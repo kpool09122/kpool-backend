@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Policy as PolicyEloquent;
+use Application\Models\Account\Principal as PrincipalEloquent;
+use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
+use Application\Models\Account\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -13,19 +17,25 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
     public function save(Policy $policy): void
     {
+        $policyIdentifier = (string) $policy->policyIdentifier();
+        $affectedRoles = $this->rolesAttachedToPolicy($policyIdentifier);
+
         PolicyEloquent::query()->updateOrCreate(
-            ['id' => (string) $policy->policyIdentifier()],
+            ['id' => $policyIdentifier],
             [
                 'name' => $policy->name(),
                 'statements' => $this->serializeStatements($policy->statements()),
                 'is_system_policy' => $policy->isSystemPolicy(),
             ]
         );
+
+        $this->forgetAccountContextsForRoles($affectedRoles);
     }
 
     /**
@@ -113,5 +123,41 @@ class PolicyRepository implements PolicyRepositoryInterface
             array_map(Action::from(...), $data['actions']),
             array_map(ResourceType::from(...), $data['resource_types']),
         );
+    }
+
+    /** @return array<int, string> */
+    private function rolesAttachedToPolicy(string $policyIdentifier): array
+    {
+        return RolePolicyAttachmentEloquent::query()
+            ->where('policy_id', $policyIdentifier)
+            ->pluck('role')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /** @param array<int, string> $roleValues */
+    private function forgetAccountContextsForRoles(array $roleValues): void
+    {
+        if (empty($roleValues)) {
+            return;
+        }
+
+        $principalIds = PrincipalGroupEloquent::query()
+            ->whereIn('role', $roleValues)
+            ->join('account_principal_group_memberships', 'account_principal_groups.id', '=', 'account_principal_group_memberships.principal_group_id')
+            ->pluck('account_principal_group_memberships.principal_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $identityIds = PrincipalEloquent::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetAccount(new IdentityIdentifier($identityId));
+        }
     }
 }

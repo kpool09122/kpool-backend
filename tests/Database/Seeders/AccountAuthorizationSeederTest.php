@@ -34,7 +34,9 @@ class AccountAuthorizationSeederTest extends TestCase
         $memberPolicies = $policyRepository->findByIds($roles[AccountRole::MEMBER->value]->policies());
 
         $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITATION_CREATE));
+        $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
         $this->assertTrue($this->hasAction($adminPolicies, Action::INVITATION_CREATE));
+        $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
         $this->assertFalse($this->hasAction($memberPolicies, Action::INVITATION_CREATE));
     }
 

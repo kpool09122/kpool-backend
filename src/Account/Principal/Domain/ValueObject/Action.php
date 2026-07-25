@@ -7,7 +7,7 @@ namespace Source\Account\Principal\Domain\ValueObject;
 enum Action: string
 {
     case INVITATION_CREATE = 'account:invitation:create';
-    case UPDATE_NAME = 'account:updateName';
+    case UPDATE = 'account:update';
     case SETTINGS_UPDATE = 'account:settings:update';
     case DELETE = 'account:delete';
     case BILLING_MANAGE = 'account:billing:manage';

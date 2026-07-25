@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Query;
 
+use Database\Seeders\AccountAuthorizationSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Group;
@@ -29,6 +30,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $principalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14d5cc';
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateAccount::create((string) $accountIdentifier);
+        $this->app->make(AccountAuthorizationSeeder::class)->run();
         CreateIdentity::create($identityIdentifier, [
             'identity_name' => 'test-user',
             'email' => 'test@example.com',
@@ -63,7 +65,9 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertSame('http://127.0.0.1:8080/storage/profile/test.png', $readModel->profileImage());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
-        $this->assertSame('owner', $readModel->accountRole());
+        $this->assertCount(1, $readModel->accountPolicies());
+        $this->assertSame('ACCOUNT_OWNER_BASIC', $readModel->accountPolicies()[0]['name']);
+        $this->assertSame('account:update', $readModel->accountPolicies()[0]['statements'][0]['actions'][1]);
     }
 
     #[Group('useDb')]
@@ -89,7 +93,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertNull($readModel->profileImage());
         $this->assertNull($readModel->accountIdentifier());
-        $this->assertNull($readModel->accountRole());
+        $this->assertSame([], $readModel->accountPolicies());
     }
 
     #[Group('useDb')]
