@@ -143,12 +143,35 @@ class UpdateAccountTest extends TestCase
         (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
     }
 
-    private function createAccount(): Account
+    public function testProcessThrowsForbiddenWhenAccountIsNotCorporation(): void
+    {
+        $account = $this->createAccount(AccountType::INDIVIDUAL);
+        $principal = $this->createPrincipal($account->accountIdentifier());
+        $input = new UpdateAccountInput(
+            $account->accountIdentifier(),
+            $principal,
+            new AccountName('Updated Account'),
+        );
+
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->with($account->accountIdentifier())->once()->andReturn($account);
+        $accountRepository->shouldNotReceive('save');
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldNotReceive('evaluate');
+
+        $this->expectException(AccountUpdateForbiddenException::class);
+
+        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
+    }
+
+    private function createAccount(AccountType $accountType = AccountType::CORPORATION): Account
     {
         return new Account(
             new AccountIdentifier(StrTestHelper::generateUuid()),
             new Email('test@example.com'),
-            AccountType::CORPORATION,
+            $accountType,
             new AccountName('Example Inc'),
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
