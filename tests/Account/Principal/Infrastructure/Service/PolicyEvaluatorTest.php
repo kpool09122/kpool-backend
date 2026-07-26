@@ -35,7 +35,7 @@ class PolicyEvaluatorTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principal = $this->createPrincipal($accountIdentifier);
         $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), AccountRole::OWNER);
-        $policy = $this->createPolicy('ACCOUNT_OWNER_BASIC', Effect::ALLOW, [Action::INVITATION_CREATE]);
+        $policy = $this->createPolicy('ACCOUNT_OWNER_BASIC', Effect::ALLOW, [Action::INVITE_MEMBER]);
 
         /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -62,7 +62,7 @@ class PolicyEvaluatorTest extends TestCase
 
         $this->assertTrue($evaluator->evaluate(
             $principal,
-            Action::INVITATION_CREATE,
+            Action::INVITE_MEMBER,
             Resource::account($accountIdentifier),
         ));
     }
@@ -91,7 +91,7 @@ class PolicyEvaluatorTest extends TestCase
 
         $this->assertFalse($evaluator->evaluate(
             $principal,
-            Action::INVITATION_CREATE,
+            Action::INVITE_MEMBER,
             Resource::account($accountIdentifier),
         ));
     }
@@ -101,8 +101,8 @@ class PolicyEvaluatorTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principal = $this->createPrincipal($accountIdentifier);
         $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), AccountRole::ADMIN);
-        $allowPolicy = $this->createPolicy('ALLOW_INVITATION', Effect::ALLOW, [Action::INVITATION_CREATE]);
-        $denyPolicy = $this->createPolicy('DENY_INVITATION', Effect::DENY, [Action::INVITATION_CREATE]);
+        $allowPolicy = $this->createPolicy('ALLOW_INVITATION', Effect::ALLOW, [Action::INVITE_MEMBER]);
+        $denyPolicy = $this->createPolicy('DENY_INVITATION', Effect::DENY, [Action::INVITE_MEMBER]);
 
         /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -137,7 +137,7 @@ class PolicyEvaluatorTest extends TestCase
 
         $this->assertFalse($evaluator->evaluate(
             $principal,
-            Action::INVITATION_CREATE,
+            Action::INVITE_MEMBER,
             Resource::account($accountIdentifier),
         ));
     }

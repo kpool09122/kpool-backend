@@ -32,7 +32,7 @@ class AccountAuthorizationSeeder extends Seeder
             new Statement(
                 effect: Effect::ALLOW,
                 actions: [
-                    Action::INVITATION_CREATE,
+                    Action::INVITE_MEMBER,
                     Action::UPDATE,
                     Action::SETTINGS_UPDATE,
                     Action::DELETE,
@@ -47,7 +47,7 @@ class AccountAuthorizationSeeder extends Seeder
             new Statement(
                 effect: Effect::ALLOW,
                 actions: [
-                    Action::INVITATION_CREATE,
+                    Action::INVITE_MEMBER,
                     Action::UPDATE,
                     Action::SETTINGS_UPDATE,
                     Action::DELEGATION_MANAGE,

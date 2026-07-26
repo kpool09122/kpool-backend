@@ -80,7 +80,7 @@ readonly class InviteMember implements InviteMemberInterface
 
         $allowed = $this->policyEvaluator->evaluate(
             $principal,
-            Action::INVITATION_CREATE,
+            Action::INVITE_MEMBER,
             Resource::account($input->accountIdentifier()),
         );
 
