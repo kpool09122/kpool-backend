@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $principal_id
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read Principal|null $principal
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',

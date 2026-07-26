@@ -8,6 +8,7 @@ use Application\Models\Account\PrincipalGroup as PrincipalGroupModel;
 use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInputPort;
 use Source\Account\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
+use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupMemberReadModel;
 use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupReadModel;
 use Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization;
 
@@ -25,7 +26,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
 
         /** @var Collection<int, PrincipalGroupModel> $groups */
         $groups = PrincipalGroupModel::query()
-            ->with(['members', 'roleAttachments'])
+            ->with(['members.principal.identity', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->orderBy('created_at')
             ->get();
@@ -36,7 +37,20 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             name: $group->name,
             roleIdentifiers: $group->roleAttachments->map(static fn ($attachment): string => $attachment->role_id)->values()->all(),
             isDefault: $group->is_default,
-            members: $group->members->map(static fn ($member): string => $member->principal_id)->values()->all(),
+            members: $group->members
+                ->map(static function ($member): PrincipalGroupMemberReadModel {
+                    $principal = $member->principal;
+                    $identity = $principal->identity;
+
+                    return new PrincipalGroupMemberReadModel(
+                        principalIdentifier: $principal->id,
+                        identityIdentifier: $principal->identity_id,
+                        identityName: $identity->identity_name,
+                        email: $identity->email,
+                    );
+                })
+                ->values()
+                ->all(),
         ))->values()->all();
     }
 }

@@ -43,10 +43,26 @@ class ListPrincipalGroupsTest extends TestCase
         $roleId = StrTestHelper::generateUuid();
         $memberId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
-        CreateIdentity::create(new IdentityIdentifier($identityId), ['email' => 'member@example.com']);
+        CreateIdentity::create(new IdentityIdentifier($identityId), [
+            'identityName' => 'alice',
+            'email' => 'alice@example.com',
+        ]);
         DB::table('account_principals')->insert([
             'id' => $memberId,
             'identity_id' => $identityId,
+            'account_id' => (string) $accountIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $secondMemberId = StrTestHelper::generateUuid();
+        $secondIdentityId = StrTestHelper::generateUuid();
+        CreateIdentity::create(new IdentityIdentifier($secondIdentityId), [
+            'identityName' => 'bob',
+            'email' => 'bob@example.com',
+        ]);
+        DB::table('account_principals')->insert([
+            'id' => $secondMemberId,
+            'identity_id' => $secondIdentityId,
             'account_id' => (string) $accountIdentifier,
             'created_at' => now(),
             'updated_at' => now(),
@@ -63,11 +79,20 @@ class ListPrincipalGroupsTest extends TestCase
             'role_id' => $roleId,
         ]);
         DB::table('account_principal_group_memberships')->insert([
-            'id' => StrTestHelper::generateUuid(),
-            'principal_group_id' => $groupId,
-            'principal_id' => $memberId,
-            'created_at' => now(),
-            'updated_at' => now(),
+            [
+                'id' => StrTestHelper::generateUuid(),
+                'principal_group_id' => $groupId,
+                'principal_id' => $memberId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => StrTestHelper::generateUuid(),
+                'principal_group_id' => $groupId,
+                'principal_id' => $secondMemberId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -88,7 +113,20 @@ class ListPrincipalGroupsTest extends TestCase
             'name' => 'Admins',
             'roleIdentifiers' => [$roleId],
             'isDefault' => false,
-            'members' => [$memberId],
+            'members' => [
+                [
+                    'principalIdentifier' => $memberId,
+                    'identityIdentifier' => $identityId,
+                    'identityName' => 'alice',
+                    'email' => 'alice@example.com',
+                ],
+                [
+                    'principalIdentifier' => $secondMemberId,
+                    'identityIdentifier' => $secondIdentityId,
+                    'identityName' => 'bob',
+                    'email' => 'bob@example.com',
+                ],
+            ],
         ], $groups[0]->toArray());
     }
 

@@ -137,6 +137,18 @@ model ListPrincipalGroupsResponseBody {
   principalGroups: PrincipalGroupSummary[];
 }
 
+@doc("Principal group member summary.")
+model PrincipalGroupMemberSummary {
+  @doc("Principal identifier.")
+  principalIdentifier: Uuid;
+  @doc("Identity identifier.")
+  identityIdentifier: Uuid;
+  @doc("Identity display name.")
+  identityName: string;
+  @doc("Identity email address.")
+  email: string;
+}
+
 @doc("Principal group snapshot returned after updates.")
 model PrincipalGroupSummary {
   @doc("Principal group identifier.")
@@ -149,8 +161,8 @@ model PrincipalGroupSummary {
   roleIdentifiers: Uuid[];
   @doc("Whether this is the default principal group.")
   isDefault: boolean;
-  @doc("Identity identifiers currently assigned to the group.")
-  members?: Uuid[];
+  @doc("Principal details currently assigned to the group.")
+  members?: PrincipalGroupMemberSummary[];
 }
 
 @doc("Principal group snapshot returned immediately after creation.")
