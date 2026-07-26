@@ -8,7 +8,7 @@ readonly class PrincipalGroupReadModel
 {
     /**
      * @param array<int, string> $roleIdentifiers
-     * @param array<int, string> $members
+     * @param array<int, PrincipalGroupMemberReadModel> $members
      */
     public function __construct(
         private string $principalGroupIdentifier,
@@ -46,7 +46,7 @@ readonly class PrincipalGroupReadModel
         return $this->isDefault;
     }
 
-    /** @return array<int, string> */
+    /** @return array<int, PrincipalGroupMemberReadModel> */
     public function members(): array
     {
         return $this->members;
@@ -61,7 +61,7 @@ readonly class PrincipalGroupReadModel
             'name' => $this->name,
             'roleIdentifiers' => $this->roleIdentifiers,
             'isDefault' => $this->isDefault,
-            'members' => $this->members,
+            'members' => array_map(static fn (PrincipalGroupMemberReadModel $member): array => $member->toArray(), $this->members),
         ];
     }
 }

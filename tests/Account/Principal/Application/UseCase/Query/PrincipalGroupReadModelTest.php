@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Account\Principal\Application\UseCase\Query;
 
 use PHPUnit\Framework\TestCase;
+use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupMemberReadModel;
 use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupReadModel;
 use Tests\Helper\StrTestHelper;
 
@@ -19,8 +20,18 @@ class PrincipalGroupReadModelTest extends TestCase
             StrTestHelper::generateUuid(),
         ];
         $members = [
-            StrTestHelper::generateUuid(),
-            StrTestHelper::generateUuid(),
+            new PrincipalGroupMemberReadModel(
+                principalIdentifier: StrTestHelper::generateUuid(),
+                identityIdentifier: StrTestHelper::generateUuid(),
+                identityName: 'alice',
+                email: 'alice@example.com',
+            ),
+            new PrincipalGroupMemberReadModel(
+                principalIdentifier: StrTestHelper::generateUuid(),
+                identityIdentifier: StrTestHelper::generateUuid(),
+                identityName: 'bob',
+                email: 'bob@example.com',
+            ),
         ];
 
         $readModel = new PrincipalGroupReadModel(
@@ -48,9 +59,15 @@ class PrincipalGroupReadModelTest extends TestCase
             StrTestHelper::generateUuid(),
             StrTestHelper::generateUuid(),
         ];
+        $principalIdentifier = StrTestHelper::generateUuid();
+        $identityIdentifier = StrTestHelper::generateUuid();
         $members = [
-            StrTestHelper::generateUuid(),
-            StrTestHelper::generateUuid(),
+            new PrincipalGroupMemberReadModel(
+                principalIdentifier: $principalIdentifier,
+                identityIdentifier: $identityIdentifier,
+                identityName: 'alice',
+                email: 'alice@example.com',
+            ),
         ];
 
         $readModel = new PrincipalGroupReadModel(
@@ -68,7 +85,14 @@ class PrincipalGroupReadModelTest extends TestCase
             'name' => 'Administrators',
             'roleIdentifiers' => $roleIdentifiers,
             'isDefault' => false,
-            'members' => $members,
+            'members' => [
+                [
+                    'principalIdentifier' => $principalIdentifier,
+                    'identityIdentifier' => $identityIdentifier,
+                    'identityName' => 'alice',
+                    'email' => 'alice@example.com',
+                ],
+            ],
         ], $readModel->toArray());
     }
 }

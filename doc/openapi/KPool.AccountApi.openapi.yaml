@@ -1579,6 +1579,29 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier to add or remove.
       description: Request body for mutating principal group membership.
+    PrincipalGroupMemberSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - identityName
+        - email
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal identifier.
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier.
+        identityName:
+          type: string
+          description: Identity display name.
+        email:
+          type: string
+          description: Identity email address.
+      description: Principal group member summary.
     PrincipalGroupSummary:
       type: object
       required:
@@ -1610,8 +1633,8 @@ components:
         members:
           type: array
           items:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifiers currently assigned to the group.
+            $ref: '#/components/schemas/PrincipalGroupMemberSummary'
+          description: Principal details currently assigned to the group.
       description: Principal group snapshot returned after updates.
     RejectAffiliationRequestBody:
       type: object
