@@ -7,15 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Account\Domain\ValueObject\AccountStatus;
-use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
@@ -38,32 +30,20 @@ use Tests\TestCase;
 class CreatePrincipalTest extends TestCase
 {
     /**
-     * 正常系: 正しくプリンシパルを作成できること（Default PrincipalGroup が存在しない場合）.
+     * 正常系: Default PrincipalGroup が存在しない場合、COLLABORATORロールを持つDefaultグループを作成してPrincipalを追加すること.
      *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
      * @throws BindingResolutionException
+     * @throws PrincipalAlreadyExistsException
      */
-    public function testProcess(): void
+    public function testProcessCreatesDefaultPrincipalGroupWithCollaboratorRole(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
+        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
         $defaultPrincipalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
@@ -71,28 +51,37 @@ class CreatePrincipalTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
+        $collaboratorRole = new Role(
+            $roleIdentifier,
+            'COLLABORATOR',
+            [],
+            true,
+            new DateTimeImmutable(),
+        );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIdentityIdentifier')
             ->with($identityIdentifier)
             ->once()
-            ->andReturn(null);
+            ->andReturnNull();
+        $principalRepository->shouldReceive('save')
+            ->with($principal)
+            ->once();
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
             ->with($identityIdentifier)
             ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
+            ->andReturn($principal);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findDefaultByAccountId')
             ->with($accountIdentifier)
             ->once()
-            ->andReturn(null);
+            ->andReturnNull();
+        $principalGroupRepository->shouldReceive('save')
+            ->with($defaultPrincipalGroup)
+            ->twice();
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
@@ -100,67 +89,44 @@ class CreatePrincipalTest extends TestCase
             ->once()
             ->andReturn($defaultPrincipalGroup);
 
-        $principalGroupRepository->shouldReceive('save')
-            ->with($defaultPrincipalGroup)
-            ->twice();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturnNull();
-
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findByName')
             ->with('COLLABORATOR')
             ->once()
-            ->andReturnNull();
+            ->andReturn($collaboratorRole);
 
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
 
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
+        $output = new CreatePrincipalOutput();
+        $this->app->make(CreatePrincipalInterface::class)->process(
+            new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
+            $output,
+        );
+
+        $this->assertSame((string) $principalIdentifier, $output->toArray()['principalIdentifier']);
+        $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
         $this->assertTrue($defaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
     /**
-     * 正常系: Default PrincipalGroup が既に存在する場合、既存のグループに Principal を追加すること.
+     * 正常系: Default PrincipalGroup が既に存在する場合、ロール構成を変更せずPrincipalを追加すること.
      *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
      * @throws BindingResolutionException
+     * @throws PrincipalAlreadyExistsException
      */
-    public function testProcessWithExistingDefaultPrincipalGroup(): void
+    public function testProcessAddsPrincipalToExistingDefaultPrincipalGroup(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
 
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
-        $existingDefaultPrincipalGroup = new PrincipalGroup(
-            $principalGroupIdentifier,
+        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $defaultPrincipalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
             'Default',
             true,
@@ -171,83 +137,70 @@ class CreatePrincipalTest extends TestCase
         $principalRepository->shouldReceive('findByIdentityIdentifier')
             ->with($identityIdentifier)
             ->once()
-            ->andReturn(null);
+            ->andReturnNull();
+        $principalRepository->shouldReceive('save')
+            ->with($principal)
+            ->once();
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
             ->with($identityIdentifier)
             ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
+            ->andReturn($principal);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findDefaultByAccountId')
             ->with($accountIdentifier)
             ->once()
-            ->andReturn($existingDefaultPrincipalGroup);
+            ->andReturn($defaultPrincipalGroup);
+        $principalGroupRepository->shouldReceive('save')
+            ->with($defaultPrincipalGroup)
+            ->once();
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldNotReceive('create');
 
-        $principalGroupRepository->shouldReceive('save')
-            ->with($existingDefaultPrincipalGroup)
-            ->once();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldNotReceive('findById');
-
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldNotReceive('findByName');
 
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
 
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
-        $this->assertTrue($existingDefaultPrincipalGroup->hasMember($principalIdentifier));
+        $output = new CreatePrincipalOutput();
+        $this->app->make(CreatePrincipalInterface::class)->process(
+            new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
+            $output,
+        );
+
+        $this->assertSame((string) $principalIdentifier, $output->toArray()['principalIdentifier']);
+        $this->assertTrue($defaultPrincipalGroup->hasMember($principalIdentifier));
+        $this->assertEmpty($defaultPrincipalGroup->roles());
     }
 
     /**
-     * 異常系: すでに生成済みのプリンシパルを作成しようとした場合、例外がスローされること.
+     * 異常系: すでに生成済みのPrincipalを作成しようとした場合、例外がスローされること.
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function testProcessThrowsExceptionWhenPrincipalAlreadyExists(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $existingPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIdentityIdentifier')
             ->with($identityIdentifier)
             ->once()
-            ->andReturn($existingPrincipal);
+            ->andReturn(new Principal(
+                new PrincipalIdentifier(StrTestHelper::generateUuid()),
+                $identityIdentifier,
+                null,
+                [],
+                [],
+            ));
         $principalRepository->shouldNotReceive('save');
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -257,438 +210,17 @@ class CreatePrincipalTest extends TestCase
         $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
         $principalGroupRepository->shouldNotReceive('save');
 
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldNotReceive('create');
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldNotReceive('findById');
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldNotReceive('findByName');
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(PrincipalGroupFactoryInterface::class, Mockery::mock(PrincipalGroupFactoryInterface::class));
+        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
 
         $this->expectException(PrincipalAlreadyExistsException::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
-    }
-
-    /**
-     * 正常系: AccountがAGENCYの場合、AGENCY_ACTOR_ROLEが付与されること.
-     *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
-     * @throws BindingResolutionException
-     */
-    public function testProcessWithAgencyAccountAssignsAgencyActorRole(): void
-    {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
-        $defaultPrincipalGroup = new PrincipalGroup(
-            $principalGroupIdentifier,
-            $accountIdentifier,
-            'Default',
-            true,
-            new DateTimeImmutable(),
-        );
-
-        $agencyAccount = $this->createAccount(AccountCategory::AGENCY);
-        $agencyActorRole = $this->createRole($roleIdentifier, 'AGENCY_ACTOR');
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
-
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')
-            ->with($accountIdentifier, 'Default', true)
-            ->once()
-            ->andReturn($defaultPrincipalGroup);
-
-        $principalGroupRepository->shouldReceive('save')
-            ->with($defaultPrincipalGroup)
-            ->twice();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn($agencyAccount);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->with('AGENCY_ACTOR')
-            ->once()
-            ->andReturn($agencyActorRole);
-
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
-
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
-    }
-
-    /**
-     * 正常系: AccountがTALENTの場合、TALENT_ACTOR_ROLEが付与されること.
-     *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
-     * @throws BindingResolutionException
-     */
-    public function testProcessWithTalentAccountAssignsTalentActorRole(): void
-    {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
-        $defaultPrincipalGroup = new PrincipalGroup(
-            $principalGroupIdentifier,
-            $accountIdentifier,
-            'Default',
-            true,
-            new DateTimeImmutable(),
-        );
-
-        $talentAccount = $this->createAccount(AccountCategory::TALENT);
-        $talentActorRole = $this->createRole($roleIdentifier, 'TALENT_ACTOR');
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
-
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')
-            ->with($accountIdentifier, 'Default', true)
-            ->once()
-            ->andReturn($defaultPrincipalGroup);
-
-        $principalGroupRepository->shouldReceive('save')
-            ->with($defaultPrincipalGroup)
-            ->twice();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn($talentAccount);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->with('TALENT_ACTOR')
-            ->once()
-            ->andReturn($talentActorRole);
-
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
-
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
-    }
-
-    /**
-     * 正常系: AccountがGENERALの場合、COLLABORATOR_ROLEが付与されること.
-     *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
-     * @throws BindingResolutionException
-     */
-    public function testProcessWithGeneralAccountAssignsCollaboratorRole(): void
-    {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
-        $defaultPrincipalGroup = new PrincipalGroup(
-            $principalGroupIdentifier,
-            $accountIdentifier,
-            'Default',
-            true,
-            new DateTimeImmutable(),
-        );
-
-        $generalAccount = $this->createAccount(AccountCategory::GENERAL);
-        $collaboratorRole = $this->createRole($roleIdentifier, 'COLLABORATOR');
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
-
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')
-            ->with($accountIdentifier, 'Default', true)
-            ->once()
-            ->andReturn($defaultPrincipalGroup);
-
-        $principalGroupRepository->shouldReceive('save')
-            ->with($defaultPrincipalGroup)
-            ->twice();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn($generalAccount);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->with('COLLABORATOR')
-            ->once()
-            ->andReturn($collaboratorRole);
-
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
-
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
-    }
-
-    /**
-     * 正常系: Roleが見つからない場合、Roleはアタッチされないこと.
-     *
-     * @return void
-     * @throws PrincipalAlreadyExistsException
-     * @throws BindingResolutionException
-     */
-    public function testProcessWithRoleNotFoundDoesNotAttachRole(): void
-    {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-
-        $input = new CreatePrincipalInput(
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-
-        $expectedPrincipal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-
-        $defaultPrincipalGroup = new PrincipalGroup(
-            $principalGroupIdentifier,
-            $accountIdentifier,
-            'Default',
-            true,
-            new DateTimeImmutable(),
-        );
-
-        $agencyAccount = $this->createAccount(AccountCategory::AGENCY);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
-            ->once()
-            ->andReturn($expectedPrincipal);
-
-        $principalRepository->shouldReceive('save')
-            ->with($expectedPrincipal)
-            ->once();
-
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn(null);
-
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')
-            ->with($accountIdentifier, 'Default', true)
-            ->once()
-            ->andReturn($defaultPrincipalGroup);
-
-        $principalGroupRepository->shouldReceive('save')
-            ->with($defaultPrincipalGroup)
-            ->twice();
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')
-            ->with($accountIdentifier)
-            ->once()
-            ->andReturn($agencyAccount);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->with('AGENCY_ACTOR')
-            ->once()
-            ->andReturnNull();
-
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $output = new CreatePrincipalOutput();
-        $useCase->process($input, $output);
-
-        $result = $output->toArray();
-        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
-        $this->assertEmpty($defaultPrincipalGroup->roles());
-    }
-
-    private function createAccount(AccountCategory $category): Account
-    {
-        return new Account(
-            new AccountIdentifier(StrTestHelper::generateUuid()),
-            new Email('test@example.com'),
-            AccountType::CORPORATION,
-            new AccountName('Test Account'),
-            AccountStatus::ACTIVE,
-            $category,
-            DeletionReadinessChecklist::ready(),
-        );
-    }
-
-    private function createRole(RoleIdentifier $roleIdentifier, string $name): Role
-    {
-        return new Role(
-            $roleIdentifier,
-            $name,
-            [],
-            true,
-            new DateTimeImmutable(),
+        $this->app->make(CreatePrincipalInterface::class)->process(
+            new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
+            new CreatePrincipalOutput(),
         );
     }
 }

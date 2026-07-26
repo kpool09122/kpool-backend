@@ -6,6 +6,7 @@ namespace Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Grading\Domain\Entity\DemotionWarning;
 use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
@@ -16,9 +17,11 @@ use Source\Wiki\Grading\Domain\Repository\DemotionWarningRepositoryInterface;
 use Source\Wiki\Grading\Domain\Repository\PromotionHistoryRepositoryInterface;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
+use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Event\PrincipalsBatchDemoted;
 use Source\Wiki\Principal\Domain\Event\PrincipalsBatchPromoted;
+use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -28,6 +31,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
 {
     private const string COLLABORATOR_ROLE = 'COLLABORATOR';
     private const string SENIOR_COLLABORATOR_ROLE = 'SENIOR_COLLABORATOR';
+    private const string SENIOR_COLLABORATOR_GROUP_NAME = 'Senior Collaborator';
 
     public function __construct(
         private ContributionPointSummaryRepositoryInterface $summaryRepository,
@@ -36,6 +40,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         private PromotionHistoryRepositoryInterface $promotionHistoryRepository,
         private PromotionHistoryFactoryInterface $promotionHistoryFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
+        private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
@@ -223,13 +228,18 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                 if ($warning->warningCount()->isExceedDemotionThreshold()) {
                     $principalIdentifier = new PrincipalIdentifier($principalId);
                     $principalGroups = $this->principalGroupRepository->findByPrincipalId($principalIdentifier);
+                    $defaultGroup = $this->findDefaultGroupForPrincipalGroups($principalGroups);
 
                     foreach ($principalGroups as $group) {
                         if ($group->hasRole($seniorCollaboratorRole->roleIdentifier())) {
-                            $group->removeRole($seniorCollaboratorRole->roleIdentifier());
-                            $group->addRole($collaboratorRole->roleIdentifier());
+                            $group->removeMember($principalIdentifier);
                             $this->principalGroupRepository->save($group);
                         }
+                    }
+
+                    if ($defaultGroup !== null && ! $defaultGroup->hasMember($principalIdentifier)) {
+                        $defaultGroup->addMember($principalIdentifier);
+                        $this->principalGroupRepository->save($defaultGroup);
                     }
 
                     $history = $this->promotionHistoryFactory->create(
@@ -301,13 +311,34 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
             if (in_array($principalId, $collaborators, true)) {
                 $principalIdentifier = new PrincipalIdentifier($principalId);
                 $principalGroups = $this->principalGroupRepository->findByPrincipalId($principalIdentifier);
+                $defaultGroup = $this->findDefaultGroup($principalGroups);
 
-                foreach ($principalGroups as $group) {
-                    if ($group->hasRole($collaboratorRole->roleIdentifier())) {
-                        $group->removeRole($collaboratorRole->roleIdentifier());
-                        $group->addRole($seniorCollaboratorRole->roleIdentifier());
-                        $this->principalGroupRepository->save($group);
-                    }
+                if ($defaultGroup === null) {
+                    continue;
+                }
+
+                $seniorCollaboratorGroup = $this->findRoleGroupForAccount(
+                    $seniorCollaboratorRole,
+                    $defaultGroup->accountIdentifier(),
+                );
+
+                if ($seniorCollaboratorGroup === null) {
+                    $seniorCollaboratorGroup = $this->principalGroupFactory->create(
+                        $defaultGroup->accountIdentifier(),
+                        self::SENIOR_COLLABORATOR_GROUP_NAME,
+                        false,
+                    );
+                    $seniorCollaboratorGroup->addRole($seniorCollaboratorRole->roleIdentifier());
+                }
+
+                if ($defaultGroup->hasMember($principalIdentifier)) {
+                    $defaultGroup->removeMember($principalIdentifier);
+                    $this->principalGroupRepository->save($defaultGroup);
+                }
+
+                if (! $seniorCollaboratorGroup->hasMember($principalIdentifier)) {
+                    $seniorCollaboratorGroup->addMember($principalIdentifier);
+                    $this->principalGroupRepository->save($seniorCollaboratorGroup);
                 }
 
                 $points = $cumulativePoints[$principalId] ?? 0;
@@ -324,6 +355,52 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         }
 
         return $promoted;
+    }
+
+    /**
+     * @param array<PrincipalGroup> $principalGroups
+     */
+    private function findDefaultGroup(array $principalGroups): ?PrincipalGroup
+    {
+        foreach ($principalGroups as $group) {
+            if ($group->isDefault()) {
+                return $group;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<PrincipalGroup> $principalGroups
+     */
+    private function findDefaultGroupForPrincipalGroups(array $principalGroups): ?PrincipalGroup
+    {
+        $defaultGroup = $this->findDefaultGroup($principalGroups);
+        if ($defaultGroup !== null) {
+            return $defaultGroup;
+        }
+
+        foreach ($principalGroups as $group) {
+            return $this->principalGroupRepository->findDefaultByAccountId($group->accountIdentifier());
+        }
+
+        return null;
+    }
+
+    private function findRoleGroupForAccount(
+        Role $role,
+        AccountIdentifier $accountIdentifier,
+    ): ?PrincipalGroup {
+        $groups = $this->principalGroupRepository->findByRole($role->roleIdentifier());
+
+        foreach ($groups as $group) {
+            if ((string) $group->accountIdentifier() === (string) $accountIdentifier) {
+                return $group;
+            }
+        }
+
+        return null;
     }
 
     /**
