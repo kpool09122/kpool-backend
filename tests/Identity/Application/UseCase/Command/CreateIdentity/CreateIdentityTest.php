@@ -424,10 +424,6 @@ class CreateIdentityTest extends TestCase
             $oneTimeToken,
         );
 
-        $verifiedAt = new DateTimeImmutable();
-        $authCode = new AuthCode('123456');
-        $session = new AuthCodeSession($email, $authCode, $verifiedAt, $verifiedAt);
-
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $identity = new Identity(
             $identityIdentifier,
@@ -440,10 +436,7 @@ class CreateIdentityTest extends TestCase
         );
 
         $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authCodeSessionRepository->shouldReceive('findByEmail')
-            ->once()
-            ->with($email)
-            ->andReturn($session);
+        $authCodeSessionRepository->shouldNotReceive('findByEmail');
 
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')
@@ -483,6 +476,7 @@ class CreateIdentityTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
+        $this->assertNotNull($identity->emailVerifiedAt());
     }
 
     /**

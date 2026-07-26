@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
+use DateTimeImmutable;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
@@ -43,9 +44,12 @@ readonly class CreateIdentity implements CreateIdentityInterface
             throw new PasswordMismatchException('パスワードが一致しません');
         }
 
-        $session = $this->authCodeSessionRepository->findByEmail($input->email());
-        if (! $session) {
-            throw new AuthCodeSessionNotFoundException();
+        $session = null;
+        if ($input->oneTimeToken() === null) {
+            $session = $this->authCodeSessionRepository->findByEmail($input->email());
+            if (! $session) {
+                throw new AuthCodeSessionNotFoundException();
+            }
         }
 
         $existsIdentity = $this->identityRepository->findByEmail($input->email());
@@ -59,7 +63,12 @@ readonly class CreateIdentity implements CreateIdentityInterface
             $input->language(),
             $input->password(),
         );
-        $identity->copyEmailVerifiedAt($session);
+
+        if ($session !== null) {
+            $identity->copyEmailVerifiedAt($session);
+        } else {
+            $identity->markEmailVerified(new DateTimeImmutable());
+        }
 
         if ($input->base64EncodedImage()) {
             $imagePath = $this->imageService->upload($input->base64EncodedImage());
