@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Domain\Repository;
 
 use Source\Account\Principal\Domain\Entity\Role;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 
 interface RoleRepositoryInterface
 {
     public function save(Role $role): void;
 
-    public function findByRole(AccountRole $role): Role;
+    public function findById(RoleIdentifier $roleIdentifier): ?Role;
 
     /**
-     * @param AccountRole[] $roles
-     * @return array<string, Role> role value をキーとした連想配列
+     * @param RoleIdentifier[] $roleIdentifiers
+     * @return array<string, Role> roleIdentifier をキーとした連想配列
      */
-    public function findByRoles(array $roles): array;
+    public function findByIds(array $roleIdentifiers): array;
+
+    public function findByName(string $name): ?Role;
 }

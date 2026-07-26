@@ -5,21 +5,47 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
+use Source\Account\Principal\Domain\Entity\Role;
 
 class FullAccessTestAccountSeeder extends Seeder
 {
-    private const string ACCOUNT_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa01';
-    private const string IDENTITY_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa02';
-    private const string PRINCIPAL_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa03';
-    private const string PRINCIPAL_GROUP_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa04';
-    private const string ACCOUNT_PRINCIPAL_GROUP_MEMBERSHIP_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa05';
-    private const string EMAIL = 'test@example.com';
+    private const array ACCOUNTS = [
+        [
+            'accountId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa01',
+            'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa02',
+            'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa03',
+            'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa04',
+            'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
+            'email' => 'test@example.com',
+            'identityName' => 'full-access-test',
+            'accountName' => 'Full Access Test Account',
+            'principalGroupName' => 'Full Access Test Group',
+            'accountType' => 'individual',
+        ],
+        [
+            'accountId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa06',
+            'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa07',
+            'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa08',
+            'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa09',
+            'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
+            'email' => 'corp@example.com',
+            'identityName' => 'corp-full-access-test',
+            'accountName' => 'Corporate Full Access Test Account',
+            'principalGroupName' => 'Corporate Full Access Test Group',
+            'accountType' => 'corporation',
+        ],
+    ];
 
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
         $administratorRoleId = DB::table('roles')
             ->where('name', 'ADMINISTRATOR')
             ->value('id');
@@ -28,14 +54,47 @@ class FullAccessTestAccountSeeder extends Seeder
             throw new RuntimeException('ADMINISTRATOR role not found. Please run SystemRoleSeeder first.');
         }
 
+        $ownerRoleId = DB::table('account_roles')
+            ->where('name', Role::OWNER)
+            ->value('id');
+
+        if (! is_string($ownerRoleId)) {
+            throw new RuntimeException('Owner account role not found. Please run AccountAuthorizationSeeder first.');
+        }
+
         $now = now();
 
+        foreach (self::ACCOUNTS as $account) {
+            $this->createFullAccessAccount($account, $administratorRoleId, $ownerRoleId, $now);
+        }
+    }
+
+    /**
+     * @param array{
+     *     accountId: string,
+     *     identityId: string,
+     *     principalId: string,
+     *     principalGroupId: string,
+     *     accountPrincipalGroupMembershipId: string,
+     *     email: string,
+     *     identityName: string,
+     *     accountName: string,
+     *     principalGroupName: string,
+     *     accountType: string
+     * } $account
+     */
+    private function createFullAccessAccount(
+        array $account,
+        string $administratorRoleId,
+        string $ownerRoleId,
+        Carbon $now,
+    ): void {
         DB::table('accounts')->upsert([
             [
-                'id' => self::ACCOUNT_ID,
-                'email' => self::EMAIL,
-                'type' => 'individual',
-                'name' => 'Full Access Test Account',
+                'id' => $account['accountId'],
+                'email' => $account['email'],
+                'type' => $account['accountType'],
+                'name' => $account['accountName'],
                 'status' => 'active',
                 'category' => 'general',
                 'created_at' => $now,
@@ -45,9 +104,9 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('identities')->upsert([
             [
-                'id' => self::IDENTITY_ID,
-                'identity_name' => 'full-access-test',
-                'email' => self::EMAIL,
+                'id' => $account['identityId'],
+                'identity_name' => $account['identityName'],
+                'email' => $account['email'],
                 'language' => 'ja',
                 'profile_image' => null,
                 'password' => Hash::make('password'),
@@ -61,8 +120,8 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('wiki_principals')->upsert([
             [
-                'id' => self::PRINCIPAL_ID,
-                'identity_id' => self::IDENTITY_ID,
+                'id' => $account['principalId'],
+                'identity_id' => $account['identityId'],
                 'agency_id' => null,
                 'group_ids' => json_encode([], JSON_THROW_ON_ERROR),
                 'talent_ids' => json_encode([], JSON_THROW_ON_ERROR),
@@ -75,9 +134,9 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('account_principals')->upsert([
             [
-                'id' => self::PRINCIPAL_ID,
-                'identity_id' => self::IDENTITY_ID,
-                'account_id' => self::ACCOUNT_ID,
+                'id' => $account['principalId'],
+                'identity_id' => $account['identityId'],
+                'account_id' => $account['accountId'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -85,10 +144,9 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('account_principal_groups')->upsert([
             [
-                'id' => self::PRINCIPAL_GROUP_ID,
-                'account_id' => self::ACCOUNT_ID,
-                'name' => 'Full Access Test Group',
-                'role' => 'owner',
+                'id' => $account['principalGroupId'],
+                'account_id' => $account['accountId'],
+                'name' => $account['principalGroupName'],
                 'is_default' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -97,19 +155,26 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('account_principal_group_memberships')->upsert([
             [
-                'id' => self::ACCOUNT_PRINCIPAL_GROUP_MEMBERSHIP_ID,
-                'principal_group_id' => self::PRINCIPAL_GROUP_ID,
-                'principal_id' => self::PRINCIPAL_ID,
+                'id' => $account['accountPrincipalGroupMembershipId'],
+                'principal_group_id' => $account['principalGroupId'],
+                'principal_id' => $account['principalId'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
         ], ['principal_group_id', 'principal_id']);
 
+        DB::table('account_principal_group_role_attachments')->upsert([
+            [
+                'principal_group_id' => $account['principalGroupId'],
+                'role_id' => $ownerRoleId,
+            ],
+        ], ['principal_group_id', 'role_id']);
+
         DB::table('principal_groups')->upsert([
             [
-                'id' => self::PRINCIPAL_GROUP_ID,
-                'account_id' => self::ACCOUNT_ID,
-                'name' => 'Full Access Test Group',
+                'id' => $account['principalGroupId'],
+                'account_id' => $account['accountId'],
+                'name' => $account['principalGroupName'],
                 'is_default' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -118,8 +183,8 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('principal_group_memberships')->upsert([
             [
-                'principal_group_id' => self::PRINCIPAL_GROUP_ID,
-                'principal_id' => self::PRINCIPAL_ID,
+                'principal_group_id' => $account['principalGroupId'],
+                'principal_id' => $account['principalId'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -127,7 +192,7 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('principal_group_role_attachments')->upsert([
             [
-                'principal_group_id' => self::PRINCIPAL_GROUP_ID,
+                'principal_group_id' => $account['principalGroupId'],
                 'role_id' => $administratorRoleId,
             ],
         ], ['principal_group_id', 'role_id']);

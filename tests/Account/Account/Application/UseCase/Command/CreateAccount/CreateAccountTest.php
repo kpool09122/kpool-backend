@@ -21,11 +21,13 @@ use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -52,6 +54,7 @@ class CreateAccountTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
@@ -59,6 +62,7 @@ class CreateAccountTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateAccountInterface::class);
         $this->assertInstanceOf(CreateAccount::class, $useCase);
@@ -103,8 +107,14 @@ class CreateAccountTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($testData->identifier, 'Owners', AccountRole::OWNER, true)
+            ->with($testData->identifier, 'Owners', true)
             ->andReturn($testData->principalGroup);
+
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturn($testData->ownerRole);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('save')
@@ -129,6 +139,7 @@ class CreateAccountTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
@@ -142,6 +153,7 @@ class CreateAccountTest extends TestCase
         $this->assertSame($testData->accountType->value, $result['type']);
         $this->assertSame((string) $testData->accountName, $result['name']);
         $this->assertTrue($testData->principalGroup->hasMember($testData->principalIdentifier));
+        $this->assertTrue($testData->principalGroup->hasRole($testData->ownerRole->roleIdentifier()));
     }
 
     /**
@@ -178,8 +190,14 @@ class CreateAccountTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($testData->identifier, 'Owners', AccountRole::OWNER, true)
+            ->with($testData->identifier, 'Owners', true)
             ->andReturn($testData->principalGroup);
+
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturn($testData->ownerRole);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('save')
@@ -204,6 +222,7 @@ class CreateAccountTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
@@ -247,6 +266,8 @@ class CreateAccountTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldNotReceive('save');
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldNotReceive('findByName');
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
@@ -263,6 +284,7 @@ class CreateAccountTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
@@ -298,11 +320,17 @@ class CreateAccountTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, $identityIdentifier, $identifier);
 
+        $ownerRole = new Role(
+            new RoleIdentifier(StrTestHelper::generateUuid()),
+            Role::OWNER,
+            [],
+            true,
+        );
+
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $identifier,
             'Owners',
-            AccountRole::OWNER,
             true,
             new \DateTimeImmutable(),
         );
@@ -327,6 +355,7 @@ class CreateAccountTest extends TestCase
             $principalIdentifier,
             $principal,
             $principalGroup,
+            $ownerRole,
             $language,
         );
     }
@@ -346,6 +375,7 @@ readonly class CreateAccountTestData
         public PrincipalIdentifier $principalIdentifier,
         public Principal $principal,
         public PrincipalGroup $principalGroup,
+        public Role $ownerRole,
         public Language $language,
     ) {
     }

@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $role
+ * @property string $role_id
  * @property string $policy_id
  * @property-read Policy|null $policy
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
-    'role',
+    'role_id',
     'policy_id',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_role_policy_attachments')]

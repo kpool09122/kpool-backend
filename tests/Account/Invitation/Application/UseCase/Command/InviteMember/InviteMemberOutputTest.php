@@ -9,6 +9,7 @@ use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMem
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -25,6 +26,7 @@ class InviteMemberOutputTest extends TestCase
     {
         $invitationIdentifier = new InvitationIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $invitedByPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $invitedByIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@example.com');
         $token = new OneTimeToken(StrTestHelper::generateHex(64));
@@ -46,14 +48,14 @@ class InviteMemberOutputTest extends TestCase
         );
 
         $output = new InviteMemberOutput();
-        $output->setInvitations([$invitation]);
+        $output->setInvitations([$invitation], $invitedByPrincipalIdentifier);
 
         $result = $output->toArray();
 
         $this->assertCount(1, $result);
         $this->assertSame((string) $invitationIdentifier, $result[0]['invitationIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result[0]['accountIdentifier']);
-        $this->assertSame((string) $invitedByIdentityIdentifier, $result[0]['invitedByIdentityIdentifier']);
+        $this->assertSame((string) $invitedByPrincipalIdentifier, $result[0]['invitedByPrincipalIdentifier']);
         $this->assertSame((string) $email, $result[0]['email']);
         $this->assertSame((string) $token, $result[0]['token']);
         $this->assertSame($status->value, $result[0]['status']);

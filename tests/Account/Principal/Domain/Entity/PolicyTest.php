@@ -22,20 +22,20 @@ class PolicyTest extends TestCase
         $createdAt = new DateTimeImmutable();
         $statement = new Statement(
             Effect::ALLOW,
-            [Action::INVITATION_CREATE],
+            [Action::INVITE_MEMBER],
             [ResourceType::ACCOUNT],
         );
 
         $policy = new Policy(
             $identifier,
-            'ACCOUNT_INVITATION_CREATE',
+            'ACCOUNT_INVITE_MEMBER',
             [$statement],
             true,
             $createdAt,
         );
 
         $this->assertSame($identifier, $policy->policyIdentifier());
-        $this->assertSame('ACCOUNT_INVITATION_CREATE', $policy->name());
+        $this->assertSame('ACCOUNT_INVITE_MEMBER', $policy->name());
         $this->assertSame([$statement], $policy->statements());
         $this->assertTrue($policy->isSystemPolicy());
         $this->assertSame($createdAt, $policy->createdAt());

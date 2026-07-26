@@ -37,7 +37,12 @@ class GetAuthenticatedIdentityTest extends TestCase
             'language' => 'ja',
             'profile_image' => 'profile/test.png',
         ]);
-        CreateAccountPrincipalGroup::create($principalGroupIdentifier, $accountIdentifier);
+        $ownerRoleId = DB::table('account_roles')->where('name', 'Owner')->value('id');
+        $this->assertIsString($ownerRoleId);
+
+        CreateAccountPrincipalGroup::create($principalGroupIdentifier, $accountIdentifier, [
+            'role_ids' => [$ownerRoleId],
+        ]);
         DB::table('account_principals')->insert([
             'id' => $principalIdentifier,
             'identity_id' => (string) $identityIdentifier,

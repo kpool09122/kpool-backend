@@ -14,8 +14,10 @@ use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\De
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -31,7 +33,9 @@ class DeletePrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $this->assertInstanceOf(DeletePrincipalGroup::class, $useCase);
     }
@@ -49,7 +53,6 @@ class DeletePrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -63,8 +66,14 @@ class DeletePrincipalGroupTest extends TestCase
             ->once()
             ->with($principalGroup)
             ->andReturnNull();
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturn($this->createOwnerRole());
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
 
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
@@ -88,6 +97,7 @@ class DeletePrincipalGroupTest extends TestCase
         $repository->shouldNotReceive('delete');
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
 
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
@@ -110,7 +120,6 @@ class DeletePrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Default Owner Group',
-            AccountRole::OWNER,
             true, // isDefault = true
             new DateTimeImmutable(),
         );
@@ -123,6 +132,7 @@ class DeletePrincipalGroupTest extends TestCase
         $repository->shouldNotReceive('delete');
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
 
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
@@ -141,15 +151,16 @@ class DeletePrincipalGroupTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $ownerRole = $this->createOwnerRole();
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
             'Owner Group',
-            AccountRole::OWNER,
             false,
             new DateTimeImmutable(),
         );
+        $principalGroup->addRole($ownerRole->roleIdentifier());
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -162,8 +173,14 @@ class DeletePrincipalGroupTest extends TestCase
             ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $accountIdentifier))
             ->andReturn([$principalGroup]); // Only one OWNER group with members
         $repository->shouldNotReceive('delete');
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturn($ownerRole);
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
 
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
@@ -171,5 +188,15 @@ class DeletePrincipalGroupTest extends TestCase
         $this->expectException(CannotDeleteLastOwnerGroupException::class);
 
         $useCase->process($input);
+    }
+
+    private function createOwnerRole(): Role
+    {
+        return new Role(
+            new RoleIdentifier(StrTestHelper::generateUuid()),
+            Role::OWNER,
+            [],
+            true,
+        );
     }
 }

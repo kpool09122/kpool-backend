@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -24,23 +24,31 @@ class RoleRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testSaveAndFindByRoles(): void
+    public function testSaveAndFindByIds(): void
     {
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $repository = $this->app->make(RoleRepositoryInterface::class);
         $this->createPolicy($policyIdentifier);
 
-        $repository->save(new Role(AccountRole::ADMIN, [$policyIdentifier]));
+        $repository->save(new Role($roleIdentifier, Role::ADMIN, [$policyIdentifier], true));
+
+        $this->assertDatabaseHas('account_roles', [
+            'id' => (string) $roleIdentifier,
+            'name' => Role::ADMIN,
+            'is_system_role' => true,
+        ]);
 
         $this->assertDatabaseHas('account_role_policy_attachments', [
-            'role' => AccountRole::ADMIN->value,
+            'role_id' => (string) $roleIdentifier,
             'policy_id' => (string) $policyIdentifier,
         ]);
 
-        $roles = $repository->findByRoles([AccountRole::ADMIN]);
+        $roles = $repository->findByIds([$roleIdentifier]);
 
-        $this->assertArrayHasKey(AccountRole::ADMIN->value, $roles);
-        $this->assertTrue($roles[AccountRole::ADMIN->value]->hasPolicy($policyIdentifier));
+        $this->assertArrayHasKey((string) $roleIdentifier, $roles);
+        $this->assertSame(Role::ADMIN, $roles[(string) $roleIdentifier]->name());
+        $this->assertTrue($roles[(string) $roleIdentifier]->hasPolicy($policyIdentifier));
     }
 
     #[Group('useDb')]
@@ -48,21 +56,37 @@ class RoleRepositoryTest extends TestCase
     {
         $oldPolicyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $newPolicyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $repository = $this->app->make(RoleRepositoryInterface::class);
         $this->createPolicy($oldPolicyIdentifier);
         $this->createPolicy($newPolicyIdentifier);
 
-        $repository->save(new Role(AccountRole::OWNER, [$oldPolicyIdentifier]));
-        $repository->save(new Role(AccountRole::OWNER, [$newPolicyIdentifier]));
+        $repository->save(new Role($roleIdentifier, Role::OWNER, [$oldPolicyIdentifier], true));
+        $repository->save(new Role($roleIdentifier, Role::OWNER, [$newPolicyIdentifier], true));
 
         $this->assertDatabaseMissing('account_role_policy_attachments', [
-            'role' => AccountRole::OWNER->value,
+            'role_id' => (string) $roleIdentifier,
             'policy_id' => (string) $oldPolicyIdentifier,
         ]);
         $this->assertDatabaseHas('account_role_policy_attachments', [
-            'role' => AccountRole::OWNER->value,
+            'role_id' => (string) $roleIdentifier,
             'policy_id' => (string) $newPolicyIdentifier,
         ]);
+    }
+
+    #[Group('useDb')]
+    public function testFindByName(): void
+    {
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $repository = $this->app->make(RoleRepositoryInterface::class);
+
+        $repository->save(new Role($roleIdentifier, Role::BASIC, [], true));
+
+        $result = $repository->findByName(Role::BASIC);
+
+        $this->assertNotNull($result);
+        $this->assertSame((string) $roleIdentifier, (string) $result->roleIdentifier());
+        $this->assertSame(Role::BASIC, $result->name());
     }
 
     private function createPolicy(PolicyIdentifier $policyIdentifier): void

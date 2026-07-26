@@ -61,12 +61,14 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             return [];
         }
 
-        $accountRoles = [];
+        $roleIdentifiers = [];
         foreach ($principalGroups as $principalGroup) {
-            $accountRoles[$principalGroup->role()->value] = $principalGroup->role();
+            foreach ($principalGroup->roles() as $roleIdentifier) {
+                $roleIdentifiers[(string) $roleIdentifier] = $roleIdentifier;
+            }
         }
 
-        $roles = $this->roleRepository->findByRoles(array_values($accountRoles));
+        $roles = $this->roleRepository->findByIds(array_values($roleIdentifiers));
         $policyIdentifiers = [];
         foreach ($roles as $role) {
             foreach ($role->policies() as $policyIdentifier) {

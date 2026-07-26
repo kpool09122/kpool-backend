@@ -31,10 +31,10 @@ class PolicyRepositoryTest extends TestCase
     {
         $policy = new Policy(
             new PolicyIdentifier(StrTestHelper::generateUuid()),
-            'ACCOUNT_INVITATION_CREATE_TEST',
+            'ACCOUNT_INVITE_MEMBER_TEST',
             [new Statement(
                 Effect::ALLOW,
-                [Action::INVITATION_CREATE],
+                [Action::INVITE_MEMBER],
                 [ResourceType::ACCOUNT],
             )],
             true,
@@ -46,7 +46,7 @@ class PolicyRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('account_policies', [
             'id' => (string) $policy->policyIdentifier(),
-            'name' => 'ACCOUNT_INVITATION_CREATE_TEST',
+            'name' => 'ACCOUNT_INVITE_MEMBER_TEST',
             'is_system_policy' => true,
         ]);
 
@@ -54,9 +54,9 @@ class PolicyRepositoryTest extends TestCase
 
         $this->assertCount(1, $foundPolicies);
         $foundPolicy = $foundPolicies[(string) $policy->policyIdentifier()];
-        $this->assertSame('ACCOUNT_INVITATION_CREATE_TEST', $foundPolicy->name());
+        $this->assertSame('ACCOUNT_INVITE_MEMBER_TEST', $foundPolicy->name());
         $this->assertSame(Effect::ALLOW, $foundPolicy->statements()[0]->effect());
-        $this->assertSame(Action::INVITATION_CREATE, $foundPolicy->statements()[0]->actions()[0]);
+        $this->assertSame(Action::INVITE_MEMBER, $foundPolicy->statements()[0]->actions()[0]);
         $this->assertSame(ResourceType::ACCOUNT, $foundPolicy->statements()[0]->resourceTypes()[0]);
     }
 }

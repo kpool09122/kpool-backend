@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -30,7 +30,6 @@ class PrincipalGroupTest extends TestCase
             principalGroupIdentifier: $principalGroupIdentifier,
             accountIdentifier: $accountIdentifier,
             name: 'オーナーグループ',
-            role: AccountRole::OWNER,
             isDefault: true,
             createdAt: $createdAt,
         );
@@ -38,10 +37,10 @@ class PrincipalGroupTest extends TestCase
         $this->assertSame($principalGroupIdentifier, $principalGroup->principalGroupIdentifier());
         $this->assertSame($accountIdentifier, $principalGroup->accountIdentifier());
         $this->assertSame('オーナーグループ', $principalGroup->name());
-        $this->assertSame(AccountRole::OWNER, $principalGroup->role());
         $this->assertTrue($principalGroup->isDefault());
         $this->assertSame($createdAt, $principalGroup->createdAt());
         $this->assertEmpty($principalGroup->members());
+        $this->assertSame([], $principalGroup->roles());
     }
 
     /**
@@ -114,13 +113,36 @@ class PrincipalGroupTest extends TestCase
         $this->assertSame(2, $principalGroup->memberCount());
     }
 
+    public function testAddRoleDoesNotDuplicateRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($roleIdentifier);
+
+        $this->assertCount(1, $principalGroup->roles());
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier));
+    }
+
+    public function testRemoveRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->removeRole($roleIdentifier);
+
+        $this->assertSame([], $principalGroup->roles());
+        $this->assertFalse($principalGroup->hasRole($roleIdentifier));
+    }
+
     private function createPrincipalGroup(): PrincipalGroup
     {
         return new PrincipalGroup(
             principalGroupIdentifier: new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             accountIdentifier: new AccountIdentifier(StrTestHelper::generateUuid()),
             name: 'テストグループ',
-            role: AccountRole::BASIC,
             isDefault: false,
             createdAt: new DateTimeImmutable(),
         );

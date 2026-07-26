@@ -20,7 +20,6 @@ readonly class CreatePrincipalGroup implements CreatePrincipalGroupInterface
         $principalGroup = $this->principalGroupFactory->create(
             $input->accountIdentifier(),
             $input->name(),
-            $input->role(),
             false,
         );
 

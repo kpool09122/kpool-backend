@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
+use Application\Models\Account\Principal as PrincipalEloquent;
 use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Account\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
+use Application\Models\Account\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use DateTimeImmutable;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -31,32 +33,24 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             [
                 'account_id' => (string) $principalGroup->accountIdentifier(),
                 'name' => $principalGroup->name(),
-                'role' => $principalGroup->role()->value,
                 'is_default' => $principalGroup->isDefault(),
             ]
         );
 
-        PrincipalGroupMembershipEloquent::query()
-            ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
-            ->delete();
+        $this->syncMembers($principalGroup);
+        $this->syncRoles($principalGroup);
 
-        $currentMemberIds = [];
-        foreach ($principalGroup->members() as $principalIdentifier) {
-            $currentMemberIds[] = (string) $principalIdentifier;
-            PrincipalGroupMembershipEloquent::query()->create([
-                'id' => (string) Uuid::v7(),
-                'principal_group_id' => (string) $principalGroup->principalGroupIdentifier(),
-                'principal_id' => (string) $principalIdentifier,
-            ]);
-        }
-
+        $currentMemberIds = array_map(
+            static fn (PrincipalIdentifier $principalIdentifier): string => (string) $principalIdentifier,
+            $principalGroup->members()
+        );
         $this->forgetAccountContexts(array_unique(array_merge($previousMemberIds, $currentMemberIds)));
     }
 
     public function findById(PrincipalGroupIdentifier $identifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->where('id', (string) $identifier)
             ->first();
 
@@ -73,11 +67,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquents = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->get();
 
-        return $eloquents->map(fn ($e) => $this->toDomainEntity($e))->all();
+        return $eloquents->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     /**
@@ -86,13 +80,13 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
     {
         $eloquents = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->whereHas('members', function ($query) use ($principalIdentifier) {
                 $query->where('principal_id', (string) $principalIdentifier);
             })
             ->get();
 
-        return $eloquents->map(fn ($e) => $this->toDomainEntity($e))->all();
+        return $eloquents->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     /**
@@ -103,20 +97,20 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         PrincipalIdentifier $principalIdentifier
     ): array {
         $eloquents = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->whereHas('members', function ($query) use ($principalIdentifier) {
                 $query->where('principal_id', (string) $principalIdentifier);
             })
             ->get();
 
-        return $eloquents->map(fn ($e) => $this->toDomainEntity($e))->all();
+        return $eloquents->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->where('is_default', true)
             ->first();
@@ -130,12 +124,14 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     public function findByAccountIdAndRole(
         AccountIdentifier $accountIdentifier,
-        AccountRole $role
+        RoleIdentifier $roleIdentifier
     ): ?PrincipalGroup {
         $eloquent = PrincipalGroupEloquent::query()
-            ->with('members')
+            ->with(['members', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
-            ->where('role', $role->value)
+            ->whereHas('roleAttachments', function ($query) use ($roleIdentifier) {
+                $query->where('role_id', (string) $roleIdentifier);
+            })
             ->first();
 
         if ($eloquent === null) {
@@ -162,7 +158,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     /** @param array<int, string> $principalIds */
     private function forgetAccountContexts(array $principalIds): void
     {
-        $identityIds = \Application\Models\Account\Principal::query()
+        if (empty($principalIds)) {
+            return;
+        }
+
+        $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
             ->all();
@@ -172,20 +172,60 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         }
     }
 
+    private function syncMembers(PrincipalGroup $principalGroup): void
+    {
+        $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
+
+        PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', $principalGroupId)
+            ->delete();
+
+        foreach ($principalGroup->members() as $principalIdentifier) {
+            PrincipalGroupMembershipEloquent::query()->create([
+                'id' => (string) Uuid::v7(),
+                'principal_group_id' => $principalGroupId,
+                'principal_id' => (string) $principalIdentifier,
+            ]);
+        }
+    }
+
+    private function syncRoles(PrincipalGroup $principalGroup): void
+    {
+        $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
+
+        PrincipalGroupRoleAttachmentEloquent::query()
+            ->where('principal_group_id', $principalGroupId)
+            ->delete();
+
+        $records = array_map(
+            static fn (RoleIdentifier $roleIdentifier) => [
+                'principal_group_id' => $principalGroupId,
+                'role_id' => (string) $roleIdentifier,
+            ],
+            $principalGroup->roles()
+        );
+
+        if (! empty($records)) {
+            PrincipalGroupRoleAttachmentEloquent::query()->insert($records);
+        }
+    }
+
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($eloquent->id),
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
-            AccountRole::from($eloquent->role),
             $eloquent->is_default,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
         );
 
-        /** @var PrincipalGroupMembershipEloquent $member */
         foreach ($eloquent->members as $member) {
             $principalGroup->addMember(new PrincipalIdentifier($member->principal_id));
+        }
+
+        foreach ($eloquent->roleAttachments as $roleAttachment) {
+            $principalGroup->addRole(new RoleIdentifier($roleAttachment->role_id));
         }
 
         return $principalGroup;

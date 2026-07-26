@@ -6,7 +6,6 @@ namespace Tests\Account\PrincipalGroup\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Infrastructure\Factory\PrincipalGroupFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -37,24 +36,22 @@ class PrincipalGroupFactoryTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $name = 'Test Group';
-        $role = AccountRole::OWNER;
         $isDefault = true;
 
         $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
-            $role,
             $isDefault,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $principalGroup->principalGroupIdentifier()));
         $this->assertSame($accountIdentifier, $principalGroup->accountIdentifier());
         $this->assertSame($name, $principalGroup->name());
-        $this->assertSame($role, $principalGroup->role());
         $this->assertTrue($principalGroup->isDefault());
         $this->assertNotNull($principalGroup->createdAt());
         $this->assertSame([], $principalGroup->members());
+        $this->assertSame([], $principalGroup->roles());
     }
 
     /**
@@ -67,21 +64,18 @@ class PrincipalGroupFactoryTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $name = 'Non Default Group';
-        $role = AccountRole::BASIC;
         $isDefault = false;
 
         $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
-            $role,
             $isDefault,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $principalGroup->principalGroupIdentifier()));
         $this->assertSame($accountIdentifier, $principalGroup->accountIdentifier());
         $this->assertSame($name, $principalGroup->name());
-        $this->assertSame($role, $principalGroup->role());
         $this->assertFalse($principalGroup->isDefault());
         $this->assertNotNull($principalGroup->createdAt());
     }

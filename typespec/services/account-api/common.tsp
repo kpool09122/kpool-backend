@@ -109,8 +109,8 @@ model PrincipalGroupSummary {
   accountIdentifier: Uuid;
   @doc("Principal group name.")
   name: string;
-  @doc("Principal group role.")
-  role: string;
+  @doc("Role identifiers attached to the principal group.")
+  roleIdentifiers: Uuid[];
   @doc("Whether this is the default principal group.")
   isDefault: boolean;
   @doc("Identity identifiers currently assigned to the group.")

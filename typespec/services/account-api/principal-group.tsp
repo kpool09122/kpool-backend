@@ -9,8 +9,6 @@ model CreatePrincipalGroupRequestBody {
   accountIdentifier: Uuid;
   @doc("Principal group name.")
   name: string;
-  @doc("Role assigned to the principal group.")
-  role: string;
 }
 
 @doc("Request body for mutating principal group membership.")

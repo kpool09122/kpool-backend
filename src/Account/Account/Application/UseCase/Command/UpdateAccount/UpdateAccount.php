@@ -7,6 +7,7 @@ namespace Source\Account\Account\Application\UseCase\Command\UpdateAccount;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -32,6 +33,10 @@ readonly class UpdateAccount implements UpdateAccountInterface
 
         if (! $account) {
             throw new AccountNotFoundException();
+        }
+
+        if ($account->type() !== AccountType::CORPORATION) {
+            throw new AccountUpdateForbiddenException();
         }
 
         if (

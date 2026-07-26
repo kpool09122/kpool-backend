@@ -31,7 +31,7 @@ class CreatePrincipalGroupOutput implements CreatePrincipalGroupOutputPort
             'principalGroupIdentifier' => (string) $ig->principalGroupIdentifier(),
             'accountIdentifier' => (string) $ig->accountIdentifier(),
             'name' => $ig->name(),
-            'role' => $ig->role()->value,
+            'roleIdentifiers' => array_map(static fn ($roleIdentifier): string => (string) $roleIdentifier, $ig->roles()),
             'isDefault' => $ig->isDefault(),
             'createdAt' => $ig->createdAt()->format(DateTimeInterface::ATOM),
         ];

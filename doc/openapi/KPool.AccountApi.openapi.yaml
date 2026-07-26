@@ -1182,7 +1182,6 @@ components:
       required:
         - accountIdentifier
         - name
-        - role
       properties:
         accountIdentifier:
           allOf:
@@ -1191,9 +1190,6 @@ components:
         name:
           type: string
           description: Principal group name.
-        role:
-          type: string
-          description: Role assigned to the principal group.
       description: Request body for creating an principal group.
     CreatedPrincipalGroupSummary:
       type: object
@@ -1413,7 +1409,7 @@ components:
         - principalGroupIdentifier
         - accountIdentifier
         - name
-        - role
+        - roleIdentifiers
         - isDefault
       properties:
         principalGroupIdentifier:
@@ -1427,9 +1423,11 @@ components:
         name:
           type: string
           description: Principal group name.
-        role:
-          type: string
-          description: Principal group role.
+        roleIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Role identifiers attached to the principal group.
         isDefault:
           type: boolean
           description: Whether this is the default principal group.

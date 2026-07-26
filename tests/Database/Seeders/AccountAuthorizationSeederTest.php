@@ -6,9 +6,9 @@ namespace Tests\Database\Seeders;
 
 use Database\Seeders\AccountAuthorizationSeeder;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Tests\TestCase;
@@ -28,16 +28,23 @@ class AccountAuthorizationSeederTest extends TestCase
 
         $policyRepository = $this->app->make(PolicyRepositoryInterface::class);
         $roleRepository = $this->app->make(RoleRepositoryInterface::class);
-        $roles = $roleRepository->findByRoles([AccountRole::OWNER, AccountRole::ADMIN, AccountRole::BASIC]);
-        $ownerPolicies = $policyRepository->findByIds($roles[AccountRole::OWNER->value]->policies());
-        $adminPolicies = $policyRepository->findByIds($roles[AccountRole::ADMIN->value]->policies());
-        $basicPolicies = $policyRepository->findByIds($roles[AccountRole::BASIC->value]->policies());
+        $ownerRole = $roleRepository->findByName(Role::OWNER);
+        $adminRole = $roleRepository->findByName(Role::ADMIN);
+        $basicRole = $roleRepository->findByName(Role::BASIC);
 
-        $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITATION_CREATE));
+        $this->assertNotNull($ownerRole);
+        $this->assertNotNull($adminRole);
+        $this->assertNotNull($basicRole);
+
+        $ownerPolicies = $policyRepository->findByIds($ownerRole->policies());
+        $adminPolicies = $policyRepository->findByIds($adminRole->policies());
+        $basicPolicies = $policyRepository->findByIds($basicRole->policies());
+
+        $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
-        $this->assertTrue($this->hasAction($adminPolicies, Action::INVITATION_CREATE));
+        $this->assertTrue($this->hasAction($adminPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
-        $this->assertFalse($this->hasAction($basicPolicies, Action::INVITATION_CREATE));
+        $this->assertFalse($this->hasAction($basicPolicies, Action::INVITE_MEMBER));
     }
 
     /**

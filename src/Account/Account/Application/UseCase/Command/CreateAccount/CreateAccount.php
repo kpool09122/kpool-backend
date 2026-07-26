@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
+use RuntimeException;
 use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateAccount implements CreateAccountInterface
@@ -26,6 +28,7 @@ readonly class CreateAccount implements CreateAccountInterface
         private PrincipalRepositoryInterface $principalRepository,
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
+        private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -59,9 +62,13 @@ readonly class CreateAccount implements CreateAccountInterface
         $principalGroup = $this->principalGroupFactory->create(
             $account->accountIdentifier(),
             self::DEFAULT_IDENTITY_GROUP_NAME,
-            AccountRole::OWNER,
             true,
         );
+        $ownerRole = $this->roleRepository->findByName(Role::OWNER);
+        if ($ownerRole === null) {
+            throw new RuntimeException('Owner account role is not found.');
+        }
+        $principalGroup->addRole($ownerRole->roleIdentifier());
 
         if ($input->identityIdentifier() !== null) {
             $principal = $this->principalFactory->create(
