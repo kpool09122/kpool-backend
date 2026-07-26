@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\User\Domain\Exception;
 
-use Exception;
+use DomainException;
 use Throwable;
 
-class AlreadyUserExistsException extends Exception
+class AlreadyUserExistsException extends DomainException
 {
     public function __construct(
         string $message = 'User already exists.',

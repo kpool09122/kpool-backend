@@ -9,8 +9,9 @@ use Throwable;
 
 class PaymentCurrencyMismatchForMatchingException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Payment currency does not match invoice.', 0, $previous);
     }
 }

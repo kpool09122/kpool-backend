@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentOutput;
@@ -85,6 +86,11 @@ readonly class RefundPaymentAction
                 $this->logger->error((string) $e);
 
                 throw new InternalServerErrorHttpException(detail: error_message('payment_gateway_error', $language), previous: $e);
+            } catch (ApiException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

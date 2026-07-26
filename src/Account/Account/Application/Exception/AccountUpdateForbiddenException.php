@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\Exception;
 
-use Exception;
+use RuntimeException;
+use Throwable;
 
-class AccountUpdateForbiddenException extends Exception
+class AccountUpdateForbiddenException extends RuntimeException
 {
+    public function __construct(
+        string $message = 'Account Update Forbidden',
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct($message, 0, $previous);
+    }
 }

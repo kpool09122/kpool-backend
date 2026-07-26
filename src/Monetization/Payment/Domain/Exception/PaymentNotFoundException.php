@@ -10,12 +10,10 @@ use Throwable;
 
 class PaymentNotFoundException extends DomainException
 {
-    public function __construct(PaymentIdentifier $paymentIdentifier, ?Throwable $previous = null)
-    {
-        parent::__construct(
-            sprintf('Payment not found: %s', (string) $paymentIdentifier),
-            0,
-            $previous
-        );
+    public function __construct(
+        PaymentIdentifier $paymentIdentifier,
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct(sprintf('Payment not found: %s', (string) $paymentIdentifier), 0, $previous);
     }
 }

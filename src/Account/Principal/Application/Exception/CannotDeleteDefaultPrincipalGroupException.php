@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\Exception;
 
-use Exception;
+use RuntimeException;
+use Throwable;
 
-class CannotDeleteDefaultPrincipalGroupException extends Exception
+class CannotDeleteDefaultPrincipalGroupException extends RuntimeException
 {
     public function __construct(
         string $message = 'Cannot delete default PrincipalGroup.',
+        ?Throwable $previous = null,
     ) {
-        parent::__construct($message, 0);
+        parent::__construct($message, 0, $previous);
     }
 }

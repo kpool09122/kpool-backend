@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
@@ -75,6 +76,11 @@ readonly class AuthorizePaymentAction
                 DB::rollBack();
 
                 throw new InternalServerErrorHttpException(detail: error_message('payment_gateway_error', $language), previous: $e);
+            } catch (ApiException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

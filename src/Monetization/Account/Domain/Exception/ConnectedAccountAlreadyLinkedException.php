@@ -9,8 +9,9 @@ use Throwable;
 
 class ConnectedAccountAlreadyLinkedException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Stripe Connected Account already linked.', 0, $previous);
     }
 }

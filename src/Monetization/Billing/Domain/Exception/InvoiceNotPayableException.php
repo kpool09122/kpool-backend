@@ -9,8 +9,9 @@ use Throwable;
 
 class InvoiceNotPayableException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Invoice is not payable.', 0, $previous);
     }
 }

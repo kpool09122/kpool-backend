@@ -9,8 +9,9 @@ use Throwable;
 
 class RefundCurrencyMismatchException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Refund currency must match payment currency.', 0, $previous);
     }
 }
