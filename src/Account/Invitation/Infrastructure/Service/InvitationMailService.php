@@ -39,7 +39,7 @@ readonly class InvitationMailService implements InvitationMailServiceInterface
             ? (string) $account->name()
             : self::FALLBACK_ACCOUNT_NAMES[$language->value];
 
-        $invitationUrl = $this->frontendBaseUrl . '/signup?token=' . $invitation->token();
+        $invitationUrl = $this->buildInvitationUrl($invitation);
 
         Mail::to((string) $invitation->email())->send(
             new InvitationMail($invitation, $invitationUrl, $accountName, $language)
@@ -51,5 +51,13 @@ readonly class InvitationMailService implements InvitationMailServiceInterface
         Mail::to((string) $email)->send(
             new ConflictNotificationMail($language)
         );
+    }
+
+    private function buildInvitationUrl(Invitation $invitation): string
+    {
+        return $this->frontendBaseUrl . '/invitations/accept?' . http_build_query([
+            'token' => (string) $invitation->token(),
+            'email' => (string) $invitation->email(),
+        ], '', '&', PHP_QUERY_RFC3986);
     }
 }
