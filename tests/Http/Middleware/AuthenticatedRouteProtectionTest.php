@@ -124,6 +124,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account: delete account' => ['DELETE', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: request delegation' => ['POST', '/api/account/delegations'],
             'account: create invitation' => ['POST', '/api/account/invitations'],
+            'account: list members' => ['GET', '/api/account/members'],
+            'account: list principal groups' => ['GET', '/api/account/principal-groups'],
 
             // Monetization: bootstrap/app.php のグループ設定で全 route が認証必須
             'monetization: provision account' => ['POST', '/api/monetization/accounts'],
@@ -169,6 +171,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
         return [
             'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
+            'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
+            'account principal groups resolve actor and account' => ['GET', '/api/account/principal-groups', ['resolve.actor', 'resolve.account']],
             'account get resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],

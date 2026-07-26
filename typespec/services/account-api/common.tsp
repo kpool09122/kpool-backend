@@ -101,6 +101,42 @@ model DelegationPermissionSummary {
   createdAt: Timestamp;
 }
 
+@doc("Principal group assigned to an account member.")
+model MemberPrincipalGroupSummary {
+  @doc("Principal group identifier.")
+  principalGroupIdentifier: Uuid;
+  @doc("Principal group name.")
+  name: string;
+  @doc("Whether this is the default principal group.")
+  isDefault: boolean;
+}
+
+@doc("Account member summary.")
+model AccountMemberSummary {
+  @doc("Principal identifier.")
+  principalIdentifier: Uuid;
+  @doc("Identity identifier.")
+  identityIdentifier: Uuid;
+  @doc("Identity display name.")
+  identityName: string;
+  @doc("Identity email address.")
+  email: string;
+  @doc("Principal groups assigned to the member.")
+  principalGroups: MemberPrincipalGroupSummary[];
+}
+
+@doc("Response body for account member list.")
+model ListMembersResponseBody {
+  @doc("Account members.")
+  members: AccountMemberSummary[];
+}
+
+@doc("Response body for principal group list.")
+model ListPrincipalGroupsResponseBody {
+  @doc("Principal groups.")
+  principalGroups: PrincipalGroupSummary[];
+}
+
 @doc("Principal group snapshot returned after updates.")
 model PrincipalGroupSummary {
   @doc("Principal group identifier.")

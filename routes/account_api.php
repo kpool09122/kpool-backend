@@ -9,6 +9,7 @@ use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
+use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
@@ -21,6 +22,7 @@ use Application\Http\Action\Account\DelegationPermission\Command\RevokeDelegatio
 use Application\Http\Action\Account\PrincipalGroup\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
 use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
 use Illuminate\Support\Facades\Route;
@@ -43,7 +45,11 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::post('/delegation-permissions', GrantDelegationPermissionAction::class);
     Route::delete('/delegation-permissions/{delegationPermissionId}', RevokeDelegationPermissionAction::class);
 
+    // Member
+    Route::get('/members', ListMembersAction::class);
+
     // PrincipalGroup
+    Route::get('/principal-groups', ListPrincipalGroupsAction::class);
     Route::post('/principal-groups', CreatePrincipalGroupAction::class);
     Route::post('/principal-groups/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
     Route::post('/principal-groups/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);

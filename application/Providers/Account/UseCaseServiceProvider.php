@@ -47,6 +47,10 @@ use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\De
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
+use Source\Account\Principal\Application\UseCase\Query\ListMembers\ListMembersInterface;
+use Source\Account\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
+use Source\Account\Principal\Infrastructure\Query\ListMembers;
+use Source\Account\Principal\Infrastructure\Query\ListPrincipalGroups;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -57,6 +61,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
         $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
+        $this->app->singleton(ListMembersInterface::class, ListMembers::class);
+        $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
         $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
         $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);

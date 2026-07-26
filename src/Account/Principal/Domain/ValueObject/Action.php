@@ -12,4 +12,5 @@ enum Action: string
     case DELETE = 'account:delete';
     case BILLING_MANAGE = 'account:billing:manage';
     case DELEGATION_MANAGE = 'account:delegation:manage';
+    case PRINCIPAL_GROUP_MANAGE = 'account:principal-group:manage';
 }
