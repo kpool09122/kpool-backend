@@ -13,9 +13,9 @@ use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -59,29 +59,31 @@ readonly class AccountResolver
             $accountPrincipal->accountIdentifier(),
             $accountPrincipal->principalIdentifier(),
         );
-        $roles = [];
+        $roleIdentifiers = [];
         foreach ($principalGroups as $principalGroup) {
-            $roles[$principalGroup->role()->value] = $principalGroup->role();
+            foreach ($principalGroup->roles() as $roleIdentifier) {
+                $roleIdentifiers[(string) $roleIdentifier] = $roleIdentifier;
+            }
         }
 
         return new AccountContext(
             principal: $accountPrincipal,
             accountType: AccountType::from($account->type),
-            accountPolicies: $this->effectivePolicies(array_values($roles)),
+            accountPolicies: $this->effectivePolicies(array_values($roleIdentifiers)),
         );
     }
 
     /**
-     * @param AccountRole[] $accountRoles
+     * @param RoleIdentifier[] $roleIdentifiers
      * @return array<int, array<string, mixed>>
      */
-    private function effectivePolicies(array $accountRoles): array
+    private function effectivePolicies(array $roleIdentifiers): array
     {
-        if (empty($accountRoles)) {
+        if (empty($roleIdentifiers)) {
             return [];
         }
 
-        $roles = $this->roleRepository->findByRoles($accountRoles);
+        $roles = $this->roleRepository->findByIds($roleIdentifiers);
         $policyIdentifiers = [];
         foreach ($roles as $role) {
             foreach ($role->policies() as $policyIdentifier) {

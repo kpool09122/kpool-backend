@@ -7,7 +7,8 @@ namespace Source\Account\Principal\Infrastructure\Repository;
 use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Policy as PolicyEloquent;
 use Application\Models\Account\Principal as PrincipalEloquent;
-use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
+use Application\Models\Account\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
+use Application\Models\Account\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use Application\Models\Account\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
 use Source\Account\Principal\Domain\Entity\Policy;
@@ -130,23 +131,31 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return RolePolicyAttachmentEloquent::query()
             ->where('policy_id', $policyIdentifier)
-            ->pluck('role')
+            ->pluck('role_id')
             ->unique()
             ->values()
             ->all();
     }
 
-    /** @param array<int, string> $roleValues */
-    private function forgetAccountContextsForRoles(array $roleValues): void
+    /** @param array<int, string> $roleIds */
+    private function forgetAccountContextsForRoles(array $roleIds): void
     {
-        if (empty($roleValues)) {
+        if (empty($roleIds)) {
             return;
         }
 
-        $principalIds = PrincipalGroupEloquent::query()
-            ->whereIn('role', $roleValues)
-            ->join('account_principal_group_memberships', 'account_principal_groups.id', '=', 'account_principal_group_memberships.principal_group_id')
-            ->pluck('account_principal_group_memberships.principal_id')
+        $principalGroupIds = PrincipalGroupRoleAttachmentEloquent::query()
+            ->whereIn('role_id', $roleIds)
+            ->pluck('principal_group_id')
+            ->all();
+
+        if (empty($principalGroupIds)) {
+            return;
+        }
+
+        $principalIds = PrincipalGroupMembershipEloquent::query()
+            ->whereIn('principal_group_id', $principalGroupIds)
+            ->pluck('principal_id')
             ->unique()
             ->values()
             ->all();

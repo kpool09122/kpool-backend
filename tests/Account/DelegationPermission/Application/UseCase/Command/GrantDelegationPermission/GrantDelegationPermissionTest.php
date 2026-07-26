@@ -18,7 +18,6 @@ use Source\Account\DelegationPermission\Domain\ValueObject\DelegationPermissionI
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -59,7 +58,6 @@ class GrantDelegationPermissionTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );

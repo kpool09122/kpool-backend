@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\EventHandler;
 
+use RuntimeException;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
@@ -25,6 +27,7 @@ readonly class IdentityCreatedViaInvitationHandler
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalFactoryInterface $principalFactory,
         private PrincipalRepositoryInterface $principalRepository,
+        private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -39,18 +42,23 @@ readonly class IdentityCreatedViaInvitationHandler
 
         $invitation->assertAcceptable();
 
+        $basicRole = $this->roleRepository->findByName(Role::BASIC);
+        if ($basicRole === null) {
+            throw new RuntimeException('Basic account role is not found.');
+        }
+
         $memberGroup = $this->principalGroupRepository->findByAccountIdAndRole(
             $invitation->accountIdentifier(),
-            AccountRole::BASIC
+            $basicRole->roleIdentifier()
         );
 
         if ($memberGroup === null) {
             $memberGroup = $this->principalGroupFactory->create(
                 $invitation->accountIdentifier(),
                 self::MEMBER_GROUP_NAME,
-                AccountRole::BASIC,
                 false,
             );
+            $memberGroup->addRole($basicRole->roleIdentifier());
         }
 
         $principal = $this->principalFactory->create(

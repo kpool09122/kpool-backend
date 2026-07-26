@@ -19,7 +19,6 @@ class CreatePrincipalGroupRequest extends FormRequest
         return [
             'accountIdentifier' => ['required', 'uuid'],
             'name' => ['required', 'string'],
-            'role' => ['required', 'string'],
         ];
     }
 
@@ -31,10 +30,5 @@ class CreatePrincipalGroupRequest extends FormRequest
     public function name(): string
     {
         return (string) $this->input('name');
-    }
-
-    public function role(): string
-    {
-        return (string) $this->input('role');
     }
 }

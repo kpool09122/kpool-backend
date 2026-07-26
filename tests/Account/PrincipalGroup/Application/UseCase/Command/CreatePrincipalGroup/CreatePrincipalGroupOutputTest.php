@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupOutput;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -23,16 +23,17 @@ class CreatePrincipalGroupOutputTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable('2024-01-15T10:00:00+00:00');
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             $createdAt,
         );
+        $principalGroup->addRole($roleIdentifier);
 
         $output = new CreatePrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);
@@ -42,7 +43,7 @@ class CreatePrincipalGroupOutputTest extends TestCase
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);
-        $this->assertSame('basic', $result['role']);
+        $this->assertSame([(string) $roleIdentifier], $result['roleIdentifiers']);
         $this->assertFalse($result['isDefault']);
         $this->assertSame($createdAt->format(DateTimeInterface::ATOM), $result['createdAt']);
     }

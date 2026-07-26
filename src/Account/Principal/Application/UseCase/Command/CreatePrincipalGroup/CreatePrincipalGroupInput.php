@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup;
 
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class CreatePrincipalGroupInput implements CreatePrincipalGroupInputPort
@@ -12,7 +11,6 @@ readonly class CreatePrincipalGroupInput implements CreatePrincipalGroupInputPor
     public function __construct(
         private AccountIdentifier $accountIdentifier,
         private string $name,
-        private AccountRole $role,
     ) {
     }
 
@@ -24,10 +22,5 @@ readonly class CreatePrincipalGroupInput implements CreatePrincipalGroupInputPor
     public function name(): string
     {
         return $this->name;
-    }
-
-    public function role(): AccountRole
-    {
-        return $this->role;
     }
 }

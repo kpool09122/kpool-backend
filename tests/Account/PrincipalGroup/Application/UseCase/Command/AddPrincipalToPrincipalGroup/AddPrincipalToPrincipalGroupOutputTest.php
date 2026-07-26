@@ -7,7 +7,7 @@ namespace Tests\Account\PrincipalGroup\Application\UseCase\Command\AddPrincipalT
 use DateTimeImmutable;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupOutput;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -24,16 +24,17 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
         $principalGroup->addMember($principalIdentifier);
+        $principalGroup->addRole($roleIdentifier);
 
         $output = new AddPrincipalToPrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);
@@ -43,7 +44,7 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);
-        $this->assertSame('basic', $result['role']);
+        $this->assertSame([(string) $roleIdentifier], $result['roleIdentifiers']);
         $this->assertFalse($result['isDefault']);
         $this->assertCount(1, $result['members']);
         $this->assertSame((string) $principalIdentifier, $result['members'][0]);

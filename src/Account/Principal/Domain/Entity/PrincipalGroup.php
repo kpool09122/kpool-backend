@@ -7,7 +7,7 @@ namespace Source\Account\Principal\Domain\Entity;
 use DateTimeImmutable;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -17,11 +17,13 @@ class PrincipalGroup
     /** @var array<string, PrincipalIdentifier> */
     private array $members = [];
 
+    /** @var RoleIdentifier[] */
+    private array $roles = [];
+
     public function __construct(
         private readonly PrincipalGroupIdentifier $principalGroupIdentifier,
         private readonly AccountIdentifier $accountIdentifier,
         private readonly string $name,
-        private readonly AccountRole $role,
         private readonly bool $isDefault,
         private readonly DateTimeImmutable $createdAt,
     ) {
@@ -40,11 +42,6 @@ class PrincipalGroup
     public function name(): string
     {
         return $this->name;
-    }
-
-    public function role(): AccountRole
-    {
-        return $this->role;
     }
 
     public function isDefault(): bool
@@ -91,5 +88,35 @@ class PrincipalGroup
         }
 
         unset($this->members[(string) $principalIdentifier]);
+    }
+
+    /**
+     * @return RoleIdentifier[]
+     */
+    public function roles(): array
+    {
+        return $this->roles;
+    }
+
+    public function hasRole(RoleIdentifier $roleIdentifier): bool
+    {
+        return array_any($this->roles, static fn (RoleIdentifier $role) => (string) $role === (string) $roleIdentifier);
+    }
+
+    public function addRole(RoleIdentifier $roleIdentifier): void
+    {
+        if ($this->hasRole($roleIdentifier)) {
+            return;
+        }
+
+        $this->roles[] = $roleIdentifier;
+    }
+
+    public function removeRole(RoleIdentifier $roleIdentifier): void
+    {
+        $this->roles = array_values(array_filter(
+            $this->roles,
+            static fn (RoleIdentifier $role) => (string) $role !== (string) $roleIdentifier
+        ));
     }
 }

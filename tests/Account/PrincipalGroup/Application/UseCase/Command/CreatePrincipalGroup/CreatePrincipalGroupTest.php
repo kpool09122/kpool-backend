@@ -14,7 +14,6 @@ use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\Cr
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -56,7 +55,6 @@ class CreatePrincipalGroupTest extends TestCase
             ->with(
                 $testData->accountIdentifier,
                 $testData->name,
-                $testData->role,
                 false
             )
             ->andReturn($testData->principalGroup);
@@ -73,7 +71,7 @@ class CreatePrincipalGroupTest extends TestCase
         $this->assertSame((string) $testData->principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $testData->accountIdentifier, $result['accountIdentifier']);
         $this->assertSame($testData->name, $result['name']);
-        $this->assertSame($testData->role->value, $result['role']);
+        $this->assertSame([], $result['roleIdentifiers']);
         $this->assertFalse($result['isDefault']);
     }
 
@@ -82,13 +80,11 @@ class CreatePrincipalGroupTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $name = 'Talent X Responsible Team';
-        $role = AccountRole::BASIC;
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
             $name,
-            $role,
             false,
             new DateTimeImmutable(),
         );
@@ -96,14 +92,12 @@ class CreatePrincipalGroupTest extends TestCase
         $input = new CreatePrincipalGroupInput(
             $accountIdentifier,
             $name,
-            $role,
         );
 
         return new CreatePrincipalGroupTestData(
             $principalGroupIdentifier,
             $accountIdentifier,
             $name,
-            $role,
             $principalGroup,
             $input,
         );
@@ -116,7 +110,6 @@ readonly class CreatePrincipalGroupTestData
         public PrincipalGroupIdentifier $principalGroupIdentifier,
         public AccountIdentifier $accountIdentifier,
         public string $name,
-        public AccountRole $role,
         public PrincipalGroup $principalGroup,
         public CreatePrincipalGroupInput $input,
     ) {

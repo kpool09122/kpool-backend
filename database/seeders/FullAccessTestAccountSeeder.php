@@ -28,6 +28,14 @@ class FullAccessTestAccountSeeder extends Seeder
             throw new RuntimeException('ADMINISTRATOR role not found. Please run SystemRoleSeeder first.');
         }
 
+        $ownerRoleId = DB::table('account_roles')
+            ->where('name', \Source\Account\Principal\Domain\Entity\Role::OWNER)
+            ->value('id');
+
+        if (! is_string($ownerRoleId)) {
+            throw new RuntimeException('Owner account role not found. Please run AccountAuthorizationSeeder first.');
+        }
+
         $now = now();
 
         DB::table('accounts')->upsert([
@@ -88,7 +96,6 @@ class FullAccessTestAccountSeeder extends Seeder
                 'id' => self::PRINCIPAL_GROUP_ID,
                 'account_id' => self::ACCOUNT_ID,
                 'name' => 'Full Access Test Group',
-                'role' => 'owner',
                 'is_default' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -104,6 +111,13 @@ class FullAccessTestAccountSeeder extends Seeder
                 'updated_at' => $now,
             ],
         ], ['principal_group_id', 'principal_id']);
+
+        DB::table('account_principal_group_role_attachments')->upsert([
+            [
+                'principal_group_id' => self::PRINCIPAL_GROUP_ID,
+                'role_id' => $ownerRoleId,
+            ],
+        ], ['principal_group_id', 'role_id']);
 
         DB::table('principal_groups')->upsert([
             [

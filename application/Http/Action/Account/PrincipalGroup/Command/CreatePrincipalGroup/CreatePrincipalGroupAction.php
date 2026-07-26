@@ -13,7 +13,6 @@ use Psr\Log\LoggerInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupOutput;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -39,7 +38,6 @@ readonly class CreatePrincipalGroupAction
                 $input = new CreatePrincipalGroupInput(
                     accountIdentifier: new AccountIdentifier($request->accountIdentifier()),
                     name: $request->name(),
-                    role: AccountRole::from($request->role()),
                 );
                 $output = new CreatePrincipalGroupOutput();
             } catch (InvalidArgumentException|ValueError $e) {

@@ -15,7 +15,6 @@ use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipal
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -50,7 +49,6 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -118,7 +116,6 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );

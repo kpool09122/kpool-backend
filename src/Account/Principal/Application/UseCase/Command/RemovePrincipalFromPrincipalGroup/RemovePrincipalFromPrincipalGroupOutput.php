@@ -31,7 +31,7 @@ class RemovePrincipalFromPrincipalGroupOutput implements RemovePrincipalFromPrin
             'principalGroupIdentifier' => (string) $ig->principalGroupIdentifier(),
             'accountIdentifier' => (string) $ig->accountIdentifier(),
             'name' => $ig->name(),
-            'role' => $ig->role()->value,
+            'roleIdentifiers' => array_map(static fn ($roleIdentifier): string => (string) $roleIdentifier, $ig->roles()),
             'isDefault' => $ig->isDefault(),
             'members' => array_map(
                 static fn (PrincipalIdentifier $principalIdentifier) => (string) $principalIdentifier,

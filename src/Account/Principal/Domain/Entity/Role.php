@@ -4,23 +4,34 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Domain\Entity;
 
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 
 class Role
 {
+    public const string OWNER = 'Owner';
+    public const string ADMIN = 'Admin';
+    public const string BASIC = 'Basic';
+
     /**
      * @param PolicyIdentifier[] $policies
      */
     public function __construct(
-        private readonly AccountRole $role,
+        private readonly RoleIdentifier $roleIdentifier,
+        private readonly string $name,
         private array $policies,
+        private readonly bool $isSystemRole,
     ) {
     }
 
-    public function role(): AccountRole
+    public function roleIdentifier(): RoleIdentifier
     {
-        return $this->role;
+        return $this->roleIdentifier;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
     }
 
     /**
@@ -29,6 +40,11 @@ class Role
     public function policies(): array
     {
         return $this->policies;
+    }
+
+    public function isSystemRole(): bool
+    {
+        return $this->isSystemRole;
     }
 
     public function addPolicy(PolicyIdentifier $policyIdentifier): void
