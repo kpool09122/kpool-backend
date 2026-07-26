@@ -878,6 +878,54 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePrincipalGroupRequestBody'
+  /principal-groups/members:
+    patch:
+      operationId: PrincipalGroupOperations_updatePrincipalGroupMembers
+      description: Update members for multiple principal groups.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when multiple principal group memberships are updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPrincipalGroupsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrincipalGroupMembersRequestBody'
   /principal-groups/{principalGroupId}:
     delete:
       operationId: PrincipalGroupOperations_deletePrincipalGroup
@@ -1692,6 +1740,33 @@ components:
           type: string
           description: Updated account display name.
       description: Request body for updating account information.
+    UpdatePrincipalGroupMembersItem:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - principalIdentifiers
+      properties:
+        principalGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal group identifier whose members will be updated.
+        principalIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal identifiers that should belong to the principal group after the update.
+      description: Principal group membership update item.
+    UpdatePrincipalGroupMembersRequestBody:
+      type: object
+      required:
+        - principalGroups
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatePrincipalGroupMembersItem'
+          description: Principal groups and their updated member sets.
+      description: Request body for updating multiple principal group memberships.
     VerificationDocumentSummary:
       type: object
       required:

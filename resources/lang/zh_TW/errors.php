@@ -56,6 +56,7 @@ return [
     'identity_already_member' => '該身分已是此群組的成員。',
     'identity_not_member' => '該身分不是此群組的成員。',
     'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
+    'cannot_remove_last_principal_group_manager' => '至少需要一個擁有 PrincipalGroup 管理權限的 Principal。',
     'cannot_delete_default_identity_group' => '無法刪除預設身分群組。',
     'cannot_delete_last_owner_group' => '無法刪除有成員的最後一個擁有者群組。',
     'delegation_not_found' => '找不到指定的委託。',

@@ -27,6 +27,30 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /**
+     * @param array<int, PrincipalIdentifier> $principalIdentifiers
+     * @return array<string, Principal>
+     */
+    public function findByIds(array $principalIdentifiers): array
+    {
+        if (empty($principalIdentifiers)) {
+            return [];
+        }
+
+        $ids = array_map(static fn (PrincipalIdentifier $principalIdentifier): string => (string) $principalIdentifier, $principalIdentifiers);
+
+        $eloquents = PrincipalEloquent::query()
+            ->whereIn('id', $ids)
+            ->get();
+
+        $result = [];
+        foreach ($eloquents as $eloquent) {
+            $result[$eloquent->id] = $this->toDomainEntity($eloquent);
+        }
+
+        return $result;
+    }
+
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()

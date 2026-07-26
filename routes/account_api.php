@@ -24,6 +24,7 @@ use Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup\
 use Application\Http\Action\Account\PrincipalGroup\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::post('/principal-groups', CreatePrincipalGroupAction::class);
     Route::post('/principal-groups/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
     Route::post('/principal-groups/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
     Route::delete('/principal-groups/{principalGroupId}', DeletePrincipalGroupAction::class);
 
     // Invitation
