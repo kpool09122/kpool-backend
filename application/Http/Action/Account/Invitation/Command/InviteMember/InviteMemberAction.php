@@ -15,9 +15,9 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberOutput;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -40,7 +40,7 @@ readonly class InviteMemberAction
             try {
                 $input = new InviteMemberInput(
                     accountIdentifier: new AccountIdentifier($request->accountIdentifier()),
-                    inviterIdentityIdentifier: new IdentityIdentifier($request->inviterIdentityIdentifier()),
+                    inviterPrincipalIdentifier: new PrincipalIdentifier($request->inviterPrincipalIdentifier()),
                     emails: array_map(
                         static fn (string $email) => new Email($email),
                         $request->emails()

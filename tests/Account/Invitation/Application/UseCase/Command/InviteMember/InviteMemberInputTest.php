@@ -6,9 +6,9 @@ namespace Tests\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
 /**
@@ -22,7 +22,7 @@ class InviteMemberInputTest extends TestCase
     public function test__construct(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $inviterPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $emails = [
             new Email('test1@example.com'),
             new Email('test2@example.com'),
@@ -30,12 +30,12 @@ class InviteMemberInputTest extends TestCase
 
         $input = new InviteMemberInput(
             $accountIdentifier,
-            $inviterIdentityIdentifier,
+            $inviterPrincipalIdentifier,
             $emails,
         );
 
         $this->assertSame($accountIdentifier, $input->accountIdentifier());
-        $this->assertSame($inviterIdentityIdentifier, $input->inviterIdentityIdentifier());
+        $this->assertSame($inviterPrincipalIdentifier, $input->inviterPrincipalIdentifier());
         $this->assertSame($emails, $input->emails());
     }
 
@@ -45,17 +45,17 @@ class InviteMemberInputTest extends TestCase
     public function test__constructWithEmptyEmails(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $inviterPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $emails = [];
 
         $input = new InviteMemberInput(
             $accountIdentifier,
-            $inviterIdentityIdentifier,
+            $inviterPrincipalIdentifier,
             $emails,
         );
 
         $this->assertSame($accountIdentifier, $input->accountIdentifier());
-        $this->assertSame($inviterIdentityIdentifier, $input->inviterIdentityIdentifier());
+        $this->assertSame($inviterPrincipalIdentifier, $input->inviterPrincipalIdentifier());
         $this->assertSame([], $input->emails());
     }
 }

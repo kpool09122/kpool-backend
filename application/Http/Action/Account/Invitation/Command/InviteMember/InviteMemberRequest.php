@@ -18,7 +18,7 @@ class InviteMemberRequest extends FormRequest
     {
         return [
             'accountIdentifier' => ['required', 'uuid'],
-            'inviterIdentityIdentifier' => ['required', 'uuid'],
+            'inviterPrincipalIdentifier' => ['required', 'uuid'],
             'emails' => ['required', 'array', 'min:1'],
             'emails.*' => ['required', 'email', 'distinct'],
         ];
@@ -29,9 +29,9 @@ class InviteMemberRequest extends FormRequest
         return (string) $this->input('accountIdentifier');
     }
 
-    public function inviterIdentityIdentifier(): string
+    public function inviterPrincipalIdentifier(): string
     {
-        return (string) $this->input('inviterIdentityIdentifier');
+        return (string) $this->input('inviterPrincipalIdentifier');
     }
 
     /**

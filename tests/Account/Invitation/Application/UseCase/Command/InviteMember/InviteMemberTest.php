@@ -216,7 +216,7 @@ class InviteMemberTest extends TestCase
         $email2 = new Email('user2@example.com');
         $invitation1 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email1);
         $invitation2 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email2);
-        $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email1, $email2]);
+        $input = new InviteMemberInput($accountIdentifier, $principalIdentifier, [$email1, $email2]);
         $account = $this->createAccount($accountIdentifier, AccountType::CORPORATION);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -232,9 +232,9 @@ class InviteMemberTest extends TestCase
             ->andReturnTrue();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($inviterIdentityIdentifier, $accountIdentifier)
+            ->with($principalIdentifier)
             ->andReturn($principal);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -288,9 +288,9 @@ class InviteMemberTest extends TestCase
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($data->inviterIdentityIdentifier, $data->accountIdentifier)
+            ->with($data->principalIdentifier)
             ->andReturn($data->principal);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
     }
@@ -314,7 +314,7 @@ class InviteMemberTest extends TestCase
         $account = $this->createAccount($accountIdentifier, $accountType);
         $email = new Email('invitee@example.com');
         $invitation = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email);
-        $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email]);
+        $input = new InviteMemberInput($accountIdentifier, $principalIdentifier, [$email]);
 
         return new InviteMemberTestData(
             $accountIdentifier,
