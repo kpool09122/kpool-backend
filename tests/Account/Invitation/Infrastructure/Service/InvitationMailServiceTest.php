@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Account\Invitation\Infrastructure\Service;
 
+use Application\Mail\ConflictNotificationMail;
 use Application\Mail\InvitationMail;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -162,6 +163,24 @@ class InvitationMailServiceTest extends TestCase
 
         Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => str_contains($mail->invitationUrl, '/signup?token=')
             && str_contains($mail->invitationUrl, (string) $data->invitation->token()));
+    }
+
+    /**
+     * 正常系: 既存メール通知が送信されること
+     *
+     * @throws BindingResolutionException
+     */
+    public function testSendExistingEmailNotification(): void
+    {
+        Mail::fake();
+
+        $data = $this->createTestData();
+
+        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service->sendExistingEmailNotification($data->invitation->email(), Language::JAPANESE);
+
+        Mail::assertSent(ConflictNotificationMail::class, static fn (ConflictNotificationMail $mail): bool => $mail->hasTo((string) $data->invitation->email())
+            && $mail->language === Language::JAPANESE);
     }
 
     private function createTestData(): InvitationMailServiceTestData

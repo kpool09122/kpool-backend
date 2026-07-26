@@ -10,12 +10,16 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Language;
 
 readonly class InviteMember implements InviteMemberInterface
 {
@@ -25,6 +29,8 @@ readonly class InviteMember implements InviteMemberInterface
         private PolicyEvaluatorInterface $policyEvaluator,
         private PrincipalRepositoryInterface $principalRepository,
         private AccountRepositoryInterface $accountRepository,
+        private IdentityRepositoryInterface $identityRepository,
+        private InvitationMailServiceInterface $invitationMailService,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -37,6 +43,16 @@ readonly class InviteMember implements InviteMemberInterface
 
         $invitations = [];
         foreach ($input->emails() as $email) {
+            $existingEmailNotificationLanguage = $this->existingEmailNotificationLanguage($email, $principal);
+            if ($existingEmailNotificationLanguage !== null) {
+                $this->invitationMailService->sendExistingEmailNotification(
+                    $email,
+                    $existingEmailNotificationLanguage
+                );
+
+                continue;
+            }
+
             $existingInvitation = $this->invitationRepository->findPendingByAccountAndEmail(
                 $input->accountIdentifier(),
                 $email
@@ -67,6 +83,21 @@ readonly class InviteMember implements InviteMemberInterface
         }
 
         $output->setInvitations($invitations, $principal->principalIdentifier());
+    }
+
+    private function existingEmailNotificationLanguage(Email $email, Principal $inviter): ?Language
+    {
+        $identity = $this->identityRepository->findByEmail($email);
+        if ($identity !== null) {
+            return $identity->language();
+        }
+
+        if ($this->accountRepository->findByEmail($email) === null) {
+            return null;
+        }
+
+        return $this->identityRepository->findById($inviter->identityIdentifier())?->language()
+            ?? Language::ENGLISH;
     }
 
     private function findInviterPrincipal(InviteMemberInputPort $input): Principal

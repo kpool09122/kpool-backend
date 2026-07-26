@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Infrastructure\Service;
 
+use Application\Mail\ConflictNotificationMail;
 use Application\Mail\InvitationMail;
 use Illuminate\Support\Facades\Mail;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
 readonly class InvitationMailService implements InvitationMailServiceInterface
@@ -41,6 +43,13 @@ readonly class InvitationMailService implements InvitationMailServiceInterface
 
         Mail::to((string) $invitation->email())->send(
             new InvitationMail($invitation, $invitationUrl, $accountName, $language)
+        );
+    }
+
+    public function sendExistingEmailNotification(Email $email, Language $language): void
+    {
+        Mail::to((string) $email)->send(
+            new ConflictNotificationMail($language)
         );
     }
 }
