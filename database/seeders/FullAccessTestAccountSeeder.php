@@ -19,6 +19,7 @@ class FullAccessTestAccountSeeder extends Seeder
             'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa02',
             'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa03',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa04',
+            'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0b',
             'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
             'email' => 'test@example.com',
             'identityName' => 'full-access-test',
@@ -31,6 +32,7 @@ class FullAccessTestAccountSeeder extends Seeder
             'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa07',
             'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa08',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa09',
+            'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0c',
             'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
             'email' => 'corp@example.com',
             'identityName' => 'corp-full-access-test',
@@ -54,6 +56,14 @@ class FullAccessTestAccountSeeder extends Seeder
             throw new RuntimeException('ADMINISTRATOR role not found. Please run SystemRoleSeeder first.');
         }
 
+        $collaboratorRoleId = DB::table('roles')
+            ->where('name', 'COLLABORATOR')
+            ->value('id');
+
+        if (! is_string($collaboratorRoleId)) {
+            throw new RuntimeException('COLLABORATOR role not found. Please run SystemRoleSeeder first.');
+        }
+
         $ownerRoleId = DB::table('account_roles')
             ->where('name', Role::OWNER)
             ->value('id');
@@ -65,7 +75,7 @@ class FullAccessTestAccountSeeder extends Seeder
         $now = now();
 
         foreach (self::ACCOUNTS as $account) {
-            $this->createFullAccessAccount($account, $administratorRoleId, $ownerRoleId, $now);
+            $this->createFullAccessAccount($account, $administratorRoleId, $collaboratorRoleId, $ownerRoleId, $now);
         }
     }
 
@@ -75,6 +85,7 @@ class FullAccessTestAccountSeeder extends Seeder
      *     identityId: string,
      *     principalId: string,
      *     principalGroupId: string,
+     *     wikiDefaultPrincipalGroupId: string,
      *     accountPrincipalGroupMembershipId: string,
      *     email: string,
      *     identityName: string,
@@ -86,6 +97,7 @@ class FullAccessTestAccountSeeder extends Seeder
     private function createFullAccessAccount(
         array $account,
         string $administratorRoleId,
+        string $collaboratorRoleId,
         string $ownerRoleId,
         Carbon $now,
     ): void {
@@ -172,16 +184,30 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('principal_groups')->upsert([
             [
+                'id' => $account['wikiDefaultPrincipalGroupId'],
+                'account_id' => $account['accountId'],
+                'name' => 'Default',
+                'is_default' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
                 'id' => $account['principalGroupId'],
                 'account_id' => $account['accountId'],
                 'name' => $account['principalGroupName'],
-                'is_default' => true,
+                'is_default' => false,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
         ], ['id']);
 
         DB::table('principal_group_memberships')->upsert([
+            [
+                'principal_group_id' => $account['wikiDefaultPrincipalGroupId'],
+                'principal_id' => $account['principalId'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
             [
                 'principal_group_id' => $account['principalGroupId'],
                 'principal_id' => $account['principalId'],
@@ -191,6 +217,10 @@ class FullAccessTestAccountSeeder extends Seeder
         ], ['principal_group_id', 'principal_id']);
 
         DB::table('principal_group_role_attachments')->upsert([
+            [
+                'principal_group_id' => $account['wikiDefaultPrincipalGroupId'],
+                'role_id' => $collaboratorRoleId,
+            ],
             [
                 'principal_group_id' => $account['principalGroupId'],
                 'role_id' => $administratorRoleId,

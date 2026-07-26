@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 
-use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyExistsException;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -17,8 +14,6 @@ use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 readonly class CreatePrincipal implements CreatePrincipalInterface
 {
     private const string DEFAULT_PRINCIPAL_GROUP_NAME = 'Default';
-    private const string AGENCY_ACTOR_ROLE = 'AGENCY_ACTOR';
-    private const string TALENT_ACTOR_ROLE = 'TALENT_ACTOR';
     private const string COLLABORATOR_ROLE = 'COLLABORATOR';
 
     public function __construct(
@@ -26,7 +21,6 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
         private PrincipalFactoryInterface $principalFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private PrincipalGroupFactoryInterface $principalGroupFactory,
-        private AccountRepositoryInterface $accountRepository,
         private RoleRepositoryInterface $roleRepository,
     ) {
     }
@@ -64,9 +58,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
                 true,
             );
 
-            // AccountCategoryに応じたRoleを付与
-            $roleName = $this->determineRoleName($input->accountIdentifier());
-            $role = $this->roleRepository->findByName($roleName);
+            $role = $this->roleRepository->findByName(self::COLLABORATOR_ROLE);
             if ($role !== null) {
                 $defaultPrincipalGroup->addRole($role->roleIdentifier());
             }
@@ -79,20 +71,5 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
         $this->principalGroupRepository->save($defaultPrincipalGroup);
 
         $output->setPrincipal($principal);
-    }
-
-    private function determineRoleName(AccountIdentifier $accountIdentifier): string
-    {
-        $account = $this->accountRepository->findById($accountIdentifier);
-
-        if ($account === null) {
-            return self::COLLABORATOR_ROLE;
-        }
-
-        return match ($account->accountCategory()) {
-            AccountCategory::AGENCY => self::AGENCY_ACTOR_ROLE,
-            AccountCategory::TALENT => self::TALENT_ACTOR_ROLE,
-            AccountCategory::GENERAL => self::COLLABORATOR_ROLE,
-        };
     }
 }
