@@ -128,7 +128,7 @@ class InvitationMailServiceTest extends TestCase
     }
 
     /**
-     * 正常系: 招待URLにトークンが含まれていること
+     * 正常系: 招待URLにトークンとメールアドレスが含まれていること
      *
      * @throws BindingResolutionException
      */
@@ -161,8 +161,12 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => str_contains($mail->invitationUrl, '/signup?token=')
-            && str_contains($mail->invitationUrl, (string) $data->invitation->token()));
+        $expectedQuery = http_build_query([
+            'token' => (string) $data->invitation->token(),
+            'email' => (string) $data->invitation->email(),
+        ], '', '&', PHP_QUERY_RFC3986);
+
+        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->invitationUrl === 'http://localhost:3000/invitations/accept?' . $expectedQuery);
     }
 
     /**
@@ -187,7 +191,7 @@ class InvitationMailServiceTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $email = new Email('invitee@example.com');
+        $email = new Email('invitee+member@example.com');
         $token = new OneTimeToken(bin2hex(random_bytes(32)));
 
         $invitation = new Invitation(

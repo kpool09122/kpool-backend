@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Invitation\Application\EventHandler;
 
 use RuntimeException;
+use Source\Account\Invitation\Application\Exception\InvitationEmailMismatchException;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
@@ -15,6 +16,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
+use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class IdentityCreatedViaInvitationHandler
@@ -28,6 +30,7 @@ readonly class IdentityCreatedViaInvitationHandler
         private PrincipalFactoryInterface $principalFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
+        private IdentityRepositoryInterface $identityRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -41,6 +44,11 @@ readonly class IdentityCreatedViaInvitationHandler
         }
 
         $invitation->assertAcceptable();
+        $identity = $this->identityRepository->findById($event->identityIdentifier);
+
+        if ($identity === null || (string) $identity->email() !== (string) $invitation->email()) {
+            throw new InvitationEmailMismatchException('招待されたメールアドレスと登録メールアドレスが一致しません。');
+        }
 
         $basicRole = $this->roleRepository->findByName(Role::BASIC);
         if ($basicRole === null) {

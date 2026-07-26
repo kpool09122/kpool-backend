@@ -24,7 +24,7 @@ class AccountAuthorizationSeederTest extends TestCase
 
         $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_OWNER_BASIC']);
         $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_ADMIN_BASIC']);
-        $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_BASIC']);
+        $this->assertDatabaseMissing('account_policies', ['name' => 'ACCOUNT_BASIC']);
 
         $policyRepository = $this->app->make(PolicyRepositoryInterface::class);
         $roleRepository = $this->app->make(RoleRepositoryInterface::class);
@@ -44,7 +44,8 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
         $this->assertTrue($this->hasAction($adminPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
-        $this->assertFalse($this->hasAction($basicPolicies, Action::INVITE_MEMBER));
+        $this->assertSame([], $basicRole->policies());
+        $this->assertSame([], $basicPolicies);
     }
 
     /**

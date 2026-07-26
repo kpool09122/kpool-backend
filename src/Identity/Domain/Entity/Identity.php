@@ -109,6 +109,11 @@ class Identity
         $this->emailVerifiedAt = $session->verifiedAt();
     }
 
+    public function markEmailVerified(DateTimeImmutable $verifiedAt): void
+    {
+        $this->emailVerifiedAt = $verifiedAt;
+    }
+
     /**
      * @throws InvalidCredentialsException
      * @return void

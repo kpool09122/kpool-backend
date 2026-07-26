@@ -55,11 +55,9 @@ class AccountAuthorizationSeeder extends Seeder
             ),
         ]);
 
-        $basicPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000003', 'ACCOUNT_BASIC', []);
-
         $this->saveRole(Role::OWNER, [$ownerPolicy->policyIdentifier()]);
         $this->saveRole(Role::ADMIN, [$adminPolicy->policyIdentifier()]);
-        $this->saveRole(Role::BASIC, [$basicPolicy->policyIdentifier()]);
+        $this->saveRole(Role::BASIC, []);
     }
 
     /**
