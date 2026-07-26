@@ -13,6 +13,12 @@ interface PrincipalRepositoryInterface
 {
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal;
 
+    /**
+     * @param array<int, PrincipalIdentifier> $principalIdentifiers
+     * @return array<string, Principal>
+     */
+    public function findByIds(array $principalIdentifiers): array;
+
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal;
 
     public function findByIdentityIdentifierAndAccountIdentifier(

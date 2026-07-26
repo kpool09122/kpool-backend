@@ -56,6 +56,7 @@ return [
     'identity_already_member' => '该身份已是此组的成员。',
     'identity_not_member' => '该身份不是此组的成员。',
     'cannot_remove_last_owner' => '无法移除账户的最后一个所有者。',
+    'cannot_remove_last_principal_group_manager' => '至少需要一个拥有 PrincipalGroup 管理权限的 Principal。',
     'cannot_delete_default_identity_group' => '无法删除默认身份组。',
     'cannot_delete_last_owner_group' => '无法删除有成员的最后一个所有者组。',
     'delegation_not_found' => '找不到指定的委托。',

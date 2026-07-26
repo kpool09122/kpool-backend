@@ -91,6 +91,18 @@ class PrincipalGroup
     }
 
     /**
+     * @param array<int, PrincipalIdentifier> $principalIdentifiers
+     */
+    public function replaceMembers(array $principalIdentifiers): void
+    {
+        $this->members = [];
+
+        foreach ($principalIdentifiers as $principalIdentifier) {
+            $this->members[(string) $principalIdentifier] = $principalIdentifier;
+        }
+    }
+
+    /**
      * @return RoleIdentifier[]
      */
     public function roles(): array

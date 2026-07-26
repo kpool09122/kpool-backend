@@ -17,6 +17,20 @@ model MutatePrincipalGroupMemberRequestBody {
   principalIdentifier: Uuid;
 }
 
+@doc("Principal group membership update item.")
+model UpdatePrincipalGroupMembersItem {
+  @doc("Principal group identifier whose members will be updated.")
+  principalGroupIdentifier: Uuid;
+  @doc("Principal identifiers that should belong to the principal group after the update.")
+  principalIdentifiers: Uuid[];
+}
+
+@doc("Request body for updating multiple principal group memberships.")
+model UpdatePrincipalGroupMembersRequestBody {
+  @doc("Principal groups and their updated member sets.")
+  principalGroups: UpdatePrincipalGroupMembersItem[];
+}
+
 @doc("Response returned when an principal group is created.")
 model CreatePrincipalGroupResponse {
   @statusCode statusCode: 201;
@@ -37,6 +51,12 @@ model ListMembersResponse {
 
 @doc("Response returned when principal groups are listed.")
 model ListPrincipalGroupsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListPrincipalGroupsResponseBody;
+}
+
+@doc("Response returned when multiple principal group memberships are updated.")
+model UpdatePrincipalGroupMembersResponse {
   @statusCode statusCode: 200;
   @body body: ListPrincipalGroupsResponseBody;
 }
@@ -75,6 +95,13 @@ interface PrincipalGroupOperations {
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
   ): OkPrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/members")
+  @doc("Update members for multiple principal groups.")
+  updatePrincipalGroupMembers(
+    @body body: UpdatePrincipalGroupMembersRequestBody,
+  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @delete
   @route("/{principalGroupId}")

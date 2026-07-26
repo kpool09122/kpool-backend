@@ -113,6 +113,37 @@ class PrincipalGroupTest extends TestCase
         $this->assertSame(2, $principalGroup->memberCount());
     }
 
+    public function testReplaceMembers(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $oldMember = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $newMemberA = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $newMemberB = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalGroup->addMember($oldMember);
+
+        $principalGroup->replaceMembers([$newMemberA, $newMemberB, $newMemberA]);
+
+        $this->assertFalse($principalGroup->hasMember($oldMember));
+        $this->assertTrue($principalGroup->hasMember($newMemberA));
+        $this->assertTrue($principalGroup->hasMember($newMemberB));
+        $this->assertSame(2, $principalGroup->memberCount());
+        $this->assertSame([
+            (string) $newMemberA => $newMemberA,
+            (string) $newMemberB => $newMemberB,
+        ], $principalGroup->members());
+    }
+
+    public function testReplaceMembersCanClearMembers(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+
+        $principalGroup->replaceMembers([]);
+
+        $this->assertSame([], $principalGroup->members());
+        $this->assertSame(0, $principalGroup->memberCount());
+    }
+
     public function testAddRoleDoesNotDuplicateRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
