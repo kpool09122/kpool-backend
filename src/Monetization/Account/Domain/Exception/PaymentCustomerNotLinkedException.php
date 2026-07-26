@@ -9,8 +9,9 @@ use Throwable;
 
 class PaymentCustomerNotLinkedException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Stripe Customer is not linked.', 0, $previous);
     }
 }

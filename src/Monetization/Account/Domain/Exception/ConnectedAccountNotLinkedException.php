@@ -9,8 +9,9 @@ use Throwable;
 
 class ConnectedAccountNotLinkedException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Stripe Connected Account is not linked.', 0, $previous);
     }
 }

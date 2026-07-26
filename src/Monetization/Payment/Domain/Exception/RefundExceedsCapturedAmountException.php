@@ -9,8 +9,9 @@ use Throwable;
 
 class RefundExceedsCapturedAmountException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Refund exceeds captured amount.', 0, $previous);
     }
 }

@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Application\UseCase\Exception;
 
-use Exception;
+use RuntimeException;
 use Throwable;
 
-class ContactNotFoundException extends Exception
+class ContactNotFoundException extends RuntimeException
 {
     public function __construct(
         string $message = 'Contact not found',
-        int $code = 0,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 0, $previous);
     }
 }

@@ -9,8 +9,9 @@ use Throwable;
 
 class EmptyInvoiceLinesException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('At least one product line is required.', 0, $previous);
     }
 }

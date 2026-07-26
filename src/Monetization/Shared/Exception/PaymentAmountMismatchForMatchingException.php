@@ -9,8 +9,9 @@ use Throwable;
 
 class PaymentAmountMismatchForMatchingException extends DomainException
 {
-    public function __construct(?Throwable $previous = null)
-    {
+    public function __construct(
+        ?Throwable $previous = null,
+    ) {
         parent::__construct('Payment amount does not match invoice total.', 0, $previous);
     }
 }

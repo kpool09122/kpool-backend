@@ -22,9 +22,6 @@ readonly class TransferGateway implements TransferGatewayInterface
     ) {
     }
 
-    /**
-     * @throws StripeTransferException
-     */
     public function execute(Transfer $transfer, MonetizationAccount $account): StripeTransferId
     {
         try {

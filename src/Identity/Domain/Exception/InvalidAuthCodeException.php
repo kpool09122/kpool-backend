@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Identity\Domain\Exception;
 
-use Exception;
+use DomainException;
+use Throwable;
 
-class InvalidAuthCodeException extends Exception
+class InvalidAuthCodeException extends DomainException
 {
     public function __construct(
         string $message = 'Auth code does not match.',
+        ?Throwable $previous = null,
     ) {
-        parent::__construct($message, 0);
+        parent::__construct($message, 0, $previous);
     }
 }

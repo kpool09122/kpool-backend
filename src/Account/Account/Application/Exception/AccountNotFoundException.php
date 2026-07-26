@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\Exception;
 
-use Exception;
+use RuntimeException;
+use Throwable;
 
-class AccountNotFoundException extends Exception
+class AccountNotFoundException extends RuntimeException
 {
     public function __construct(
         string $message = 'Account is not found.',
+        ?Throwable $previous = null,
     ) {
-        parent::__construct($message, 0);
+        parent::__construct($message, 0, $previous);
     }
 }
