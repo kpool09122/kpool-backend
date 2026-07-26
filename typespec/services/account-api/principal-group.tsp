@@ -29,8 +29,31 @@ model OkPrincipalGroupResponse {
   @body body: PrincipalGroupSummary;
 }
 
+@doc("Response returned when account members are listed.")
+model ListMembersResponse {
+  @statusCode statusCode: 200;
+  @body body: ListMembersResponseBody;
+}
+
+@doc("Response returned when principal groups are listed.")
+model ListPrincipalGroupsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListPrincipalGroupsResponseBody;
+}
+
+@route("/members")
+interface MemberOperations {
+  @get
+  @doc("List account members.")
+  listMembers(): ListMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/principal-groups")
 interface PrincipalGroupOperations {
+  @get
+  @doc("List principal groups.")
+  listPrincipalGroups(): ListPrincipalGroupsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @doc("Create an principal group.")
   createPrincipalGroup(

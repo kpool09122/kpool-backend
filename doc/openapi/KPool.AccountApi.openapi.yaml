@@ -783,7 +783,66 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InviteMemberRequestBody'
+  /members:
+    get:
+      operationId: MemberOperations_listMembers
+      description: List account members.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when account members are listed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMembersResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /principal-groups:
+    get:
+      operationId: PrincipalGroupOperations_listPrincipalGroups
+      description: List principal groups.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when principal groups are listed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPrincipalGroupsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     post:
       operationId: PrincipalGroupOperations_createPrincipalGroup
       description: Create an principal group.
@@ -952,6 +1011,35 @@ paths:
               $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
 components:
   schemas:
+    AccountMemberSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - identityName
+        - email
+        - principalGroups
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal identifier.
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier.
+        identityName:
+          type: string
+          description: Identity display name.
+        email:
+          type: string
+          description: Identity email address.
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberPrincipalGroupSummary'
+          description: Principal groups assigned to the member.
+      description: Account member summary.
     AccountSummary:
       type: object
       required:
@@ -1393,6 +1481,46 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListMembersResponseBody:
+      type: object
+      required:
+        - members
+      properties:
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountMemberSummary'
+          description: Account members.
+      description: Response body for account member list.
+    ListPrincipalGroupsResponseBody:
+      type: object
+      required:
+        - principalGroups
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroupSummary'
+          description: Principal groups.
+      description: Response body for principal group list.
+    MemberPrincipalGroupSummary:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - name
+        - isDefault
+      properties:
+        principalGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal group identifier.
+        name:
+          type: string
+          description: Principal group name.
+        isDefault:
+          type: boolean
+          description: Whether this is the default principal group.
+      description: Principal group assigned to an account member.
     MutatePrincipalGroupMemberRequestBody:
       type: object
       required:

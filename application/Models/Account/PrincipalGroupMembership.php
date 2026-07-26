@@ -34,8 +34,15 @@ class PrincipalGroupMembership extends Model
         ];
     }
 
+    /** @return BelongsTo<PrincipalGroup, $this> */
     public function principalGroup(): BelongsTo
     {
         return $this->belongsTo(PrincipalGroup::class, 'principal_group_id', 'id');
+    }
+
+    /** @return BelongsTo<Principal, $this> */
+    public function principal(): BelongsTo
+    {
+        return $this->belongsTo(Principal::class, 'principal_id', 'id');
     }
 }
