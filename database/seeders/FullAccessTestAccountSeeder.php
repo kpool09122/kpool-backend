@@ -18,6 +18,7 @@ class FullAccessTestAccountSeeder extends Seeder
             'accountId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa01',
             'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa02',
             'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa03',
+            'accountDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0d',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa04',
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0b',
             'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
@@ -31,6 +32,7 @@ class FullAccessTestAccountSeeder extends Seeder
             'accountId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa06',
             'identityId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa07',
             'principalId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa08',
+            'accountDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0f',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa09',
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0c',
             'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
@@ -84,6 +86,7 @@ class FullAccessTestAccountSeeder extends Seeder
      *     accountId: string,
      *     identityId: string,
      *     principalId: string,
+     *     accountDefaultPrincipalGroupId: string,
      *     principalGroupId: string,
      *     wikiDefaultPrincipalGroupId: string,
      *     accountPrincipalGroupMembershipId: string,
@@ -156,14 +159,27 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('account_principal_groups')->upsert([
             [
-                'id' => $account['principalGroupId'],
+                'id' => $account['accountDefaultPrincipalGroupId'],
                 'account_id' => $account['accountId'],
-                'name' => $account['principalGroupName'],
+                'name' => 'Default',
                 'is_default' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            [
+                'id' => $account['principalGroupId'],
+                'account_id' => $account['accountId'],
+                'name' => $account['principalGroupName'],
+                'is_default' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ], ['id']);
+
+        DB::table('account_principal_group_memberships')
+            ->where('principal_group_id', $account['accountDefaultPrincipalGroupId'])
+            ->where('principal_id', $account['principalId'])
+            ->delete();
 
         DB::table('account_principal_group_memberships')->upsert([
             [
@@ -201,13 +217,12 @@ class FullAccessTestAccountSeeder extends Seeder
             ],
         ], ['id']);
 
+        DB::table('principal_group_memberships')
+            ->where('principal_group_id', $account['wikiDefaultPrincipalGroupId'])
+            ->where('principal_id', $account['principalId'])
+            ->delete();
+
         DB::table('principal_group_memberships')->upsert([
-            [
-                'principal_group_id' => $account['wikiDefaultPrincipalGroupId'],
-                'principal_id' => $account['principalId'],
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
             [
                 'principal_group_id' => $account['principalGroupId'],
                 'principal_id' => $account['principalId'],
