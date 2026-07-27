@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
+use Source\Account\Principal\Application\Exception\PrincipalAlreadyAssignedToPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
@@ -63,6 +64,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([
+            (string) $executor->principalIdentifier() => $executor,
             (string) $manager->principalIdentifier() => $manager,
             (string) $memberA->principalIdentifier() => $memberA,
             (string) $memberB->principalIdentifier() => $memberB,
@@ -87,8 +89,63 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $this->assertTrue($groupA->hasMember($memberA->principalIdentifier()));
         $this->assertFalse($groupA->hasMember($memberB->principalIdentifier()));
         $this->assertTrue($groupB->hasMember($memberB->principalIdentifier()));
-        $this->assertTrue($untargetedGroup->hasMember($manager->principalIdentifier()));
+        $this->assertTrue($untargetedGroup->hasMember($executor->principalIdentifier()));
         $this->assertCount(2, $output->toArray()['principalGroups']);
+    }
+
+    public function testThrowsWhenRequestedPrincipalAppearsInMultipleGroups(): void
+    {
+        [$accountId, $executor, $manager, , , $groupA, $groupB] = $this->fixture();
+
+        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $groupB]);
+        $principalGroupRepository->shouldNotReceive('save');
+
+        $principalRepository = $this->emptyPrincipalRepository();
+        $principalRepository->shouldNotReceive('findByIds');
+
+        $useCase = new UpdatePrincipalGroupMembers(
+            $principalGroupRepository,
+            $principalRepository,
+            $this->emptyRoleRepository(),
+            $this->emptyPolicyRepository(),
+            $this->allowedPolicyEvaluator(),
+        );
+
+        $this->expectException(PrincipalAlreadyAssignedToPrincipalGroupException::class);
+
+        $useCase->process(new UpdatePrincipalGroupMembersInput($accountId, $executor, [
+            new PrincipalGroupMembers($groupA->principalGroupIdentifier(), [$manager->principalIdentifier()]),
+            new PrincipalGroupMembers($groupB->principalGroupIdentifier(), [$manager->principalIdentifier()]),
+        ]), new UpdatePrincipalGroupMembersOutput());
+    }
+
+    public function testThrowsWhenRequestedPrincipalAlreadyBelongsToUntargetedGroup(): void
+    {
+        [$accountId, $executor, $manager, , , $groupA, , $untargetedGroup] = $this->fixture();
+
+        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $untargetedGroup]);
+        $principalGroupRepository->shouldNotReceive('save');
+
+        $principalRepository = $this->emptyPrincipalRepository();
+        $principalRepository->shouldNotReceive('findByIds');
+
+        $useCase = new UpdatePrincipalGroupMembers(
+            $principalGroupRepository,
+            $principalRepository,
+            $this->emptyRoleRepository(),
+            $this->emptyPolicyRepository(),
+            $this->allowedPolicyEvaluator(),
+        );
+
+        $this->expectException(PrincipalAlreadyAssignedToPrincipalGroupException::class);
+
+        $useCase->process(new UpdatePrincipalGroupMembersInput($accountId, $executor, [
+            new PrincipalGroupMembers($groupA->principalGroupIdentifier(), [$manager->principalIdentifier(), $executor->principalIdentifier()]),
+        ]), new UpdatePrincipalGroupMembersOutput());
     }
 
     public function testThrowsWhenPrincipalGroupIsOutsideAccount(): void
@@ -305,7 +362,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $groupB = $this->principalGroup($accountId);
         $groupB->addMember($memberA->principalIdentifier());
         $untargetedGroup = $this->principalGroup($accountId, $roleId);
-        $untargetedGroup->addMember($manager->principalIdentifier());
+        $untargetedGroup->addMember($executor->principalIdentifier());
 
         return [$accountId, $executor, $manager, $memberA, $memberB, $groupA, $groupB, $untargetedGroup, $roleId, $policyId];
     }

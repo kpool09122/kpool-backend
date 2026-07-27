@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
+use Source\Account\Principal\Application\Exception\PrincipalAlreadyAssignedToPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
@@ -72,6 +73,10 @@ readonly class UpdatePrincipalGroupMembersAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('cannot_remove_last_principal_group_manager', $language), previous: $e);
+            } catch (PrincipalAlreadyAssignedToPrincipalGroupException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('principal_already_assigned_to_principal_group', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

@@ -57,6 +57,7 @@ return [
     'identity_not_member' => 'このアイデンティティはこのグループのメンバーではありません。',
     'cannot_remove_last_owner' => 'アカウントから最後のオーナーを削除することはできません。',
     'cannot_remove_last_principal_group_manager' => 'PrincipalGroup を管理できる Principal が少なくとも1人必要です。',
+    'principal_already_assigned_to_principal_group' => 'Principal はアカウント内で1つの PrincipalGroup にのみ所属できます。',
     'cannot_delete_default_identity_group' => 'デフォルトのアイデンティティグループは削除できません。',
     'cannot_delete_last_owner_group' => 'メンバーがいる最後のオーナーグループは削除できません。',
     'delegation_not_found' => '指定された委任が見つかりません。',

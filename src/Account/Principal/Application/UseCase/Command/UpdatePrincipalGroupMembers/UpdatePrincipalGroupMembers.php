@@ -6,6 +6,7 @@ namespace Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGr
 
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
+use Source\Account\Principal\Application\Exception\PrincipalAlreadyAssignedToPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -67,6 +68,8 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             $principalGroupsById[$principalGroupId]->replaceMembers($principalIdentifiers);
         }
 
+        $this->assertPrincipalsAssignedToSingleGroup($principalGroups);
+
         $principalsById = $this->principalRepository->findByIds(array_values($this->collectPrincipalIdentifiers($principalGroups)));
         $this->assertPrincipalsBelongToAccount(array_values($allRequestedPrincipalIdentifiers), $principalsById, $accountIdentifier);
 
@@ -79,6 +82,25 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         }
 
         $output->setPrincipalGroups(array_values(array_intersect_key($principalGroupsById, $requestedPrincipalIdentifiersByGroupId)));
+    }
+
+    /**
+     * @param array<int, PrincipalGroup> $principalGroups
+     */
+    private function assertPrincipalsAssignedToSingleGroup(array $principalGroups): void
+    {
+        $groupIdsByPrincipalId = [];
+        foreach ($principalGroups as $principalGroup) {
+            $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
+            foreach ($principalGroup->members() as $principalIdentifier) {
+                $principalId = (string) $principalIdentifier;
+                if (isset($groupIdsByPrincipalId[$principalId]) && $groupIdsByPrincipalId[$principalId] !== $principalGroupId) {
+                    throw new PrincipalAlreadyAssignedToPrincipalGroupException();
+                }
+
+                $groupIdsByPrincipalId[$principalId] = $principalGroupId;
+            }
+        }
     }
 
     /**
