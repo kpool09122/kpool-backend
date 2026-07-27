@@ -11,6 +11,7 @@ class Role
 {
     public const string OWNER = 'Owner';
     public const string ADMIN = 'Admin';
+
     /**
      * @param PolicyIdentifier[] $policies
      */

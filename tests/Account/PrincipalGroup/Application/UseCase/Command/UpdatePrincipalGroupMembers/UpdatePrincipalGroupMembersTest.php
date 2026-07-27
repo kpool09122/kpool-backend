@@ -102,6 +102,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $groupB]);
         $principalGroupRepository->shouldNotReceive('save');
 
+        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
         $principalRepository = $this->emptyPrincipalRepository();
         $principalRepository->shouldNotReceive('findByIds');
 
@@ -130,6 +131,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $untargetedGroup]);
         $principalGroupRepository->shouldNotReceive('save');
 
+        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
         $principalRepository = $this->emptyPrincipalRepository();
         $principalRepository->shouldNotReceive('findByIds');
 
