@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Application\Http\Context\AuthContextCache;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use Source\Account\Principal\Domain\Entity\Role;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class FullAccessTestAccountSeeder extends Seeder
 {
@@ -241,5 +243,10 @@ class FullAccessTestAccountSeeder extends Seeder
                 'role_id' => $administratorRoleId,
             ],
         ], ['principal_group_id', 'role_id']);
+
+        $identityIdentifier = new IdentityIdentifier($account['identityId']);
+        $authContextCache = app(AuthContextCache::class);
+        $authContextCache->forgetAccount($identityIdentifier);
+        $authContextCache->forgetWiki($identityIdentifier);
     }
 }
