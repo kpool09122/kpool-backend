@@ -19,7 +19,8 @@ use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateAccount implements CreateAccountInterface
 {
-    private const string DEFAULT_IDENTITY_GROUP_NAME = 'Owners';
+    private const string DEFAULT_GROUP_NAME = 'Default';
+    private const string OWNER_GROUP_NAME = 'Owners';
 
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
@@ -59,16 +60,23 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $this->accountRepository->save($account);
 
-        $principalGroup = $this->principalGroupFactory->create(
+        $defaultPrincipalGroup = $this->principalGroupFactory->create(
             $account->accountIdentifier(),
-            self::DEFAULT_IDENTITY_GROUP_NAME,
+            self::DEFAULT_GROUP_NAME,
             true,
         );
+
+        $ownerPrincipalGroup = $this->principalGroupFactory->create(
+            $account->accountIdentifier(),
+            self::OWNER_GROUP_NAME,
+            false,
+        );
+
         $ownerRole = $this->roleRepository->findByName(Role::OWNER);
         if ($ownerRole === null) {
             throw new RuntimeException('Owner account role is not found.');
         }
-        $principalGroup->addRole($ownerRole->roleIdentifier());
+        $ownerPrincipalGroup->addRole($ownerRole->roleIdentifier());
 
         if ($input->identityIdentifier() !== null) {
             $principal = $this->principalFactory->create(
@@ -76,10 +84,11 @@ readonly class CreateAccount implements CreateAccountInterface
                 $account->accountIdentifier(),
             );
             $this->principalRepository->save($principal);
-            $principalGroup->addMember($principal->principalIdentifier());
+            $ownerPrincipalGroup->addMember($principal->principalIdentifier());
         }
 
-        $this->principalGroupRepository->save($principalGroup);
+        $this->principalGroupRepository->save($defaultPrincipalGroup);
+        $this->principalGroupRepository->save($ownerPrincipalGroup);
 
         $this->eventDispatcher->dispatch(new AccountCreated(
             accountIdentifier: $account->accountIdentifier(),

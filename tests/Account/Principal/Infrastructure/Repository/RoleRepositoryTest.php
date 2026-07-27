@@ -78,15 +78,16 @@ class RoleRepositoryTest extends TestCase
     public function testFindByName(): void
     {
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $roleName = 'Role ' . (string) $roleIdentifier;
         $repository = $this->app->make(RoleRepositoryInterface::class);
 
-        $repository->save(new Role($roleIdentifier, Role::BASIC, [], true));
+        $repository->save(new Role($roleIdentifier, $roleName, [], true));
 
-        $result = $repository->findByName(Role::BASIC);
+        $result = $repository->findByName($roleName);
 
         $this->assertNotNull($result);
         $this->assertSame((string) $roleIdentifier, (string) $result->roleIdentifier());
-        $this->assertSame(Role::BASIC, $result->name());
+        $this->assertSame($roleName, $result->name());
     }
 
     private function createPolicy(PolicyIdentifier $policyIdentifier): void

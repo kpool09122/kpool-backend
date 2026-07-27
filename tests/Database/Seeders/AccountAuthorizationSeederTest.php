@@ -30,22 +30,18 @@ class AccountAuthorizationSeederTest extends TestCase
         $roleRepository = $this->app->make(RoleRepositoryInterface::class);
         $ownerRole = $roleRepository->findByName(Role::OWNER);
         $adminRole = $roleRepository->findByName(Role::ADMIN);
-        $basicRole = $roleRepository->findByName(Role::BASIC);
 
         $this->assertNotNull($ownerRole);
         $this->assertNotNull($adminRole);
-        $this->assertNotNull($basicRole);
+        $this->assertDatabaseMissing('account_roles', ['name' => 'Basic']);
 
         $ownerPolicies = $policyRepository->findByIds($ownerRole->policies());
         $adminPolicies = $policyRepository->findByIds($adminRole->policies());
-        $basicPolicies = $policyRepository->findByIds($basicRole->policies());
 
         $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
         $this->assertTrue($this->hasAction($adminPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
-        $this->assertSame([], $basicRole->policies());
-        $this->assertSame([], $basicPolicies);
     }
 
     /**

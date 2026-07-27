@@ -59,7 +59,6 @@ class AccountAuthorizationSeeder extends Seeder
 
         $this->saveRole(Role::OWNER, [$ownerPolicy->policyIdentifier()]);
         $this->saveRole(Role::ADMIN, [$adminPolicy->policyIdentifier()]);
-        $this->saveRole(Role::BASIC, []);
     }
 
     /**
