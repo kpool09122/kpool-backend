@@ -21,11 +21,11 @@ class FullAccessTestAccountSeeder extends Seeder
             'accountDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0d',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa04',
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0b',
-            'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
+            'accountOwnerPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
             'email' => 'test@example.com',
             'identityName' => 'full-access-test',
             'accountName' => 'Full Access Test Account',
-            'principalGroupName' => 'Full Access Test Group',
+            'wikiPrincipalGroupName' => 'Full Access Test Group',
             'accountType' => 'individual',
         ],
         [
@@ -35,11 +35,11 @@ class FullAccessTestAccountSeeder extends Seeder
             'accountDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0f',
             'principalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa09',
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0c',
-            'accountPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
+            'accountOwnerPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
             'email' => 'corp@example.com',
             'identityName' => 'corp-full-access-test',
             'accountName' => 'Corporate Full Access Test Account',
-            'principalGroupName' => 'Corporate Full Access Test Group',
+            'wikiPrincipalGroupName' => 'Corporate Full Access Test Group',
             'accountType' => 'corporation',
         ],
     ];
@@ -89,11 +89,11 @@ class FullAccessTestAccountSeeder extends Seeder
      *     accountDefaultPrincipalGroupId: string,
      *     principalGroupId: string,
      *     wikiDefaultPrincipalGroupId: string,
-     *     accountPrincipalGroupMembershipId: string,
+     *     accountOwnerPrincipalGroupMembershipId: string,
      *     email: string,
      *     identityName: string,
      *     accountName: string,
-     *     principalGroupName: string,
+     *     wikiPrincipalGroupName: string,
      *     accountType: string
      * } $account
      */
@@ -169,7 +169,7 @@ class FullAccessTestAccountSeeder extends Seeder
             [
                 'id' => $account['principalGroupId'],
                 'account_id' => $account['accountId'],
-                'name' => $account['principalGroupName'],
+                'name' => 'Owners',
                 'is_default' => false,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -183,7 +183,7 @@ class FullAccessTestAccountSeeder extends Seeder
 
         DB::table('account_principal_group_memberships')->upsert([
             [
-                'id' => $account['accountPrincipalGroupMembershipId'],
+                'id' => $account['accountOwnerPrincipalGroupMembershipId'],
                 'principal_group_id' => $account['principalGroupId'],
                 'principal_id' => $account['principalId'],
                 'created_at' => $now,
@@ -210,7 +210,7 @@ class FullAccessTestAccountSeeder extends Seeder
             [
                 'id' => $account['principalGroupId'],
                 'account_id' => $account['accountId'],
-                'name' => $account['principalGroupName'],
+                'name' => $account['wikiPrincipalGroupName'],
                 'is_default' => false,
                 'created_at' => $now,
                 'updated_at' => $now,
