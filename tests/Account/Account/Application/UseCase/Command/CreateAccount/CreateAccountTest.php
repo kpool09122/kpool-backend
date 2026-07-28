@@ -107,8 +107,12 @@ class CreateAccountTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($testData->identifier, 'Owners', true)
-            ->andReturn($testData->principalGroup);
+            ->with($testData->identifier, 'Default', true)
+            ->andReturn($testData->defaultPrincipalGroup);
+        $principalGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Owners', false)
+            ->andReturn($testData->ownerPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findByName')
@@ -119,7 +123,11 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with($testData->principalGroup)
+            ->with($testData->defaultPrincipalGroup)
+            ->andReturnNull();
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with($testData->ownerPrincipalGroup)
             ->andReturnNull();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -152,8 +160,9 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->email, $result['email']);
         $this->assertSame($testData->accountType->value, $result['type']);
         $this->assertSame((string) $testData->accountName, $result['name']);
-        $this->assertTrue($testData->principalGroup->hasMember($testData->principalIdentifier));
-        $this->assertTrue($testData->principalGroup->hasRole($testData->ownerRole->roleIdentifier()));
+        $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
+        $this->assertTrue($testData->ownerPrincipalGroup->hasMember($testData->principalIdentifier));
+        $this->assertTrue($testData->ownerPrincipalGroup->hasRole($testData->ownerRole->roleIdentifier()));
     }
 
     /**
@@ -190,8 +199,12 @@ class CreateAccountTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($testData->identifier, 'Owners', true)
-            ->andReturn($testData->principalGroup);
+            ->with($testData->identifier, 'Default', true)
+            ->andReturn($testData->defaultPrincipalGroup);
+        $principalGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Owners', false)
+            ->andReturn($testData->ownerPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findByName')
@@ -202,7 +215,11 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with($testData->principalGroup)
+            ->with($testData->defaultPrincipalGroup)
+            ->andReturnNull();
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with($testData->ownerPrincipalGroup)
             ->andReturnNull();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -232,7 +249,8 @@ class CreateAccountTest extends TestCase
 
         $result = $output->toArray();
         $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
-        $this->assertSame(0, $testData->principalGroup->memberCount());
+        $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
+        $this->assertSame(0, $testData->ownerPrincipalGroup->memberCount());
     }
 
     /**
@@ -327,11 +345,19 @@ class CreateAccountTest extends TestCase
             true,
         );
 
-        $principalGroup = new PrincipalGroup(
+        $defaultPrincipalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            $identifier,
+            'Default',
+            true,
+            new \DateTimeImmutable(),
+        );
+
+        $ownerPrincipalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $identifier,
             'Owners',
-            true,
+            false,
             new \DateTimeImmutable(),
         );
 
@@ -354,7 +380,8 @@ class CreateAccountTest extends TestCase
             $identityIdentifier,
             $principalIdentifier,
             $principal,
-            $principalGroup,
+            $defaultPrincipalGroup,
+            $ownerPrincipalGroup,
             $ownerRole,
             $language,
         );
@@ -374,7 +401,8 @@ readonly class CreateAccountTestData
         public IdentityIdentifier $identityIdentifier,
         public PrincipalIdentifier $principalIdentifier,
         public Principal $principal,
-        public PrincipalGroup $principalGroup,
+        public PrincipalGroup $defaultPrincipalGroup,
+        public PrincipalGroup $ownerPrincipalGroup,
         public Role $ownerRole,
         public Language $language,
     ) {

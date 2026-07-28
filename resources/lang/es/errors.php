@@ -57,6 +57,7 @@ return [
     'identity_not_member' => 'La identidad no es miembro de este grupo.',
     'cannot_remove_last_owner' => 'No se puede eliminar al último propietario de la cuenta.',
     'cannot_remove_last_principal_group_manager' => 'Se requiere al menos un principal con permiso para administrar grupos de principales.',
+    'principal_already_assigned_to_principal_group' => 'Un principal solo puede pertenecer a un grupo de principales dentro de una cuenta.',
     'cannot_delete_default_identity_group' => 'No se puede eliminar el grupo de identidad predeterminado.',
     'cannot_delete_last_owner_group' => 'No se puede eliminar el último grupo de propietarios con miembros.',
     'delegation_not_found' => 'No se encontró la delegación especificada.',

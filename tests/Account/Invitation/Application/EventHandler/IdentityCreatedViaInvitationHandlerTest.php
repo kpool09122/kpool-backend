@@ -18,13 +18,10 @@ use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
-use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
-use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\Identity;
@@ -55,7 +52,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
@@ -64,7 +60,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
@@ -74,11 +69,11 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
     }
 
     /**
-     * 正常系: 既存のMemberグループがある場合、そのグループにメンバーを追加すること
+     * 正常系: 既存のDefaultグループがある場合、そのグループにメンバーを追加すること
      *
      * @throws BindingResolutionException
      */
-    public function testHandleWhenMemberGroupExists(): void
+    public function testHandleWhenDefaultGroupExists(): void
     {
         $data = $this->createTestData();
 
@@ -102,13 +97,13 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->with($data->invitation);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
+        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
             ->once()
-            ->with($data->accountIdentifier, $data->basicRole->roleIdentifier())
-            ->andReturn($data->memberGroup);
+            ->with($data->accountIdentifier)
+            ->andReturn($data->defaultGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with($data->memberGroup);
+            ->with($data->defaultGroup);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldNotReceive('create');
@@ -124,12 +119,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->once()
             ->with($data->principal);
 
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->once()
-            ->with(Role::BASIC)
-            ->andReturn($data->basicRole);
-
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findById')
             ->once()
@@ -142,21 +131,20 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
 
-        $this->assertTrue($data->memberGroup->hasMember($data->principalIdentifier));
+        $this->assertTrue($data->defaultGroup->hasMember($data->principalIdentifier));
     }
 
     /**
-     * 正常系: Memberグループが存在しない場合、新規作成してメンバーを追加すること
+     * 正常系: Defaultグループが存在しない場合、新規作成してメンバーを追加すること
      *
      * @throws BindingResolutionException
      */
-    public function testHandleWhenMemberGroupNotExists(): void
+    public function testHandleWhenDefaultGroupNotExists(): void
     {
         $data = $this->createTestData();
 
@@ -177,19 +165,19 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->with($data->invitation);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
+        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
             ->once()
-            ->with($data->accountIdentifier, $data->basicRole->roleIdentifier())
+            ->with($data->accountIdentifier)
             ->andReturnNull();
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with($data->memberGroup);
+            ->with($data->defaultGroup);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($data->accountIdentifier, 'Members', false)
-            ->andReturn($data->memberGroup);
+            ->with($data->accountIdentifier, 'Default', true)
+            ->andReturn($data->defaultGroup);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
@@ -201,12 +189,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalRepository->shouldReceive('save')
             ->once()
             ->with($data->principal);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
-            ->once()
-            ->with(Role::BASIC)
-            ->andReturn($data->basicRole);
 
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findById')
@@ -220,13 +202,12 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
 
-        $this->assertTrue($data->memberGroup->hasMember($data->principalIdentifier));
+        $this->assertTrue($data->defaultGroup->hasMember($data->principalIdentifier));
     }
 
     /**
@@ -251,7 +232,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -262,7 +242,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
@@ -295,7 +274,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -306,7 +284,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
@@ -340,7 +317,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -351,7 +327,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
@@ -385,7 +360,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->andReturn($differentEmailIdentity);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldNotReceive('findByAccountIdAndRole');
+        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
         $principalGroupRepository->shouldNotReceive('save');
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
@@ -397,9 +372,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('save');
 
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldNotReceive('findByName');
-
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
@@ -409,7 +381,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
@@ -444,15 +415,13 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $principalGroupRepository->shouldNotReceive('findByAccountIdAndRole');
+        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
         $principalGroupRepository->shouldNotReceive('save');
         $principalGroupFactory->shouldNotReceive('create');
         $principalFactory->shouldNotReceive('create');
         $principalRepository->shouldNotReceive('save');
-        $roleRepository->shouldNotReceive('findByName');
         $eventDispatcher->shouldNotReceive('dispatch');
 
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
@@ -461,7 +430,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
 
         $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
@@ -496,18 +464,11 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $identity = $this->createIdentity($identityIdentifier, $invitation->email());
         $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
-        $basicRole = new Role(
-            new RoleIdentifier(StrTestHelper::generateUuid()),
-            Role::BASIC,
-            [],
-            true,
-        );
-
-        $memberGroup = new PrincipalGroup(
+        $defaultGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
-            'Members',
-            false,
+            'Default',
+            true,
             new DateTimeImmutable(),
         );
 
@@ -520,8 +481,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             $invitation,
             $identity,
             $principal,
-            $memberGroup,
-            $basicRole,
+            $defaultGroup,
         );
     }
 
@@ -550,8 +510,7 @@ readonly class IdentityCreatedViaInvitationHandlerTestData
         public Invitation $invitation,
         public Identity $identity,
         public Principal $principal,
-        public PrincipalGroup $memberGroup,
-        public Role $basicRole,
+        public PrincipalGroup $defaultGroup,
     ) {
     }
 }
