@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\Service;
 
+use Source\Account\Account\Domain\ValueObject\AccountDocumentFileType;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
+use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface DocumentStorageServiceInterface
 {
@@ -20,6 +23,13 @@ interface DocumentStorageServiceInterface
     public function store(
         VerificationIdentifier $verificationId,
         string $fileName,
+        string $contents,
+    ): DocumentPath;
+
+    public function storeForAccount(
+        AccountIdentifier $accountId,
+        DocumentType $documentType,
+        AccountDocumentFileType $fileType,
         string $contents,
     ): DocumentPath;
 
@@ -47,6 +57,8 @@ interface DocumentStorageServiceInterface
      * @return bool
      */
     public function delete(DocumentPath $path): bool;
+
+    public function deleteAfterCommit(DocumentPath $path): void;
 
     /**
      * Delete all documents for a verification.

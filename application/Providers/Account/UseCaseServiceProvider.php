@@ -17,6 +17,8 @@ use Source\Account\Account\Application\UseCase\Command\RequestVerification\Reque
 use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
+use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
@@ -78,6 +80,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(TerminateAffiliationInterface::class, TerminateAffiliation::class);
         $this->app->singleton(RequestAffiliationInterface::class, RequestAffiliation::class);
         $this->app->singleton(RejectAffiliationInterface::class, RejectAffiliation::class);
+
+        $this->app->singleton(UploadDocumentsInterface::class, UploadDocuments::class);
 
         // AccountVerification
         $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);

@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\DeleteAccount;
 
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -37,6 +38,7 @@ class DeleteAccountOutputTest extends TestCase
             $status,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $output = new DeleteAccountOutput();

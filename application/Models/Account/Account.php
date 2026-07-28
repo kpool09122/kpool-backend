@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Account;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $id
@@ -37,5 +38,10 @@ class Account extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(AccountDocument::class, 'account_id', 'id');
     }
 }

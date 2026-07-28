@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
+use Application\Http\Action\Account\Account\Command\Documents\UploadDocumentsAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
@@ -36,6 +37,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::get('/accounts/{accountId}', GetAccountAction::class);
     Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
     Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
+    Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);
 
     // Delegation
     Route::post('/delegations', RequestDelegationAction::class);

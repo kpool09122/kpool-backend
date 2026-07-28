@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
+use Psr\Log\NullLogger;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
@@ -39,7 +40,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStore(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test-document.jpg';
         $contents = 'test file contents';
@@ -58,7 +59,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testGet(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test-document.jpg';
         $contents = 'test file contents';
@@ -74,7 +75,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testGetReturnsNullWhenNotExists(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $path = new DocumentPath('verifications/non-existent/file.jpg');
 
         $result = $service->get($path);
@@ -87,7 +88,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testDelete(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test-document.jpg';
         $contents = 'test file contents';
@@ -102,11 +103,26 @@ class DocumentStorageServiceTest extends TestCase
     }
 
     /**
+     * 正常系: DBトランザクション外では削除予約が即時実行されること
+     */
+    public function testDeleteAfterCommitDeletesImmediatelyWithoutTransaction(): void
+    {
+        $service = new DocumentStorageService(new NullLogger());
+        $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
+        $path = $service->store($verificationId, 'test-document.jpg', 'test file contents');
+        Storage::disk('verification-documents')->assertExists((string) $path);
+
+        $service->deleteAfterCommit($path);
+
+        Storage::disk('verification-documents')->assertMissing((string) $path);
+    }
+
+    /**
      * 正常系: VerificationIdに紐づく全ファイルを削除できること
      */
     public function testDeleteByVerificationId(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
 
         // 複数のファイルを保存
@@ -128,7 +144,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testExists(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test-document.jpg';
         $contents = 'test file contents';
@@ -143,7 +159,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testExistsReturnsFalseWhenNotExists(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $path = new DocumentPath('verifications/non-existent/file.jpg');
 
         $this->assertFalse($service->exists($path));
@@ -154,7 +170,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testGetTemporaryUrl(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test-document.jpg';
         $contents = 'test file contents';
@@ -178,7 +194,7 @@ class DocumentStorageServiceTest extends TestCase
             ->with('verification-documents')
             ->andReturn($mockDisk);
 
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $url = $service->getTemporaryUrl($path);
 
         $this->assertSame((string) $path, $url);
@@ -189,7 +205,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStoreWithSpecialCharactersInFileName(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = 'test<script>alert("xss")</script>.jpg';
         $contents = 'test file contents';
@@ -207,7 +223,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStoreWithPathInFileName(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = '/etc/passwd/../../../malicious.jpg';
         $contents = 'test file contents';
@@ -225,7 +241,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStoreWithLongFileName(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $longName = str_repeat('a', 300) . '.jpg';
         $contents = 'test file contents';
@@ -246,7 +262,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStoreWithJapaneseFileName(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
         $fileName = '本人確認書類.jpg';
         $contents = 'test file contents';
@@ -263,7 +279,7 @@ class DocumentStorageServiceTest extends TestCase
      */
     public function testStoreMultipleFiles(): void
     {
-        $service = new DocumentStorageService();
+        $service = new DocumentStorageService(new NullLogger());
         $verificationId = new VerificationIdentifier(StrTestHelper::generateUuid());
 
         $path1 = $service->store($verificationId, 'document1.jpg', 'contents1');

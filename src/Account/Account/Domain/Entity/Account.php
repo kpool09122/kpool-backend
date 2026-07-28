@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\Entity;
 
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
+use Source\Account\Account\Domain\ValueObject\AccountDocument;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -23,6 +25,7 @@ class Account
         private readonly AccountStatus $status,
         private AccountCategory $accountCategory,
         private readonly DeletionReadinessChecklist $deletionReadiness,
+        private AccountDocuments $documents,
     ) {
     }
 
@@ -69,6 +72,19 @@ class Account
     public function deletionReadiness(): DeletionReadinessChecklist
     {
         return $this->deletionReadiness;
+    }
+
+    public function documents(): AccountDocuments
+    {
+        return $this->documents;
+    }
+
+    /**
+     * @param AccountDocument[] $documents
+     */
+    public function replaceDocuments(array $documents): void
+    {
+        $this->documents->replaceWith($documents);
     }
 
     /**

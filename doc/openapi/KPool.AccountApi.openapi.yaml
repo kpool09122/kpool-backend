@@ -309,6 +309,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountId}/documents:
+    post:
+      operationId: AccountOperations_uploadDocuments
+      description: Upload required documents for an account.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '201':
+          description: Response returned when account document upload succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadAccountDocumentsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadAccountDocumentsRequestBody'
   /affiliations:
     post:
       operationId: AffiliationOperations_requestAffiliation
@@ -1059,6 +1112,37 @@ paths:
               $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
 components:
   schemas:
+    AccountDocumentSummary:
+      type: object
+      required:
+        - documentType
+        - documentPath
+        - uploadedAt
+      properties:
+        documentType:
+          type: string
+          description: Document type.
+        documentPath:
+          type: string
+          description: Stored document path.
+        uploadedAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the document was uploaded.
+      description: Uploaded account document state.
+    AccountDocumentUploadItem:
+      type: object
+      required:
+        - documentType
+        - fileContents
+      properties:
+        documentType:
+          type: string
+          description: Document type.
+        fileContents:
+          type: string
+          description: Base64-encoded document contents.
+      description: Current account state.
     AccountMemberSummary:
       type: object
       required:
@@ -1117,7 +1201,6 @@ components:
         accountCategory:
           type: string
           description: Account category assigned during creation.
-      description: Current account state.
     AccountVerificationSummary:
       type: object
       required:
@@ -1790,6 +1873,28 @@ components:
             $ref: '#/components/schemas/UpdatePrincipalGroupMembersItem'
           description: Principal groups and their updated member sets.
       description: Request body for updating multiple principal group memberships.
+    UploadAccountDocumentsRequestBody:
+      type: object
+      required:
+        - documents
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountDocumentUploadItem'
+          description: Documents to upload.
+      description: Request body for account document upload.
+    UploadAccountDocumentsResponseBody:
+      type: object
+      required:
+        - documents
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountDocumentSummary'
+          description: Uploaded documents.
+      description: Response body for account document upload.
     VerificationDocumentSummary:
       type: object
       required:

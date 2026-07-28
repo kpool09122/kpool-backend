@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Infrastructure\Service;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocumentFileType;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
+use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Throwable;
 
 class DocumentStorageService implements DocumentStorageServiceInterface
 {
@@ -15,7 +22,14 @@ class DocumentStorageService implements DocumentStorageServiceInterface
 
     private const string BASE_PATH = 'verifications';
 
+    private const string ACCOUNT_BASE_PATH = 'accounts';
+
     private const int MAX_FILE_NAME_LENGTH = 200;
+
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
+    }
 
     public function store(
         VerificationIdentifier $verificationId,
@@ -29,6 +43,26 @@ class DocumentStorageService implements DocumentStorageServiceInterface
             (string) $verificationId,
             time(),
             $sanitizedFileName,
+        );
+
+        Storage::disk(self::DISK)->put($path, $contents);
+
+        return new DocumentPath($path);
+    }
+
+    public function storeForAccount(
+        AccountIdentifier $accountId,
+        DocumentType $documentType,
+        AccountDocumentFileType $fileType,
+        string $contents,
+    ): DocumentPath {
+        $path = sprintf(
+            '%s/%s/%s_%s.%s',
+            self::ACCOUNT_BASE_PATH,
+            (string) $accountId,
+            $documentType->value,
+            (string) Str::uuid(),
+            $fileType->extension(),
         );
 
         Storage::disk(self::DISK)->put($path, $contents);
@@ -62,6 +96,29 @@ class DocumentStorageService implements DocumentStorageServiceInterface
     public function delete(DocumentPath $path): bool
     {
         return Storage::disk(self::DISK)->delete((string) $path);
+    }
+
+    public function deleteAfterCommit(DocumentPath $path): void
+    {
+        $logger = $this->logger;
+        $delete = function () use ($path, $logger): void {
+            try {
+                $this->delete($path);
+            } catch (Throwable $e) {
+                $logger->warning('Failed to delete document.', [
+                    'documentPath' => (string) $path,
+                    'exception' => $e,
+                ]);
+            }
+        };
+
+        if (DB::transactionLevel() > 0) {
+            DB::afterCommit($delete);
+
+            return;
+        }
+
+        $delete();
     }
 
     public function deleteByVerificationId(VerificationIdentifier $verificationId): bool

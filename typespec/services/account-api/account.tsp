@@ -33,6 +33,12 @@ model OkAccountResponse {
   @body body: AccountSummary;
 }
 
+@doc("Response returned when account document upload succeeds.")
+model CreatedAccountDocumentsResponse {
+  @statusCode statusCode: 201;
+  @body body: UploadAccountDocumentsResponseBody;
+}
+
 @route("/accounts")
 interface AccountOperations {
   @post
@@ -62,4 +68,12 @@ interface AccountOperations {
   deleteAccount(
     @path accountId: Uuid,
   ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/{accountId}/documents")
+  @doc("Upload required documents for an account.")
+  uploadDocuments(
+    @path accountId: Uuid,
+    @body body: UploadAccountDocumentsRequestBody,
+  ): CreatedAccountDocumentsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

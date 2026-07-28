@@ -14,6 +14,7 @@ use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccou
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -163,6 +164,7 @@ class DeleteAccountTest extends TestCase
             $status,
             $accountCategory,
             $deletionReadiness,
+            new AccountDocuments(),
         );
 
         return new DeleteAccountTestData(

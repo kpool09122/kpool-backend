@@ -23,6 +23,7 @@ use Source\Account\Account\Domain\Factory\AccountVerificationFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountVerificationRepositoryInterface;
 use Source\Account\Account\Domain\Service\DocumentRequirementValidator;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -621,6 +622,7 @@ class RequestVerificationTest extends TestCase
             AccountStatus::ACTIVE,
             $category,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
     }
 
