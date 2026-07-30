@@ -866,6 +866,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/documents:
+    get:
+      operationId: MyAccountOperations_listMyAccountDocuments
+      description: List saved documents for the authenticated account.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when account documents are listed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAccountDocumentsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /principal-groups:
     get:
       operationId: PrincipalGroupOperations_listPrincipalGroups
@@ -1612,6 +1648,17 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListAccountDocumentsResponseBody:
+      type: object
+      required:
+        - documents
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountDocumentSummary'
+          description: Saved documents.
+      description: Response body for account document list.
     ListMembersResponseBody:
       type: object
       required:
