@@ -16,6 +16,7 @@ use Source\Account\Account\Domain\Entity\AccountVerification;
 use Source\Account\Account\Domain\Exception\InvalidVerificationApprovalException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountVerificationRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -177,6 +178,7 @@ class ApproveVerificationTest extends TestCase
             AccountStatus::ACTIVE,
             $category,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
     }
 }

@@ -6,6 +6,7 @@ namespace Source\Account\Account\Infrastructure\Factory;
 
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -35,6 +36,7 @@ readonly class AccountFactory implements AccountFactoryInterface
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
     }
 }

@@ -15,6 +15,7 @@ use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -332,6 +333,7 @@ class CreateAccountTest extends TestCase
             $status,
             $accountCategory,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());

@@ -11,7 +11,8 @@
         "stripe/stripe-php": "^20.0",
         "ext-gd": "*",
         "google/cloud-translate": "^2.1",
-        "sentry/sentry-laravel": "^4.25"
+        "sentry/sentry-laravel": "^4.25",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

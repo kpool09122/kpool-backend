@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -38,6 +39,7 @@ class CreateAccountOutputTest extends TestCase
             $status,
             $accountCategory,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $output = new CreateAccountOutput();

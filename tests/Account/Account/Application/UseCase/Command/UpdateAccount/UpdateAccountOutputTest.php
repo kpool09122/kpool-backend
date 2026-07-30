@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\UpdateAccount;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -28,6 +29,7 @@ class UpdateAccountOutputTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
         $output = new UpdateAccountOutput();
 

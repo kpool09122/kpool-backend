@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Domain\Entity;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -127,6 +128,7 @@ class AccountTest extends TestCase
             $status,
             $accountCategory,
             $deletionReadiness,
+            new AccountDocuments(),
         );
 
         return new AccountTestData(

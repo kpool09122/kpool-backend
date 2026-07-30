@@ -13,6 +13,7 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -176,6 +177,7 @@ class UpdateAccountTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
     }
 

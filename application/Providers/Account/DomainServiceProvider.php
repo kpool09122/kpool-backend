@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountVerificationFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountVerificationRepositoryInterface;
+use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
+use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Domain\Service\DocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\DocumentRequirementValidatorInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountVerificationFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountVerificationRepository;
+use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
@@ -66,6 +70,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountVerificationFactoryInterface::class, AccountVerificationFactory::class);
         $this->app->singleton(AccountVerificationRepositoryInterface::class, AccountVerificationRepository::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
+        $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);
+        $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
         $this->app->singleton(DocumentRequirementValidator::class, DocumentRequirementValidator::class);
         $this->app->singleton(DocumentRequirementValidatorInterface::class, DocumentRequirementValidator::class);
 

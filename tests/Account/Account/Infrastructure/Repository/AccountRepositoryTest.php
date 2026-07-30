@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Infrastructure\Repository;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocument;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\DocumentPath;
+use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -23,6 +28,7 @@ class AccountRepositoryTest extends TestCase
     private function createTestAccount(
         ?string $accountId = null,
         ?string $email = null,
+        ?AccountDocuments $documents = null,
     ): Account {
         $accountId ??= StrTestHelper::generateUuid();
         $email ??= StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
@@ -35,6 +41,7 @@ class AccountRepositoryTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            $documents ?? new AccountDocuments(),
         );
     }
 
@@ -159,6 +166,67 @@ class AccountRepositoryTest extends TestCase
         $this->assertDatabaseHas('accounts', [
             'id' => $accountId,
             'name' => 'Updated Account',
+        ]);
+    }
+
+    /**
+     * 正常系: Account保存時にAccountDocumentを全削除して再作成できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveRecreatesAccountDocuments(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $account = $this->createTestAccount(
+            accountId: $accountId,
+            documents: new AccountDocuments([
+                new AccountDocument(
+                    new AccountIdentifier($accountId),
+                    DocumentType::BUSINESS_REGISTRATION,
+                    new DocumentPath('accounts/documents/old_business_registration.pdf'),
+                    new DateTimeImmutable('2026-07-01 00:00:00'),
+                ),
+                new AccountDocument(
+                    new AccountIdentifier($accountId),
+                    DocumentType::REPRESENTATIVE_ID,
+                    new DocumentPath('accounts/documents/old_representative_id.jpg'),
+                    new DateTimeImmutable('2026-07-01 00:00:00'),
+                ),
+            ]),
+        );
+        $repository->save($account);
+
+        $account->replaceDocuments([
+            new AccountDocument(
+                new AccountIdentifier($accountId),
+                DocumentType::REPRESENTATIVE_ID,
+                new DocumentPath('accounts/documents/new_representative_id.jpg'),
+                new DateTimeImmutable('2026-07-02 00:00:00'),
+            ),
+        ]);
+        $repository->save($account);
+
+        $this->assertDatabaseMissing('account_documents', [
+            'account_id' => $accountId,
+            'document_type' => 'business_registration',
+        ]);
+        $this->assertDatabaseMissing('account_documents', [
+            'account_id' => $accountId,
+            'document_path' => 'accounts/documents/old_representative_id.jpg',
+        ]);
+        $this->assertDatabaseHas('account_documents', [
+            'account_id' => $accountId,
+            'document_type' => 'representative_id',
+            'document_path' => 'accounts/documents/new_representative_id.jpg',
+        ]);
+
+        $account->replaceDocuments([]);
+        $repository->save($account);
+
+        $this->assertDatabaseMissing('account_documents', [
+            'account_id' => $accountId,
         ]);
     }
 

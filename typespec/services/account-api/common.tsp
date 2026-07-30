@@ -4,6 +4,35 @@ using KPool.Common;
 namespace KPool.AccountApi;
 
 @doc("Current account state.")
+model AccountDocumentUploadItem {
+  @doc("Document type.")
+  documentType: string;
+  @doc("Base64-encoded document contents.")
+  fileContents: string;
+}
+
+@doc("Request body for account document upload.")
+model UploadAccountDocumentsRequestBody {
+  @doc("Documents to upload.")
+  documents: AccountDocumentUploadItem[];
+}
+
+@doc("Uploaded account document state.")
+model AccountDocumentSummary {
+  @doc("Document type.")
+  documentType: string;
+  @doc("Stored document path.")
+  documentPath: string;
+  @doc("Timestamp when the document was uploaded.")
+  uploadedAt: Timestamp;
+}
+
+@doc("Response body for account document upload.")
+model UploadAccountDocumentsResponseBody {
+  @doc("Uploaded documents.")
+  documents: AccountDocumentSummary[];
+}
+
 model AccountSummary {
   @doc("Account identifier.")
   accountIdentifier: Uuid;

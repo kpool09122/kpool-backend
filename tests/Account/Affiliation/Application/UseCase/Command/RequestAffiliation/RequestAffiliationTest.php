@@ -9,6 +9,7 @@ use Mockery;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -160,6 +161,7 @@ class RequestAffiliationTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
@@ -198,6 +200,7 @@ class RequestAffiliationTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
@@ -278,6 +281,7 @@ class RequestAffiliationTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $talentAccount = new Account(
@@ -288,6 +292,7 @@ class RequestAffiliationTest extends TestCase
             AccountStatus::ACTIVE,
             AccountCategory::TALENT,
             DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
 
         $affiliation = new Affiliation(
