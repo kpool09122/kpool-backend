@@ -39,6 +39,20 @@ model CreatedAccountDocumentsResponse {
   @body body: UploadAccountDocumentsResponseBody;
 }
 
+@doc("Response returned when account documents are listed.")
+model OkAccountDocumentsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListAccountDocumentsResponseBody;
+}
+
+@route("/my")
+interface MyAccountOperations {
+  @get
+  @route("/documents")
+  @doc("List saved documents for the authenticated account.")
+  listMyAccountDocuments(): OkAccountDocumentsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/accounts")
 interface AccountOperations {
   @post
@@ -76,4 +90,5 @@ interface AccountOperations {
     @path accountId: Uuid,
     @body body: UploadAccountDocumentsRequestBody,
   ): CreatedAccountDocumentsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
 }

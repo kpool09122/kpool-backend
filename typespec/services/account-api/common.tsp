@@ -33,6 +33,12 @@ model UploadAccountDocumentsResponseBody {
   documents: AccountDocumentSummary[];
 }
 
+@doc("Response body for account document list.")
+model ListAccountDocumentsResponseBody {
+  @doc("Saved documents.")
+  documents: AccountDocumentSummary[];
+}
+
 model AccountSummary {
   @doc("Account identifier.")
   accountIdentifier: Uuid;
