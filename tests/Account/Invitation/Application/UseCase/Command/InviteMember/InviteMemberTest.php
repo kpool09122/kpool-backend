@@ -240,7 +240,8 @@ class InviteMemberTest extends TestCase
                     static fn (Principal $actual): bool => $actual === $principal
                 ),
                 Action::INVITE_MEMBER,
-                Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $accountIdentifier)
+                Mockery::on(static fn (Resource $resource): bool => (string) $resource->accountIdentifier() === (string) $accountIdentifier
+                    && $resource->accountType() === AccountType::CORPORATION)
             )
             ->andReturnTrue();
 
@@ -416,7 +417,8 @@ class InviteMemberTest extends TestCase
                     static fn (Principal $principal): bool => $principal === $data->principal
                 ),
                 Action::INVITE_MEMBER,
-                Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $data->accountIdentifier)
+                Mockery::on(static fn (Resource $resource): bool => (string) $resource->accountIdentifier() === (string) $data->accountIdentifier
+                    && $resource->accountType() === AccountType::CORPORATION)
             )
             ->andReturn($allowed);
 

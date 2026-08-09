@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
@@ -16,6 +17,7 @@ readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupM
         private AccountIdentifier $accountIdentifier,
         private Principal $principal,
         private array $principalGroups,
+        private ?AccountType $accountType = null,
     ) {
     }
 
@@ -27,6 +29,11 @@ readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupM
     public function principal(): Principal
     {
         return $this->principal;
+    }
+
+    public function accountType(): ?AccountType
+    {
+        return $this->accountType;
     }
 
     /**

@@ -44,7 +44,7 @@ readonly class UpdateAccount implements UpdateAccountInterface
             || ! $this->policyEvaluator->evaluate(
                 $input->principal(),
                 Action::UPDATE,
-                Resource::account($account->accountIdentifier()),
+                Resource::account($account->accountIdentifier(), $account->type()),
             )
         ) {
             throw new AccountUpdateForbiddenException();

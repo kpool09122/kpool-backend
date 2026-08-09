@@ -16,6 +16,7 @@ readonly class AuthenticatedIdentityReadModel
         private string $language,
         private ?string $profileImage,
         private ?string $accountIdentifier,
+        private ?string $accountPrincipalIdentifier,
         private ?string $accountType,
         private array $accountPolicies = [],
     ) {
@@ -51,6 +52,11 @@ readonly class AuthenticatedIdentityReadModel
         return $this->accountIdentifier;
     }
 
+    public function accountPrincipalIdentifier(): ?string
+    {
+        return $this->accountPrincipalIdentifier;
+    }
+
     public function accountType(): ?string
     {
         return $this->accountType;
@@ -76,6 +82,7 @@ readonly class AuthenticatedIdentityReadModel
             'language' => $this->language,
             'profileImage' => $this->profileImage,
             'accountIdentifier' => $this->accountIdentifier,
+            'accountPrincipalIdentifier' => $this->accountPrincipalIdentifier,
             'accountType' => $this->accountType,
             'accountPolicies' => $this->accountPolicies,
         ];

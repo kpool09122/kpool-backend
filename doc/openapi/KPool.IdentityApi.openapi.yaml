@@ -454,6 +454,34 @@ components:
             $ref: '#/components/schemas/AccountPolicyStatement'
           description: Statements that define the effective policy.
       description: Effective account policy summary for the authenticated identity.
+    AccountPolicyCondition:
+      type: object
+      properties:
+        clauses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountPolicyConditionClause'
+          description: List of condition clauses.
+      description: Conditional constraints for an account policy statement.
+    AccountPolicyConditionClause:
+      type: object
+      required:
+        - field
+        - operator
+        - value
+      properties:
+        field:
+          type: string
+          description: Field name to evaluate.
+        operator:
+          type: string
+          description: Operator used for the comparison.
+        value:
+          anyOf:
+            - type: string
+            - type: boolean
+          description: Value to compare against.
+      description: Single condition clause in an account policy.
     AccountPolicyStatement:
       type: object
       required:
@@ -474,11 +502,18 @@ components:
           items:
             type: string
           description: Resource types covered by this statement.
+        condition:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AccountPolicyCondition'
+          nullable: true
+          description: Optional condition attached to the statement.
       description: Policy statement returned for account effective policies.
     AuthenticatedIdentitySummary:
       type: object
       required:
         - accountIdentifier
+        - accountPrincipalIdentifier
         - accountType
         - accountPolicies
       properties:
@@ -488,6 +523,12 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Account identifier associated with the authenticated identity.
+        accountPrincipalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Account principal identifier associated with the authenticated identity in the current account.
         accountType:
           type: string
           nullable: true

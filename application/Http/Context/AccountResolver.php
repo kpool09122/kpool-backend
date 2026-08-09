@@ -14,6 +14,8 @@ use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Condition;
+use Source\Account\Principal\Domain\ValueObject\ConditionClause;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
@@ -111,7 +113,7 @@ readonly class AccountResolver
     }
 
     /**
-     * @return array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>}
+     * @return array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null}
      */
     private function toStatementArray(Statement $statement): array
     {
@@ -119,6 +121,33 @@ readonly class AccountResolver
             'effect' => $statement->effect()->value,
             'actions' => array_map(static fn (Action $action): string => $action->value, $statement->actions()),
             'resourceTypes' => array_map(static fn (ResourceType $resourceType): string => $resourceType->value, $statement->resourceTypes()),
+            'condition' => $this->toConditionArray($statement->condition()),
+        ];
+    }
+
+    /**
+     * @return array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null
+     */
+    private function toConditionArray(?Condition $condition): ?array
+    {
+        if ($condition === null) {
+            return null;
+        }
+
+        return [
+            'clauses' => array_map($this->toConditionClauseArray(...), $condition->clauses()),
+        ];
+    }
+
+    /**
+     * @return array{field: string, operator: string, value: string|bool}
+     */
+    private function toConditionClauseArray(ConditionClause $clause): array
+    {
+        return [
+            'field' => $clause->key()->value,
+            'operator' => $clause->operator()->value,
+            'value' => $clause->value(),
         ];
     }
 }

@@ -67,7 +67,9 @@ class UpdateAccountTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
             ->once()
-            ->with($principal, Action::UPDATE, Mockery::type(Resource::class))
+            ->with($principal, Action::UPDATE, Mockery::on(
+                static fn (Resource $resource): bool => $resource->accountType() === AccountType::CORPORATION
+            ))
             ->andReturnTrue();
 
         $useCase = new UpdateAccount($accountRepository, $policyEvaluator);

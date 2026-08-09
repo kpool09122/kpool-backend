@@ -38,10 +38,16 @@ class AccountAuthorizationSeederTest extends TestCase
         $ownerPolicies = $policyRepository->findByIds($ownerRole->policies());
         $adminPolicies = $policyRepository->findByIds($adminRole->policies());
 
+        $this->assertTrue($this->hasAction($ownerPolicies, Action::READ));
         $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
+        $this->assertTrue($this->hasAction($adminPolicies, Action::READ));
         $this->assertTrue($this->hasAction($adminPolicies, Action::INVITE_MEMBER));
         $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
+        $this->assertFalse($this->hasCondition($ownerPolicies, Action::READ));
+        $this->assertFalse($this->hasCondition($adminPolicies, Action::READ));
+        $this->assertTrue($this->hasCondition($ownerPolicies, Action::UPDATE));
+        $this->assertTrue($this->hasCondition($adminPolicies, Action::UPDATE));
     }
 
     /**
@@ -56,6 +62,26 @@ class AccountAuthorizationSeederTest extends TestCase
                 }
 
                 if (in_array($action, $statement->actions(), true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<\Source\Account\Principal\Domain\Entity\Policy> $policies
+     */
+    private function hasCondition(array $policies, Action $action): bool
+    {
+        foreach ($policies as $policy) {
+            foreach ($policy->statements() as $statement) {
+                if (! in_array($action, $statement->actions(), true)) {
+                    continue;
+                }
+
+                if ($statement->condition() !== null) {
                     return true;
                 }
             }

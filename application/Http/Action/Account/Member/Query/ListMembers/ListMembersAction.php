@@ -31,7 +31,11 @@ readonly class ListMembersAction
     public function __invoke(ListMembersRequest $request): JsonResponse
     {
         try {
-            $members = $this->listMembers->process(new ListMembersInput($this->accountContext->principal()->accountIdentifier(), $this->accountContext->principal()));
+            $members = $this->listMembers->process(new ListMembersInput(
+                $this->accountContext->principal()->accountIdentifier(),
+                $this->accountContext->principal(),
+                $this->accountContext->accountType(),
+            ));
         } catch (AccountUpdateForbiddenException $e) {
             $exception = new ForbiddenHttpException(detail: error_message('account_update_forbidden', $request->language()), previous: $e);
 

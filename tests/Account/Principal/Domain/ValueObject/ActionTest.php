@@ -9,6 +9,11 @@ use Tests\TestCase;
 
 class ActionTest extends TestCase
 {
+    public function testReadValue(): void
+    {
+        $this->assertSame('account:read', Action::READ->value);
+    }
+
     public function testInviteMemberValue(): void
     {
         $this->assertSame('account:member:invite', Action::INVITE_MEMBER->value);

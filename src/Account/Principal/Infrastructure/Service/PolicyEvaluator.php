@@ -10,9 +10,12 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Condition;
+use Source\Account\Principal\Domain\ValueObject\ConditionClause;
+use Source\Account\Principal\Domain\ValueObject\ConditionKey;
+use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Resource;
-use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 
 readonly class PolicyEvaluator implements PolicyEvaluatorInterface
@@ -30,7 +33,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         Resource $resource,
     ): bool {
         $statements = $this->collectStatements($principal, $resource);
-        $applicableStatements = $this->filterApplicable($statements, $action, $resource->type());
+        $applicableStatements = $this->filterApplicable($statements, $action, $resource);
 
         foreach ($applicableStatements as $statement) {
             if ($statement->effect() === Effect::DENY) {
@@ -90,13 +93,51 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
      * @param Statement[] $statements
      * @return Statement[]
      */
-    private function filterApplicable(array $statements, Action $action, ResourceType $resourceType): array
+    private function filterApplicable(array $statements, Action $action, Resource $resource): array
     {
-        return array_filter($statements, static function (Statement $statement) use ($action, $resourceType): bool {
+        return array_filter($statements, function (Statement $statement) use ($action, $resource): bool {
             $actionMatches = in_array($action, $statement->actions(), true);
-            $resourceMatches = in_array($resourceType, $statement->resourceTypes(), true);
+            $resourceMatches = in_array($resource->type(), $statement->resourceTypes(), true);
 
-            return $actionMatches && $resourceMatches;
+            return $actionMatches && $resourceMatches && $this->conditionMatches($statement->condition(), $resource);
         });
+    }
+
+    private function conditionMatches(?Condition $condition, Resource $resource): bool
+    {
+        if ($condition === null) {
+            return true;
+        }
+
+        foreach ($condition->clauses() as $clause) {
+            if (! $this->conditionClauseMatches($clause, $resource)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function conditionClauseMatches(ConditionClause $clause, Resource $resource): bool
+    {
+        $actual = $this->conditionActualValue($clause->key(), $resource);
+
+        if ($actual === null) {
+            return false;
+        }
+
+        return match ($clause->operator()) {
+            ConditionOperator::EQUALS => $actual === $clause->value(),
+            ConditionOperator::NOT_EQUALS => $actual !== $clause->value(),
+            ConditionOperator::IN => in_array($actual, (array) $clause->value(), true),
+            ConditionOperator::NOT_IN => ! in_array($actual, (array) $clause->value(), true),
+        };
+    }
+
+    private function conditionActualValue(ConditionKey $key, Resource $resource): ?string
+    {
+        return match ($key) {
+            ConditionKey::RESOURCE_ACCOUNT_TYPE => $resource->accountType()?->value,
+        };
     }
 }

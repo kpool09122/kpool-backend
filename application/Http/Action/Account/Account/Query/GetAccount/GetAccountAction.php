@@ -43,6 +43,7 @@ readonly class GetAccountAction
                 $input = new GetAccountInput(
                     accountIdentifier: new AccountIdentifier($request->accountId()),
                     principal: $this->accountContext->principal(),
+                    accountType: $this->accountContext->accountType(),
                 );
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
