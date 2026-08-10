@@ -8,6 +8,7 @@ use Application\Http\Action\Account\Account\Command\Documents\UploadDocumentsAct
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
+use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
@@ -36,6 +37,7 @@ Route::post('/accounts', CreateAccountAction::class);
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
     // Account
     Route::get('/my/documents', ListMyAccountDocumentsAction::class);
+    Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
     Route::get('/accounts/{accountId}', GetAccountAction::class);
     Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
     Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
