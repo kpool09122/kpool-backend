@@ -13,6 +13,8 @@ use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccou
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerification;
 use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
+use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
+use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerification;
 use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
@@ -88,6 +90,7 @@ class UseCaseServiceProvider extends ServiceProvider
 
         // AccountVerification
         $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
+        $this->app->singleton(RequestAccountCategoryChangeInterface::class, RequestAccountCategoryChange::class);
         $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
         $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
 

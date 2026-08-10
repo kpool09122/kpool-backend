@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Account\Command\Documents;
+namespace Application\Http\Action\Account\Account\Command\UploadDocuments;
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
