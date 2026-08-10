@@ -14,6 +14,7 @@ final readonly class Statement
         private Effect $effect,
         private array $actions,
         private array $resourceTypes,
+        private ?Condition $condition = null,
     ) {
     }
 
@@ -36,5 +37,10 @@ final readonly class Statement
     public function resourceTypes(): array
     {
         return $this->resourceTypes;
+    }
+
+    public function condition(): ?Condition
+    {
+        return $this->condition;
     }
 }

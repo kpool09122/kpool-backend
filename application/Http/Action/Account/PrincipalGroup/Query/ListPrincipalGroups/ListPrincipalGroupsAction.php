@@ -31,7 +31,11 @@ readonly class ListPrincipalGroupsAction
     public function __invoke(ListPrincipalGroupsRequest $request): JsonResponse
     {
         try {
-            $principalGroups = $this->listPrincipalGroups->process(new ListPrincipalGroupsInput($this->accountContext->principal()->accountIdentifier(), $this->accountContext->principal()));
+            $principalGroups = $this->listPrincipalGroups->process(new ListPrincipalGroupsInput(
+                $this->accountContext->principal()->accountIdentifier(),
+                $this->accountContext->principal(),
+                $this->accountContext->accountType(),
+            ));
         } catch (AccountUpdateForbiddenException $e) {
             $exception = new ForbiddenHttpException(detail: error_message('account_update_forbidden', $request->language()), previous: $e);
 

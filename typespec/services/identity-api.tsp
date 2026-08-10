@@ -19,6 +19,22 @@ model IdentitySummary {
   profileImage?: string | null;
 }
 
+@doc("Single condition clause in an account policy.")
+model AccountPolicyConditionClause {
+  @doc("Field name to evaluate.")
+  field: string;
+  @doc("Operator used for the comparison.")
+  operator: string;
+  @doc("Value to compare against.")
+  value: string | boolean;
+}
+
+@doc("Conditional constraints for an account policy statement.")
+model AccountPolicyCondition {
+  @doc("List of condition clauses.")
+  clauses?: AccountPolicyConditionClause[];
+}
+
 @doc("Policy statement returned for account effective policies.")
 model AccountPolicyStatement {
   @doc("Whether the statement allows or denies the action.")
@@ -27,6 +43,8 @@ model AccountPolicyStatement {
   actions: string[];
   @doc("Resource types covered by this statement.")
   resourceTypes: string[];
+  @doc("Optional condition attached to the statement.")
+  condition?: AccountPolicyCondition | null;
 }
 
 @doc("Effective account policy summary for the authenticated identity.")
@@ -45,6 +63,8 @@ model AccountEffectivePolicySummary {
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;
+  @doc("Account principal identifier associated with the authenticated identity in the current account.")
+  accountPrincipalIdentifier: Uuid | null;
   @doc("Account type associated with the authenticated identity.")
   accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")

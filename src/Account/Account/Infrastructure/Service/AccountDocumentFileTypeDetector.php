@@ -17,9 +17,24 @@ readonly class AccountDocumentFileTypeDetector implements AccountDocumentFileTyp
         $fileType = AccountDocumentFileType::tryFromMimeType((string) $mimeType);
 
         if ($fileType === null) {
+            $fileType = $this->detectIsoBaseMediaFileType($contents);
+        }
+
+        if ($fileType === null) {
             throw new InvalidDocumentsForVerificationException('Unsupported account document file type.');
         }
 
         return $fileType;
+    }
+
+    private function detectIsoBaseMediaFileType(string $contents): ?AccountDocumentFileType
+    {
+        $brand = substr($contents, 8, 4);
+
+        return match ($brand) {
+            'heic', 'heix', 'hevc', 'hevx' => AccountDocumentFileType::HEIC,
+            'mif1', 'msf1' => AccountDocumentFileType::HEIF,
+            default => null,
+        };
     }
 }

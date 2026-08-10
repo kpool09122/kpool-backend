@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
+use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
@@ -37,9 +38,9 @@ readonly class InviteMember implements InviteMemberInterface
 
     public function process(InviteMemberInputPort $input, InviteMemberOutputPort $output): void
     {
-        $this->assertAccountAllowsInvitation($input);
+        $account = $this->assertAccountAllowsInvitation($input);
         $principal = $this->findInviterPrincipal($input);
-        $this->assertInviterHasPermission($input, $principal);
+        $this->assertInviterHasPermission($input, $principal, $account);
 
         $invitations = [];
         foreach ($input->emails() as $email) {
@@ -114,11 +115,12 @@ readonly class InviteMember implements InviteMemberInterface
     private function assertInviterHasPermission(
         InviteMemberInputPort $input,
         Principal $principal,
+        Account $account,
     ): void {
         $allowed = $this->policyEvaluator->evaluate(
             $principal,
             Action::INVITE_MEMBER,
-            Resource::account($input->accountIdentifier()),
+            Resource::account($input->accountIdentifier(), $account->type()),
         );
 
         if ($allowed) {
@@ -128,12 +130,12 @@ readonly class InviteMember implements InviteMemberInterface
         throw new DisallowedInvitationException('招待を作成する権限がありません。');
     }
 
-    private function assertAccountAllowsInvitation(InviteMemberInputPort $input): void
+    private function assertAccountAllowsInvitation(InviteMemberInputPort $input): Account
     {
         $account = $this->accountRepository->findById($input->accountIdentifier());
 
         if ($account?->type() === AccountType::CORPORATION) {
-            return;
+            return $account;
         }
 
         throw new DisallowedInvitationException('法人アカウントのみメンバーを招待できます。');

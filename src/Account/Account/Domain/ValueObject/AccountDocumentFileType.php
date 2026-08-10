@@ -10,6 +10,8 @@ enum AccountDocumentFileType: string
     case JPEG = 'image/jpeg';
     case PNG = 'image/png';
     case WEBP = 'image/webp';
+    case HEIC = 'image/heic';
+    case HEIF = 'image/heif';
 
     public static function tryFromMimeType(string $mimeType): ?self
     {
@@ -23,6 +25,8 @@ enum AccountDocumentFileType: string
             self::JPEG => 'jpg',
             self::PNG => 'png',
             self::WEBP => 'webp',
+            self::HEIC => 'heic',
+            self::HEIF => 'heif',
         };
     }
 }

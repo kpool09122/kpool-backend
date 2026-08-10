@@ -39,7 +39,11 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     {
         $accountIdentifier = $input->accountIdentifier();
         if ((string) $input->principal()->accountIdentifier() !== (string) $accountIdentifier
-            || ! $this->policyEvaluator->evaluate($input->principal(), Action::PRINCIPAL_GROUP_MANAGE, Resource::account($accountIdentifier))
+            || ! $this->policyEvaluator->evaluate(
+                $input->principal(),
+                Action::PRINCIPAL_GROUP_MANAGE,
+                Resource::account($accountIdentifier, $input->accountType())
+            )
         ) {
             throw new AccountUpdateForbiddenException();
         }

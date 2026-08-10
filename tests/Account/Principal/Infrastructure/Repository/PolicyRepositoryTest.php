@@ -6,9 +6,14 @@ namespace Tests\Account\Principal\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Condition;
+use Source\Account\Principal\Domain\ValueObject\ConditionClause;
+use Source\Account\Principal\Domain\ValueObject\ConditionKey;
+use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
@@ -36,6 +41,13 @@ class PolicyRepositoryTest extends TestCase
                 Effect::ALLOW,
                 [Action::INVITE_MEMBER],
                 [ResourceType::ACCOUNT],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_ACCOUNT_TYPE,
+                        ConditionOperator::EQUALS,
+                        AccountType::CORPORATION->value,
+                    ),
+                ]),
             )],
             true,
             new DateTimeImmutable(),
@@ -58,5 +70,10 @@ class PolicyRepositoryTest extends TestCase
         $this->assertSame(Effect::ALLOW, $foundPolicy->statements()[0]->effect());
         $this->assertSame(Action::INVITE_MEMBER, $foundPolicy->statements()[0]->actions()[0]);
         $this->assertSame(ResourceType::ACCOUNT, $foundPolicy->statements()[0]->resourceTypes()[0]);
+        $condition = $foundPolicy->statements()[0]->condition();
+        $this->assertNotNull($condition);
+        $this->assertSame(ConditionKey::RESOURCE_ACCOUNT_TYPE, $condition->clauses()[0]->key());
+        $this->assertSame(ConditionOperator::EQUALS, $condition->clauses()[0]->operator());
+        $this->assertSame(AccountType::CORPORATION->value, $condition->clauses()[0]->value());
     }
 }

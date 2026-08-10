@@ -11,10 +11,15 @@ use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Condition;
+use Source\Account\Principal\Domain\ValueObject\ConditionClause;
+use Source\Account\Principal\Domain\ValueObject\ConditionKey;
+use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Symfony\Component\Uid\Uuid;
 
 
@@ -31,15 +36,33 @@ class AccountAuthorizationSeeder extends Seeder
             new Statement(
                 effect: Effect::ALLOW,
                 actions: [
+                    Action::READ,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::INVITE_MEMBER,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::UPDATE,
-                    Action::SETTINGS_UPDATE,
-                    Action::DELETE,
-                    Action::BILLING_MANAGE,
-                    Action::DELEGATION_MANAGE,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::PRINCIPAL_GROUP_MANAGE,
                 ],
                 resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
             ),
         ]);
 
@@ -47,18 +70,49 @@ class AccountAuthorizationSeeder extends Seeder
             new Statement(
                 effect: Effect::ALLOW,
                 actions: [
+                    Action::READ,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::INVITE_MEMBER,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::UPDATE,
-                    Action::SETTINGS_UPDATE,
-                    Action::DELEGATION_MANAGE,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
+            ),
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
                     Action::PRINCIPAL_GROUP_MANAGE,
                 ],
                 resourceTypes: [ResourceType::ACCOUNT],
+                condition: $this->corporationAccountCondition(),
             ),
         ]);
 
         $this->saveRole(Role::OWNER, [$ownerPolicy->policyIdentifier()]);
         $this->saveRole(Role::ADMIN, [$adminPolicy->policyIdentifier()]);
+    }
+
+    private function corporationAccountCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_ACCOUNT_TYPE,
+                ConditionOperator::EQUALS,
+                AccountType::CORPORATION->value,
+            ),
+        ]);
     }
 
     /**

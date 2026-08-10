@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Query\GetAccount;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInput;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -23,9 +24,10 @@ class GetAccountInputTest extends TestCase
             $accountIdentifier,
         );
 
-        $input = new GetAccountInput($accountIdentifier, $principal);
+        $input = new GetAccountInput($accountIdentifier, $principal, AccountType::CORPORATION);
 
         $this->assertSame($accountIdentifier, $input->accountIdentifier());
         $this->assertSame($principal, $input->principal());
+        $this->assertSame(AccountType::CORPORATION, $input->accountType());
     }
 }

@@ -70,10 +70,23 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertSame('http://127.0.0.1:8080/storage/profile/test.png', $readModel->profileImage());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
+        $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5cc', $readModel->accountPrincipalIdentifier());
         $this->assertSame('corporation', $readModel->accountType());
         $this->assertCount(1, $readModel->accountPolicies());
         $this->assertSame('ACCOUNT_OWNER_BASIC', $readModel->accountPolicies()[0]['name']);
-        $this->assertSame('account:update', $readModel->accountPolicies()[0]['statements'][0]['actions'][1]);
+        $actions = array_merge(...array_column($readModel->accountPolicies()[0]['statements'], 'actions'));
+        $this->assertContains('account:read', $actions);
+        $this->assertContains('account:update', $actions);
+        $inviteStatement = $this->statementForAction($readModel->accountPolicies()[0]['statements'], 'account:member:invite');
+        $this->assertSame([
+            'clauses' => [
+                [
+                    'field' => 'resource:accountType',
+                    'operator' => 'eq',
+                    'value' => 'corporation',
+                ],
+            ],
+        ], $inviteStatement['condition']);
     }
 
     #[Group('useDb')]
@@ -99,6 +112,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertNull($readModel->profileImage());
         $this->assertNull($readModel->accountIdentifier());
+        $this->assertNull($readModel->accountPrincipalIdentifier());
         $this->assertNull($readModel->accountType());
         $this->assertSame([], $readModel->accountPolicies());
     }
@@ -113,5 +127,20 @@ class GetAuthenticatedIdentityTest extends TestCase
         $useCase->process(new GetAuthenticatedIdentityInput(
             new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5ff'),
         ));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $statements
+     * @return array<string, mixed>
+     */
+    private function statementForAction(array $statements, string $action): array
+    {
+        foreach ($statements as $statement) {
+            if (in_array($action, $statement['actions'], true)) {
+                return $statement;
+            }
+        }
+
+        $this->fail("Statement for action {$action} was not found.");
     }
 }

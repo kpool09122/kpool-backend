@@ -50,6 +50,7 @@ readonly class UpdatePrincipalGroupMembersAction
                         new PrincipalGroupIdentifier($principalGroup['principalGroupIdentifier']),
                         array_map(static fn (string $principalIdentifier): PrincipalIdentifier => new PrincipalIdentifier($principalIdentifier), $principalGroup['principalIdentifiers']),
                     ), $request->principalGroups()),
+                    accountType: $this->accountContext->accountType(),
                 );
                 $output = new UpdatePrincipalGroupMembersOutput();
             } catch (InvalidArgumentException $e) {

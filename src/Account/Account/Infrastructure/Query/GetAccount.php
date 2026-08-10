@@ -35,8 +35,8 @@ readonly class GetAccount implements GetAccountInterface
 
         if (! $this->policyEvaluator->evaluate(
             $input->principal(),
-            Action::UPDATE,
-            Resource::account($accountIdentifier),
+            Action::READ,
+            Resource::account($accountIdentifier, $input->accountType()),
         )) {
             throw new AccountUpdateForbiddenException();
         }

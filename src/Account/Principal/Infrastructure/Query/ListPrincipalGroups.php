@@ -22,7 +22,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
     public function process(ListPrincipalGroupsInputPort $input): array
     {
         $accountIdentifier = $input->accountIdentifier();
-        $this->authorization->assertAllowed($accountIdentifier, $input->principal());
+        $this->authorization->assertAllowed($accountIdentifier, $input->principal(), $input->accountType());
 
         /** @var Collection<int, PrincipalGroupModel> $groups */
         $groups = PrincipalGroupModel::query()

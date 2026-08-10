@@ -22,7 +22,7 @@ readonly class ListMembers implements ListMembersInterface
     public function process(ListMembersInputPort $input): array
     {
         $accountIdentifier = $input->accountIdentifier();
-        $this->authorization->assertAllowed($accountIdentifier, $input->principal());
+        $this->authorization->assertAllowed($accountIdentifier, $input->principal(), $input->accountType());
 
         /** @var Collection<int, PrincipalModel> $principals */
         $principals = PrincipalModel::query()

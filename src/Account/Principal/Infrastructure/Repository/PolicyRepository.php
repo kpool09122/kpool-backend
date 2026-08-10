@@ -14,6 +14,10 @@ use DateTimeImmutable;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Condition;
+use Source\Account\Principal\Domain\ValueObject\ConditionClause;
+use Source\Account\Principal\Domain\ValueObject\ConditionKey;
+use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
@@ -75,7 +79,7 @@ class PolicyRepository implements PolicyRepositoryInterface
 
     /**
      * @param Statement[] $statements
-     * @return array<array{effect: string, actions: array<string>, resource_types: array<string>}>
+     * @return array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool}>|null}>
      */
     private function serializeStatements(array $statements): array
     {
@@ -83,7 +87,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @return array{effect: string, actions: array<string>, resource_types: array<string>}
+     * @return array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool}>|null}
      */
     private function serializeStatement(Statement $statement): array
     {
@@ -91,7 +95,25 @@ class PolicyRepository implements PolicyRepositoryInterface
             'effect' => $statement->effect()->value,
             'actions' => array_map(static fn (Action $action) => $action->value, $statement->actions()),
             'resource_types' => array_map(static fn (ResourceType $resourceType) => $resourceType->value, $statement->resourceTypes()),
+            'condition' => $statement->condition() !== null
+                ? $this->serializeCondition($statement->condition())
+                : null,
         ];
+    }
+
+    /**
+     * @return array<array{key: string, operator: string, value: string|bool}>
+     */
+    private function serializeCondition(Condition $condition): array
+    {
+        return array_map(
+            static fn (ConditionClause $clause): array => [
+                'key' => $clause->key()->value,
+                'operator' => $clause->operator()->value,
+                'value' => $clause->value(),
+            ],
+            $condition->clauses()
+        );
     }
 
     private function toDomainEntity(PolicyEloquent $eloquent): Policy
@@ -106,7 +128,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @param array<array{effect: string, actions: array<string>, resource_types: array<string>}> $statementsData
+     * @param array<array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool}>|null}> $statementsData
      * @return Statement[]
      */
     private function deserializeStatements(array $statementsData): array
@@ -115,7 +137,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @param array{effect: string, actions: array<string>, resource_types: array<string>} $data
+     * @param array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool}>|null} $data
      */
     private function deserializeStatement(array $data): Statement
     {
@@ -123,7 +145,25 @@ class PolicyRepository implements PolicyRepositoryInterface
             Effect::from($data['effect']),
             array_map(Action::from(...), $data['actions']),
             array_map(ResourceType::from(...), $data['resource_types']),
+            array_key_exists('condition', $data) && $data['condition'] !== null
+                ? $this->deserializeCondition($data['condition'])
+                : null,
         );
+    }
+
+    /**
+     * @param array<array{key: string, operator: string, value: string|bool}> $conditionData
+     */
+    private function deserializeCondition(array $conditionData): Condition
+    {
+        return new Condition(array_map(
+            static fn (array $clauseData): ConditionClause => new ConditionClause(
+                ConditionKey::from($clauseData['key']),
+                ConditionOperator::from($clauseData['operator']),
+                $clauseData['value'],
+            ),
+            $conditionData
+        ));
     }
 
     /** @return array<int, string> */

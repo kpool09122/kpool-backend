@@ -11,6 +11,7 @@ use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInput;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -53,10 +54,12 @@ class GetAccountTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
             ->once()
-            ->with($principal, Action::UPDATE, Mockery::type(Resource::class))
+            ->with($principal, Action::READ, Mockery::on(
+                static fn (Resource $resource): bool => $resource->accountType() === AccountType::CORPORATION
+            ))
             ->andReturnTrue();
 
-        $readModel = (new GetAccount($policyEvaluator))->process(new GetAccountInput($accountIdentifier, $principal));
+        $readModel = (new GetAccount($policyEvaluator))->process(new GetAccountInput($accountIdentifier, $principal, AccountType::CORPORATION));
 
         $this->assertInstanceOf(AccountReadModel::class, $readModel);
         $this->assertSame((string) $accountIdentifier, $readModel->accountIdentifier());
@@ -77,12 +80,14 @@ class GetAccountTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
             ->once()
-            ->with($principal, Action::UPDATE, Mockery::type(Resource::class))
+            ->with($principal, Action::READ, Mockery::on(
+                static fn (Resource $resource): bool => $resource->accountType() === AccountType::CORPORATION
+            ))
             ->andReturnTrue();
 
         $this->expectException(AccountNotFoundException::class);
 
-        (new GetAccount($policyEvaluator))->process(new GetAccountInput($accountIdentifier, $principal));
+        (new GetAccount($policyEvaluator))->process(new GetAccountInput($accountIdentifier, $principal, AccountType::CORPORATION));
     }
 
     #[Group('useDb')]
