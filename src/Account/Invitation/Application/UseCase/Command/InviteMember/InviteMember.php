@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
-use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;

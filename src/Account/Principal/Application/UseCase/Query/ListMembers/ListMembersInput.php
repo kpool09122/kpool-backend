@@ -14,8 +14,7 @@ readonly class ListMembersInput implements ListMembersInputPort
         private AccountIdentifier $accountIdentifier,
         private Principal $principal,
         private ?AccountType $accountType = null,
-    )
-    {
+    ) {
     }
 
     public function accountIdentifier(): AccountIdentifier
