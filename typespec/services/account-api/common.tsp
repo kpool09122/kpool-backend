@@ -273,3 +273,26 @@ model AccountVerificationSummary {
   @doc("Submitted documents.")
   documents: VerificationDocumentSummary[];
 }
+
+
+@doc("Account type change request state.")
+model AccountTypeChangeRequestSummary {
+  @doc("Account type change request identifier.")
+  requestIdentifier: Uuid;
+  @doc("Target account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Current account type.")
+  currentAccountType: string;
+  @doc("Requested account type.")
+  requestedAccountType: string;
+  @doc("Request status.")
+  status: string;
+  @doc("Timestamp when the request was created.")
+  requestedAt: Timestamp;
+  @doc("Reviewer account identifier.")
+  reviewedBy?: Uuid | null;
+  @doc("Timestamp when the request was reviewed.")
+  reviewedAt?: Timestamp | null;
+  @doc("Optional rejection reason.")
+  rejectionReason?: VerificationRejectionReasonSummary | null;
+}

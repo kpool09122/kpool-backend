@@ -5,6 +5,7 @@ import "./account-api/delegation-permission.tsp";
 import "./account-api/principal-group.tsp";
 import "./account-api/invitation.tsp";
 import "./account-api/account-verification.tsp";
+import "./account-api/account-type-change-request.tsp";
 import "./account-api/affiliation.tsp";
 
 using TypeSpec.Http;

@@ -4,6 +4,54 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /account-type-change-requests:
+    post:
+      operationId: AccountTypeChangeRequestOperations_requestAccountTypeChange
+      description: Request account type change.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an account type change request is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAccountTypeChangeRequestBody'
   /account-verifications:
     post:
       operationId: AccountVerificationOperations_requestVerification
@@ -1237,6 +1285,56 @@ components:
         accountCategory:
           type: string
           description: Account category assigned during creation.
+    AccountTypeChangeRequestSummary:
+      type: object
+      required:
+        - requestIdentifier
+        - accountIdentifier
+        - currentAccountType
+        - requestedAccountType
+        - status
+        - requestedAt
+      properties:
+        requestIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account type change request identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        currentAccountType:
+          type: string
+          description: Current account type.
+        requestedAccountType:
+          type: string
+          description: Requested account type.
+        status:
+          type: string
+          description: Request status.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the request was created.
+        reviewedBy:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Reviewer account identifier.
+        reviewedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp when the request was reviewed.
+        rejectionReason:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/VerificationRejectionReasonSummary'
+          nullable: true
+          description: Optional rejection reason.
+      description: Account type change request state.
     AccountVerificationSummary:
       type: object
       required:
@@ -1794,6 +1892,20 @@ components:
           nullable: true
           description: Optional rejection detail.
       description: Request body for rejecting account verification.
+    RequestAccountTypeChangeRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - requestedAccountType
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        requestedAccountType:
+          type: string
+          description: Requested account type.
+      description: Request body for creating an account type change request.
     RequestAffiliationRequestBody:
       type: object
       required:
