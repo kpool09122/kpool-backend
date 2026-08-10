@@ -1,14 +1,53 @@
 {
-    "extends": ["config:base"],
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:recommended"],
     "timezone": "Asia/Tokyo",
+    "prHourlyLimit": 0,
+    "enabledManagers": ["npm", "composer", "github-actions"],
+    "includePaths": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "composer.json",
+        "composer.lock",
+        ".github/workflows/**"
+    ],
     "dependencyDashboard": true,
     "labels": ["dependencies"],
     "packageRules": [
         {
+            "description": "TypeSpec など root の npm devDependencies をまとめる",
+            "matchManagers": ["npm"],
+            "matchFileNames": ["package.json", "pnpm-lock.yaml"],
+            "matchDepTypes": ["devDependencies"],
+            "groupName": "root tooling devDependencies",
+            "stabilityDays": 3
+        },
+        {
+            "description": "Composer require をまとめる",
             "matchManagers": ["composer"],
-            "groupName": "composer dependencies",
+            "matchFileNames": ["composer.json", "composer.lock"],
+            "matchDepTypes": ["require"],
+            "groupName": "composer require",
+            "stabilityDays": 3,
+            "schedule": ["before 4am on monday"]
+        },
+        {
+            "description": "Composer require-dev をまとめる",
+            "matchManagers": ["composer"],
+            "matchFileNames": ["composer.json", "composer.lock"],
+            "matchDepTypes": ["require-dev"],
+            "groupName": "composer require-dev",
+            "stabilityDays": 3,
+            "schedule": ["before 4am on monday"]
+        },
+        {
+            "description": "GitHub Actions をまとめる",
+            "matchManagers": ["github-actions"],
+            "matchFileNames": [".github/workflows/**"],
+            "groupName": "github-actions",
             "stabilityDays": 3,
             "schedule": ["before 4am on monday"]
         }
-    ]
+    ],
+    "ignoreDeps": ["php", "pnpm"]
 }
