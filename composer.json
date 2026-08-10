@@ -8,7 +8,7 @@
         "laravel/framework": "^13.0",
         "psr/log": "^3.0",
         "ext-mbstring": "*",
-        "stripe/stripe-php": "^20.0",
+        "stripe/stripe-php": "^21.0",
         "ext-gd": "*",
         "google/cloud-translate": "^2.1",
         "sentry/sentry-laravel": "^4.25",
