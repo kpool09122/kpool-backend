@@ -53,7 +53,21 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
         $account = null;
         if ($accountContext !== null) {
             $accountModel = AccountModel::query()
-                ->select(['id', 'email', 'type', 'name', 'status', 'category', 'phone', 'address'])
+                ->select([
+                    'id',
+                    'email',
+                    'type',
+                    'name',
+                    'status',
+                    'category',
+                    'phone',
+                    'address_country_code',
+                    'address_administrative_area_code',
+                    'address_postal_code',
+                    'address_locality',
+                    'address_line1',
+                    'address_line2',
+                ])
                 ->where('id', (string) $accountContext->principal()->accountIdentifier())
                 ->first();
 
@@ -66,7 +80,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                     status: $accountModel->status,
                     accountCategory: $accountModel->category,
                     phone: $accountModel->phone,
-                    address: $accountModel->address,
+                    address: self::address($accountModel),
                 );
             }
         }
@@ -83,5 +97,22 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountPolicies: $accountContext?->accountPolicies() ?? [],
             account: $account,
         );
+    }
+
+    /** @return array<string, mixed>|null */
+    private static function address(AccountModel $model): ?array
+    {
+        if ($model->address_line1 === null) {
+            return null;
+        }
+
+        return [
+            'countryCode' => $model->address_country_code,
+            'administrativeAreaCode' => $model->address_administrative_area_code,
+            'postalCode' => $model->address_postal_code,
+            'locality' => $model->address_locality,
+            'addressLine1' => $model->address_line1,
+            'addressLine2' => $model->address_line2,
+        ];
     }
 }

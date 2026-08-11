@@ -42,7 +42,21 @@ readonly class GetAccount implements GetAccountInterface
         }
 
         $model = AccountModel::query()
-            ->select(['id', 'email', 'type', 'name', 'status', 'category', 'phone', 'address'])
+            ->select([
+                'id',
+                'email',
+                'type',
+                'name',
+                'status',
+                'category',
+                'phone',
+                'address_country_code',
+                'address_administrative_area_code',
+                'address_postal_code',
+                'address_locality',
+                'address_line1',
+                'address_line2',
+            ])
             ->where('id', (string) $accountIdentifier)
             ->first();
 
@@ -58,7 +72,26 @@ readonly class GetAccount implements GetAccountInterface
             status: $model->status,
             accountCategory: $model->category,
             phone: $model->phone,
-            address: $model->address,
+            address: self::address($model),
         );
+    }
+
+    /**
+     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null}|null
+     */
+    private static function address(AccountModel $model): ?array
+    {
+        if ($model->address_line1 === null) {
+            return null;
+        }
+
+        return [
+            'countryCode' => $model->address_country_code,
+            'administrativeAreaCode' => $model->address_administrative_area_code,
+            'postalCode' => $model->address_postal_code,
+            'locality' => $model->address_locality,
+            'addressLine1' => $model->address_line1,
+            'addressLine2' => $model->address_line2,
+        ];
     }
 }

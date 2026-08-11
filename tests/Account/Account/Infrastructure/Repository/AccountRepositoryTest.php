@@ -207,6 +207,12 @@ class AccountRepositoryTest extends TestCase
         $this->assertDatabaseHas('accounts', [
             'id' => $accountId,
             'phone' => '+819012345678',
+            'address_country_code' => 'JP',
+            'address_administrative_area_code' => '13',
+            'address_postal_code' => '100-0001',
+            'address_locality' => '千代田区',
+            'address_line1' => '千代田1-1',
+            'address_line2' => null,
         ]);
     }
 
