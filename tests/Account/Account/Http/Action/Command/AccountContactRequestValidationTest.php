@@ -94,6 +94,56 @@ class AccountContactRequestValidationTest extends TestCase
             'administrativeAreaCode' => 'FL',
         ])];
 
+        yield 'create account australia' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'AU',
+            'administrativeAreaCode' => 'NSW',
+        ])];
+
+        yield 'update account canada' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'CA',
+            'administrativeAreaCode' => 'ON',
+        ])];
+
+        yield 'create account china' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'CN',
+            'administrativeAreaCode' => '11',
+        ])];
+
+        yield 'update account taiwan' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'TW',
+            'administrativeAreaCode' => 'TPE',
+        ])];
+
+        yield 'create account thailand' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'TH',
+            'administrativeAreaCode' => '10',
+        ])];
+
+        yield 'update account thailand province outside bangkok' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'TH',
+            'administrativeAreaCode' => '96',
+        ])];
+
+        yield 'update account philippines' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'PH',
+            'administrativeAreaCode' => '00',
+        ])];
+
+        yield 'create account philippines province outside national capital region' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'PH',
+            'administrativeAreaCode' => 'ZSI',
+        ])];
+
+        yield 'create account viet nam' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'VN',
+            'administrativeAreaCode' => 'HN',
+        ])];
+
+        yield 'update account viet nam province outside municipalities' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'VN',
+            'administrativeAreaCode' => '73',
+        ])];
+
         yield 'create account without address line 1' => [CreateAccountRequest::class, self::createPayload([
             'countryCode' => 'JP',
             'administrativeAreaCode' => '13',

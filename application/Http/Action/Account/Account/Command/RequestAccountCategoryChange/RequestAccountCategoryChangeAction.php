@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInput;
@@ -56,7 +57,7 @@ readonly class RequestAccountCategoryChangeAction
                 DB::rollBack();
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
-            } catch (SameAccountCategoryChangeRequestException|AccountCategoryChangeRequestAlreadyPendingException|InvalidDocumentsForVerificationException $e) {
+            } catch (SameAccountCategoryChangeRequestException|AccountCategoryChangeRequestAlreadyPendingException|IncompleteAccountContactForCategoryChangeException|InvalidDocumentsForVerificationException $e) {
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

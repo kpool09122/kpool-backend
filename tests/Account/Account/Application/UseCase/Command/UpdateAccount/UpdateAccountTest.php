@@ -190,27 +190,35 @@ class UpdateAccountTest extends TestCase
         (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
     }
 
-    public function testProcessThrowsForbiddenWhenAccountIsNotCorporation(): void
+    public function testProcessAllowsIndividualAccountToUpdateOwnAccount(): void
     {
         $account = $this->createAccount(AccountType::INDIVIDUAL);
         $principal = $this->createPrincipal($account->accountIdentifier());
         $input = new UpdateAccountInput(
             $account->accountIdentifier(),
             $principal,
-            new AccountName('Updated Account'),
+            new AccountName('Updated Individual Account'),
         );
 
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         $accountRepository->shouldReceive('findById')->with($account->accountIdentifier())->once()->andReturn($account);
-        $accountRepository->shouldNotReceive('save');
+        $accountRepository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (Account $savedAccount): bool => (string) $savedAccount->name() === 'Updated Individual Account'
+        ));
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldNotReceive('evaluate');
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->with($principal, Action::UPDATE, Mockery::on(
+                static fn (Resource $resource): bool => $resource->accountType() === AccountType::INDIVIDUAL
+            ))
+            ->andReturnTrue();
 
-        $this->expectException(AccountUpdateForbiddenException::class);
+        $output = new UpdateAccountOutput();
+        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, $output);
 
-        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
+        $this->assertSame('Updated Individual Account', $output->toArray()['name']);
     }
 
     private function createAccount(AccountType $accountType = AccountType::CORPORATION): Account
