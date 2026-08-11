@@ -47,6 +47,15 @@ class GetAccountCategoryChangeRequestTest extends TestCase
             'status' => 'active',
             'category' => 'general',
         ]);
+        DB::table('accounts')->where('id', (string) $accountIdentifier)->update([
+            'phone' => '+81-90-1234-5678',
+            'address_country_code' => 'JP',
+            'address_administrative_area_code' => '13',
+            'address_postal_code' => '100-0001',
+            'address_locality' => '千代田区',
+            'address_line1' => '千代田1-1',
+            'address_line2' => '1F',
+        ]);
 
         $requestId = StrTestHelper::generateUuid();
         $this->insertRequest($requestId, $accountIdentifier, 'pending', 'agency', '2026-08-11 10:00:00');
@@ -65,6 +74,15 @@ class GetAccountCategoryChangeRequestTest extends TestCase
         $this->assertSame('agency', $payload['request']['requestedAccountCategory']);
         $this->assertSame('account@example.com', $payload['account']['email']);
         $this->assertSame('Target Account', $payload['account']['name']);
+        $this->assertSame('+81-90-1234-5678', $payload['account']['phone']);
+        $this->assertSame([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'postalCode' => '100-0001',
+            'locality' => '千代田区',
+            'addressLine1' => '千代田1-1',
+            'addressLine2' => '1F',
+        ], $payload['account']['address']);
         $this->assertSame([
             ['name' => 'Alice', 'email' => 'alice@example.com'],
             ['name' => 'Bob', 'email' => 'bob@example.com'],

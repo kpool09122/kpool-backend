@@ -7,6 +7,7 @@ namespace Source\Account\Account\Application\UseCase\Command\RequestAccountCateg
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
@@ -36,6 +37,9 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         }
         if ($account->accountCategory() === $input->requestedAccountCategory()) {
             throw new SameAccountCategoryChangeRequestException();
+        }
+        if (! $account->hasRequiredContactForCategoryChange()) {
+            throw new IncompleteAccountContactForCategoryChangeException();
         }
         $verificationType = $this->verificationTypeFor($input->requestedAccountCategory());
         if ($verificationType !== null) {

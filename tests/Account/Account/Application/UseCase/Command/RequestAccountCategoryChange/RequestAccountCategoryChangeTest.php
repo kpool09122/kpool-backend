@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
@@ -33,8 +34,10 @@ use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Phone;
 use Tests\Helper\StrTestHelper;
 
 class RequestAccountCategoryChangeTest extends TestCase
@@ -104,6 +107,130 @@ class RequestAccountCategoryChangeTest extends TestCase
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
     }
 
+    public function testThrowsWhenContactPhoneIsMissing(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID], phone: null)),
+            new FakeRequestRepository(),
+            new FixedFactory(),
+            new DocumentRequirementValidator(),
+        );
+
+        $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
+
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    public function testThrowsWhenContactAddressCountryCodeIsMissing(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount(
+                $accountId,
+                AccountCategory::GENERAL,
+                [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID],
+                address: ContactAddress::fromArray([
+                    'countryCode' => null,
+                    'administrativeAreaCode' => null,
+                    'postalCode' => '100-0001',
+                    'locality' => '千代田区',
+                    'addressLine1' => '千代田1-1',
+                    'addressLine2' => null,
+                ]),
+            )),
+            new FakeRequestRepository(),
+            new FixedFactory(),
+            new DocumentRequirementValidator(),
+        );
+
+        $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
+
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    public function testThrowsWhenContactAddressLine1IsMissing(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount(
+                $accountId,
+                AccountCategory::GENERAL,
+                [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID],
+                address: ContactAddress::fromArray([
+                    'countryCode' => 'JP',
+                    'administrativeAreaCode' => '13',
+                    'postalCode' => '100-0001',
+                    'locality' => '千代田区',
+                    'addressLine1' => null,
+                    'addressLine2' => null,
+                ]),
+            )),
+            new FakeRequestRepository(),
+            new FixedFactory(),
+            new DocumentRequirementValidator(),
+        );
+
+        $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
+
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    public function testThrowsWhenAdministrativeAreaCodeIsMissingForRequiredCountry(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount(
+                $accountId,
+                AccountCategory::GENERAL,
+                [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID],
+                address: ContactAddress::fromArray([
+                    'countryCode' => 'US',
+                    'administrativeAreaCode' => null,
+                    'postalCode' => '33139',
+                    'locality' => 'Miami Beach',
+                    'addressLine1' => '1 Ocean Dr',
+                    'addressLine2' => null,
+                ]),
+            )),
+            new FakeRequestRepository(),
+            new FixedFactory(),
+            new DocumentRequirementValidator(),
+        );
+
+        $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
+
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    public function testAllowsAdministrativeAreaCodeNullForNonRequiredCountry(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $repository = new FakeRequestRepository();
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount(
+                $accountId,
+                AccountCategory::GENERAL,
+                [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID],
+                address: ContactAddress::fromArray([
+                    'countryCode' => 'FR',
+                    'administrativeAreaCode' => null,
+                    'postalCode' => '75001',
+                    'locality' => 'Paris',
+                    'addressLine1' => '1 Rue de Rivoli',
+                    'addressLine2' => null,
+                ]),
+            )),
+            $repository,
+            new FixedFactory(),
+            new DocumentRequirementValidator(),
+        );
+
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+
+        $this->assertNotNull($repository->saved);
+    }
+
     public function testThrowsWhenPendingRequestAlreadyExists(): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -122,8 +249,17 @@ class RequestAccountCategoryChangeTest extends TestCase
     }
 
     /** @param DocumentType[] $documentTypes */
-    private function createAccount(AccountIdentifier $accountId, AccountCategory $accountCategory, array $documentTypes): Account
+    private function createAccount(AccountIdentifier $accountId, AccountCategory $accountCategory, array $documentTypes, ?Phone $phone = new Phone('+81-90-1234-5678'), ?ContactAddress $address = null): Account
     {
+        $address ??= ContactAddress::fromArray([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'postalCode' => '100-0001',
+            'locality' => '千代田区',
+            'addressLine1' => '千代田1-1',
+            'addressLine2' => null,
+        ]);
+
         return new Account(
             $accountId,
             new Email('test@example.com'),
@@ -136,6 +272,8 @@ class RequestAccountCategoryChangeTest extends TestCase
                 static fn (DocumentType $documentType): AccountDocument => new AccountDocument($accountId, $documentType, new DocumentPath('/documents/test'), new DateTimeImmutable()),
                 $documentTypes,
             )),
+            $phone,
+            $address,
         );
     }
 

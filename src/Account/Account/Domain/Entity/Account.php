@@ -14,6 +14,7 @@ use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ContactAddress;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Phone;
 
@@ -76,6 +77,36 @@ class Account
     public function changeAddress(?ContactAddress $address): void
     {
         $this->address = $address;
+    }
+
+    public function hasRequiredContactForCategoryChange(): bool
+    {
+        if ($this->phone === null || $this->address === null || $this->address->countryCode() === null || $this->address->addressLine1() === null) {
+            return false;
+        }
+
+        if (self::requiresAdministrativeAreaCode($this->address->countryCode())) {
+            return $this->address->administrativeAreaCode() !== null;
+        }
+
+        return true;
+    }
+
+    private static function requiresAdministrativeAreaCode(CountryCode $countryCode): bool
+    {
+        return in_array($countryCode, [
+            CountryCode::JAPAN,
+            CountryCode::UNITED_STATES,
+            CountryCode::KOREA_REPUBLIC,
+            CountryCode::AUSTRALIA,
+            CountryCode::CANADA,
+            CountryCode::NEW_ZEALAND,
+            CountryCode::CHINA,
+            CountryCode::TAIWAN,
+            CountryCode::THAILAND,
+            CountryCode::PHILIPPINES,
+            CountryCode::VIET_NAM,
+        ], true);
     }
 
     public function status(): AccountStatus
