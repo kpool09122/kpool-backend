@@ -7,6 +7,10 @@ namespace KPool.AccountApi;
 model UpdateAccountRequestBody {
   @doc("Updated account display name.")
   accountName: string;
+  @doc("Contact phone number.")
+  phone?: string | null;
+  @doc("Contact address.")
+  address?: ContactAddressSummary | null;
 }
 
 @doc("Request body for creating an account.")
@@ -19,6 +23,10 @@ model CreateAccountRequestBody {
   accountName: string;
   @doc("Identity identifier to attach to the account.")
   principalIdentifier?: Uuid | null;
+  @doc("Contact phone number.")
+  phone?: string | null;
+  @doc("Contact address.")
+  address?: ContactAddressSummary | null;
 }
 
 @doc("Response returned when an account is created.")

@@ -19,6 +19,7 @@ readonly class AuthenticatedIdentityReadModel
         private ?string $accountPrincipalIdentifier,
         private ?string $accountType,
         private array $accountPolicies = [],
+        private ?AuthenticatedAccountSummaryReadModel $account = null,
     ) {
     }
 
@@ -70,6 +71,11 @@ readonly class AuthenticatedIdentityReadModel
         return $this->accountPolicies;
     }
 
+    public function account(): ?AuthenticatedAccountSummaryReadModel
+    {
+        return $this->account;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -85,6 +91,7 @@ readonly class AuthenticatedIdentityReadModel
             'accountPrincipalIdentifier' => $this->accountPrincipalIdentifier,
             'accountType' => $this->accountType,
             'accountPolicies' => $this->accountPolicies,
+            'account' => $this->account?->toArray(),
         ];
     }
 }

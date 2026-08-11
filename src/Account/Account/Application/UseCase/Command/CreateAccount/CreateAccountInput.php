@@ -9,6 +9,7 @@ use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\Phone;
 
 readonly class CreateAccountInput implements CreateAccountInputPort
 {
@@ -18,6 +19,13 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         private AccountName $accountName,
         private ?IdentityIdentifier $identityIdentifier = null,
         private Language $language = Language::ENGLISH,
+        private ?Phone $phone = null,
+        private ?string $addressCountryCode = null,
+        private ?string $addressAdministrativeAreaCode = null,
+        private ?string $addressPostalCode = null,
+        private ?string $addressLocality = null,
+        private ?string $addressLine1 = null,
+        private ?string $addressLine2 = null,
     ) {
     }
 
@@ -44,5 +52,40 @@ readonly class CreateAccountInput implements CreateAccountInputPort
     public function language(): Language
     {
         return $this->language;
+    }
+
+    public function phone(): ?Phone
+    {
+        return $this->phone;
+    }
+
+    public function addressCountryCode(): ?string
+    {
+        return $this->addressCountryCode;
+    }
+
+    public function addressAdministrativeAreaCode(): ?string
+    {
+        return $this->addressAdministrativeAreaCode;
+    }
+
+    public function addressPostalCode(): ?string
+    {
+        return $this->addressPostalCode;
+    }
+
+    public function addressLocality(): ?string
+    {
+        return $this->addressLocality;
+    }
+
+    public function addressLine1(): ?string
+    {
+        return $this->addressLine1;
+    }
+
+    public function addressLine2(): ?string
+    {
+        return $this->addressLine2;
     }
 }

@@ -59,6 +59,42 @@ model AccountEffectivePolicySummary {
   statements: AccountPolicyStatement[];
 }
 
+@doc("Account contact address summary returned for authenticated account details.")
+model AuthenticatedAccountAddressSummary {
+  @doc("ISO 3166-1 alpha-2 country code.")
+  countryCode?: string | null;
+  @doc("Administrative area code for supported countries.")
+  administrativeAreaCode?: string | null;
+  @doc("Postal code.")
+  postalCode?: string | null;
+  @doc("Locality/city name.")
+  locality?: string | null;
+  @doc("Primary address line.")
+  addressLine1?: string | null;
+  @doc("Secondary address line.")
+  addressLine2?: string | null;
+}
+
+@doc("Account summary returned for the authenticated identity.")
+model AuthenticatedAccountSummary {
+  @doc("Account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Account email address.")
+  email: string;
+  @doc("Account type.")
+  type: string;
+  @doc("Account display name.")
+  name: string;
+  @doc("Account status.")
+  status: string;
+  @doc("Account category assigned during creation.")
+  accountCategory: string;
+  @doc("Contact phone number.")
+  phone?: string | null;
+  @doc("Contact address.")
+  address?: AuthenticatedAccountAddressSummary | null;
+}
+
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
@@ -69,6 +105,8 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
+  @doc("Detailed account information associated with the authenticated identity.")
+  account?: AuthenticatedAccountSummary | null;
 }
 
 @doc("Public profile fields for a requested identity.")

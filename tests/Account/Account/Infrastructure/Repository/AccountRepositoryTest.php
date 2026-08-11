@@ -19,7 +19,14 @@ use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\AddressLine;
+use Source\Shared\Domain\ValueObject\AdministrativeAreaCode;
+use Source\Shared\Domain\ValueObject\ContactAddress;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Locality;
+use Source\Shared\Domain\ValueObject\Phone;
+use Source\Shared\Domain\ValueObject\PostalCode;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -166,6 +173,46 @@ class AccountRepositoryTest extends TestCase
         $this->assertDatabaseHas('accounts', [
             'id' => $accountId,
             'name' => 'Updated Account',
+        ]);
+    }
+
+    /**
+     * 正常系: Account の連絡先情報を保存・復元できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveAndFindRestoresContactInformation(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $account = $this->createTestAccount(accountId: $accountId);
+        $account->changePhone(new Phone('+81 (90) 1234-5678'));
+        $account->changeAddress(new ContactAddress(
+            countryCode: CountryCode::JAPAN,
+            administrativeAreaCode: AdministrativeAreaCode::JAPAN_TOKYO,
+            postalCode: new PostalCode('100-0001'),
+            locality: new Locality('千代田区'),
+            addressLine1: new AddressLine('千代田1-1'),
+            addressLine2: null,
+        ));
+
+        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository->save($account);
+
+        $result = $repository->findById(new AccountIdentifier($accountId));
+
+        $this->assertNotNull($result);
+        $this->assertSame((string) $account->phone(), (string) $result->phone());
+        $this->assertSame($account->address()?->toArray(), $result->address()?->toArray());
+        $this->assertDatabaseHas('accounts', [
+            'id' => $accountId,
+            'phone' => '+819012345678',
+            'address_country_code' => 'JP',
+            'address_administrative_area_code' => '13',
+            'address_postal_code' => '100-0001',
+            'address_locality' => '千代田区',
+            'address_line1' => '千代田1-1',
+            'address_line2' => null,
         ]);
     }
 

@@ -25,10 +25,26 @@ class UpdateAccountInputTest extends TestCase
         );
         $accountName = new AccountName('Updated Account');
 
-        $input = new UpdateAccountInput($accountIdentifier, $principal, $accountName);
+        $input = new UpdateAccountInput(
+            $accountIdentifier,
+            $principal,
+            $accountName,
+            addressCountryCode: 'US',
+            addressAdministrativeAreaCode: 'FL',
+            addressPostalCode: '33139',
+            addressLocality: 'Miami Beach',
+            addressLine1: '1 Ocean Dr',
+            addressLine2: 'Suite 2',
+        );
 
         $this->assertSame($accountIdentifier, $input->accountIdentifier());
         $this->assertSame($principal, $input->principal());
         $this->assertSame($accountName, $input->accountName());
+        $this->assertSame('US', $input->addressCountryCode());
+        $this->assertSame('FL', $input->addressAdministrativeAreaCode());
+        $this->assertSame('33139', $input->addressPostalCode());
+        $this->assertSame('Miami Beach', $input->addressLocality());
+        $this->assertSame('1 Ocean Dr', $input->addressLine1());
+        $this->assertSame('Suite 2', $input->addressLine2());
     }
 }

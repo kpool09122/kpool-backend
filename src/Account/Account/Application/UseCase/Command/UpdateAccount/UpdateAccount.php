@@ -11,6 +11,7 @@ use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 
 readonly class UpdateAccount implements UpdateAccountInterface
 {
@@ -51,8 +52,33 @@ readonly class UpdateAccount implements UpdateAccountInterface
         }
 
         $account->changeName($input->accountName());
+        $account->changePhone($input->phone());
+        $account->changeAddress(self::contactAddress($input));
         $this->accountRepository->save($account);
 
         $output->setAccount($account);
+    }
+
+    private static function contactAddress(UpdateAccountInputPort $input): ?ContactAddress
+    {
+        if (
+            $input->addressCountryCode() === null
+            && $input->addressAdministrativeAreaCode() === null
+            && $input->addressPostalCode() === null
+            && $input->addressLocality() === null
+            && $input->addressLine1() === null
+            && $input->addressLine2() === null
+        ) {
+            return null;
+        }
+
+        return ContactAddress::fromArray([
+            'countryCode' => $input->addressCountryCode(),
+            'administrativeAreaCode' => $input->addressAdministrativeAreaCode(),
+            'postalCode' => $input->addressPostalCode(),
+            'locality' => $input->addressLocality(),
+            'addressLine1' => $input->addressLine1(),
+            'addressLine2' => $input->addressLine2(),
+        ]);
     }
 }

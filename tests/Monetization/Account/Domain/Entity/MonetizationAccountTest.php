@@ -22,7 +22,6 @@ use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Account\Domain\ValueObject\ContractName;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
-use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Monetization\Account\Domain\ValueObject\PostalCode;
 use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
 use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
@@ -31,6 +30,7 @@ use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 use Tests\Helper\StrTestHelper;
 
 class MonetizationAccountTest extends TestCase

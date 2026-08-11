@@ -79,6 +79,50 @@ class UpdateAccountTest extends TestCase
         $this->assertSame('Updated Account', $output->toArray()['name']);
     }
 
+    /**
+     * @throws AccountNotFoundException
+     * @throws AccountUpdateForbiddenException
+     */
+    public function testProcessBuildsContactAddressFromInputValues(): void
+    {
+        $account = $this->createAccount();
+        $principal = $this->createPrincipal($account->accountIdentifier());
+        $input = new UpdateAccountInput(
+            accountIdentifier: $account->accountIdentifier(),
+            principal: $principal,
+            accountName: new AccountName('Updated Account'),
+            addressCountryCode: 'US',
+            addressAdministrativeAreaCode: 'FL',
+            addressPostalCode: '33139',
+            addressLocality: 'Miami Beach',
+            addressLine1: '1 Ocean Dr',
+            addressLine2: 'Suite 2',
+        );
+
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->with($account->accountIdentifier())->once()->andReturn($account);
+        $accountRepository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (Account $savedAccount): bool => $savedAccount->address()?->toArray() === [
+                'countryCode' => 'US',
+                'administrativeAreaCode' => 'FL',
+                'postalCode' => '33139',
+                'locality' => 'Miami Beach',
+                'addressLine1' => '1 Ocean Dr',
+                'addressLine2' => 'Suite 2',
+            ]
+        ));
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
+
+        $useCase = new UpdateAccount($accountRepository, $policyEvaluator);
+        $output = new UpdateAccountOutput();
+        $useCase->process($input, $output);
+
+        $this->assertSame('Updated Account', $output->toArray()['name']);
+    }
+
     public function testProcessThrowsAccountNotFoundException(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());

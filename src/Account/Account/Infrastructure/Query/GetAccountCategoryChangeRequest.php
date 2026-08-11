@@ -63,7 +63,21 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
 
         /** @var AccountModel|null $account */
         $account = AccountModel::query()
-            ->select(['id', 'email', 'type', 'name', 'status', 'category'])
+            ->select([
+                'id',
+                'email',
+                'type',
+                'name',
+                'status',
+                'category',
+                'phone',
+                'address_country_code',
+                'address_administrative_area_code',
+                'address_postal_code',
+                'address_locality',
+                'address_line1',
+                'address_line2',
+            ])
             ->where('id', $request->account_id)
             ->first();
 
@@ -117,6 +131,8 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
                 name: $account->name,
                 status: $account->status,
                 accountCategory: $account->category,
+                phone: $account->phone,
+                address: self::address($account),
             ),
             identities: $identities,
             documents: $documents,
@@ -136,6 +152,32 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
         return [
             'code' => (string) $rejectionReason['code'],
             'detail' => isset($rejectionReason['detail']) ? (string) $rejectionReason['detail'] : null,
+        ];
+    }
+
+    /**
+     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null
+     */
+    private static function address(AccountModel $account): ?array
+    {
+        if (
+            $account->address_country_code === null
+            && $account->address_administrative_area_code === null
+            && $account->address_postal_code === null
+            && $account->address_locality === null
+            && $account->address_line1 === null
+            && $account->address_line2 === null
+        ) {
+            return null;
+        }
+
+        return [
+            'countryCode' => $account->address_country_code,
+            'administrativeAreaCode' => $account->address_administrative_area_code,
+            'postalCode' => $account->address_postal_code,
+            'locality' => $account->address_locality,
+            'addressLine1' => $account->address_line1,
+            'addressLine2' => $account->address_line2,
         ];
     }
 }

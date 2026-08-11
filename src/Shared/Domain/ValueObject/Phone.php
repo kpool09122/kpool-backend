@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Monetization\Account\Domain\ValueObject;
+namespace Source\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
@@ -45,7 +45,6 @@ class Phone extends StringBaseValue
     {
         $trimmed = trim($value);
 
-        // remove common separators; keep leading plus if present
         return preg_replace('/[\s\-()]/', '', $trimmed) ?? '';
     }
 }

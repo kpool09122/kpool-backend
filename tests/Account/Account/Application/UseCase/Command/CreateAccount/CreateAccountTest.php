@@ -37,6 +37,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\Phone;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -252,6 +253,97 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
         $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
         $this->assertSame(0, $testData->ownerPrincipalGroup->memberCount());
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    public function testProcessAppliesContactInformationAfterAccountCreation(): void
+    {
+        $testData = $this->createDummyAccountTestData();
+        $input = new CreateAccountInput(
+            email: $testData->email,
+            accountType: $testData->accountType,
+            accountName: $testData->accountName,
+            identityIdentifier: $testData->identityIdentifier,
+            language: $testData->language,
+            phone: new Phone('+81 90 1234 5678'),
+            addressCountryCode: 'JP',
+            addressAdministrativeAreaCode: '13',
+            addressPostalCode: '100-0001',
+            addressLocality: '千代田区',
+            addressLine1: '千代田1-1',
+            addressLine2: null,
+        );
+
+        $repository = Mockery::mock(AccountRepositoryInterface::class);
+        $repository->shouldReceive('findByEmail')
+            ->with($testData->email)
+            ->once()
+            ->andReturnNull();
+        $repository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static fn (Account $account): bool => (string) $account->phone() === '+819012345678'
+                && $account->address()?->toArray() === [
+                    'countryCode' => 'JP',
+                    'administrativeAreaCode' => '13',
+                    'postalCode' => '100-0001',
+                    'locality' => '千代田区',
+                    'addressLine1' => '千代田1-1',
+                    'addressLine2' => null,
+                ]))
+            ->andReturnNull();
+
+        $factory = Mockery::mock(AccountFactoryInterface::class);
+        $factory->shouldReceive('create')
+            ->once()
+            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->andReturn($testData->account);
+
+        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
+        $principalFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($testData->principal);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('save')->once();
+
+        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
+        $principalGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Default', true)
+            ->andReturn($testData->defaultPrincipalGroup);
+        $principalGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Owners', false)
+            ->andReturn($testData->ownerPrincipalGroup);
+
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturn($testData->ownerRole);
+
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('save')->twice();
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once();
+
+        $this->app->instance(AccountRepositoryInterface::class, $repository);
+        $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+
+        $useCase = $this->app->make(CreateAccountInterface::class);
+        $output = new CreateAccountOutput();
+        $useCase->process($input, $output);
+
+        $this->assertSame('+819012345678', $output->toArray()['phone']);
     }
 
     /**

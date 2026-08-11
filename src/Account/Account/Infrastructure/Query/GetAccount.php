@@ -42,7 +42,21 @@ readonly class GetAccount implements GetAccountInterface
         }
 
         $model = AccountModel::query()
-            ->select(['id', 'email', 'type', 'name', 'status', 'category'])
+            ->select([
+                'id',
+                'email',
+                'type',
+                'name',
+                'status',
+                'category',
+                'phone',
+                'address_country_code',
+                'address_administrative_area_code',
+                'address_postal_code',
+                'address_locality',
+                'address_line1',
+                'address_line2',
+            ])
             ->where('id', (string) $accountIdentifier)
             ->first();
 
@@ -57,6 +71,34 @@ readonly class GetAccount implements GetAccountInterface
             name: $model->name,
             status: $model->status,
             accountCategory: $model->category,
+            phone: $model->phone,
+            address: self::address($model),
         );
+    }
+
+    /**
+     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null
+     */
+    private static function address(AccountModel $model): ?array
+    {
+        if (
+            $model->address_country_code === null
+            && $model->address_administrative_area_code === null
+            && $model->address_postal_code === null
+            && $model->address_locality === null
+            && $model->address_line1 === null
+            && $model->address_line2 === null
+        ) {
+            return null;
+        }
+
+        return [
+            'countryCode' => $model->address_country_code,
+            'administrativeAreaCode' => $model->address_administrative_area_code,
+            'postalCode' => $model->address_postal_code,
+            'locality' => $model->address_locality,
+            'addressLine1' => $model->address_line1,
+            'addressLine2' => $model->address_line2,
+        ];
     }
 }

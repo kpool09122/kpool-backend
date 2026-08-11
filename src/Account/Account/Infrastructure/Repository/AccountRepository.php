@@ -18,12 +18,16 @@ use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 
 class AccountRepository implements AccountRepositoryInterface
 {
     public function save(Account $account): void
     {
+        $addressColumns = self::contactAddressColumns($account->address());
+
         AccountEloquent::query()->updateOrCreate(
             ['id' => (string) $account->accountIdentifier()],
             [
@@ -32,6 +36,8 @@ class AccountRepository implements AccountRepositoryInterface
                 'name' => (string) $account->name(),
                 'status' => $account->status()->value,
                 'category' => $account->accountCategory()->value,
+                'phone' => $account->phone() !== null ? (string) $account->phone() : null,
+                ...$addressColumns,
             ]
         );
 
@@ -111,6 +117,44 @@ class AccountRepository implements AccountRepositoryInterface
             AccountCategory::from($eloquent->category),
             DeletionReadinessChecklist::ready(),
             new AccountDocuments($documents),
+            $eloquent->phone !== null ? new Phone($eloquent->phone) : null,
+            self::contactAddress($eloquent),
         );
+    }
+
+    /** @return array{address_country_code: string|null, address_administrative_area_code: string|null, address_postal_code: string|null, address_locality: string|null, address_line1: string|null, address_line2: string|null} */
+    private static function contactAddressColumns(?ContactAddress $address): array
+    {
+        return [
+            'address_country_code' => $address?->countryCode()?->value,
+            'address_administrative_area_code' => $address?->administrativeAreaCode()?->code(),
+            'address_postal_code' => $address?->postalCode() !== null ? (string) $address->postalCode() : null,
+            'address_locality' => $address?->locality() !== null ? (string) $address->locality() : null,
+            'address_line1' => $address?->addressLine1() !== null ? (string) $address->addressLine1() : null,
+            'address_line2' => $address?->addressLine2() !== null ? (string) $address->addressLine2() : null,
+        ];
+    }
+
+    private static function contactAddress(AccountEloquent $eloquent): ?ContactAddress
+    {
+        if (
+            $eloquent->address_country_code === null
+            && $eloquent->address_administrative_area_code === null
+            && $eloquent->address_postal_code === null
+            && $eloquent->address_locality === null
+            && $eloquent->address_line1 === null
+            && $eloquent->address_line2 === null
+        ) {
+            return null;
+        }
+
+        return ContactAddress::fromArray([
+            'countryCode' => $eloquent->address_country_code,
+            'administrativeAreaCode' => $eloquent->address_administrative_area_code,
+            'postalCode' => $eloquent->address_postal_code,
+            'locality' => $eloquent->address_locality,
+            'addressLine1' => $eloquent->address_line1,
+            'addressLine2' => $eloquent->address_line2,
+        ]);
     }
 }

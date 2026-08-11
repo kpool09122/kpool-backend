@@ -32,6 +32,12 @@ class CreateAccountInputTest extends TestCase
             $accountType,
             $accountName,
             $identityIdentifier,
+            addressCountryCode: 'JP',
+            addressAdministrativeAreaCode: '13',
+            addressPostalCode: '100-0001',
+            addressLocality: '千代田区',
+            addressLine1: '千代田1-1',
+            addressLine2: 'ビル 2F',
         );
 
         $this->assertSame($email, $input->email());
@@ -39,6 +45,12 @@ class CreateAccountInputTest extends TestCase
         $this->assertSame($accountName, $input->accountName());
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
         $this->assertSame(Language::ENGLISH, $input->language());
+        $this->assertSame('JP', $input->addressCountryCode());
+        $this->assertSame('13', $input->addressAdministrativeAreaCode());
+        $this->assertSame('100-0001', $input->addressPostalCode());
+        $this->assertSame('千代田区', $input->addressLocality());
+        $this->assertSame('千代田1-1', $input->addressLine1());
+        $this->assertSame('ビル 2F', $input->addressLine2());
     }
 
     /**
@@ -66,5 +78,11 @@ class CreateAccountInputTest extends TestCase
         $this->assertSame($accountName, $input->accountName());
         $this->assertNull($input->identityIdentifier());
         $this->assertSame($language, $input->language());
+        $this->assertNull($input->addressCountryCode());
+        $this->assertNull($input->addressAdministrativeAreaCode());
+        $this->assertNull($input->addressPostalCode());
+        $this->assertNull($input->addressLocality());
+        $this->assertNull($input->addressLine1());
+        $this->assertNull($input->addressLine2());
     }
 }

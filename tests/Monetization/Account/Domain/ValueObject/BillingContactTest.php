@@ -7,8 +7,8 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\ValueObject\BillingContact;
 use Source\Monetization\Account\Domain\ValueObject\ContractName;
-use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 
 class BillingContactTest extends TestCase
 {

@@ -33,6 +33,8 @@ class UpdateAccountOutput implements UpdateAccountOutputPort
             'name' => (string) $account->name(),
             'status' => $account->status()->value,
             'accountCategory' => $account->accountCategory()->value,
+            'phone' => $account->phone() !== null ? (string) $account->phone() : null,
+            'address' => $account->address()?->toArray(),
         ];
     }
 }
