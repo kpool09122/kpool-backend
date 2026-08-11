@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
+use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
+use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
+use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
-use Application\Http\Action\Account\Account\Command\Documents\UploadDocumentsAction;
+use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocumentsAction;
+use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
-use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
-use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
-use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
-use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
@@ -22,13 +22,14 @@ use Application\Http\Action\Account\Delegation\Command\RequestDelegation\Request
 use Application\Http\Action\Account\Delegation\Command\RevokeDelegation\RevokeDelegationAction;
 use Application\Http\Action\Account\DelegationPermission\Command\GrantDelegationPermission\GrantDelegationPermissionAction;
 use Application\Http\Action\Account\DelegationPermission\Command\RevokeDelegationPermission\RevokeDelegationPermissionAction;
+use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
+use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
-use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
-use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
+use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Illuminate\Support\Facades\Route;
 
 // Account
@@ -70,6 +71,9 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::post('/account-verifications', RequestVerificationAction::class);
     Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
     Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);
+
+    // AccountCategoryChangeRequest
+    Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
 
     // Affiliation
     Route::post('/affiliations', RequestAffiliationAction::class);

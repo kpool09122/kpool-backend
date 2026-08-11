@@ -44,7 +44,7 @@ model AccountSummary {
   accountIdentifier: Uuid;
   @doc("Account email address.")
   email: string;
-  @doc("Account type.")
+  @doc("Account category.")
   type: string;
   @doc("Account display name.")
   name: string;
@@ -60,7 +60,7 @@ model CreateAccountResult {
   accountIdentifier?: Uuid;
   @doc("Account email address when a new account was created.")
   email?: string;
-  @doc("Account type when a new account was created.")
+  @doc("Account category when a new account was created.")
   type?: string;
   @doc("Account display name when a new account was created.")
   name?: string;
@@ -272,4 +272,27 @@ model AccountVerificationSummary {
   rejectionReason?: VerificationRejectionReasonSummary | null;
   @doc("Submitted documents.")
   documents: VerificationDocumentSummary[];
+}
+
+
+@doc("Account category change request state.")
+model AccountCategoryChangeRequestSummary {
+  @doc("Account category change request identifier.")
+  requestIdentifier: Uuid;
+  @doc("Target account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Current account category.")
+  currentAccountCategory: string;
+  @doc("Requested account category.")
+  requestedAccountCategory: string;
+  @doc("Request status.")
+  status: string;
+  @doc("Timestamp when the request was created.")
+  requestedAt: Timestamp;
+  @doc("Reviewer account identifier.")
+  reviewedBy?: Uuid | null;
+  @doc("Timestamp when the request was reviewed.")
+  reviewedAt?: Timestamp | null;
+  @doc("Optional rejection reason.")
+  rejectionReason?: VerificationRejectionReasonSummary | null;
 }

@@ -170,6 +170,59 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateAccountRequestBody'
+  /accounts/{accountIdentifier}/category-change-requests:
+    post:
+      operationId: AccountCategoryChangeRequestOperations_requestAccountCategoryChange
+      description: Request account category change.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '201':
+          description: Response returned when an account category change request is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAccountCategoryChangeRequestBody'
   /accounts/{accountId}:
     get:
       operationId: AccountOperations_getAccount
@@ -1148,6 +1201,56 @@ paths:
               $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
 components:
   schemas:
+    AccountCategoryChangeRequestSummary:
+      type: object
+      required:
+        - requestIdentifier
+        - accountIdentifier
+        - currentAccountCategory
+        - requestedAccountCategory
+        - status
+        - requestedAt
+      properties:
+        requestIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account category change request identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        currentAccountCategory:
+          type: string
+          description: Current account category.
+        requestedAccountCategory:
+          type: string
+          description: Requested account category.
+        status:
+          type: string
+          description: Request status.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the request was created.
+        reviewedBy:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Reviewer account identifier.
+        reviewedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp when the request was reviewed.
+        rejectionReason:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/VerificationRejectionReasonSummary'
+          nullable: true
+          description: Optional rejection reason.
+      description: Account category change request state.
     AccountDocumentSummary:
       type: object
       required:
@@ -1227,7 +1330,7 @@ components:
           description: Account email address.
         type:
           type: string
-          description: Account type.
+          description: Account category.
         name:
           type: string
           description: Account display name.
@@ -1421,7 +1524,7 @@ components:
           description: Account email address when a new account was created.
         type:
           type: string
-          description: Account type when a new account was created.
+          description: Account category when a new account was created.
         name:
           type: string
           description: Account display name when a new account was created.
@@ -1794,6 +1897,19 @@ components:
           nullable: true
           description: Optional rejection detail.
       description: Request body for rejecting account verification.
+    RequestAccountCategoryChangeRequestBody:
+      type: object
+      required:
+        - requestedAccountCategory
+      properties:
+        requestedAccountCategory:
+          type: string
+          enum:
+            - agency
+            - talent
+            - general
+          description: Requested account category.
+      description: Request body for creating an account category change request.
     RequestAffiliationRequestBody:
       type: object
       required:
