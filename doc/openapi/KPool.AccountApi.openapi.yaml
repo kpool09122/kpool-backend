@@ -78,6 +78,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-category-change-requests/{requestId}:
+    get:
+      operationId: AccountCategoryChangeRequestOperations_getAccountCategoryChangeRequest
+      description: Get an account category change request detail for operations review.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when getting an account category change request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCategoryChangeRequestDetailResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /account-category-change-requests/{requestId}/approve:
     post:
       operationId: AccountCategoryChangeRequestOperations_approveAccountCategoryChangeRequest
@@ -1375,6 +1422,46 @@ paths:
               $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
 components:
   schemas:
+    AccountCategoryChangeRequestDetailResponseBody:
+      type: object
+      required:
+        - request
+        - account
+        - identities
+        - documents
+      properties:
+        request:
+          allOf:
+            - $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+          description: Account category change request.
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AccountSummary'
+          description: Target account.
+        identities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountCategoryChangeRequestIdentitySummary'
+          description: Identities attached to the target account.
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountDocumentSummary'
+          description: Documents attached to the target account.
+      description: Response body for account category change request detail.
+    AccountCategoryChangeRequestIdentitySummary:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Identity display name.
+        email:
+          type: string
+          description: Identity email address.
+      description: Identity summary attached to an account category change request target account.
     AccountCategoryChangeRequestSummary:
       type: object
       required:

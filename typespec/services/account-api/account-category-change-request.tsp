@@ -36,6 +36,12 @@ model RejectAccountCategoryChangeRequestResponse {
   @body body: AccountCategoryChangeRequestSummary;
 }
 
+@doc("Response returned when getting an account category change request detail.")
+model GetAccountCategoryChangeRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: AccountCategoryChangeRequestDetailResponseBody;
+}
+
 @doc("Response returned when listing account category change requests.")
 model ListAccountCategoryChangeRequestsResponse {
   @statusCode statusCode: 200;
@@ -52,6 +58,13 @@ interface AccountCategoryChangeRequestOperations {
     @query perPage?: int32 | null,
     @query page?: int32 | null,
   ): ListAccountCategoryChangeRequestsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/account-category-change-requests/{requestId}")
+  @doc("Get an account category change request detail for operations review.")
+  getAccountCategoryChangeRequest(
+    @path requestId: Uuid,
+  ): GetAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
