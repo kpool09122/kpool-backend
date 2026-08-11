@@ -32,76 +32,45 @@ class AccountAuthorizationSeeder extends Seeder
 
     public function run(): void
     {
-        $ownerPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000001', 'ACCOUNT_OWNER_BASIC', [
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::READ,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::INVITE_MEMBER,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::UPDATE,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::PRINCIPAL_GROUP_MANAGE,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-        ]);
+        $accountReadPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000001',
+            'ACCOUNT_READ',
+            Action::READ,
+        );
+        $corporationAccountInviteMemberPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000002',
+            'CORPORATION_ACCOUNT_INVITE_MEMBER',
+            Action::INVITE_MEMBER,
+            $this->corporationAccountCondition(),
+        );
+        $corporationAccountUpdatePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000003',
+            'CORPORATION_ACCOUNT_UPDATE',
+            Action::UPDATE,
+            $this->corporationAccountCondition(),
+        );
+        $corporationAccountPrincipalGroupManagePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000004',
+            'CORPORATION_ACCOUNT_PRINCIPAL_GROUP_MANAGE',
+            Action::PRINCIPAL_GROUP_MANAGE,
+            $this->corporationAccountCondition(),
+        );
+        $accountCategoryChangeRequestManagePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000005',
+            'ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE',
+            Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE,
+        );
 
-        $adminPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000002', 'ACCOUNT_ADMIN_BASIC', [
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::READ,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::INVITE_MEMBER,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::UPDATE,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-            new Statement(
-                effect: Effect::ALLOW,
-                actions: [
-                    Action::PRINCIPAL_GROUP_MANAGE,
-                ],
-                resourceTypes: [ResourceType::ACCOUNT],
-                condition: $this->corporationAccountCondition(),
-            ),
-        ]);
+        $accountManagementPolicyIdentifiers = [
+            $accountReadPolicy->policyIdentifier(),
+            $corporationAccountInviteMemberPolicy->policyIdentifier(),
+            $corporationAccountUpdatePolicy->policyIdentifier(),
+            $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
+        ];
 
-        $this->saveRole(Role::OWNER, [$ownerPolicy->policyIdentifier()]);
-        $this->saveRole(Role::ADMIN, [$adminPolicy->policyIdentifier()]);
+        $this->saveRole(Role::OWNER, $accountManagementPolicyIdentifiers);
+        $this->saveRole(Role::ADMIN, $accountManagementPolicyIdentifiers);
+        $this->saveRole(Role::OPERATIONS, [$accountCategoryChangeRequestManagePolicy->policyIdentifier()]);
     }
 
     private function corporationAccountCondition(): Condition
@@ -115,15 +84,19 @@ class AccountAuthorizationSeeder extends Seeder
         ]);
     }
 
-    /**
-     * @param Statement[] $statements
-     */
-    private function createPolicy(string $identifier, string $name, array $statements): Policy
+    private function createPolicy(string $identifier, string $name, Action $action, ?Condition $condition = null): Policy
     {
         $policy = new Policy(
             new PolicyIdentifier($identifier),
             $name,
-            $statements,
+            [
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [$action],
+                    resourceTypes: [ResourceType::ACCOUNT],
+                    condition: $condition,
+                ),
+            ],
             true,
             new DateTimeImmutable(),
         );

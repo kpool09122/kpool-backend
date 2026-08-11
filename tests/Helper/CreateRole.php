@@ -20,7 +20,7 @@ class CreateRole
         RoleIdentifier $roleIdentifier,
         array $overrides = []
     ): void {
-        DB::table('roles')->insert([
+        DB::table('wiki_roles')->insert([
             'id' => (string) $roleIdentifier,
             'name' => $overrides['name'] ?? 'Test Role',
             'is_system_role' => $overrides['is_system_role'] ?? false,
@@ -31,7 +31,7 @@ class CreateRole
         // role_policy_attachments にアタッチ
         if (isset($overrides['policies'])) {
             foreach ($overrides['policies'] as $policyId) {
-                DB::table('role_policy_attachments')->insert([
+                DB::table('wiki_role_policy_attachments')->insert([
                     'role_id' => (string) $roleIdentifier,
                     'policy_id' => $policyId,
                 ]);

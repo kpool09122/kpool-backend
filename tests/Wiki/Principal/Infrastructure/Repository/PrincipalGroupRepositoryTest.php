@@ -61,7 +61,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
-        $this->assertDatabaseHas('principal_groups', [
+        $this->assertDatabaseHas('wiki_principal_groups', [
             'id' => $principalGroupId,
             'account_id' => $accountId,
             'name' => 'Default Group',
@@ -238,7 +238,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // 削除前に存在確認
-        $this->assertDatabaseHas('principal_groups', ['id' => $principalGroupId]);
+        $this->assertDatabaseHas('wiki_principal_groups', ['id' => $principalGroupId]);
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
 
@@ -254,7 +254,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository->delete($principalGroup);
 
         // 削除後の確認
-        $this->assertDatabaseMissing('principal_groups', ['id' => $principalGroupId]);
+        $this->assertDatabaseMissing('wiki_principal_groups', ['id' => $principalGroupId]);
     }
 
     /**
@@ -279,7 +279,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // 更新前の確認
-        $this->assertDatabaseHas('principal_groups', [
+        $this->assertDatabaseHas('wiki_principal_groups', [
             'id' => $principalGroupId,
             'name' => 'Original Name',
             'is_default' => true,
@@ -299,7 +299,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository->save($updatedGroup);
 
         // 更新後の確認
-        $this->assertDatabaseHas('principal_groups', [
+        $this->assertDatabaseHas('wiki_principal_groups', [
             'id' => $principalGroupId,
             'name' => 'Updated Name',
             'is_default' => false,
@@ -404,11 +404,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
-        $this->assertDatabaseHas('principal_group_memberships', [
+        $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId1,
         ]);
-        $this->assertDatabaseHas('principal_group_memberships', [
+        $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId2,
         ]);
@@ -448,11 +448,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         CreatePrincipalGroupMembership::create($principalGroupId, $principalId2);
 
         // 事前確認
-        $this->assertDatabaseHas('principal_group_memberships', [
+        $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId1,
         ]);
-        $this->assertDatabaseHas('principal_group_memberships', [
+        $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId2,
         ]);
@@ -470,11 +470,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
-        $this->assertDatabaseHas('principal_group_memberships', [
+        $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId1,
         ]);
-        $this->assertDatabaseMissing('principal_group_memberships', [
+        $this->assertDatabaseMissing('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId2,
         ]);
@@ -552,11 +552,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
-        $this->assertDatabaseHas('principal_group_role_attachments', [
+        $this->assertDatabaseHas('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId1,
         ]);
-        $this->assertDatabaseHas('principal_group_role_attachments', [
+        $this->assertDatabaseHas('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId2,
         ]);
@@ -584,17 +584,17 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // 既存のRoleアタッチメントを作成
-        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
         ]);
 
         // 事前確認
-        $this->assertDatabaseHas('principal_group_role_attachments', [
+        $this->assertDatabaseHas('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId1,
         ]);
-        $this->assertDatabaseHas('principal_group_role_attachments', [
+        $this->assertDatabaseHas('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId2,
         ]);
@@ -612,11 +612,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
-        $this->assertDatabaseHas('principal_group_role_attachments', [
+        $this->assertDatabaseHas('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId1,
         ]);
-        $this->assertDatabaseMissing('principal_group_role_attachments', [
+        $this->assertDatabaseMissing('wiki_principal_group_role_attachments', [
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId2,
         ]);
@@ -644,7 +644,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // Roleアタッチメントを作成
-        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
         ]);
@@ -694,7 +694,7 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         // Group 1とGroup 2にはTarget Roleをアタッチ
         // Group 3にはOther Roleをアタッチ（検索対象外）
-        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId1, 'role_id' => $roleId],
             ['principal_group_id' => $principalGroupId2, 'role_id' => $roleId],
             ['principal_group_id' => $principalGroupId3, 'role_id' => $otherRoleId],

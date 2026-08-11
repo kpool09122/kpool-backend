@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'principal_group_id',
     'role_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'principal_group_role_attachments')]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principal_group_role_attachments')]
 class PrincipalGroupRoleAttachment extends Model
 {
     #[\Override]

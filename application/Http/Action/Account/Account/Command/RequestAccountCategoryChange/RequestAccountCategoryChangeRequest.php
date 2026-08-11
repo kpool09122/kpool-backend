@@ -18,7 +18,7 @@ class RequestAccountCategoryChangeRequest extends FormRequest
     {
         return [
             'accountIdentifier' => ['required', 'uuid'],
-            'requestedAccountCategory' => ['required', Rule::enum(AccountCategory::class)],
+            'requestedAccountCategory' => ['required', 'string', Rule::in(array_column(AccountCategory::cases(), 'value'))],
         ];
     }
 
@@ -27,9 +27,9 @@ class RequestAccountCategoryChangeRequest extends FormRequest
         return (string) $this->route('accountIdentifier');
     }
 
-    public function requestedAccountCategory(): AccountCategory
+    public function requestedAccountCategory(): string
     {
-        return AccountCategory::from((string) $this->input('requestedAccountCategory'));
+        return (string) $this->input('requestedAccountCategory');
     }
 
     /** @return array<string, mixed> */

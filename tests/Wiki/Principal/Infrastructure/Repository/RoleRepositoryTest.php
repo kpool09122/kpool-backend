@@ -62,7 +62,7 @@ class RoleRepositoryTest extends TestCase
         $repository = $this->app->make(RoleRepositoryInterface::class);
         $repository->save($role);
 
-        $this->assertDatabaseHas('roles', [
+        $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Administrator',
             'is_system_role' => true,
@@ -99,15 +99,15 @@ class RoleRepositoryTest extends TestCase
         $repository = $this->app->make(RoleRepositoryInterface::class);
         $repository->save($role);
 
-        $this->assertDatabaseHas('roles', [
+        $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Multi Policy Role',
         ]);
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId1,
         ]);
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId2,
         ]);
@@ -244,7 +244,7 @@ class RoleRepositoryTest extends TestCase
         CreateRole::create(new RoleIdentifier($roleId));
 
         // 削除前に存在確認
-        $this->assertDatabaseHas('roles', ['id' => $roleId]);
+        $this->assertDatabaseHas('wiki_roles', ['id' => $roleId]);
 
         $repository = $this->app->make(RoleRepositoryInterface::class);
 
@@ -259,7 +259,7 @@ class RoleRepositoryTest extends TestCase
         $repository->delete($role);
 
         // 削除後の確認
-        $this->assertDatabaseMissing('roles', ['id' => $roleId]);
+        $this->assertDatabaseMissing('wiki_roles', ['id' => $roleId]);
     }
 
     /**
@@ -280,8 +280,8 @@ class RoleRepositoryTest extends TestCase
         );
 
         // 削除前に存在確認
-        $this->assertDatabaseHas('roles', ['id' => $roleId]);
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_roles', ['id' => $roleId]);
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId,
         ]);
@@ -299,8 +299,8 @@ class RoleRepositoryTest extends TestCase
         $repository->delete($role);
 
         // 削除後の確認
-        $this->assertDatabaseMissing('roles', ['id' => $roleId]);
-        $this->assertDatabaseMissing('role_policy_attachments', [
+        $this->assertDatabaseMissing('wiki_roles', ['id' => $roleId]);
+        $this->assertDatabaseMissing('wiki_role_policy_attachments', [
             'role_id' => $roleId,
         ]);
     }
@@ -324,7 +324,7 @@ class RoleRepositoryTest extends TestCase
         );
 
         // 更新前の確認
-        $this->assertDatabaseHas('roles', [
+        $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Original Name',
             'is_system_role' => false,
@@ -343,7 +343,7 @@ class RoleRepositoryTest extends TestCase
         $repository->save($updatedRole);
 
         // 更新後の確認
-        $this->assertDatabaseHas('roles', [
+        $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Updated Name',
             'is_system_role' => true,
@@ -374,11 +374,11 @@ class RoleRepositoryTest extends TestCase
             ['policies' => [$policyId1, $policyId2]]
         );
 
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId1,
         ]);
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId2,
         ]);
@@ -400,16 +400,16 @@ class RoleRepositoryTest extends TestCase
         $repository->save($updatedRole);
 
         // policy1 は削除されている
-        $this->assertDatabaseMissing('role_policy_attachments', [
+        $this->assertDatabaseMissing('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId1,
         ]);
         // policy2, policy3 は存在する
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId2,
         ]);
-        $this->assertDatabaseHas('role_policy_attachments', [
+        $this->assertDatabaseHas('wiki_role_policy_attachments', [
             'role_id' => $roleId,
             'policy_id' => $policyId3,
         ]);

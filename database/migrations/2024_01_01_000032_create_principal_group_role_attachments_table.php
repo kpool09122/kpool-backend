@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('principal_group_role_attachments', function (Blueprint $table) {
+        Schema::create('wiki_principal_group_role_attachments', function (Blueprint $table) {
             $table->uuid('principal_group_id');
             $table->uuid('role_id');
 
@@ -17,18 +17,18 @@ return new class () extends Migration {
 
             $table->foreign('principal_group_id')
                 ->references('id')
-                ->on('principal_groups')
+                ->on('wiki_principal_groups')
                 ->onDelete('cascade');
 
             $table->foreign('role_id')
                 ->references('id')
-                ->on('roles')
+                ->on('wiki_roles')
                 ->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('principal_group_role_attachments');
+        Schema::dropIfExists('wiki_principal_group_role_attachments');
     }
 };

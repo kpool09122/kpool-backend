@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
     'name',
     'is_system_role',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'roles', keyType: 'string')]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_roles', keyType: 'string')]
 class Role extends Model
 {
     #[\Override]

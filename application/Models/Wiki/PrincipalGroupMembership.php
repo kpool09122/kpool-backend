@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
     'principal_group_id',
     'principal_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'principal_group_memberships', keyType: 'string')]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principal_group_memberships', keyType: 'string')]
 class PrincipalGroupMembership extends Model
 {
     #[\Override]

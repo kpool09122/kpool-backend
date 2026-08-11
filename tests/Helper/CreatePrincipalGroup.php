@@ -21,7 +21,7 @@ class CreatePrincipalGroup
         AccountIdentifier $accountIdentifier,
         array $overrides = []
     ): void {
-        DB::table('principal_groups')->insert([
+        DB::table('wiki_principal_groups')->insert([
             'id' => (string) $principalGroupIdentifier,
             'account_id' => (string) $accountIdentifier,
             'name' => $overrides['name'] ?? 'Test Group',
