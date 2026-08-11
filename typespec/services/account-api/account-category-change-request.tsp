@@ -21,6 +21,21 @@ model ApproveAccountCategoryChangeRequestResponse {
   @body body: AccountCategoryChangeRequestSummary;
 }
 
+@doc("Request body for rejecting an account category change request.")
+model RejectAccountCategoryChangeRequestBody {
+  @doc("Rejection reason code.")
+  rejectionReasonCode: "document_unclear" | "document_expired" | "document_mismatch" | "document_incomplete" | "fraudulent_document" | "other";
+
+  @doc("Detailed rejection reason. Required when rejectionReasonCode is other.")
+  rejectionReasonDetail?: string | null;
+}
+
+@doc("Response returned when an account category change request is rejected.")
+model RejectAccountCategoryChangeRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: AccountCategoryChangeRequestSummary;
+}
+
 interface AccountCategoryChangeRequestOperations {
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
@@ -36,4 +51,12 @@ interface AccountCategoryChangeRequestOperations {
   approveAccountCategoryChangeRequest(
     @path requestId: Uuid,
   ): ApproveAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/account-category-change-requests/{requestId}/reject")
+  @doc("Reject an account category change request.")
+  rejectAccountCategoryChangeRequest(
+    @path requestId: Uuid,
+    @body body: RejectAccountCategoryChangeRequestBody,
+  ): RejectAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

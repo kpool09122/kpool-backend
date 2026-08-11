@@ -13,6 +13,8 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
+use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerification;
 use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
@@ -94,6 +96,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
         $this->app->singleton(RequestAccountCategoryChangeInterface::class, RequestAccountCategoryChange::class);
         $this->app->singleton(ApproveAccountCategoryChangeRequestInterface::class, ApproveAccountCategoryChangeRequest::class);
+        $this->app->singleton(RejectAccountCategoryChangeRequestInterface::class, RejectAccountCategoryChangeRequest::class);
         $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
         $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
 

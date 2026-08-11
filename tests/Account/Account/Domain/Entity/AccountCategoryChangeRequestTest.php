@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
+use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestRejectionException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
@@ -71,7 +72,26 @@ class AccountCategoryChangeRequestTest extends TestCase
 
         $this->assertSame(AccountCategoryChangeRequestStatus::REJECTED, $request->status());
         $this->assertSame((string) $reviewer, (string) $request->reviewedBy());
+        $this->assertNotNull($request->reviewedAt());
         $this->assertSame($reason, $request->rejectionReason());
+    }
+
+    public function testCannotRejectFromApproved(): void
+    {
+        $request = $this->createRequest(AccountCategoryChangeRequestStatus::APPROVED);
+
+        $this->expectException(InvalidAccountCategoryChangeRequestRejectionException::class);
+
+        $request->reject(new AccountIdentifier(StrTestHelper::generateUuid()), new RejectionReason(RejectionReasonCode::OTHER, 'missing information'));
+    }
+
+    public function testCannotRejectFromRejected(): void
+    {
+        $request = $this->createRequest(AccountCategoryChangeRequestStatus::REJECTED);
+
+        $this->expectException(InvalidAccountCategoryChangeRequestRejectionException::class);
+
+        $request->reject(new AccountIdentifier(StrTestHelper::generateUuid()), new RejectionReason(RejectionReasonCode::OTHER, 'missing information'));
     }
 
     private function createRequest(AccountCategoryChangeRequestStatus $status): AccountCategoryChangeRequest

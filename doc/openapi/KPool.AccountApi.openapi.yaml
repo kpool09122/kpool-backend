@@ -51,6 +51,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-category-change-requests/{requestId}/reject:
+    post:
+      operationId: AccountCategoryChangeRequestOperations_rejectAccountCategoryChangeRequest
+      description: Reject an account category change request.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an account category change request is rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectAccountCategoryChangeRequestBody'
   /account-verifications:
     post:
       operationId: AccountVerificationOperations_requestVerification
@@ -1916,6 +1969,26 @@ components:
             $ref: '#/components/schemas/PrincipalGroupMemberSummary'
           description: Principal details currently assigned to the group.
       description: Principal group snapshot returned after updates.
+    RejectAccountCategoryChangeRequestBody:
+      type: object
+      required:
+        - rejectionReasonCode
+      properties:
+        rejectionReasonCode:
+          type: string
+          enum:
+            - document_unclear
+            - document_expired
+            - document_mismatch
+            - document_incomplete
+            - fraudulent_document
+            - other
+          description: Rejection reason code.
+        rejectionReasonDetail:
+          type: string
+          nullable: true
+          description: Detailed rejection reason. Required when rejectionReasonCode is other.
+      description: Request body for rejecting an account category change request.
     RejectAffiliationRequestBody:
       type: object
       required:
