@@ -77,6 +77,8 @@ class GetAuthenticatedIdentityTest extends TestCase
         $actions = array_merge(...array_column($statements, 'actions'));
         $this->assertContains('account:read', $actions);
         $this->assertContains('account:update', $actions);
+        $updateStatement = $this->statementForAction($statements, 'account:update');
+        $this->assertNull($updateStatement['condition']);
         $inviteStatement = $this->statementForAction($statements, 'account:member:invite');
         $this->assertSame([
             'clauses' => [
