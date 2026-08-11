@@ -27,172 +27,163 @@ class SystemPolicySeeder extends Seeder
 
     public function run(): void
     {
-        $this->createFullAccessPolicy();
-        $this->createBasicEditingPolicy();
-        $this->createAgencyManagementPolicy();
-        $this->createTalentManagementPolicy();
-        $this->createDenyAgencyApprovalPolicy();
+        $this->createGlobalActionPolicies();
+        $this->createOwnWikiActionPolicies();
+        $this->createAgencyScopeActionPolicies();
+        $this->createTalentScopeActionPolicies();
+        $this->createDenyAgencyActionPolicies();
         $this->createDenyRollbackPolicy();
     }
 
-    private function createFullAccessPolicy(): void
+    private function createGlobalActionPolicies(): void
     {
-        $policy = $this->policyFactory->create(
-            name: 'FULL_ACCESS',
-            statements: [
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: Action::cases(),
-                    resourceTypes: ResourceType::cases(),
-                    condition: null,
-                ),
-            ],
-            isSystemPolicy: true,
-        );
-
-        $this->policyRepository->save($policy);
+        foreach (Action::cases() as $action) {
+            $this->createPolicy(
+                name: 'GLOBAL_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: ResourceType::cases(),
+            );
+        }
     }
 
-    private function createBasicEditingPolicy(): void
+    private function createOwnWikiActionPolicies(): void
     {
-        $policy = $this->policyFactory->create(
-            name: 'BASIC_EDITING',
-            statements: [
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::CREATE, Action::EDIT, Action::SUBMIT],
-                    resourceTypes: ResourceType::cases(),
-                    condition: null,
-                ),
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::DELETE, Action::WITHDRAW],
-                    resourceTypes: ResourceType::cases(),
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_EDITOR_ID,
-                            ConditionOperator::EQUALS,
-                            ConditionValue::PRINCIPAL_ID,
-                        ),
-                    ]),
-                ),
-            ],
-            isSystemPolicy: true,
-        );
-
-        $this->policyRepository->save($policy);
+        foreach ([Action::DELETE, Action::WITHDRAW] as $action) {
+            $this->createPolicy(
+                name: 'OWN_WIKI_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: ResourceType::cases(),
+                condition: $this->editorCondition(),
+            );
+        }
     }
 
-    private function createAgencyManagementPolicy(): void
+    private function createAgencyScopeActionPolicies(): void
     {
-        $policy = $this->policyFactory->create(
-            name: 'AGENCY_MANAGEMENT',
-            statements: [
-                // Agency, Group, Song の承認系（TALENT は Affiliation ベースで付与されるため除外）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::READ, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS],
-                    resourceTypes: [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_AGENCY_ID,
-                            ConditionOperator::EQUALS,
-                            ConditionValue::PRINCIPAL_AGENCY_ID,
-                        ),
-                    ]),
-                ),
-                // IMAGE の承認・却下・削除（agencyId が一致するもの）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::DELETE],
-                    resourceTypes: [ResourceType::IMAGE],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_AGENCY_ID,
-                            ConditionOperator::EQUALS,
-                            ConditionValue::PRINCIPAL_AGENCY_ID,
-                        ),
-                    ]),
-                ),
-            ],
-            isSystemPolicy: true,
-        );
+        foreach ([Action::READ, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS] as $action) {
+            $this->createPolicy(
+                name: 'AGENCY_SCOPE_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG],
+                condition: $this->agencyCondition(),
+            );
+        }
 
-        $this->policyRepository->save($policy);
+        foreach ([Action::APPROVE, Action::REJECT, Action::DELETE] as $action) {
+            $this->createPolicy(
+                name: 'AGENCY_SCOPE_IMAGE_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: [ResourceType::IMAGE],
+                condition: $this->agencyCondition(),
+            );
+        }
     }
 
-    private function createTalentManagementPolicy(): void
+    private function createTalentScopeActionPolicies(): void
     {
-        $policy = $this->policyFactory->create(
-            name: 'TALENT_MANAGEMENT',
-            statements: [
-                // Talent 承認系（自分のタレント）
-                // ※ Group と Song は Affiliation 成立時に付与されるため、ここでは TALENT のみ
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS],
-                    resourceTypes: [ResourceType::TALENT],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_TALENT_ID,
-                            ConditionOperator::IN,
-                            ConditionValue::PRINCIPAL_TALENT_IDS,
-                        ),
-                    ]),
-                ),
-                // IMAGE の承認・却下・削除（talentId が一致するもの）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::DELETE],
-                    resourceTypes: [ResourceType::IMAGE],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_TALENT_ID,
-                            ConditionOperator::IN,
-                            ConditionValue::PRINCIPAL_TALENT_IDS,
-                        ),
-                    ]),
-                ),
-            ],
-            isSystemPolicy: true,
-        );
+        foreach ([Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS] as $action) {
+            $this->createPolicy(
+                name: 'TALENT_SCOPE_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: [ResourceType::TALENT],
+                condition: $this->talentCondition(),
+            );
+        }
 
-        $this->policyRepository->save($policy);
+        foreach ([Action::APPROVE, Action::REJECT, Action::DELETE] as $action) {
+            $this->createPolicy(
+                name: 'TALENT_SCOPE_IMAGE_' . $this->policyActionName($action),
+                effect: Effect::ALLOW,
+                action: $action,
+                resourceTypes: [ResourceType::IMAGE],
+                condition: $this->talentCondition(),
+            );
+        }
     }
 
-    private function createDenyAgencyApprovalPolicy(): void
+    private function createDenyAgencyActionPolicies(): void
     {
-        $policy = $this->policyFactory->create(
-            name: 'DENY_AGENCY_APPROVAL',
-            statements: [
-                new Statement(
-                    effect: Effect::DENY,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
-                    resourceTypes: [ResourceType::AGENCY],
-                    condition: null,
-                ),
-            ],
-            isSystemPolicy: true,
-        );
-
-        $this->policyRepository->save($policy);
+        foreach ([Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
+            $this->createPolicy(
+                name: 'DENY_AGENCY_' . $this->policyActionName($action),
+                effect: Effect::DENY,
+                action: $action,
+                resourceTypes: [ResourceType::AGENCY],
+            );
+        }
     }
 
     private function createDenyRollbackPolicy(): void
     {
-        $policy = $this->policyFactory->create(
+        $this->createPolicy(
             name: 'DENY_ROLLBACK',
+            effect: Effect::DENY,
+            action: Action::ROLLBACK,
+            resourceTypes: ResourceType::cases(),
+        );
+    }
+
+    /**
+     * @param ResourceType[] $resourceTypes
+     */
+    private function createPolicy(string $name, Effect $effect, Action $action, array $resourceTypes, ?Condition $condition = null): void
+    {
+        $policy = $this->policyFactory->create(
+            name: $name,
             statements: [
                 new Statement(
-                    effect: Effect::DENY,
-                    actions: [Action::ROLLBACK],
-                    resourceTypes: ResourceType::cases(),
-                    condition: null,
+                    effect: $effect,
+                    actions: [$action],
+                    resourceTypes: $resourceTypes,
+                    condition: $condition,
                 ),
             ],
             isSystemPolicy: true,
         );
 
         $this->policyRepository->save($policy);
+    }
+
+    private function editorCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_EDITOR_ID,
+                ConditionOperator::EQUALS,
+                ConditionValue::PRINCIPAL_ID,
+            ),
+        ]);
+    }
+
+    private function agencyCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_AGENCY_ID,
+                ConditionOperator::EQUALS,
+                ConditionValue::PRINCIPAL_AGENCY_ID,
+            ),
+        ]);
+    }
+
+    private function talentCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_TALENT_ID,
+                ConditionOperator::IN,
+                ConditionValue::PRINCIPAL_TALENT_IDS,
+            ),
+        ]);
+    }
+
+    private function policyActionName(Action $action): string
+    {
+        return strtoupper($action->value);
     }
 }

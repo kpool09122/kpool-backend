@@ -223,7 +223,7 @@ class GetCurrentPrincipalTest extends TestCase
         PrincipalGroupIdentifier $principalGroupIdentifier,
         RoleIdentifier $roleIdentifier
     ): void {
-        DB::table('principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             'principal_group_id' => (string) $principalGroupIdentifier,
             'role_id' => (string) $roleIdentifier,
         ]);

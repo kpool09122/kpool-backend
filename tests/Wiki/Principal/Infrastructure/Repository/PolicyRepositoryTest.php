@@ -76,7 +76,7 @@ class PolicyRepositoryTest extends TestCase
         $repository = $this->app->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
-        $this->assertDatabaseHas('policies', [
+        $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Full Access',
             'is_system_policy' => true,
@@ -181,7 +181,7 @@ class PolicyRepositoryTest extends TestCase
         CreatePolicy::create(new PolicyIdentifier($policyId));
 
         // 削除前に存在確認
-        $this->assertDatabaseHas('policies', ['id' => $policyId]);
+        $this->assertDatabaseHas('wiki_policies', ['id' => $policyId]);
 
         $repository = $this->app->make(PolicyRepositoryInterface::class);
 
@@ -196,7 +196,7 @@ class PolicyRepositoryTest extends TestCase
         $repository->delete($policy);
 
         // 削除後の確認
-        $this->assertDatabaseMissing('policies', ['id' => $policyId]);
+        $this->assertDatabaseMissing('wiki_policies', ['id' => $policyId]);
     }
 
     /**
@@ -218,7 +218,7 @@ class PolicyRepositoryTest extends TestCase
         );
 
         // 更新前の確認
-        $this->assertDatabaseHas('policies', [
+        $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Original Name',
             'is_system_policy' => false,
@@ -237,7 +237,7 @@ class PolicyRepositoryTest extends TestCase
         $repository->save($updatedPolicy);
 
         // 更新後の確認
-        $this->assertDatabaseHas('policies', [
+        $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Updated Name',
             'is_system_policy' => true,

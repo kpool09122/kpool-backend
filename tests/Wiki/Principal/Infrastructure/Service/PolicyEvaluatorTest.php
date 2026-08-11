@@ -116,7 +116,7 @@ class PolicyEvaluatorTest extends TestCase
 
         // Roleを追加
         foreach ($roleIdentifiers as $roleIdentifier) {
-            \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+            \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
                 'principal_group_id' => $groupId,
                 'role_id' => (string) $roleIdentifier,
             ]);
@@ -404,7 +404,7 @@ class PolicyEvaluatorTest extends TestCase
             ['name' => 'Test Group 2', 'is_default' => false]
         );
         CreatePrincipalGroupMembership::create($groupId2, (string) $principal->principalIdentifier());
-        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
             'principal_group_id' => $groupId2,
             'role_id' => (string) $approveRole->roleIdentifier(),
         ]);

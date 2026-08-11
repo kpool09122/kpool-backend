@@ -9,10 +9,12 @@ use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountA
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
 use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocumentsAction;
 use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeAction;
+use Application\Http\Action\Account\Account\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
+
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
@@ -74,6 +76,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
 
     // AccountCategoryChangeRequest
     Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
+    Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
 
     // Affiliation
     Route::post('/affiliations', RequestAffiliationAction::class);

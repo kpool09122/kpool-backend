@@ -20,7 +20,7 @@ class CreatePolicy
         PolicyIdentifier $policyIdentifier,
         array $overrides = []
     ): void {
-        DB::table('policies')->insert([
+        DB::table('wiki_policies')->insert([
             'id' => (string) $policyIdentifier,
             'name' => $overrides['name'] ?? 'Test Policy',
             'statements' => json_encode($overrides['statements'] ?? [

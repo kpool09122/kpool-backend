@@ -67,7 +67,7 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'ADMINISTRATOR',
-            policies: $this->getPolicyIdentifiers(['FULL_ACCESS']),
+            policies: $this->getPolicyIdentifiers($this->globalPolicyNames()),
             isSystemRole: true,
         );
 
@@ -78,7 +78,7 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'SENIOR_COLLABORATOR',
-            policies: $this->getPolicyIdentifiers(['FULL_ACCESS', 'DENY_ROLLBACK']),
+            policies: $this->getPolicyIdentifiers([...$this->globalPolicyNames(), 'DENY_ROLLBACK']),
             isSystemRole: true,
         );
 
@@ -89,7 +89,7 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'AGENCY_ACTOR',
-            policies: $this->getPolicyIdentifiers(['BASIC_EDITING', 'AGENCY_MANAGEMENT']),
+            policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->agencyManagementPolicyNames()]),
             isSystemRole: true,
         );
 
@@ -100,7 +100,7 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'TALENT_ACTOR',
-            policies: $this->getPolicyIdentifiers(['BASIC_EDITING', 'TALENT_MANAGEMENT', 'DENY_AGENCY_APPROVAL']),
+            policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
             isSystemRole: true,
         );
 
@@ -111,7 +111,7 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'COLLABORATOR',
-            policies: $this->getPolicyIdentifiers(['BASIC_EDITING']),
+            policies: $this->getPolicyIdentifiers($this->basicEditingPolicyNames()),
             isSystemRole: true,
         );
 
@@ -127,5 +127,98 @@ class SystemRoleSeeder extends Seeder
         );
 
         $this->roleRepository->save($role);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function globalPolicyNames(): array
+    {
+        return [
+            'GLOBAL_CREATE',
+            'GLOBAL_READ',
+            'GLOBAL_EDIT',
+            'GLOBAL_SUBMIT',
+            'GLOBAL_WITHDRAW',
+            'GLOBAL_APPROVE',
+            'GLOBAL_REJECT',
+            'GLOBAL_TRANSLATE',
+            'GLOBAL_PUBLISH',
+            'GLOBAL_ROLLBACK',
+            'GLOBAL_MERGE',
+            'GLOBAL_AUTOMATIC_CREATE',
+            'GLOBAL_SAVE_VIDEO_LINKS',
+            'GLOBAL_DELETE',
+            'GLOBAL_HIDE',
+            'GLOBAL_UNHIDE',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function basicEditingPolicyNames(): array
+    {
+        return [
+            'GLOBAL_CREATE',
+            'GLOBAL_EDIT',
+            'GLOBAL_SUBMIT',
+            'OWN_WIKI_DELETE',
+            'OWN_WIKI_WITHDRAW',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function agencyManagementPolicyNames(): array
+    {
+        return [
+            'AGENCY_SCOPE_READ',
+            'AGENCY_SCOPE_APPROVE',
+            'AGENCY_SCOPE_REJECT',
+            'AGENCY_SCOPE_TRANSLATE',
+            'AGENCY_SCOPE_PUBLISH',
+            'AGENCY_SCOPE_MERGE',
+            'AGENCY_SCOPE_AUTOMATIC_CREATE',
+            'AGENCY_SCOPE_SAVE_VIDEO_LINKS',
+            'AGENCY_SCOPE_IMAGE_APPROVE',
+            'AGENCY_SCOPE_IMAGE_REJECT',
+            'AGENCY_SCOPE_IMAGE_DELETE',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function talentManagementPolicyNames(): array
+    {
+        return [
+            'TALENT_SCOPE_READ',
+            'TALENT_SCOPE_EDIT',
+            'TALENT_SCOPE_APPROVE',
+            'TALENT_SCOPE_REJECT',
+            'TALENT_SCOPE_TRANSLATE',
+            'TALENT_SCOPE_PUBLISH',
+            'TALENT_SCOPE_MERGE',
+            'TALENT_SCOPE_AUTOMATIC_CREATE',
+            'TALENT_SCOPE_SAVE_VIDEO_LINKS',
+            'TALENT_SCOPE_IMAGE_APPROVE',
+            'TALENT_SCOPE_IMAGE_REJECT',
+            'TALENT_SCOPE_IMAGE_DELETE',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function denyAgencyApprovalPolicyNames(): array
+    {
+        return [
+            'DENY_AGENCY_APPROVE',
+            'DENY_AGENCY_REJECT',
+            'DENY_AGENCY_TRANSLATE',
+            'DENY_AGENCY_PUBLISH',
+        ];
     }
 }

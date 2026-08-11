@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'role_id',
     'policy_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'role_policy_attachments')]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_role_policy_attachments')]
 class RolePolicyAttachment extends Model
 {
     #[\Override]

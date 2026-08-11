@@ -12,7 +12,7 @@ class CreatePrincipalGroupMembership
         string $principalGroupId,
         string $principalId,
     ): void {
-        DB::table('principal_group_memberships')->insert([
+        DB::table('wiki_principal_group_memberships')->insert([
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId,
             'created_at' => now(),

@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('principal_group_memberships', static function (Blueprint $table) {
+        Schema::create('wiki_principal_group_memberships', static function (Blueprint $table) {
             $table->uuid('principal_group_id')->comment('PrincipalGroup ID');
             $table->uuid('principal_id')->comment('Principal ID');
             $table->timestamps();
 
             $table->primary(['principal_group_id', 'principal_id']);
-            $table->foreign('principal_group_id')->references('id')->on('principal_groups')->onDelete('cascade');
+            $table->foreign('principal_group_id')->references('id')->on('wiki_principal_groups')->onDelete('cascade');
             $table->foreign('principal_id')->references('id')->on('wiki_principals')->onDelete('cascade');
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('principal_group_memberships');
+        Schema::dropIfExists('wiki_principal_group_memberships');
     }
 };

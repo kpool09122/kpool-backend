@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('principal_groups', static function (Blueprint $table) {
+        Schema::create('wiki_principal_groups', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('PrincipalGroup ID');
             $table->uuid('account_id')->comment('Account ID');
             $table->string('name', 255)->comment('グループ名');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('principal_groups');
+        Schema::dropIfExists('wiki_principal_groups');
     }
 };

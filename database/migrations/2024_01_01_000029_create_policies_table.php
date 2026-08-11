@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('policies', static function (Blueprint $table) {
+        Schema::create('wiki_policies', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Policy ID');
             $table->string('name', 255)->comment('ポリシー名');
             $table->json('statements')->comment('Statement の配列（JSON）');
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('policies');
+        Schema::dropIfExists('wiki_policies');
     }
 };

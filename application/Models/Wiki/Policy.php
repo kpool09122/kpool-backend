@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
     'statements',
     'is_system_policy',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'policies', keyType: 'string')]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_policies', keyType: 'string')]
 class Policy extends Model
 {
     #[\Override]
