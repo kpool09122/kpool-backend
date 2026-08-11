@@ -1395,14 +1395,57 @@ components:
     AccountCategoryChangeRequestListItemSummary:
       type: object
       required:
+        - requestIdentifier
+        - accountIdentifier
+        - currentAccountCategory
+        - requestedAccountCategory
+        - status
+        - requestedAt
         - account
       properties:
+        requestIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account category change request identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        currentAccountCategory:
+          type: string
+          description: Current account category.
+        requestedAccountCategory:
+          type: string
+          description: Requested account category.
+        status:
+          type: string
+          description: Request status.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the request was created.
+        reviewedBy:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Reviewer account identifier.
+        reviewedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp when the request was reviewed.
+        rejectionReason:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/VerificationRejectionReasonSummary'
+          nullable: true
+          description: Optional rejection reason.
         account:
           allOf:
             - $ref: '#/components/schemas/AccountSummary'
           description: Target account.
-      allOf:
-        - $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
       description: Account category change request state with target account summary.
     AccountCategoryChangeRequestSummary:
       type: object
