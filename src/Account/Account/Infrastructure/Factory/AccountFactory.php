@@ -14,9 +14,7 @@ use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Phone;
 
 readonly class AccountFactory implements AccountFactoryInterface
 {
@@ -29,8 +27,6 @@ readonly class AccountFactory implements AccountFactoryInterface
         Email $email,
         AccountType $type,
         AccountName $name,
-        ?Phone $phone = null,
-        ?ContactAddress $address = null,
     ): Account {
         return new Account(
             new AccountIdentifier($this->generator->generate()),
@@ -41,8 +37,6 @@ readonly class AccountFactory implements AccountFactoryInterface
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
-            $phone,
-            $address,
         );
     }
 }

@@ -43,15 +43,33 @@ class ContactAddressTest extends TestCase
         ]);
     }
 
-    public function testAdministrativeAreaCodeAllowsConfiguredCountriesOnly(): void
+    public function testAdministrativeAreaCodeMustMatchCountryCode(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Administrative area code is supported only for configured countries.');
+        $this->expectExceptionMessage('Administrative area code is invalid for country code.');
 
         ContactAddress::fromArray([
-            'countryCode' => 'FR',
-            'administrativeAreaCode' => 'IDF',
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => 'FL',
             'addressLine1' => '10 Rue Example',
         ]);
+    }
+
+    public function testFromArrayAllowsUnitedStatesAdministrativeAreaCode(): void
+    {
+        $address = ContactAddress::fromArray([
+            'countryCode' => 'US',
+            'administrativeAreaCode' => 'FL',
+            'addressLine1' => '1 Ocean Dr',
+        ]);
+
+        $this->assertSame([
+            'countryCode' => 'US',
+            'administrativeAreaCode' => 'FL',
+            'postalCode' => null,
+            'locality' => null,
+            'addressLine1' => '1 Ocean Dr',
+            'addressLine2' => null,
+        ], $address->toArray());
     }
 }

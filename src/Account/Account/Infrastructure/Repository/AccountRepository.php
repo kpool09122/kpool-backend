@@ -127,7 +127,7 @@ class AccountRepository implements AccountRepositoryInterface
     {
         return [
             'address_country_code' => $address?->countryCode()?->value,
-            'address_administrative_area_code' => $address?->administrativeAreaCode() !== null ? (string) $address->administrativeAreaCode() : null,
+            'address_administrative_area_code' => $address?->administrativeAreaCode()?->code(),
             'address_postal_code' => $address?->postalCode() !== null ? (string) $address->postalCode() : null,
             'address_locality' => $address?->locality() !== null ? (string) $address->locality() : null,
             'address_line1' => $address !== null ? (string) $address->addressLine1() : null,

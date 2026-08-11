@@ -40,6 +40,20 @@ class AccountContactRequestValidationTest extends TestCase
     }
 
     /**
+     * @param class-string<CreateAccountRequest|UpdateAccountRequest> $requestClass
+     * @param array<string, mixed> $payload
+     */
+    #[DataProvider('invalidAdministrativeAreaCodePayloadProvider')]
+    public function testAdministrativeAreaCodeMustMatchCountryCode(string $requestClass, array $payload): void
+    {
+        $request = $requestClass::create('/', 'POST', $payload);
+        $validator = Validator::make($request->all(), $request->rules());
+
+        $this->assertTrue($validator->fails());
+        $this->assertArrayHasKey('address.administrativeAreaCode', $validator->errors()->toArray());
+    }
+
+    /**
      * @return iterable<string, array{class-string<CreateAccountRequest|UpdateAccountRequest>, array<string, mixed>}>
      */
     public static function requestPayloadProvider(): iterable
@@ -67,6 +81,32 @@ class AccountContactRequestValidationTest extends TestCase
 
         yield 'update account' => [UpdateAccountRequest::class, self::updatePayload([
             'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+        ])];
+
+        yield 'create account united states' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'US',
+            'administrativeAreaCode' => 'FL',
+        ])];
+
+        yield 'update account united states' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'US',
+            'administrativeAreaCode' => 'FL',
+        ])];
+    }
+
+    /**
+     * @return iterable<string, array{class-string<CreateAccountRequest|UpdateAccountRequest>, array<string, mixed>}>
+     */
+    public static function invalidAdministrativeAreaCodePayloadProvider(): iterable
+    {
+        yield 'create account jp with us state' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => 'FL',
+        ])];
+
+        yield 'update account us with jp prefecture' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'US',
             'administrativeAreaCode' => '13',
         ])];
     }

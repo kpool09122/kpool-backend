@@ -8,13 +8,6 @@ use InvalidArgumentException;
 
 readonly class ContactAddress
 {
-    /** @var array<string, bool> */
-    private const array ADMINISTRATIVE_AREA_CODE_COUNTRIES = [
-        'JP' => true,
-        'KR' => true,
-        'US' => true,
-    ];
-
     public function __construct(
         private ?CountryCode $countryCode,
         private ?AdministrativeAreaCode $administrativeAreaCode,
@@ -30,9 +23,9 @@ readonly class ContactAddress
         if (
             $this->countryCode !== null
             && $this->administrativeAreaCode !== null
-            && ! isset(self::ADMINISTRATIVE_AREA_CODE_COUNTRIES[$this->countryCode->value])
+            && ! $this->administrativeAreaCode->isSupportedBy($this->countryCode)
         ) {
-            throw new InvalidArgumentException('Administrative area code is supported only for configured countries.');
+            throw new InvalidArgumentException('Administrative area code is invalid for country code.');
         }
     }
 
@@ -71,9 +64,11 @@ readonly class ContactAddress
      */
     public static function fromArray(array $value): self
     {
+        $countryCode = array_key_exists('countryCode', $value) && $value['countryCode'] !== null ? CountryCode::from($value['countryCode']) : null;
+
         return new self(
-            countryCode: array_key_exists('countryCode', $value) && $value['countryCode'] !== null ? CountryCode::from($value['countryCode']) : null,
-            administrativeAreaCode: array_key_exists('administrativeAreaCode', $value) && $value['administrativeAreaCode'] !== null ? new AdministrativeAreaCode($value['administrativeAreaCode']) : null,
+            countryCode: $countryCode,
+            administrativeAreaCode: self::resolveAdministrativeAreaCode($countryCode, $value),
             postalCode: array_key_exists('postalCode', $value) && $value['postalCode'] !== null ? new PostalCode($value['postalCode']) : null,
             locality: array_key_exists('locality', $value) && $value['locality'] !== null ? new Locality($value['locality']) : null,
             addressLine1: new AddressLine($value['addressLine1']),
@@ -81,12 +76,28 @@ readonly class ContactAddress
         );
     }
 
+    /**
+     * @param array{countryCode?: string|null, administrativeAreaCode?: string|null, postalCode?: string|null, locality?: string|null, addressLine1: string, addressLine2?: string|null} $value
+     */
+    private static function resolveAdministrativeAreaCode(?CountryCode $countryCode, array $value): ?AdministrativeAreaCode
+    {
+        if (! array_key_exists('administrativeAreaCode', $value) || $value['administrativeAreaCode'] === null) {
+            return null;
+        }
+
+        if ($countryCode === null) {
+            throw new InvalidArgumentException('Administrative area code must be null when country code is null.');
+        }
+
+        return AdministrativeAreaCode::fromCountryAndCode($countryCode, $value['administrativeAreaCode']);
+    }
+
     /** @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null} */
     public function toArray(): array
     {
         return [
             'countryCode' => $this->countryCode?->value,
-            'administrativeAreaCode' => $this->administrativeAreaCode !== null ? (string) $this->administrativeAreaCode : null,
+            'administrativeAreaCode' => $this->administrativeAreaCode?->code(),
             'postalCode' => $this->postalCode !== null ? (string) $this->postalCode : null,
             'locality' => $this->locality !== null ? (string) $this->locality : null,
             'addressLine1' => (string) $this->addressLine1,

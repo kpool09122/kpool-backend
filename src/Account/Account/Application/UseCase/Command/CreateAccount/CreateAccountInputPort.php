@@ -6,7 +6,6 @@ namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -24,7 +23,17 @@ interface CreateAccountInputPort
 
     public function phone(): ?Phone;
 
-    public function address(): ?ContactAddress;
+    public function addressCountryCode(): ?string;
+
+    public function addressAdministrativeAreaCode(): ?string;
+
+    public function addressPostalCode(): ?string;
+
+    public function addressLocality(): ?string;
+
+    public function addressLine1(): ?string;
+
+    public function addressLine2(): ?string;
 
     public function language(): Language;
 }

@@ -15,7 +15,6 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -41,6 +40,7 @@ readonly class CreateAccountAction
     {
         try {
             try {
+                $address = $request->address();
                 $input = new CreateAccountInput(
                     email: new Email($request->email()),
                     accountType: AccountType::from($request->accountType()),
@@ -50,7 +50,12 @@ readonly class CreateAccountAction
                         : null,
                     language: Language::from($request->language()),
                     phone: $request->phone() !== null ? new Phone($request->phone()) : null,
-                    address: $request->address() !== null ? ContactAddress::fromArray($request->address()) : null,
+                    addressCountryCode: self::nullableString($address, 'countryCode'),
+                    addressAdministrativeAreaCode: self::nullableString($address, 'administrativeAreaCode'),
+                    addressPostalCode: self::nullableString($address, 'postalCode'),
+                    addressLocality: self::nullableString($address, 'locality'),
+                    addressLine1: self::nullableString($address, 'addressLine1'),
+                    addressLine2: self::nullableString($address, 'addressLine2'),
                 );
                 $output = new CreateAccountOutput();
             } catch (InvalidArgumentException|ValueError $e) {
@@ -62,6 +67,10 @@ readonly class CreateAccountAction
             try {
                 $this->createAccount->process($input, $output);
                 DB::commit();
+            } catch (InvalidArgumentException|ValueError $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
@@ -78,5 +87,15 @@ readonly class CreateAccountAction
         }
 
         return response()->json($output->toArray(), Response::HTTP_CREATED);
+    }
+
+    /** @param array<string, mixed>|null $values */
+    private static function nullableString(?array $values, string $key): ?string
+    {
+        if ($values === null || ! array_key_exists($key, $values) || $values[$key] === null) {
+            return null;
+        }
+
+        return (string) $values[$key];
     }
 }

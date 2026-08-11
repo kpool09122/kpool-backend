@@ -189,7 +189,7 @@ class AccountRepositoryTest extends TestCase
         $account->changePhone(new Phone('+81 (90) 1234-5678'));
         $account->changeAddress(new ContactAddress(
             countryCode: CountryCode::JAPAN,
-            administrativeAreaCode: new AdministrativeAreaCode('13'),
+            administrativeAreaCode: AdministrativeAreaCode::JAPAN_TOKYO,
             postalCode: new PostalCode('100-0001'),
             locality: new Locality('千代田区'),
             addressLine1: new AddressLine('千代田1-1'),
