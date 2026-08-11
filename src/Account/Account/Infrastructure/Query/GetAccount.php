@@ -77,11 +77,18 @@ readonly class GetAccount implements GetAccountInterface
     }
 
     /**
-     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null}|null
+     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null
      */
     private static function address(AccountModel $model): ?array
     {
-        if ($model->address_line1 === null) {
+        if (
+            $model->address_country_code === null
+            && $model->address_administrative_area_code === null
+            && $model->address_postal_code === null
+            && $model->address_locality === null
+            && $model->address_line1 === null
+            && $model->address_line2 === null
+        ) {
             return null;
         }
 

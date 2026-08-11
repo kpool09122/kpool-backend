@@ -102,7 +102,14 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
     /** @return array<string, mixed>|null */
     private static function address(AccountModel $model): ?array
     {
-        if ($model->address_line1 === null) {
+        if (
+            $model->address_country_code === null
+            && $model->address_administrative_area_code === null
+            && $model->address_postal_code === null
+            && $model->address_locality === null
+            && $model->address_line1 === null
+            && $model->address_line2 === null
+        ) {
             return null;
         }
 

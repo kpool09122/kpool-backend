@@ -130,14 +130,21 @@ class AccountRepository implements AccountRepositoryInterface
             'address_administrative_area_code' => $address?->administrativeAreaCode()?->code(),
             'address_postal_code' => $address?->postalCode() !== null ? (string) $address->postalCode() : null,
             'address_locality' => $address?->locality() !== null ? (string) $address->locality() : null,
-            'address_line1' => $address !== null ? (string) $address->addressLine1() : null,
+            'address_line1' => $address?->addressLine1() !== null ? (string) $address->addressLine1() : null,
             'address_line2' => $address?->addressLine2() !== null ? (string) $address->addressLine2() : null,
         ];
     }
 
     private static function contactAddress(AccountEloquent $eloquent): ?ContactAddress
     {
-        if ($eloquent->address_line1 === null) {
+        if (
+            $eloquent->address_country_code === null
+            && $eloquent->address_administrative_area_code === null
+            && $eloquent->address_postal_code === null
+            && $eloquent->address_locality === null
+            && $eloquent->address_line1 === null
+            && $eloquent->address_line2 === null
+        ) {
             return null;
         }
 

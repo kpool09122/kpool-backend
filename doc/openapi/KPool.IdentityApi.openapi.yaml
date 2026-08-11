@@ -511,8 +511,6 @@ components:
       description: Policy statement returned for account effective policies.
     AuthenticatedAccountAddressSummary:
       type: object
-      required:
-        - addressLine1
       properties:
         countryCode:
           type: string
@@ -532,6 +530,7 @@ components:
           description: Locality/city name.
         addressLine1:
           type: string
+          nullable: true
           description: Primary address line.
         addressLine2:
           type: string

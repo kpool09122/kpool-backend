@@ -156,11 +156,18 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
     }
 
     /**
-     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null}|null
+     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null
      */
     private static function address(AccountModel $account): ?array
     {
-        if ($account->address_line1 === null) {
+        if (
+            $account->address_country_code === null
+            && $account->address_administrative_area_code === null
+            && $account->address_postal_code === null
+            && $account->address_locality === null
+            && $account->address_line1 === null
+            && $account->address_line2 === null
+        ) {
             return null;
         }
 

@@ -121,7 +121,7 @@ readonly class CreateAccount implements CreateAccountInterface
             'administrativeAreaCode' => $input->addressAdministrativeAreaCode(),
             'postalCode' => $input->addressPostalCode(),
             'locality' => $input->addressLocality(),
-            'addressLine1' => $input->addressLine1() ?? '',
+            'addressLine1' => $input->addressLine1(),
             'addressLine2' => $input->addressLine2(),
         ]);
     }

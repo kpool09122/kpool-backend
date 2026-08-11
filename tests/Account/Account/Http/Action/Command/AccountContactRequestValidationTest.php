@@ -93,6 +93,18 @@ class AccountContactRequestValidationTest extends TestCase
             'countryCode' => 'US',
             'administrativeAreaCode' => 'FL',
         ])];
+
+        yield 'create account without address line 1' => [CreateAccountRequest::class, self::createPayload([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'addressLine1' => null,
+        ])];
+
+        yield 'update account without address line 1' => [UpdateAccountRequest::class, self::updatePayload([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'addressLine1' => null,
+        ])];
     }
 
     /**

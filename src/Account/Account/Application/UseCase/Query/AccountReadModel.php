@@ -6,7 +6,7 @@ namespace Source\Account\Account\Application\UseCase\Query;
 
 readonly class AccountReadModel
 {
-    /** @param array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null}|null $address */
+    /** @param array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null $address */
     public function __construct(
         private string $accountIdentifier,
         private string $email,
@@ -54,7 +54,7 @@ readonly class AccountReadModel
         return $this->phone;
     }
 
-    /** @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null}|null */
+    /** @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null */
     public function address(): ?array
     {
         return $this->address;

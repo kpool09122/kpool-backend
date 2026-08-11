@@ -37,7 +37,7 @@ class CreateAccountRequest extends FormRequest
             ],
             'address.postalCode' => ['nullable', 'string', 'max:16'],
             'address.locality' => ['nullable', 'string', 'max:64'],
-            'address.addressLine1' => ['required_with:address', 'string', 'max:252'],
+            'address.addressLine1' => ['nullable', 'string', 'max:252'],
             'address.addressLine2' => ['nullable', 'string', 'max:252'],
         ];
     }

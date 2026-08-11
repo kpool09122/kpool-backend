@@ -72,4 +72,23 @@ class ContactAddressTest extends TestCase
             'addressLine2' => null,
         ], $address->toArray());
     }
+
+    public function testFromArrayAllowsContactAddressWithoutAddressLine1(): void
+    {
+        $address = ContactAddress::fromArray([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'postalCode' => '100-0001',
+            'locality' => '千代田区',
+        ]);
+
+        $this->assertSame([
+            'countryCode' => 'JP',
+            'administrativeAreaCode' => '13',
+            'postalCode' => '100-0001',
+            'locality' => '千代田区',
+            'addressLine1' => null,
+            'addressLine2' => null,
+        ], $address->toArray());
+    }
 }

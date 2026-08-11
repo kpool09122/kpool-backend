@@ -1762,8 +1762,6 @@ components:
       description: Request body for approving account verification.
     ContactAddressSummary:
       type: object
-      required:
-        - addressLine1
       properties:
         countryCode:
           type: string
@@ -1783,6 +1781,7 @@ components:
           description: Locality/city name.
         addressLine1:
           type: string
+          nullable: true
           description: Primary address line.
         addressLine2:
           type: string

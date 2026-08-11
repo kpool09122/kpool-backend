@@ -13,7 +13,7 @@ readonly class ContactAddress
         private ?AdministrativeAreaCode $administrativeAreaCode,
         private ?PostalCode $postalCode,
         private ?Locality $locality,
-        private AddressLine $addressLine1,
+        private ?AddressLine $addressLine1,
         private ?AddressLine $addressLine2 = null,
     ) {
         if ($this->countryCode === null && $this->administrativeAreaCode !== null) {
@@ -49,7 +49,7 @@ readonly class ContactAddress
         return $this->locality;
     }
 
-    public function addressLine1(): AddressLine
+    public function addressLine1(): ?AddressLine
     {
         return $this->addressLine1;
     }
@@ -60,7 +60,7 @@ readonly class ContactAddress
     }
 
     /**
-     * @param array{countryCode?: string|null, administrativeAreaCode?: string|null, postalCode?: string|null, locality?: string|null, addressLine1: string, addressLine2?: string|null} $value
+     * @param array{countryCode?: string|null, administrativeAreaCode?: string|null, postalCode?: string|null, locality?: string|null, addressLine1?: string|null, addressLine2?: string|null} $value
      */
     public static function fromArray(array $value): self
     {
@@ -71,13 +71,13 @@ readonly class ContactAddress
             administrativeAreaCode: self::resolveAdministrativeAreaCode($countryCode, $value),
             postalCode: array_key_exists('postalCode', $value) && $value['postalCode'] !== null ? new PostalCode($value['postalCode']) : null,
             locality: array_key_exists('locality', $value) && $value['locality'] !== null ? new Locality($value['locality']) : null,
-            addressLine1: new AddressLine($value['addressLine1']),
+            addressLine1: array_key_exists('addressLine1', $value) && $value['addressLine1'] !== null ? new AddressLine($value['addressLine1']) : null,
             addressLine2: array_key_exists('addressLine2', $value) && $value['addressLine2'] !== null ? new AddressLine($value['addressLine2']) : null,
         );
     }
 
     /**
-     * @param array{countryCode?: string|null, administrativeAreaCode?: string|null, postalCode?: string|null, locality?: string|null, addressLine1: string, addressLine2?: string|null} $value
+     * @param array{countryCode?: string|null, administrativeAreaCode?: string|null, postalCode?: string|null, locality?: string|null, addressLine1?: string|null, addressLine2?: string|null} $value
      */
     private static function resolveAdministrativeAreaCode(?CountryCode $countryCode, array $value): ?AdministrativeAreaCode
     {
@@ -92,7 +92,7 @@ readonly class ContactAddress
         return AdministrativeAreaCode::fromCountryAndCode($countryCode, $value['administrativeAreaCode']);
     }
 
-    /** @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string, addressLine2: string|null} */
+    /** @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null} */
     public function toArray(): array
     {
         return [
@@ -100,7 +100,7 @@ readonly class ContactAddress
             'administrativeAreaCode' => $this->administrativeAreaCode?->code(),
             'postalCode' => $this->postalCode !== null ? (string) $this->postalCode : null,
             'locality' => $this->locality !== null ? (string) $this->locality : null,
-            'addressLine1' => (string) $this->addressLine1,
+            'addressLine1' => $this->addressLine1 !== null ? (string) $this->addressLine1 : null,
             'addressLine2' => $this->addressLine2 !== null ? (string) $this->addressLine2 : null,
         ];
     }

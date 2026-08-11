@@ -49,7 +49,7 @@ model ContactAddressSummary {
   @doc("Locality/city name.")
   locality?: string | null;
   @doc("Primary address line.")
-  addressLine1: string;
+  addressLine1?: string | null;
   @doc("Secondary address line.")
   addressLine2?: string | null;
 }
