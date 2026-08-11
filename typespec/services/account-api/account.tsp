@@ -53,6 +53,13 @@ model OkAccountDocumentsResponse {
   @body body: ListAccountDocumentsResponseBody;
 }
 
+@doc("Response returned when an account document file is streamed.")
+model OkAccountDocumentFileResponse {
+  @statusCode statusCode: 200;
+  @header("Cache-Control") cacheControl: "private, no-store";
+  @body body: bytes;
+}
+
 @route("/my")
 interface MyAccountOperations {
   @get
@@ -98,5 +105,13 @@ interface AccountOperations {
     @path accountId: Uuid,
     @body body: UploadAccountDocumentsRequestBody,
   ): CreatedAccountDocumentsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{accountId}/documents/{documentType}")
+  @doc("View a saved document file for the specified account as an operator.")
+  viewAccountDocument(
+    @path accountId: Uuid,
+    @path documentType: string,
+  ): OkAccountDocumentFileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
 }

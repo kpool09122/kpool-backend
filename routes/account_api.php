@@ -16,6 +16,7 @@ use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
+use Application\Http\Action\Account\Account\Query\ViewAccountDocument\ViewAccountDocumentAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
 
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
@@ -48,6 +49,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
     Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
     Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);
+    Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
 
     // Delegation
     Route::post('/delegations', RequestDelegationAction::class);
