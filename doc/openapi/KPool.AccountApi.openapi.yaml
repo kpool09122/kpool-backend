@@ -52,6 +52,53 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RequestAccountTypeChangeRequestBody'
+  /account-type-change-requests/{requestId}/approve:
+    post:
+      operationId: AccountTypeChangeRequestOperations_approveAccountTypeChangeRequest
+      description: Approve account type change request.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an account type change request is approved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /account-verifications:
     post:
       operationId: AccountVerificationOperations_requestVerification

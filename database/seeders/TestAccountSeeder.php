@@ -13,7 +13,7 @@ use RuntimeException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-class FullAccessTestAccountSeeder extends Seeder
+class TestAccountSeeder extends Seeder
 {
     private const array ACCOUNTS = [
         [
@@ -25,9 +25,9 @@ class FullAccessTestAccountSeeder extends Seeder
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0b',
             'accountOwnerPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa05',
             'email' => 'test@example.com',
-            'identityName' => 'full-access-test',
-            'accountName' => 'Full Access Test Account',
-            'wikiPrincipalGroupName' => 'Full Access Test Group',
+            'identityName' => 'test-account',
+            'accountName' => 'Test Account',
+            'wikiPrincipalGroupName' => 'Test Account Group',
             'accountType' => 'individual',
         ],
         [
@@ -39,9 +39,9 @@ class FullAccessTestAccountSeeder extends Seeder
             'wikiDefaultPrincipalGroupId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0c',
             'accountOwnerPrincipalGroupMembershipId' => '01965bb2-bcc9-7c6f-8b90-89f7f217fa0a',
             'email' => 'corp@example.com',
-            'identityName' => 'corp-full-access-test',
-            'accountName' => 'Corporate Full Access Test Account',
-            'wikiPrincipalGroupName' => 'Corporate Full Access Test Group',
+            'identityName' => 'corp-test-account',
+            'accountName' => 'Corporate Test Account',
+            'wikiPrincipalGroupName' => 'Corporate Test Account Group',
             'accountType' => 'corporation',
         ],
     ];
@@ -50,14 +50,6 @@ class FullAccessTestAccountSeeder extends Seeder
     {
         if (! app()->environment(['local', 'testing'])) {
             return;
-        }
-
-        $administratorRoleId = DB::table('roles')
-            ->where('name', 'ADMINISTRATOR')
-            ->value('id');
-
-        if (! is_string($administratorRoleId)) {
-            throw new RuntimeException('ADMINISTRATOR role not found. Please run SystemRoleSeeder first.');
         }
 
         $collaboratorRoleId = DB::table('roles')
@@ -79,7 +71,7 @@ class FullAccessTestAccountSeeder extends Seeder
         $now = now();
 
         foreach (self::ACCOUNTS as $account) {
-            $this->createFullAccessAccount($account, $administratorRoleId, $collaboratorRoleId, $ownerRoleId, $now);
+            $this->createTestAccount($account, $collaboratorRoleId, $ownerRoleId, $now);
         }
     }
 
@@ -99,9 +91,8 @@ class FullAccessTestAccountSeeder extends Seeder
      *     accountType: string
      * } $account
      */
-    private function createFullAccessAccount(
+    private function createTestAccount(
         array $account,
-        string $administratorRoleId,
         string $collaboratorRoleId,
         string $ownerRoleId,
         Carbon $now,
@@ -237,10 +228,6 @@ class FullAccessTestAccountSeeder extends Seeder
             [
                 'principal_group_id' => $account['wikiDefaultPrincipalGroupId'],
                 'role_id' => $collaboratorRoleId,
-            ],
-            [
-                'principal_group_id' => $account['principalGroupId'],
-                'role_id' => $administratorRoleId,
             ],
         ], ['principal_group_id', 'role_id']);
 

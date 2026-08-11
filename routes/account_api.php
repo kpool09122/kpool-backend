@@ -12,6 +12,7 @@ use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAc
 use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
+use Application\Http\Action\Account\Account\AccountTypeChangeRequest\Command\ApproveAccountTypeChangeRequest\ApproveAccountTypeChangeRequestAction;
 use Application\Http\Action\Account\Account\AccountTypeChangeRequest\Command\RequestAccountTypeChange\RequestAccountTypeChangeAction;
 use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
@@ -74,6 +75,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
 
     // AccountTypeChangeRequest
     Route::post('/account-type-change-requests', RequestAccountTypeChangeAction::class);
+    Route::post('/account-type-change-requests/{requestId}/approve', ApproveAccountTypeChangeRequestAction::class);
 
     // Affiliation
     Route::post('/affiliations', RequestAffiliationAction::class);

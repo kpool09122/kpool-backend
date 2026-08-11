@@ -10,4 +10,5 @@ enum Action: string
     case INVITE_MEMBER = 'account:member:invite';
     case UPDATE = 'account:update';
     case PRINCIPAL_GROUP_MANAGE = 'account:principal-group:manage';
+    case ACCOUNT_TYPE_CHANGE_REQUEST_APPROVE = 'account:type-change-request:approve';
 }

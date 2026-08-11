@@ -20,7 +20,7 @@ class Account
     public function __construct(
         private readonly AccountIdentifier $accountIdentifier,
         private readonly Email $email,
-        private readonly AccountType $type,
+        private AccountType $type,
         private AccountName $name,
         private readonly AccountStatus $status,
         private AccountCategory $accountCategory,
@@ -42,6 +42,11 @@ class Account
     public function type(): AccountType
     {
         return $this->type;
+    }
+
+    public function changeType(AccountType $type): void
+    {
+        $this->type = $type;
     }
 
     public function name(): AccountName

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Account\Application\UseCase\Command\ApproveAccountTypeChangeRequest\ApproveAccountTypeChangeRequest;
+use Source\Account\Account\Application\UseCase\Command\ApproveAccountTypeChangeRequest\ApproveAccountTypeChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveVerification\ApproveVerification;
 use Source\Account\Account\Application\UseCase\Command\ApproveVerification\ApproveVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
@@ -91,6 +93,7 @@ class UseCaseServiceProvider extends ServiceProvider
         // AccountVerification
         $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
         $this->app->singleton(RequestAccountTypeChangeInterface::class, RequestAccountTypeChange::class);
+        $this->app->singleton(ApproveAccountTypeChangeRequestInterface::class, ApproveAccountTypeChangeRequest::class);
         $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
         $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
 
