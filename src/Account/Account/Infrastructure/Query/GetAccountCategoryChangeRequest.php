@@ -63,7 +63,7 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
 
         /** @var AccountModel|null $account */
         $account = AccountModel::query()
-            ->select(['id', 'email', 'type', 'name', 'status', 'category'])
+            ->select(['id', 'email', 'type', 'name', 'status', 'category', 'phone', 'address'])
             ->where('id', $request->account_id)
             ->first();
 
@@ -117,6 +117,8 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
                 name: $account->name,
                 status: $account->status,
                 accountCategory: $account->category,
+                phone: $account->phone,
+                address: $account->address,
             ),
             identities: $identities,
             documents: $documents,

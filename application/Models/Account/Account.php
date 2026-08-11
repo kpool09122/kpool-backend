@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $status
  * @property string $category
+ * @property ?string $phone
+ * @property ?array $address
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -24,11 +26,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'name',
     'status',
     'category',
+    'phone',
+    'address',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'accounts', keyType: 'string')]
 class Account extends Model
 {
-    #[\Override]
     public $incrementing = false;
 
     #[\Override]
@@ -37,6 +40,7 @@ class Account extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
+            'address' => 'array',
         ];
     }
 

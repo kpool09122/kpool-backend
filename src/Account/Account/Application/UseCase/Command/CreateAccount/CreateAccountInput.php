@@ -6,9 +6,11 @@ namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\Phone;
 
 readonly class CreateAccountInput implements CreateAccountInputPort
 {
@@ -18,6 +20,8 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         private AccountName $accountName,
         private ?IdentityIdentifier $identityIdentifier = null,
         private Language $language = Language::ENGLISH,
+        private ?Phone $phone = null,
+        private ?ContactAddress $address = null,
     ) {
     }
 
@@ -44,5 +48,15 @@ readonly class CreateAccountInput implements CreateAccountInputPort
     public function language(): Language
     {
         return $this->language;
+    }
+
+    public function phone(): ?Phone
+    {
+        return $this->phone;
+    }
+
+    public function address(): ?ContactAddress
+    {
+        return $this->address;
     }
 }

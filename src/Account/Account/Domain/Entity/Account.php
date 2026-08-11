@@ -13,7 +13,9 @@ use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 
 class Account
 {
@@ -26,6 +28,8 @@ class Account
         private AccountCategory $accountCategory,
         private readonly DeletionReadinessChecklist $deletionReadiness,
         private AccountDocuments $documents,
+        private ?Phone $phone = null,
+        private ?ContactAddress $address = null,
     ) {
     }
 
@@ -52,6 +56,26 @@ class Account
     public function changeName(AccountName $name): void
     {
         $this->name = $name;
+    }
+
+    public function phone(): ?Phone
+    {
+        return $this->phone;
+    }
+
+    public function changePhone(?Phone $phone): void
+    {
+        $this->phone = $phone;
+    }
+
+    public function address(): ?ContactAddress
+    {
+        return $this->address;
+    }
+
+    public function changeAddress(?ContactAddress $address): void
+    {
+        $this->address = $address;
     }
 
     public function status(): AccountStatus

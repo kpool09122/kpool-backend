@@ -58,6 +58,8 @@ class AccountCategoryChangeRequestDetailReadModelTest extends TestCase
                 'name' => 'Account Name',
                 'status' => 'active',
                 'accountCategory' => 'general',
+                'phone' => null,
+                'address' => null,
             ],
             'identities' => [
                 ['name' => 'Alice', 'email' => 'alice@example.com'],

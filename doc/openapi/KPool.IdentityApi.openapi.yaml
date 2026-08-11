@@ -509,6 +509,75 @@ components:
           nullable: true
           description: Optional condition attached to the statement.
       description: Policy statement returned for account effective policies.
+    AuthenticatedAccountAddressSummary:
+      type: object
+      required:
+        - addressLine1
+      properties:
+        countryCode:
+          type: string
+          nullable: true
+          description: ISO 3166-1 alpha-2 country code.
+        administrativeAreaCode:
+          type: string
+          nullable: true
+          description: Administrative area code for supported countries.
+        postalCode:
+          type: string
+          nullable: true
+          description: Postal code.
+        locality:
+          type: string
+          nullable: true
+          description: Locality/city name.
+        addressLine1:
+          type: string
+          description: Primary address line.
+        addressLine2:
+          type: string
+          nullable: true
+          description: Secondary address line.
+      description: Account contact address summary returned for authenticated account details.
+    AuthenticatedAccountSummary:
+      type: object
+      required:
+        - accountIdentifier
+        - email
+        - type
+        - name
+        - status
+        - accountCategory
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier.
+        email:
+          type: string
+          description: Account email address.
+        type:
+          type: string
+          description: Account type.
+        name:
+          type: string
+          description: Account display name.
+        status:
+          type: string
+          description: Account status.
+        accountCategory:
+          type: string
+          description: Account category assigned during creation.
+        phone:
+          type: string
+          nullable: true
+          description: Contact phone number.
+        address:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountAddressSummary'
+          nullable: true
+          description: Contact address.
+      description: Account summary returned for the authenticated identity.
     AuthenticatedIdentitySummary:
       type: object
       required:
@@ -538,6 +607,12 @@ components:
           items:
             $ref: '#/components/schemas/AccountEffectivePolicySummary'
           description: Effective policies for the authenticated identity in the current account.
+        account:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountSummary'
+          nullable: true
+          description: Detailed account information associated with the authenticated identity.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.

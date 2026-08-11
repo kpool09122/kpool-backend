@@ -91,7 +91,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountType, $testData->accountName, null, null)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -188,7 +188,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountType, $testData->accountName, null, null)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);

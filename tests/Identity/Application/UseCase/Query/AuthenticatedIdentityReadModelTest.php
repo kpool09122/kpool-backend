@@ -63,6 +63,7 @@ class AuthenticatedIdentityReadModelTest extends TestCase
                     'statements' => [],
                 ],
             ],
+            'account' => null,
         ], $readModel->toArray());
     }
 }

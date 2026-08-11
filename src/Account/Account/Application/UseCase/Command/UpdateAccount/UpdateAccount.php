@@ -51,6 +51,8 @@ readonly class UpdateAccount implements UpdateAccountInterface
         }
 
         $account->changeName($input->accountName());
+        $account->changePhone($input->phone());
+        $account->changeAddress($input->address());
         $this->accountRepository->save($account);
 
         $output->setAccount($account);

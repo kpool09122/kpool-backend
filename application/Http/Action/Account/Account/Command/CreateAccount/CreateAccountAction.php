@@ -15,9 +15,11 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\Phone;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
@@ -47,6 +49,8 @@ readonly class CreateAccountAction
                         ? new IdentityIdentifier($request->identityIdentifier())
                         : null,
                     language: Language::from($request->language()),
+                    phone: $request->phone() !== null ? new Phone($request->phone()) : null,
+                    address: $request->address() !== null ? ContactAddress::fromArray($request->address()) : null,
                 );
                 $output = new CreateAccountOutput();
             } catch (InvalidArgumentException|ValueError $e) {

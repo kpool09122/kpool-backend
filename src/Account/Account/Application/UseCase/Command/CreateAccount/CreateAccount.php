@@ -56,6 +56,8 @@ readonly class CreateAccount implements CreateAccountInterface
             $input->email(),
             $input->accountType(),
             $input->accountName(),
+            $input->phone(),
+            $input->address(),
         );
 
         $this->accountRepository->save($account);

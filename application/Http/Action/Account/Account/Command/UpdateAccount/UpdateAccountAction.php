@@ -20,8 +20,11 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\ContactAddress;
+use Source\Shared\Domain\ValueObject\Phone;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
+use ValueError;
 
 readonly class UpdateAccountAction
 {
@@ -47,9 +50,11 @@ readonly class UpdateAccountAction
                     accountIdentifier: new AccountIdentifier($request->accountId()),
                     principal: $this->accountContext->principal(),
                     accountName: new AccountName($request->accountName()),
+                    phone: $request->phone() !== null ? new Phone($request->phone()) : null,
+                    address: $request->address() !== null ? ContactAddress::fromArray($request->address()) : null,
                 );
                 $output = new UpdateAccountOutput();
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }
 

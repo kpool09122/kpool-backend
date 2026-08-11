@@ -39,6 +39,21 @@ model ListAccountDocumentsResponseBody {
   documents: AccountDocumentSummary[];
 }
 
+model ContactAddressSummary {
+  @doc("ISO 3166-1 alpha-2 country code.")
+  countryCode?: string | null;
+  @doc("Administrative area code for supported countries.")
+  administrativeAreaCode?: string | null;
+  @doc("Postal code.")
+  postalCode?: string | null;
+  @doc("Locality/city name.")
+  locality?: string | null;
+  @doc("Primary address line.")
+  addressLine1: string;
+  @doc("Secondary address line.")
+  addressLine2?: string | null;
+}
+
 model AccountSummary {
   @doc("Account identifier.")
   accountIdentifier: Uuid;
@@ -52,6 +67,10 @@ model AccountSummary {
   status: string;
   @doc("Account category assigned during creation.")
   accountCategory: string;
+  @doc("Contact phone number.")
+  phone?: string | null;
+  @doc("Contact address.")
+  address?: ContactAddressSummary | null;
 }
 
 @doc("Account creation request result. Empty when the request is accepted without exposing whether an account already exists.")
@@ -68,6 +87,10 @@ model CreateAccountResult {
   status?: string;
   @doc("Account category assigned during creation.")
   accountCategory?: string;
+  @doc("Contact phone number.")
+  phone?: string | null;
+  @doc("Contact address.")
+  address?: ContactAddressSummary | null;
 }
 
 @doc("Affiliation contract terms.")

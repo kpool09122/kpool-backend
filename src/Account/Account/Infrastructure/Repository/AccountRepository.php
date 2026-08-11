@@ -18,7 +18,9 @@ use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 
 class AccountRepository implements AccountRepositoryInterface
 {
@@ -32,6 +34,8 @@ class AccountRepository implements AccountRepositoryInterface
                 'name' => (string) $account->name(),
                 'status' => $account->status()->value,
                 'category' => $account->accountCategory()->value,
+                'phone' => $account->phone() !== null ? (string) $account->phone() : null,
+                'address' => $account->address()?->toArray(),
             ]
         );
 
@@ -111,6 +115,8 @@ class AccountRepository implements AccountRepositoryInterface
             AccountCategory::from($eloquent->category),
             DeletionReadinessChecklist::ready(),
             new AccountDocuments($documents),
+            $eloquent->phone !== null ? new Phone($eloquent->phone) : null,
+            $eloquent->address !== null ? ContactAddress::fromArray($eloquent->address) : null,
         );
     }
 }

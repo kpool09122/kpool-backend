@@ -7,8 +7,10 @@ namespace Source\Identity\Infrastructure\Query;
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
 use Application\Http\Context\AuthContextCache;
+use Application\Models\Account\Account as AccountModel;
 use Application\Models\Identity\Identity as IdentityModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Identity\Application\UseCase\Query\AuthenticatedAccountSummaryReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
@@ -48,6 +50,27 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             $accountContext = null;
         }
 
+        $account = null;
+        if ($accountContext !== null) {
+            $accountModel = AccountModel::query()
+                ->select(['id', 'email', 'type', 'name', 'status', 'category', 'phone', 'address'])
+                ->where('id', (string) $accountContext->principal()->accountIdentifier())
+                ->first();
+
+            if ($accountModel !== null) {
+                $account = new AuthenticatedAccountSummaryReadModel(
+                    accountIdentifier: $accountModel->id,
+                    email: $accountModel->email,
+                    type: $accountModel->type,
+                    name: $accountModel->name,
+                    status: $accountModel->status,
+                    accountCategory: $accountModel->category,
+                    phone: $accountModel->phone,
+                    address: $accountModel->address,
+                );
+            }
+        }
+
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
             identityName: $model->identity_name,
@@ -58,6 +81,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
             accountType: $accountContext?->accountType()->value,
             accountPolicies: $accountContext?->accountPolicies() ?? [],
+            account: $account,
         );
     }
 }

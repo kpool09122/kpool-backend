@@ -42,7 +42,7 @@ readonly class GetAccount implements GetAccountInterface
         }
 
         $model = AccountModel::query()
-            ->select(['id', 'email', 'type', 'name', 'status', 'category'])
+            ->select(['id', 'email', 'type', 'name', 'status', 'category', 'phone', 'address'])
             ->where('id', (string) $accountIdentifier)
             ->first();
 
@@ -57,6 +57,8 @@ readonly class GetAccount implements GetAccountInterface
             name: $model->name,
             status: $model->status,
             accountCategory: $model->category,
+            phone: $model->phone,
+            address: $model->address,
         );
     }
 }

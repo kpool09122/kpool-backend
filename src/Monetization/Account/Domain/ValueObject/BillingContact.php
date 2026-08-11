@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Account\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Phone;
 
 readonly class BillingContact
 {

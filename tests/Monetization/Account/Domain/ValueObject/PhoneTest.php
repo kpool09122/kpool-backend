@@ -6,7 +6,7 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\ValueObject\Phone;
+use Source\Shared\Domain\ValueObject\Phone;
 
 class PhoneTest extends TestCase
 {

@@ -32,6 +32,8 @@ class AccountReadModelTest extends TestCase
             'name' => 'Example Inc',
             'status' => AccountStatus::ACTIVE->value,
             'accountCategory' => AccountCategory::GENERAL->value,
+            'phone' => null,
+            'address' => null,
         ], $readModel->toArray());
     }
 }
