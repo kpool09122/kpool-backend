@@ -100,8 +100,19 @@ class AccountAuthorizationSeeder extends Seeder
             ),
         ]);
 
+        $operationsPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000003', 'ACCOUNT_CATEGORY_CHANGE_REQUEST_APPROVAL', [
+            new Statement(
+                effect: Effect::ALLOW,
+                actions: [
+                    Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_APPROVE,
+                ],
+                resourceTypes: [ResourceType::ACCOUNT],
+            ),
+        ]);
+
         $this->saveRole(Role::OWNER, [$ownerPolicy->policyIdentifier()]);
         $this->saveRole(Role::ADMIN, [$adminPolicy->policyIdentifier()]);
+        $this->saveRole(Role::OPERATIONS, [$operationsPolicy->policyIdentifier()]);
     }
 
     private function corporationAccountCondition(): Condition

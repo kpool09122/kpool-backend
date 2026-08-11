@@ -15,6 +15,12 @@ model CreateAccountCategoryChangeRequestResponse {
   @body body: AccountCategoryChangeRequestSummary;
 }
 
+@doc("Response returned when an account category change request is approved.")
+model ApproveAccountCategoryChangeRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: AccountCategoryChangeRequestSummary;
+}
+
 @route("/accounts/{accountIdentifier}/category-change-requests")
 interface AccountCategoryChangeRequestOperations {
   @post
@@ -23,4 +29,13 @@ interface AccountCategoryChangeRequestOperations {
     @path accountIdentifier: Uuid,
     @body body: RequestAccountCategoryChangeRequestBody,
   ): CreateAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/account-category-change-requests/{requestIdentifier}/approve")
+interface AccountCategoryChangeRequestApprovalOperations {
+  @post
+  @doc("Approve an account category change request.")
+  approveAccountCategoryChangeRequest(
+    @path requestIdentifier: Uuid,
+  ): ApproveAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
