@@ -70,7 +70,9 @@ class AccountAuthorizationSeeder extends Seeder
 
         $this->saveRole(Role::OWNER, $accountManagementPolicyIdentifiers);
         $this->saveRole(Role::ADMIN, $accountManagementPolicyIdentifiers);
-        $this->saveRole(Role::OPERATIONS, [$accountCategoryChangeRequestManagePolicy->policyIdentifier()]);
+        $this->saveRole(Role::OPERATIONS, [
+            $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
+        ]);
     }
 
     private function corporationAccountCondition(): Condition

@@ -26,8 +26,10 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
+use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
+use Source\Account\Account\Infrastructure\Query\ListAccountCategoryChangeRequests;
 use Source\Account\Account\Infrastructure\Query\ListAccountDocuments;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
@@ -81,6 +83,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
         $this->app->singleton(UpdateAccountInterface::class, UpdateAccount::class);
         $this->app->singleton(GetAccountInterface::class, GetAccount::class);
+        $this->app->singleton(ListAccountCategoryChangeRequestsInterface::class, ListAccountCategoryChangeRequests::class);
         $this->app->singleton(ListAccountDocumentsInterface::class, ListAccountDocuments::class);
         $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);

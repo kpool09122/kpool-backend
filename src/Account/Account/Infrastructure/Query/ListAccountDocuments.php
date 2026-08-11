@@ -8,10 +8,10 @@ use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\AccountDocument as AccountDocumentModel;
 use Source\Account\Account\Application\Exception\AccountDocumentListForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\UseCase\Query\AccountDocumentListReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountDocumentReadModel;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInputPort;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
+use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsOutputPort;
 
 readonly class ListAccountDocuments implements ListAccountDocumentsInterface
 {
@@ -19,7 +19,7 @@ readonly class ListAccountDocuments implements ListAccountDocumentsInterface
      * @throws AccountNotFoundException
      * @throws AccountDocumentListForbiddenException
      */
-    public function process(ListAccountDocumentsInputPort $input): AccountDocumentListReadModel
+    public function process(ListAccountDocumentsInputPort $input, ListAccountDocumentsOutputPort $output): void
     {
         $accountIdentifier = $input->accountIdentifier();
 
@@ -47,6 +47,6 @@ readonly class ListAccountDocuments implements ListAccountDocumentsInterface
             ))
             ->all();
 
-        return new AccountDocumentListReadModel($documents);
+        $output->output($documents);
     }
 }

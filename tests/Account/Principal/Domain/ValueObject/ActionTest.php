@@ -18,4 +18,9 @@ class ActionTest extends TestCase
     {
         $this->assertSame('account:member:invite', Action::INVITE_MEMBER->value);
     }
+
+    public function testAccountCategoryChangeRequestManageValue(): void
+    {
+        $this->assertSame('account:category-change-request:manage', Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE->value);
+    }
 }

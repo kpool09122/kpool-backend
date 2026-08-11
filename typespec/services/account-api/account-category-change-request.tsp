@@ -36,7 +36,23 @@ model RejectAccountCategoryChangeRequestResponse {
   @body body: AccountCategoryChangeRequestSummary;
 }
 
+@doc("Response returned when listing account category change requests.")
+model ListAccountCategoryChangeRequestsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListAccountCategoryChangeRequestsResponseBody;
+}
+
 interface AccountCategoryChangeRequestOperations {
+  @get
+  @route("/account-category-change-requests")
+  @doc("List account category change requests for operations review.")
+  listAccountCategoryChangeRequests(
+    @query status?: "pending" | "approved" | "rejected" | null,
+    @query requestedAccountCategory?: "agency" | "talent" | "general" | null,
+    @query perPage?: int32 | null,
+    @query page?: int32 | null,
+  ): ListAccountCategoryChangeRequestsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
   @doc("Request account category change.")

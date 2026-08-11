@@ -14,6 +14,7 @@ use Source\Account\Account\Application\Exception\AccountDocumentListForbiddenExc
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInput;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
+use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsOutput;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -38,7 +39,8 @@ readonly class ListMyAccountDocumentsAction
             );
 
             try {
-                $documents = $this->listAccountDocuments->process($input);
+                $output = new ListAccountDocumentsOutput();
+                $this->listAccountDocuments->process($input, $output);
             } catch (AccountNotFoundException $e) {
                 throw new NotFoundHttpException(detail: error_message('account_not_found', $language), previous: $e);
             } catch (AccountDocumentListForbiddenException $e) {
@@ -54,6 +56,6 @@ readonly class ListMyAccountDocumentsAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json($documents->toArray(), Response::HTTP_OK);
+        return response()->json($output->toArray(), Response::HTTP_OK);
     }
 }
