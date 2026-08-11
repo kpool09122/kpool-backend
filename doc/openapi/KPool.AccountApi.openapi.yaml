@@ -225,136 +225,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RejectAccountCategoryChangeRequestBody'
-  /account-verifications:
-    post:
-      operationId: AccountVerificationOperations_requestVerification
-      description: Request account verification.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when an account verification is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountVerificationSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestVerificationRequestBody'
-  /account-verifications/{verificationId}/approve:
-    post:
-      operationId: AccountVerificationOperations_approveVerification
-      description: Approve account verification.
-      parameters:
-        - name: verificationId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '200':
-          description: Response returned when an account verification operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountVerificationSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApproveVerificationRequestBody'
-  /account-verifications/{verificationId}/reject:
-    post:
-      operationId: AccountVerificationOperations_rejectVerification
-      description: Reject account verification.
-      parameters:
-        - name: verificationId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '200':
-          description: Response returned when an account verification operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountVerificationSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RejectVerificationRequestBody'
   /accounts:
     post:
       operationId: AccountOperations_createAccount
@@ -1522,6 +1392,18 @@ components:
           type: string
           description: Identity email address.
       description: Identity summary attached to an account category change request target account.
+    AccountCategoryChangeRequestListItemSummary:
+      type: object
+      required:
+        - account
+      properties:
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AccountSummary'
+          description: Target account.
+      allOf:
+        - $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+      description: Account category change request state with target account summary.
     AccountCategoryChangeRequestSummary:
       type: object
       required:
@@ -1671,62 +1553,6 @@ components:
             - $ref: '#/components/schemas/ContactAddressSummary'
           nullable: true
           description: Contact address.
-    AccountVerificationSummary:
-      type: object
-      required:
-        - verificationIdentifier
-        - accountIdentifier
-        - verificationType
-        - status
-        - applicantName
-        - requestedAt
-        - documents
-      properties:
-        verificationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Verification identifier.
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier under review.
-        verificationType:
-          type: string
-          description: Verification type.
-        status:
-          type: string
-          description: Verification status.
-        applicantName:
-          type: string
-          description: Applicant full name.
-        requestedAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the verification was requested.
-        reviewedBy:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Reviewer account identifier.
-        reviewedAt:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          nullable: true
-          description: Timestamp when the verification was reviewed.
-        rejectionReason:
-          type: object
-          allOf:
-            - $ref: '#/components/schemas/VerificationRejectionReasonSummary'
-          nullable: true
-          description: Optional rejection reason.
-        documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/VerificationDocumentSummary'
-          description: Submitted documents.
-      description: Account verification state.
     AffiliationSummary:
       type: object
       required:
@@ -1810,16 +1636,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier approving the delegation.
       description: Request body for approving a delegation.
-    ApproveVerificationRequestBody:
-      type: object
-      required:
-        - reviewerAccountIdentifier
-      properties:
-        reviewerAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Reviewer account identifier.
-      description: Request body for approving account verification.
     ContactAddressSummary:
       type: object
       properties:
@@ -2141,7 +1957,7 @@ components:
         requests:
           type: array
           items:
-            $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+            $ref: '#/components/schemas/AccountCategoryChangeRequestListItemSummary'
           description: Account category change requests.
         current_page:
           type: integer
@@ -2308,24 +2124,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Rejector account identifier.
       description: Request body for rejecting an affiliation.
-    RejectVerificationRequestBody:
-      type: object
-      required:
-        - reviewerAccountIdentifier
-        - rejectionReasonCode
-      properties:
-        reviewerAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Reviewer account identifier.
-        rejectionReasonCode:
-          type: string
-          description: Rejection reason code.
-        rejectionReasonDetail:
-          type: string
-          nullable: true
-          description: Optional rejection detail.
-      description: Request body for rejecting account verification.
     RequestAccountCategoryChangeRequestBody:
       type: object
       required:
@@ -2385,30 +2183,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier of the delegator.
       description: Request body for requesting a delegation.
-    RequestVerificationRequestBody:
-      type: object
-      required:
-        - accountIdentifier
-        - verificationType
-        - applicantName
-        - documents
-      properties:
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier under review.
-        verificationType:
-          type: string
-          description: Verification type.
-        applicantName:
-          type: string
-          description: Applicant full name.
-        documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/VerificationDocumentUploadRequestBody'
-          description: Documents submitted for review.
-      description: Request body for requesting account verification.
     RevokeDelegationRequestBody:
       type: object
       required:
@@ -2497,60 +2271,6 @@ components:
             $ref: '#/components/schemas/AccountDocumentSummary'
           description: Uploaded documents.
       description: Response body for account document upload.
-    VerificationDocumentSummary:
-      type: object
-      required:
-        - documentIdentifier
-        - documentType
-        - documentPath
-        - originalFileName
-        - fileSizeBytes
-        - uploadedAt
-      properties:
-        documentIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Document identifier.
-        documentType:
-          type: string
-          description: Document type.
-        documentPath:
-          type: string
-          description: Stored document path.
-        originalFileName:
-          type: string
-          description: Original file name.
-        fileSizeBytes:
-          type: integer
-          format: int32
-          description: Document size in bytes.
-        uploadedAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the document was uploaded.
-      description: Verification document state.
-    VerificationDocumentUploadRequestBody:
-      type: object
-      required:
-        - documentType
-        - fileName
-        - fileContents
-        - fileSizeBytes
-      properties:
-        documentType:
-          type: string
-          description: Document type.
-        fileName:
-          type: string
-          description: Original file name.
-        fileContents:
-          type: string
-          description: Base64-encoded file contents.
-        fileSizeBytes:
-          type: integer
-          format: int32
-          description: Document size in bytes.
-      description: Verification document submitted by the applicant.
     VerificationRejectionReasonSummary:
       type: object
       required:

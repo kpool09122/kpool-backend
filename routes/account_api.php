@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
-use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
-use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
 use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocumentsAction;
@@ -73,11 +70,6 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
 
     // Invitation
     Route::post('/invitations', InviteMemberAction::class);
-
-    // AccountVerification
-    Route::post('/account-verifications', RequestVerificationAction::class);
-    Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
-    Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);
 
     // AccountCategoryChangeRequest
     Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);

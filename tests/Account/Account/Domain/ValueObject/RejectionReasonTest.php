@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\AccountVerification\Domain\ValueObject;
+namespace Tests\Account\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;

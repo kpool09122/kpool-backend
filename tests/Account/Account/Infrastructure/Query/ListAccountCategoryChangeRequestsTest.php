@@ -38,8 +38,8 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         $accountA = new AccountIdentifier(StrTestHelper::generateUuid());
         $accountB = new AccountIdentifier(StrTestHelper::generateUuid());
-        CreateAccount::create((string) $accountA);
-        CreateAccount::create((string) $accountB);
+        CreateAccount::create((string) $accountA, ['email' => 'account-a@example.com', 'name' => 'Account A']);
+        CreateAccount::create((string) $accountB, ['email' => 'account-b@example.com', 'name' => 'Account B']);
 
         $oldId = StrTestHelper::generateUuid();
         $newerLowId = '00000000-0000-0000-0000-000000000001';
@@ -54,6 +54,10 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
 
         $payload = $output->toArray();
         $this->assertSame([$newerHighId, $newerLowId, $oldId], array_column($payload['requests'], 'requestIdentifier'));
+        $this->assertSame('account-b@example.com', $payload['requests'][0]['account']['email']);
+        $this->assertSame('Account B', $payload['requests'][0]['account']['name']);
+        $this->assertSame('account-a@example.com', $payload['requests'][1]['account']['email']);
+        $this->assertSame('Account A', $payload['requests'][1]['account']['name']);
         $this->assertSame(['code' => 'other', 'detail' => '書類不足'], $payload['requests'][0]['rejectionReason']);
         $this->assertSame(1, $payload['current_page']);
         $this->assertSame(1, $payload['last_page']);

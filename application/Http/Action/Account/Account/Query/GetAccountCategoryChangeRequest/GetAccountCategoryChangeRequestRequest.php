@@ -11,6 +11,13 @@ class GetAccountCategoryChangeRequestRequest extends FormRequest
 {
     use ResolvesLanguage;
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'requestId' => $this->route('requestId'),
+        ]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

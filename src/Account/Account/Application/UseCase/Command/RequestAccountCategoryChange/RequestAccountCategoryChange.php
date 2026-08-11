@@ -12,9 +12,7 @@ use Source\Account\Account\Application\Exception\SameAccountCategoryChangeReques
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\Service\DocumentRequirementValidatorInterface;
-use Source\Account\Account\Domain\ValueObject\VerificationType;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 
 readonly class RequestAccountCategoryChange implements RequestAccountCategoryChangeInterface
 {
@@ -22,7 +20,7 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         private AccountRepositoryInterface $accountRepository,
         private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
         private AccountCategoryChangeRequestFactoryInterface $requestFactory,
-        private DocumentRequirementValidatorInterface $documentRequirementValidator,
+        private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
     ) {
     }
 
@@ -41,24 +39,12 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         if (! $account->hasRequiredContactForCategoryChange()) {
             throw new IncompleteAccountContactForCategoryChangeException();
         }
-        $verificationType = $this->verificationTypeFor($input->requestedAccountCategory());
-        if ($verificationType !== null) {
-            $this->documentRequirementValidator->validate($verificationType, $account->documents()->documentTypes());
-        }
+        $this->documentRequirementValidator->validate($account->type(), $account->documents()->documentTypes());
         if ($this->requestRepository->findPendingByAccountId($input->accountIdentifier()) !== null) {
             throw new AccountCategoryChangeRequestAlreadyPendingException();
         }
         $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory());
         $this->requestRepository->save($request);
         $output->setRequest($request);
-    }
-
-    private function verificationTypeFor(AccountCategory $accountCategory): ?VerificationType
-    {
-        return match ($accountCategory) {
-            AccountCategory::AGENCY => VerificationType::AGENCY,
-            AccountCategory::TALENT => VerificationType::TALENT,
-            AccountCategory::GENERAL => null,
-        };
     }
 }
