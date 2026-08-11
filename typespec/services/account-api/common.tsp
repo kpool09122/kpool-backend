@@ -296,3 +296,17 @@ model AccountCategoryChangeRequestSummary {
   @doc("Optional rejection reason.")
   rejectionReason?: VerificationRejectionReasonSummary | null;
 }
+
+@doc("Response body for account category change request list.")
+model ListAccountCategoryChangeRequestsResponseBody {
+  @doc("Account category change requests.")
+  requests: AccountCategoryChangeRequestSummary[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of account category change requests matching the filters.")
+  total: int32;
+  @doc("Number of items per page.")
+  per_page: int32;
+}

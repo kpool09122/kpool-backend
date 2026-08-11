@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountDocumentListForbiddenExc
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInput;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
+use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsOutput;
 use Source\Account\Account\Infrastructure\Query\ListAccountDocuments;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -50,7 +51,8 @@ class ListAccountDocumentsTest extends TestCase
             ],
         ]);
 
-        $readModel = (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal));
+        $output = new ListAccountDocumentsOutput();
+        (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal), $output);
 
         $this->assertSame([
             'documents' => [
@@ -65,7 +67,7 @@ class ListAccountDocumentsTest extends TestCase
                     'uploadedAt' => '2026-07-30T12:34:56+00:00',
                 ],
             ],
-        ], $readModel->toArray());
+        ], $output->toArray());
     }
 
     #[Group('useDb')]
@@ -75,9 +77,10 @@ class ListAccountDocumentsTest extends TestCase
         $principal = $this->createPrincipal($accountIdentifier);
         CreateAccount::create((string) $accountIdentifier);
 
-        $readModel = (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal));
+        $output = new ListAccountDocumentsOutput();
+        (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal), $output);
 
-        $this->assertSame(['documents' => []], $readModel->toArray());
+        $this->assertSame(['documents' => []], $output->toArray());
     }
 
     #[Group('useDb')]
@@ -88,10 +91,13 @@ class ListAccountDocumentsTest extends TestCase
 
         $this->expectException(AccountDocumentListForbiddenException::class);
 
-        (new ListAccountDocuments())->process(new ListAccountDocumentsInput(
-            $accountIdentifier,
-            $this->createPrincipal(new AccountIdentifier(StrTestHelper::generateUuid())),
-        ));
+        (new ListAccountDocuments())->process(
+            new ListAccountDocumentsInput(
+                $accountIdentifier,
+                $this->createPrincipal(new AccountIdentifier(StrTestHelper::generateUuid())),
+            ),
+            new ListAccountDocumentsOutput(),
+        );
     }
 
     #[Group('useDb')]
@@ -102,7 +108,7 @@ class ListAccountDocumentsTest extends TestCase
 
         $this->expectException(AccountNotFoundException::class);
 
-        (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal));
+        (new ListAccountDocuments())->process(new ListAccountDocumentsInput($accountIdentifier, $principal), new ListAccountDocumentsOutput());
     }
 
     private function createPrincipal(AccountIdentifier $accountIdentifier): Principal

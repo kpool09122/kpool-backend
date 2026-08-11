@@ -72,12 +72,12 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5cc', $readModel->accountPrincipalIdentifier());
         $this->assertSame('corporation', $readModel->accountType());
-        $this->assertCount(1, $readModel->accountPolicies());
-        $this->assertSame('ACCOUNT_OWNER_BASIC', $readModel->accountPolicies()[0]['name']);
-        $actions = array_merge(...array_column($readModel->accountPolicies()[0]['statements'], 'actions'));
+        $this->assertGreaterThanOrEqual(4, count($readModel->accountPolicies()));
+        $statements = array_merge(...array_column($readModel->accountPolicies(), 'statements'));
+        $actions = array_merge(...array_column($statements, 'actions'));
         $this->assertContains('account:read', $actions);
         $this->assertContains('account:update', $actions);
-        $inviteStatement = $this->statementForAction($readModel->accountPolicies()[0]['statements'], 'account:member:invite');
+        $inviteStatement = $this->statementForAction($statements, 'account:member:invite');
         $this->assertSame([
             'clauses' => [
                 [

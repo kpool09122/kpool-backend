@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\Application\UseCase\Query;
+namespace Tests\Account\Account\Application\UseCase\Query\ListAccountDocuments;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Application\UseCase\Query\AccountDocumentListReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountDocumentReadModel;
+use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsOutput;
 
-class AccountDocumentListReadModelTest extends TestCase
+class ListAccountDocumentsOutputTest extends TestCase
 {
     public function testToArrayReturnsDocuments(): void
     {
-        $list = new AccountDocumentListReadModel([
+        $output = new ListAccountDocumentsOutput();
+        $output->output([
             new AccountDocumentReadModel(
                 documentType: 'representative_id',
                 documentPath: 'accounts/account-id/representative_id.pdf',
@@ -26,13 +27,13 @@ class AccountDocumentListReadModelTest extends TestCase
                 'documentPath' => 'accounts/account-id/representative_id.pdf',
                 'uploadedAt' => '2026-07-30T12:34:56+00:00',
             ]],
-        ], $list->toArray());
+        ], $output->toArray());
     }
 
-    public function testToArrayReturnsEmptyDocuments(): void
+    public function testToArrayReturnsEmptyDocumentsByDefault(): void
     {
-        $list = new AccountDocumentListReadModel([]);
+        $output = new ListAccountDocumentsOutput();
 
-        $this->assertSame(['documents' => []], $list->toArray());
+        $this->assertSame(['documents' => []], $output->toArray());
     }
 }
