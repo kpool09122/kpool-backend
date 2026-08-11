@@ -288,7 +288,8 @@ model AccountCategoryChangeRequestIdentitySummary {
 }
 
 @doc("Account category change request state with target account summary.")
-model AccountCategoryChangeRequestListItemSummary extends AccountCategoryChangeRequestSummary {
+model AccountCategoryChangeRequestListItemSummary {
+  ...AccountCategoryChangeRequestSummary;
   @doc("Target account.")
   account: AccountSummary;
 }
