@@ -12,7 +12,6 @@ use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocumentFileType;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
-use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Throwable;
 
@@ -20,34 +19,11 @@ class DocumentStorageService implements DocumentStorageServiceInterface
 {
     private const string DISK = 'verification-documents';
 
-    private const string BASE_PATH = 'verifications';
-
     private const string ACCOUNT_BASE_PATH = 'accounts';
-
-    private const int MAX_FILE_NAME_LENGTH = 200;
 
     public function __construct(
         private LoggerInterface $logger,
     ) {
-    }
-
-    public function store(
-        VerificationIdentifier $verificationId,
-        string $fileName,
-        string $contents,
-    ): DocumentPath {
-        $sanitizedFileName = $this->sanitizeFileName($fileName);
-        $path = sprintf(
-            '%s/%s/%s_%s',
-            self::BASE_PATH,
-            (string) $verificationId,
-            time(),
-            $sanitizedFileName,
-        );
-
-        Storage::disk(self::DISK)->put($path, $contents);
-
-        return new DocumentPath($path);
     }
 
     public function storeForAccount(
@@ -121,32 +97,8 @@ class DocumentStorageService implements DocumentStorageServiceInterface
         $delete();
     }
 
-    public function deleteByVerificationId(VerificationIdentifier $verificationId): bool
-    {
-        $directory = sprintf('%s/%s', self::BASE_PATH, (string) $verificationId);
-
-        return Storage::disk(self::DISK)->deleteDirectory($directory);
-    }
-
     public function exists(DocumentPath $path): bool
     {
         return Storage::disk(self::DISK)->exists((string) $path);
-    }
-
-    private function sanitizeFileName(string $fileName): string
-    {
-        $fileName = basename($fileName);
-
-        $fileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileName);
-
-        if (strlen((string) $fileName) > self::MAX_FILE_NAME_LENGTH) {
-            $extension = pathinfo((string) $fileName, PATHINFO_EXTENSION);
-            $name = pathinfo((string) $fileName, PATHINFO_FILENAME);
-            $extensionLength = $extension !== '' ? strlen($extension) + 1 : 0;
-            $maxNameLength = self::MAX_FILE_NAME_LENGTH - $extensionLength;
-            $fileName = substr($name, 0, $maxNameLength) . ($extension !== '' ? '.' . $extension : '');
-        }
-
-        return $fileName;
     }
 }

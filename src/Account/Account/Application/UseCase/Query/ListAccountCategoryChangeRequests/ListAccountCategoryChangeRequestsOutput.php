@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests;
 
-use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestReadModel;
+use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestListItemReadModel;
 
 class ListAccountCategoryChangeRequestsOutput implements ListAccountCategoryChangeRequestsOutputPort
 {
-    /** @var AccountCategoryChangeRequestReadModel[] */
+    /** @var AccountCategoryChangeRequestListItemReadModel[] */
     private array $requests = [];
 
     private ?int $currentPage = null;
@@ -19,7 +19,7 @@ class ListAccountCategoryChangeRequestsOutput implements ListAccountCategoryChan
 
     private ?int $perPage = null;
 
-    /** @param AccountCategoryChangeRequestReadModel[] $requests */
+    /** @param AccountCategoryChangeRequestListItemReadModel[] $requests */
     public function output(array $requests, int $currentPage, int $lastPage, int $total, int $perPage): void
     {
         $this->requests = $requests;
@@ -34,7 +34,7 @@ class ListAccountCategoryChangeRequestsOutput implements ListAccountCategoryChan
     {
         return [
             'requests' => array_map(
-                static fn (AccountCategoryChangeRequestReadModel $request): array => $request->toArray(),
+                static fn (AccountCategoryChangeRequestListItemReadModel $request): array => $request->toArray(),
                 $this->requests,
             ),
             'current_page' => $this->currentPage,

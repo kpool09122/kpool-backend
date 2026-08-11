@@ -11,10 +11,19 @@ class ApproveAccountCategoryChangeRequestRequest extends FormRequest
 {
     use ResolvesLanguage;
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'requestId' => $this->route('requestId'),
+        ]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [];
+        return [
+            'requestId' => ['required', 'uuid'],
+        ];
     }
 
     public function requestId(): string

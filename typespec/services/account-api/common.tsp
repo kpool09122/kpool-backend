@@ -257,47 +257,6 @@ model VerificationRejectionReasonSummary {
   detail?: string | null;
 }
 
-@doc("Verification document state.")
-model VerificationDocumentSummary {
-  @doc("Document identifier.")
-  documentIdentifier: Uuid;
-  @doc("Document type.")
-  documentType: string;
-  @doc("Stored document path.")
-  documentPath: string;
-  @doc("Original file name.")
-  originalFileName: string;
-  @doc("Document size in bytes.")
-  fileSizeBytes: int32;
-  @doc("Timestamp when the document was uploaded.")
-  uploadedAt: Timestamp;
-}
-
-@doc("Account verification state.")
-model AccountVerificationSummary {
-  @doc("Verification identifier.")
-  verificationIdentifier: Uuid;
-  @doc("Account identifier under review.")
-  accountIdentifier: Uuid;
-  @doc("Verification type.")
-  verificationType: string;
-  @doc("Verification status.")
-  status: string;
-  @doc("Applicant full name.")
-  applicantName: string;
-  @doc("Timestamp when the verification was requested.")
-  requestedAt: Timestamp;
-  @doc("Reviewer account identifier.")
-  reviewedBy?: Uuid | null;
-  @doc("Timestamp when the verification was reviewed.")
-  reviewedAt?: Timestamp | null;
-  @doc("Optional rejection reason.")
-  rejectionReason?: VerificationRejectionReasonSummary | null;
-  @doc("Submitted documents.")
-  documents: VerificationDocumentSummary[];
-}
-
-
 @doc("Account category change request state.")
 model AccountCategoryChangeRequestSummary {
   @doc("Account category change request identifier.")
@@ -328,6 +287,12 @@ model AccountCategoryChangeRequestIdentitySummary {
   email: string;
 }
 
+@doc("Account category change request state with target account summary.")
+model AccountCategoryChangeRequestListItemSummary extends AccountCategoryChangeRequestSummary {
+  @doc("Target account.")
+  account: AccountSummary;
+}
+
 @doc("Response body for account category change request detail.")
 model AccountCategoryChangeRequestDetailResponseBody {
   @doc("Account category change request.")
@@ -343,7 +308,7 @@ model AccountCategoryChangeRequestDetailResponseBody {
 @doc("Response body for account category change request list.")
 model ListAccountCategoryChangeRequestsResponseBody {
   @doc("Account category change requests.")
-  requests: AccountCategoryChangeRequestSummary[];
+  requests: AccountCategoryChangeRequestListItemSummary[];
   @doc("Current page number.")
   current_page: int32;
   @doc("Last page number.")

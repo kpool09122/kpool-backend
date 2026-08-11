@@ -11,10 +11,18 @@ class RejectAccountCategoryChangeRequestRequest extends FormRequest
 {
     use ResolvesLanguage;
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'requestId' => $this->route('requestId'),
+        ]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
+            'requestId' => ['required', 'uuid'],
             'rejectionReasonCode' => ['required', 'string'],
             'rejectionReasonDetail' => ['nullable', 'string', 'max:1000'],
         ];

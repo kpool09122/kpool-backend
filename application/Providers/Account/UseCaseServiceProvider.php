@@ -7,20 +7,14 @@ namespace Application\Providers\Account;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
-use Source\Account\Account\Application\UseCase\Command\ApproveVerification\ApproveVerification;
-use Source\Account\Account\Application\UseCase\Command\ApproveVerification\ApproveVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
-use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerification;
-use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
-use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerification;
-use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
@@ -101,13 +95,9 @@ class UseCaseServiceProvider extends ServiceProvider
 
         $this->app->singleton(UploadDocumentsInterface::class, UploadDocuments::class);
 
-        // AccountVerification
-        $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
         $this->app->singleton(RequestAccountCategoryChangeInterface::class, RequestAccountCategoryChange::class);
         $this->app->singleton(ApproveAccountCategoryChangeRequestInterface::class, ApproveAccountCategoryChangeRequest::class);
         $this->app->singleton(RejectAccountCategoryChangeRequestInterface::class, RejectAccountCategoryChangeRequest::class);
-        $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
-        $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
 
         // Invitation
         $this->app->singleton(InviteMemberInterface::class, InviteMember::class);

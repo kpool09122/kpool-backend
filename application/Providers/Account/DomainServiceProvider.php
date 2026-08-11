@@ -9,20 +9,14 @@ use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorIn
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
-use Source\Account\Account\Domain\Factory\AccountVerificationFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\Repository\AccountVerificationRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
-use Source\Account\Account\Domain\Service\DocumentRequirementValidator;
-use Source\Account\Account\Domain\Service\DocumentRequirementValidatorInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountCategoryChangeRequestFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
-use Source\Account\Account\Infrastructure\Factory\AccountVerificationFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
-use Source\Account\Account\Infrastructure\Repository\AccountVerificationRepository;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
@@ -70,16 +64,11 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
         $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
 
-        // AccountVerification
-        $this->app->singleton(AccountVerificationFactoryInterface::class, AccountVerificationFactory::class);
-        $this->app->singleton(AccountVerificationRepositoryInterface::class, AccountVerificationRepository::class);
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
-        $this->app->singleton(DocumentRequirementValidator::class, DocumentRequirementValidator::class);
-        $this->app->singleton(DocumentRequirementValidatorInterface::class, DocumentRequirementValidator::class);
 
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\AccountVerification\Domain\ValueObject;
+namespace Tests\Account\Account\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
