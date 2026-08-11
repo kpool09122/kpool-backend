@@ -13,6 +13,7 @@ use Application\Http\Action\Account\Account\Command\ApproveAccountCategoryChange
 use Application\Http\Action\Account\Account\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
+use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
@@ -78,6 +79,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
 
     // AccountCategoryChangeRequest
     Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
+    Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
     Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
     Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
     Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);

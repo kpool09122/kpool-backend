@@ -297,6 +297,26 @@ model AccountCategoryChangeRequestSummary {
   rejectionReason?: VerificationRejectionReasonSummary | null;
 }
 
+@doc("Identity summary attached to an account category change request target account.")
+model AccountCategoryChangeRequestIdentitySummary {
+  @doc("Identity display name.")
+  name: string;
+  @doc("Identity email address.")
+  email: string;
+}
+
+@doc("Response body for account category change request detail.")
+model AccountCategoryChangeRequestDetailResponseBody {
+  @doc("Account category change request.")
+  request: AccountCategoryChangeRequestSummary;
+  @doc("Target account.")
+  account: AccountSummary;
+  @doc("Identities attached to the target account.")
+  identities: AccountCategoryChangeRequestIdentitySummary[];
+  @doc("Documents attached to the target account.")
+  documents: AccountDocumentSummary[];
+}
+
 @doc("Response body for account category change request list.")
 model ListAccountCategoryChangeRequestsResponseBody {
   @doc("Account category change requests.")
