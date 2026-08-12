@@ -7,58 +7,46 @@ namespace Tests\Account\Affiliation\Application\UseCase\Command\RequestAffiliati
 use PHPUnit\Framework\TestCase;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInput;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class RequestAffiliationInputTest extends TestCase
 {
-    /**
-     * 正常系: インスタンスが正しく作成できること
-     *
-     * @return void
-     */
     public function test__construct(): void
     {
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $requestedBy = $agencyAccountIdentifier;
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        );
+        $targetEmail = new Email('target@example.com');
         $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
 
-        $input = new RequestAffiliationInput(
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $requestedBy,
-            $terms,
-        );
+        $input = new RequestAffiliationInput($principal, $targetEmail, $terms);
 
-        $this->assertSame($agencyAccountIdentifier, $input->agencyAccountIdentifier());
-        $this->assertSame($talentAccountIdentifier, $input->talentAccountIdentifier());
-        $this->assertSame($requestedBy, $input->requestedBy());
+        $this->assertSame($principal, $input->principal());
+        $this->assertSame($targetEmail, $input->targetEmail());
         $this->assertSame($terms, $input->terms());
     }
 
-    /**
-     * 正常系: termsがnullでもインスタンスが正しく作成できること
-     *
-     * @return void
-     */
     public function test__constructWithNullTerms(): void
     {
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $requestedBy = $agencyAccountIdentifier;
-
-        $input = new RequestAffiliationInput(
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $requestedBy,
-            null,
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
+        $targetEmail = new Email('target@example.com');
 
-        $this->assertSame($agencyAccountIdentifier, $input->agencyAccountIdentifier());
-        $this->assertSame($talentAccountIdentifier, $input->talentAccountIdentifier());
-        $this->assertSame($requestedBy, $input->requestedBy());
+        $input = new RequestAffiliationInput($principal, $targetEmail, null);
+
+        $this->assertSame($principal, $input->principal());
+        $this->assertSame($targetEmail, $input->targetEmail());
         $this->assertNull($input->terms());
     }
 }

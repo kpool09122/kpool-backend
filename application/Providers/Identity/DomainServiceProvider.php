@@ -7,6 +7,7 @@ namespace Application\Providers\Identity;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
+use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
@@ -26,6 +27,7 @@ use Source\Identity\Infrastructure\Repository\AuthCodeSessionRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Identity\Infrastructure\Repository\OAuthStateRepository;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
+use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService;
 use Source\Identity\Infrastructure\Service\AuthCodeService;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
@@ -42,6 +44,10 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(IdentityRepositoryInterface::class, IdentityRepository::class);
         $this->app->singleton(AuthServiceInterface::class, AuthService::class);
         $this->app->singleton(AuthCodeServiceInterface::class, AuthCodeService::class);
+        $this->app->singleton(AffiliationRequestNotificationServiceInterface::class, fn ($app) => new AffiliationRequestNotificationService(
+            $app->make(IdentityRepositoryInterface::class),
+            config('app.frontend_url', 'http://localhost:3000'),
+        ));
         $this->app->singleton(CollaboratorNotificationServiceInterface::class, CollaboratorNotificationService::class);
         $this->app->singleton(DelegationValidatorInterface::class, DelegationValidator::class);
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);

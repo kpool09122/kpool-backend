@@ -17,28 +17,16 @@ class RequestAffiliationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agencyAccountIdentifier' => ['required', 'uuid'],
-            'talentAccountIdentifier' => ['required', 'uuid'],
-            'requestedBy' => ['required', 'uuid'],
+            'targetEmail' => ['required', 'email'],
             'terms' => ['nullable', 'array'],
             'terms.revenueSharePercentage' => ['nullable', 'integer', 'min:0', 'max:100'],
             'terms.contractNotes' => ['nullable', 'string'],
         ];
     }
 
-    public function agencyAccountIdentifier(): string
+    public function targetEmail(): string
     {
-        return (string) $this->input('agencyAccountIdentifier');
-    }
-
-    public function talentAccountIdentifier(): string
-    {
-        return (string) $this->input('talentAccountIdentifier');
-    }
-
-    public function requestedBy(): string
-    {
-        return (string) $this->input('requestedBy');
+        return (string) $this->input('targetEmail');
     }
 
     /**

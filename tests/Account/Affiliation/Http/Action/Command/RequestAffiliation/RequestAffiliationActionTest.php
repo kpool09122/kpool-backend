@@ -6,20 +6,26 @@ namespace Tests\Account\Affiliation\Http\Action\Command\RequestAffiliation;
 
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationRequest;
+use Application\Http\Context\AccountContext;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsException;
+use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationOutput;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
+use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -29,11 +35,10 @@ class RequestAffiliationActionTest extends TestCase
     public function testInvokeReturnsCreatedResponse(): void
     {
         $affiliation = $this->createAffiliation();
+        $principal = $this->principal($affiliation->requestedBy());
         /** @var RequestAffiliationRequest&Mockery\MockInterface $request */
         $request = Mockery::mock(RequestAffiliationRequest::class);
-        $request->shouldReceive('agencyAccountIdentifier')->andReturn((string) $affiliation->agencyAccountIdentifier());
-        $request->shouldReceive('talentAccountIdentifier')->andReturn((string) $affiliation->talentAccountIdentifier());
-        $request->shouldReceive('requestedBy')->andReturn((string) $affiliation->requestedBy());
+        $request->shouldReceive('targetEmail')->andReturn('target@example.com');
         $request->shouldReceive('terms')->andReturn([
             'revenueSharePercentage' => 30,
             'contractNotes' => 'Contract notes',
@@ -48,7 +53,9 @@ class RequestAffiliationActionTest extends TestCase
         $useCase->shouldReceive('process')
             ->once()
             ->with(
-                Mockery::type(RequestAffiliationInput::class),
+                Mockery::on(fn ($input) => $input instanceof RequestAffiliationInput
+                    && $input->principal() === $principal
+                    && (string) $input->targetEmail() === 'target@example.com'),
                 Mockery::on(function ($output) use ($affiliation): bool {
                     if (! $output instanceof RequestAffiliationOutput) {
                         return false;
@@ -64,7 +71,7 @@ class RequestAffiliationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldNotReceive('error');
 
-        $action = new RequestAffiliationAction($useCase, $logger);
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -74,13 +81,43 @@ class RequestAffiliationActionTest extends TestCase
         $this->assertSame(AffiliationStatus::PENDING->value, $payload['status']);
     }
 
-    public function testInvokeReturnsConflictResponseWhenAffiliationAlreadyExists(): void
+    public function testInvokeReturnsGenericUnprocessableResponseWhenTargetIsDisallowed(): void
     {
+        $principal = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         /** @var RequestAffiliationRequest&Mockery\MockInterface $request */
         $request = Mockery::mock(RequestAffiliationRequest::class);
-        $request->shouldReceive('agencyAccountIdentifier')->andReturn(StrTestHelper::generateUuid());
-        $request->shouldReceive('talentAccountIdentifier')->andReturn(StrTestHelper::generateUuid());
-        $request->shouldReceive('requestedBy')->andReturn(StrTestHelper::generateUuid());
+        $request->shouldReceive('targetEmail')->andReturn('target@example.com');
+        $request->shouldReceive('terms')->andReturn(null);
+        $request->shouldReceive('language')->andReturn('en');
+
+        DB::shouldReceive('beginTransaction')->once();
+        DB::shouldReceive('rollBack')->once();
+
+        /** @var RequestAffiliationInterface&Mockery\MockInterface $useCase */
+        $useCase = Mockery::mock(RequestAffiliationInterface::class);
+        $useCase->shouldReceive('process')
+            ->once()
+            ->andThrow(new DisallowedAffiliationOperationException('Affiliation request target is not allowed.'));
+
+        /** @var LoggerInterface&Mockery\MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
+
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
+
+        $response = $action($request);
+        $payload = $response->getData(true);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $this->assertSame(error_message('disallowed_affiliation_operation', 'en'), $payload['detail']);
+    }
+
+    public function testInvokeReturnsConflictResponseWhenAffiliationAlreadyExists(): void
+    {
+        $principal = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
+        /** @var RequestAffiliationRequest&Mockery\MockInterface $request */
+        $request = Mockery::mock(RequestAffiliationRequest::class);
+        $request->shouldReceive('targetEmail')->andReturn('target@example.com');
         $request->shouldReceive('terms')->andReturn(null);
         $request->shouldReceive('language')->andReturn('en');
 
@@ -97,7 +134,7 @@ class RequestAffiliationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RequestAffiliationAction($useCase, $logger);
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -122,6 +159,15 @@ class RequestAffiliationActionTest extends TestCase
             new DateTimeImmutable('-1 day'),
             null,
             null,
+        );
+    }
+
+    private function principal(AccountIdentifier $accountIdentifier): Principal
+    {
+        return new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
         );
     }
 }

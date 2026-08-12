@@ -79,7 +79,7 @@ class PolicyRepository implements PolicyRepositoryInterface
 
     /**
      * @param Statement[] $statements
-     * @return array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool}>|null}>
+     * @return array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool|list<string>}>|null}>
      */
     private function serializeStatements(array $statements): array
     {
@@ -87,7 +87,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @return array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool}>|null}
+     * @return array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool|list<string>}>|null}
      */
     private function serializeStatement(Statement $statement): array
     {
@@ -102,7 +102,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @return array<array{key: string, operator: string, value: string|bool}>
+     * @return array<array{key: string, operator: string, value: string|bool|list<string>}>
      */
     private function serializeCondition(Condition $condition): array
     {
@@ -128,7 +128,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @param array<array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool}>|null}> $statementsData
+     * @param array<array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool|list<string>}>|null}> $statementsData
      * @return Statement[]
      */
     private function deserializeStatements(array $statementsData): array
@@ -137,7 +137,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @param array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool}>|null} $data
+     * @param array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool|list<string>}>|null} $data
      */
     private function deserializeStatement(array $data): Statement
     {
@@ -152,7 +152,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
-     * @param array<array{key: string, operator: string, value: string|bool}> $conditionData
+     * @param array<array{key: string, operator: string, value: string|bool|list<string>}> $conditionData
      */
     private function deserializeCondition(array $conditionData): Condition
     {

@@ -113,7 +113,7 @@ readonly class AccountResolver
     }
 
     /**
-     * @return array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null}
+     * @return array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: array{clauses: array<int, array{field: string, operator: string, value: string|bool|list<string>}>}|null}
      */
     private function toStatementArray(Statement $statement): array
     {
@@ -126,7 +126,7 @@ readonly class AccountResolver
     }
 
     /**
-     * @return array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null
+     * @return array{clauses: array<int, array{field: string, operator: string, value: string|bool|list<string>}>}|null
      */
     private function toConditionArray(?Condition $condition): ?array
     {
@@ -140,7 +140,7 @@ readonly class AccountResolver
     }
 
     /**
-     * @return array{field: string, operator: string, value: string|bool}
+     * @return array{field: string, operator: string, value: string|bool|list<string>}
      */
     private function toConditionClauseArray(ConditionClause $clause): array
     {
