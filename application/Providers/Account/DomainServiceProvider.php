@@ -63,7 +63,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DelegationPermissionFactoryInterface::class, DelegationPermissionFactory::class);
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
         $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
-
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);

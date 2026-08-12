@@ -6,8 +6,10 @@ namespace Application\Providers\Identity;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Affiliation\Domain\Event\AffiliationRequested;
 use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Event\DelegationRevoked;
+use Source\Identity\Application\EventHandler\AffiliationRequestedHandler;
 use Source\Identity\Application\EventHandler\DelegationApprovedHandler;
 use Source\Identity\Application\EventHandler\DelegationRevokedHandler;
 use Source\Identity\Application\EventHandler\DemotionWarningsBatchIssuedHandler;
@@ -32,6 +34,11 @@ class EventServiceProvider extends ServiceProvider
         $events->listen(
             DelegationRevoked::class,
             [DelegationRevokedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            AffiliationRequested::class,
+            [AffiliationRequestedHandler::class, 'handle'],
         );
 
         $events->listen(

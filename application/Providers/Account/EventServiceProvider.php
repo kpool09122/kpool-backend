@@ -48,5 +48,6 @@ class EventServiceProvider extends ServiceProvider
             IdentityCreatedViaInvitation::class,
             [IdentityCreatedViaInvitationHandler::class, 'handle'],
         );
+
     }
 }

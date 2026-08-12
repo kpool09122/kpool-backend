@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Affiliation\Command\RequestAffiliation;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
-use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsException;
-use Source\Account\Affiliation\Application\Exception\InvalidAccountCategoryException;
+use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationOutput;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Monetization\Shared\ValueObject\Percentage;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -28,6 +27,7 @@ readonly class RequestAffiliationAction
 {
     public function __construct(
         private RequestAffiliationInterface $requestAffiliation,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -41,9 +41,8 @@ readonly class RequestAffiliationAction
             try {
                 $terms = $request->terms();
                 $input = new RequestAffiliationInput(
-                    agencyAccountIdentifier: new AccountIdentifier($request->agencyAccountIdentifier()),
-                    talentAccountIdentifier: new AccountIdentifier($request->talentAccountIdentifier()),
-                    requestedBy: new AccountIdentifier($request->requestedBy()),
+                    principal: $this->accountContext->principal(),
+                    targetEmail: new Email($request->targetEmail()),
                     terms: $terms === null
                         ? null
                         : new AffiliationTerms(
@@ -63,14 +62,10 @@ readonly class RequestAffiliationAction
             try {
                 $this->requestAffiliation->process($input, $output);
                 DB::commit();
-            } catch (AccountNotFoundException $e) {
+            } catch (DisallowedAffiliationOperationException $e) {
                 DB::rollBack();
 
-                throw new NotFoundHttpException(detail: error_message('account_not_found', $language), previous: $e);
-            } catch (InvalidAccountCategoryException $e) {
-                DB::rollBack();
-
-                throw new UnprocessableEntityHttpException(detail: error_message('invalid_account_category_for_affiliation', $language), previous: $e);
+                throw new UnprocessableEntityHttpException(detail: error_message('disallowed_affiliation_operation', $language), previous: $e);
             } catch (AffiliationAlreadyExistsException $e) {
                 DB::rollBack();
 
@@ -80,7 +75,7 @@ readonly class RequestAffiliationAction
 
                 throw $e;
             }
-        } catch (ConflictHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

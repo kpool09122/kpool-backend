@@ -10,6 +10,7 @@ use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
@@ -71,6 +72,22 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         $eloquent = PrincipalEloquent::query()
             ->where('identity_id', (string) $identityIdentifier)
             ->where('account_id', (string) $accountIdentifier)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByEmailAndAccountIdentifier(Email $email, AccountIdentifier $accountIdentifier): ?Principal
+    {
+        $eloquent = PrincipalEloquent::query()
+            ->join('identities', 'account_principals.identity_id', '=', 'identities.id')
+            ->where('identities.email', (string) $email)
+            ->where('account_principals.account_id', (string) $accountIdentifier)
+            ->select('account_principals.*')
             ->first();
 
         if ($eloquent === null) {

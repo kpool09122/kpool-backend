@@ -17,6 +17,7 @@ use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 
 readonly class PolicyEvaluator implements PolicyEvaluatorInterface
 {
@@ -134,10 +135,21 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         };
     }
 
-    private function conditionActualValue(ConditionKey $key, Resource $resource): ?string
+    private function conditionActualValue(ConditionKey $key, Resource $resource): string|bool|null
     {
         return match ($key) {
             ConditionKey::RESOURCE_ACCOUNT_TYPE => $resource->accountType()?->value,
+            ConditionKey::RESOURCE_ACCOUNT_CATEGORY => $resource->accountCategory()?->value,
+            ConditionKey::AFFILIATION_REQUEST_PAIR_ALLOWED => $this->affiliationRequestPairAllowed($resource),
+        };
+    }
+
+    private function affiliationRequestPairAllowed(Resource $resource): bool
+    {
+        return match ($resource->affiliationRequestingAccountCategory()) {
+            AccountCategory::TALENT => $resource->accountCategory() === AccountCategory::AGENCY,
+            AccountCategory::AGENCY => $resource->accountCategory() === AccountCategory::TALENT,
+            default => false,
         };
     }
 }

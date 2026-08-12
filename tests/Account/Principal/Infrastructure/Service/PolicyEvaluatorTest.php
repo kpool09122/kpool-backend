@@ -26,6 +26,7 @@ use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -177,6 +178,29 @@ class PolicyEvaluatorTest extends TestCase
         );
     }
 
+    public function testEvaluateAllowsWhenConditionMatchesResourceAccountCategory(): void
+    {
+        $this->assertTrue($this->evaluateInvitationWithAccountCategoryCondition(AccountCategory::TALENT));
+    }
+
+    public function testEvaluateDeniesWhenConditionDoesNotMatchResourceAccountCategory(): void
+    {
+        $this->assertFalse($this->evaluateInvitationWithAccountCategoryCondition(AccountCategory::GENERAL));
+    }
+
+    public function testEvaluateAllowsWhenAffiliationRequestPairIsAllowed(): void
+    {
+        $this->assertTrue($this->evaluateAffiliationRequestReceive(AccountCategory::TALENT, AccountCategory::AGENCY));
+        $this->assertTrue($this->evaluateAffiliationRequestReceive(AccountCategory::AGENCY, AccountCategory::TALENT));
+    }
+
+    public function testEvaluateDeniesWhenAffiliationRequestPairIsNotAllowed(): void
+    {
+        $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::TALENT, AccountCategory::TALENT));
+        $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::AGENCY, AccountCategory::AGENCY));
+        $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::GENERAL, AccountCategory::AGENCY));
+    }
+
     /**
      * @param Action[] $actions
      */
@@ -240,6 +264,84 @@ class PolicyEvaluatorTest extends TestCase
         );
     }
 
+    private function evaluateInvitationWithAccountCategoryCondition(AccountCategory $accountCategory): bool
+    {
+        return $this->evaluateWithCondition(
+            Action::INVITE_MEMBER,
+            new Condition([
+                new ConditionClause(
+                    ConditionKey::RESOURCE_ACCOUNT_CATEGORY,
+                    ConditionOperator::IN,
+                    [
+                        AccountCategory::TALENT->value,
+                        AccountCategory::AGENCY->value,
+                    ],
+                ),
+            ]),
+            Resource::account(new AccountIdentifier(StrTestHelper::generateUuid()), null, $accountCategory),
+        );
+    }
+
+    private function evaluateAffiliationRequestReceive(
+        AccountCategory $requestingCategory,
+        AccountCategory $targetCategory,
+    ): bool {
+        return $this->evaluateWithCondition(
+            Action::AFFILIATION_REQUEST_RECEIVE,
+            new Condition([
+                new ConditionClause(
+                    ConditionKey::AFFILIATION_REQUEST_PAIR_ALLOWED,
+                    ConditionOperator::EQUALS,
+                    true,
+                ),
+            ]),
+            Resource::account(
+                new AccountIdentifier(StrTestHelper::generateUuid()),
+                null,
+                $targetCategory,
+                $requestingCategory,
+            ),
+        );
+    }
+
+    private function evaluateWithCondition(Action $action, Condition $condition, Resource $resource): bool
+    {
+        $accountIdentifier = $resource->accountIdentifier();
+        $principal = $this->createPrincipal($accountIdentifier);
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $roleIdentifier);
+        $policy = $this->createPolicy('CONDITIONAL_POLICY', Effect::ALLOW, [$action], $condition);
+
+        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
+            ->once()
+            ->with($accountIdentifier, $principal->principalIdentifier())
+            ->andReturn([$principalGroup]);
+
+        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$policy->policyIdentifier()])
+            ->andReturn([(string) $policy->policyIdentifier() => $policy]);
+
+        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$roleIdentifier])
+            ->andReturn([
+                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], true),
+            ]);
+
+        return $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository)->evaluate(
+            $principal,
+            $action,
+            $resource,
+        );
+    }
+
     private function makePolicyEvaluator(
         PrincipalGroupRepositoryInterface $principalGroupRepository,
         RoleRepositoryInterface $roleRepository,
@@ -248,6 +350,7 @@ class PolicyEvaluatorTest extends TestCase
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app->forgetInstance(PolicyEvaluatorInterface::class);
 
         return $this->app->make(PolicyEvaluatorInterface::class);
     }

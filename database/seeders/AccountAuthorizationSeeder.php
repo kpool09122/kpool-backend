@@ -20,6 +20,7 @@ use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Symfony\Component\Uid\Uuid;
 
 
@@ -59,12 +60,26 @@ class AccountAuthorizationSeeder extends Seeder
             'ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE',
             Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE,
         );
+        $affiliationRequestCreatePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000006',
+            'AFFILIATION_REQUEST_CREATE',
+            Action::AFFILIATION_REQUEST_CREATE,
+            $this->affiliationRequestCreateCondition(),
+        );
+        $affiliationRequestReceivePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000007',
+            'AFFILIATION_REQUEST_RECEIVE',
+            Action::AFFILIATION_REQUEST_RECEIVE,
+            $this->affiliationRequestReceiveCondition(),
+        );
 
         $accountManagementPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
             $accountUpdatePolicy->policyIdentifier(),
             $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
+            $affiliationRequestCreatePolicy->policyIdentifier(),
+            $affiliationRequestReceivePolicy->policyIdentifier(),
         ];
 
         $this->saveRole(Role::OWNER, $accountManagementPolicyIdentifiers);
@@ -81,6 +96,31 @@ class AccountAuthorizationSeeder extends Seeder
                 ConditionKey::RESOURCE_ACCOUNT_TYPE,
                 ConditionOperator::EQUALS,
                 AccountType::CORPORATION->value,
+            ),
+        ]);
+    }
+
+    private function affiliationRequestCreateCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_ACCOUNT_CATEGORY,
+                ConditionOperator::IN,
+                [
+                    AccountCategory::TALENT->value,
+                    AccountCategory::AGENCY->value,
+                ],
+            ),
+        ]);
+    }
+
+    private function affiliationRequestReceiveCondition(): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::AFFILIATION_REQUEST_PAIR_ALLOWED,
+                ConditionOperator::EQUALS,
+                true,
             ),
         ]);
     }

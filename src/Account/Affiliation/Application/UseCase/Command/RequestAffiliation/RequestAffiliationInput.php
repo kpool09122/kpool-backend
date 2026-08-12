@@ -5,31 +5,26 @@ declare(strict_types=1);
 namespace Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation;
 
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Shared\Domain\ValueObject\Email;
 
 readonly class RequestAffiliationInput implements RequestAffiliationInputPort
 {
     public function __construct(
-        private AccountIdentifier $agencyAccountIdentifier,
-        private AccountIdentifier $talentAccountIdentifier,
-        private AccountIdentifier $requestedBy,
+        private Principal $principal,
+        private Email $targetEmail,
         private ?AffiliationTerms $terms,
     ) {
     }
 
-    public function agencyAccountIdentifier(): AccountIdentifier
+    public function principal(): Principal
     {
-        return $this->agencyAccountIdentifier;
+        return $this->principal;
     }
 
-    public function talentAccountIdentifier(): AccountIdentifier
+    public function targetEmail(): Email
     {
-        return $this->talentAccountIdentifier;
-    }
-
-    public function requestedBy(): AccountIdentifier
-    {
-        return $this->requestedBy;
+        return $this->targetEmail;
     }
 
     public function terms(): ?AffiliationTerms

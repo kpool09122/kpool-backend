@@ -6,10 +6,11 @@ namespace Source\Account\Principal\Domain\ValueObject;
 
 final readonly class ConditionClause
 {
+    /** @param string|bool|list<string> $value */
     public function __construct(
         private ConditionKey $key,
         private ConditionOperator $operator,
-        private string|bool $value,
+        private string|bool|array $value,
     ) {
     }
 
@@ -23,7 +24,8 @@ final readonly class ConditionClause
         return $this->operator;
     }
 
-    public function value(): string|bool
+    /** @return string|bool|list<string> */
+    public function value(): string|bool|array
     {
         return $this->value;
     }

@@ -2183,22 +2183,11 @@ components:
     RequestAffiliationRequestBody:
       type: object
       required:
-        - agencyAccountIdentifier
-        - talentAccountIdentifier
-        - requestedBy
+        - targetEmail
       properties:
-        agencyAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Agency account identifier.
-        talentAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Talent account identifier.
-        requestedBy:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier that requested the affiliation.
+        targetEmail:
+          type: string
+          description: Email address of the target account/principal that should receive the affiliation request.
         terms:
           type: object
           allOf:

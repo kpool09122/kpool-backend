@@ -5,12 +5,8 @@ namespace KPool.AccountApi;
 
 @doc("Request body for requesting an affiliation.")
 model RequestAffiliationRequestBody {
-  @doc("Agency account identifier.")
-  agencyAccountIdentifier: Uuid;
-  @doc("Talent account identifier.")
-  talentAccountIdentifier: Uuid;
-  @doc("Account identifier that requested the affiliation.")
-  requestedBy: Uuid;
+  @doc("Email address of the target account/principal that should receive the affiliation request.")
+  targetEmail: string;
   @doc("Optional contract terms.")
   terms?: AffiliationTermsSummary | null;
 }
