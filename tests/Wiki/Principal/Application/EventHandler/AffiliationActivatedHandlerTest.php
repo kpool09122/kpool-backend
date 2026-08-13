@@ -28,10 +28,17 @@ use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\AffiliationGrantIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\AffiliationGrantType;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionClause;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionKey;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionOperator;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionValue;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\Statement;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -139,8 +146,30 @@ class AffiliationActivatedHandlerTest extends TestCase
         $policyFactory = Mockery::mock(PolicyFactoryInterface::class);
         $policyFactory
             ->shouldReceive('create')
-            ->twice()
-            ->andReturn($talentSidePolicy, $agencySidePolicy);
+            ->once()
+            ->with(
+                "Affiliation Policy - Agency {$agencyAccountIdentifier}",
+                Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
+                    $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
+
+                    return true;
+                }),
+                false,
+            )
+            ->andReturn($talentSidePolicy);
+        $policyFactory
+            ->shouldReceive('create')
+            ->once()
+            ->with(
+                "Affiliation Policy - Talent {$talentAccountIdentifier}",
+                Mockery::on(function (array $statements): bool {
+                    $this->assertAgencySideStatements($statements);
+
+                    return true;
+                }),
+                false,
+            )
+            ->andReturn($agencySidePolicy);
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository
@@ -452,8 +481,30 @@ class AffiliationActivatedHandlerTest extends TestCase
         $policyFactory = Mockery::mock(PolicyFactoryInterface::class);
         $policyFactory
             ->shouldReceive('create')
-            ->twice()
-            ->andReturn($talentSidePolicy, $agencySidePolicy);
+            ->once()
+            ->with(
+                "Affiliation Policy - Agency {$agencyAccountIdentifier}",
+                Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
+                    $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
+
+                    return true;
+                }),
+                false,
+            )
+            ->andReturn($talentSidePolicy);
+        $policyFactory
+            ->shouldReceive('create')
+            ->once()
+            ->with(
+                "Affiliation Policy - Talent {$talentAccountIdentifier}",
+                Mockery::on(function (array $statements): bool {
+                    $this->assertAgencySideStatements($statements);
+
+                    return true;
+                }),
+                false,
+            )
+            ->andReturn($agencySidePolicy);
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository
@@ -490,6 +541,75 @@ class AffiliationActivatedHandlerTest extends TestCase
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
+    }
+
+    /**
+     * @param Statement[] $statements
+     */
+    private function assertAgencySideStatements(array $statements): void
+    {
+        $this->assertCount(1, $statements);
+        $this->assertStatement(
+            $statements[0],
+            ResourceType::TALENT,
+            [
+                new ConditionClause(
+                    ConditionKey::RESOURCE_TALENT_ID,
+                    ConditionOperator::IN,
+                    ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS,
+                ),
+            ],
+        );
+    }
+
+    /**
+     * @param Statement[] $statements
+     */
+    private function assertTalentSideStatements(string $agencyId, array $statements): void
+    {
+        $this->assertCount(3, $statements);
+        $this->assertStatement(
+            $statements[0],
+            ResourceType::GROUP,
+            [
+                new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
+                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+            ],
+        );
+        $this->assertStatement(
+            $statements[1],
+            ResourceType::SONG,
+            [
+                new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
+                new ConditionClause(ConditionKey::RESOURCE_GROUP_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_WIKI_GROUP_IDS),
+            ],
+        );
+        $this->assertStatement(
+            $statements[2],
+            ResourceType::SONG,
+            [
+                new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
+                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+            ],
+        );
+    }
+
+    /**
+     * @param ConditionClause[] $expectedClauses
+     */
+    private function assertStatement(Statement $statement, ResourceType $resourceType, array $expectedClauses): void
+    {
+        $this->assertSame([Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT], $statement->actions());
+        $this->assertSame([$resourceType], $statement->resourceTypes());
+        $this->assertNotNull($statement->condition());
+        $actualClauses = $statement->condition()->clauses();
+        $this->assertCount(count($expectedClauses), $actualClauses);
+
+        foreach ($expectedClauses as $index => $expectedClause) {
+            $this->assertSame($expectedClause->key(), $actualClauses[$index]->key());
+            $this->assertSame($expectedClause->operator(), $actualClauses[$index]->operator());
+            $this->assertSame($expectedClause->value(), $actualClauses[$index]->value());
+        }
     }
 
     private function createPrincipal(AccountIdentifier $accountIdentifier): Principal
