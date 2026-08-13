@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation;
 
+use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class ApproveAffiliationInput implements ApproveAffiliationInputPort
 {
     public function __construct(
         private AffiliationIdentifier $affiliationIdentifier,
-        private AccountIdentifier $approverAccountIdentifier,
+        private Principal $principal,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class ApproveAffiliationInput implements ApproveAffiliationInputPort
         return $this->affiliationIdentifier;
     }
 
-    public function approverAccountIdentifier(): AccountIdentifier
+    public function principal(): Principal
     {
-        return $this->approverAccountIdentifier;
+        return $this->principal;
     }
 }

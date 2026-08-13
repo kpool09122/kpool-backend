@@ -11,18 +11,6 @@ model RequestAffiliationRequestBody {
   terms?: AffiliationTermsSummary | null;
 }
 
-@doc("Request body for approving an affiliation.")
-model ApproveAffiliationRequestBody {
-  @doc("Approver account identifier.")
-  approverAccountIdentifier: Uuid;
-}
-
-@doc("Request body for rejecting an affiliation.")
-model RejectAffiliationRequestBody {
-  @doc("Rejector account identifier.")
-  rejectorAccountIdentifier: Uuid;
-}
-
 @doc("Request body for terminating an affiliation.")
 model TerminateAffiliationRequestBody {
   @doc("Terminator account identifier.")
@@ -54,7 +42,6 @@ interface AffiliationOperations {
   @doc("Approve an affiliation.")
   approveAffiliation(
     @path affiliationId: Uuid,
-    @body body: ApproveAffiliationRequestBody,
   ): OkAffiliationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
@@ -62,7 +49,6 @@ interface AffiliationOperations {
   @doc("Reject an affiliation.")
   rejectAffiliation(
     @path affiliationId: Uuid,
-    @body body: RejectAffiliationRequestBody,
   ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post

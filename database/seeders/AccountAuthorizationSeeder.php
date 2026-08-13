@@ -70,7 +70,19 @@ class AccountAuthorizationSeeder extends Seeder
             '01982020-0456-7000-8000-000000000007',
             'AFFILIATION_REQUEST_RECEIVE',
             Action::AFFILIATION_REQUEST_RECEIVE,
-            $this->affiliationRequestReceiveCondition(),
+            $this->affiliationPairAllowedCondition(),
+        );
+        $affiliationApprovePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000008',
+            'AFFILIATION_APPROVE',
+            Action::AFFILIATION_APPROVE,
+            $this->affiliationPairAllowedCondition(),
+        );
+        $affiliationRejectPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000009',
+            'AFFILIATION_REJECT',
+            Action::AFFILIATION_REJECT,
+            $this->affiliationPairAllowedCondition(),
         );
 
         $accountManagementPolicyIdentifiers = [
@@ -80,6 +92,8 @@ class AccountAuthorizationSeeder extends Seeder
             $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
             $affiliationRequestCreatePolicy->policyIdentifier(),
             $affiliationRequestReceivePolicy->policyIdentifier(),
+            $affiliationApprovePolicy->policyIdentifier(),
+            $affiliationRejectPolicy->policyIdentifier(),
         ];
 
         $this->saveRole(Role::OWNER, $accountManagementPolicyIdentifiers);
@@ -114,7 +128,7 @@ class AccountAuthorizationSeeder extends Seeder
         ]);
     }
 
-    private function affiliationRequestReceiveCondition(): Condition
+    private function affiliationPairAllowedCondition(): Condition
     {
         return new Condition([
             new ConditionClause(
