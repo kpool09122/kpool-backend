@@ -13,6 +13,7 @@ use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryCha
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
+use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -29,6 +30,7 @@ use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -42,6 +44,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $this->app->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
         $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
         $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
         $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
     }
@@ -72,8 +75,17 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
             ->with($principal, Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE, Mockery::on(static fn (Resource $resource): bool => (string) $resource->accountIdentifier() === (string) $reviewerAccountId))
             ->andReturnTrue();
 
+        /** @var EventDispatcherInterface&Mockery\MockInterface $eventDispatcher */
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(static fn (AccountCategoryChanged $event): bool => (string) $event->accountIdentifier() === (string) $targetAccountId
+                && $event->previousAccountCategory() === AccountCategory::GENERAL
+                && $event->newAccountCategory() === AccountCategory::AGENCY
+                && (string) $event->reviewerAccountIdentifier() === (string) $reviewerAccountId));
+
         $output = new ApproveAccountCategoryChangeRequestOutput();
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, $eventDispatcher))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $principal), $output);
 
         $this->assertSame(AccountCategoryChangeRequestStatus::APPROVED, $request->status());
@@ -102,7 +114,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnFalse();
 
         $this->expectException(AccountCategoryChangeRequestForbiddenException::class);
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock()))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $principal), new ApproveAccountCategoryChangeRequestOutput());
     }
 
@@ -123,6 +135,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
             $requestRepository,
             $accountRepository,
             $policyEvaluator,
+            self::eventDispatcherMock(),
         ))->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
     }
 
@@ -147,8 +160,19 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
 
         $this->expectException(InvalidAccountCategoryChangeRequestApprovalException::class);
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock()))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
+    }
+
+    /**
+     * @return EventDispatcherInterface&Mockery\MockInterface
+     */
+    private static function eventDispatcherMock(): EventDispatcherInterface
+    {
+        /** @var EventDispatcherInterface&Mockery\MockInterface $mock */
+        $mock = Mockery::mock(EventDispatcherInterface::class);
+
+        return $mock;
     }
 
     private function request(AccountCategoryChangeRequestIdentifier $requestId, AccountIdentifier $accountId, AccountCategoryChangeRequestStatus $status): AccountCategoryChangeRequest

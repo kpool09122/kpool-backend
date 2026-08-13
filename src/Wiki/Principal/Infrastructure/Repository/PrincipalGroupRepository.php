@@ -115,6 +115,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         return $eloquentModels->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?PrincipalGroup
+    {
+        $eloquent = PrincipalGroupEloquent::query()
+            ->with(['memberships', 'roleAttachments'])
+            ->where('account_id', (string) $accountIdentifier)
+            ->where('name', $name)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
     public function delete(PrincipalGroup $principalGroup): void
     {
         $principalIds = PrincipalGroupMembershipEloquent::query()

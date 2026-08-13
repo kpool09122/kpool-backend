@@ -33,5 +33,7 @@ interface PrincipalGroupRepositoryInterface
 
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup;
 
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?PrincipalGroup;
+
     public function delete(PrincipalGroup $principalGroup): void;
 }

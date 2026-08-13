@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest;
 
+use DateTimeImmutable;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCategoryChangeRequestInterface
 {
@@ -19,6 +22,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
         private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
         private AccountRepositoryInterface $accountRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -43,11 +47,22 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             throw new AccountNotFoundException();
         }
 
+        $previousAccountCategory = $account->accountCategory();
+        $newAccountCategory = $request->requestedAccountCategory();
+
         $request->approve($reviewerAccountIdentifier);
-        $account->setAccountCategory($request->requestedAccountCategory());
+        $account->setAccountCategory($newAccountCategory);
 
         $this->accountRepository->save($account);
         $this->requestRepository->save($request);
+
+        $this->eventDispatcher->dispatch(new AccountCategoryChanged(
+            accountIdentifier: $account->accountIdentifier(),
+            previousAccountCategory: $previousAccountCategory,
+            newAccountCategory: $newAccountCategory,
+            reviewerAccountIdentifier: $reviewerAccountIdentifier,
+            changedAt: new DateTimeImmutable(),
+        ));
 
         $output->setRequest($request);
     }
