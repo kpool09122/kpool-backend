@@ -19,6 +19,10 @@ use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeReques
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
+use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
+use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
+use Source\Account\Affiliation\Infrastructure\Factory\AffiliationFactory;
+use Source\Account\Affiliation\Infrastructure\Repository\AffiliationRepository;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
@@ -68,6 +72,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
+        $this->app->singleton(AffiliationFactoryInterface::class, AffiliationFactory::class);
+        $this->app->singleton(AffiliationRepositoryInterface::class, AffiliationRepository::class);
 
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);

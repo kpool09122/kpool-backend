@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Service;
 
 use DateTimeImmutable;
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -15,6 +16,7 @@ use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\ConditionValueResolverInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionClause;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionKey;
@@ -26,6 +28,7 @@ use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\Wiki\Principal\Infrastructure\Service\PrincipalConditionValueResolver;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
@@ -206,7 +209,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -234,7 +238,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -263,7 +268,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -287,7 +293,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -339,7 +346,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -412,7 +420,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -469,7 +478,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 自分のAgencyへのAPPROVEは許可
@@ -529,7 +539,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 交差がある場合は許可
@@ -582,7 +593,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $otherAgency = new Resource(ResourceType::AGENCY, $otherAgencyId);
@@ -633,7 +645,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::GROUP, null, [$groupId]);
@@ -678,7 +691,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 自分のGroupへのAPPROVEは許可
@@ -730,7 +744,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $ownAgency = new Resource(ResourceType::AGENCY, $principalAgencyId);
@@ -780,7 +795,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::AGENCY);
@@ -822,7 +838,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
@@ -866,7 +883,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $otherGroup = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
@@ -917,7 +935,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 自分のTalentへのAPPROVEは許可
@@ -976,7 +995,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 両方一致する場合は許可
@@ -1034,7 +1054,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::GROUP);
@@ -1089,7 +1110,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $resource = new Resource(ResourceType::GROUP);
@@ -1156,7 +1178,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $ownDraft = new Resource(ResourceType::GROUP, editorId: (string) $principal->principalIdentifier());
@@ -1245,7 +1268,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         $agency = new Resource(ResourceType::AGENCY);
@@ -1322,7 +1346,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // 自分のAgencyへの承認は許可される
@@ -1416,7 +1441,8 @@ class PolicyEvaluatorTest extends TestCase
         $policyEvaluator = new PolicyEvaluator(
             $this->principalGroupRepository,
             $this->roleRepository,
-            $this->policyRepository
+            $this->policyRepository,
+            new PrincipalConditionValueResolver(),
         );
 
         // Groupが一致するSongへの承認は許可
@@ -1439,5 +1465,55 @@ class PolicyEvaluatorTest extends TestCase
             [StrTestHelper::generateUuid()]
         );
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $songByNeither));
+    }
+
+    /**
+     * 正常系: 動的 resolver で Affiliation 由来 Talent が評価時に解決される.
+     */
+    #[Group('useDb')]
+    public function testAffiliatedTalentConditionUsesResolverAtEvaluationTime(): void
+    {
+        $agencyId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::READ],
+                [ResourceType::TALENT],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_TALENT_ID,
+                        ConditionOperator::IN,
+                        ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS,
+                    ),
+                ])
+            ),
+        ]);
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal($agencyId);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        /** @var ConditionValueResolverInterface&Mockery\MockInterface $resolver */
+        $resolver = Mockery::mock(ConditionValueResolverInterface::class);
+        $resolver->shouldReceive('resolve')
+            ->with(ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS, $principal)
+            ->andReturn([], [$talentId]);
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository,
+            $resolver,
+        );
+
+        $resource = new Resource(ResourceType::TALENT, null, [], [$talentId]);
+
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::READ, $resource));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::READ, $resource));
     }
 }
