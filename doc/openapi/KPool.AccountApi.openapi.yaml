@@ -661,12 +661,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApproveAffiliationRequestBody'
   /affiliations/{affiliationId}/reject:
     post:
       operationId: AffiliationOperations_rejectAffiliation
@@ -710,12 +704,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RejectAffiliationRequestBody'
   /affiliations/{affiliationId}/terminate:
     post:
       operationId: AffiliationOperations_terminateAffiliation
@@ -1659,16 +1647,6 @@ components:
           type: string
           description: Free-form contract notes.
       description: Affiliation contract terms.
-    ApproveAffiliationRequestBody:
-      type: object
-      required:
-        - approverAccountIdentifier
-      properties:
-        approverAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Approver account identifier.
-      description: Request body for approving an affiliation.
     ApproveDelegationRequestBody:
       type: object
       required:
@@ -2157,16 +2135,6 @@ components:
           nullable: true
           description: Detailed rejection reason. Required when rejectionReasonCode is other.
       description: Request body for rejecting an account category change request.
-    RejectAffiliationRequestBody:
-      type: object
-      required:
-        - rejectorAccountIdentifier
-      properties:
-        rejectorAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Rejector account identifier.
-      description: Request body for rejecting an affiliation.
     RequestAccountCategoryChangeRequestBody:
       type: object
       required:

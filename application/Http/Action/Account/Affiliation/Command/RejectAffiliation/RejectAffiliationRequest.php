@@ -16,18 +16,11 @@ class RejectAffiliationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'rejectorAccountIdentifier' => ['required', 'uuid'],
-        ];
+        return [];
     }
 
     public function affiliationId(): string
     {
         return (string) $this->route('affiliationId');
-    }
-
-    public function rejectorAccountIdentifier(): string
-    {
-        return (string) $this->input('rejectorAccountIdentifier');
     }
 }

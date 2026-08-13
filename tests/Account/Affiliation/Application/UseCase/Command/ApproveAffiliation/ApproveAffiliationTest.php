@@ -7,6 +7,13 @@ namespace Tests\Account\Affiliation\Application\UseCase\Command\ApproveAffiliati
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocuments;
+use Source\Account\Account\Domain\ValueObject\AccountName;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
@@ -17,259 +24,191 @@ use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
-use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class ApproveAffiliationTest extends TestCase
 {
-    /**
-     * 正常系: 正しくDIが動作すること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
+    /** @throws BindingResolutionException */
     public function test__construct(): void
     {
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $useCase = $this->app->make(ApproveAffiliationInterface::class);
-        $this->assertInstanceOf(ApproveAffiliation::class, $useCase);
+        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
+        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+
+        $this->assertInstanceOf(ApproveAffiliation::class, $this->app->make(ApproveAffiliationInterface::class));
     }
 
-    /**
-     * 正常系: Agency側がリクエストした場合、Talent側が承認できること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testProcessWhenRequestedByAgency(): void
+    public function testProcessWhenPolicyAllowsDesignatedApprover(): void
     {
-        $testData = $this->createTestDataRequestedByAgency();
-
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn($testData->affiliation);
-        $affiliationRepository->shouldReceive('save')
-            ->once()
-            ->with($testData->affiliation);
-
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')
-            ->once()
-            ->with(Mockery::on(
-                fn ($event) => $event instanceof AffiliationActivated
-                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
-                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
-                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
-            ));
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-
-        $useCase = $this->app->make(ApproveAffiliationInterface::class);
-
+        $data = $this->data(AccountCategory::AGENCY, AccountCategory::TALENT, policyAllowed: true);
+        $useCase = $this->useCase($data);
         $output = new ApproveAffiliationOutput();
 
-        $useCase->process($testData->input, $output);
+        $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), $output);
 
         $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['activatedAt']);
     }
 
-    /**
-     * 正常系: Talent側がリクエストした場合、Agency側が承認できること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testProcessWhenRequestedByTalent(): void
-    {
-        $testData = $this->createTestDataRequestedByTalent();
-
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn($testData->affiliation);
-        $affiliationRepository->shouldReceive('save')
-            ->once()
-            ->with($testData->affiliation);
-
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')
-            ->once()
-            ->with(Mockery::on(
-                fn ($event) => $event instanceof AffiliationActivated
-                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
-                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
-                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
-            ));
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-
-        $useCase = $this->app->make(ApproveAffiliationInterface::class);
-
-        $output = new ApproveAffiliationOutput();
-
-        $useCase->process($testData->input, $output);
-
-        $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
-        $this->assertNotNull($output->toArray()['activatedAt']);
-    }
-
-    /**
-     * 異常系: アフィリエーションが存在しない場合、例外がスローされること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
     public function testThrowsWhenAffiliationNotFound(): void
     {
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $approverAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
+        $repository = Mockery::mock(AffiliationRepositoryInterface::class);
+        $repository->shouldReceive('findById')->with($affiliationIdentifier)->once()->andReturnNull();
 
-        $input = new ApproveAffiliationInput($affiliationIdentifier, $approverAccountIdentifier);
+        /** @var AccountRepositoryInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        /** @var PolicyEvaluatorInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        /** @var AffiliationRepositoryInterface $repository */
+        /** @var EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($affiliationIdentifier)
-            ->once()
-            ->andReturnNull();
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-
-        $useCase = $this->app->make(ApproveAffiliationInterface::class);
-
-        $this->expectException(AffiliationNotFoundException::class);
-        $this->expectExceptionMessage('Affiliation not found.');
-
-        $useCase->process($input, new ApproveAffiliationOutput());
-    }
-
-    /**
-     * 異常系: 承認権限のないアカウントが承認しようとした場合、例外がスローされること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testThrowsWhenUnauthorizedApprover(): void
-    {
-        $testData = $this->createTestDataRequestedByAgency();
-        $unauthorizedAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-
-        $input = new ApproveAffiliationInput(
-            $testData->affiliationIdentifier,
-            $unauthorizedAccountIdentifier,
+        $useCase = new ApproveAffiliation(
+            $accountRepository,
+            $policyEvaluator,
+            $repository,
+            $eventDispatcher,
         );
 
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn($testData->affiliation);
-        $affiliationRepository->shouldNotReceive('save');
+        $this->expectException(AffiliationNotFoundException::class);
+        $useCase->process(new ApproveAffiliationInput($affiliationIdentifier, $principal), new ApproveAffiliationOutput());
+    }
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-
-        $useCase = $this->app->make(ApproveAffiliationInterface::class);
+    public function testThrowsWhenPrincipalIsNotDesignatedApprover(): void
+    {
+        $data = $this->data(AccountCategory::AGENCY, AccountCategory::TALENT, principalAccountIdentifier: new AccountIdentifier(StrTestHelper::generateUuid()));
+        $useCase = $this->useCase($data, expectAccountLookup: false, expectPolicyEvaluation: false, expectSave: false);
 
         $this->expectException(DisallowedAffiliationOperationException::class);
         $this->expectExceptionMessage('Only the designated approver can approve this affiliation.');
-
-        $useCase->process($input, new ApproveAffiliationOutput());
+        $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
     }
 
-    /**
-     * Agency側がリクエストしたテストデータを作成
-     */
-    private function createTestDataRequestedByAgency(): ApproveAffiliationTestData
+    public function testThrowsWhenApproverPolicyDenies(): void
     {
+        $data = $this->data(AccountCategory::AGENCY, AccountCategory::TALENT, policyAllowed: false);
+        $useCase = $this->useCase($data, expectSave: false);
+
+        $this->expectException(DisallowedAffiliationOperationException::class);
+        $this->expectExceptionMessage('Affiliation approval is not allowed.');
+        $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
+    }
+
+    public function testThrowsWhenApproverAccountCategoryIsGeneral(): void
+    {
+        $data = $this->data(AccountCategory::AGENCY, AccountCategory::GENERAL, policyAllowed: false);
+        $useCase = $this->useCase($data, expectSave: false);
+
+        $this->expectException(DisallowedAffiliationOperationException::class);
+        $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
+    }
+
+    private function useCase(ApproveAffiliationTestData $data, bool $expectAccountLookup = true, bool $expectPolicyEvaluation = true, bool $expectSave = true): ApproveAffiliation
+    {
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        if ($expectAccountLookup) {
+            $accountRepository->shouldReceive('findById')->with($data->approverAccountIdentifier)->andReturn($data->approverAccount);
+        } else {
+            $accountRepository->shouldNotReceive('findById');
+        }
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        if ($expectPolicyEvaluation) {
+            $policyEvaluator->shouldReceive('evaluate')
+                ->once()
+                ->with(
+                    $data->principal,
+                    Action::AFFILIATION_APPROVE,
+                    Mockery::on(fn (Resource $resource): bool => $resource->accountIdentifier() === $data->approverAccountIdentifier
+                        && $resource->accountCategory() === $data->approverAccountCategory
+                        && $resource->affiliationRequestingAccountCategory() === $data->requestingAccountCategory)
+                )
+                ->andReturn($data->policyAllowed);
+        } else {
+            $policyEvaluator->shouldNotReceive('evaluate');
+        }
+
+        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
+        $affiliationRepository->shouldReceive('findById')->with($data->affiliationIdentifier)->once()->andReturn($data->affiliation);
+        if ($expectSave) {
+            $affiliationRepository->shouldReceive('save')->once()->with($data->affiliation);
+        } else {
+            $affiliationRepository->shouldNotReceive('save');
+        }
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        if ($expectSave) {
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::type(AffiliationActivated::class));
+        } else {
+            $eventDispatcher->shouldNotReceive('dispatch');
+        }
+
+        /** @var AccountRepositoryInterface $accountRepository */
+        /** @var PolicyEvaluatorInterface $policyEvaluator */
+        /** @var AffiliationRepositoryInterface $affiliationRepository */
+        /** @var EventDispatcherInterface $eventDispatcher */
+        return new ApproveAffiliation($accountRepository, $policyEvaluator, $affiliationRepository, $eventDispatcher);
+    }
+
+    private function data(AccountCategory $requestingCategory, AccountCategory $approverCategory, bool $policyAllowed = true, ?AccountIdentifier $principalAccountIdentifier = null): ApproveAffiliationTestData
+    {
+        $agency = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talent = new AccountIdentifier(StrTestHelper::generateUuid());
+        $requestedBy = $requestingCategory === AccountCategory::AGENCY ? $agency : $talent;
+        $approver = $requestingCategory === AccountCategory::AGENCY ? $talent : $agency;
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $requestedBy = $agencyAccountIdentifier;
-        $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
-
-        $affiliation = new Affiliation(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $requestedBy,
-            AffiliationStatus::PENDING,
-            $terms,
-            new DateTimeImmutable(),
-            null,
-            null,
-        );
-
-        $input = new ApproveAffiliationInput(
-            $affiliationIdentifier,
-            $talentAccountIdentifier,
-        );
+        $affiliation = new Affiliation($affiliationIdentifier, $agency, $talent, $requestedBy, AffiliationStatus::PENDING, null, new DateTimeImmutable(), null, null);
+        $principal = $this->principal($principalAccountIdentifier ?? $approver);
 
         return new ApproveAffiliationTestData(
             $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
+            $approver,
+            $principal,
             $affiliation,
-            $input,
+            $this->account($approver, $approverCategory),
+            $requestingCategory,
+            $approverCategory,
+            $policyAllowed,
         );
     }
 
-    /**
-     * Talent側がリクエストしたテストデータを作成
-     */
-    private function createTestDataRequestedByTalent(): ApproveAffiliationTestData
+    private function principal(AccountIdentifier $accountIdentifier): Principal
     {
-        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $requestedBy = $talentAccountIdentifier;
-        $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
+        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), $accountIdentifier);
+    }
 
-        $affiliation = new Affiliation(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $requestedBy,
-            AffiliationStatus::PENDING,
-            $terms,
-            new DateTimeImmutable(),
-            null,
-            null,
-        );
-
-        $input = new ApproveAffiliationInput(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-        );
-
-        return new ApproveAffiliationTestData(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $affiliation,
-            $input,
-        );
+    private function account(AccountIdentifier $identifier, AccountCategory $category): Account
+    {
+        return new Account($identifier, new Email('account@example.com'), AccountType::CORPORATION, new AccountName('Test Account'), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
     }
 }
 
 readonly class ApproveAffiliationTestData
 {
     public function __construct(
-        public AffiliationIdentifier   $affiliationIdentifier,
-        public AccountIdentifier       $agencyAccountIdentifier,
-        public AccountIdentifier       $talentAccountIdentifier,
-        public Affiliation             $affiliation,
-        public ApproveAffiliationInput $input,
+        public AffiliationIdentifier $affiliationIdentifier,
+        public AccountIdentifier $approverAccountIdentifier,
+        public Principal $principal,
+        public Affiliation $affiliation,
+        public Account $approverAccount,
+        public AccountCategory $requestingAccountCategory,
+        public AccountCategory $approverAccountCategory,
+        public bool $policyAllowed,
     ) {
     }
 }

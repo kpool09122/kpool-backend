@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation;
 
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
+use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveAffiliation implements ApproveAffiliationInterface
 {
     public function __construct(
+        private AccountRepositoryInterface $accountRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
         private AffiliationRepositoryInterface $affiliationRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
@@ -26,8 +34,26 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             throw new AffiliationNotFoundException('Affiliation not found.');
         }
 
-        if ((string) $affiliation->approverAccountIdentifier() !== (string) $input->approverAccountIdentifier()) {
+        if ((string) $affiliation->approverAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
             throw new DisallowedAffiliationOperationException('Only the designated approver can approve this affiliation.');
+        }
+
+        $approverAccount = $this->accountRepository->findById($affiliation->approverAccountIdentifier());
+        if ($approverAccount === null) {
+            throw new DisallowedAffiliationOperationException('Affiliation approval is not allowed.');
+        }
+
+        if (! $this->policyEvaluator->evaluate(
+            $input->principal(),
+            Action::AFFILIATION_APPROVE,
+            Resource::account(
+                $approverAccount->accountIdentifier(),
+                $approverAccount->type(),
+                $approverAccount->accountCategory(),
+                $this->requestingAccountCategory($affiliation),
+            ),
+        )) {
+            throw new DisallowedAffiliationOperationException('Affiliation approval is not allowed.');
         }
 
         $affiliation->approve();
@@ -41,5 +67,10 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->activatedAt(),
         ));
         $output->setAffiliation($affiliation);
+    }
+
+    private function requestingAccountCategory(Affiliation $affiliation): AccountCategory
+    {
+        return $affiliation->isRequestedByAgency() ? AccountCategory::AGENCY : AccountCategory::TALENT;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -19,7 +20,6 @@ use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\Ap
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationOutput;
 use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationApprovalException;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -27,6 +27,7 @@ readonly class ApproveAffiliationAction
 {
     public function __construct(
         private ApproveAffiliationInterface $approveAffiliation,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -40,7 +41,7 @@ readonly class ApproveAffiliationAction
             try {
                 $input = new ApproveAffiliationInput(
                     affiliationIdentifier: new AffiliationIdentifier($request->affiliationId()),
-                    approverAccountIdentifier: new AccountIdentifier($request->approverAccountIdentifier()),
+                    principal: $this->accountContext->principal(),
                 );
                 $output = new ApproveAffiliationOutput();
             } catch (InvalidArgumentException $e) {

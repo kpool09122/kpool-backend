@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Affiliation\Command\RejectAffiliation;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -16,7 +17,6 @@ use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperat
 use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliationInterface;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -24,6 +24,7 @@ readonly class RejectAffiliationAction
 {
     public function __construct(
         private RejectAffiliationInterface $rejectAffiliation,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -37,7 +38,7 @@ readonly class RejectAffiliationAction
             try {
                 $input = new RejectAffiliationInput(
                     affiliationIdentifier: new AffiliationIdentifier($request->affiliationId()),
-                    rejectorAccountIdentifier: new AccountIdentifier($request->rejectorAccountIdentifier()),
+                    principal: $this->accountContext->principal(),
                 );
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

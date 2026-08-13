@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation;
+namespace Tests\Account\Affiliation\Application\UseCase\Command\RejectAffiliation;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInput;
+use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliationInput;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -13,7 +13,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
-class ApproveAffiliationInputTest extends TestCase
+class RejectAffiliationInputTest extends TestCase
 {
     public function test__construct(): void
     {
@@ -24,7 +24,7 @@ class ApproveAffiliationInputTest extends TestCase
             new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
-        $input = new ApproveAffiliationInput($affiliationIdentifier, $principal);
+        $input = new RejectAffiliationInput($affiliationIdentifier, $principal);
 
         $this->assertSame($affiliationIdentifier, $input->affiliationIdentifier());
         $this->assertSame($principal, $input->principal());
