@@ -169,6 +169,100 @@ class PrincipalGroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系: AccountIdとNameに紐づくPrincipalGroupを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndName(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $otherAccountId = StrTestHelper::generateUuid();
+        $principalGroupId = StrTestHelper::generateUuid();
+        $sameNameOtherAccountGroupId = StrTestHelper::generateUuid();
+        $otherNameGroupId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+        $roleId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateAccount::create($otherAccountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId), ['email' => 'find-by-account-id-and-name@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId),
+            new IdentityIdentifier($identityId),
+        );
+        CreateRole::create(new RoleIdentifier($roleId), ['name' => 'Find By Account And Name Role']);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            [
+                'name' => 'Agency Actor',
+                'is_default' => false,
+            ]
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($sameNameOtherAccountGroupId),
+            new AccountIdentifier($otherAccountId),
+            [
+                'name' => 'Agency Actor',
+                'is_default' => false,
+            ]
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($otherNameGroupId),
+            new AccountIdentifier($accountId),
+            [
+                'name' => 'Other Group',
+                'is_default' => false,
+            ]
+        );
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId);
+        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId,
+        ]);
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findByAccountIdAndName(new AccountIdentifier($accountId), 'Agency Actor');
+
+        $this->assertNotNull($result);
+        $this->assertSame($principalGroupId, (string) $result->principalGroupIdentifier());
+        $this->assertSame($accountId, (string) $result->accountIdentifier());
+        $this->assertSame('Agency Actor', $result->name());
+        $this->assertFalse($result->isDefault());
+        $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId)));
+        $this->assertTrue($result->hasRole(new RoleIdentifier($roleId)));
+    }
+
+    /**
+     * 正常系: AccountIdとNameに紐づくPrincipalGroupが存在しない場合、NULLが返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndNameWhenNotFound(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $principalGroupId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            [
+                'name' => 'Agency Actor',
+                'is_default' => false,
+            ]
+        );
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+
+        $this->assertNull($repository->findByAccountIdAndName(new AccountIdentifier($accountId), 'Talent Actor'));
+        $this->assertNull($repository->findByAccountIdAndName(new AccountIdentifier(StrTestHelper::generateUuid()), 'Agency Actor'));
+    }
+
+    /**
      * 正常系: 正しくAccountIdに紐づくデフォルトPrincipalGroupを取得できること
      *
      * @throws BindingResolutionException
