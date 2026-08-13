@@ -8,12 +8,12 @@ use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\ConditionValueResolverInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionClause;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionKey;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionOperator;
-use Source\Wiki\Principal\Domain\ValueObject\ConditionValue;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -26,6 +26,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyRepositoryInterface $policyRepository,
+        private ConditionValueResolverInterface $conditionValueResolver,
     ) {
     }
 
@@ -152,8 +153,8 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         // リソースの値を取得
         $resourceValue = $this->getResourceValue($clause->key(), $resource);
 
-        // 条件値を解決（変数の場合は Principal から値を取得）
-        $conditionValue = $this->resolveConditionValue($clause->value(), $principal);
+        // 条件値を resolver 経由で解決（動的 ConditionValue を含む）
+        $conditionValue = $this->conditionValueResolver->resolve($clause->value(), $principal);
 
         // 演算子に応じて評価
         return $this->compareValues($clause->operator(), $resourceValue, $conditionValue);
@@ -173,25 +174,6 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             ConditionKey::RESOURCE_IS_OFFICIAL => $resource->isOfficial(),
             ConditionKey::RESOURCE_EDITOR_ID => $resource->editorId(),
         };
-    }
-
-    /**
-     * 条件値を解決する（変数の場合は Principal から値を取得）.
-     *
-     * @return string|string[]|bool|null
-     */
-    private function resolveConditionValue(ConditionValue|string|bool $value, Principal $principal): string|array|bool|null
-    {
-        if ($value instanceof ConditionValue) {
-            return match ($value) {
-                ConditionValue::PRINCIPAL_AGENCY_ID => $principal->agencyId(),
-                ConditionValue::PRINCIPAL_WIKI_GROUP_IDS => $principal->groupIds(),
-                ConditionValue::PRINCIPAL_TALENT_IDS => $principal->talentIds(),
-                ConditionValue::PRINCIPAL_ID => (string) $principal->principalIdentifier(),
-            };
-        }
-
-        return $value;
     }
 
     /**

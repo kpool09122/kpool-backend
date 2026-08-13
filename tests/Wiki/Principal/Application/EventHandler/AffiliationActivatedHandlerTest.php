@@ -11,8 +11,6 @@ use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationActivatedHandler;
 use Source\Wiki\Principal\Domain\Entity\AffiliationGrant;
 use Source\Wiki\Principal\Domain\Entity\Policy;
@@ -34,14 +32,6 @@ use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
-use Source\Wiki\Shared\Domain\ValueObject\Version;
-use Source\Wiki\Wiki\Domain\Entity\Wiki;
-use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -64,8 +54,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $roleFactory = Mockery::mock(RoleFactoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $affiliationGrantFactory = Mockery::mock(AffiliationGrantFactoryInterface::class);
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
@@ -75,7 +63,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $roleFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
@@ -177,13 +164,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->twice()
             ->andReturn($talentSideGrant, $agencySideGrant);
 
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository
-            ->shouldReceive('findByOwnerAccountId')
-            ->with($talentAccountIdentifier, ResourceType::TALENT)
-            ->once()
-            ->andReturnNull();
-
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
@@ -193,7 +173,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $roleFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
@@ -282,13 +261,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->once()
             ->andReturn($agencySideGrant);
 
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository
-            ->shouldReceive('findByOwnerAccountId')
-            ->with($talentAccountIdentifier, ResourceType::TALENT)
-            ->once()
-            ->andReturnNull();
-
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
@@ -298,7 +270,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $roleFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
@@ -397,9 +368,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->once()
             ->andReturn($talentSideGrant);
 
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldNotReceive('findByOwnerAccountId');
-
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
@@ -409,7 +377,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $roleFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
@@ -417,18 +384,16 @@ class AffiliationActivatedHandlerTest extends TestCase
     }
 
     /**
-     * 正常系: 公式Talentが存在する場合、Agency側にTalent制限付きの権限が付与されること.
+     * 正常系: Agency側にAffiliation由来の動的Talent制限付き権限が付与されること.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testHandleCreatesAgencySideGrantWithTalentCondition(): void
+    public function testHandleCreatesAgencySideGrantWithDynamicTalentCondition(): void
     {
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-
         $event = new AffiliationActivated(
             $affiliationIdentifier,
             $agencyAccountIdentifier,
@@ -438,9 +403,6 @@ class AffiliationActivatedHandlerTest extends TestCase
 
         // Talent側のPrincipal
         $talentPrincipal = $this->createPrincipal($talentAccountIdentifier);
-
-        // 公式Talent（Wiki）
-        $officialWiki = $this->createWiki($wikiIdentifier, $talentAccountIdentifier);
 
         // 作成されるエンティティ
         $talentSidePrincipalGroup = $this->createPrincipalGroup($talentAccountIdentifier);
@@ -515,13 +477,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->twice()
             ->andReturn($talentSideGrant, $agencySideGrant);
 
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository
-            ->shouldReceive('findByOwnerAccountId')
-            ->with($talentAccountIdentifier, ResourceType::TALENT)
-            ->once()
-            ->andReturn($officialWiki);
-
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
@@ -531,7 +486,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $roleFactory);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $handler = $this->app->make(AffiliationActivatedHandler::class);
 
@@ -596,26 +550,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $type,
             new DateTimeImmutable(),
-        );
-    }
-
-    private function createWiki(
-        WikiIdentifier $wikiIdentifier,
-        AccountIdentifier $ownerAccountIdentifier,
-    ): Wiki {
-        $basic = Mockery::mock(BasicInterface::class);
-
-        return new Wiki(
-            $wikiIdentifier,
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('tl-chaeyoung'),
-            Language::KOREAN,
-            ResourceType::TALENT,
-            $basic, /** @phpstan-ignore argument.type */
-            new SectionContentCollection(),
-            null,
-            new Version(1),
-            $ownerAccountIdentifier,
         );
     }
 }

@@ -24,7 +24,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 
 readonly class AffiliationActivatedHandler
 {
@@ -38,7 +37,6 @@ readonly class AffiliationActivatedHandler
         private RoleFactoryInterface $roleFactory,
         private RoleRepositoryInterface $roleRepository,
         private AffiliationGrantFactoryInterface $affiliationGrantFactory,
-        private WikiRepositoryInterface $wikiRepository,
     ) {
     }
 
@@ -127,17 +125,11 @@ readonly class AffiliationActivatedHandler
         );
         $this->principalGroupRepository->save($principalGroup);
 
-        // TalentAccountIdentifierからWiki側のTalentIdentifierを取得
-        $wiki = $this->wikiRepository->findByOwnerAccountId(
-            $event->talentAccountIdentifier(),
-            ResourceType::TALENT,
-        );
-        $talentId = $wiki !== null ? (string) $wiki->wikiIdentifier() : null;
-
         // Policy 作成（Talent に対する権限）
+        // Talent Wiki は評価時に動的解決するため、Affiliation 成立時点で未作成でも空 Policy にしない。
         $policy = $this->policyFactory->create(
             "Affiliation Policy - Talent {$event->talentAccountIdentifier()}",
-            $this->createAgencySideStatements($talentId),
+            $this->createAgencySideStatements(),
             false,
         );
         $this->policyRepository->save($policy);
@@ -212,24 +204,24 @@ readonly class AffiliationActivatedHandler
     /**
      * Agency側の Statement: Talent に対する EDIT 権限.
      *
-     * 指定されたTalentのみに対する権限を付与する.
-     * TalentIdがnullの場合（公式Talentが存在しない場合）は権限なし.
+     * active Affiliation と評価時点の Talent Wiki 所有情報から動的に対象 Talent を解決する.
+     * Talent Wiki が存在しない場合は resolver が空配列を返し、暗黙的に権限なしになる.
      *
      * @return Statement[]
      */
-    private function createAgencySideStatements(?string $talentId): array
+    private function createAgencySideStatements(): array
     {
-        if ($talentId === null) {
-            return [];
-        }
-
         return [
             new Statement(
                 Effect::ALLOW,
                 [Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT],
                 [ResourceType::TALENT],
                 new Condition([
-                    new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, $talentId),
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_TALENT_ID,
+                        ConditionOperator::IN,
+                        ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS,
+                    ),
                 ]),
             ),
         ];
