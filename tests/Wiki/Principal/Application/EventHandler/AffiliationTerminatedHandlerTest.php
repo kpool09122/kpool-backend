@@ -24,6 +24,7 @@ use Source\Wiki\Principal\Domain\ValueObject\AffiliationGrantType;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -64,12 +65,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $event = new AffiliationTerminated(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            new DateTimeImmutable(),
-        );
+        $event = $this->createEvent($affiliationIdentifier, $agencyAccountIdentifier, $talentAccountIdentifier);
 
         $talentSideGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
         $agencySideGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::AGENCY_SIDE);
@@ -77,13 +73,15 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $talentSidePrincipalGroup = $this->createPrincipalGroup($talentAccountIdentifier, false);
         $agencySidePrincipalGroup = $this->createPrincipalGroup($agencyAccountIdentifier, false);
 
+        $talentDefaultPrincipalGroup = $this->createPrincipalGroup($talentAccountIdentifier, true);
+        $agencyDefaultPrincipalGroup = $this->createPrincipalGroup($agencyAccountIdentifier, true);
+
         $talentSidePolicy = $this->createPolicy($talentSideGrant->policyIdentifier());
         $agencySidePolicy = $this->createPolicy($agencySideGrant->policyIdentifier());
 
         $talentSideRole = $this->createRole($talentSideGrant->roleIdentifier());
         $agencySideRole = $this->createRole($agencySideGrant->roleIdentifier());
 
-        // Mocks
         $affiliationGrantRepository = Mockery::mock(AffiliationGrantRepositoryInterface::class);
         $affiliationGrantRepository
             ->shouldReceive('findByAffiliationId')
@@ -136,6 +134,19 @@ class AffiliationTerminatedHandlerTest extends TestCase
             ->once()
             ->andReturn($agencySidePrincipalGroup);
         $principalGroupRepository
+            ->shouldReceive('findDefaultByAccountId')
+            ->with($talentAccountIdentifier)
+            ->once()
+            ->andReturn($talentDefaultPrincipalGroup);
+        $principalGroupRepository
+            ->shouldReceive('findDefaultByAccountId')
+            ->with($agencyAccountIdentifier)
+            ->once()
+            ->andReturn($agencyDefaultPrincipalGroup);
+        $principalGroupRepository
+            ->shouldReceive('save')
+            ->twice();
+        $principalGroupRepository
             ->shouldReceive('delete')
             ->twice();
 
@@ -150,6 +161,147 @@ class AffiliationTerminatedHandlerTest extends TestCase
     }
 
     /**
+     * 正常系: Affiliation専用グループのPrincipalがDefaultグループに戻ること.
+     */
+    public function testHandleRestoresAffiliationGroupMembersToDefaultGroup(): void
+    {
+        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
+        $affiliationGroup = $this->createPrincipalGroup($accountIdentifier, false, 'Affiliation - Agency 1');
+        $affiliationGroup->addMember($principalIdentifier);
+        $affiliationGroup->addRole($grant->roleIdentifier());
+        $defaultGroup = $this->createPrincipalGroup($accountIdentifier, true, 'Default');
+
+        $principalGroupRepository = $this->mockPrincipalGroupRepositoryForSingleGrant($grant, $affiliationGroup, $defaultGroup);
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => $saved->isDefault()
+                && $saved->hasMember($principalIdentifier)));
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => ! $saved->isDefault()
+                && ! $saved->hasRole($grant->roleIdentifier())));
+        $principalGroupRepository->shouldReceive('delete')->once()->with($affiliationGroup);
+
+        $this->handleSingleGrant($affiliationIdentifier, $grant, $principalGroupRepository);
+    }
+
+    /**
+     * 正常系: 既にDefaultグループに所属しているPrincipalは重複追加されないこと.
+     */
+    public function testHandleDoesNotDuplicateMemberAlreadyInDefaultGroup(): void
+    {
+        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
+        $affiliationGroup = $this->createPrincipalGroup($accountIdentifier, false, 'Affiliation - Agency 1');
+        $affiliationGroup->addMember($principalIdentifier);
+        $defaultGroup = $this->createPrincipalGroup($accountIdentifier, true, 'Default');
+        $defaultGroup->addMember($principalIdentifier);
+
+        $principalGroupRepository = $this->mockPrincipalGroupRepositoryForSingleGrant($grant, $affiliationGroup, $defaultGroup);
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => ! $saved->isDefault()
+                && $saved->memberCount() === 1));
+        $principalGroupRepository->shouldReceive('delete')->once()->with($affiliationGroup);
+
+        $this->handleSingleGrant($affiliationIdentifier, $grant, $principalGroupRepository);
+
+        $this->assertSame(1, $defaultGroup->memberCount());
+    }
+
+    /**
+     * 正常系: Defaultグループがない場合も失敗しないこと.
+     */
+    public function testHandleDoesNotFailWhenDefaultGroupDoesNotExist(): void
+    {
+        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
+        $affiliationGroup = $this->createPrincipalGroup($accountIdentifier, false, 'Affiliation - Agency 1');
+        $affiliationGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+
+        $principalGroupRepository = $this->mockPrincipalGroupRepositoryForSingleGrant($grant, $affiliationGroup, null);
+        $principalGroupRepository->shouldReceive('save')->once()->with($affiliationGroup);
+        $principalGroupRepository->shouldReceive('delete')->once()->with($affiliationGroup);
+
+        $this->handleSingleGrant($affiliationIdentifier, $grant, $principalGroupRepository);
+    }
+
+    /**
+     * 正常系: カテゴリ由来のPrincipalGroupやDefaultグループは削除しないこと.
+     */
+    public function testHandleDoesNotDeleteDefaultOrCategoryPrincipalGroups(): void
+    {
+        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $defaultGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
+        $actorGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::AGENCY_SIDE);
+        $defaultGroup = $this->createPrincipalGroup($accountIdentifier, true, 'Default');
+        $actorGroup = $this->createPrincipalGroup($accountIdentifier, false, 'Agency Actor');
+
+        $affiliationGrantRepository = $this->mockAffiliationGrantRepository($affiliationIdentifier, [$defaultGrant, $actorGrant]);
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findById')->with($defaultGrant->roleIdentifier())->once()->andReturnNull();
+        $roleRepository->shouldReceive('findById')->with($actorGrant->roleIdentifier())->once()->andReturnNull();
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findById')->with($defaultGrant->policyIdentifier())->once()->andReturnNull();
+        $policyRepository->shouldReceive('findById')->with($actorGrant->policyIdentifier())->once()->andReturnNull();
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findById')->with($defaultGrant->principalGroupIdentifier())->once()->andReturn($defaultGroup);
+        $principalGroupRepository->shouldReceive('findById')->with($actorGrant->principalGroupIdentifier())->once()->andReturn($actorGroup);
+        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
+        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldNotReceive('delete');
+
+        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+
+        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+            $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
+        );
+    }
+
+    /**
+     * 正常系: system role/policy は削除しないこと.
+     */
+    public function testHandleDoesNotDeleteSystemRoleOrPolicy(): void
+    {
+        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
+        $systemRole = $this->createRole($grant->roleIdentifier(), true);
+        $systemPolicy = $this->createPolicy($grant->policyIdentifier(), true);
+
+        $affiliationGrantRepository = $this->mockAffiliationGrantRepository($affiliationIdentifier, [$grant]);
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findById')->with($grant->roleIdentifier())->once()->andReturn($systemRole);
+        $roleRepository->shouldNotReceive('delete');
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findById')->with($grant->policyIdentifier())->once()->andReturn($systemPolicy);
+        $policyRepository->shouldNotReceive('delete');
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findById')->with($grant->principalGroupIdentifier())->once()->andReturnNull();
+        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldNotReceive('delete');
+
+        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+
+        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+            $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
+        );
+    }
+
+    /**
      * 正常系: Grant が存在しない場合は何もしないこと.
      *
      * @return void
@@ -161,12 +313,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $event = new AffiliationTerminated(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            new DateTimeImmutable(),
-        );
+        $event = $this->createEvent($affiliationIdentifier, $agencyAccountIdentifier, $talentAccountIdentifier);
 
         $affiliationGrantRepository = Mockery::mock(AffiliationGrantRepositoryInterface::class);
         $affiliationGrantRepository
@@ -195,74 +342,118 @@ class AffiliationTerminatedHandlerTest extends TestCase
     }
 
     /**
-     * 正常系: デフォルトのPrincipalGroupは削除しないこと.
-     *
-     * @return void
-     * @throws BindingResolutionException
+     * 正常系: 既に一部リソースがない場合も冪等に処理できること.
      */
-    public function testHandleSkipsDefaultPrincipalGroup(): void
+    public function testHandleIsIdempotentWhenSomeResourcesDoNotExist(): void
     {
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
 
-        $event = new AffiliationTerminated(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            new DateTimeImmutable(),
-        );
-
-        $talentSideGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
-
-        // Default PrincipalGroup
-        $defaultPrincipalGroup = $this->createPrincipalGroup($talentAccountIdentifier, true);
-        $talentSidePolicy = $this->createPolicy($talentSideGrant->policyIdentifier());
-        $talentSideRole = $this->createRole($talentSideGrant->roleIdentifier());
-
-        $affiliationGrantRepository = Mockery::mock(AffiliationGrantRepositoryInterface::class);
-        $affiliationGrantRepository
-            ->shouldReceive('findByAffiliationId')
-            ->with($affiliationIdentifier)
-            ->once()
-            ->andReturn([$talentSideGrant]);
-        $affiliationGrantRepository
-            ->shouldReceive('delete')
-            ->once();
-
+        $affiliationGrantRepository = $this->mockAffiliationGrantRepository($affiliationIdentifier, [$grant]);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->andReturn($talentSideRole);
-        $roleRepository
-            ->shouldReceive('delete')
-            ->once();
-
+        $roleRepository->shouldReceive('findById')->with($grant->roleIdentifier())->once()->andReturnNull();
+        $roleRepository->shouldNotReceive('delete');
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
-        $policyRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->andReturn($talentSidePolicy);
-        $policyRepository
-            ->shouldReceive('delete')
-            ->once();
-
+        $policyRepository->shouldReceive('findById')->with($grant->policyIdentifier())->once()->andReturnNull();
+        $policyRepository->shouldNotReceive('delete');
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository
-            ->shouldReceive('findById')
-            ->once()
-            ->andReturn($defaultPrincipalGroup);
-        $principalGroupRepository->shouldNotReceive('delete'); // Default なので削除されない
+        $principalGroupRepository->shouldReceive('findById')->with($grant->principalGroupIdentifier())->once()->andReturnNull();
+        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
+        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldNotReceive('delete');
 
         $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $handler = $this->app->make(AffiliationTerminatedHandler::class);
+        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+            $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
+        );
+    }
 
-        $handler->handle($event);
+    private function handleSingleGrant(
+        AffiliationIdentifier $affiliationIdentifier,
+        AffiliationGrant $grant,
+        PrincipalGroupRepositoryInterface $principalGroupRepository,
+    ): void {
+        $affiliationGrantRepository = $this->mockAffiliationGrantRepository($affiliationIdentifier, [$grant]);
+        $role = $this->createRole($grant->roleIdentifier());
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findById')->once()->with($grant->roleIdentifier())->andReturn($role);
+        $roleRepository->shouldReceive('delete')->once()->with($role);
+        $policy = $this->createPolicy($grant->policyIdentifier());
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findById')->once()->with($grant->policyIdentifier())->andReturn($policy);
+        $policyRepository->shouldReceive('delete')->once()->with($policy);
+
+        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+
+        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+            $this->createEvent(
+                $affiliationIdentifier,
+                new AccountIdentifier(StrTestHelper::generateUuid()),
+                new AccountIdentifier(StrTestHelper::generateUuid()),
+            )
+        );
+    }
+
+    /**
+     * @param AffiliationGrant[] $grants
+     * @return AffiliationGrantRepositoryInterface&Mockery\MockInterface
+     */
+    private function mockAffiliationGrantRepository(
+        AffiliationIdentifier $affiliationIdentifier,
+        array $grants,
+    ): AffiliationGrantRepositoryInterface {
+        /** @var AffiliationGrantRepositoryInterface&Mockery\MockInterface $affiliationGrantRepository */
+        $affiliationGrantRepository = Mockery::mock(AffiliationGrantRepositoryInterface::class);
+        $affiliationGrantRepository->shouldReceive('findByAffiliationId')
+            ->once()
+            ->with($affiliationIdentifier)
+            ->andReturn($grants);
+        $affiliationGrantRepository->shouldReceive('delete')->times(count($grants));
+
+        return $affiliationGrantRepository;
+    }
+
+    /**
+     * @return PrincipalGroupRepositoryInterface&Mockery\MockInterface
+     */
+    private function mockPrincipalGroupRepositoryForSingleGrant(
+        AffiliationGrant $grant,
+        PrincipalGroup $affiliationGroup,
+        ?PrincipalGroup $defaultGroup,
+    ): PrincipalGroupRepositoryInterface {
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($grant->principalGroupIdentifier())
+            ->andReturn($affiliationGroup);
+        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
+            ->once()
+            ->with($affiliationGroup->accountIdentifier())
+            ->andReturn($defaultGroup);
+
+        return $principalGroupRepository;
+    }
+
+    private function createEvent(
+        AffiliationIdentifier $affiliationIdentifier,
+        AccountIdentifier $agencyAccountIdentifier,
+        AccountIdentifier $talentAccountIdentifier,
+    ): AffiliationTerminated {
+        return new AffiliationTerminated(
+            $affiliationIdentifier,
+            $agencyAccountIdentifier,
+            $talentAccountIdentifier,
+            new DateTimeImmutable(),
+        );
     }
 
     private function createAffiliationGrant(
@@ -280,35 +471,38 @@ class AffiliationTerminatedHandlerTest extends TestCase
         );
     }
 
-    private function createPrincipalGroup(AccountIdentifier $accountIdentifier, bool $isDefault): PrincipalGroup
-    {
+    private function createPrincipalGroup(
+        AccountIdentifier $accountIdentifier,
+        bool $isDefault,
+        string $name = 'Affiliation - Test',
+    ): PrincipalGroup {
         return new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
-            'Test Group',
+            $name,
             $isDefault,
             new DateTimeImmutable(),
         );
     }
 
-    private function createPolicy(PolicyIdentifier $policyIdentifier): Policy
+    private function createPolicy(PolicyIdentifier $policyIdentifier, bool $isSystemPolicy = false): Policy
     {
         return new Policy(
             $policyIdentifier,
             'Test Policy',
             [],
-            false,
+            $isSystemPolicy,
             new DateTimeImmutable(),
         );
     }
 
-    private function createRole(RoleIdentifier $roleIdentifier): Role
+    private function createRole(RoleIdentifier $roleIdentifier, bool $isSystemRole = false): Role
     {
         return new Role(
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            $isSystemRole,
             new DateTimeImmutable(),
         );
     }
