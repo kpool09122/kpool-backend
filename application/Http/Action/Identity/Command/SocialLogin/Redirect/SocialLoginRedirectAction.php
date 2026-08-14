@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;

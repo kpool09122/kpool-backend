@@ -56,6 +56,7 @@ return [
     'identity_already_member' => 'このアイデンティティは既にこのグループのメンバーです。',
     'identity_not_member' => 'このアイデンティティはこのグループのメンバーではありません。',
     'cannot_remove_last_owner' => 'アカウントから最後のオーナーを削除することはできません。',
+    'cannot_remove_last_wiki_administrator' => 'Wiki Administrator が少なくとも1人必要です。',
     'cannot_remove_last_principal_group_manager' => 'PrincipalGroup を管理できる Principal が少なくとも1人必要です。',
     'principal_already_assigned_to_principal_group' => 'Principal はアカウント内で1つの PrincipalGroup にのみ所属できます。',
     'cannot_delete_default_identity_group' => 'デフォルトのアイデンティティグループは削除できません。',

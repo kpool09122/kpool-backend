@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalOutput;
@@ -58,6 +59,10 @@ readonly class CreatePrincipalAction
                 DB::rollBack();
 
                 throw new ConflictHttpException(detail: error_message('principal_already_exists', $language), previous: $e);
+            } catch (SystemRoleNotFoundException $e) {
+                DB::rollBack();
+
+                throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

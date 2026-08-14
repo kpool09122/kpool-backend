@@ -6,7 +6,7 @@ namespace Source\Account\Account\Domain\Factory;
 
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 
 interface AccountFactoryInterface

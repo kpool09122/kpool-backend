@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Query\ListMembers;
 
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class ListMembersInput implements ListMembersInputPort

@@ -7,11 +7,13 @@ namespace Tests\Wiki\Principal\Http\Action\Command\CreatePrincipal;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalRequest;
 use Application\Http\Context\ActorContext;
+use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalOutput;
@@ -108,6 +110,39 @@ class CreatePrincipalActionTest extends TestCase
 
         $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
         $this->assertSame(error_message('principal_already_exists', 'en'), $payload['detail']);
+    }
+
+    public function testInvokeThrowsInternalServerErrorWhenSystemRoleNotFound(): void
+    {
+        $identityIdentifier = StrTestHelper::generateUuid();
+        $accountIdentifier = StrTestHelper::generateUuid();
+
+        /** @var CreatePrincipalRequest&Mockery\MockInterface $request */
+        $request = Mockery::mock(CreatePrincipalRequest::class);
+        $request->shouldReceive('identityIdentifier')->andReturn($identityIdentifier);
+        $request->shouldReceive('accountIdentifier')->andReturn($accountIdentifier);
+        $request->shouldReceive('language')->andReturn('en');
+
+        $this->expectAccountMembershipCheck($accountIdentifier, $identityIdentifier, true);
+        DB::shouldReceive('beginTransaction')->once();
+        DB::shouldReceive('rollBack')->once();
+
+        /** @var CreatePrincipalInterface&Mockery\MockInterface $useCase */
+        $useCase = Mockery::mock(CreatePrincipalInterface::class);
+        $useCase->shouldReceive('process')
+            ->once()
+            ->andThrow(new SystemRoleNotFoundException('WIKI_ADMINISTRATOR'));
+
+        /** @var LoggerInterface&Mockery\MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
+
+        $action = new CreatePrincipalAction($useCase, $this->actorContext($identityIdentifier), $logger);
+
+        $this->expectException(InternalServerErrorHttpException::class);
+        $this->expectExceptionMessage('WIKI_ADMINISTRATOR system role is not found.');
+
+        $action($request);
     }
 
     public function testInvokeReturnsUnprocessableWhenIdentityDoesNotMatchActor(): void

@@ -801,3 +801,10 @@ model PolicyStatement {
   @doc("Optional condition attached to the statement.")
   condition?: PolicyCondition | null;
 }
+
+
+@doc("List of Wiki principal groups.")
+model ListPrincipalGroupsResponseBody {
+  @doc("Principal groups.")
+  principalGroups: PrincipalGroupSummary[];
+}

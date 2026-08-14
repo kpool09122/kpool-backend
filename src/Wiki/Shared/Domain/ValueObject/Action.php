@@ -22,4 +22,5 @@ enum Action: string
     case DELETE = 'delete';
     case HIDE = 'hide';
     case UNHIDE = 'unhide';
+    case PRINCIPAL_GROUP_MANAGE = 'principal-group-manage';
 }

@@ -56,6 +56,7 @@ return [
     'identity_already_member' => 'The identity is already a member of this group.',
     'identity_not_member' => 'The identity is not a member of this group.',
     'cannot_remove_last_owner' => 'Cannot remove the last owner from the account.',
+    'cannot_remove_last_wiki_administrator' => 'At least one Wiki Administrator is required.',
     'cannot_remove_last_principal_group_manager' => 'At least one principal with principal group manage permission is required.',
     'principal_already_assigned_to_principal_group' => 'A principal can belong to only one principal group in an account.',
     'cannot_delete_default_identity_group' => 'Cannot delete the default identity group.',

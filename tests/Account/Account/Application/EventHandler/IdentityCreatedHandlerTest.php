@@ -10,7 +10,7 @@ use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInputPort;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutputPort;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;

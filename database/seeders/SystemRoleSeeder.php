@@ -31,6 +31,7 @@ class SystemRoleSeeder extends Seeder
         $this->createSeniorCollaboratorRole();
         $this->createAgencyActorRole();
         $this->createTalentActorRole();
+        $this->createWikiAdministratorRole();
         $this->createCollaboratorRole();
         $this->createNoneRole();
     }
@@ -101,6 +102,17 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'TALENT_ACTOR',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
+            isSystemRole: true,
+        );
+
+        $this->roleRepository->save($role);
+    }
+
+    private function createWikiAdministratorRole(): void
+    {
+        $role = $this->roleFactory->create(
+            name: 'WIKI_ADMINISTRATOR',
+            policies: $this->getPolicyIdentifiers(['GLOBAL_PRINCIPAL_GROUP_MANAGE']),
             isSystemRole: true,
         );
 

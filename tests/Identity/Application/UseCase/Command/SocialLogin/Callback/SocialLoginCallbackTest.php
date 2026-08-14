@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;

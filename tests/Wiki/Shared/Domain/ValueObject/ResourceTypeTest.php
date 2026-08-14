@@ -57,4 +57,12 @@ class ResourceTypeTest extends TestCase
 
         ResourceType::IMAGE->slugPrefix();
     }
+
+    public function testSlugPrefixThrowsForPrincipalGroup(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PRINCIPAL_GROUP resource type does not support wiki slug prefixes.');
+
+        ResourceType::PRINCIPAL_GROUP->slugPrefix();
+    }
 }

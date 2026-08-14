@@ -25,6 +25,20 @@ model MutatePrincipalGroupMemberRequestBody {
   principalIdentifier: Uuid;
 }
 
+@doc("Principal group membership update item.")
+model UpdatePrincipalGroupMembersItem {
+  @doc("Principal group identifier whose members will be updated.")
+  principalGroupIdentifier: Uuid;
+  @doc("Principal identifiers that should belong to the principal group after the update.")
+  principalIdentifiers: Uuid[];
+}
+
+@doc("Request body for updating multiple Wiki principal group memberships.")
+model UpdatePrincipalGroupMembersRequestBody {
+  @doc("Principal groups and their updated member sets.")
+  principalGroups: UpdatePrincipalGroupMembersItem[];
+}
+
 @doc("Request body for attaching or detaching a role from a principal group.")
 model AttachRoleToPrincipalGroupRequestBody {
   @doc("Role identifier to mutate.")
@@ -81,6 +95,12 @@ model OkPrincipalGroupResponse {
   @body body: PrincipalGroupSummary;
 }
 
+@doc("Response returned when multiple Wiki principal group memberships are updated.")
+model UpdatePrincipalGroupMembersResponse {
+  @statusCode statusCode: 200;
+  @body body: ListPrincipalGroupsResponseBody;
+}
+
 @doc("Response returned when a role is created.")
 model CreateRoleResponse {
   @statusCode statusCode: 201;
@@ -129,6 +149,13 @@ interface PrincipalOperations {
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
   ): OkPrincipalGroupResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/principal-groups/members")
+  @doc("Update members for multiple Wiki principal groups.")
+  updatePrincipalGroupMembers(
+    @body body: UpdatePrincipalGroupMembersRequestBody,
+  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @delete
   @route("/principal-group/{principalGroupId}")

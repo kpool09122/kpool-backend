@@ -11,12 +11,12 @@ use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInput;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;

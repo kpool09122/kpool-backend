@@ -14,7 +14,7 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;

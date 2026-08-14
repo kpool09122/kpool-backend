@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;

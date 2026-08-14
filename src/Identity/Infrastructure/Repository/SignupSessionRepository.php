@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Repository;
 
 use Illuminate\Support\Facades\Redis;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;

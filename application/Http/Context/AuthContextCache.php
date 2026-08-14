@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;

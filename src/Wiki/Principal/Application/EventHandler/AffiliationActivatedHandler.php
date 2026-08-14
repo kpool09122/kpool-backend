@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\EventHandler;
 
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -66,12 +67,14 @@ readonly class AffiliationActivatedHandler
         );
         $this->principalGroupRepository->save($principalGroup);
 
-        // Talent の全 Principal を新グループに追加
-        $principals = $this->principalRepository->findByAccountId($event->talentAccountIdentifier());
-        foreach ($principals as $principal) {
-            $principalGroup->addMember($principal->principalIdentifier());
+        if ($event->talentAccountType() === AccountType::INDIVIDUAL) {
+            // Talent の全 Principal を新グループに追加
+            $principals = $this->principalRepository->findByAccountId($event->talentAccountIdentifier());
+            foreach ($principals as $principal) {
+                $principalGroup->addMember($principal->principalIdentifier());
+            }
+            $this->principalGroupRepository->save($principalGroup);
         }
-        $this->principalGroupRepository->save($principalGroup);
 
         // Policy 作成（Agency の GROUP/SONG に対する権限）
         $agencyId = (string) $event->agencyAccountIdentifier();
@@ -144,6 +147,12 @@ readonly class AffiliationActivatedHandler
 
         // PrincipalGroup に Role をアタッチ
         $principalGroup->addRole($role->roleIdentifier());
+        if ($event->agencyAccountType() === AccountType::INDIVIDUAL) {
+            $principals = $this->principalRepository->findByAccountId($event->agencyAccountIdentifier());
+            foreach ($principals as $principal) {
+                $principalGroup->addMember($principal->principalIdentifier());
+            }
+        }
         $this->principalGroupRepository->save($principalGroup);
 
         // AffiliationGrant 記録を保存

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Affiliation\Domain\Event;
 
 use DateTimeImmutable;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
@@ -15,6 +16,8 @@ readonly class AffiliationActivated
         private AccountIdentifier $agencyAccountIdentifier,
         private AccountIdentifier $talentAccountIdentifier,
         private DateTimeImmutable $activatedAt,
+        private AccountType $agencyAccountType = AccountType::CORPORATION,
+        private AccountType $talentAccountType = AccountType::INDIVIDUAL,
     ) {
     }
 
@@ -36,5 +39,15 @@ readonly class AffiliationActivated
     public function activatedAt(): DateTimeImmutable
     {
         return $this->activatedAt;
+    }
+
+    public function agencyAccountType(): AccountType
+    {
+        return $this->agencyAccountType;
+    }
+
+    public function talentAccountType(): AccountType
+    {
+        return $this->talentAccountType;
     }
 }

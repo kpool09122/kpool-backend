@@ -6,6 +6,7 @@ namespace Source\Account\Account\Domain\Event;
 
 use DateTimeImmutable;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class AccountCategoryChanged
@@ -16,6 +17,7 @@ readonly class AccountCategoryChanged
         private AccountCategory $newAccountCategory,
         private AccountIdentifier $reviewerAccountIdentifier,
         private DateTimeImmutable $changedAt,
+        private AccountType $accountType,
     ) {
     }
 
@@ -42,5 +44,10 @@ readonly class AccountCategoryChanged
     public function changedAt(): DateTimeImmutable
     {
         return $this->changedAt;
+    }
+
+    public function accountType(): AccountType
+    {
+        return $this->accountType;
     }
 }

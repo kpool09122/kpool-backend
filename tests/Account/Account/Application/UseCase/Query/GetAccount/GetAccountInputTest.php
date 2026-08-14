@@ -6,8 +6,8 @@ namespace Tests\Account\Account\Application\UseCase\Query\GetAccount;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInput;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;

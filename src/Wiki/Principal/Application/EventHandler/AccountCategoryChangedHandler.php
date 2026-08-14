@@ -7,6 +7,7 @@ namespace Source\Wiki\Principal\Application\EventHandler;
 use RuntimeException;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -55,6 +56,12 @@ readonly class AccountCategoryChangedHandler
         }
 
         $principalGroup->addRole($role->roleIdentifier());
+
+        if ($event->accountType() === AccountType::CORPORATION) {
+            $this->principalGroupRepository->save($principalGroup);
+
+            return;
+        }
 
         $principals = $this->principalRepository->findByAccountId($event->accountIdentifier());
         $defaultPrincipalGroup = empty($principals)

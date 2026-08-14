@@ -29,6 +29,7 @@ use Application\Http\Action\Wiki\Principal\Command\DeleteRole\DeleteRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\DetachPolicyFromRole\DetachPolicyFromRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
+use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
@@ -114,6 +115,7 @@ Route::middleware('auth.api')->group(function () {
     Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
     Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);

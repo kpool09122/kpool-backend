@@ -6,7 +6,6 @@ namespace Tests\Account\Principal\Infrastructure\Service;
 
 use DateTimeImmutable;
 use Mockery;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
@@ -27,6 +26,7 @@ use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;

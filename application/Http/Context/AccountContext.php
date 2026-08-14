@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 
 readonly class AccountContext
 {
