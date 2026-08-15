@@ -23,35 +23,12 @@ class PrincipalTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $agencyId = StrTestHelper::generateUuid();
-        $groupIds = [
-            StrTestHelper::generateUuid(),
-            StrTestHelper::generateUuid(),
-        ];
-        $memberIds = [StrTestHelper::generateUuid()];
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $agencyId,
-            $groupIds,
-            $memberIds,
         );
         $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
         $this->assertSame((string)$identityIdentifier, (string)$principal->identityIdentifier());
-        $this->assertSame($agencyId, $principal->agencyId());
-        $this->assertSame($groupIds, $principal->groupIds());
-        $this->assertSame($memberIds, $principal->talentIds());
-
-        $principal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            null,
-            [],
-            [],
-        );
-        $this->assertNull($principal->agencyId());
-        $this->assertEmpty($principal->groupIds());
-        $this->assertEmpty($principal->talentIds());
     }
 
     /**
@@ -62,9 +39,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
         );
 
         $this->assertNull($principal->delegationIdentifier());
@@ -81,9 +55,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
             $delegationIdentifier,
             true,
         );
@@ -102,9 +73,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
             $delegationIdentifier,
             true,
         );
@@ -126,9 +94,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
         );
 
         $this->expectException(CannotChangeNonDelegatedPrincipalException::class);

@@ -166,7 +166,7 @@ class SystemPolicySeeder extends Seeder
             new ConditionClause(
                 ConditionKey::RESOURCE_AGENCY_ID,
                 ConditionOperator::EQUALS,
-                ConditionValue::PRINCIPAL_AGENCY_ID,
+                ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS,
             ),
         ]);
     }
@@ -177,7 +177,7 @@ class SystemPolicySeeder extends Seeder
             new ConditionClause(
                 ConditionKey::RESOURCE_TALENT_ID,
                 ConditionOperator::IN,
-                ConditionValue::PRINCIPAL_TALENT_IDS,
+                ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS,
             ),
         ]);
     }

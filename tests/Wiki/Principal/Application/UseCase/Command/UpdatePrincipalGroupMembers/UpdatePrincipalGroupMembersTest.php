@@ -7,7 +7,10 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupM
 use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministratorException;
@@ -73,8 +76,10 @@ class UpdatePrincipalGroupMembersTest extends TestCase
             ->with($operator, Action::PRINCIPAL_GROUP_MANAGE, Mockery::on(static fn (Resource $resource): bool => $resource->type() === ResourceType::PRINCIPAL_GROUP))
             ->andReturnTrue();
 
+        $accountPrincipalRepository = $this->accountPrincipalRepositoryMock($accountIdentifier, $operator, $member);
+
         $output = new UpdatePrincipalGroupMembersOutput();
-        (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator))->process(
+        (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator, $accountPrincipalRepository))->process(
             new UpdatePrincipalGroupMembersInput(
                 $accountIdentifier,
                 $operator->principalIdentifier(),
@@ -96,6 +101,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
             self::principalRepositoryMock(),
             self::roleRepositoryMock(),
             self::policyEvaluatorMock(),
+            self::accountPrincipalRepositoryEmptyMock(),
         ))->process(
             new UpdatePrincipalGroupMembersInput(
                 new AccountIdentifier(StrTestHelper::generateUuid()),
@@ -134,9 +140,11 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
 
+        $accountPrincipalRepository = $this->accountPrincipalRepositoryMock($accountIdentifier, $operator);
+
         $this->expectException(CannotRemoveLastWikiAdministratorException::class);
 
-        (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator))->process(
+        (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator, $accountPrincipalRepository))->process(
             new UpdatePrincipalGroupMembersInput(
                 $accountIdentifier,
                 $operator->principalIdentifier(),
@@ -179,9 +187,39 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         return $mock;
     }
 
+    private static function accountPrincipalRepositoryEmptyMock(): AccountPrincipalRepositoryInterface
+    {
+        /** @var AccountPrincipalRepositoryInterface&Mockery\MockInterface $mock */
+        $mock = Mockery::mock(AccountPrincipalRepositoryInterface::class);
+
+        return $mock;
+    }
+
+    private function accountPrincipalRepositoryMock(AccountIdentifier $accountIdentifier, Principal ...$principals): AccountPrincipalRepositoryInterface
+    {
+        /** @var AccountPrincipalRepositoryInterface&Mockery\MockInterface $mock */
+        $mock = Mockery::mock(AccountPrincipalRepositoryInterface::class);
+
+        foreach ($principals as $principal) {
+            $mock->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+                ->once()
+                ->with(
+                    $principal->identityIdentifier(),
+                    $accountIdentifier,
+                )
+                ->andReturn(new AccountPrincipal(
+                    new AccountPrincipalIdentifier(StrTestHelper::generateUuid()),
+                    $principal->identityIdentifier(),
+                    $accountIdentifier,
+                ));
+        }
+
+        return $mock;
+    }
+
     private function principal(AccountIdentifier $accountIdentifier): Principal
     {
-        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), (string) $accountIdentifier, [], []);
+        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()));
     }
 
     private function principalGroup(AccountIdentifier $accountIdentifier, string $name): PrincipalGroup

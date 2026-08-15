@@ -214,13 +214,16 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             return count(array_intersect($resourceValue, $conditionValue)) > 0;
         }
 
-        // スカラー同士の比較
-        if (! is_array($resourceValue) && ! is_array($conditionValue)) {
-            return $resourceValue === $conditionValue;
+        if (is_array($resourceValue) && ! is_array($conditionValue)) {
+            return in_array($conditionValue, $resourceValue, true);
         }
 
-        // 型が異なる場合は false
-        return false;
+        if (! is_array($resourceValue) && is_array($conditionValue)) {
+            return in_array($resourceValue, $conditionValue, true);
+        }
+
+        // スカラー同士の比較
+        return $resourceValue === $conditionValue;
     }
 
     /**

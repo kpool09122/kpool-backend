@@ -233,7 +233,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
                 $songBasic->groups()->sync($groupIdentifiers ?? []);
                 $songBasic->talents()->sync($talentIdentifiers ?? []);
             })(),
-            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->value . ' resource type does not have a Basic.'),
+            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };
     }
 
@@ -276,7 +276,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ResourceType::GROUP => $this->buildGroupBasic($model),
             ResourceType::AGENCY => $this->buildAgencyBasic($model),
             ResourceType::SONG => $this->buildSongBasic($model),
-            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->value . ' resource type does not have a Basic.'),
+            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };
     }
 

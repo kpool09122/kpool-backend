@@ -48,7 +48,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $generatedData = $this->makeGeneratedWikiData();
@@ -104,7 +104,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $generatedData = $this->makeGeneratedWikiData();
@@ -158,7 +158,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithUnauthorizedRole(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
 
@@ -229,7 +229,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithEmptyGeneratedData(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $emptyGeneratedData = new GeneratedWikiData(

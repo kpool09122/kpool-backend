@@ -208,9 +208,6 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f712'),
-            null,
-            [],
-            [],
         );
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f611', 'group', [
@@ -251,9 +248,6 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f722'),
-            null,
-            [],
-            [],
         );
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f621', 'talent', [
@@ -414,9 +408,6 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $this->defaultPrincipalIdentifier(),
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
-            null,
-            [],
-            [],
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);

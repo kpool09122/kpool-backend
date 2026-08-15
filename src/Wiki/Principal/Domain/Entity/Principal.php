@@ -14,18 +14,12 @@ class Principal
     /**
      * @param PrincipalIdentifier $principalIdentifier
      * @param IdentityIdentifier $identityIdentifier
-     * @param string|null $agencyId
-     * @param string[] $groupIds
-     * @param string[] $talentIds
      * @param DelegationIdentifier|null $delegationIdentifier
      * @param bool $enabled
      */
     public function __construct(
         private readonly PrincipalIdentifier $principalIdentifier,
         private readonly IdentityIdentifier  $identityIdentifier,
-        private readonly ?string             $agencyId,
-        private readonly array               $groupIds,
-        private readonly array               $talentIds,
         private readonly ?DelegationIdentifier $delegationIdentifier = null,
         private bool                         $enabled = true,
     ) {
@@ -39,27 +33,6 @@ class Principal
     public function identityIdentifier(): IdentityIdentifier
     {
         return $this->identityIdentifier;
-    }
-
-    public function agencyId(): ?string
-    {
-        return $this->agencyId;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function groupIds(): array
-    {
-        return $this->groupIds;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function talentIds(): array
-    {
-        return $this->talentIds;
     }
 
     public function delegationIdentifier(): ?DelegationIdentifier

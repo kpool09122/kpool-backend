@@ -16,11 +16,12 @@ class ConditionValueTest extends TestCase
     {
         $cases = ConditionValue::cases();
 
-        $this->assertCount(5, $cases);
-        $this->assertContains(ConditionValue::PRINCIPAL_AGENCY_ID, $cases);
-        $this->assertContains(ConditionValue::PRINCIPAL_WIKI_GROUP_IDS, $cases);
-        $this->assertContains(ConditionValue::PRINCIPAL_TALENT_IDS, $cases);
-        $this->assertContains(ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS, $cases);
+        $this->assertCount(6, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_GROUP_WIKI_IDENTIFIERS, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_ID, $cases);
     }
 
@@ -29,10 +30,11 @@ class ConditionValueTest extends TestCase
      */
     public function test_case_values(): void
     {
-        $this->assertSame('${principal.agencyId}', ConditionValue::PRINCIPAL_AGENCY_ID->value);
-        $this->assertSame('${principal.wikiGroupIds}', ConditionValue::PRINCIPAL_WIKI_GROUP_IDS->value);
-        $this->assertSame('${principal.talentIds}', ConditionValue::PRINCIPAL_TALENT_IDS->value);
-        $this->assertSame('${principal.affiliatedTalentIds}', ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS->value);
+        $this->assertSame('${principal.agencyWikiIdentifiers}', ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS->value);
+        $this->assertSame('${principal.groupWikiIdentifiers}', ConditionValue::PRINCIPAL_GROUP_WIKI_IDENTIFIERS->value);
+        $this->assertSame('${principal.talentGroupWikiIdentifiers}', ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS->value);
+        $this->assertSame('${principal.talentWikiIdentifiers}', ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS->value);
+        $this->assertSame('${principal.affiliatedTalentWikiIdentifiers}', ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS->value);
         $this->assertSame('${principal.id}', ConditionValue::PRINCIPAL_ID->value);
     }
 }

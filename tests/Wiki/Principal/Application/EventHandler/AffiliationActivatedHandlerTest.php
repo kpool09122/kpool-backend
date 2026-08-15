@@ -556,7 +556,7 @@ class AffiliationActivatedHandlerTest extends TestCase
                 new ConditionClause(
                     ConditionKey::RESOURCE_TALENT_ID,
                     ConditionOperator::IN,
-                    ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS,
+                    ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS,
                 ),
             ],
         );
@@ -573,7 +573,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ResourceType::GROUP,
             [
                 new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS),
             ],
         );
         $this->assertStatement(
@@ -581,7 +581,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ResourceType::SONG,
             [
                 new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                new ConditionClause(ConditionKey::RESOURCE_GROUP_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_WIKI_GROUP_IDS),
+                new ConditionClause(ConditionKey::RESOURCE_GROUP_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS),
             ],
         );
         $this->assertStatement(
@@ -589,7 +589,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ResourceType::SONG,
             [
                 new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+                new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS),
             ],
         );
     }
@@ -617,11 +617,6 @@ class AffiliationActivatedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            (string) $accountIdentifier,
-            [],
-            [],
-            null,
-            true,
         );
     }
 

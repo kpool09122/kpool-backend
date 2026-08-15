@@ -66,7 +66,7 @@ class UnhideImageTest extends TestCase
     {
         $testData = $this->createTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UnhideImageInput($testData->imageIdentifier, $principalIdentifier);
@@ -197,7 +197,7 @@ class UnhideImageTest extends TestCase
     {
         $testData = $this->createTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UnhideImageInput($testData->imageIdentifier, $principalIdentifier);

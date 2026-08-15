@@ -24,9 +24,6 @@ class CreatePrincipalOutputTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            null,
-            [],
-            [],
         );
 
         $output = new CreatePrincipalOutput();

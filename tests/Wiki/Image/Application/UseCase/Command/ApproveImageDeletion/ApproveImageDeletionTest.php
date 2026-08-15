@@ -117,7 +117,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
@@ -210,7 +210,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithoutDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
@@ -300,7 +300,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);

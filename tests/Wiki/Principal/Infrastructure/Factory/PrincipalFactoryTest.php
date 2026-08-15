@@ -33,9 +33,6 @@ class PrincipalFactoryTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string)$principal->principalIdentifier()));
         $this->assertSame($identityIdentifier, $principal->identityIdentifier());
-        $this->assertNull($principal->agencyId());
-        $this->assertEmpty($principal->groupIds());
-        $this->assertEmpty($principal->talentIds());
         $this->assertNull($principal->delegationIdentifier());
         $this->assertFalse($principal->isDelegatedPrincipal());
         $this->assertTrue($principal->isEnabled());
@@ -49,16 +46,9 @@ class PrincipalFactoryTest extends TestCase
      */
     public function testCreateDelegatedPrincipal(): void
     {
-        $agencyId = StrTestHelper::generateUuid();
-        $groupIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
-        $talentIds = [StrTestHelper::generateUuid()];
-
         $originalPrincipal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $agencyId,
-            $groupIds,
-            $talentIds,
         );
 
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
@@ -77,9 +67,6 @@ class PrincipalFactoryTest extends TestCase
             (string)$delegatedPrincipal->principalIdentifier()
         );
         $this->assertSame($delegatedIdentityIdentifier, $delegatedPrincipal->identityIdentifier());
-        $this->assertSame($agencyId, $delegatedPrincipal->agencyId());
-        $this->assertSame($groupIds, $delegatedPrincipal->groupIds());
-        $this->assertSame($talentIds, $delegatedPrincipal->talentIds());
         $this->assertSame($delegationIdentifier, $delegatedPrincipal->delegationIdentifier());
         $this->assertTrue($delegatedPrincipal->isDelegatedPrincipal());
         $this->assertTrue($delegatedPrincipal->isEnabled());

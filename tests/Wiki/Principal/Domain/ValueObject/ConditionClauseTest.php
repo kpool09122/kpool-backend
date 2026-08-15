@@ -20,12 +20,12 @@ class ConditionClauseTest extends TestCase
         $clause = new ConditionClause(
             ConditionKey::RESOURCE_AGENCY_ID,
             ConditionOperator::EQUALS,
-            ConditionValue::PRINCIPAL_AGENCY_ID,
+            ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS,
         );
 
         $this->assertSame(ConditionKey::RESOURCE_AGENCY_ID, $clause->key());
         $this->assertSame(ConditionOperator::EQUALS, $clause->operator());
-        $this->assertSame(ConditionValue::PRINCIPAL_AGENCY_ID, $clause->value());
+        $this->assertSame(ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS, $clause->value());
     }
 
     /**
@@ -68,11 +68,11 @@ class ConditionClauseTest extends TestCase
         $clause = new ConditionClause(
             ConditionKey::RESOURCE_GROUP_ID,
             ConditionOperator::IN,
-            ConditionValue::PRINCIPAL_WIKI_GROUP_IDS,
+            ConditionValue::PRINCIPAL_GROUP_WIKI_IDENTIFIERS,
         );
 
         $this->assertSame(ConditionKey::RESOURCE_GROUP_ID, $clause->key());
         $this->assertSame(ConditionOperator::IN, $clause->operator());
-        $this->assertSame(ConditionValue::PRINCIPAL_WIKI_GROUP_IDS, $clause->value());
+        $this->assertSame(ConditionValue::PRINCIPAL_GROUP_WIKI_IDENTIFIERS, $clause->value());
     }
 }

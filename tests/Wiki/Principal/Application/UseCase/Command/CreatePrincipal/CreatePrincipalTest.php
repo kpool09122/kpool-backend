@@ -53,7 +53,7 @@ class CreatePrincipalTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $principal = new Principal($principalIdentifier, $identityIdentifier);
         $defaultPrincipalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
@@ -137,7 +137,7 @@ class CreatePrincipalTest extends TestCase
         $wikiAdministratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $collaboratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $principal = new Principal($principalIdentifier, $identityIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -238,7 +238,7 @@ class CreatePrincipalTest extends TestCase
         $accountPrincipalIdentifier = new AccountPrincipalIdentifier(StrTestHelper::generateUuid());
         $ownerRoleIdentifier = new AccountRoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $principal = new Principal($principalIdentifier, $identityIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -310,7 +310,7 @@ class CreatePrincipalTest extends TestCase
         $ownerRoleIdentifier = new AccountRoleIdentifier(StrTestHelper::generateUuid());
         $wikiAdministratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $principal = new Principal($principalIdentifier, $identityIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -393,7 +393,7 @@ class CreatePrincipalTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier, null, [], []);
+        $principal = new Principal($principalIdentifier, $identityIdentifier);
         $defaultPrincipalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
@@ -471,9 +471,6 @@ class CreatePrincipalTest extends TestCase
             ->andReturn(new Principal(
                 new PrincipalIdentifier(StrTestHelper::generateUuid()),
                 $identityIdentifier,
-                null,
-                [],
-                [],
             ));
         $principalRepository->shouldNotReceive('save');
 

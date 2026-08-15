@@ -212,7 +212,7 @@ class WithdrawWikiTest extends TestCase
         bool $expectSave = false,
         ?WikiHistory $history = null,
     ): void {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')->once()->with($draftWiki->wikiIdentifier())->andReturn($draftWiki);

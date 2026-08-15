@@ -54,9 +54,6 @@ class CreatePrincipalActionTest extends TestCase
                     $output->setPrincipal(new \Source\Wiki\Principal\Domain\Entity\Principal(
                         new \Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier($principalIdentifier),
                         new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityIdentifier),
-                        null,
-                        [],
-                        [],
                     ));
 
                     return true;

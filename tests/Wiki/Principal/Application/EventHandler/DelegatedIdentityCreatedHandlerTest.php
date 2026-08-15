@@ -173,9 +173,6 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            null,
-            [],
-            [],
         );
     }
 
@@ -187,9 +184,6 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            null,
-            [],
-            [],
             $delegationIdentifier,
         );
     }

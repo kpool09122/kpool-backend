@@ -69,7 +69,7 @@ class RejectImageTest extends TestCase
     {
         $testData = $this->createTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new RejectImageInput($testData->draftImageIdentifier, $principalIdentifier);
@@ -124,7 +124,7 @@ class RejectImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $input = new RejectImageInput($imageIdentifier, $principalIdentifier);
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
@@ -166,7 +166,7 @@ class RejectImageTest extends TestCase
     {
         $testData = $this->createTestDataWithInvalidStatus();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new RejectImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
@@ -215,7 +215,7 @@ class RejectImageTest extends TestCase
     {
         $testData = $this->createTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new RejectImageInput($testData->draftImageIdentifier, $principalIdentifier);

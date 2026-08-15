@@ -72,7 +72,7 @@ class UploadImageTest extends TestCase
     public function testProcess(): void
     {
         $testData = $this->createTestData();
-        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UploadImageInput(
@@ -162,7 +162,7 @@ class UploadImageTest extends TestCase
     public function testProcessDisallowed(): void
     {
         $testData = $this->createTestData();
-        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UploadImageInput(

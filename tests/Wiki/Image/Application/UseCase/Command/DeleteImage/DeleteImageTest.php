@@ -66,7 +66,7 @@ class DeleteImageTest extends TestCase
     {
         $testData = $this->createImageTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new DeleteImageInput($testData->imageIdentifier, $principalIdentifier);
@@ -117,7 +117,7 @@ class DeleteImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $input = new DeleteImageInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
@@ -155,7 +155,7 @@ class DeleteImageTest extends TestCase
     {
         $testData = $this->createImageTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new DeleteImageInput($testData->imageIdentifier, $principalIdentifier);

@@ -71,7 +71,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $updatedBasic = new GroupBasic(
             name: new Name('ITZY'),
@@ -250,7 +250,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -306,7 +306,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -383,7 +383,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki($status);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,

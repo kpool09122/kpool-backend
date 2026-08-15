@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministratorException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
@@ -29,6 +30,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private AccountPrincipalRepositoryInterface $accountPrincipalRepository,
     ) {
     }
 
@@ -39,7 +41,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         }
 
         $operator = $this->principalRepository->findById($input->operatorPrincipalIdentifier());
-        if ($operator === null || $operator->agencyId() !== (string) $input->accountIdentifier()) {
+        if ($operator === null || ! $this->belongsToAccount($operator, $input)) {
             throw new AccountUpdateForbiddenException();
         }
 
@@ -87,10 +89,18 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     {
         foreach ($principalIdentifiers as $principalIdentifier) {
             $principal = $principalsById[(string) $principalIdentifier] ?? null;
-            if ($principal === null || $principal->agencyId() !== (string) $input->accountIdentifier()) {
+            if ($principal === null || ! $this->belongsToAccount($principal, $input)) {
                 throw new PrincipalNotFoundException();
             }
         }
+    }
+
+    private function belongsToAccount(Principal $principal, UpdatePrincipalGroupMembersInputPort $input): bool
+    {
+        return $this->accountPrincipalRepository->findByIdentityIdentifierAndAccountIdentifier(
+            $principal->identityIdentifier(),
+            $input->accountIdentifier(),
+        ) !== null;
     }
 
     /** @param array<int, PrincipalGroup> $principalGroups */

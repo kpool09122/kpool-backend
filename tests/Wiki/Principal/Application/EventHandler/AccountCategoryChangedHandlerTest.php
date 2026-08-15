@@ -292,11 +292,6 @@ class AccountCategoryChangedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            (string) $accountIdentifier,
-            [],
-            [],
-            null,
-            true,
         );
     }
 

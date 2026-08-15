@@ -25,9 +25,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $identityIdentifier,
             null,
-            [],
-            [],
-            null,
             true,
         );
     }
@@ -40,9 +37,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
         return new Principal(
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $delegatedIdentityIdentifier,
-            $originalPrincipal->agencyId(),
-            $originalPrincipal->groupIds(),
-            $originalPrincipal->talentIds(),
             $delegationIdentifier,
             true,
         );
