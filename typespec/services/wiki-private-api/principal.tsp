@@ -95,6 +95,12 @@ model OkPrincipalGroupResponse {
   @body body: PrincipalGroupSummary;
 }
 
+@doc("Response returned when Wiki principal groups are listed.")
+model ListPrincipalGroupsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListPrincipalGroupsResponseBody;
+}
+
 @doc("Response returned when multiple Wiki principal group memberships are updated.")
 model UpdatePrincipalGroupMembersResponse {
   @statusCode statusCode: 200;
@@ -126,6 +132,13 @@ interface PrincipalOperations {
   createPrincipal(
     @body body: CreatePrincipalRequestBody,
   ): CreatePrincipalResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/principal-groups")
+  @doc("List Wiki principal groups for management.")
+  listPrincipalGroups(
+    @query accountIdentifier: Uuid,
+  ): ListPrincipalGroupsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/principal-group/create")

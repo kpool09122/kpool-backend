@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups;
+namespace Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups;
 
-use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ListPrincipalGroupsRequest extends FormRequest
 {
-    use ResolvesLanguage;
-
     public function authorize(): bool
     {
         return true;
@@ -19,6 +16,13 @@ class ListPrincipalGroupsRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [];
+        return [
+            'accountIdentifier' => ['required', 'uuid'],
+        ];
+    }
+
+    public function accountIdentifier(): string
+    {
+        return (string) $this->query('accountIdentifier');
     }
 }
