@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Domain\Event;
 
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 

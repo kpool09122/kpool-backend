@@ -27,7 +27,7 @@ final class WikiCommandPayloadMapper
             ResourceType::GROUP => GroupBasic::fromArray(self::groupBasic($basic)),
             ResourceType::TALENT => TalentBasic::fromArray(self::talentBasic($basic)),
             ResourceType::SONG => SongBasic::fromArray(self::songBasic($basic)),
-            ResourceType::IMAGE => throw new InvalidArgumentException('IMAGE resource type does not have a Basic.'),
+            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->value . ' resource type does not have a Basic.'),
         };
     }
 

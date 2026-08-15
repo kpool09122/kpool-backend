@@ -7,7 +7,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;

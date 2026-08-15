@@ -6,7 +6,6 @@ namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
@@ -17,6 +16,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\Email;

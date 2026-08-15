@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\ValueObject\SignupSession;
 
 class SignupSessionTest extends TestCase

@@ -22,13 +22,13 @@ use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -82,7 +82,8 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
             ->with(Mockery::on(static fn (AccountCategoryChanged $event): bool => (string) $event->accountIdentifier() === (string) $targetAccountId
                 && $event->previousAccountCategory() === AccountCategory::GENERAL
                 && $event->newAccountCategory() === AccountCategory::AGENCY
-                && (string) $event->reviewerAccountIdentifier() === (string) $reviewerAccountId));
+                && (string) $event->reviewerAccountIdentifier() === (string) $reviewerAccountId
+                && $event->accountType() === AccountType::INDIVIDUAL));
 
         $output = new ApproveAccountCategoryChangeRequestOutput();
         (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, $eventDispatcher))

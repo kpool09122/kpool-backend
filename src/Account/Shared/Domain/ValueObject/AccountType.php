@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Account\Domain\ValueObject;
+namespace Source\Account\Shared\Domain\ValueObject;
 
 enum AccountType: string
 {

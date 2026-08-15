@@ -56,6 +56,7 @@ return [
     'identity_already_member' => '該身分已是此群組的成員。',
     'identity_not_member' => '該身分不是此群組的成員。',
     'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
+    'cannot_remove_last_wiki_administrator' => '至少需要一個 Wiki Administrator。',
     'cannot_remove_last_principal_group_manager' => '至少需要一個擁有 PrincipalGroup 管理權限的 Principal。',
     'principal_already_assigned_to_principal_group' => 'Principal 在一個帳戶內只能屬於一個 PrincipalGroup。',
     'cannot_delete_default_identity_group' => '無法刪除預設身分群組。',

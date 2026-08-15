@@ -62,6 +62,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             newAccountCategory: $newAccountCategory,
             reviewerAccountIdentifier: $reviewerAccountIdentifier,
             changedAt: new DateTimeImmutable(),
+            accountType: $account->type(),
         ));
 
         $output->setRequest($request);

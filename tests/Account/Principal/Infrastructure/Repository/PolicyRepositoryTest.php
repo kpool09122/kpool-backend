@@ -6,7 +6,6 @@ namespace Tests\Account\Principal\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
@@ -19,6 +18,7 @@ use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Principal\Infrastructure\Repository\PolicyRepository;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

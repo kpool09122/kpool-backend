@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Account\Principal\Domain\ValueObject;
 
-use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Condition;
 use Source\Account\Principal\Domain\ValueObject\ConditionClause;
@@ -14,6 +13,7 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;

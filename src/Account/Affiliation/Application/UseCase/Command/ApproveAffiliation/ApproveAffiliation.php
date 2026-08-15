@@ -14,6 +14,7 @@ use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveAffiliation implements ApproveAffiliationInterface
@@ -56,6 +57,13 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             throw new DisallowedAffiliationOperationException('Affiliation approval is not allowed.');
         }
 
+        $agencyAccountType = (string) $approverAccount->accountIdentifier() === (string) $affiliation->agencyAccountIdentifier()
+            ? $approverAccount->type()
+            : AccountType::CORPORATION;
+        $talentAccountType = (string) $approverAccount->accountIdentifier() === (string) $affiliation->talentAccountIdentifier()
+            ? $approverAccount->type()
+            : AccountType::INDIVIDUAL;
+
         $affiliation->approve();
 
         $this->affiliationRepository->save($affiliation);
@@ -65,6 +73,8 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
             $affiliation->activatedAt(),
+            $agencyAccountType,
+            $talentAccountType,
         ));
         $output->setAffiliation($affiliation);
     }
