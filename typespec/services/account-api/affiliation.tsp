@@ -29,8 +29,23 @@ model OkAffiliationResponse {
   @body body: AffiliationSummary;
 }
 
+@doc("Response returned when listing affiliations succeeds.")
+model ListAffiliationsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListAffiliationsResponseBody;
+}
+
 @route("/affiliations")
 interface AffiliationOperations {
+  @get
+  @doc("List affiliations related to the authenticated account.")
+  listAffiliations(
+    @query status?: string | null,
+    @query viewerRole?: string | null,
+    @query perPage?: int32 | null,
+    @query page?: int32 | null,
+  ): ListAffiliationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @doc("Request an affiliation.")
   requestAffiliation(

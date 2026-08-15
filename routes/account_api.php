@@ -20,6 +20,7 @@ use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\Appro
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\TerminateAffiliation\TerminateAffiliationAction;
+use Application\Http\Action\Account\Affiliation\Query\ListAffiliations\ListAffiliationsAction;
 use Application\Http\Action\Account\Delegation\Command\ApproveDelegation\ApproveDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RequestDelegation\RequestDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RevokeDelegation\RevokeDelegationAction;
@@ -79,6 +80,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);
 
     // Affiliation
+    Route::get('/affiliations', ListAffiliationsAction::class);
     Route::post('/affiliations', RequestAffiliationAction::class);
     Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
     Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);

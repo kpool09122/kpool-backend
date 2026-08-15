@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Account;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $id
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon $requested_at
  * @property ?\Illuminate\Support\Carbon $activated_at
  * @property ?\Illuminate\Support\Carbon $terminated_at
+ * @property-read Account|null $agencyAccount
+ * @property-read Account|null $talentAccount
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -45,5 +48,15 @@ class Affiliation extends Model
             'activated_at' => 'datetime',
             'terminated_at' => 'datetime',
         ];
+    }
+
+    public function agencyAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'agency_account_id', 'id');
+    }
+
+    public function talentAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'talent_account_id', 'id');
     }
 }
