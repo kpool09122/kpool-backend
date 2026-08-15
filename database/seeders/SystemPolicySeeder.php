@@ -184,6 +184,6 @@ class SystemPolicySeeder extends Seeder
 
     private function policyActionName(Action $action): string
     {
-        return strtoupper($action->value);
+        return str_replace('-', '_', strtoupper($action->value));
     }
 }

@@ -99,13 +99,46 @@ class RequestAffiliationTest extends TestCase
         }
     }
 
-    public function testThrowsWhenActiveAffiliationAlreadyExists(): void
+    public function testThrowsWhenSameAgencyTalentActiveAffiliationAlreadyExists(): void
     {
         $data = $this->createTestData(AccountCategory::TALENT, activeExists: true);
         $useCase = $this->createUseCase($data);
 
         $this->expectException(AffiliationAlreadyExistsException::class);
+        $this->expectExceptionMessage('An active affiliation already exists between these accounts.');
         $useCase->process($data->input, new RequestAffiliationOutput());
+    }
+
+    public function testThrowsWhenTalentAlreadyHasActiveAffiliationWithAnotherAgency(): void
+    {
+        $data = $this->createTestData(AccountCategory::AGENCY, activeTalentExists: true);
+        $useCase = $this->createUseCase($data);
+
+        $this->expectException(AffiliationAlreadyExistsException::class);
+        $this->expectExceptionMessage('The talent account already has an active affiliation.');
+        $useCase->process($data->input, new RequestAffiliationOutput());
+    }
+
+    public function testAgencyCanRequestAnotherTalentWhenTargetTalentHasNoActiveAffiliation(): void
+    {
+        $data = $this->createTestData(AccountCategory::AGENCY);
+        $useCase = $this->createUseCase($data);
+
+        $output = new RequestAffiliationOutput();
+        $useCase->process($data->input, $output);
+
+        $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
+    }
+
+    public function testTerminatedAffiliationDoesNotBlockRequest(): void
+    {
+        $data = $this->createTestData(AccountCategory::TALENT);
+        $useCase = $this->createUseCase($data);
+
+        $output = new RequestAffiliationOutput();
+        $useCase->process($data->input, $output);
+
+        $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
     }
 
     private function createUseCase(RequestAffiliationTestData $data): RequestAffiliation
@@ -149,6 +182,11 @@ class RequestAffiliationTest extends TestCase
             $affiliationRepository->shouldReceive('existsActiveAffiliation')
                 ->with($data->agencyAccountIdentifier, $data->talentAccountIdentifier)
                 ->andReturn($data->activeExists);
+            if (! $data->activeExists) {
+                $affiliationRepository->shouldReceive('findActiveByTalentAccount')
+                    ->with($data->talentAccountIdentifier)
+                    ->andReturn($data->activeTalentAffiliation);
+            }
         }
         if ($data->expectSave) {
             $affiliationRepository->shouldReceive('save')->once()->with($data->affiliation);
@@ -190,7 +228,7 @@ class RequestAffiliationTest extends TestCase
         );
     }
 
-    private function createTestData(AccountCategory $requestingCategory, bool $requesterAllowed = true, ?string $targetFailure = null, bool $activeExists = false): RequestAffiliationTestData
+    private function createTestData(AccountCategory $requestingCategory, bool $requesterAllowed = true, ?string $targetFailure = null, bool $activeExists = false, bool $activeTalentExists = false): RequestAffiliationTestData
     {
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -205,6 +243,9 @@ class RequestAffiliationTest extends TestCase
         $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $affiliation = new Affiliation($affiliationIdentifier, $agencyAccountIdentifier, $talentAccountIdentifier, $requestingAccountIdentifier, AffiliationStatus::PENDING, $terms, new DateTimeImmutable(), null, null);
+        $activeTalentAffiliation = $activeTalentExists
+            ? new Affiliation(new AffiliationIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), $talentAccountIdentifier, new AccountIdentifier(StrTestHelper::generateUuid()), AffiliationStatus::ACTIVE, null, new DateTimeImmutable(), new DateTimeImmutable(), null)
+            : null;
         $requesterAllowed = $requesterAllowed && $requestingCategory !== AccountCategory::GENERAL;
         $targetAllowed = $targetFailure !== 'policy' && $targetAccount !== null && $this->isAllowedAffiliationRequestPair($requestingCategory, $targetAccount->accountCategory());
 
@@ -225,10 +266,11 @@ class RequestAffiliationTest extends TestCase
             $requesterAllowed,
             $targetAllowed,
             $activeExists,
+            $activeTalentAffiliation,
             $requesterAllowed && $targetAccount !== null,
             $requesterAllowed && $targetAccount !== null,
             $requesterAllowed && $targetAccount !== null && $targetAllowed,
-            $requesterAllowed && $targetAccount !== null && $targetAllowed && ! $activeExists,
+            $requesterAllowed && $targetAccount !== null && $targetAllowed && ! $activeExists && $activeTalentAffiliation === null,
         );
     }
 
@@ -266,6 +308,7 @@ readonly class RequestAffiliationTestData
         public bool $requesterAllowed,
         public bool $targetAllowed,
         public bool $activeExists,
+        public ?Affiliation $activeTalentAffiliation,
         public bool $expectTargetPrincipalLookup,
         public bool $expectTargetPolicyEvaluation,
         public bool $expectAffiliationLookup,
