@@ -78,6 +78,43 @@ class AffiliationRepositoryTest extends TestCase
         $this->assertNull((new AffiliationRepository())->findActiveByTalentAccount($talentAccountIdentifier));
     }
 
+    #[Group('useDb')]
+    public function testExistsOpenAffiliationReturnsTrueForPendingOrActiveSamePair(): void
+    {
+        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $repository = new AffiliationRepository();
+
+        $this->assertFalse($repository->existsOpenAffiliation($agencyAccountIdentifier, $talentAccountIdentifier));
+
+        $this->insertAffiliation(
+            StrTestHelper::generateUuid(),
+            $agencyAccountIdentifier,
+            $talentAccountIdentifier,
+            AffiliationStatus::PENDING,
+        );
+
+        $this->assertTrue($repository->existsOpenAffiliation($agencyAccountIdentifier, $talentAccountIdentifier));
+    }
+
+    #[Group('useDb')]
+    public function testExistsOpenAffiliationReturnsFalseForTerminatedSamePair(): void
+    {
+        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+
+        $this->insertAffiliation(
+            StrTestHelper::generateUuid(),
+            $agencyAccountIdentifier,
+            $talentAccountIdentifier,
+            AffiliationStatus::TERMINATED,
+            activatedAt: new DateTimeImmutable('2026-01-03 00:00:00'),
+            terminatedAt: new DateTimeImmutable('2026-01-04 00:00:00'),
+        );
+
+        $this->assertFalse((new AffiliationRepository())->existsOpenAffiliation($agencyAccountIdentifier, $talentAccountIdentifier));
+    }
+
     private function insertAffiliation(
         string $identifier,
         AccountIdentifier $agencyAccountIdentifier,

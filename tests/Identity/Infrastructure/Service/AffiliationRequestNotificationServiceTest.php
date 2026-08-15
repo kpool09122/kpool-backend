@@ -50,7 +50,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
 
         Mail::assertSent(AffiliationRequestMail::class, static fn (AffiliationRequestMail $mail): bool => $mail->hasTo((string) $email)
             && $mail->language === Language::JAPANESE
-            && $mail->affiliationUrl === 'http://localhost:3000/admin/account/affiliation');
+            && $mail->affiliationUrl === 'http://localhost:3000/admin/account/affiliations');
     }
 
     public function testSendAffiliationRequestNotificationDoesNothingWhenIdentityIsMissing(): void
@@ -78,7 +78,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
         $service = new AffiliationRequestNotificationService($identityRepository, 'https://frontend.example.com');
         $service->sendAffiliationRequestNotification($email);
 
-        Mail::assertSent(AffiliationRequestMail::class, static fn (AffiliationRequestMail $mail): bool => str_contains($mail->affiliationUrl, '/admin/account/affiliation'));
+        Mail::assertSent(AffiliationRequestMail::class, static fn (AffiliationRequestMail $mail): bool => str_contains($mail->affiliationUrl, '/admin/account/affiliations'));
     }
 
     public function testSendAffiliationRequestNotificationDefersUntilAfterCommitInTransaction(): void
@@ -100,7 +100,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
 
     public function testMailBodyRendersHtmlForAllLanguages(): void
     {
-        $affiliationUrl = 'https://frontend.example.com/admin/account/affiliation';
+        $affiliationUrl = 'https://frontend.example.com/admin/account/affiliations';
 
         foreach (Language::cases() as $language) {
             $html = (new AffiliationRequestMail($affiliationUrl, $language))->render();

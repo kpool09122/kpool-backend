@@ -99,13 +99,13 @@ class RequestAffiliationTest extends TestCase
         }
     }
 
-    public function testThrowsWhenSameAgencyTalentActiveAffiliationAlreadyExists(): void
+    public function testThrowsWhenSameAgencyTalentOpenAffiliationAlreadyExists(): void
     {
-        $data = $this->createTestData(AccountCategory::TALENT, activeExists: true);
+        $data = $this->createTestData(AccountCategory::TALENT, openExists: true);
         $useCase = $this->createUseCase($data);
 
         $this->expectException(AffiliationAlreadyExistsException::class);
-        $this->expectExceptionMessage('An active affiliation already exists between these accounts.');
+        $this->expectExceptionMessage('An affiliation request or active affiliation already exists between these accounts.');
         $useCase->process($data->input, new RequestAffiliationOutput());
     }
 
@@ -179,10 +179,10 @@ class RequestAffiliationTest extends TestCase
 
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
         if ($data->expectAffiliationLookup) {
-            $affiliationRepository->shouldReceive('existsActiveAffiliation')
+            $affiliationRepository->shouldReceive('existsOpenAffiliation')
                 ->with($data->agencyAccountIdentifier, $data->talentAccountIdentifier)
-                ->andReturn($data->activeExists);
-            if (! $data->activeExists) {
+                ->andReturn($data->openExists);
+            if (! $data->openExists) {
                 $affiliationRepository->shouldReceive('findActiveByTalentAccount')
                     ->with($data->talentAccountIdentifier)
                     ->andReturn($data->activeTalentAffiliation);
@@ -228,7 +228,7 @@ class RequestAffiliationTest extends TestCase
         );
     }
 
-    private function createTestData(AccountCategory $requestingCategory, bool $requesterAllowed = true, ?string $targetFailure = null, bool $activeExists = false, bool $activeTalentExists = false): RequestAffiliationTestData
+    private function createTestData(AccountCategory $requestingCategory, bool $requesterAllowed = true, ?string $targetFailure = null, bool $openExists = false, bool $activeTalentExists = false): RequestAffiliationTestData
     {
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -265,12 +265,12 @@ class RequestAffiliationTest extends TestCase
             new RequestAffiliationInput($requestingPrincipal, $targetEmail, $terms),
             $requesterAllowed,
             $targetAllowed,
-            $activeExists,
+            $openExists,
             $activeTalentAffiliation,
             $requesterAllowed && $targetAccount !== null,
             $requesterAllowed && $targetAccount !== null,
             $requesterAllowed && $targetAccount !== null && $targetAllowed,
-            $requesterAllowed && $targetAccount !== null && $targetAllowed && ! $activeExists && $activeTalentAffiliation === null,
+            $requesterAllowed && $targetAccount !== null && $targetAllowed && ! $openExists && $activeTalentAffiliation === null,
         );
     }
 
@@ -307,7 +307,7 @@ readonly class RequestAffiliationTestData
         public RequestAffiliationInput $input,
         public bool $requesterAllowed,
         public bool $targetAllowed,
-        public bool $activeExists,
+        public bool $openExists,
         public ?Affiliation $activeTalentAffiliation,
         public bool $expectTargetPrincipalLookup,
         public bool $expectTargetPolicyEvaluation,

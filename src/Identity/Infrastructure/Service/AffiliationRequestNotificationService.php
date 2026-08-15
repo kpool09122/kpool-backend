@@ -42,6 +42,6 @@ readonly class AffiliationRequestNotificationService implements AffiliationReque
 
     private function buildAffiliationUrl(): string
     {
-        return rtrim($this->frontendBaseUrl, '/') . '/admin/account/affiliation';
+        return rtrim($this->frontendBaseUrl, '/') . '/admin/account/affiliations';
     }
 }

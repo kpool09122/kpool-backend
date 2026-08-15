@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -28,6 +29,8 @@ return new class extends Migration
             $table->index(['agency_account_id', 'talent_account_id', 'status']);
             $table->index(['requested_by', 'status']);
         });
+
+        DB::statement("CREATE UNIQUE INDEX account_affiliations_open_pair_unique ON account_affiliations (agency_account_id, talent_account_id) WHERE status IN ('pending', 'active')");
     }
 
     /**

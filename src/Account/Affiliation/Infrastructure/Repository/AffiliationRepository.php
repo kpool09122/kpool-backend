@@ -109,14 +109,17 @@ class AffiliationRepository implements AffiliationRepositoryInterface
             ->all();
     }
 
-    public function existsActiveAffiliation(
+    public function existsOpenAffiliation(
         AccountIdentifier $agencyAccountIdentifier,
         AccountIdentifier $talentAccountIdentifier,
     ): bool {
         return AffiliationEloquent::query()
             ->where('agency_account_id', (string) $agencyAccountIdentifier)
             ->where('talent_account_id', (string) $talentAccountIdentifier)
-            ->where('status', AffiliationStatus::ACTIVE->value)
+            ->whereIn('status', [
+                AffiliationStatus::PENDING->value,
+                AffiliationStatus::ACTIVE->value,
+            ])
             ->exists();
     }
 
