@@ -20,7 +20,7 @@
             "matchFileNames": ["package.json", "pnpm-lock.yaml"],
             "matchDepTypes": ["devDependencies"],
             "groupName": "root tooling devDependencies",
-            "stabilityDays": 3
+            "minimumReleaseAge": "3 days"
         },
         {
             "description": "Composer require をまとめる",
@@ -28,7 +28,7 @@
             "matchFileNames": ["composer.json", "composer.lock"],
             "matchDepTypes": ["require"],
             "groupName": "composer require",
-            "stabilityDays": 3,
+            "minimumReleaseAge": "3 days",
             "schedule": ["before 4am on monday"]
         },
         {
@@ -37,7 +37,7 @@
             "matchFileNames": ["composer.json", "composer.lock"],
             "matchDepTypes": ["require-dev"],
             "groupName": "composer require-dev",
-            "stabilityDays": 3,
+            "minimumReleaseAge": "3 days",
             "schedule": ["before 4am on monday"]
         },
         {
@@ -45,7 +45,7 @@
             "matchManagers": ["github-actions"],
             "matchFileNames": [".github/workflows/**"],
             "groupName": "github-actions",
-            "stabilityDays": 3,
+            "minimumReleaseAge": "3 days",
             "schedule": ["before 4am on monday"]
         }
     ],
