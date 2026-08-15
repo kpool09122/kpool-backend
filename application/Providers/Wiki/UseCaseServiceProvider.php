@@ -62,7 +62,9 @@ use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincip
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
+use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
+use Source\Wiki\Principal\Infrastructure\Query\ListPrincipalGroups;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWiki;
@@ -143,6 +145,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DetachRoleFromPrincipalGroupInterface::class, DetachRoleFromPrincipalGroup::class);
         $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(GetCurrentPrincipalInterface::class, GetCurrentPrincipal::class);
+        $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
         $this->app->singleton(RequestCertificationInterface::class, RequestCertification::class);
         $this->app->singleton(ApproveCertificationInterface::class, ApproveCertification::class);
         $this->app->singleton(RejectCertificationInterface::class, RejectCertification::class);

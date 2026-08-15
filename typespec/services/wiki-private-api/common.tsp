@@ -726,6 +726,34 @@ model PrincipalGroupSummary {
   createdAt: string;
 }
 
+@doc("Principal group member summary for management.")
+model PrincipalGroupMemberSummary {
+  @doc("Principal identifier.")
+  principalIdentifier: Uuid;
+  @doc("Identity identifier linked to the principal.")
+  identityIdentifier: Uuid;
+  @doc("Identity display name.")
+  identityName: string;
+  @doc("Identity email address.")
+  email: string;
+}
+
+@doc("Principal group summary for management.")
+model PrincipalGroupManagementSummary {
+  @doc("Principal group identifier.")
+  principalGroupIdentifier: Uuid;
+  @doc("Owning account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Principal group name.")
+  name: string;
+  @doc("Role identifiers attached to the principal group.")
+  roleIdentifiers: Uuid[];
+  @doc("Whether this is the default principal group.")
+  isDefault: boolean;
+  @doc("Members of the principal group.")
+  members: PrincipalGroupMemberSummary[];
+}
+
 @doc("Summary of a role.")
 model RoleSummary {
   @doc("Role identifier.")
@@ -806,5 +834,5 @@ model PolicyStatement {
 @doc("List of Wiki principal groups.")
 model ListPrincipalGroupsResponseBody {
   @doc("Principal groups.")
-  principalGroups: PrincipalGroupSummary[];
+  principalGroups: PrincipalGroupManagementSummary[];
 }

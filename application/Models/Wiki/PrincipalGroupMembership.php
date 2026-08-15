@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read PrincipalGroup|null $principalGroup
+ * @property-read Principal|null $principal
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'principal_group_id',
@@ -47,5 +48,13 @@ class PrincipalGroupMembership extends Model
     public function principalGroup(): BelongsTo
     {
         return $this->belongsTo(PrincipalGroup::class, 'principal_group_id', 'id');
+    }
+
+    /**
+     * @return BelongsTo<Principal, $this>
+     */
+    public function principal(): BelongsTo
+    {
+        return $this->belongsTo(Principal::class, 'principal_id', 'id');
     }
 }
