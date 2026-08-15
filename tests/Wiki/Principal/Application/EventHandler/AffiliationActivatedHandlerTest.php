@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -87,12 +88,18 @@ class AffiliationActivatedHandlerTest extends TestCase
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agencyAccountName = 'Agency Alpha';
+        $talentAccountName = 'Talent Beta';
 
         $event = new AffiliationActivated(
             $affiliationIdentifier,
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
             new DateTimeImmutable(),
+            $agencyAccountName,
+            $talentAccountName,
+            AccountType::CORPORATION,
+            AccountType::INDIVIDUAL,
         );
 
         // Talent側のPrincipal
@@ -135,8 +142,14 @@ class AffiliationActivatedHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory
             ->shouldReceive('create')
-            ->twice()
-            ->andReturn($talentSidePrincipalGroup, $agencySidePrincipalGroup);
+            ->once()
+            ->with($talentAccountIdentifier, "Affiliation - Agency {$agencyAccountName}", false)
+            ->andReturn($talentSidePrincipalGroup);
+        $principalGroupFactory
+            ->shouldReceive('create')
+            ->once()
+            ->with($agencyAccountIdentifier, "Affiliation - Talent {$talentAccountName}", false)
+            ->andReturn($agencySidePrincipalGroup);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository
@@ -148,7 +161,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->shouldReceive('create')
             ->once()
             ->with(
-                "Affiliation Policy - Agency {$agencyAccountIdentifier}",
+                "Affiliation Policy - Agency {$agencyAccountName}",
                 Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
                     $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
 
@@ -161,7 +174,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->shouldReceive('create')
             ->once()
             ->with(
-                "Affiliation Policy - Talent {$talentAccountIdentifier}",
+                "Affiliation Policy - Talent {$talentAccountName}",
                 Mockery::on(function (array $statements): bool {
                     $this->assertAgencySideStatements($statements);
 
@@ -219,12 +232,18 @@ class AffiliationActivatedHandlerTest extends TestCase
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agencyAccountName = 'Agency Alpha';
+        $talentAccountName = 'Talent Beta';
 
         $event = new AffiliationActivated(
             $affiliationIdentifier,
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
             new DateTimeImmutable(),
+            $agencyAccountName,
+            $talentAccountName,
+            AccountType::CORPORATION,
+            AccountType::INDIVIDUAL,
         );
 
         $existingTalentSideGrant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
@@ -316,12 +335,18 @@ class AffiliationActivatedHandlerTest extends TestCase
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agencyAccountName = 'Agency Alpha';
+        $talentAccountName = 'Talent Beta';
 
         $event = new AffiliationActivated(
             $affiliationIdentifier,
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
             new DateTimeImmutable(),
+            $agencyAccountName,
+            $talentAccountName,
+            AccountType::CORPORATION,
+            AccountType::INDIVIDUAL,
         );
 
         // Talent側のPrincipal
@@ -423,11 +448,17 @@ class AffiliationActivatedHandlerTest extends TestCase
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agencyAccountName = 'Agency Alpha';
+        $talentAccountName = 'Talent Beta';
         $event = new AffiliationActivated(
             $affiliationIdentifier,
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
             new DateTimeImmutable(),
+            $agencyAccountName,
+            $talentAccountName,
+            AccountType::CORPORATION,
+            AccountType::INDIVIDUAL,
         );
 
         // Talent側のPrincipal
@@ -483,7 +514,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->shouldReceive('create')
             ->once()
             ->with(
-                "Affiliation Policy - Agency {$agencyAccountIdentifier}",
+                "Affiliation Policy - Agency {$agencyAccountName}",
                 Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
                     $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
 
@@ -496,7 +527,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->shouldReceive('create')
             ->once()
             ->with(
-                "Affiliation Policy - Talent {$talentAccountIdentifier}",
+                "Affiliation Policy - Talent {$talentAccountName}",
                 Mockery::on(function (array $statements): bool {
                     $this->assertAgencySideStatements($statements);
 

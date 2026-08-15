@@ -16,8 +16,10 @@ readonly class AffiliationActivated
         private AccountIdentifier $agencyAccountIdentifier,
         private AccountIdentifier $talentAccountIdentifier,
         private DateTimeImmutable $activatedAt,
-        private AccountType $agencyAccountType = AccountType::CORPORATION,
-        private AccountType $talentAccountType = AccountType::INDIVIDUAL,
+        private string $agencyAccountName,
+        private string $talentAccountName,
+        private AccountType $agencyAccountType,
+        private AccountType $talentAccountType,
     ) {
     }
 
@@ -49,5 +51,15 @@ readonly class AffiliationActivated
     public function talentAccountType(): AccountType
     {
         return $this->talentAccountType;
+    }
+
+    public function agencyAccountName(): string
+    {
+        return $this->agencyAccountName;
+    }
+
+    public function talentAccountName(): string
+    {
+        return $this->talentAccountName;
     }
 }

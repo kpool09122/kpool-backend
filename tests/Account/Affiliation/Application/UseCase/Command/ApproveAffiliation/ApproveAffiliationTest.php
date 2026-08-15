@@ -109,6 +109,16 @@ class ApproveAffiliationTest extends TestCase
         $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
     }
 
+    public function testThrowsWhenTalentAlreadyHasAnotherActiveAffiliationOnApproval(): void
+    {
+        $data = $this->data(AccountCategory::AGENCY, AccountCategory::TALENT, activeTalentExists: true);
+        $useCase = $this->useCase($data, expectSave: false);
+
+        $this->expectException(DisallowedAffiliationOperationException::class);
+        $this->expectExceptionMessage('The talent account already has an active affiliation.');
+        $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
+    }
+
     public function testThrowsWhenApproverAccountCategoryIsGeneral(): void
     {
         $data = $this->data(AccountCategory::AGENCY, AccountCategory::GENERAL, policyAllowed: false);
@@ -122,12 +132,14 @@ class ApproveAffiliationTest extends TestCase
     {
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         if ($expectAccountLookup) {
-            $accountRepository->shouldReceive('findById')->with($data->approverAccountIdentifier)->andReturn($data->approverAccount);
+            $accountRepository->shouldReceive('findById')->with($data->agencyAccountIdentifier)->andReturn($data->agencyAccount);
+            $accountRepository->shouldReceive('findById')->with($data->talentAccountIdentifier)->andReturn($data->talentAccount);
         } else {
             $accountRepository->shouldNotReceive('findById');
         }
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $approverAccount = $data->approverAccountIdentifier === $data->agencyAccountIdentifier ? $data->agencyAccount : $data->talentAccount;
         if ($expectPolicyEvaluation) {
             $policyEvaluator->shouldReceive('evaluate')
                 ->once()
@@ -135,7 +147,7 @@ class ApproveAffiliationTest extends TestCase
                     $data->principal,
                     Action::AFFILIATION_APPROVE,
                     Mockery::on(fn (Resource $resource): bool => $resource->accountIdentifier() === $data->approverAccountIdentifier
-                        && $resource->accountCategory() === $data->approverAccountCategory
+                        && $resource->accountCategory() === $approverAccount->accountCategory()
                         && $resource->affiliationRequestingAccountCategory() === $data->requestingAccountCategory)
                 )
                 ->andReturn($data->policyAllowed);
@@ -145,6 +157,12 @@ class ApproveAffiliationTest extends TestCase
 
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
         $affiliationRepository->shouldReceive('findById')->with($data->affiliationIdentifier)->once()->andReturn($data->affiliation);
+        if ($expectPolicyEvaluation && $data->policyAllowed) {
+            $affiliationRepository->shouldReceive('findActiveByTalentAccount')
+                ->with($data->talentAccountIdentifier)
+                ->once()
+                ->andReturn($data->activeTalentAffiliation);
+        }
         if ($expectSave) {
             $affiliationRepository->shouldReceive('save')->once()->with($data->affiliation);
         } else {
@@ -153,7 +171,12 @@ class ApproveAffiliationTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         if ($expectSave) {
-            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::type(AffiliationActivated::class));
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (AffiliationActivated $event): bool => $event->agencyAccountIdentifier() === $data->agencyAccountIdentifier
+                && $event->talentAccountIdentifier() === $data->talentAccountIdentifier
+                && $event->agencyAccountType() === $data->agencyAccount->type()
+                && $event->talentAccountType() === $data->talentAccount->type()
+                && $event->agencyAccountName() === (string) $data->agencyAccount->name()
+                && $event->talentAccountName() === (string) $data->talentAccount->name()));
         } else {
             $eventDispatcher->shouldNotReceive('dispatch');
         }
@@ -165,7 +188,7 @@ class ApproveAffiliationTest extends TestCase
         return new ApproveAffiliation($accountRepository, $policyEvaluator, $affiliationRepository, $eventDispatcher);
     }
 
-    private function data(AccountCategory $requestingCategory, AccountCategory $approverCategory, bool $policyAllowed = true, ?AccountIdentifier $principalAccountIdentifier = null): ApproveAffiliationTestData
+    private function data(AccountCategory $requestingCategory, AccountCategory $approverCategory, bool $policyAllowed = true, ?AccountIdentifier $principalAccountIdentifier = null, bool $activeTalentExists = false): ApproveAffiliationTestData
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -173,14 +196,25 @@ class ApproveAffiliationTest extends TestCase
         $approver = $requestingCategory === AccountCategory::AGENCY ? $talent : $agency;
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $affiliation = new Affiliation($affiliationIdentifier, $agency, $talent, $requestedBy, AffiliationStatus::PENDING, null, new DateTimeImmutable(), null, null);
+        $activeTalentAffiliation = $activeTalentExists
+            ? new Affiliation(new AffiliationIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), $talent, new AccountIdentifier(StrTestHelper::generateUuid()), AffiliationStatus::ACTIVE, null, new DateTimeImmutable(), new DateTimeImmutable(), null)
+            : null;
         $principal = $this->principal($principalAccountIdentifier ?? $approver);
+        $agencyCategory = $approver === $agency ? $approverCategory : AccountCategory::AGENCY;
+        $talentCategory = $approver === $talent ? $approverCategory : AccountCategory::TALENT;
+        $agencyAccount = $this->account($agency, $agencyCategory, 'Agency Alpha');
+        $talentAccount = $this->account($talent, $talentCategory, 'Talent Beta');
 
         return new ApproveAffiliationTestData(
             $affiliationIdentifier,
+            $agency,
+            $talent,
             $approver,
             $principal,
             $affiliation,
-            $this->account($approver, $approverCategory),
+            $activeTalentAffiliation,
+            $agencyAccount,
+            $talentAccount,
             $requestingCategory,
             $approverCategory,
             $policyAllowed,
@@ -192,9 +226,9 @@ class ApproveAffiliationTest extends TestCase
         return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), $accountIdentifier);
     }
 
-    private function account(AccountIdentifier $identifier, AccountCategory $category): Account
+    private function account(AccountIdentifier $identifier, AccountCategory $category, string $name): Account
     {
-        return new Account($identifier, new Email('account@example.com'), AccountType::CORPORATION, new AccountName('Test Account'), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
+        return new Account($identifier, new Email('account@example.com'), AccountType::CORPORATION, new AccountName($name), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
     }
 }
 
@@ -202,10 +236,14 @@ readonly class ApproveAffiliationTestData
 {
     public function __construct(
         public AffiliationIdentifier $affiliationIdentifier,
+        public AccountIdentifier $agencyAccountIdentifier,
+        public AccountIdentifier $talentAccountIdentifier,
         public AccountIdentifier $approverAccountIdentifier,
         public Principal $principal,
         public Affiliation $affiliation,
-        public Account $approverAccount,
+        public ?Affiliation $activeTalentAffiliation,
+        public Account $agencyAccount,
+        public Account $talentAccount,
         public AccountCategory $requestingAccountCategory,
         public AccountCategory $approverAccountCategory,
         public bool $policyAllowed,

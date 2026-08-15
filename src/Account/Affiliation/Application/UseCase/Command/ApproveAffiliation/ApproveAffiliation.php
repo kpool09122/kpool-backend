@@ -14,7 +14,6 @@ use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveAffiliation implements ApproveAffiliationInterface
@@ -39,10 +38,15 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             throw new DisallowedAffiliationOperationException('Only the designated approver can approve this affiliation.');
         }
 
-        $approverAccount = $this->accountRepository->findById($affiliation->approverAccountIdentifier());
-        if ($approverAccount === null) {
+        $agencyAccount = $this->accountRepository->findById($affiliation->agencyAccountIdentifier());
+        $talentAccount = $this->accountRepository->findById($affiliation->talentAccountIdentifier());
+        if ($agencyAccount === null || $talentAccount === null) {
             throw new DisallowedAffiliationOperationException('Affiliation approval is not allowed.');
         }
+
+        $approverAccount = (string) $affiliation->approverAccountIdentifier() === (string) $agencyAccount->accountIdentifier()
+            ? $agencyAccount
+            : $talentAccount;
 
         if (! $this->policyEvaluator->evaluate(
             $input->principal(),
@@ -57,12 +61,11 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             throw new DisallowedAffiliationOperationException('Affiliation approval is not allowed.');
         }
 
-        $agencyAccountType = (string) $approverAccount->accountIdentifier() === (string) $affiliation->agencyAccountIdentifier()
-            ? $approverAccount->type()
-            : AccountType::CORPORATION;
-        $talentAccountType = (string) $approverAccount->accountIdentifier() === (string) $affiliation->talentAccountIdentifier()
-            ? $approverAccount->type()
-            : AccountType::INDIVIDUAL;
+        $activeAffiliation = $this->affiliationRepository->findActiveByTalentAccount($affiliation->talentAccountIdentifier());
+        if ($activeAffiliation !== null
+            && (string) $activeAffiliation->affiliationIdentifier() !== (string) $affiliation->affiliationIdentifier()) {
+            throw new DisallowedAffiliationOperationException('The talent account already has an active affiliation.');
+        }
 
         $affiliation->approve();
 
@@ -73,8 +76,10 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
             $affiliation->activatedAt(),
-            $agencyAccountType,
-            $talentAccountType,
+            (string) $agencyAccount->name(),
+            (string) $talentAccount->name(),
+            $agencyAccount->type(),
+            $talentAccount->type(),
         ));
         $output->setAffiliation($affiliation);
     }

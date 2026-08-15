@@ -62,7 +62,7 @@ readonly class AffiliationActivatedHandler
         // 専用 PrincipalGroup を新規作成
         $principalGroup = $this->principalGroupFactory->create(
             $event->talentAccountIdentifier(),
-            "Affiliation - Agency {$event->agencyAccountIdentifier()}",
+            "Affiliation - Agency {$event->agencyAccountName()}",
             false,
         );
         $this->principalGroupRepository->save($principalGroup);
@@ -79,7 +79,7 @@ readonly class AffiliationActivatedHandler
         // Policy 作成（Agency の GROUP/SONG に対する権限）
         $agencyId = (string) $event->agencyAccountIdentifier();
         $policy = $this->policyFactory->create(
-            "Affiliation Policy - Agency {$agencyId}",
+            "Affiliation Policy - Agency {$event->agencyAccountName()}",
             $this->createTalentSideStatements($agencyId),
             false,
         );
@@ -87,7 +87,7 @@ readonly class AffiliationActivatedHandler
 
         // Role 作成
         $role = $this->roleFactory->create(
-            "Affiliation Role - Agency {$event->agencyAccountIdentifier()}",
+            "Affiliation Role - Agency {$event->agencyAccountName()}",
             [$policy->policyIdentifier()],
             false,
         );
@@ -123,7 +123,7 @@ readonly class AffiliationActivatedHandler
         // 専用 PrincipalGroup を新規作成（Principal は追加しない - UI 経由で後から追加）
         $principalGroup = $this->principalGroupFactory->create(
             $event->agencyAccountIdentifier(),
-            "Affiliation - Talent {$event->talentAccountIdentifier()}",
+            "Affiliation - Talent {$event->talentAccountName()}",
             false,
         );
         $this->principalGroupRepository->save($principalGroup);
@@ -131,7 +131,7 @@ readonly class AffiliationActivatedHandler
         // Policy 作成（Talent に対する権限）
         // Talent Wiki は評価時に動的解決するため、Affiliation 成立時点で未作成でも空 Policy にしない。
         $policy = $this->policyFactory->create(
-            "Affiliation Policy - Talent {$event->talentAccountIdentifier()}",
+            "Affiliation Policy - Talent {$event->talentAccountName()}",
             $this->createAgencySideStatements(),
             false,
         );
@@ -139,7 +139,7 @@ readonly class AffiliationActivatedHandler
 
         // Role 作成
         $role = $this->roleFactory->create(
-            "Affiliation Role - Talent {$event->talentAccountIdentifier()}",
+            "Affiliation Role - Talent {$event->talentAccountName()}",
             [$policy->policyIdentifier()],
             false,
         );
