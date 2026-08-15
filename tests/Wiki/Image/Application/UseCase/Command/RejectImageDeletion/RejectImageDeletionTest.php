@@ -64,7 +64,7 @@ class RejectImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new RejectImageDeletionInput($imageIdentifier, $principalIdentifier, 'Not applicable');
@@ -147,7 +147,7 @@ class RejectImageDeletionTest extends TestCase
         $image = $this->createTestImageWithoutDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new RejectImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');
 
@@ -231,7 +231,7 @@ class RejectImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new RejectImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');

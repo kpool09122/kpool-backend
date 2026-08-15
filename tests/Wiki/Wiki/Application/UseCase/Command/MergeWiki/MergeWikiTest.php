@@ -72,7 +72,7 @@ class MergeWikiTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $updatedBasic = new GroupBasic(
             name: new Name('ITZY'),
@@ -255,7 +255,7 @@ class MergeWikiTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new MergeWikiInput(
             $testData->wikiIdentifier,
@@ -311,7 +311,7 @@ class MergeWikiTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new MergeWikiInput(
             $testData->wikiIdentifier,

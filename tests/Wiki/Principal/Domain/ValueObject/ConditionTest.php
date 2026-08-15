@@ -21,7 +21,7 @@ class ConditionTest extends TestCase
         $clause = new ConditionClause(
             ConditionKey::RESOURCE_AGENCY_ID,
             ConditionOperator::EQUALS,
-            ConditionValue::PRINCIPAL_AGENCY_ID,
+            ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS,
         );
 
         $condition = new Condition([$clause]);
@@ -38,7 +38,7 @@ class ConditionTest extends TestCase
         $clause1 = new ConditionClause(
             ConditionKey::RESOURCE_AGENCY_ID,
             ConditionOperator::EQUALS,
-            ConditionValue::PRINCIPAL_AGENCY_ID,
+            ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS,
         );
         $clause2 = new ConditionClause(
             ConditionKey::RESOURCE_IS_OFFICIAL,

@@ -29,7 +29,7 @@ class StatementTest extends TestCase
             new ConditionClause(
                 ConditionKey::RESOURCE_AGENCY_ID,
                 ConditionOperator::EQUALS,
-                ConditionValue::PRINCIPAL_AGENCY_ID,
+                ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS,
             ),
         ]);
 

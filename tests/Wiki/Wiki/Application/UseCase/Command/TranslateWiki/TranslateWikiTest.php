@@ -70,9 +70,6 @@ class TranslateWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
         );
 
         $input = new TranslateWikiInput(
@@ -294,9 +291,6 @@ class TranslateWikiTest extends TestCase
         $principal = new Principal(
             $testData->principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            [],
         );
 
         $input = new TranslateWikiInput(

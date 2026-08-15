@@ -48,6 +48,7 @@ use Source\Wiki\OfficialCertification\Infrastructure\Repository\OfficialCertific
 use Source\Wiki\OfficialCertification\Infrastructure\Service\OfficialResourceUpdater;
 use Source\Wiki\Principal\Application\Service\AffiliationQueryServiceInterface;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
+use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -73,6 +74,7 @@ use Source\Wiki\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationConditionValueResolver;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationQueryService;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinks;
@@ -131,6 +133,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PrincipalGroupRepositoryInterface::class, PrincipalGroupRepository::class);
         $this->app->singleton(PolicyRepositoryInterface::class, PolicyRepository::class);
         $this->app->singleton(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->singleton(PrincipalWikiScopeResolverInterface::class, PrincipalWikiScopeResolver::class);
         $this->app->singleton(ConditionValueResolverInterface::class, AffiliationConditionValueResolver::class);
         $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
         $this->app->singleton(AffiliationQueryServiceInterface::class, AffiliationQueryService::class);

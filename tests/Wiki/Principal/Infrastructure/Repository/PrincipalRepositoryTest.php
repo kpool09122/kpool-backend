@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
 use Tests\Helper\StrTestHelper;
@@ -111,18 +112,11 @@ class PrincipalRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier);
 
         $principalId = StrTestHelper::generateUuid();
-        $agencyId = StrTestHelper::generateUuid();
-        $groupId = StrTestHelper::generateUuid();
-        $groupIds = [$groupId];
-        $talentIds = [StrTestHelper::generateUuid()];
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
 
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityIdentifier,
-            $agencyId,
-            $groupIds,
-            $talentIds,
             $delegationIdentifier,
         );
 
@@ -132,13 +126,12 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_principals', [
             'id' => $principalId,
             'identity_id' => (string) $identityIdentifier,
-            'agency_id' => $agencyId,
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
         $saved = $repository->findById(new PrincipalIdentifier($principalId));
         $this->assertNotNull($saved);
-        $this->assertSame($groupIds, $saved->groupIds());
+        $this->assertSame((string) $identityIdentifier, (string) $saved->identityIdentifier());
     }
 
     /**
@@ -161,9 +154,6 @@ class PrincipalRepositoryTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            null,
-            [],
-            [],
         );
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
@@ -282,16 +272,15 @@ class PrincipalRepositoryTest extends TestCase
         ]);
 
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1, [
-            'agency_id' => (string) $accountIdentifier,
-        ]);
+        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1);
+        $this->createAccountPrincipal($identityIdentifier1, $accountIdentifier);
 
         $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, [
-            'agency_id' => (string) $accountIdentifier,
-        ]);
+        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2);
+        $this->createAccountPrincipal($identityIdentifier2, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByAccountId($accountIdentifier);
@@ -300,6 +289,17 @@ class PrincipalRepositoryTest extends TestCase
         $principalIds = array_map(fn ($p) => (string) $p->principalIdentifier(), $results);
         $this->assertContains((string) $principalIdentifier1, $principalIds);
         $this->assertContains((string) $principalIdentifier2, $principalIds);
+    }
+
+    private function createAccountPrincipal(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): void
+    {
+        \Illuminate\Support\Facades\DB::table('account_principals')->insert([
+            'id' => StrTestHelper::generateUuid(),
+            'identity_id' => (string) $identityIdentifier,
+            'account_id' => (string) $accountIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

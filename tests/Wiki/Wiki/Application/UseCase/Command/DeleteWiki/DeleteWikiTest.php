@@ -228,7 +228,7 @@ class DeleteWikiTest extends TestCase
         bool $isAllowed,
         bool $expectDelete = false,
     ): void {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')->once()->with($draftWiki->wikiIdentifier())->andReturn($draftWiki);

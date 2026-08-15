@@ -90,9 +90,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(
@@ -188,9 +185,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(
@@ -285,9 +279,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(
@@ -434,9 +425,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(
@@ -505,9 +493,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(
@@ -567,9 +552,6 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            null,
-            [],
-            []
         );
 
         $input = new RollbackWikiInput(

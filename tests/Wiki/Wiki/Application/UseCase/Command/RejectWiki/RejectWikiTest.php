@@ -78,7 +78,7 @@ class RejectWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $dummyRejectWiki = $this->createDummyRejectWiki(
             operatorIdentifier: $principalIdentifier,
@@ -295,7 +295,7 @@ class RejectWikiTest extends TestCase
         $dummyRejectWiki = $this->createDummyRejectWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new RejectWikiInput(
             $dummyRejectWiki->wikiIdentifier,

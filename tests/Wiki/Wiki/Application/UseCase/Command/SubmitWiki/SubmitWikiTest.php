@@ -78,7 +78,7 @@ class SubmitWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $dummySubmitWiki = $this->createDummySubmitWiki(
             operatorIdentifier: $principalIdentifier,
@@ -239,7 +239,7 @@ class SubmitWikiTest extends TestCase
         $dummySubmitWiki = $this->createDummySubmitWiki(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new SubmitWikiInput(
             $dummySubmitWiki->wikiIdentifier,
@@ -289,7 +289,7 @@ class SubmitWikiTest extends TestCase
         $dummySubmitWiki = $this->createDummySubmitWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $input = new SubmitWikiInput(
             $dummySubmitWiki->wikiIdentifier,

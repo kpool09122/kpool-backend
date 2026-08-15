@@ -119,7 +119,7 @@ class CreateWikiTest extends TestCase
         $testData = $this->createDummyCreateWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);
@@ -179,7 +179,7 @@ class CreateWikiTest extends TestCase
         $testData = $this->createDummyCreateWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);

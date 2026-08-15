@@ -184,7 +184,7 @@ readonly class AffiliationActivatedHandler
                 [ResourceType::GROUP],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                    new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+                    new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS),
                 ]),
             ),
             // Song (Group経由): AgencyがSongに紐づいている AND 自身が所属するGroupがSongに紐づいている
@@ -194,7 +194,7 @@ readonly class AffiliationActivatedHandler
                 [ResourceType::SONG],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                    new ConditionClause(ConditionKey::RESOURCE_GROUP_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_WIKI_GROUP_IDS),
+                    new ConditionClause(ConditionKey::RESOURCE_GROUP_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS),
                 ]),
             ),
             // Song (Talent経由): AgencyがSongに紐づいている AND 自身のTalentがSongに紐づいている
@@ -204,7 +204,7 @@ readonly class AffiliationActivatedHandler
                 [ResourceType::SONG],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
-                    new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_IDS),
+                    new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS),
                 ]),
             ),
         ];
@@ -229,7 +229,7 @@ readonly class AffiliationActivatedHandler
                     new ConditionClause(
                         ConditionKey::RESOURCE_TALENT_ID,
                         ConditionOperator::IN,
-                        ConditionValue::PRINCIPAL_AFFILIATED_TALENT_IDS,
+                        ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS,
                     ),
                 ]),
             ),

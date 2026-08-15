@@ -82,7 +82,9 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquents = PrincipalEloquent::query()
-            ->where('agency_id', (string) $accountIdentifier)
+            ->select('wiki_principals.*')
+            ->join('account_principals', 'wiki_principals.identity_id', '=', 'account_principals.identity_id')
+            ->where('account_principals.account_id', (string) $accountIdentifier)
             ->get();
 
         return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
@@ -98,9 +100,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ['id' => (string) $principal->principalIdentifier()],
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
-                'agency_id' => $principal->agencyId(),
-                'group_ids' => $principal->groupIds(),
-                'talent_ids' => $principal->talentIds(),
                 'delegation_identifier' => $principal->delegationIdentifier() !== null
                     ? (string) $principal->delegationIdentifier()
                     : null,
@@ -134,9 +133,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return new Principal(
             new PrincipalIdentifier($eloquent->id),
             new IdentityIdentifier($eloquent->identity_id),
-            $eloquent->agency_id,
-            $eloquent->group_ids,
-            $eloquent->talent_ids,
             $eloquent->delegation_identifier !== null
                 ? new DelegationIdentifier($eloquent->delegation_identifier)
                 : null,

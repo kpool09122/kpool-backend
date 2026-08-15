@@ -12,9 +12,6 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $identity_id
- * @property ?string $agency_id
- * @property array<string> $group_ids
- * @property array<string> $talent_ids
  * @property ?string $delegation_identifier
  * @property bool $enabled
  * @property ?Carbon $created_at
@@ -24,9 +21,6 @@ use Illuminate\Support\Carbon;
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'identity_id',
-    'agency_id',
-    'group_ids',
-    'talent_ids',
     'delegation_identifier',
     'enabled',
 ])]
@@ -40,8 +34,6 @@ class Principal extends Model
     protected function casts(): array
     {
         return [
-            'group_ids' => 'array',
-            'talent_ids' => 'array',
             'enabled' => 'boolean',
         ];
     }
