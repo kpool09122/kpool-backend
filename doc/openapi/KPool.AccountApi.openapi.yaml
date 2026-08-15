@@ -567,6 +567,71 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /affiliations:
+    get:
+      operationId: AffiliationOperations_listAffiliations
+      description: List affiliations related to the authenticated account.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: viewerRole
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when listing affiliations succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAffiliationsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     post:
       operationId: AffiliationOperations_requestAffiliation
       description: Request an affiliation.
@@ -1584,12 +1649,32 @@ components:
             - $ref: '#/components/schemas/ContactAddressSummary'
           nullable: true
           description: Contact address.
+    AffiliationAccountSummary:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+        - email
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier.
+        name:
+          type: string
+          description: Account display name.
+        email:
+          type: string
+          description: Account email address.
+      description: Account summary attached to an affiliation.
     AffiliationSummary:
       type: object
       required:
         - affiliationIdentifier
         - agencyAccountIdentifier
         - talentAccountIdentifier
+        - agencyAccount
+        - talentAccount
         - requestedBy
         - status
         - requestedAt
@@ -1606,6 +1691,14 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Talent account identifier.
+        agencyAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Agency account.
+        talentAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Talent account.
         requestedBy:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -2008,6 +2101,37 @@ components:
             $ref: '#/components/schemas/AccountDocumentSummary'
           description: Saved documents.
       description: Response body for account document list.
+    ListAffiliationsResponseBody:
+      type: object
+      required:
+        - affiliations
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        affiliations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AffiliationSummary'
+          description: Affiliations related to the authenticated account.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of affiliations matching the filters.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of items per page.
+      description: Response body for affiliation list.
     ListMembersResponseBody:
       type: object
       required:

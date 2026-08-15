@@ -37,6 +37,8 @@ use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\Re
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInterface;
+use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAffiliationsInterface;
+use Source\Account\Affiliation\Infrastructure\Query\ListAffiliations;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
@@ -89,6 +91,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);
+        $this->app->singleton(ListAffiliationsInterface::class, ListAffiliations::class);
         $this->app->singleton(TerminateAffiliationInterface::class, TerminateAffiliation::class);
         $this->app->singleton(RequestAffiliationInterface::class, RequestAffiliation::class);
         $this->app->singleton(RejectAffiliationInterface::class, RejectAffiliation::class);

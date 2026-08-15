@@ -101,6 +101,16 @@ model AffiliationTermsSummary {
   contractNotes?: string;
 }
 
+@doc("Account summary attached to an affiliation.")
+model AffiliationAccountSummary {
+  @doc("Account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Account display name.")
+  name: string;
+  @doc("Account email address.")
+  email: string;
+}
+
 @doc("Affiliation state.")
 model AffiliationSummary {
   @doc("Affiliation identifier.")
@@ -109,6 +119,10 @@ model AffiliationSummary {
   agencyAccountIdentifier: Uuid;
   @doc("Talent account identifier.")
   talentAccountIdentifier: Uuid;
+  @doc("Agency account.")
+  agencyAccount: AffiliationAccountSummary;
+  @doc("Talent account.")
+  talentAccount: AffiliationAccountSummary;
   @doc("Account that initiated the affiliation workflow.")
   requestedBy: Uuid;
   @doc("Affiliation status.")
@@ -121,6 +135,20 @@ model AffiliationSummary {
   activatedAt?: Timestamp | null;
   @doc("Timestamp when the affiliation was terminated.")
   terminatedAt?: Timestamp | null;
+}
+
+@doc("Response body for affiliation list.")
+model ListAffiliationsResponseBody {
+  @doc("Affiliations related to the authenticated account.")
+  affiliations: AffiliationSummary[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of affiliations matching the filters.")
+  total: int32;
+  @doc("Number of items per page.")
+  per_page: int32;
 }
 
 @doc("Delegation state.")
