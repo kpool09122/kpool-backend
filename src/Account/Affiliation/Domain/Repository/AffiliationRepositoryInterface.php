@@ -34,5 +34,5 @@ interface AffiliationRepositoryInterface
      */
     public function findPendingByApprover(AccountIdentifier $approverAccountIdentifier): array;
 
-    public function existsActiveAffiliation(AccountIdentifier $agencyAccountIdentifier, AccountIdentifier $talentAccountIdentifier): bool;
+    public function existsOpenAffiliation(AccountIdentifier $agencyAccountIdentifier, AccountIdentifier $talentAccountIdentifier): bool;
 }

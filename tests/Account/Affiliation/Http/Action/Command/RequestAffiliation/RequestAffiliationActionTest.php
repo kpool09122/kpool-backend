@@ -128,7 +128,7 @@ class RequestAffiliationActionTest extends TestCase
         $useCase = Mockery::mock(RequestAffiliationInterface::class);
         $useCase->shouldReceive('process')
             ->once()
-            ->andThrow(new AffiliationAlreadyExistsException('An active affiliation already exists between these accounts.'));
+            ->andThrow(new AffiliationAlreadyExistsException('An affiliation request or active affiliation already exists between these accounts.'));
 
         /** @var LoggerInterface&Mockery\MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);

@@ -79,8 +79,8 @@ readonly class RequestAffiliation implements RequestAffiliationInterface
             $targetAccount->accountIdentifier(),
         );
 
-        if ($this->affiliationRepository->existsActiveAffiliation($agencyAccountIdentifier, $talentAccountIdentifier)) {
-            throw new AffiliationAlreadyExistsException('An active affiliation already exists between these accounts.');
+        if ($this->affiliationRepository->existsOpenAffiliation($agencyAccountIdentifier, $talentAccountIdentifier)) {
+            throw new AffiliationAlreadyExistsException('An affiliation request or active affiliation already exists between these accounts.');
         }
 
         if ($this->affiliationRepository->findActiveByTalentAccount($talentAccountIdentifier) !== null) {
