@@ -47,8 +47,19 @@ model SubmitContactResponse {
   @body body: ContactSummary;
 }
 
+@doc("Response containing contact inquiries associated with the signed-in identity.")
+model ListMyContactsResponse {
+  @statusCode statusCode: 200;
+  @body body: ContactSummary[];
+}
+
 @route("/contact")
 interface ContactOperations {
+  @get
+  @route("/me")
+  @doc("List contact inquiries associated with the signed-in identity, newest first.")
+  listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/submit/v{version}")
   @doc("Submit a contact inquiry.")

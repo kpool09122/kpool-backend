@@ -38,6 +38,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->prefix('api/account')
             ->group($routePath('account_api.php'));
         RouteFacade::middleware(['api', 'session'])
+            ->prefix('api/site-management')
+            ->group($routePath('siteManagiment_public_api.php'));
+        RouteFacade::middleware(['api', 'session'])
             ->prefix('api/wiki')
             ->group($routePath('wiki_private_api.php'));
     }
@@ -131,6 +134,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account: list principal groups' => ['GET', '/api/account/principal-groups'],
             'account: update principal group members' => ['PATCH', '/api/account/principal-groups/members'],
 
+            // Site management: 自身の問い合わせは認証必須
+            'site management: list my contacts' => ['GET', '/api/site-management/contact/me'],
+
             // Monetization: bootstrap/app.php のグループ設定で全 route が認証必須
             'monetization: provision account' => ['POST', '/api/monetization/accounts'],
             'monetization: authorize payment' => ['POST', '/api/monetization/payments/authorize'],
@@ -183,6 +189,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account view document resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
             'account list account category change requests resolves actor and account' => ['GET', '/api/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'site management list my contacts resolves actor' => ['GET', '/api/site-management/contact/me', ['resolve.actor']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
@@ -209,6 +216,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
             // Account: signup フローで利用する公開例外
             'account: create account' => ['POST', '/api/account/accounts'],
+
+            // Site management: 問い合わせ投稿は公開API
+            'site management: submit contact' => ['POST', '/api/site-management/contact/submit/v1'],
 
             // Wiki: トップページ・Wiki一覧・Wiki詳細で必要な公開取得API
             'wiki: list wikis' => ['GET', '/api/wiki/wikis/ja'],
