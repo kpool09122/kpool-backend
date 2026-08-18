@@ -4,6 +4,32 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /contact/me:
+    get:
+      operationId: ContactOperations_listMyContacts
+      description: List contact inquiries associated with the signed-in identity, newest first.
+      parameters: []
+      responses:
+        '200':
+          description: Response containing contact inquiries associated with the signed-in identity.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /contact/submit/v{version}:
     post:
       operationId: ContactOperations_submitContact
