@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
@@ -26,7 +26,9 @@ use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -162,7 +164,7 @@ class RequestCertificationTest extends TestCase
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
-        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::GENERAL, ResourceType::AGENCY, true);
+        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::GENERAL, ResourceType::AGENCY, false);
 
         $useCase = $this->app->make(RequestCertificationInterface::class);
         $input = new RequestCertificationInput(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier, $principalIdentifier);
@@ -221,7 +223,13 @@ class RequestCertificationTest extends TestCase
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->andReturn($policyAllowed);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->with(
+                $principal,
+                Action::OFFICIAL_CERTIFICATION_REQUEST,
+                Mockery::on(static fn (Resource $resource): bool => $resource->ownerAccountCategory() === $accountCategory),
+            )
+            ->andReturn($policyAllowed);
 
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);

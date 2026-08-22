@@ -6,6 +6,7 @@ namespace Source\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 final readonly class Resource
 {
@@ -16,6 +17,7 @@ final readonly class Resource
      * @param string[] $talentIds
      * @param bool $isOfficial
      * @param string|null $editorId
+     * @param AccountCategory|null $ownerAccountCategory
      */
     public function __construct(
         private ResourceType $type,
@@ -24,6 +26,7 @@ final readonly class Resource
         private array $talentIds = [],
         private bool $isOfficial = false,
         private ?string $editorId = null,
+        private ?AccountCategory $ownerAccountCategory = null,
     ) {
         $this->validate($agencyId, $this->groupIds, $this->talentIds, $editorId);
     }
@@ -62,6 +65,11 @@ final readonly class Resource
     public function editorId(): ?string
     {
         return $this->editorId;
+    }
+
+    public function ownerAccountCategory(): ?AccountCategory
+    {
+        return $this->ownerAccountCategory;
     }
 
     /**

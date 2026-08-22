@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -39,6 +40,12 @@ class SystemPolicySeeder extends Seeder
     private function createGlobalActionPolicies(): void
     {
         foreach (Action::cases() as $action) {
+            if ($action === Action::OFFICIAL_CERTIFICATION_REQUEST) {
+                $this->createGlobalOfficialCertificationRequestPolicy();
+
+                continue;
+            }
+
             $this->createPolicy(
                 name: 'GLOBAL_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,
@@ -46,6 +53,30 @@ class SystemPolicySeeder extends Seeder
                 resourceTypes: ResourceType::cases(),
             );
         }
+    }
+
+    private function createGlobalOfficialCertificationRequestPolicy(): void
+    {
+        $policy = $this->policyFactory->create(
+            name: 'GLOBAL_' . $this->policyActionName(Action::OFFICIAL_CERTIFICATION_REQUEST),
+            statements: [
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
+                    resourceTypes: [ResourceType::AGENCY],
+                    condition: $this->ownerAccountCategoryCondition(AccountCategory::AGENCY),
+                ),
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
+                    resourceTypes: [ResourceType::TALENT],
+                    condition: $this->ownerAccountCategoryCondition(AccountCategory::TALENT),
+                ),
+            ],
+            isSystemPolicy: true,
+        );
+
+        $this->policyRepository->save($policy);
     }
 
     private function createOwnWikiActionPolicies(): void
@@ -114,7 +145,10 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::AGENCY],
-            condition: $this->agencyCondition(),
+            condition: $this->officialCertificationRequestCondition(
+                $this->agencyCondition(),
+                AccountCategory::AGENCY,
+            ),
         );
 
         $this->createPolicy(
@@ -122,8 +156,30 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::TALENT],
-            condition: $this->talentCondition(),
+            condition: $this->officialCertificationRequestCondition(
+                $this->talentCondition(),
+                AccountCategory::TALENT,
+            ),
         );
+    }
+
+    private function officialCertificationRequestCondition(Condition $scopeCondition, AccountCategory $ownerAccountCategory): Condition
+    {
+        return new Condition([
+            ...$scopeCondition->clauses(),
+            ...$this->ownerAccountCategoryCondition($ownerAccountCategory)->clauses(),
+        ]);
+    }
+
+    private function ownerAccountCategoryCondition(AccountCategory $ownerAccountCategory): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_OWNER_ACCOUNT_CATEGORY,
+                ConditionOperator::EQUALS,
+                $ownerAccountCategory->value,
+            ),
+        ]);
     }
 
     private function createDenyAgencyActionPolicies(): void

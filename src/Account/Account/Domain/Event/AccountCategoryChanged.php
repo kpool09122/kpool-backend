@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\Event;
 
 use DateTimeImmutable;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 

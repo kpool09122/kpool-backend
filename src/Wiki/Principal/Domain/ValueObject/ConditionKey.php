@@ -11,4 +11,5 @@ enum ConditionKey: string
     case RESOURCE_GROUP_ID = 'resource:groupId';
     case RESOURCE_TALENT_ID = 'resource:talentId';
     case RESOURCE_EDITOR_ID = 'resource:editorId';
+    case RESOURCE_OWNER_ACCOUNT_CATEGORY = 'resource:ownerAccountCategory';
 }

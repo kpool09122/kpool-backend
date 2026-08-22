@@ -6,7 +6,7 @@ namespace Source\Wiki\Principal\Application\EventHandler;
 
 use RuntimeException;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;

@@ -173,6 +173,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             ConditionKey::RESOURCE_TALENT_ID => $resource->talentIds(),
             ConditionKey::RESOURCE_IS_OFFICIAL => $resource->isOfficial(),
             ConditionKey::RESOURCE_EDITOR_ID => $resource->editorId(),
+            ConditionKey::RESOURCE_OWNER_ACCOUNT_CATEGORY => $resource->ownerAccountCategory()?->value,
         };
     }
 

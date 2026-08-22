@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Service;
 use DateTimeImmutable;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
@@ -1106,6 +1107,45 @@ class PolicyEvaluatorTest extends TestCase
             $policyEvaluator->evaluate($principal, Action::APPROVE, $officialResource),
             'APPROVE should be allowed when isOfficial is true'
         );
+    }
+
+    /**
+     * 正常系: ResourceのownerAccountCategoryをConditionで評価できること.
+     */
+    #[Group('useDb')]
+    public function testConditionOwnerAccountCategoryEquals(): void
+    {
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::OFFICIAL_CERTIFICATION_REQUEST],
+                [ResourceType::AGENCY],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_OWNER_ACCOUNT_CATEGORY,
+                        ConditionOperator::EQUALS,
+                        AccountCategory::AGENCY->value,
+                    ),
+                ]),
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+        $principal = $this->createPrincipal();
+        $this->createAndSavePrincipalGroup($principal->principalIdentifier(), [$role->roleIdentifier()]);
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository,
+            $this->conditionValueResolver(),
+        );
+
+        $agencyOwnerResource = new Resource(type: ResourceType::AGENCY, ownerAccountCategory: AccountCategory::AGENCY);
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::OFFICIAL_CERTIFICATION_REQUEST, $agencyOwnerResource));
+
+        $generalOwnerResource = new Resource(type: ResourceType::AGENCY, ownerAccountCategory: AccountCategory::GENERAL);
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::OFFICIAL_CERTIFICATION_REQUEST, $generalOwnerResource));
     }
 
     /**
