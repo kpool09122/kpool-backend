@@ -10,7 +10,7 @@ use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestReposit
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class AccountCategoryChangeRequestRepository implements AccountCategoryChangeRequestRepositoryInterface

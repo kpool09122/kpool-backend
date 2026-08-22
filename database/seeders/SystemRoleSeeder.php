@@ -163,6 +163,9 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
             'GLOBAL_UNHIDE',
+            'GLOBAL_OFFICIAL_CERTIFICATION_REQUEST',
+            'GLOBAL_OFFICIAL_CERTIFICATION_APPROVE',
+            'GLOBAL_OFFICIAL_CERTIFICATION_REJECT',
         ];
     }
 
@@ -197,6 +200,7 @@ class SystemRoleSeeder extends Seeder
             'AGENCY_SCOPE_IMAGE_APPROVE',
             'AGENCY_SCOPE_IMAGE_REJECT',
             'AGENCY_SCOPE_IMAGE_DELETE',
+            'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
         ];
     }
 
@@ -218,6 +222,7 @@ class SystemRoleSeeder extends Seeder
             'TALENT_SCOPE_IMAGE_APPROVE',
             'TALENT_SCOPE_IMAGE_REJECT',
             'TALENT_SCOPE_IMAGE_DELETE',
+            'TALENT_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
         ];
     }
 

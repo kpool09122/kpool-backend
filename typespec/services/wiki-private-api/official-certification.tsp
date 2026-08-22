@@ -9,8 +9,6 @@ model RequestCertificationRequestBody {
   resourceType: string;
   @doc("Wiki identifier to certify.")
   wikiId: Uuid;
-  @doc("Owner account identifier for the certification.")
-  ownerAccountId: Uuid;
 }
 
 @doc("Response returned when an official certification request is created.")
@@ -32,19 +30,19 @@ interface OfficialCertificationOperations {
   @doc("Create an official certification request.")
   requestCertification(
     @body body: RequestCertificationRequestBody,
-  ): CreateOfficialCertificationResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreateOfficialCertificationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{certificationId}/approve")
   @doc("Approve an official certification request.")
   approveCertification(
     @path certificationId: Uuid,
-  ): OkOfficialCertificationResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkOfficialCertificationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{certificationId}/reject")
   @doc("Reject an official certification request.")
   rejectCertification(
     @path certificationId: Uuid,
-  ): OkOfficialCertificationResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkOfficialCertificationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

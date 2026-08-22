@@ -90,16 +90,20 @@ class ListAffiliationsTest extends TestCase
     {
         $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         $agency = $operator->accountIdentifier();
-        $talent = new AccountIdentifier(StrTestHelper::generateUuid());
+        $pendingTalent1 = new AccountIdentifier(StrTestHelper::generateUuid());
+        $pendingTalent2 = new AccountIdentifier(StrTestHelper::generateUuid());
+        $activeTalent = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $agency, ['category' => 'agency']);
-        CreateAccount::create((string) $talent, ['category' => 'talent']);
+        CreateAccount::create((string) $pendingTalent1, ['category' => 'talent']);
+        CreateAccount::create((string) $pendingTalent2, ['category' => 'talent']);
+        CreateAccount::create((string) $activeTalent, ['category' => 'talent']);
 
         $pending1 = StrTestHelper::generateUuid();
         $pending2 = StrTestHelper::generateUuid();
         $active = StrTestHelper::generateUuid();
-        $this->insertAffiliation($pending1, $agency, $talent, $agency, 'pending', '2026-08-10 10:00:00');
-        $this->insertAffiliation($active, $agency, $talent, $talent, 'active', '2026-08-11 10:00:00');
-        $this->insertAffiliation($pending2, $agency, $talent, $talent, 'pending', '2026-08-12 10:00:00');
+        $this->insertAffiliation($pending1, $agency, $pendingTalent1, $agency, 'pending', '2026-08-10 10:00:00');
+        $this->insertAffiliation($active, $agency, $activeTalent, $activeTalent, 'active', '2026-08-11 10:00:00');
+        $this->insertAffiliation($pending2, $agency, $pendingTalent2, $pendingTalent2, 'pending', '2026-08-12 10:00:00');
 
         $output = new ListAffiliationsOutput();
         (new ListAffiliations($this->allowingPolicyEvaluator($operator)))
@@ -118,14 +122,16 @@ class ListAffiliationsTest extends TestCase
     {
         $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         $agency = $operator->accountIdentifier();
-        $talent = new AccountIdentifier(StrTestHelper::generateUuid());
+        $requesterTalent = new AccountIdentifier(StrTestHelper::generateUuid());
+        $approverTalent = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $agency, ['category' => 'agency']);
-        CreateAccount::create((string) $talent, ['category' => 'talent']);
+        CreateAccount::create((string) $requesterTalent, ['category' => 'talent']);
+        CreateAccount::create((string) $approverTalent, ['category' => 'talent']);
 
         $requester = StrTestHelper::generateUuid();
         $approver = StrTestHelper::generateUuid();
-        $this->insertAffiliation($requester, $agency, $talent, $agency, 'pending', '2026-08-10 10:00:00');
-        $this->insertAffiliation($approver, $agency, $talent, $talent, 'pending', '2026-08-11 10:00:00');
+        $this->insertAffiliation($requester, $agency, $requesterTalent, $agency, 'pending', '2026-08-10 10:00:00');
+        $this->insertAffiliation($approver, $agency, $approverTalent, $approverTalent, 'pending', '2026-08-11 10:00:00');
 
         $requesterOutput = new ListAffiliationsOutput();
         (new ListAffiliations($this->allowingPolicyEvaluator($operator)))

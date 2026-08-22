@@ -7,7 +7,7 @@ namespace Source\Account\Account\Application\UseCase\Query\ListAccountCategoryCh
 use InvalidArgumentException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 readonly class ListAccountCategoryChangeRequestsInput implements ListAccountCategoryChangeRequestsInputPort
 {

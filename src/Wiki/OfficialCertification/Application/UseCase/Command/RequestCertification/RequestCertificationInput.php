@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -14,6 +15,7 @@ readonly class RequestCertificationInput implements RequestCertificationInputPor
         private ResourceType      $resourceType,
         private WikiIdentifier    $wikiIdentifier,
         private AccountIdentifier $ownerAccountIdentifier,
+        private PrincipalIdentifier $requesterPrincipalIdentifier,
     ) {
     }
 
@@ -30,5 +32,10 @@ readonly class RequestCertificationInput implements RequestCertificationInputPor
     public function ownerAccountIdentifier(): AccountIdentifier
     {
         return $this->ownerAccountIdentifier;
+    }
+
+    public function requesterPrincipalIdentifier(): PrincipalIdentifier
+    {
+        return $this->requesterPrincipalIdentifier;
     }
 }

@@ -7,7 +7,7 @@ namespace Application\Http\Action\Account\Account\Command\RequestAccountCategory
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 class RequestAccountCategoryChangeRequest extends FormRequest
 {

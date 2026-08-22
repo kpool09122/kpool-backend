@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Shared\Domain\ValueObject;
+namespace Tests\Shared\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 class AccountCategoryTest extends TestCase
 {

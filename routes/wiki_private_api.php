@@ -139,11 +139,12 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 });
 
 // OfficialCertification
-Route::middleware('auth.api')->group(function () {
-    Route::post('/official-certification/request', RequestCertificationAction::class);
-    Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
-    Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
-});
+Route::post('/official-certification/request', RequestCertificationAction::class)
+    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
+Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class)
+    ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
+Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class)
+    ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 
 // VideoLink
 Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

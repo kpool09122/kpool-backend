@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Domain\ValueObject;
 
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 final readonly class Resource

@@ -13,8 +13,8 @@ use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 readonly class ApproveAffiliation implements ApproveAffiliationInterface
 {

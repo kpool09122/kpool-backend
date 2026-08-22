@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertification;
@@ -18,6 +19,11 @@ use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -41,6 +47,7 @@ class RejectCertificationTest extends TestCase
     public function testProcess(): void
     {
         $certificationId = new CertificationIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::TALENT,
@@ -63,10 +70,11 @@ class RejectCertificationTest extends TestCase
             ->andReturnNull();
 
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->registerOperatorAuthorization($principalIdentifier, true);
 
         $useCase = $this->app->make(RejectCertificationInterface::class);
 
-        $input = new RejectCertificationInput($certificationId);
+        $input = new RejectCertificationInput($certificationId, $principalIdentifier);
         $output = new RejectCertificationOutput();
 
         $useCase->process($input, $output);
@@ -89,7 +97,7 @@ class RejectCertificationTest extends TestCase
 
         $useCase = $this->app->make(RejectCertificationInterface::class);
 
-        $input = new RejectCertificationInput($certificationId);
+        $input = new RejectCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $output = new RejectCertificationOutput();
 
@@ -122,12 +130,54 @@ class RejectCertificationTest extends TestCase
 
         $useCase = $this->app->make(RejectCertificationInterface::class);
 
-        $input = new RejectCertificationInput($certificationId);
+        $input = new RejectCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $output = new RejectCertificationOutput();
 
         $this->expectException(OfficialCertificationInvalidStatusException::class);
 
         $useCase->process($input, $output);
+    }
+
+    public function testProcessWhenOperatorPolicyDenies(): void
+    {
+        $certificationId = new CertificationIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $certification = new OfficialCertification(
+            $certificationId,
+            ResourceType::TALENT,
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            CertificationStatus::PENDING,
+            new DateTimeImmutable(),
+            null,
+            null,
+        );
+
+        $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
+        $repository->shouldReceive('findById')->with($certificationId)->andReturn($certification);
+        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->registerOperatorAuthorization($principalIdentifier, false);
+
+        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $input = new RejectCertificationInput($certificationId, $principalIdentifier);
+        $output = new RejectCertificationOutput();
+
+        $this->expectException(DisallowedException::class);
+
+        $useCase->process($input, $output);
+    }
+
+    private function registerOperatorAuthorization(PrincipalIdentifier $principalIdentifier, bool $policyAllowed): void
+    {
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($policyAllowed);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

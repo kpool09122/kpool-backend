@@ -11,7 +11,7 @@ use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdenti
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
