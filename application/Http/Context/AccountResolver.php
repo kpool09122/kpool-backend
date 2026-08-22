@@ -20,6 +20,7 @@ use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -72,6 +73,7 @@ readonly class AccountResolver
             principal: $accountPrincipal,
             accountType: AccountType::from($account->type),
             accountPolicies: $this->effectivePolicies(array_values($roleIdentifiers)),
+            accountCategory: AccountCategory::from($account->category),
         );
     }
 

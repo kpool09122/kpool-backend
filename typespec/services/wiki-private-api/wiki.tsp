@@ -341,6 +341,24 @@ model SearchMasterWikisResponseBody {
   wikis: WikiMasterSearchItem[];
 }
 
+@doc("Response body for the current account owned wiki list endpoint.")
+model ListMyOwnedWikisResponseBody {
+  @doc("Category of the current account.")
+  accountCategory: "agency" | "talent" | "general";
+  @doc("Owned wikis whose resource type directly matches the current account category.")
+  primaryOwnedWikis: WikiListItem[];
+  @doc("Owned wikis whose resource type does not directly match the current account category for the requested page.")
+  otherOwnedWikis: WikiListItem[];
+  @doc("Current page number for other owned wikis.")
+  current_page: int32;
+  @doc("Last page number for other owned wikis.")
+  last_page: int32;
+  @doc("Total number of other owned wikis.")
+  total: int32;
+  @doc("Number of other owned wikis per page.")
+  per_page: int32;
+}
+
 @doc("Response body for the draft wiki list endpoint.")
 model ListDraftWikisResponseBody {
   @doc("Draft wikis for the requested page.")
@@ -377,6 +395,12 @@ model SearchMasterWikisResponse {
 model ListRelatedProfilesResponse {
   @statusCode statusCode: 200;
   @body body: ListRelatedProfilesResponseBody;
+}
+
+@doc("Response returned when current account owned wiki list retrieval succeeds.")
+model ListMyOwnedWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: ListMyOwnedWikisResponseBody;
 }
 
 @doc("Response returned when draft wiki list retrieval succeeds.")
@@ -419,6 +443,15 @@ interface WikiListOperations {
     @query sort?: "updatedAt" | "name" | "createdAt" | "version" | null,
     @query order?: string,
   ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/my/owned-wikis")
+interface MyOwnedWikiListOperations {
+  @get
+  @doc("List published wikis owned by the current account, grouped by account-category relevance.")
+  listMyOwnedWikis(
+    @query perPage?: int32,
+  ): ListMyOwnedWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/my/draft-wikis")

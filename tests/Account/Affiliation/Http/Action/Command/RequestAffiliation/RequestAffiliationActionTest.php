@@ -24,6 +24,7 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,7 +72,7 @@ class RequestAffiliationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldNotReceive('error');
 
-        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION, AccountCategory::AGENCY), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -103,7 +104,7 @@ class RequestAffiliationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION, AccountCategory::AGENCY), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -134,7 +135,7 @@ class RequestAffiliationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION), $logger);
+        $action = new RequestAffiliationAction($useCase, new AccountContext($principal, AccountType::CORPORATION, AccountCategory::AGENCY), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
