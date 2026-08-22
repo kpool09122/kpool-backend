@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
@@ -26,7 +27,6 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -51,7 +51,7 @@ class ApproveCertificationTest extends TestCase
     {
         $certificationId = new CertificationIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $certification = new OfficialCertification(
@@ -128,7 +128,7 @@ class ApproveCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::GROUP,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::APPROVED,
             new DateTimeImmutable(),
@@ -165,7 +165,7 @@ class ApproveCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::PENDING,
             new DateTimeImmutable(),

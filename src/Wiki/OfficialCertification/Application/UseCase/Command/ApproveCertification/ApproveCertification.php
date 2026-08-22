@@ -7,7 +7,6 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveC
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -44,23 +43,6 @@ readonly class ApproveCertification implements ApproveCertificationInterface
             throw new OfficialCertificationInvalidStatusException();
         }
 
-        $this->assertAllowed($input, $certification);
-
-        $certification->approve();
-
-        $this->repository->save($certification);
-
-        $this->resourceUpdater->markOfficial(
-            $certification->resourceType(),
-            $certification->wikiIdentifier(),
-            $certification->ownerAccountIdentifier(),
-        );
-
-        $output->setOfficialCertification($certification);
-    }
-
-    private function assertAllowed(ApproveCertificationInputPort $input, OfficialCertification $certification): void
-    {
         $principal = $this->principalRepository->findById($input->operatorPrincipalIdentifier());
         if ($principal === null) {
             throw new PrincipalNotFoundException();
@@ -73,5 +55,17 @@ readonly class ApproveCertification implements ApproveCertificationInterface
         )) {
             throw new DisallowedException();
         }
+
+        $certification->approve();
+
+        $this->repository->save($certification);
+
+        $this->resourceUpdater->markOfficial(
+            $certification->resourceType(),
+            $certification->translationSetIdentifier(),
+            $certification->ownerAccountIdentifier(),
+        );
+
+        $output->setOfficialCertification($certification);
     }
 }

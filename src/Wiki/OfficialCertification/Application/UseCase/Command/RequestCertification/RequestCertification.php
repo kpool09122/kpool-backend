@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
@@ -46,9 +47,10 @@ readonly class RequestCertification implements RequestCertificationInterface
             throw new PrincipalNotFoundException();
         }
 
-        $wiki = $this->wikiRepository->findById($input->wikiIdentifier());
+        $wikis = $this->wikiRepository->findByTranslationSetIdentifier($input->translationSetIdentifier());
         $account = $this->accountRepository->findById($input->ownerAccountIdentifier());
-        if ($wiki === null || $account === null || $wiki->resourceType() !== $input->resourceType()) {
+        $wiki = $this->representativeWiki($wikis, $input->resourceType());
+        if ($wiki === null || $account === null) {
             throw new DisallowedException();
         }
 
@@ -62,7 +64,7 @@ readonly class RequestCertification implements RequestCertificationInterface
 
         $existing = $this->repository->findByResource(
             $input->resourceType(),
-            $input->wikiIdentifier(),
+            $input->translationSetIdentifier(),
         );
 
         if ($existing !== null) {
@@ -71,13 +73,27 @@ readonly class RequestCertification implements RequestCertificationInterface
 
         $certification = $this->factory->create(
             $input->resourceType(),
-            $input->wikiIdentifier(),
+            $input->translationSetIdentifier(),
             $input->ownerAccountIdentifier(),
         );
 
         $this->repository->save($certification);
 
         $output->setOfficialCertification($certification);
+    }
+
+    /**
+     * @param Wiki[] $wikis
+     */
+    private function representativeWiki(array $wikis, ResourceType $resourceType): ?Wiki
+    {
+        foreach ($wikis as $wiki) {
+            if ($wiki->resourceType() === $resourceType) {
+                return $wiki;
+            }
+        }
+
+        return null;
     }
 
     private function authorizationResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier, mixed $basic, AccountCategory $ownerAccountCategory): Resource

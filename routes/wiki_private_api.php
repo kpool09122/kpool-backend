@@ -64,6 +64,7 @@ use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfi
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisAction;
+use Application\Http\Action\Wiki\Wiki\Query\SearchTranslationSetMasterWikis\SearchTranslationSetMasterWikisAction;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
@@ -82,6 +83,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 });
 Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class)->middleware('auth.api');
+Route::get('/wiki-translation-sets/masters', SearchTranslationSetMasterWikisAction::class)->middleware('auth.api');
 Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/my/owned-wikis', ListMyOwnedWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.account']);

@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInterface;
@@ -21,7 +22,6 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertifi
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -44,7 +44,7 @@ readonly class RequestCertificationAction
             try {
                 $input = new RequestCertificationInput(
                     ResourceType::from($request->resourceType()),
-                    new WikiIdentifier($request->wikiId()),
+                    new TranslationSetIdentifier($request->translationSetIdentifier()),
                     $this->accountContext->principal()->accountIdentifier(),
                     $this->wikiContext->principalIdentifier,
                 );

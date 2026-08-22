@@ -16,7 +16,7 @@ class RejectCertificationOutput implements RejectCertificationOutputPort
     }
 
     /**
-     * @return array{certificationIdentifier: ?string, resourceType: ?string, wikiIdentifier: ?string, status: ?string}
+     * @return array{certificationIdentifier: ?string, resourceType: ?string, translationSetIdentifier: ?string, status: ?string}
      */
     public function toArray(): array
     {
@@ -24,7 +24,7 @@ class RejectCertificationOutput implements RejectCertificationOutputPort
             return [
                 'certificationIdentifier' => null,
                 'resourceType' => null,
-                'wikiIdentifier' => null,
+                'translationSetIdentifier' => null,
                 'status' => null,
             ];
         }
@@ -32,7 +32,7 @@ class RejectCertificationOutput implements RejectCertificationOutputPort
         return [
             'certificationIdentifier' => (string) $this->officialCertification->certificationIdentifier(),
             'resourceType' => $this->officialCertification->resourceType()->value,
-            'wikiIdentifier' => (string) $this->officialCertification->wikiIdentifier(),
+            'translationSetIdentifier' => (string) $this->officialCertification->translationSetIdentifier(),
             'status' => $this->officialCertification->status()->value,
         ];
     }

@@ -11,7 +11,7 @@ interface ApproveCertificationOutputPort
     public function setOfficialCertification(OfficialCertification $officialCertification): void;
 
     /**
-     * @return array{certificationIdentifier: ?string, resourceType: ?string, wikiIdentifier: ?string, status: ?string}
+     * @return array{certificationIdentifier: ?string, resourceType: ?string, translationSetIdentifier: ?string, status: ?string}
      */
     public function toArray(): array;
 }

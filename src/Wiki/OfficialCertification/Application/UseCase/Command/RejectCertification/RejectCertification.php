@@ -6,7 +6,6 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCe
 
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -42,17 +41,6 @@ readonly class RejectCertification implements RejectCertificationInterface
             throw new OfficialCertificationInvalidStatusException();
         }
 
-        $this->assertAllowed($input, $certification);
-
-        $certification->reject();
-
-        $this->repository->save($certification);
-
-        $output->setOfficialCertification($certification);
-    }
-
-    private function assertAllowed(RejectCertificationInputPort $input, OfficialCertification $certification): void
-    {
         $principal = $this->principalRepository->findById($input->operatorPrincipalIdentifier());
         if ($principal === null) {
             throw new PrincipalNotFoundException();
@@ -65,5 +53,11 @@ readonly class RejectCertification implements RejectCertificationInterface
         )) {
             throw new DisallowedException();
         }
+
+        $certification->reject();
+
+        $this->repository->save($certification);
+
+        $output->setOfficialCertification($certification);
     }
 }
