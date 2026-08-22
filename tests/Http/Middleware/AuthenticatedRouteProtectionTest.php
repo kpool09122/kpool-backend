@@ -187,6 +187,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki current principal resolves actor' => ['GET', '/api/wiki/principal/me', ['resolve.actor']],
+            'wiki update principal group members resolves actor, account and wiki' => ['PATCH', '/api/wiki/principal-groups/members', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
             'wiki image upload resolves actor and wiki' => ['POST', '/api/wiki/image/upload', ['resolve.actor', 'resolve.wiki']],
             'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],
             'wiki video link resolves actor and wiki' => ['POST', '/api/wiki/video-link/save', ['resolve.actor', 'resolve.wiki']],

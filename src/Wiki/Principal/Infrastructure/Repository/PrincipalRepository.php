@@ -29,8 +29,8 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     }
 
     /**
-     * @param PrincipalIdentifier[] $principalIdentifiers
-     * @return Principal[]
+     * @param array<int, PrincipalIdentifier> $principalIdentifiers
+     * @return array<string, Principal>
      */
     public function findByIds(array $principalIdentifiers): array
     {
@@ -47,7 +47,12 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ->whereIn('id', $ids)
             ->get();
 
-        return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+        $result = [];
+        foreach ($eloquents as $eloquent) {
+            $result[$eloquent->id] = $this->toDomainEntity($eloquent);
+        }
+
+        return $result;
     }
 
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal

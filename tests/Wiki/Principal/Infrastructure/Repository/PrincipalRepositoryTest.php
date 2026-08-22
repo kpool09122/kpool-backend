@@ -359,14 +359,12 @@ class PrincipalRepositoryTest extends TestCase
 
         $this->assertCount(3, $results);
         $this->assertContainsOnlyInstancesOf(Principal::class, $results);
-
-        $resultIds = array_map(
-            fn (Principal $principal) => (string) $principal->principalIdentifier(),
-            $results
-        );
-        $this->assertContains((string) $principalIdentifier1, $resultIds);
-        $this->assertContains((string) $principalIdentifier2, $resultIds);
-        $this->assertContains((string) $principalIdentifier3, $resultIds);
+        $this->assertArrayHasKey((string) $principalIdentifier1, $results);
+        $this->assertArrayHasKey((string) $principalIdentifier2, $results);
+        $this->assertArrayHasKey((string) $principalIdentifier3, $results);
+        $this->assertSame((string) $principalIdentifier1, (string) $results[(string) $principalIdentifier1]->principalIdentifier());
+        $this->assertSame((string) $principalIdentifier2, (string) $results[(string) $principalIdentifier2]->principalIdentifier());
+        $this->assertSame((string) $principalIdentifier3, (string) $results[(string) $principalIdentifier3]->principalIdentifier());
     }
 
     /**
@@ -410,6 +408,8 @@ class PrincipalRepositoryTest extends TestCase
         $results = $repository->findByIds([$existingPrincipalId, $nonExistingPrincipalId]);
 
         $this->assertCount(1, $results);
-        $this->assertSame((string) $existingPrincipalId, (string) $results[0]->principalIdentifier());
+        $this->assertArrayHasKey((string) $existingPrincipalId, $results);
+        $this->assertArrayNotHasKey((string) $nonExistingPrincipalId, $results);
+        $this->assertSame((string) $existingPrincipalId, (string) $results[(string) $existingPrincipalId]->principalIdentifier());
     }
 }

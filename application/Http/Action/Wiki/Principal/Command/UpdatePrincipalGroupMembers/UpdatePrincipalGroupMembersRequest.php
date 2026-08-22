@@ -18,7 +18,7 @@ class UpdatePrincipalGroupMembersRequest extends FormRequest
             'principalGroups' => ['required', 'array'],
             'principalGroups.*.principalGroupIdentifier' => ['required', 'uuid', 'distinct'],
             'principalGroups.*.principalIdentifiers' => ['present', 'array'],
-            'principalGroups.*.principalIdentifiers.*' => ['required', 'uuid', 'distinct'],
+            'principalGroups.*.principalIdentifiers.*' => ['required', 'uuid'],
         ];
     }
 
