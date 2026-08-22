@@ -11,9 +11,12 @@ use Application\Models\Wiki\DraftWikiSongBasic;
 use Application\Models\Wiki\DraftWikiTalentBasic;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -40,6 +43,7 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PrincipalWikiScopeResolverInterface $principalWikiScopeResolver,
     ) {
     }
 
@@ -49,6 +53,11 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
      */
     public function process(ListDraftWikisInputPort $input, ListDraftWikisOutputPort $output): void
     {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
+
         $query = DraftWiki::query()
             ->with([
                 'image',
@@ -75,10 +84,12 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             $query->whereIn('draft_wikis.resource_type', array_keys(self::BASIC_RELATIONS));
         }
 
+        $this->applyReadableScope($query, $principal);
+
         /** @var LengthAwarePaginator<int, DraftWiki> $paginator */
         $paginator = $query->paginate($input->perPage());
 
-        $this->authorize($input, $paginator->items());
+        $this->authorize($principal, $paginator->items());
 
         $output->output(
             array_map(
@@ -95,20 +106,124 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
     /**
      * @param DraftWiki[] $wikis
      * @throws DisallowedException
-     * @throws PrincipalNotFoundException
      */
-    private function authorize(ListDraftWikisInputPort $input, array $wikis): void
+    private function authorize(Principal $principal, array $wikis): void
     {
-        $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null) {
-            throw new PrincipalNotFoundException();
-        }
-
         foreach ($wikis as $wiki) {
             if (! $this->policyEvaluator->evaluate($principal, Action::READ, $this->toResource($wiki))) {
                 throw new DisallowedException();
             }
         }
+    }
+
+    /**
+     * @param Builder<DraftWiki> $query
+     */
+    private function applyReadableScope(Builder $query, Principal $principal): void
+    {
+        if ($this->canReadAllSupportedResourceTypes($principal)) {
+            return;
+        }
+
+        $agencyWikiIdentifiers = $this->uniqueStrings($this->principalWikiScopeResolver->agencyWikiIdentifiers($principal));
+        $groupWikiIdentifiers = $this->uniqueStrings($this->principalWikiScopeResolver->groupWikiIdentifiers($principal));
+        $talentWikiIdentifiers = $this->uniqueStrings([
+            ...$this->principalWikiScopeResolver->talentWikiIdentifiers($principal),
+            ...$this->principalWikiScopeResolver->affiliatedTalentWikiIdentifiers($principal),
+        ]);
+        $readableGroupWikiIdentifiers = $this->uniqueStrings([
+            ...$groupWikiIdentifiers,
+            ...$this->principalWikiScopeResolver->talentGroupWikiIdentifiers($principal),
+        ]);
+
+        if (
+            empty($agencyWikiIdentifiers)
+            && empty($readableGroupWikiIdentifiers)
+            && empty($talentWikiIdentifiers)
+        ) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where(function (Builder $query) use (
+            $agencyWikiIdentifiers,
+            $readableGroupWikiIdentifiers,
+            $talentWikiIdentifiers,
+        ): void {
+            if (! empty($agencyWikiIdentifiers)) {
+                $query->orWhere(function (Builder $query) use ($agencyWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::AGENCY->value)
+                        ->whereIn('draft_wikis.id', $agencyWikiIdentifiers);
+                });
+
+                $query->orWhere(function (Builder $query) use ($agencyWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::GROUP->value)
+                        ->whereHas('groupBasic', function (Builder $query) use ($agencyWikiIdentifiers): void {
+                            $query->whereIn('agency_identifier', $agencyWikiIdentifiers);
+                        });
+                });
+
+                $query->orWhere(function (Builder $query) use ($agencyWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::SONG->value)
+                        ->whereHas('songBasic', function (Builder $query) use ($agencyWikiIdentifiers): void {
+                            $query->whereIn('agency_identifier', $agencyWikiIdentifiers);
+                        });
+                });
+            }
+
+            if (! empty($readableGroupWikiIdentifiers)) {
+                $query->orWhere(function (Builder $query) use ($readableGroupWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::GROUP->value)
+                        ->whereIn('draft_wikis.id', $readableGroupWikiIdentifiers);
+                });
+
+                $query->orWhere(function (Builder $query) use ($readableGroupWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::SONG->value)
+                        ->whereHas('songBasic.groups', function (Builder $query) use ($readableGroupWikiIdentifiers): void {
+                            $query->whereIn('wikis.id', $readableGroupWikiIdentifiers);
+                        });
+                });
+            }
+
+            if (! empty($talentWikiIdentifiers)) {
+                $query->orWhere(function (Builder $query) use ($talentWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::TALENT->value)
+                        ->whereIn('draft_wikis.id', $talentWikiIdentifiers);
+                });
+
+                $query->orWhere(function (Builder $query) use ($talentWikiIdentifiers): void {
+                    $query->where('draft_wikis.resource_type', ResourceType::SONG->value)
+                        ->whereHas('songBasic.talents', function (Builder $query) use ($talentWikiIdentifiers): void {
+                            $query->whereIn('wikis.id', $talentWikiIdentifiers);
+                        });
+                });
+            }
+        });
+    }
+
+    private function canReadAllSupportedResourceTypes(Principal $principal): bool
+    {
+        foreach (array_keys(self::BASIC_RELATIONS) as $resourceType) {
+            if (! $this->policyEvaluator->evaluate(
+                $principal,
+                Action::READ,
+                new Resource(ResourceType::from($resourceType)),
+            )) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string[] $values
+     * @return string[]
+     */
+    private function uniqueStrings(array $values): array
+    {
+        return array_values(array_unique($values));
     }
 
     private function toResource(DraftWiki $wiki): Resource

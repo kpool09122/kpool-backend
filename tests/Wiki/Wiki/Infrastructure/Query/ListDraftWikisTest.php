@@ -8,6 +8,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -221,14 +222,16 @@ class ListDraftWikisTest extends TestCase
         $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
-            ->once()
-            ->with($principal, Action::READ, Mockery::on(
-                static fn (Resource $resource): bool => $resource->type() === ResourceType::GROUP
-                    && $resource->agencyId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f714'
-                    && $resource->groupIds() === ['01965bb2-bcc9-7c6f-8b90-89f7f217f611']
-                    && $resource->editorId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f713'
-            ))
-            ->andReturn(true);
+            ->with($principal, Action::READ, Mockery::type(Resource::class))
+            ->andReturnUsing(static function (Principal $principal, Action $action, Resource $resource): bool {
+                return $resource->agencyId() === null
+                    || (
+                        $resource->type() === ResourceType::GROUP
+                        && $resource->agencyId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f714'
+                        && $resource->groupIds() === ['01965bb2-bcc9-7c6f-8b90-89f7f217f611']
+                        && $resource->editorId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f713'
+                    );
+            });
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
@@ -239,6 +242,64 @@ class ListDraftWikisTest extends TestCase
 
         $this->assertSame(1, $payload['total']);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f611', $payload['wikis'][0]['wikiIdentifier']);
+    }
+
+    #[Group('useDb')]
+    public function testProcessFiltersDraftWikisByReadableScopeBeforePagination(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f741');
+        $principal = new Principal(
+            $principalIdentifier,
+            new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f742'),
+        );
+
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f641', 'group', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'edited_at' => '2026-05-02 00:00:00',
+        ], [
+            'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f743',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f642', 'group', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'edited_at' => '2026-05-03 00:00:00',
+        ], [
+            'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f744',
+        ]);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+
+        $principalWikiScopeResolver = Mockery::mock(PrincipalWikiScopeResolverInterface::class);
+        $principalWikiScopeResolver->shouldReceive('agencyWikiIdentifiers')
+            ->once()
+            ->with($principal)
+            ->andReturn(['01965bb2-bcc9-7c6f-8b90-89f7f217f743']);
+        $principalWikiScopeResolver->shouldReceive('groupWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('talentWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('affiliatedTalentWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('talentGroupWikiIdentifiers')->once()->with($principal)->andReturn([]);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->with($principal, Action::READ, Mockery::type(Resource::class))
+            ->andReturnUsing(static function (Principal $principal, Action $action, Resource $resource): bool {
+                return $resource->type() === ResourceType::GROUP
+                    && $resource->agencyId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f743';
+            });
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $payload = $this->process(new ListDraftWikisInput(
+            statuses: [ApprovalStatus::UnderReview],
+            principalIdentifier: $principalIdentifier,
+        ))->toArray();
+
+        $this->assertSame(1, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f641',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
     }
 
     #[Group('useDb')]
@@ -256,9 +317,19 @@ class ListDraftWikisTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $principalWikiScopeResolver = Mockery::mock(PrincipalWikiScopeResolverInterface::class);
+        $principalWikiScopeResolver->shouldReceive('agencyWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('groupWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('talentWikiIdentifiers')
+            ->once()
+            ->with($principal)
+            ->andReturn(['01965bb2-bcc9-7c6f-8b90-89f7f217f621']);
+        $principalWikiScopeResolver->shouldReceive('affiliatedTalentWikiIdentifiers')->once()->with($principal)->andReturn([]);
+        $principalWikiScopeResolver->shouldReceive('talentGroupWikiIdentifiers')->once()->with($principal)->andReturn([]);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $policyEvaluator->shouldReceive('evaluate')->twice()->andReturn(false);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $this->expectException(DisallowedException::class);
