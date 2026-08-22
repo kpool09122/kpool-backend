@@ -18,8 +18,8 @@ use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAf
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 readonly class ListAffiliations implements ListAffiliationsInterface
 {

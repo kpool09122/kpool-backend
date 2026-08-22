@@ -7,8 +7,8 @@ namespace Tests\Account\Account\Application\UseCase\Query;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Tests\Helper\StrTestHelper;
 
 class AccountReadModelTest extends TestCase

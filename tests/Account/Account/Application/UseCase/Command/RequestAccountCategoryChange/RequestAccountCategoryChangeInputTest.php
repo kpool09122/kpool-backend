@@ -7,8 +7,8 @@ namespace Tests\Account\Account\Application\UseCase\Command\RequestAccountCatego
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInput;
 use Source\Account\Principal\Domain\Entity\Principal;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;

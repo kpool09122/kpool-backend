@@ -28,11 +28,11 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
