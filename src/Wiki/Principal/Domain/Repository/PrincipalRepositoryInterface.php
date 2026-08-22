@@ -15,8 +15,8 @@ interface PrincipalRepositoryInterface
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal;
 
     /**
-     * @param PrincipalIdentifier[] $principalIdentifiers
-     * @return Principal[]
+     * @param array<int, PrincipalIdentifier> $principalIdentifiers
+     * @return array<string, Principal>
      */
     public function findByIds(array $principalIdentifiers): array;
 
