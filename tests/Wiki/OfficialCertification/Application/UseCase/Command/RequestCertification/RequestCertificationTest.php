@@ -12,6 +12,7 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInput;
@@ -57,7 +58,7 @@ class RequestCertificationTest extends TestCase
     public function testProcess(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $certification = new OfficialCertification(
@@ -112,7 +113,7 @@ class RequestCertificationTest extends TestCase
 
     public function testProcessWhenAlreadyRequested(): void
     {
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $existing = new OfficialCertification(
@@ -156,7 +157,7 @@ class RequestCertificationTest extends TestCase
 
     public function testProcessWhenAccountCategoryDoesNotMatchResourceType(): void
     {
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
@@ -177,7 +178,7 @@ class RequestCertificationTest extends TestCase
 
     public function testProcessWhenPolicyDenies(): void
     {
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
@@ -197,7 +198,7 @@ class RequestCertificationTest extends TestCase
     }
 
     private function registerAuthorizationDependencies(
-        WikiIdentifier $wikiId,
+        TranslationSetIdentifier $wikiId,
         AccountIdentifier $ownerAccountIdentifier,
         PrincipalIdentifier $principalIdentifier,
         AccountCategory $accountCategory,
@@ -209,14 +210,14 @@ class RequestCertificationTest extends TestCase
 
         $wiki = Mockery::mock(Wiki::class);
         $wiki->shouldReceive('resourceType')->andReturn($wikiResourceType);
-        $wiki->shouldReceive('wikiIdentifier')->andReturn($wikiId);
+        $wiki->shouldReceive('wikiIdentifier')->andReturn(new WikiIdentifier(StrTestHelper::generateUuid()));
         $wiki->shouldReceive('basic')->andReturn(Mockery::mock(BasicInterface::class));
 
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         $accountRepository->shouldReceive('findById')->with($ownerAccountIdentifier)->andReturn($account);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')->with($wikiId)->andReturn($wiki);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')->with($wikiId)->andReturn([$wiki]);
 
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);

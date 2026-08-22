@@ -6,13 +6,13 @@ namespace Tests\Wiki\OfficialCertification\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForApprovalException;
 use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForRejectionException;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class OfficialCertificationTest extends TestCase
     {
         $certificationIdentifier = new CertificationIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::AGENCY;
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $certificationStatus = CertificationStatus::REJECTED;
         $requestedAt = new DateTimeImmutable();
@@ -36,7 +36,7 @@ class OfficialCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationIdentifier,
             $resourceType,
-            $wikiIdentifier,
+            $translationSetIdentifier,
             $accountIdentifier,
             $certificationStatus,
             $requestedAt,
@@ -45,7 +45,7 @@ class OfficialCertificationTest extends TestCase
         );
         $this->assertSame($certificationIdentifier, $certification->certificationIdentifier());
         $this->assertSame($resourceType, $certification->resourceType());
-        $this->assertSame($wikiIdentifier, $certification->wikiIdentifier());
+        $this->assertSame($translationSetIdentifier, $certification->translationSetIdentifier());
         $this->assertSame($accountIdentifier, $certification->ownerAccountIdentifier());
         $this->assertSame($certificationStatus, $certification->status());
         $this->assertSame($requestedAt, $certification->requestedAt());
@@ -93,7 +93,7 @@ class OfficialCertificationTest extends TestCase
         $certification = new OfficialCertification(
             new CertificationIdentifier(StrTestHelper::generateUuid()),
             ResourceType::AGENCY,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::APPROVED,
             new DateTimeImmutable(),
@@ -116,7 +116,7 @@ class OfficialCertificationTest extends TestCase
         $certification = new OfficialCertification(
             new CertificationIdentifier(StrTestHelper::generateUuid()),
             ResourceType::AGENCY,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::REJECTED,
             new DateTimeImmutable(),
@@ -134,7 +134,7 @@ class OfficialCertificationTest extends TestCase
         return new OfficialCertification(
             new CertificationIdentifier(StrTestHelper::generateUuid()),
             ResourceType::GROUP,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::PENDING,
             new DateTimeImmutable(),

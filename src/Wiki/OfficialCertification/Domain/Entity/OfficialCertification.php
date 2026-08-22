@@ -6,19 +6,19 @@ namespace Source\Wiki\OfficialCertification\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForApprovalException;
 use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForRejectionException;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class OfficialCertification
 {
     public function __construct(
         private readonly CertificationIdentifier $certificationIdentifier,
         private readonly ResourceType            $resourceType,
-        private readonly WikiIdentifier          $wikiIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly AccountIdentifier       $ownerAccountIdentifier,
         private CertificationStatus              $status,
         private readonly DateTimeImmutable       $requestedAt,
@@ -37,9 +37,9 @@ class OfficialCertification
         return $this->resourceType;
     }
 
-    public function wikiIdentifier(): WikiIdentifier
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->wikiIdentifier;
+        return $this->translationSetIdentifier;
     }
 
     public function ownerAccountIdentifier(): AccountIdentifier

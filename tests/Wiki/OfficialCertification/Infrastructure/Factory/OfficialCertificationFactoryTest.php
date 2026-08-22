@@ -7,11 +7,11 @@ namespace Tests\Wiki\OfficialCertification\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\OfficialCertification\Infrastructure\Factory\OfficialCertificationFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,19 +36,19 @@ class OfficialCertificationFactoryTest extends TestCase
     public function testCreate(): void
     {
         $resourceType = ResourceType::GROUP;
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(OfficialCertificationFactoryInterface::class);
         $certification = $factory->create(
             $resourceType,
-            $wikiIdentifier,
+            $translationSetIdentifier,
             $ownerAccountIdentifier,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $certification->certificationIdentifier()));
         $this->assertSame($resourceType, $certification->resourceType());
-        $this->assertSame((string) $wikiIdentifier, (string) $certification->wikiIdentifier());
+        $this->assertSame((string) $translationSetIdentifier, (string) $certification->translationSetIdentifier());
         $this->assertSame((string) $ownerAccountIdentifier, (string) $certification->ownerAccountIdentifier());
         $this->assertTrue($certification->status()->isPending());
         $this->assertSame(CertificationStatus::PENDING, $certification->status());

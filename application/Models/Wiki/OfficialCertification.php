@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $resource_type
- * @property string $wiki_id
+ * @property string $translation_set_identifier
  * @property string $owner_account_id
  * @property string $status
  * @property Carbon $requested_at
@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'resource_type',
-    'wiki_id',
+    'translation_set_identifier',
     'owner_account_id',
     'status',
     'requested_at',

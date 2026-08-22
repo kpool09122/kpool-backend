@@ -7,8 +7,8 @@ namespace KPool.WikiPrivateApi;
 model RequestCertificationRequestBody {
   @doc("Resource type that the certification belongs to.")
   resourceType: string;
-  @doc("Wiki identifier to certify.")
-  wikiId: Uuid;
+  @doc("Translation set identifier to certify.")
+  translationSetIdentifier: Uuid;
 }
 
 @doc("Response returned when an official certification request is created.")

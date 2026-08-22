@@ -18,7 +18,7 @@ class RequestCertificationRequest extends FormRequest
     {
         return [
             'resourceType' => ['required', 'string'],
-            'wikiId' => ['required', 'uuid'],
+            'translationSetIdentifier' => ['required', 'uuid'],
         ];
     }
 
@@ -27,8 +27,8 @@ class RequestCertificationRequest extends FormRequest
         return (string) $this->input('resourceType');
     }
 
-    public function wikiId(): string
+    public function translationSetIdentifier(): string
     {
-        return (string) $this->input('wikiId');
+        return (string) $this->input('translationSetIdentifier');
     }
 }

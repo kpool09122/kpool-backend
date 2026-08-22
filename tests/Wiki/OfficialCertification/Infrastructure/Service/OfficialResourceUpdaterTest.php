@@ -36,20 +36,20 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::AGENCY);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')
             ->once()
             ->with($wiki)
-            ->andReturnNull();
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::AGENCY, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::AGENCY, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -68,20 +68,20 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::GROUP);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')
             ->once()
             ->with($wiki)
-            ->andReturnNull();
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::GROUP, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -100,20 +100,20 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::TALENT);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')
             ->once()
             ->with($wiki)
-            ->andReturnNull();
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::TALENT, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::TALENT, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -132,20 +132,20 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::SONG);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')
             ->once()
             ->with($wiki)
-            ->andReturnNull();
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::SONG, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::SONG, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -164,17 +164,17 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::GROUP, $owner);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::GROUP, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
     }
@@ -191,17 +191,17 @@ class OfficialResourceUpdaterTest extends TestCase
         $owner = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturnNull();
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([]);
         $wikiRepository->shouldReceive('save')->never();
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::AGENCY, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::AGENCY, new TranslationSetIdentifier($wikiId), $owner);
     }
 
     /**
@@ -216,17 +216,17 @@ class OfficialResourceUpdaterTest extends TestCase
         $owner = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturnNull();
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([]);
         $wikiRepository->shouldReceive('save')->never();
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::TALENT, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::TALENT, new TranslationSetIdentifier($wikiId), $owner);
     }
 
     /**
@@ -242,17 +242,17 @@ class OfficialResourceUpdaterTest extends TestCase
         $wiki = $this->createWiki($wikiId, ResourceType::SONG, $owner);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $wikiId))
-            ->andReturn($wiki);
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::SONG, new WikiIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::SONG, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
     }

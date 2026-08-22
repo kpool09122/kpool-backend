@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Infrastructure\Service;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class OfficialResourceUpdater implements OfficialResourceUpdaterInterface
 {
@@ -19,14 +19,17 @@ readonly class OfficialResourceUpdater implements OfficialResourceUpdaterInterfa
 
     public function markOfficial(
         ResourceType $type,
-        WikiIdentifier $id,
+        TranslationSetIdentifier $id,
         AccountIdentifier $owner,
     ): void {
-        $wiki = $this->wikiRepository->findById($id);
-        if ($wiki === null || $wiki->isOfficial()) {
-            return;
+        $wikis = $this->wikiRepository->findByTranslationSetIdentifier($id);
+        foreach ($wikis as $wiki) {
+            if ($wiki->resourceType() !== $type || $wiki->isOfficial()) {
+                continue;
+            }
+
+            $wiki->markOfficial($owner);
+            $this->wikiRepository->save($wiki);
         }
-        $wiki->markOfficial($owner);
-        $this->wikiRepository->save($wiki);
     }
 }

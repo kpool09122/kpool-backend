@@ -335,6 +335,35 @@ model ListWikisResponseBody {
   per_page: int32;
 }
 
+
+@doc("Wiki item included in a translation set master search candidate.")
+model TranslationSetMasterSearchWikiItem {
+  @doc("Wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Display name of the wiki master.")
+  name: string;
+  @doc("Unique slug for the wiki.")
+  slug: string;
+}
+
+@doc("Translation set master search candidate returned by the official certification master search endpoint.")
+model TranslationSetMasterSearchItem {
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Wikis in the translation set, across all languages.")
+  wikis: TranslationSetMasterSearchWikiItem[];
+}
+
+@doc("Response body for the translation set master search endpoint.")
+model SearchTranslationSetMasterWikisResponseBody {
+  @doc("Candidate translation set master wikis.")
+  translationSetMasters: TranslationSetMasterSearchItem[];
+}
+
 @doc("Response body for the wiki master search endpoint.")
 model SearchMasterWikisResponseBody {
   @doc("Candidate master wikis.")
@@ -391,6 +420,13 @@ model SearchMasterWikisResponse {
   @body body: SearchMasterWikisResponseBody;
 }
 
+
+@doc("Response returned when translation set master search succeeds.")
+model SearchTranslationSetMasterWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: SearchTranslationSetMasterWikisResponseBody;
+}
+
 @doc("Response returned when related profile retrieval succeeds.")
 model ListRelatedProfilesResponse {
   @statusCode statusCode: 200;
@@ -443,6 +479,19 @@ interface WikiListOperations {
     @query sort?: "updatedAt" | "name" | "createdAt" | "version" | null,
     @query order?: string,
   ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+
+@route("/wiki-translation-sets")
+interface WikiTranslationSetOperations {
+  @get
+  @route("/masters")
+  @doc("Search wiki masters grouped by translation set for official certification requests.")
+  searchTranslationSetMasterWikis(
+    @query resourceType: "agency" | "group" | "talent" | "song",
+    @query keyword: string,
+    @query limit?: int32,
+  ): SearchTranslationSetMasterWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/my/owned-wikis")
