@@ -117,7 +117,8 @@ Route::middleware('auth.api')->group(function () {
     Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
-    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
+    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class)
+        ->middleware(['resolve.actor', 'resolve.account', 'resolve.wiki']);
     Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
     Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
