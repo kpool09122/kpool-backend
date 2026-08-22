@@ -6,11 +6,16 @@ namespace Tests\Wiki\OfficialCertification\Http\Action\Command\RequestCertificat
 
 use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationRequest;
+use Application\Http\Context\AccountContext;
+use Application\Http\Context\WikiContext;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInterface;
@@ -18,6 +23,7 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertifi
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -75,7 +81,7 @@ class RequestCertificationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldNotReceive('error');
 
-        $action = new RequestCertificationAction($useCase, $logger);
+        $action = new RequestCertificationAction($useCase, $this->accountContext(), $this->wikiContext(), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -112,7 +118,7 @@ class RequestCertificationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RequestCertificationAction($useCase, $logger);
+        $action = new RequestCertificationAction($useCase, $this->accountContext(), $this->wikiContext(), $logger);
 
         $response = $action($request);
         /** @var array<string, mixed> $payload */
@@ -120,5 +126,22 @@ class RequestCertificationActionTest extends TestCase
 
         $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
         $this->assertSame(error_message('official_certification_already_requested', 'en'), $payload['detail']);
+    }
+
+    private function accountContext(): AccountContext
+    {
+        return new AccountContext(
+            new AccountPrincipal(
+                new \Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier(StrTestHelper::generateUuid()),
+                new IdentityIdentifier(StrTestHelper::generateUuid()),
+                new AccountIdentifier(StrTestHelper::generateUuid()),
+            ),
+            AccountType::INDIVIDUAL,
+        );
+    }
+
+    private function wikiContext(): WikiContext
+    {
+        return new WikiContext(new PrincipalIdentifier(StrTestHelper::generateUuid()));
     }
 }

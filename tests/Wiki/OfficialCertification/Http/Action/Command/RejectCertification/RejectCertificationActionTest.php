@@ -6,6 +6,7 @@ namespace Tests\Wiki\OfficialCertification\Http\Action\Command\RejectCertificati
 
 use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationRequest;
+use Application\Http\Context\WikiContext;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Mockery;
@@ -19,6 +20,7 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertific
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -73,7 +75,7 @@ class RejectCertificationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldNotReceive('error');
 
-        $action = new RejectCertificationAction($useCase, $logger);
+        $action = new RejectCertificationAction($useCase, $this->wikiContext(), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -108,7 +110,7 @@ class RejectCertificationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RejectCertificationAction($useCase, $logger);
+        $action = new RejectCertificationAction($useCase, $this->wikiContext(), $logger);
 
         $response = $action($request);
         /** @var array<string, mixed> $payload */
@@ -141,7 +143,7 @@ class RejectCertificationActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new RejectCertificationAction($useCase, $logger);
+        $action = new RejectCertificationAction($useCase, $this->wikiContext(), $logger);
 
         $response = $action($request);
         /** @var array<string, mixed> $payload */
@@ -149,5 +151,10 @@ class RejectCertificationActionTest extends TestCase
 
         $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
         $this->assertSame(error_message('official_certification_invalid_status', 'en'), $payload['detail']);
+    }
+
+    private function wikiContext(): WikiContext
+    {
+        return new WikiContext(new PrincipalIdentifier(StrTestHelper::generateUuid()));
     }
 }

@@ -22,5 +22,8 @@ enum Action: string
     case DELETE = 'delete';
     case HIDE = 'hide';
     case UNHIDE = 'unhide';
+    case OFFICIAL_CERTIFICATION_REQUEST = 'official_certification_request';
+    case OFFICIAL_CERTIFICATION_APPROVE = 'official_certification_approve';
+    case OFFICIAL_CERTIFICATION_REJECT = 'official_certification_reject';
     case PRINCIPAL_GROUP_MANAGE = 'principal-group-manage';
 }

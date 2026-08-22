@@ -19,7 +19,6 @@ class RequestCertificationRequest extends FormRequest
         return [
             'resourceType' => ['required', 'string'],
             'wikiId' => ['required', 'uuid'],
-            'ownerAccountId' => ['required', 'uuid'],
         ];
     }
 
@@ -31,10 +30,5 @@ class RequestCertificationRequest extends FormRequest
     public function wikiId(): string
     {
         return (string) $this->input('wikiId');
-    }
-
-    public function ownerAccountId(): string
-    {
-        return (string) $this->input('ownerAccountId');
     }
 }

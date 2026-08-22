@@ -642,6 +642,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OfficialCertificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '409':
           description: The request conflicts with the current state of the server.
           content:
@@ -683,6 +695,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OfficialCertificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -724,6 +748,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OfficialCertificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4248,7 +4284,6 @@ components:
       required:
         - resourceType
         - wikiId
-        - ownerAccountId
       properties:
         resourceType:
           type: string
@@ -4257,10 +4292,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier to certify.
-        ownerAccountId:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Owner account identifier for the certification.
       description: Request body for creating an official certification request.
     RequestImageDeletionRequestBody:
       type: object

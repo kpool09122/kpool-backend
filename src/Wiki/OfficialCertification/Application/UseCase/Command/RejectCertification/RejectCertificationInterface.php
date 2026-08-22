@@ -6,6 +6,8 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCe
 
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 
 interface RejectCertificationInterface
 {
@@ -15,6 +17,8 @@ interface RejectCertificationInterface
      * @return void
      * @throws OfficialCertificationNotFoundException
      * @throws OfficialCertificationInvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function process(RejectCertificationInputPort $input, RejectCertificationOutputPort $output): void;
 }

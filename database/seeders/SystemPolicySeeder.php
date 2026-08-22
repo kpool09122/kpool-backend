@@ -31,6 +31,7 @@ class SystemPolicySeeder extends Seeder
         $this->createOwnWikiActionPolicies();
         $this->createAgencyScopeActionPolicies();
         $this->createTalentScopeActionPolicies();
+        $this->createOfficialCertificationRequestPolicies();
         $this->createDenyAgencyActionPolicies();
         $this->createDenyRollbackPolicy();
     }
@@ -104,6 +105,25 @@ class SystemPolicySeeder extends Seeder
                 condition: $this->talentCondition(),
             );
         }
+    }
+
+    private function createOfficialCertificationRequestPolicies(): void
+    {
+        $this->createPolicy(
+            name: 'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
+            effect: Effect::ALLOW,
+            action: Action::OFFICIAL_CERTIFICATION_REQUEST,
+            resourceTypes: [ResourceType::AGENCY],
+            condition: $this->agencyCondition(),
+        );
+
+        $this->createPolicy(
+            name: 'TALENT_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
+            effect: Effect::ALLOW,
+            action: Action::OFFICIAL_CERTIFICATION_REQUEST,
+            resourceTypes: [ResourceType::TALENT],
+            condition: $this->talentCondition(),
+        );
     }
 
     private function createDenyAgencyActionPolicies(): void

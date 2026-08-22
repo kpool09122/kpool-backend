@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ConflictHttpException;
+use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -18,6 +20,8 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertific
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertificationInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertificationOutput;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -25,6 +29,7 @@ readonly class RejectCertificationAction
 {
     public function __construct(
         private RejectCertificationInterface $rejectCertification,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -38,6 +43,7 @@ readonly class RejectCertificationAction
             try {
                 $input = new RejectCertificationInput(
                     new CertificationIdentifier($request->certificationId()),
+                    $this->wikiContext->principalIdentifier,
                 );
                 $output = new RejectCertificationOutput();
             } catch (InvalidArgumentException $e) {
@@ -51,6 +57,10 @@ readonly class RejectCertificationAction
             try {
                 $this->rejectCertification->process($input, $output);
                 DB::commit();
+            } catch (DisallowedException $e) {
+                DB::rollBack();
+
+                throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
             } catch (OfficialCertificationNotFoundException $e) {
                 DB::rollBack();
 
@@ -59,12 +69,17 @@ readonly class RejectCertificationAction
                 DB::rollBack();
 
                 throw new ConflictHttpException(detail: error_message('official_certification_invalid_status', $language), previous: $e);
+            } catch (PrincipalNotFoundException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ForbiddenHttpException|NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());
