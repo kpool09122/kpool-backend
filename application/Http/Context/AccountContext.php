@@ -6,6 +6,7 @@ namespace Application\Http\Context;
 
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 
 readonly class AccountContext
 {
@@ -15,6 +16,7 @@ readonly class AccountContext
     public function __construct(
         private Principal $principal,
         private AccountType $accountType,
+        private AccountCategory $accountCategory,
         private array $accountPolicies = [],
     ) {
     }
@@ -35,5 +37,10 @@ readonly class AccountContext
     public function accountPolicies(): array
     {
         return $this->accountPolicies;
+    }
+
+    public function accountCategory(): AccountCategory
+    {
+        return $this->accountCategory;
     }
 }

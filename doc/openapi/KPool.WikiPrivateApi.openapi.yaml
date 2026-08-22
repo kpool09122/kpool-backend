@@ -630,6 +630,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/owned-wikis:
+    get:
+      operationId: MyOwnedWikiListOperations_listMyOwnedWikis
+      description: List published wikis owned by the current account, grouped by account-category relevance.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: Response returned when current account owned wiki list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMyOwnedWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /official-certification/request:
     post:
       operationId: OfficialCertificationOperations_requestCertification
@@ -3849,6 +3892,51 @@ components:
           format: int32
           description: Number of images per page.
       description: Response body for the pending image deletion request list endpoint.
+    ListMyOwnedWikisResponseBody:
+      type: object
+      required:
+        - accountCategory
+        - primaryOwnedWikis
+        - otherOwnedWikis
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        accountCategory:
+          type: string
+          enum:
+            - agency
+            - talent
+            - general
+          description: Category of the current account.
+        primaryOwnedWikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiListItem'
+          description: Owned wikis whose resource type directly matches the current account category.
+        otherOwnedWikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiListItem'
+          description: Owned wikis whose resource type does not directly match the current account category for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number for other owned wikis.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number for other owned wikis.
+        total:
+          type: integer
+          format: int32
+          description: Total number of other owned wikis.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of other owned wikis per page.
+      description: Response body for the current account owned wiki list endpoint.
     ListPrincipalGroupsResponseBody:
       type: object
       required:
