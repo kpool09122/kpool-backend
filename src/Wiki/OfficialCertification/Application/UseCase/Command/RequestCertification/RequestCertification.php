@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
+use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -71,9 +72,10 @@ readonly class RequestCertification implements RequestCertificationInterface
             throw new DisallowedException();
         }
 
-        $existing = $this->repository->findByResource(
+        $existing = $this->repository->findByResourceAndStatus(
             $input->resourceType(),
             $input->translationSetIdentifier(),
+            CertificationStatus::PENDING,
         );
 
         if ($existing !== null) {

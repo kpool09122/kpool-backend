@@ -58,13 +58,22 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
         return $this->toEntity($model);
     }
 
-    public function existsPending(ResourceType $type, TranslationSetIdentifier $id): bool
-    {
-        return OfficialCertificationModel::query()
+    public function findByResourceAndStatus(
+        ResourceType $type,
+        TranslationSetIdentifier $id,
+        CertificationStatus $status,
+    ): ?OfficialCertification {
+        $model = OfficialCertificationModel::query()
             ->where('resource_type', $type->value)
             ->where('translation_set_identifier', (string) $id)
-            ->where('status', CertificationStatus::PENDING->value)
-            ->exists();
+            ->where('status', $status->value)
+            ->first();
+
+        if ($model === null) {
+            return null;
+        }
+
+        return $this->toEntity($model);
     }
 
     private function toEntity(OfficialCertificationModel $model): OfficialCertification

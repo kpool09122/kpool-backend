@@ -7,6 +7,7 @@ namespace Source\Wiki\OfficialCertification\Domain\Repository;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
+use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 interface OfficialCertificationRepositoryInterface
@@ -17,5 +18,9 @@ interface OfficialCertificationRepositoryInterface
 
     public function findByResource(ResourceType $type, TranslationSetIdentifier $id): ?OfficialCertification;
 
-    public function existsPending(ResourceType $type, TranslationSetIdentifier $id): bool;
+    public function findByResourceAndStatus(
+        ResourceType $type,
+        TranslationSetIdentifier $id,
+        CertificationStatus $status,
+    ): ?OfficialCertification;
 }

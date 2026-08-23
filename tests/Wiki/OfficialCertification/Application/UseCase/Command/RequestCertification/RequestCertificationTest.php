@@ -79,9 +79,9 @@ class RequestCertificationTest extends TestCase
         );
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
-        $repository->shouldReceive('findByResource')
+        $repository->shouldReceive('findByResourceAndStatus')
             ->once()
-            ->with(ResourceType::AGENCY, $wikiId)
+            ->with(ResourceType::AGENCY, $wikiId, CertificationStatus::PENDING)
             ->andReturnNull();
         $repository->shouldReceive('save')
             ->once()
@@ -134,9 +134,9 @@ class RequestCertificationTest extends TestCase
         );
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
-        $repository->shouldReceive('findByResource')
+        $repository->shouldReceive('findByResourceAndStatus')
             ->once()
-            ->with(ResourceType::AGENCY, $wikiId)
+            ->with(ResourceType::AGENCY, $wikiId, CertificationStatus::PENDING)
             ->andReturn($existing);
 
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
@@ -159,6 +159,56 @@ class RequestCertificationTest extends TestCase
         $this->expectException(OfficialCertificationAlreadyRequestedException::class);
 
         $useCase->process($input, $output);
+    }
+
+    public function testProcessAllowsRequestWhenOnlyRejectedCertificationExists(): void
+    {
+        $certificationId = StrTestHelper::generateUuid();
+        $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $certification = new OfficialCertification(
+            new CertificationIdentifier($certificationId),
+            ResourceType::AGENCY,
+            $wikiId,
+            $ownerAccountIdentifier,
+            CertificationStatus::PENDING,
+            new DateTimeImmutable(),
+            null,
+            null,
+        );
+
+        $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
+        $repository->shouldReceive('findByResourceAndStatus')
+            ->once()
+            ->with(ResourceType::AGENCY, $wikiId, CertificationStatus::PENDING)
+            ->andReturnNull();
+        $repository->shouldReceive('save')
+            ->once()
+            ->with($certification)
+            ->andReturnNull();
+
+        $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
+        $factory->shouldReceive('create')
+            ->once()
+            ->with(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier)
+            ->andReturn($certification);
+
+        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::AGENCY, true);
+
+        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $output = new RequestCertificationOutput();
+
+        $useCase->process(new RequestCertificationInput(
+            ResourceType::AGENCY,
+            $wikiId,
+            $ownerAccountIdentifier,
+            $principalIdentifier,
+        ), $output);
+
+        $this->assertSame($certificationId, $output->toArray()['certificationIdentifier']);
     }
 
     public function testProcessWhenRepresentativeWikiIsNotFound(): void
