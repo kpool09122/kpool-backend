@@ -110,8 +110,7 @@ readonly class RequestCertification implements RequestCertificationInterface
         WikiIdentifier $wikiIdentifier,
         mixed $basic,
         AccountCategory $requesterAccountCategory,
-    ): Resource
-    {
+    ): Resource {
         $selfIdentifier = (string) $wikiIdentifier;
 
         return match ($resourceType) {
