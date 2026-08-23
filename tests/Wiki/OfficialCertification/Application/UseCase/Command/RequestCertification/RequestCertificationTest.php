@@ -7,9 +7,6 @@ namespace Tests\Wiki\OfficialCertification\Application\UseCase\Command\RequestCe
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -90,7 +87,7 @@ class RequestCertificationTest extends TestCase
 
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
-        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::AGENCY, ResourceType::AGENCY, true);
+        $this->registerAuthorizationDependencies($wikiId, $principalIdentifier, ResourceType::AGENCY, true);
 
         $useCase = $this->app->make(RequestCertificationInterface::class);
 
@@ -137,7 +134,7 @@ class RequestCertificationTest extends TestCase
 
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
-        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::AGENCY, ResourceType::AGENCY, true);
+        $this->registerAuthorizationDependencies($wikiId, $principalIdentifier, ResourceType::AGENCY, true);
 
         $useCase = $this->app->make(RequestCertificationInterface::class);
 
@@ -155,7 +152,7 @@ class RequestCertificationTest extends TestCase
         $useCase->process($input, $output);
     }
 
-    public function testProcessWhenAccountCategoryDoesNotMatchResourceType(): void
+    public function testProcessWhenRepresentativeWikiIsNotFound(): void
     {
         $wikiId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -165,7 +162,7 @@ class RequestCertificationTest extends TestCase
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
-        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::GENERAL, ResourceType::AGENCY, false);
+        $this->registerAuthorizationDependencies($wikiId, $principalIdentifier, ResourceType::TALENT, false, expectPolicyEvaluation: false);
 
         $useCase = $this->app->make(RequestCertificationInterface::class);
         $input = new RequestCertificationInput(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier, $principalIdentifier);
@@ -186,7 +183,7 @@ class RequestCertificationTest extends TestCase
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
-        $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, AccountCategory::AGENCY, ResourceType::AGENCY, false);
+        $this->registerAuthorizationDependencies($wikiId, $principalIdentifier, ResourceType::AGENCY, false);
 
         $useCase = $this->app->make(RequestCertificationInterface::class);
         $input = new RequestCertificationInput(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier, $principalIdentifier);
@@ -199,22 +196,15 @@ class RequestCertificationTest extends TestCase
 
     private function registerAuthorizationDependencies(
         TranslationSetIdentifier $wikiId,
-        AccountIdentifier $ownerAccountIdentifier,
         PrincipalIdentifier $principalIdentifier,
-        AccountCategory $accountCategory,
         ResourceType $wikiResourceType,
         bool $policyAllowed,
+        bool $expectPolicyEvaluation = true,
     ): void {
-        $account = Mockery::mock(Account::class);
-        $account->shouldReceive('accountCategory')->andReturn($accountCategory);
-
         $wiki = Mockery::mock(Wiki::class);
         $wiki->shouldReceive('resourceType')->andReturn($wikiResourceType);
         $wiki->shouldReceive('wikiIdentifier')->andReturn(new WikiIdentifier(StrTestHelper::generateUuid()));
         $wiki->shouldReceive('basic')->andReturn(Mockery::mock(BasicInterface::class));
-
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')->with($ownerAccountIdentifier)->andReturn($account);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')->with($wikiId)->andReturn([$wiki]);
@@ -224,15 +214,20 @@ class RequestCertificationTest extends TestCase
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')
-            ->with(
-                $principal,
-                Action::OFFICIAL_CERTIFICATION_REQUEST,
-                Mockery::on(static fn (Resource $resource): bool => $resource->ownerAccountCategory() === $accountCategory),
-            )
-            ->andReturn($policyAllowed);
+        $policyExpectation = $policyEvaluator->shouldReceive('evaluate');
+        if ($expectPolicyEvaluation) {
+            $policyExpectation
+                ->once()
+                ->with(
+                    $principal,
+                    Action::OFFICIAL_CERTIFICATION_REQUEST,
+                    Mockery::on(static fn (Resource $resource): bool => $resource->ownerAccountCategory() === null),
+                )
+                ->andReturn($policyAllowed);
+        } else {
+            $policyExpectation->never();
+        }
 
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);

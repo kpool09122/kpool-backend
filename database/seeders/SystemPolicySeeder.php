@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -64,13 +63,13 @@ class SystemPolicySeeder extends Seeder
                     effect: Effect::ALLOW,
                     actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
                     resourceTypes: [ResourceType::AGENCY],
-                    condition: $this->ownerAccountCategoryCondition(AccountCategory::AGENCY),
+                    condition: null,
                 ),
                 new Statement(
                     effect: Effect::ALLOW,
                     actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
                     resourceTypes: [ResourceType::TALENT],
-                    condition: $this->ownerAccountCategoryCondition(AccountCategory::TALENT),
+                    condition: null,
                 ),
             ],
             isSystemPolicy: true,
@@ -145,10 +144,7 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::AGENCY],
-            condition: $this->officialCertificationRequestCondition(
-                $this->agencyCondition(),
-                AccountCategory::AGENCY,
-            ),
+            condition: $this->agencyCondition(),
         );
 
         $this->createPolicy(
@@ -156,30 +152,8 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::TALENT],
-            condition: $this->officialCertificationRequestCondition(
-                $this->talentCondition(),
-                AccountCategory::TALENT,
-            ),
+            condition: $this->talentCondition(),
         );
-    }
-
-    private function officialCertificationRequestCondition(Condition $scopeCondition, AccountCategory $ownerAccountCategory): Condition
-    {
-        return new Condition([
-            ...$scopeCondition->clauses(),
-            ...$this->ownerAccountCategoryCondition($ownerAccountCategory)->clauses(),
-        ]);
-    }
-
-    private function ownerAccountCategoryCondition(AccountCategory $ownerAccountCategory): Condition
-    {
-        return new Condition([
-            new ConditionClause(
-                ConditionKey::RESOURCE_OWNER_ACCOUNT_CATEGORY,
-                ConditionOperator::EQUALS,
-                $ownerAccountCategory->value,
-            ),
-        ]);
     }
 
     private function createDenyAgencyActionPolicies(): void
