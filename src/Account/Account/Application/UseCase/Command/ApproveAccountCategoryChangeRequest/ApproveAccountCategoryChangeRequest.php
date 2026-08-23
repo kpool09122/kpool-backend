@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -23,6 +24,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
         private AccountRepositoryInterface $accountRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private EventDispatcherInterface $eventDispatcher,
+        private AccountContextInvalidationServiceInterface $accountContextInvalidationService,
     ) {
     }
 
@@ -55,6 +57,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
 
         $this->accountRepository->save($account);
         $this->requestRepository->save($request);
+        $this->accountContextInvalidationService->forgetByAccountIdentifier($account->accountIdentifier());
 
         $this->eventDispatcher->dispatch(new AccountCategoryChanged(
             accountIdentifier: $account->accountIdentifier(),

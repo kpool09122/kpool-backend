@@ -6,6 +6,7 @@ namespace Tests\Wiki\OfficialCertification\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -65,6 +66,97 @@ class OfficialCertificationRepositoryTest extends TestCase
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::PENDING->value,
         ]);
+    }
+
+    /**
+     * 正常系: RejectedのOfficialCertificationが存在しても同じリソースのPendingを保存できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSavePendingWhenRejectedCertificationExistsForSameResource(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+        $requestedAt = '2024-01-01 00:00:00';
+
+        DB::table('official_certifications')->insert([
+            'id' => StrTestHelper::generateUuid(),
+            'resource_type' => ResourceType::AGENCY->value,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'owner_account_id' => $ownerAccountId,
+            'status' => CertificationStatus::REJECTED->value,
+            'requested_at' => $requestedAt,
+            'approved_at' => null,
+            'rejected_at' => '2024-01-02 00:00:00',
+            'created_at' => $requestedAt,
+            'updated_at' => $requestedAt,
+        ]);
+
+        $pendingCertificationId = StrTestHelper::generateUuid();
+        $certification = new OfficialCertification(
+            new CertificationIdentifier($pendingCertificationId),
+            ResourceType::AGENCY,
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            CertificationStatus::PENDING,
+            new DateTimeImmutable('2024-01-03 00:00:00'),
+            null,
+            null,
+        );
+
+        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository->save($certification);
+
+        $this->assertDatabaseHas('official_certifications', [
+            'id' => $pendingCertificationId,
+            'resource_type' => ResourceType::AGENCY->value,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'status' => CertificationStatus::PENDING->value,
+        ]);
+    }
+
+    /**
+     * 異常系: 同じリソースのPendingは複数保存できないこと.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSavePendingWhenPendingCertificationExistsForSameResourceThrows(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+        $requestedAt = '2024-01-01 00:00:00';
+
+        DB::table('official_certifications')->insert([
+            'id' => StrTestHelper::generateUuid(),
+            'resource_type' => ResourceType::AGENCY->value,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'owner_account_id' => $ownerAccountId,
+            'status' => CertificationStatus::PENDING->value,
+            'requested_at' => $requestedAt,
+            'approved_at' => null,
+            'rejected_at' => null,
+            'created_at' => $requestedAt,
+            'updated_at' => $requestedAt,
+        ]);
+
+        $certification = new OfficialCertification(
+            new CertificationIdentifier(StrTestHelper::generateUuid()),
+            ResourceType::AGENCY,
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            CertificationStatus::PENDING,
+            new DateTimeImmutable('2024-01-03 00:00:00'),
+            null,
+            null,
+        );
+
+        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+
+        $this->expectException(QueryException::class);
+
+        $repository->save($certification);
     }
 
     /**
@@ -208,19 +300,20 @@ class OfficialCertificationRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: 申請中のOfficialCertificationが存在する場合trueが返ること.
+     * 正常系: リソースとステータス指定でOfficialCertificationを取得できること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testExistsPending(): void
+    public function testFindByResourceAndStatus(): void
     {
+        $certificationId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-04-01 08:00:00';
 
         DB::table('official_certifications')->insert([
-            'id' => StrTestHelper::generateUuid(),
+            'id' => $certificationId,
             'resource_type' => ResourceType::TALENT->value,
             'translation_set_identifier' => $translationSetIdentifier,
             'owner_account_id' => $ownerAccountId,
@@ -233,16 +326,23 @@ class OfficialCertificationRepositoryTest extends TestCase
         ]);
 
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
-        $this->assertTrue($repository->existsPending(ResourceType::TALENT, new TranslationSetIdentifier($translationSetIdentifier)));
+        $result = $repository->findByResourceAndStatus(
+            ResourceType::TALENT,
+            new TranslationSetIdentifier($translationSetIdentifier),
+            CertificationStatus::PENDING,
+        );
+
+        $this->assertNotNull($result);
+        $this->assertSame($certificationId, (string) $result->certificationIdentifier());
     }
 
     /**
-     * 正常系: 申請中でない場合はfalseが返ること.
+     * 正常系: リソースが一致してもステータスが異なる場合はNULLが返却されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testExistsPendingWhenNotPending(): void
+    public function testFindByResourceAndStatusWhenStatusDoesNotMatch(): void
     {
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
@@ -253,15 +353,21 @@ class OfficialCertificationRepositoryTest extends TestCase
             'resource_type' => ResourceType::AGENCY->value,
             'translation_set_identifier' => $translationSetIdentifier,
             'owner_account_id' => $ownerAccountId,
-            'status' => CertificationStatus::APPROVED->value,
+            'status' => CertificationStatus::REJECTED->value,
             'requested_at' => $requestedAt,
-            'approved_at' => $requestedAt,
-            'rejected_at' => null,
+            'approved_at' => null,
+            'rejected_at' => $requestedAt,
             'created_at' => $requestedAt,
             'updated_at' => $requestedAt,
         ]);
 
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
-        $this->assertFalse($repository->existsPending(ResourceType::AGENCY, new TranslationSetIdentifier($translationSetIdentifier)));
+        $result = $repository->findByResourceAndStatus(
+            ResourceType::AGENCY,
+            new TranslationSetIdentifier($translationSetIdentifier),
+            CertificationStatus::PENDING,
+        );
+
+        $this->assertNull($result);
     }
 }
