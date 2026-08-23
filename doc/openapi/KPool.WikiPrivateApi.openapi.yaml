@@ -2152,6 +2152,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{resourceType}/{translationSetIdentifier}/related-wikis:
+    get:
+      operationId: WikiOperations_listRelatedWikis
+      description: List related published wikis for an agency or talent translation set.
+      parameters:
+        - name: resourceType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - agency
+              - talent
+        - name: translationSetIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when related wiki retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRelatedWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{wikiId}:
     delete:
       operationId: WikiOperations_deleteWiki
@@ -4087,6 +4142,17 @@ components:
             $ref: '#/components/schemas/RelatedProfileItem'
           description: Related profile cards.
       description: Response body for the related profiles endpoint.
+    ListRelatedWikisResponseBody:
+      type: object
+      required:
+        - wikis
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiListItem'
+          description: Related published wikis.
+      description: Response body for the related wikis endpoint.
     ListUploadedImagesResponseBody:
       type: object
       required:

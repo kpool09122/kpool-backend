@@ -204,6 +204,7 @@ class SystemRoleSeeder extends Seeder
             'AGENCY_SCOPE_IMAGE_REJECT',
             'AGENCY_SCOPE_IMAGE_DELETE',
             'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
+            'GLOBAL_RELATED_WIKI_LIST',
         ];
     }
 
@@ -226,6 +227,7 @@ class SystemRoleSeeder extends Seeder
             'TALENT_SCOPE_IMAGE_REJECT',
             'TALENT_SCOPE_IMAGE_DELETE',
             'TALENT_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
+            'GLOBAL_RELATED_WIKI_LIST',
         ];
     }
 
