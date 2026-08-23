@@ -33,7 +33,9 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertific
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertificationInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
+use Source\Wiki\OfficialCertification\Infrastructure\Query\ListMyOfficialCertifications;
 use Source\Wiki\OfficialCertification\Infrastructure\Query\ListOfficialCertifications;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
@@ -156,6 +158,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
         $this->app->singleton(RequestCertificationInterface::class, RequestCertification::class);
         $this->app->singleton(ListOfficialCertificationsInterface::class, ListOfficialCertifications::class);
+        $this->app->singleton(ListMyOfficialCertificationsInterface::class, ListMyOfficialCertifications::class);
         $this->app->singleton(ApproveCertificationInterface::class, ApproveCertification::class);
         $this->app->singleton(RejectCertificationInterface::class, RejectCertification::class);
         $this->app->singleton(UploadImageInterface::class, UploadImage::class);

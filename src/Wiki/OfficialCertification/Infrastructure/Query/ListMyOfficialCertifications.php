@@ -14,13 +14,13 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Infrastructure\Support\ImageUrl;
-use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInputPort;
-use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
-use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsOutputPort;
+use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInputPort;
+use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsOutputPort;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\OfficialCertificationListItemReadModel;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\OfficialCertificationOwnerAccountReadModel;
-use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -30,10 +30,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiListItemReadModel;
 
-readonly class ListOfficialCertifications implements ListOfficialCertificationsInterface
+readonly class ListMyOfficialCertifications implements ListMyOfficialCertificationsInterface
 {
     /** @var array<string, string> */
-    private const BASIC_RELATIONS = [
+    private const array BASIC_RELATIONS = [
         ResourceType::TALENT->value => 'talentBasic',
         ResourceType::GROUP->value => 'groupBasic',
         ResourceType::AGENCY->value => 'agencyBasic',
@@ -50,14 +50,27 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(ListOfficialCertificationsInputPort $input, ListOfficialCertificationsOutputPort $output): void
+    public function process(ListMyOfficialCertificationsInputPort $input, ListMyOfficialCertificationsOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
 
-        if (! $this->canReadOfficialCertifications($principal)) {
+        $resourceType = match ($input->accountCategory()) {
+            AccountCategory::AGENCY => ResourceType::AGENCY,
+            AccountCategory::TALENT => ResourceType::TALENT,
+            AccountCategory::GENERAL => null,
+        };
+
+        if ($resourceType === null || ! $this->policyEvaluator->evaluate(
+            $principal,
+            Action::OFFICIAL_CERTIFICATION_MY_READ,
+            new Resource(
+                type: $resourceType,
+                requesterAccountCategory: $input->accountCategory(),
+            ),
+        )) {
             throw new DisallowedException();
         }
 
@@ -71,6 +84,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
                     ->whereIn('wikis.resource_type', array_keys(self::BASIC_RELATIONS))
                     ->orderBy('wikis.language'),
             ])
+            ->where('official_certifications.owner_account_id', (string) $input->accountIdentifier())
             ->orderByDesc('official_certifications.requested_at')
             ->orderByDesc('official_certifications.updated_at');
 
@@ -94,16 +108,6 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
             $paginator->total(),
             $paginator->perPage(),
         );
-    }
-
-    private function canReadOfficialCertifications(Principal $principal): bool
-    {
-        return array_all(ResourceType::cases(), fn ($resourceType) => $this->policyEvaluator->evaluate(
-            $principal,
-            Action::OFFICIAL_CERTIFICATION_READ,
-            new Resource(type: $resourceType),
-        ));
-
     }
 
     private function toReadModel(
