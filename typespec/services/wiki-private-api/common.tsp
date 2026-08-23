@@ -56,6 +56,8 @@ model PublishedWikiSummary {
   resourceType: string;
   @doc("Published version number.")
   version: int32;
+  @doc("Whether this published wiki is officially certified.")
+  isOfficial: boolean;
 }
 
 @doc("Hero image payload for a draft wiki.")
@@ -205,6 +207,8 @@ model WikiDetail {
   resourceType: string;
   @doc("Published version number.")
   version: int32;
+  @doc("Whether this published wiki is officially certified.")
+  isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Stable font style identifier applied to the wiki.")
@@ -345,6 +349,8 @@ model TalentWikiDetail {
   resourceType: string;
   @doc("Published version number.")
   version: int32;
+  @doc("Whether this published wiki is officially certified.")
+  isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Stable font style identifier applied to the wiki.")
@@ -523,6 +529,8 @@ model SongWikiDetail {
   resourceType: string;
   @doc("Published version number.")
   version: int32;
+  @doc("Whether this published wiki is officially certified.")
+  isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Stable font style identifier applied to the wiki.")
@@ -613,6 +621,8 @@ model AgencyWikiDetail {
   resourceType: string;
   @doc("Published version number.")
   version: int32;
+  @doc("Whether this published wiki is officially certified.")
+  isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Stable font style identifier applied to the wiki.")

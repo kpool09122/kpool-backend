@@ -28,6 +28,7 @@ class ListWikisOutputTest extends TestCase
             normalizedName: 'chaeyoung',
             publishedAt: '2026-05-01T00:00:00+00:00',
             updatedAt: '2026-05-02T00:00:00+00:00',
+            isOfficial: false,
         );
 
         $output = new ListWikisOutput();

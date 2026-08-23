@@ -49,6 +49,7 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
             language: $model->language,
             resourceType: ResourceType::AGENCY->value,
             version: $model->version,
+            isOfficial: $model->owner_account_id !== null,
             themeColor: $model->theme_color,
             fontStyle: $model->font_style,
             title: $model->title,

@@ -48,6 +48,7 @@ class ListMyOwnedWikisOutputTest extends TestCase
             normalizedName: strtolower($name),
             publishedAt: null,
             updatedAt: '2026-08-01T00:00:00+00:00',
+            isOfficial: false,
         );
     }
 }

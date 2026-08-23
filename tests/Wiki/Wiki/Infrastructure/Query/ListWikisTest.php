@@ -21,7 +21,15 @@ class ListWikisTest extends TestCase
     public function testProcessReturnsDefaultPaginationSortedByUpdatedAtDesc(): void
     {
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f101', 'talent', 'tl-alpha', 'Alpha', 'alpha', '2026-05-01 00:00:00');
-        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f102', 'group', 'gr-beta', 'Beta', 'beta', '2026-05-03 00:00:00');
+        $this->createWiki(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f102',
+            'group',
+            'gr-beta',
+            'Beta',
+            'beta',
+            '2026-05-03 00:00:00',
+            ownerAccountId: '01965bb2-bcc9-7c6f-8b90-89f7f217f112',
+        );
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f103', 'agency', 'ag-gamma', 'Gamma', 'gamma', '2026-05-02 00:00:00');
 
         $payload = $this->process(new ListWikisInput(Language::KOREAN))->toArray();
@@ -37,6 +45,8 @@ class ListWikisTest extends TestCase
         ], array_column($payload['wikis'], 'wikiIdentifier'));
         $this->assertArrayHasKey('translationSetIdentifier', $payload['wikis'][0]);
         $this->assertIsString($payload['wikis'][0]['translationSetIdentifier']);
+        $this->assertTrue($payload['wikis'][0]['isOfficial']);
+        $this->assertFalse($payload['wikis'][1]['isOfficial']);
         $this->assertArrayHasKey('imageIdentifier', $payload['wikis'][0]);
         $this->assertArrayHasKey('imageUrl', $payload['wikis'][0]);
         $this->assertArrayHasKey('imageAltText', $payload['wikis'][0]);
@@ -240,6 +250,7 @@ class ListWikisTest extends TestCase
         ?string $imageIdentifier = null,
         ?string $createdAt = null,
         int $version = 1,
+        ?string $ownerAccountId = null,
     ): void {
         CreateWiki::create(
             $wikiId,
@@ -253,6 +264,7 @@ class ListWikisTest extends TestCase
                 'meta_description' => "{$name} profile.",
                 'keywords' => json_encode([$name, $resourceType]),
                 'version' => $version,
+                'owner_account_id' => $ownerAccountId,
             ],
             [
                 'name' => $name,

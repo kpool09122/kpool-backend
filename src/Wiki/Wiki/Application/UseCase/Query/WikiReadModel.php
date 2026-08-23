@@ -12,6 +12,7 @@ readonly class WikiReadModel
     private string $language;
     private string $resourceType;
     private int $version;
+    private bool $isOfficial;
     private ?string $themeColor;
     private ?string $fontStyle;
     private ?string $title;
@@ -37,6 +38,7 @@ readonly class WikiReadModel
         string $language,
         string $resourceType,
         int $version,
+        bool $isOfficial,
         ?string $themeColor,
         array $heroImage,
         array|WikiBasicReadModel $basic,
@@ -52,6 +54,7 @@ readonly class WikiReadModel
         $this->language = $language;
         $this->resourceType = $resourceType;
         $this->version = $version;
+        $this->isOfficial = $isOfficial;
         $this->themeColor = $themeColor;
         $this->fontStyle = $fontStyle;
         $this->title = $title;
@@ -96,6 +99,11 @@ readonly class WikiReadModel
     public function version(): int
     {
         return $this->version;
+    }
+
+    public function isOfficial(): bool
+    {
+        return $this->isOfficial;
     }
 
     public function themeColor(): ?string
@@ -161,6 +169,7 @@ readonly class WikiReadModel
             'language' => $this->language,
             'resourceType' => $this->resourceType,
             'version' => $this->version,
+            'isOfficial' => $this->isOfficial,
             'themeColor' => $this->themeColor,
             'fontStyle' => $this->fontStyle,
             'title' => $this->title,

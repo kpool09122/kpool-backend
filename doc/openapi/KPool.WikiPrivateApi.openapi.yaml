@@ -3188,6 +3188,7 @@ components:
         - language
         - resourceType
         - version
+        - isOfficial
         - themeColor
         - fontStyle
         - title
@@ -3218,6 +3219,9 @@ components:
           type: integer
           format: int32
           description: Published version number.
+        isOfficial:
+          type: boolean
+          description: Whether this published wiki is officially certified.
         themeColor:
           type: string
           nullable: true
@@ -4686,6 +4690,7 @@ components:
         - name
         - resourceType
         - version
+        - isOfficial
       properties:
         wikiIdentifier:
           allOf:
@@ -4704,6 +4709,9 @@ components:
           type: integer
           format: int32
           description: Published version number.
+        isOfficial:
+          type: boolean
+          description: Whether this published wiki is officially certified.
       description: Summary of a published wiki.
     RejectImageDeletionRequestBody:
       type: object
@@ -5256,6 +5264,7 @@ components:
         - language
         - resourceType
         - version
+        - isOfficial
         - themeColor
         - fontStyle
         - title
@@ -5286,6 +5295,9 @@ components:
           type: integer
           format: int32
           description: Published version number.
+        isOfficial:
+          type: boolean
+          description: Whether this published wiki is officially certified.
         themeColor:
           type: string
           nullable: true
@@ -5616,6 +5628,7 @@ components:
         - language
         - resourceType
         - version
+        - isOfficial
         - themeColor
         - fontStyle
         - title
@@ -5646,6 +5659,9 @@ components:
           type: integer
           format: int32
           description: Published version number.
+        isOfficial:
+          type: boolean
+          description: Whether this published wiki is officially certified.
         themeColor:
           type: string
           nullable: true
@@ -5997,6 +6013,7 @@ components:
         - language
         - resourceType
         - version
+        - isOfficial
         - themeColor
         - fontStyle
         - title
@@ -6027,6 +6044,9 @@ components:
           type: integer
           format: int32
           description: Published version number.
+        isOfficial:
+          type: boolean
+          description: Whether this published wiki is officially certified.
         themeColor:
           type: string
           nullable: true

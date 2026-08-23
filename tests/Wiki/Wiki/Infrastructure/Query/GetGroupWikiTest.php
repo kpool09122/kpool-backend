@@ -29,6 +29,7 @@ class GetGroupWikiTest extends TestCase
                 'slug' => 'gr-twice',
                 'language' => 'ko',
                 'version' => 2,
+                'owner_account_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f006',
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
                     [
@@ -62,6 +63,7 @@ class GetGroupWikiTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(2, $readModel->version());
+        $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
@@ -93,6 +95,7 @@ class GetGroupWikiTest extends TestCase
         $useCase = $this->app->make(GetGroupWikiInterface::class);
         $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-nullable-basic'), Language::ENGLISH));
 
+        $this->assertFalse($readModel->isOfficial());
         $this->assertNull($readModel->basic()['groupType']);
         $this->assertNull($readModel->basic()['generation']);
     }
