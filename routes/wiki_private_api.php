@@ -62,6 +62,7 @@ use Application\Http\Action\Wiki\Wiki\Query\ListDraftWikis\ListDraftWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis\ListMyDraftWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListMyOwnedWikis\ListMyOwnedWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfilesAction;
+use Application\Http\Action\Wiki\Wiki\Query\ListRelatedWikis\ListRelatedWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisAction;
@@ -90,6 +91,8 @@ Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.
 Route::get('/my/owned-wikis', ListMyOwnedWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.account']);
 Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
+Route::get('/wiki/{resourceType}/{translationSetIdentifier}/related-wikis', ListRelatedWikisAction::class)
+    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class)->middleware('auth.api');
 Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

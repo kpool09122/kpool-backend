@@ -408,6 +408,12 @@ model ListRelatedProfilesResponseBody {
   profiles: RelatedProfileItem[];
 }
 
+@doc("Response body for the related wikis endpoint.")
+model ListRelatedWikisResponseBody {
+  @doc("Related published wikis.")
+  wikis: WikiListItem[];
+}
+
 @doc("Response returned when wiki list retrieval succeeds.")
 model ListWikisResponse {
   @statusCode statusCode: 200;
@@ -431,6 +437,12 @@ model SearchTranslationSetMasterWikisResponse {
 model ListRelatedProfilesResponse {
   @statusCode statusCode: 200;
   @body body: ListRelatedProfilesResponseBody;
+}
+
+@doc("Response returned when related wiki retrieval succeeds.")
+model ListRelatedWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: ListRelatedWikisResponseBody;
 }
 
 @doc("Response returned when current account owned wiki list retrieval succeeds.")
@@ -631,6 +643,14 @@ interface WikiOperations {
     @path slug: string,
     @query resourceType: string,
   ): ListRelatedProfilesResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{resourceType}/{translationSetIdentifier}/related-wikis")
+  @doc("List related published wikis for an agency or talent translation set.")
+  listRelatedWikis(
+    @path resourceType: "agency" | "talent",
+    @path translationSetIdentifier: Uuid,
+  ): ListRelatedWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{language}/group/{slug}")
