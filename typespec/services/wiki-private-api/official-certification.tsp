@@ -23,6 +23,66 @@ model OkOfficialCertificationResponse {
   @body body: OfficialCertificationSummary;
 }
 
+@doc("Owner account summary shown in the operator official certification request list.")
+model OfficialCertificationOwnerAccount {
+  @doc("Owner account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Owner account email address.")
+  email: string;
+  @doc("Owner account type.")
+  type: string;
+  @doc("Owner account display name.")
+  name: string;
+  @doc("Owner account status.")
+  status: string;
+  @doc("Owner account category.")
+  category: string;
+}
+
+@doc("Summary shown in the operator official certification request list.")
+model OfficialCertificationListItem {
+  @doc("Certification identifier.")
+  certificationIdentifier: Uuid;
+  @doc("Resource type that the certification belongs to.")
+  resourceType: string;
+  @doc("Translation set identifier related to the certification.")
+  translationSetIdentifier: Uuid;
+  @doc("Account that owns the certified resource.")
+  ownerAccount: OfficialCertificationOwnerAccount | null;
+  @doc("Published wikis related by the same translation set identifier.")
+  wikis: WikiListItem[];
+  @doc("Current workflow status of the certification.")
+  status: string;
+  @doc("Date and time when the certification was requested.")
+  requestedAt: utcDateTime;
+  @doc("Date and time when the certification was approved.")
+  approvedAt: utcDateTime | null;
+  @doc("Date and time when the certification was rejected.")
+  rejectedAt: utcDateTime | null;
+}
+
+@doc("Response returned when listing official certification requests.")
+model ListOfficialCertificationsResponse {
+  @statusCode statusCode: 200;
+  @body body: {
+    officialCertifications: OfficialCertificationListItem[];
+    current_page: int32;
+    last_page: int32;
+    total: int32;
+    per_page: int32;
+  };
+}
+
+@route("/official-certifications")
+interface OfficialCertificationListOperations {
+  @get
+  @doc("List official certification requests for operators.")
+  listOfficialCertifications(
+    @query status?: string | null,
+    @query perPage?: int32 | null,
+  ): ListOfficialCertificationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/official-certification")
 interface OfficialCertificationOperations {
   @post
