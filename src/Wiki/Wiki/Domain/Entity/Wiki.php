@@ -189,10 +189,15 @@ class Wiki
 
     public function markOfficial(AccountIdentifier $ownerAccountIdentifier): void
     {
-        if ($this->isOfficial()) {
+        $this->ownerAccountIdentifier = $ownerAccountIdentifier;
+    }
+
+    public function unmarkOfficial(AccountIdentifier $ownerAccountIdentifier): void
+    {
+        if ((string) $this->ownerAccountIdentifier !== (string) $ownerAccountIdentifier) {
             return;
         }
-        $this->ownerAccountIdentifier = $ownerAccountIdentifier;
+        $this->ownerAccountIdentifier = null;
     }
 
     public function editorIdentifier(): ?PrincipalIdentifier

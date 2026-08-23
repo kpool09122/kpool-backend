@@ -15,4 +15,10 @@ interface OfficialResourceUpdaterInterface
         TranslationSetIdentifier $id,
         AccountIdentifier $owner,
     ): void;
+
+    public function unmarkOfficial(
+        ResourceType $type,
+        TranslationSetIdentifier $id,
+        AccountIdentifier $owner,
+    ): void;
 }

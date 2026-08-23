@@ -747,6 +747,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /official-certification/owned-wikis:
+    put:
+      operationId: OfficialCertificationOperations_syncOwnedWikiCertifications
+      description: Synchronize official certifications for agency-owned group and song wikis.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when owned wiki official certifications are synchronized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approved:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SyncedOfficialCertificationResource'
+                  rejected:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SyncedOfficialCertificationResource'
+                  unchanged:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SyncedOfficialCertificationResource'
+                required:
+                  - approved
+                  - rejected
+                  - unchanged
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncOwnedWikiCertificationsRequestBody'
   /official-certification/request:
     post:
       operationId: OfficialCertificationOperations_requestCertification
@@ -5268,6 +5327,31 @@ components:
           items: {}
           description: Section content payloads.
       description: Detailed published song wiki payload.
+    SyncOwnedWikiCertificationsRequestBody:
+      type: object
+      required:
+        - translationSetIdentifiers
+      properties:
+        translationSetIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifiers that should be official after synchronization.
+      description: Request body for synchronizing official certifications for agency-owned wikis.
+    SyncedOfficialCertificationResource:
+      type: object
+      required:
+        - resourceType
+        - translationSetIdentifier
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the certification belongs to.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier related to the certification.
+      description: Official certification resource changed by synchronization.
     TalentDraftWikiBasic:
       type: object
       required:

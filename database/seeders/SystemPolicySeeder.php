@@ -46,7 +46,7 @@ class SystemPolicySeeder extends Seeder
                 continue;
             }
 
-            if ($action === Action::OFFICIAL_CERTIFICATION_MY_READ) {
+            if (in_array($action, [Action::OFFICIAL_CERTIFICATION_MY_READ, Action::OFFICIAL_CERTIFICATION_OWNED_WIKI_SYNC], true)) {
                 continue;
             }
 
@@ -156,6 +156,14 @@ class SystemPolicySeeder extends Seeder
             name: 'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_MY_READ',
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_MY_READ,
+            resourceTypes: [ResourceType::AGENCY],
+            condition: $this->requesterAccountCategoryCondition(AccountCategory::AGENCY),
+        );
+
+        $this->createPolicy(
+            name: 'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_OWNED_WIKI_SYNC',
+            effect: Effect::ALLOW,
+            action: Action::OFFICIAL_CERTIFICATION_OWNED_WIKI_SYNC,
             resourceTypes: [ResourceType::AGENCY],
             condition: $this->requesterAccountCategoryCondition(AccountCategory::AGENCY),
         );

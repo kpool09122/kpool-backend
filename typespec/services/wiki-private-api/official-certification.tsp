@@ -11,6 +11,31 @@ model RequestCertificationRequestBody {
   translationSetIdentifier: Uuid;
 }
 
+
+@doc("Request body for synchronizing official certifications for agency-owned wikis.")
+model SyncOwnedWikiCertificationsRequestBody {
+  @doc("Translation set identifiers that should be official after synchronization.")
+  translationSetIdentifiers: Uuid[];
+}
+
+@doc("Official certification resource changed by synchronization.")
+model SyncedOfficialCertificationResource {
+  @doc("Resource type that the certification belongs to.")
+  resourceType: string;
+  @doc("Translation set identifier related to the certification.")
+  translationSetIdentifier: Uuid;
+}
+
+@doc("Response returned when owned wiki official certifications are synchronized.")
+model SyncOwnedWikiCertificationsResponse {
+  @statusCode statusCode: 200;
+  @body body: {
+    approved: SyncedOfficialCertificationResource[];
+    rejected: SyncedOfficialCertificationResource[];
+    unchanged: SyncedOfficialCertificationResource[];
+  };
+}
+
 @doc("Response returned when an official certification request is created.")
 model CreateOfficialCertificationResponse {
   @statusCode statusCode: 201;
@@ -99,6 +124,13 @@ interface OfficialCertificationOperations {
   requestCertification(
     @body body: RequestCertificationRequestBody,
   ): CreateOfficialCertificationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @put
+  @route("/owned-wikis")
+  @doc("Synchronize official certifications for agency-owned group and song wikis.")
+  syncOwnedWikiCertifications(
+    @body body: SyncOwnedWikiCertificationsRequestBody,
+  ): SyncOwnedWikiCertificationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{certificationId}/approve")

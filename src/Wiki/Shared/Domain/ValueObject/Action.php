@@ -27,6 +27,7 @@ enum Action: string
     case OFFICIAL_CERTIFICATION_READ = 'official_certification_read';
     case OFFICIAL_CERTIFICATION_APPROVE = 'official_certification_approve';
     case OFFICIAL_CERTIFICATION_REJECT = 'official_certification_reject';
+    case OFFICIAL_CERTIFICATION_OWNED_WIKI_SYNC = 'official_certification_owned_wiki_sync';
     case RELATED_WIKI_LIST = 'related-wiki-list';
     case PRINCIPAL_GROUP_MANAGE = 'principal-group-manage';
 }
