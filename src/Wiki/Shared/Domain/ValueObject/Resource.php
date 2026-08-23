@@ -18,6 +18,7 @@ final readonly class Resource
      * @param bool $isOfficial
      * @param string|null $editorId
      * @param AccountCategory|null $ownerAccountCategory
+     * @param AccountCategory|null $requesterAccountCategory
      */
     public function __construct(
         private ResourceType $type,
@@ -27,6 +28,7 @@ final readonly class Resource
         private bool $isOfficial = false,
         private ?string $editorId = null,
         private ?AccountCategory $ownerAccountCategory = null,
+        private ?AccountCategory $requesterAccountCategory = null,
     ) {
         $this->validate($agencyId, $this->groupIds, $this->talentIds, $editorId);
     }
@@ -70,6 +72,11 @@ final readonly class Resource
     public function ownerAccountCategory(): ?AccountCategory
     {
         return $this->ownerAccountCategory;
+    }
+
+    public function requesterAccountCategory(): ?AccountCategory
+    {
+        return $this->requesterAccountCategory;
     }
 
     /**

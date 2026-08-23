@@ -4094,7 +4094,7 @@ components:
       required:
         - certificationIdentifier
         - resourceType
-        - wikiIdentifier
+        - translationSetIdentifier
         - status
       properties:
         certificationIdentifier:
@@ -4104,10 +4104,10 @@ components:
         resourceType:
           type: string
           description: Resource type that the certification belongs to.
-        wikiIdentifier:
+        translationSetIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Wiki identifier related to the certification.
+          description: Translation set identifier related to the certification.
         status:
           type: string
           description: Current workflow status of the certification.

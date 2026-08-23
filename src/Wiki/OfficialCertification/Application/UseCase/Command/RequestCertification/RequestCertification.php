@@ -28,10 +28,10 @@ readonly class RequestCertification implements RequestCertificationInterface
     public function __construct(
         private OfficialCertificationRepositoryInterface $repository,
         private OfficialCertificationFactoryInterface $factory,
-        private AccountRepositoryInterface $accountRepository,
         private WikiRepositoryInterface $wikiRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private AccountRepositoryInterface $accountRepository,
     ) {
     }
 
@@ -48,16 +48,25 @@ readonly class RequestCertification implements RequestCertificationInterface
         }
 
         $wikis = $this->wikiRepository->findByTranslationSetIdentifier($input->translationSetIdentifier());
-        $account = $this->accountRepository->findById($input->ownerAccountIdentifier());
         $wiki = $this->representativeWiki($wikis, $input->resourceType());
-        if ($wiki === null || $account === null) {
+        if ($wiki === null) {
+            throw new DisallowedException();
+        }
+
+        $ownerAccount = $this->accountRepository->findById($input->ownerAccountIdentifier());
+        if ($ownerAccount === null) {
             throw new DisallowedException();
         }
 
         if (! $this->policyEvaluator->evaluate(
             $principal,
             Action::OFFICIAL_CERTIFICATION_REQUEST,
-            $this->authorizationResource($wiki->resourceType(), $wiki->wikiIdentifier(), $wiki->basic(), $account->accountCategory()),
+            $this->authorizationResource(
+                $wiki->resourceType(),
+                $wiki->wikiIdentifier(),
+                $wiki->basic(),
+                $ownerAccount->accountCategory(),
+            ),
         )) {
             throw new DisallowedException();
         }
@@ -96,37 +105,41 @@ readonly class RequestCertification implements RequestCertificationInterface
         return null;
     }
 
-    private function authorizationResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier, mixed $basic, AccountCategory $ownerAccountCategory): Resource
-    {
+    private function authorizationResource(
+        ResourceType $resourceType,
+        WikiIdentifier $wikiIdentifier,
+        mixed $basic,
+        AccountCategory $requesterAccountCategory,
+    ): Resource {
         $selfIdentifier = (string) $wikiIdentifier;
 
         return match ($resourceType) {
             ResourceType::AGENCY => new Resource(
                 type: ResourceType::AGENCY,
                 agencyId: $selfIdentifier,
-                ownerAccountCategory: $ownerAccountCategory,
+                requesterAccountCategory: $requesterAccountCategory,
             ),
             ResourceType::GROUP => new Resource(
                 type: ResourceType::GROUP,
                 agencyId: $basic instanceof GroupBasic && $basic->agencyIdentifier() !== null ? (string) $basic->agencyIdentifier() : null,
                 groupIds: [$selfIdentifier],
-                ownerAccountCategory: $ownerAccountCategory,
+                requesterAccountCategory: $requesterAccountCategory,
             ),
             ResourceType::TALENT => new Resource(
                 type: ResourceType::TALENT,
                 agencyId: $basic instanceof TalentBasic && $basic->agencyIdentifier() !== null ? (string) $basic->agencyIdentifier() : null,
                 groupIds: $basic instanceof TalentBasic ? array_map(static fn (WikiIdentifier $id): string => (string) $id, $basic->groupIdentifiers()) : [],
                 talentIds: [$selfIdentifier],
-                ownerAccountCategory: $ownerAccountCategory,
+                requesterAccountCategory: $requesterAccountCategory,
             ),
             ResourceType::SONG => new Resource(
                 type: ResourceType::SONG,
                 agencyId: $basic instanceof SongBasic && $basic->agencyIdentifier() !== null ? (string) $basic->agencyIdentifier() : null,
                 groupIds: $basic instanceof SongBasic ? array_map(static fn (WikiIdentifier $id): string => (string) $id, $basic->groupIdentifiers()) : [],
                 talentIds: $basic instanceof SongBasic ? array_map(static fn (WikiIdentifier $id): string => (string) $id, $basic->talentIdentifiers()) : [],
-                ownerAccountCategory: $ownerAccountCategory,
+                requesterAccountCategory: $requesterAccountCategory,
             ),
-            default => new Resource(type: $resourceType, ownerAccountCategory: $ownerAccountCategory),
+            default => new Resource(type: $resourceType, requesterAccountCategory: $requesterAccountCategory),
         };
     }
 }

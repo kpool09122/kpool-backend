@@ -796,8 +796,8 @@ model OfficialCertificationSummary {
   certificationIdentifier: Uuid;
   @doc("Resource type that the certification belongs to.")
   resourceType: string;
-  @doc("Wiki identifier related to the certification.")
-  wikiIdentifier: Uuid;
+  @doc("Translation set identifier related to the certification.")
+  translationSetIdentifier: Uuid;
   @doc("Current workflow status of the certification.")
   status: string;
 }
