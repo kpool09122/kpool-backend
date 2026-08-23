@@ -827,6 +827,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /official-certifications:
+    get:
+      operationId: OfficialCertificationListOperations_listOfficialCertifications
+      description: List official certification requests for operators.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when listing official certification requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  officialCertifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OfficialCertificationListItem'
+                  current_page:
+                    type: integer
+                    format: int32
+                  last_page:
+                    type: integer
+                    format: int32
+                  total:
+                    type: integer
+                    format: int32
+                  per_page:
+                    type: integer
+                    format: int32
+                required:
+                  - officialCertifications
+                  - current_page
+                  - last_page
+                  - total
+                  - per_page
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /policy/create:
     post:
       operationId: PrincipalOperations_createPolicy
@@ -4089,6 +4163,89 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Principal identifier to mutate.
       description: Request body for adding or removing a principal group member.
+    OfficialCertificationListItem:
+      type: object
+      required:
+        - certificationIdentifier
+        - resourceType
+        - translationSetIdentifier
+        - ownerAccount
+        - wikis
+        - status
+        - requestedAt
+        - approvedAt
+        - rejectedAt
+      properties:
+        certificationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Certification identifier.
+        resourceType:
+          type: string
+          description: Resource type that the certification belongs to.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier related to the certification.
+        ownerAccount:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/OfficialCertificationOwnerAccount'
+          nullable: true
+          description: Account that owns the certified resource.
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiListItem'
+          description: Published wikis related by the same translation set identifier.
+        status:
+          type: string
+          description: Current workflow status of the certification.
+        requestedAt:
+          type: string
+          format: date-time
+          description: Date and time when the certification was requested.
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the certification was approved.
+        rejectedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the certification was rejected.
+      description: Summary shown in the operator official certification request list.
+    OfficialCertificationOwnerAccount:
+      type: object
+      required:
+        - accountIdentifier
+        - email
+        - type
+        - name
+        - status
+        - category
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Owner account identifier.
+        email:
+          type: string
+          description: Owner account email address.
+        type:
+          type: string
+          description: Owner account type.
+        name:
+          type: string
+          description: Owner account display name.
+        status:
+          type: string
+          description: Owner account status.
+        category:
+          type: string
+          description: Owner account category.
+      description: Owner account summary shown in the operator official certification request list.
     OfficialCertificationSummary:
       type: object
       required:

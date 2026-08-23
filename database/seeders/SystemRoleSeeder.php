@@ -68,7 +68,10 @@ class SystemRoleSeeder extends Seeder
     {
         $role = $this->roleFactory->create(
             name: 'ADMINISTRATOR',
-            policies: $this->getPolicyIdentifiers($this->globalPolicyNames()),
+            policies: $this->getPolicyIdentifiers([
+                ...$this->globalPolicyNames(),
+                'GLOBAL_OFFICIAL_CERTIFICATION_READ',
+            ]),
             isSystemRole: true,
         );
 
