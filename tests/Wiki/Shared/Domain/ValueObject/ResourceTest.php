@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
@@ -36,6 +37,17 @@ class ResourceTest extends TestCase
         $this->assertSame($groupIds, $resource->groupIds());
         $this->assertSame($talentIds, $resource->talentIds());
         $this->assertSame($isOfficial, $resource->isOfficial());
+        $this->assertNull($resource->requesterAccountCategory());
+    }
+
+    public function testRequesterAccountCategory(): void
+    {
+        $resource = new Resource(
+            type: ResourceType::AGENCY,
+            requesterAccountCategory: AccountCategory::AGENCY,
+        );
+
+        $this->assertSame(AccountCategory::AGENCY, $resource->requesterAccountCategory());
     }
 
     /**

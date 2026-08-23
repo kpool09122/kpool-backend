@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -63,13 +64,13 @@ class SystemPolicySeeder extends Seeder
                     effect: Effect::ALLOW,
                     actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
                     resourceTypes: [ResourceType::AGENCY],
-                    condition: null,
+                    condition: $this->requesterAccountCategoryCondition(AccountCategory::AGENCY),
                 ),
                 new Statement(
                     effect: Effect::ALLOW,
                     actions: [Action::OFFICIAL_CERTIFICATION_REQUEST],
                     resourceTypes: [ResourceType::TALENT],
-                    condition: null,
+                    condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
                 ),
             ],
             isSystemPolicy: true,
@@ -144,7 +145,7 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::AGENCY],
-            condition: $this->agencyCondition(),
+            condition: $this->requesterAccountCategoryCondition(AccountCategory::AGENCY),
         );
 
         $this->createPolicy(
@@ -152,7 +153,7 @@ class SystemPolicySeeder extends Seeder
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
             resourceTypes: [ResourceType::TALENT],
-            condition: $this->talentCondition(),
+            condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
         );
     }
 
@@ -228,6 +229,17 @@ class SystemPolicySeeder extends Seeder
                 ConditionKey::RESOURCE_TALENT_ID,
                 ConditionOperator::IN,
                 ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS,
+            ),
+        ]);
+    }
+
+    private function requesterAccountCategoryCondition(AccountCategory $category): Condition
+    {
+        return new Condition([
+            new ConditionClause(
+                ConditionKey::RESOURCE_REQUESTER_ACCOUNT_CATEGORY,
+                ConditionOperator::EQUALS,
+                $category->value,
             ),
         ]);
     }

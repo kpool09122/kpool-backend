@@ -1149,6 +1149,45 @@ class PolicyEvaluatorTest extends TestCase
     }
 
     /**
+     * 正常系: ResourceのrequesterAccountCategoryをConditionで評価できること.
+     */
+    #[Group('useDb')]
+    public function testConditionRequesterAccountCategoryEquals(): void
+    {
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::OFFICIAL_CERTIFICATION_REQUEST],
+                [ResourceType::AGENCY],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_REQUESTER_ACCOUNT_CATEGORY,
+                        ConditionOperator::EQUALS,
+                        AccountCategory::AGENCY->value,
+                    ),
+                ]),
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+        $principal = $this->createPrincipal();
+        $this->createAndSavePrincipalGroup($principal->principalIdentifier(), [$role->roleIdentifier()]);
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository,
+            $this->conditionValueResolver(),
+        );
+
+        $agencyRequesterResource = new Resource(type: ResourceType::AGENCY, requesterAccountCategory: AccountCategory::AGENCY);
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::OFFICIAL_CERTIFICATION_REQUEST, $agencyRequesterResource));
+
+        $talentRequesterResource = new Resource(type: ResourceType::AGENCY, requesterAccountCategory: AccountCategory::TALENT);
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::OFFICIAL_CERTIFICATION_REQUEST, $talentRequesterResource));
+    }
+
+    /**
      * 正常系: 基本編集権限のテスト（CREATE, EDIT, SUBMIT のみ許可）.
      */
     #[Group('useDb')]
