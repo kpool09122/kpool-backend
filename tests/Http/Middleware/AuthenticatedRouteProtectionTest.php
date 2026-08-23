@@ -165,6 +165,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki: official certifications list' => ['GET', '/api/wiki/official-certifications'],
             'wiki: my official certifications list' => ['GET', '/api/wiki/my/official-certifications'],
             'wiki: official certification request' => ['POST', '/api/wiki/official-certification/request'],
+            'wiki: official certification owned wikis sync' => ['PUT', '/api/wiki/official-certification/owned-wikis'],
             'wiki: official certification approve' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000012/approve'],
             'wiki: official certification reject' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000013/reject'],
             'wiki: video link save' => ['POST', '/api/wiki/video-link/save'],
@@ -198,6 +199,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],
             'wiki official certifications resolves actor and wiki' => ['GET', '/api/wiki/official-certifications', ['resolve.actor', 'resolve.wiki']],
             'wiki my official certifications resolves actor, account and wiki' => ['GET', '/api/wiki/my/official-certifications', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
+            'wiki official certification owned sync resolves actor, account and wiki' => ['PUT', '/api/wiki/official-certification/owned-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
             'wiki video link resolves actor and wiki' => ['POST', '/api/wiki/video-link/save', ['resolve.actor', 'resolve.wiki']],
         ];
     }

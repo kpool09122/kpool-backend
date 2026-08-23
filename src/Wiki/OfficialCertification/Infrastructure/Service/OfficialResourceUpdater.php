@@ -24,11 +24,34 @@ readonly class OfficialResourceUpdater implements OfficialResourceUpdaterInterfa
     ): void {
         $wikis = $this->wikiRepository->findByTranslationSetIdentifier($id);
         foreach ($wikis as $wiki) {
-            if ($wiki->resourceType() !== $type || $wiki->isOfficial()) {
+            if (
+                $wiki->resourceType() !== $type
+                || (string) $wiki->ownerAccountIdentifier() === (string) $owner
+            ) {
                 continue;
             }
 
             $wiki->markOfficial($owner);
+            $this->wikiRepository->save($wiki);
+        }
+    }
+
+    public function unmarkOfficial(
+        ResourceType $type,
+        TranslationSetIdentifier $id,
+        AccountIdentifier $owner,
+    ): void {
+        $wikis = $this->wikiRepository->findByTranslationSetIdentifier($id);
+        foreach ($wikis as $wiki) {
+            if (
+                $wiki->resourceType() !== $type
+                || ! $wiki->isOfficial()
+                || (string) $wiki->ownerAccountIdentifier() !== (string) $owner
+            ) {
+                continue;
+            }
+
+            $wiki->unmarkOfficial($owner);
             $this->wikiRepository->save($wiki);
         }
     }

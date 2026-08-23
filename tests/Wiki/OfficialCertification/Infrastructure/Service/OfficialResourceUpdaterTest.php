@@ -152,7 +152,7 @@ class OfficialResourceUpdaterTest extends TestCase
     }
 
     /**
-     * 正常系: 既に公式化済みの場合は更新されないこと.
+     * 正常系: 同じ owner で公式化済みの場合は更新されないこと.
      *
      * @return void
      * @throws BindingResolutionException
@@ -177,6 +177,39 @@ class OfficialResourceUpdaterTest extends TestCase
         $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
+    }
+
+    /**
+     * 正常系: 別 owner で公式化済みの場合は owner が差し替えられること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testMarkOfficialWhenOwnedByAnotherAccountReplacesOwner(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $owner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $previousOwner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki = $this->createWiki($wikiId, ResourceType::GROUP, $previousOwner);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
+        $wikiRepository->shouldReceive('save')
+            ->once()
+            ->with($wiki)
+            ->andReturn([]);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+
+        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+
+        $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
+
+        $this->assertTrue($wiki->isOfficial());
+        $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
     }
 
     /**
@@ -255,6 +288,97 @@ class OfficialResourceUpdaterTest extends TestCase
         $service->markOfficial(ResourceType::SONG, new TranslationSetIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
+    }
+
+    /**
+     * 正常系: 指定 owner の公式 Wiki が公式解除されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testUnmarkOfficial(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $owner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki = $this->createWiki($wikiId, ResourceType::GROUP, $owner);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
+        $wikiRepository->shouldReceive('save')
+            ->once()
+            ->with($wiki)
+            ->andReturn([]);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+
+        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+
+        $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
+
+        $this->assertFalse($wiki->isOfficial());
+        $this->assertNull($wiki->ownerAccountIdentifier());
+    }
+
+    /**
+     * 正常系: resource type が一致しない場合は公式解除されないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testUnmarkOfficialWhenResourceTypeDoesNotMatchDoesNothing(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $owner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki = $this->createWiki($wikiId, ResourceType::SONG, $owner);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
+        $wikiRepository->shouldReceive('save')->never();
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+
+        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+
+        $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
+
+        $this->assertTrue($wiki->isOfficial());
+        $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
+    }
+
+    /**
+     * 正常系: owner が一致しない場合は公式解除されないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testUnmarkOfficialWhenOwnerDoesNotMatchDoesNothing(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $owner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherOwner = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki = $this->createWiki($wikiId, ResourceType::GROUP, $owner);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $id): bool => (string) $id === $wikiId))
+            ->andReturn([$wiki]);
+        $wikiRepository->shouldReceive('save')->never();
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+
+        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+
+        $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $otherOwner);
+
+        $this->assertTrue($wiki->isOfficial());
+        $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
     }
 
     private function createWiki(string $wikiId, ResourceType $resourceType, ?AccountIdentifier $owner = null): Wiki

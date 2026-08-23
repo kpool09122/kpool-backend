@@ -16,6 +16,7 @@ use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImag
 use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\SyncOwnedWikiCertifications\SyncOwnedWikiCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListOfficialCertifications\ListOfficialCertificationsAction;
 use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
@@ -153,6 +154,8 @@ Route::get('/official-certifications', ListOfficialCertificationsAction::class)
 Route::get('/my/official-certifications', ListMyOfficialCertificationsAction::class)
     ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
 Route::post('/official-certification/request', RequestCertificationAction::class)
+    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
+Route::put('/official-certification/owned-wikis', SyncOwnedWikiCertificationsAction::class)
     ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
 Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class)
     ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

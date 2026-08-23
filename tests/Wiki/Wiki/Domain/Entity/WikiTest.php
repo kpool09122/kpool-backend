@@ -450,24 +450,18 @@ class WikiTest extends TestCase
         $this->assertSame($ownerAccountIdentifier, $wiki->ownerAccountIdentifier());
     }
 
-    /**
-     * 正常系：既に公式のWikiにmarkOfficialを呼んでもownerAccountIdentifierが変更されないこと.
-     *
-     * @return void
-     */
     public function testMarkOfficialWhenAlreadyOfficial(): void
     {
         $data = $this->createDummyWiki(isOfficial: true);
         $wiki = $data->wiki;
 
         $this->assertTrue($wiki->isOfficial());
-        $originalOwner = $wiki->ownerAccountIdentifier();
 
         $newOwnerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $wiki->markOfficial($newOwnerAccountIdentifier);
 
         $this->assertTrue($wiki->isOfficial());
-        $this->assertSame($originalOwner, $wiki->ownerAccountIdentifier());
+        $this->assertSame($newOwnerAccountIdentifier, $wiki->ownerAccountIdentifier());
     }
 
     /**
