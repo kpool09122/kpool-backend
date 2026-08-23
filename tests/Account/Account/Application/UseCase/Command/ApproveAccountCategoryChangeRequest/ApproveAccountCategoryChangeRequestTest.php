@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
+use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInput;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestOutput;
@@ -45,6 +46,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
         $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
         $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
 
         $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
     }
@@ -85,8 +87,14 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
                 && (string) $event->reviewerAccountIdentifier() === (string) $reviewerAccountId
                 && $event->accountType() === AccountType::INDIVIDUAL));
 
+        /** @var AccountContextInvalidationServiceInterface&Mockery\MockInterface $accountContextInvalidationService */
+        $accountContextInvalidationService = Mockery::mock(AccountContextInvalidationServiceInterface::class);
+        $accountContextInvalidationService->shouldReceive('forgetByAccountIdentifier')
+            ->once()
+            ->with($targetAccountId);
+
         $output = new ApproveAccountCategoryChangeRequestOutput();
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, $eventDispatcher))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, $eventDispatcher, $accountContextInvalidationService))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $principal), $output);
 
         $this->assertSame(AccountCategoryChangeRequestStatus::APPROVED, $request->status());
@@ -115,7 +123,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnFalse();
 
         $this->expectException(AccountCategoryChangeRequestForbiddenException::class);
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock()))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock(), self::accountContextInvalidationServiceMock()))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $principal), new ApproveAccountCategoryChangeRequestOutput());
     }
 
@@ -137,6 +145,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
             $accountRepository,
             $policyEvaluator,
             self::eventDispatcherMock(),
+            self::accountContextInvalidationServiceMock(),
         ))->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
     }
 
@@ -161,7 +170,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
 
         $this->expectException(InvalidAccountCategoryChangeRequestApprovalException::class);
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock()))
+        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock(), self::accountContextInvalidationServiceMock()))
             ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
     }
 
@@ -172,6 +181,18 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
     {
         /** @var EventDispatcherInterface&Mockery\MockInterface $mock */
         $mock = Mockery::mock(EventDispatcherInterface::class);
+
+        return $mock;
+    }
+
+    /**
+     * @return AccountContextInvalidationServiceInterface&Mockery\MockInterface
+     */
+    private static function accountContextInvalidationServiceMock(): AccountContextInvalidationServiceInterface
+    {
+        /** @var AccountContextInvalidationServiceInterface&Mockery\MockInterface $mock */
+        $mock = Mockery::mock(AccountContextInvalidationServiceInterface::class);
+        $mock->shouldNotReceive('forgetByAccountIdentifier');
 
         return $mock;
     }
