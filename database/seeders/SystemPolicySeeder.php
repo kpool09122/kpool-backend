@@ -46,6 +46,10 @@ class SystemPolicySeeder extends Seeder
                 continue;
             }
 
+            if ($action === Action::OFFICIAL_CERTIFICATION_MY_READ) {
+                continue;
+            }
+
             $this->createPolicy(
                 name: 'GLOBAL_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,
@@ -149,9 +153,25 @@ class SystemPolicySeeder extends Seeder
         );
 
         $this->createPolicy(
+            name: 'AGENCY_SCOPE_OFFICIAL_CERTIFICATION_MY_READ',
+            effect: Effect::ALLOW,
+            action: Action::OFFICIAL_CERTIFICATION_MY_READ,
+            resourceTypes: [ResourceType::AGENCY],
+            condition: $this->requesterAccountCategoryCondition(AccountCategory::AGENCY),
+        );
+
+        $this->createPolicy(
             name: 'TALENT_SCOPE_OFFICIAL_CERTIFICATION_REQUEST',
             effect: Effect::ALLOW,
             action: Action::OFFICIAL_CERTIFICATION_REQUEST,
+            resourceTypes: [ResourceType::TALENT],
+            condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
+        );
+
+        $this->createPolicy(
+            name: 'TALENT_SCOPE_OFFICIAL_CERTIFICATION_MY_READ',
+            effect: Effect::ALLOW,
+            action: Action::OFFICIAL_CERTIFICATION_MY_READ,
             resourceTypes: [ResourceType::TALENT],
             condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
         );

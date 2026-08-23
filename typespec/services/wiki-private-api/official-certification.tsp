@@ -73,11 +73,19 @@ model ListOfficialCertificationsResponse {
   };
 }
 
-@route("/official-certifications")
 interface OfficialCertificationListOperations {
   @get
+  @route("/official-certifications")
   @doc("List official certification requests for operators.")
   listOfficialCertifications(
+    @query status?: string | null,
+    @query perPage?: int32 | null,
+  ): ListOfficialCertificationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/my/official-certifications")
+  @doc("List official certification requests owned by the current account.")
+  listMyOfficialCertifications(
     @query status?: string | null,
     @query perPage?: int32 | null,
   ): ListOfficialCertificationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;

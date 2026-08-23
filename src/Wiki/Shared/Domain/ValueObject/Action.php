@@ -23,6 +23,7 @@ enum Action: string
     case HIDE = 'hide';
     case UNHIDE = 'unhide';
     case OFFICIAL_CERTIFICATION_REQUEST = 'official_certification_request';
+    case OFFICIAL_CERTIFICATION_MY_READ = 'official_certification_my_read';
     case OFFICIAL_CERTIFICATION_READ = 'official_certification_read';
     case OFFICIAL_CERTIFICATION_APPROVE = 'official_certification_approve';
     case OFFICIAL_CERTIFICATION_REJECT = 'official_certification_reject';

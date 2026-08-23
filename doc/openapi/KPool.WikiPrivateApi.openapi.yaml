@@ -630,6 +630,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/official-certifications:
+    get:
+      operationId: OfficialCertificationListOperations_listMyOfficialCertifications
+      description: List official certification requests owned by the current account.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when listing official certification requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  officialCertifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OfficialCertificationListItem'
+                  current_page:
+                    type: integer
+                    format: int32
+                  last_page:
+                    type: integer
+                    format: int32
+                  total:
+                    type: integer
+                    format: int32
+                  per_page:
+                    type: integer
+                    format: int32
+                required:
+                  - officialCertifications
+                  - current_page
+                  - last_page
+                  - total
+                  - per_page
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/owned-wikis:
     get:
       operationId: MyOwnedWikiListOperations_listMyOwnedWikis

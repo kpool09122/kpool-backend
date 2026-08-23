@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Application\Models\Account\Account;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $rejected_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
+ * @property-read Account|null $ownerAccount
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Wiki> $wikis
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -43,5 +48,21 @@ class OfficialCertification extends Model
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function ownerAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'owner_account_id', 'id');
+    }
+
+    /**
+     * @return HasMany<Wiki, $this>
+     */
+    public function wikis(): HasMany
+    {
+        return $this->hasMany(Wiki::class, 'translation_set_identifier', 'translation_set_identifier');
     }
 }
