@@ -211,16 +211,16 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             return false;
         }
 
-        // 配列同士の比較は空でない交差があるかチェック
-        if (is_array($resourceValue) && is_array($conditionValue)) {
-            return count(array_intersect($resourceValue, $conditionValue)) > 0;
-        }
+        if (is_array($resourceValue)) {
+            // 配列同士の比較は空でない交差があるかチェック
+            if (is_array($conditionValue)) {
+                return count(array_intersect($resourceValue, $conditionValue)) > 0;
+            }
 
-        if (is_array($resourceValue) && ! is_array($conditionValue)) {
             return in_array($conditionValue, $resourceValue, true);
         }
 
-        if (! is_array($resourceValue) && is_array($conditionValue)) {
+        if (is_array($conditionValue)) {
             return in_array($resourceValue, $conditionValue, true);
         }
 
