@@ -161,6 +161,7 @@ readonly class ListMyOfficialCertifications implements ListMyOfficialCertificati
             normalizedName: (string) $basic->getAttribute('normalized_name'),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
+            isOfficial: $wiki->owner_account_id !== null,
         );
     }
 

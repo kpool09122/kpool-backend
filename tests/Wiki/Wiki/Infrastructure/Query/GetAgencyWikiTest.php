@@ -35,6 +35,7 @@ class GetAgencyWikiTest extends TestCase
                 'language' => 'ko',
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f405',
                 'version' => 3,
+                'owner_account_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f406',
                 'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
                 'theme_color' => '#1A1A1A',
                 'title' => 'JYP Agency Wiki',
@@ -89,6 +90,7 @@ class GetAgencyWikiTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame(3, $readModel->version());
+        $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
         $this->assertSame('JYP Agency Wiki', $readModel->title());
         $this->assertSame('JYP Entertainment profile.', $readModel->metaDescription());
@@ -130,6 +132,7 @@ class GetAgencyWikiTest extends TestCase
         $useCase = $this->app->make(GetAgencyWikiInterface::class);
         $readModel = $useCase->process(new GetAgencyWikiInput(new Slug('ag-nullable-basic'), Language::ENGLISH));
 
+        $this->assertFalse($readModel->isOfficial());
         $this->assertNull($readModel->basic()['officialWebsite']);
     }
 

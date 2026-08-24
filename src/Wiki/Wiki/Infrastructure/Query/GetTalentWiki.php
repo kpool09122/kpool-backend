@@ -53,6 +53,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             language: $model->language,
             resourceType: ResourceType::TALENT->value,
             version: $model->version,
+            isOfficial: $model->owner_account_id !== null,
             themeColor: $model->theme_color,
             fontStyle: $model->font_style,
             title: $model->title,

@@ -52,6 +52,7 @@ class WikiReadModelTest extends TestCase
             title: 'TWICE Wiki',
             metaDescription: 'Profile and history for TWICE.',
             keywords: ['TWICE', 'K-pop'],
+            isOfficial: true,
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
@@ -60,6 +61,7 @@ class WikiReadModelTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(2, $readModel->version());
+        $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame('ja_pop', $readModel->fontStyle());
         $this->assertSame('TWICE Wiki', $readModel->title());
@@ -76,6 +78,7 @@ class WikiReadModelTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'group',
             'version' => 2,
+            'isOfficial' => true,
             'themeColor' => '#FE5F8F',
             'fontStyle' => 'ja_pop',
             'title' => 'TWICE Wiki',

@@ -59,6 +59,7 @@ class GetTalentWikiTest extends TestCase
                 'language' => 'ko',
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
                 'version' => 4,
+                'owner_account_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f104',
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
                     [
@@ -97,6 +98,7 @@ class GetTalentWikiTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
         $this->assertSame(4, $readModel->version());
+        $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());

@@ -22,6 +22,7 @@ readonly class WikiListItemReadModel
         private string $normalizedName,
         private ?string $publishedAt,
         private ?string $updatedAt,
+        private bool $isOfficial,
         private ?string $title = null,
         private ?string $metaDescription = null,
         /** @var list<string>|null */
@@ -52,6 +53,7 @@ readonly class WikiListItemReadModel
             'language' => $this->language,
             'resourceType' => $this->resourceType,
             'version' => $this->version,
+            'isOfficial' => $this->isOfficial,
             'themeColor' => $this->themeColor,
             'fontStyle' => $this->fontStyle,
             'title' => $this->title,
