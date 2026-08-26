@@ -76,8 +76,21 @@ interface MyContactOperations {
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
+@doc("Response containing contact inquiries for an identity.")
+model ListContactsByIdentityResponse {
+  @statusCode statusCode: 200;
+  @body body: ContactSummary[];
+}
+
 @route("/contact")
 interface ContactOperations {
+  @get
+  @route("/identities/{identityIdentifier}")
+  @doc("List contact inquiries for the specified identity. Requires a site-management administrator.")
+  listContactsByIdentity(
+    @path identityIdentifier: Uuid,
+  ): ListContactsByIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/submit/v{version}")
   @doc("Submit a contact inquiry.")
