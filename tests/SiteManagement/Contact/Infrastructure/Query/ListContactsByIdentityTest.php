@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Infrastructure\Query;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
@@ -45,7 +47,11 @@ class ListContactsByIdentityTest extends TestCase
         $this->app->make(ListContactsByIdentityInterface::class)->process(new ListContactsByIdentityInput($requester, $target), $output);
 
         $this->assertSame([$newer, $older], array_column($output->toArray(), 'contactIdentifier'));
-        $this->assertSame(['newer@example.com', 'older@example.com'], array_column($output->toArray(), 'email'));
+        $this->assertSame([[], []], array_column($output->toArray(), 'replyIdentifiers'));
+        $this->assertSame([
+            (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
+            (new DateTimeImmutable('2026-08-15 10:00:00'))->format(DateTimeInterface::ATOM),
+        ], array_column($output->toArray(), 'createdAt'));
     }
 
     #[Group('useDb')]

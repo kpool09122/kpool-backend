@@ -22,7 +22,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ContactSummary'
+                  $ref: '#/components/schemas/MyContactSummary'
         '401':
           description: Access is unauthorized.
           content:
