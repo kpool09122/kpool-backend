@@ -79,7 +79,7 @@ interface MyContactOperations {
 @doc("Response containing contact inquiries for an identity.")
 model ListContactsByIdentityResponse {
   @statusCode statusCode: 200;
-  @body body: ContactSummary[];
+  @body body: MyContactSummary[];
 }
 
 @route("/contact")

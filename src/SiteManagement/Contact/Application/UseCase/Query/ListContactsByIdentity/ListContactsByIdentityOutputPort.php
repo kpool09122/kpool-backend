@@ -11,6 +11,6 @@ interface ListContactsByIdentityOutputPort
     /** @param ContactReadModel[] $contacts */
     public function output(array $contacts): void;
 
-    /** @return array<int, array{contactIdentifier: string, identityIdentifier: ?string, category: int, name: string, email: string, content: string}> */
+    /** @return array<int, array{contactIdentifier: string, identityIdentifier: ?string, category: int, name: string, replyIdentifiers: array<int, string>, createdAt: string}> */
     public function toArray(): array;
 }
