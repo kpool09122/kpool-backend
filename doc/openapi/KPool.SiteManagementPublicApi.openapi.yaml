@@ -17,7 +17,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ContactSummary'
+                  $ref: '#/components/schemas/MyContactSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -129,10 +129,49 @@ components:
           type: string
           description: URI reference identifying the specific occurrence.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
     KPool.Common.Uuid:
       type: string
       format: uuid
       description: UUID identifier.
+    MyContactSummary:
+      type: object
+      required:
+        - contactIdentifier
+        - category
+        - name
+        - replyIdentifiers
+        - createdAt
+      properties:
+        contactIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Contact identifier.
+        identityIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Identity identifier associated with the inquiry.
+        category:
+          type: integer
+          format: int32
+          description: Category of the inquiry.
+        name:
+          type: string
+          description: Name of the person submitting the inquiry.
+        replyIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identifiers of replies sent successfully for this inquiry.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the inquiry was created.
+      description: Contact inquiry summary returned to its submitter.
     SubmitContactRequestBody:
       type: object
       required:

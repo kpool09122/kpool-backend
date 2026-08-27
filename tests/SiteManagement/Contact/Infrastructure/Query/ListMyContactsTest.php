@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Infrastructure\Query;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
+use Tests\Helper\CreateReplyContact;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -67,6 +72,37 @@ class ListMyContactsTest extends TestCase
             content: '匿名の内容',
             createdAt: '2026-08-17 11:00:00',
         );
+        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $sentReply = CreateReplyContact::create(
+            new ContactIdentifier($newerContactIdentifier),
+            new Email('newer@example.com'),
+            $identityIdentifier,
+            new DateTimeImmutable('2026-08-17 10:00:00'),
+            null,
+            new DateTimeImmutable('2026-08-17 10:00:00'),
+            '送信成功した返信',
+            $encryptionService,
+        );
+        CreateReplyContact::create(
+            new ContactIdentifier($newerContactIdentifier),
+            new Email('newer@example.com'),
+            $identityIdentifier,
+            null,
+            new DateTimeImmutable('2026-08-17 10:01:00'),
+            new DateTimeImmutable('2026-08-17 10:01:00'),
+            '送信失敗した返信',
+            $encryptionService,
+        );
+        CreateReplyContact::create(
+            new ContactIdentifier($newerContactIdentifier),
+            new Email('newer@example.com'),
+            $identityIdentifier,
+            null,
+            null,
+            new DateTimeImmutable('2026-08-17 10:02:00'),
+            '送信結果未確定の返信',
+            $encryptionService,
+        );
 
         $output = new ListMyContactsOutput();
         $this->app->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identityIdentifier), $output);
@@ -77,16 +113,16 @@ class ListMyContactsTest extends TestCase
                 'identityIdentifier' => (string) $identityIdentifier,
                 'category' => Category::ISSUES->value,
                 'name' => '新しい問い合わせ',
-                'email' => 'newer@example.com',
-                'content' => '新しい内容',
+                'replyIdentifiers' => [(string) $sentReply->replyIdentifier()],
+                'createdAt' => (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
             ],
             [
                 'contactIdentifier' => $olderContactIdentifier,
                 'identityIdentifier' => (string) $identityIdentifier,
                 'category' => Category::SUGGESTIONS->value,
                 'name' => '古い問い合わせ',
-                'email' => 'older@example.com',
-                'content' => '古い内容',
+                'replyIdentifiers' => [],
+                'createdAt' => (new DateTimeImmutable('2026-08-15 10:00:00'))->format(DateTimeInterface::ATOM),
             ],
         ], $output->toArray());
     }

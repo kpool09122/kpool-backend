@@ -47,10 +47,26 @@ model SubmitContactResponse {
   @body body: ContactSummary;
 }
 
+@doc("Contact inquiry summary returned to its submitter.")
+model MyContactSummary {
+  @doc("Contact identifier.")
+  contactIdentifier: Uuid;
+  @doc("Identity identifier associated with the inquiry.")
+  identityIdentifier?: Uuid | null;
+  @doc("Category of the inquiry.")
+  category: int32;
+  @doc("Name of the person submitting the inquiry.")
+  name: string;
+  @doc("Identifiers of replies sent successfully for this inquiry.")
+  replyIdentifiers: Uuid[];
+  @doc("Timestamp when the inquiry was created.")
+  createdAt: Timestamp;
+}
+
 @doc("Response containing contact inquiries associated with the signed-in identity.")
 model ListMyContactsResponse {
   @statusCode statusCode: 200;
-  @body body: ContactSummary[];
+  @body body: MyContactSummary[];
 }
 
 @route("/contact")

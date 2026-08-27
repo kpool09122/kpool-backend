@@ -17,8 +17,8 @@ class ListMyContactsOutputTest extends TestCase
             identityIdentifier: '00000000-0000-0000-0000-000000000002',
             category: 1,
             name: '問い合わせ太郎',
-            email: 'contact@example.com',
-            content: 'お問い合わせ内容',
+            replyIdentifiers: ['00000000-0000-0000-0000-000000000003'],
+            createdAt: '2026-08-27T12:00:00+00:00',
         );
         $output = new ListMyContactsOutput();
 
@@ -30,8 +30,8 @@ class ListMyContactsOutputTest extends TestCase
                 'identityIdentifier' => '00000000-0000-0000-0000-000000000002',
                 'category' => 1,
                 'name' => '問い合わせ太郎',
-                'email' => 'contact@example.com',
-                'content' => 'お問い合わせ内容',
+                'replyIdentifiers' => ['00000000-0000-0000-0000-000000000003'],
+                'createdAt' => '2026-08-27T12:00:00+00:00',
             ],
         ], $output->toArray());
     }

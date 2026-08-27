@@ -23,8 +23,8 @@ class ListMyContactsOutput implements ListMyContactsOutputPort
      *     identityIdentifier: ?string,
      *     category: int,
      *     name: string,
-     *     email: string,
-     *     content: string
+     *     replyIdentifiers: array<int, string>,
+     *     createdAt: string
      * }>
      */
     public function toArray(): array
