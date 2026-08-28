@@ -40,6 +40,7 @@ return [
     'password_mismatch' => '비밀번호가 일치하지 않습니다.',
     'invalid_delegation' => '위임 작업이 유효하지 않습니다.',
     'identity_not_found' => '지정된 아이덴티티를 찾을 수 없습니다.',
+    'contact_not_found' => '지정된 문의를 찾을 수 없습니다.',
     'already_user_exists' => '사용자가 이미 존재합니다.',
     'unauthorized_email' => '이메일 주소가 인증되지 않았습니다.',
     'auth_code_session_not_found' => '인증 코드 세션을 찾을 수 없습니다.',
