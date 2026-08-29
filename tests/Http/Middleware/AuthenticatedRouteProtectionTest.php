@@ -135,7 +135,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account: update principal group members' => ['PATCH', '/api/account/principal-groups/members'],
 
             // Site management: 自身の問い合わせは認証必須
-            'site management: list my contacts' => ['GET', '/api/site-management/contact/me'],
+            'site management: list my contacts' => ['GET', '/api/site-management/my/contact'],
 
             // Monetization: bootstrap/app.php のグループ設定で全 route が認証必須
             'monetization: provision account' => ['POST', '/api/monetization/accounts'],
@@ -194,7 +194,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account view document resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
             'account list account category change requests resolves actor and account' => ['GET', '/api/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
-            'site management list my contacts resolves actor' => ['GET', '/api/site-management/contact/me', ['resolve.actor']],
+            'site management list my contacts resolves actor' => ['GET', '/api/site-management/my/contact', ['resolve.actor']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],

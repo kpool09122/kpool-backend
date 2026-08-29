@@ -7,4 +7,4 @@ use Application\Http\Action\SiteManagement\Contact\Query\ListMyContacts\ListMyCo
 use Illuminate\Support\Facades\Route;
 
 Route::post('/contact/submit/v{version}', SubmitContactAction::class)->whereNumber('version');
-Route::get('/contact/me', ListMyContactsAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/my/contact', ListMyContactsAction::class)->middleware(['auth.api', 'resolve.actor']);

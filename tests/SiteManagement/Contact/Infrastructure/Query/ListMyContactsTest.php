@@ -105,7 +105,11 @@ class ListMyContactsTest extends TestCase
         );
 
         $output = new ListMyContactsOutput();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
         $this->app->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identityIdentifier), $output);
+
+        $this->assertCount(1, DB::getQueryLog());
 
         $this->assertSame([
             [

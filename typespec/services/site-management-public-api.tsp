@@ -69,13 +69,15 @@ model ListMyContactsResponse {
   @body body: MyContactSummary[];
 }
 
-@route("/contact")
-interface ContactOperations {
+@route("/my/contact")
+interface MyContactOperations {
   @get
-  @route("/me")
   @doc("List contact inquiries associated with the signed-in identity, newest first.")
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
 
+@route("/contact")
+interface ContactOperations {
   @post
   @route("/submit/v{version}")
   @doc("Submit a contact inquiry.")
