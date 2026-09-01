@@ -16,18 +16,20 @@ class ListContactsInputTest extends TestCase
         $requesterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $targetIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
-        $input = new ListContactsInput($requesterIdentityIdentifier, $targetIdentityIdentifier);
+        $input = new ListContactsInput($requesterIdentityIdentifier, $targetIdentityIdentifier, true);
 
         $this->assertSame($requesterIdentityIdentifier, $input->requesterIdentityIdentifier());
         $this->assertSame($targetIdentityIdentifier, $input->targetIdentityIdentifier());
+        $this->assertTrue($input->hasReply());
     }
 
     public function testConstructAllowsNullTargetIdentityIdentifier(): void
     {
         $requesterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
-        $input = new ListContactsInput($requesterIdentityIdentifier, null);
+        $input = new ListContactsInput($requesterIdentityIdentifier, null, null);
 
         $this->assertNull($input->targetIdentityIdentifier());
+        $this->assertNull($input->hasReply());
     }
 }

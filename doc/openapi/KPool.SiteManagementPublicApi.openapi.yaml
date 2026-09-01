@@ -54,6 +54,14 @@ paths:
               - $ref: '#/components/schemas/KPool.Common.Uuid'
             nullable: true
           explode: false
+        - name: hasReply
+          in: query
+          required: false
+          description: Whether the inquiry has at least one successfully sent reply.
+          schema:
+            type: boolean
+            nullable: true
+          explode: false
       responses:
         '200':
           description: Response containing contact inquiries.
