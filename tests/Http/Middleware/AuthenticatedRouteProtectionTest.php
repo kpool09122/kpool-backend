@@ -88,7 +88,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
     public function testSiteManagementIdentityContactsRouteIsRegistered(): void
     {
-        $expectedUri = 'api/site-management/contact/identities/{identityIdentifier}';
+        $expectedUri = 'api/site-management/contacts';
 
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
             if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {

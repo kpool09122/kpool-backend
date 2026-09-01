@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity;
+namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 
-interface ListContactsByIdentityOutputPort
+interface ListContactsOutputPort
 {
     /** @param ContactReadModel[] $contacts */
     public function output(array $contacts): void;

@@ -8,20 +8,20 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInputPort;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityOutputPort;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInputPort;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsOutputPort;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
-readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
+readonly class ListContacts implements ListContactsInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
     ) {
     }
 
-    public function process(ListContactsByIdentityInputPort $input, ListContactsByIdentityOutputPort $output): void
+    public function process(ListContactsInputPort $input, ListContactsOutputPort $output): void
     {
         $requester = $this->userRepository->findByIdentityIdentifier($input->requesterIdentityIdentifier());
         if (! $requester?->isAdmin()) {
@@ -30,7 +30,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
 
         $contacts = ContactModel::query()
             ->select(['id', 'identity_identifier', 'category', 'name', 'created_at'])
-            ->where('identity_identifier', (string) $input->targetIdentityIdentifier())
+            ->when($input->targetIdentityIdentifier() !== null, fn ($query) => $query->where('identity_identifier', (string) $input->targetIdentityIdentifier()))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();

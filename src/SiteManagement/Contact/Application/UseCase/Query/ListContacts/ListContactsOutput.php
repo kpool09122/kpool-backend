@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity;
+namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 
-class ListContactsByIdentityOutput implements ListContactsByIdentityOutputPort
+class ListContactsOutput implements ListContactsOutputPort
 {
     /** @var ContactReadModel[] */
     private array $contacts = [];
