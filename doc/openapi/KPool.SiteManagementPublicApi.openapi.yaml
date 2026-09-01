@@ -40,6 +40,55 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SubmitContactRequestBody'
+  /contacts:
+    get:
+      operationId: ContactListOperations_listContacts
+      description: List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.
+      parameters:
+        - name: identityIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: hasReply
+          in: query
+          required: false
+          description: Whether the inquiry has at least one successfully sent reply.
+          schema:
+            type: boolean
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response containing contact inquiries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MyContactSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
