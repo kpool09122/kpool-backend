@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity;
+namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-readonly class ListContactsByIdentityInput implements ListContactsByIdentityInputPort
+readonly class ListContactsInput implements ListContactsInputPort
 {
     public function __construct(
         private IdentityIdentifier $requesterIdentityIdentifier,
-        private IdentityIdentifier $targetIdentityIdentifier,
+        private ?IdentityIdentifier $targetIdentityIdentifier,
     ) {
     }
 
@@ -19,7 +19,7 @@ readonly class ListContactsByIdentityInput implements ListContactsByIdentityInpu
         return $this->requesterIdentityIdentifier;
     }
 
-    public function targetIdentityIdentifier(): IdentityIdentifier
+    public function targetIdentityIdentifier(): ?IdentityIdentifier
     {
         return $this->targetIdentityIdentifier;
     }
