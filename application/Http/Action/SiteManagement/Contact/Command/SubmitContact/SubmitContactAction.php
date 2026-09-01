@@ -7,10 +7,12 @@ namespace Application\Http\Action\SiteManagement\Contact\Command\SubmitContact;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
@@ -43,7 +45,7 @@ readonly class SubmitContactAction
         try {
             try {
                 $input = new SubmitContactInput(
-                    null,
+                    $this->authenticatedIdentityIdentifier(),
                     Category::from($request->category()),
                     new ContactName($request->name()),
                     new Email($request->email()),
@@ -83,5 +85,14 @@ readonly class SubmitContactAction
         }
 
         return response()->json($output->toArray(), Response::HTTP_CREATED);
+    }
+
+    private function authenticatedIdentityIdentifier(): ?IdentityIdentifier
+    {
+        if (! Auth::check()) {
+            return null;
+        }
+
+        return new IdentityIdentifier((string) Auth::id());
     }
 }
