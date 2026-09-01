@@ -9,9 +9,9 @@ use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactDetailReadModel;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutputPort;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
@@ -21,7 +21,7 @@ readonly class GetContactDetail implements GetContactDetailInterface
     {
     }
 
-    public function process(GetContactDetailInput $input, GetContactDetailOutput $output): void
+    public function process(GetContactDetailInputPort $input, GetContactDetailOutputPort $output): void
     {
         if (! $this->userRepository->findByIdentityIdentifier($input->requesterIdentityIdentifier())?->isAdmin()) {
             throw new UnauthorizedException();

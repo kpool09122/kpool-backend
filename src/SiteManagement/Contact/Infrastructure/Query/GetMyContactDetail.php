@@ -9,13 +9,13 @@ use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactDetailReadModel;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutputPort;
 
 readonly class GetMyContactDetail implements GetMyContactDetailInterface
 {
-    public function process(GetMyContactDetailInput $input, GetMyContactDetailOutput $output): void
+    public function process(GetMyContactDetailInputPort $input, GetMyContactDetailOutputPort $output): void
     {
         $contact = ContactModel::query()->select(['id', 'identity_identifier', 'category', 'name', 'content', 'created_at'])
             ->where('id', (string) $input->contactIdentifier())->where('identity_identifier', (string) $input->identityIdentifier())->first();

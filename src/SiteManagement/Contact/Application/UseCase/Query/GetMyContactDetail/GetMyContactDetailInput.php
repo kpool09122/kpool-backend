@@ -7,7 +7,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDe
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 
-readonly class GetMyContactDetailInput
+readonly class GetMyContactDetailInput implements GetMyContactDetailInputPort
 {
     public function __construct(
         private IdentityIdentifier $identityIdentifier,

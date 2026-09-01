@@ -6,7 +6,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDeta
 
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactDetailReadModel;
 
-class GetContactDetailOutput
+class GetContactDetailOutput implements GetContactDetailOutputPort
 {
     private ?ContactDetailReadModel $contact = null;
 

@@ -6,5 +6,5 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDe
 
 interface GetMyContactDetailInterface
 {
-    public function process(GetMyContactDetailInput $input, GetMyContactDetailOutput $output): void;
+    public function process(GetMyContactDetailInputPort $input, GetMyContactDetailOutputPort $output): void;
 }
