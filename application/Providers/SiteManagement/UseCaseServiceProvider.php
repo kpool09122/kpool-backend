@@ -19,8 +19,12 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\Reply
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
+use Source\SiteManagement\Contact\Infrastructure\Query\GetContactDetail;
+use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByIdentity;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUser;
@@ -37,6 +41,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ReplyContactInterface::class, ReplyContact::class);
         $this->app->singleton(ListContactsByIdentityInterface::class, ListContactsByIdentity::class);
         $this->app->singleton(ListMyContactsInterface::class, ListMyContacts::class);
+        $this->app->singleton(GetMyContactDetailInterface::class, GetMyContactDetail::class);
+        $this->app->singleton(GetContactDetailInterface::class, GetContactDetail::class);
         $this->app->singleton(TranslateAnnouncementInterface::class, TranslateAnnouncement::class);
         $this->app->singleton(PublishAnnouncementInterface::class, PublishAnnouncement::class);
         $this->app->singleton(ProvisionUserInterface::class, ProvisionUser::class);

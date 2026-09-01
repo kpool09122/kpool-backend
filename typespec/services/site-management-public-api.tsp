@@ -63,6 +63,24 @@ model MyContactSummary {
   createdAt: Timestamp;
 }
 
+@doc("A successfully sent reply to a contact inquiry.")
+model ContactReplyDetail {
+  replyIdentifier: Uuid;
+  content: string;
+  sentAt: Timestamp;
+}
+
+@doc("Contact inquiry detail.")
+model ContactDetail {
+  contactIdentifier: Uuid;
+  identityIdentifier?: Uuid | null;
+  category: int32;
+  name: string;
+  createdAt: Timestamp;
+  content: string;
+  replies: ContactReplyDetail[];
+}
+
 @doc("Response containing contact inquiries associated with the signed-in identity.")
 model ListMyContactsResponse {
   @statusCode statusCode: 200;
@@ -71,6 +89,13 @@ model ListMyContactsResponse {
 
 @route("/my/contact")
 interface MyContactOperations {
+  @get
+  @route("/{contactIdentifier}")
+  @doc("Get a contact inquiry associated with the signed-in identity.")
+  getMyContactDetail(
+    @path contactIdentifier: Uuid,
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @get
   @doc("List contact inquiries associated with the signed-in identity, newest first.")
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
@@ -84,6 +109,15 @@ model ListContactsByIdentityResponse {
 
 @route("/contact")
 interface ContactOperations {
+  @get
+  @route("/identities/{identityIdentifier}/{contactIdentifier}")
+  @doc("Get the specified contact inquiry for an identity. Requires a site-management administrator.")
+  getContactDetail(
+    @path identityIdentifier: Uuid,
+    @path contactIdentifier: Uuid,
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+
   @get
   @route("/identities/{identityIdentifier}")
   @doc("List contact inquiries for the specified identity. Requires a site-management administrator.")

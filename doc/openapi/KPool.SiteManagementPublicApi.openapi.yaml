@@ -41,6 +41,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /contact/identities/{identityIdentifier}/{contactIdentifier}:
+    get:
+      operationId: ContactOperations_getContactDetail
+      description: Get the specified contact inquiry for an identity. Requires a site-management administrator.
+      parameters:
+        - name: identityIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: contactIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /contact/submit/v{version}:
     post:
       operationId: ContactOperations_submitContact
@@ -103,6 +149,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/contact/{contactIdentifier}:
+    get:
+      operationId: MyContactOperations_getMyContactDetail
+      description: Get a contact inquiry associated with the signed-in identity.
+      parameters:
+        - name: contactIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
 components:
   schemas:
     ContactCategory:
@@ -113,6 +194,51 @@ components:
         - 3
         - 99
       description: Contact category accepted by the submit-contact endpoint.
+    ContactDetail:
+      type: object
+      required:
+        - contactIdentifier
+        - category
+        - name
+        - createdAt
+        - content
+        - replies
+      properties:
+        contactIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        category:
+          type: integer
+          format: int32
+        name:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        content:
+          type: string
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactReplyDetail'
+      description: Contact inquiry detail.
+    ContactReplyDetail:
+      type: object
+      required:
+        - replyIdentifier
+        - content
+        - sentAt
+      properties:
+        replyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        content:
+          type: string
+        sentAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+      description: A successfully sent reply to a contact inquiry.
     ContactSummary:
       type: object
       required:
