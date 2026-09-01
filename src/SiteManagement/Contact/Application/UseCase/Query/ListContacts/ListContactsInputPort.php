@@ -11,4 +11,6 @@ interface ListContactsInputPort
     public function requesterIdentityIdentifier(): IdentityIdentifier;
 
     public function targetIdentityIdentifier(): ?IdentityIdentifier;
+
+    public function hasReply(): ?bool;
 }

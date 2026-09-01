@@ -11,6 +11,7 @@ readonly class ListContactsInput implements ListContactsInputPort
     public function __construct(
         private IdentityIdentifier $requesterIdentityIdentifier,
         private ?IdentityIdentifier $targetIdentityIdentifier,
+        private ?bool $hasReply,
     ) {
     }
 
@@ -22,5 +23,10 @@ readonly class ListContactsInput implements ListContactsInputPort
     public function targetIdentityIdentifier(): ?IdentityIdentifier
     {
         return $this->targetIdentityIdentifier;
+    }
+
+    public function hasReply(): ?bool
+    {
+        return $this->hasReply;
     }
 }

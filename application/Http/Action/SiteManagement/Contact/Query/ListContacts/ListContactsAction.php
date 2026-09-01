@@ -33,6 +33,7 @@ readonly class ListContactsAction
             $this->listContacts->process(new ListContactsInput(
                 $this->actorContext->identityIdentifier,
                 $request->identityIdentifier() === null ? null : new IdentityIdentifier($request->identityIdentifier()),
+                $request->hasReply(),
             ), $output);
         } catch (UnauthorizedException $e) {
             $this->logger->error((string) $e);

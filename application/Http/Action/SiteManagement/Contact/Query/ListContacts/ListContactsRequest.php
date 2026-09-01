@@ -13,11 +13,17 @@ class ListContactsRequest extends FormRequest
     {
         return [
             'identityIdentifier' => ['nullable', 'uuid'],
+            'hasReply' => ['nullable', 'boolean'],
         ];
     }
 
     public function identityIdentifier(): ?string
     {
         return $this->query('identityIdentifier') !== null ? (string) $this->query('identityIdentifier') : null;
+    }
+
+    public function hasReply(): ?bool
+    {
+        return $this->query('hasReply') !== null ? $this->boolean('hasReply') : null;
     }
 }
