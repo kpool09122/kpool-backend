@@ -29,6 +29,8 @@ use Source\Account\Account\Infrastructure\Query\GetAccountCategoryChangeRequest;
 use Source\Account\Account\Infrastructure\Query\GetAccountDocument;
 use Source\Account\Account\Infrastructure\Query\ListAccountCategoryChangeRequests;
 use Source\Account\Account\Infrastructure\Query\ListAccountDocuments;
+use Source\Account\AccountDelegation\Application\UseCase\Command\RequestAccountDelegation\RequestAccountDelegation;
+use Source\Account\AccountDelegation\Application\UseCase\Command\RequestAccountDelegation\RequestAccountDelegationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliation;
@@ -89,6 +91,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetAccountDocumentInterface::class, GetAccountDocument::class);
         $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
+        $this->app->singleton(RequestAccountDelegationInterface::class, RequestAccountDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);
         $this->app->singleton(ListAffiliationsInterface::class, ListAffiliations::class);

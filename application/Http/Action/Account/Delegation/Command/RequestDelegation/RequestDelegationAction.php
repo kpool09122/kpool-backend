@@ -4,78 +4,77 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Delegation\Command\RequestDelegation;
 
+use Application\Http\Context\AccountContext;
+use Application\Http\Exceptions\ConflictHttpException;
+use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
-use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
-use Source\Account\Affiliation\Application\Exception\InvalidAffiliationStatusException;
-use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
-use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
-use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
-use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Account\AccountDelegation\Application\Exception\AccountDelegationForbiddenException;
+use Source\Account\AccountDelegation\Application\Exception\AccountDelegationUnavailableException;
+use Source\Account\AccountDelegation\Application\UseCase\Command\RequestAccountDelegation\RequestAccountDelegationInput;
+use Source\Account\AccountDelegation\Application\UseCase\Command\RequestAccountDelegation\RequestAccountDelegationInterface;
+use Source\Account\AccountDelegation\Application\UseCase\Command\RequestAccountDelegation\RequestAccountDelegationOutput;
+use Source\Account\AccountDelegation\Domain\Exception\AccountDelegationAlreadyExistsException;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 readonly class RequestDelegationAction
 {
     public function __construct(
-        private RequestDelegationInterface $requestDelegation,
+        private RequestAccountDelegationInterface $requestDelegation,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * @param RequestDelegationRequest $request
-     * @return JsonResponse
-     * @throws InternalServerErrorHttpException
-     */
     public function __invoke(RequestDelegationRequest $request): JsonResponse
     {
         try {
             try {
-                $input = new RequestDelegationInput(
-                    affiliationIdentifier: new AffiliationIdentifier($request->affiliationIdentifier()),
-                    delegateIdentifier: new IdentityIdentifier($request->delegateIdentifier()),
-                    delegatorIdentifier: new IdentityIdentifier($request->delegatorIdentifier()),
+                $input = new RequestAccountDelegationInput(
+                    $this->accountContext->principal(),
+                    new AccountIdentifier($request->targetAccountIdentifier()),
                 );
-                $output = new RequestDelegationOutput();
-            } catch (InvalidArgumentException $e) {
-                throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
+                $output = new RequestAccountDelegationOutput();
+            } catch (InvalidArgumentException $exception) {
+                throw new UnprocessableEntityHttpException(detail: $exception->getMessage(), previous: $exception);
             }
 
             DB::beginTransaction();
 
-            $language = $request->language();
-
             try {
                 $this->requestDelegation->process($input, $output);
                 DB::commit();
-            } catch (AffiliationNotFoundException $e) {
+            } catch (AccountDelegationForbiddenException $exception) {
                 DB::rollBack();
 
-                throw new NotFoundHttpException(detail: error_message('affiliation_not_found', $language), previous: $e);
-            } catch (InvalidAffiliationStatusException $e) {
+                throw new ForbiddenHttpException(detail: error_message('disallowed_delegation_operation', $request->language()), previous: $exception);
+            } catch (AccountDelegationUnavailableException $exception) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: error_message('invalid_affiliation_status', $language), previous: $e);
-            } catch (Throwable $e) {
+                throw new UnprocessableEntityHttpException(detail: error_message('disallowed_delegation_operation', $request->language()), previous: $exception);
+            } catch (AccountDelegationAlreadyExistsException $exception) {
                 DB::rollBack();
 
-                throw $e;
+                throw new ConflictHttpException(detail: error_message('account_delegation_already_exists', $request->language()), previous: $exception);
+            } catch (Throwable $exception) {
+                DB::rollBack();
+
+                throw $exception;
             }
-        } catch (NotFoundHttpException|UnprocessableEntityHttpException $e) {
-            $this->logger->error((string) $e);
+        } catch (ConflictHttpException|ForbiddenHttpException|UnprocessableEntityHttpException $exception) {
+            $this->logger->error((string) $exception);
 
-            return response()->json($e->toProblemDetails(), $e->getHttpStatus());
-        } catch (Throwable $e) {
-            $this->logger->error((string) $e);
+            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
+        } catch (Throwable $exception) {
+            $this->logger->error((string) $exception);
 
-            throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
+            throw new InternalServerErrorHttpException(detail: $exception->getMessage(), previous: $exception);
         }
 
         return response()->json($output->toArray(), Response::HTTP_CREATED);
