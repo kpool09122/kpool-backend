@@ -21,6 +21,10 @@ use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountContextInvalidationService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
+use Source\Account\AccountDelegation\Domain\Factory\AccountDelegationFactoryInterface;
+use Source\Account\AccountDelegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\AccountDelegation\Infrastructure\Factory\AccountDelegationFactory;
+use Source\Account\AccountDelegation\Infrastructure\Repository\AccountDelegationRepository;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Infrastructure\Factory\AffiliationFactory;
@@ -77,6 +81,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
         $this->app->singleton(AffiliationFactoryInterface::class, AffiliationFactory::class);
         $this->app->singleton(AffiliationRepositoryInterface::class, AffiliationRepository::class);
+        $this->app->singleton(AccountDelegationFactoryInterface::class, AccountDelegationFactory::class);
+        $this->app->singleton(AccountDelegationRepositoryInterface::class, AccountDelegationRepository::class);
 
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);
