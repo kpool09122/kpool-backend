@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => 'No se puede eliminar el último grupo de propietarios con miembros.',
     'delegation_not_found' => 'No se encontró la delegación especificada.',
     'disallowed_delegation_operation' => 'Esta operación de delegación no está permitida.',
+    'account_delegation_already_exists' => 'Ya existe una solicitud de delegación activa para esta afiliación.',
     'invalid_delegation_approval' => 'Solo se pueden aprobar las delegaciones pendientes.',
     'invalid_delegation_revocation' => 'Solo se pueden revocar las delegaciones aprobadas.',
     'affiliation_not_found' => 'No se encontro la afiliacion especificada.',

@@ -27,6 +27,14 @@ parameters:
     reportUnmatchedIgnoredErrors: true
 services:
     -
+        class: Kpool\PHPStan\Rules\ExceptionConstructorRule
+        arguments:
+            targetClassNamePatterns:
+                - '#^Source\\(?:[^\\]+\\)*Domain\\(?:[^\\]+\\)*[^\\]+Exception$#'
+                - '#^Source\\(?:[^\\]+\\)*Application\\(?:[^\\]+\\)*[^\\]+Exception$#'
+        tags:
+            - phpstan.rules.rule
+    -
         class: Kpool\PHPStan\Rules\ForbiddenExternalLibraryInDomainAndUseCaseRule
         arguments:
             targetFilePathPatterns:

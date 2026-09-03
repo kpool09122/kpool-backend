@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => '無法刪除有成員的最後一個擁有者群組。',
     'delegation_not_found' => '找不到指定的委託。',
     'disallowed_delegation_operation' => '不允許此委託操作。',
+    'account_delegation_already_exists' => '此所屬關係已存在有效的委託申請。',
     'invalid_delegation_approval' => '只能核准待處理的委託。',
     'invalid_delegation_revocation' => '只能撤銷已核准的委託。',
     'affiliation_not_found' => '找不到指定的所屬。',

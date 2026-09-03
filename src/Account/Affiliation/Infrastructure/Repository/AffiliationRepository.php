@@ -58,6 +58,26 @@ class AffiliationRepository implements AffiliationRepositoryInterface
         return $eloquent === null ? null : $this->toDomainEntity($eloquent);
     }
 
+    public function findActiveBetweenAccounts(
+        AccountIdentifier $firstAccountIdentifier,
+        AccountIdentifier $secondAccountIdentifier,
+    ): ?Affiliation {
+        $first = (string) $firstAccountIdentifier;
+        $second = (string) $secondAccountIdentifier;
+        $eloquent = AffiliationEloquent::query()
+            ->where('status', AffiliationStatus::ACTIVE->value)
+            ->where(static function ($query) use ($first, $second): void {
+                $query->where(static function ($query) use ($first, $second): void {
+                    $query->where('agency_account_id', $first)->where('talent_account_id', $second);
+                })->orWhere(static function ($query) use ($first, $second): void {
+                    $query->where('agency_account_id', $second)->where('talent_account_id', $first);
+                });
+            })
+            ->first();
+
+        return $eloquent === null ? null : $this->toDomainEntity($eloquent);
+    }
+
     /**
      * @return Affiliation[]
      */

@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -21,6 +22,7 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\Uid\Uuid;
 
 
@@ -28,6 +30,7 @@ class AccountAuthorizationSeeder extends Seeder
 {
     public function __construct(
         private readonly PolicyRepositoryInterface $policyRepository,
+        private readonly AccountContextInvalidationServiceInterface $accountContextInvalidationService,
     ) {
     }
 
@@ -84,8 +87,14 @@ class AccountAuthorizationSeeder extends Seeder
             Action::AFFILIATION_REJECT,
             $this->affiliationPairAllowedCondition(),
         );
+        $delegationRequestCreatePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000010',
+            'DELEGATION_REQUEST_CREATE',
+            Action::DELEGATION_REQUEST_CREATE,
+            $this->affiliationRequestCreateCondition(),
+        );
 
-        $accountManagementPolicyIdentifiers = [
+        $ownerPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
             $accountUpdatePolicy->policyIdentifier(),
@@ -94,13 +103,31 @@ class AccountAuthorizationSeeder extends Seeder
             $affiliationRequestReceivePolicy->policyIdentifier(),
             $affiliationApprovePolicy->policyIdentifier(),
             $affiliationRejectPolicy->policyIdentifier(),
+            $delegationRequestCreatePolicy->policyIdentifier(),
         ];
 
-        $this->saveRole(Role::OWNER, $accountManagementPolicyIdentifiers);
-        $this->saveRole(Role::ADMIN, $accountManagementPolicyIdentifiers);
+        $adminPolicyIdentifiers = [
+            $accountReadPolicy->policyIdentifier(),
+            $corporationAccountInviteMemberPolicy->policyIdentifier(),
+            $accountUpdatePolicy->policyIdentifier(),
+            $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
+            $affiliationRequestReceivePolicy->policyIdentifier(),
+            $affiliationApprovePolicy->policyIdentifier(),
+            $affiliationRejectPolicy->policyIdentifier(),
+        ];
+
+        $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
+        $this->saveRole(Role::ADMIN, $adminPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
         ]);
+
+        DB::table('account_principals')
+            ->distinct()
+            ->pluck('account_id')
+            ->each(fn (string $accountIdentifier) => $this->accountContextInvalidationService->forgetByAccountIdentifier(
+                new AccountIdentifier($accountIdentifier),
+            ));
     }
 
     private function corporationAccountCondition(): Condition

@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => '멤버가 있는 마지막 소유자 그룹은 삭제할 수 없습니다.',
     'delegation_not_found' => '지정된 위임을 찾을 수 없습니다.',
     'disallowed_delegation_operation' => '이 위임 작업은 허용되지 않습니다.',
+    'account_delegation_already_exists' => '이 소속 관계에는 이미 유효한 위임 요청이 존재합니다.',
     'invalid_delegation_approval' => '보류 중인 위임만 승인할 수 있습니다.',
     'invalid_delegation_revocation' => '승인된 위임만 취소할 수 있습니다.',
     'affiliation_not_found' => '지정된 소속을 찾을 수 없습니다.',
