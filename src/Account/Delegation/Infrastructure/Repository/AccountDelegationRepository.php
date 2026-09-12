@@ -31,7 +31,7 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
                     'direction' => $delegation->direction()->value,
                     'requested_at' => $delegation->requestedAt(),
                     'approved_at' => $delegation->approvedAt(),
-                    'revoked_at' => $delegation->revokedAt(),
+                    'rejected_at' => $delegation->rejectedAt(),
                 ],
             );
         } catch (QueryException $exception) {
@@ -48,11 +48,6 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
         $eloquent = AccountDelegationEloquent::query()->find((string) $identifier);
 
         return $eloquent === null ? null : $this->toDomainEntity($eloquent);
-    }
-
-    public function delete(AccountDelegation $delegation): void
-    {
-        AccountDelegationEloquent::query()->where('id', (string) $delegation->delegationIdentifier())->delete();
     }
 
     public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?AccountDelegation
@@ -77,7 +72,7 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
             DelegationDirection::from($eloquent->direction),
             $eloquent->requested_at->toDateTimeImmutable(),
             $eloquent->approved_at?->toDateTimeImmutable(),
-            $eloquent->revoked_at?->toDateTimeImmutable(),
+            $eloquent->rejected_at?->toDateTimeImmutable(),
         );
     }
 }

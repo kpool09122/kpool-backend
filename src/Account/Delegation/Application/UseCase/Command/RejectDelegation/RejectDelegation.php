@@ -41,6 +41,7 @@ readonly class RejectDelegation implements RejectDelegationInterface
         )) {
             throw new DisallowedDelegationOperationException('Delegation rejection is not allowed.');
         }
-        $this->delegationRepository->delete($delegation);
+        $delegation->reject();
+        $this->delegationRepository->save($delegation);
     }
 }

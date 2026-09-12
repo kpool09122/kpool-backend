@@ -44,7 +44,7 @@ class ListDelegationsTest extends TestCase
         $sameTimeLow = '00000000-0000-0000-0000-000000000002';
         $this->insert($old, $operator->accountIdentifier(), $related, $operator->accountIdentifier(), 'pending', '2026-09-10 10:00:00');
         $this->insert($sameTimeLow, $related, $operator->accountIdentifier(), $related, 'approved', '2026-09-11 10:00:00', '2026-09-11 11:00:00');
-        $this->insert($sameTimeHigh, $operator->accountIdentifier(), $related, $related, 'revoked', '2026-09-11 10:00:00', null, '2026-09-11 12:00:00');
+        $this->insert($sameTimeHigh, $operator->accountIdentifier(), $related, $related, 'rejected', '2026-09-11 10:00:00', null, '2026-09-11 12:00:00');
         $this->insert(StrTestHelper::generateUuid(), $other1, $other2, $other1, 'pending', '2026-09-12 10:00:00');
 
         $output = new ListDelegationsOutput();
@@ -53,7 +53,7 @@ class ListDelegationsTest extends TestCase
         $this->assertSame([$sameTimeHigh, $sameTimeLow], array_column($payload['delegations'], 'delegationIdentifier'));
         $this->assertSame(3, $payload['total']);
         $this->assertSame(2, $payload['last_page']);
-        $this->assertSame('2026-09-11T12:00:00+00:00', $payload['delegations'][0]['revokedAt']);
+        $this->assertSame('2026-09-11T12:00:00+00:00', $payload['delegations'][0]['rejectedAt']);
     }
 
     #[Group('useDb')]
@@ -112,14 +112,14 @@ class ListDelegationsTest extends TestCase
         return $policy;
     }
 
-    private function insert(string $id, AccountIdentifier $delegate, AccountIdentifier $delegator, AccountIdentifier $requestedBy, string $status, string $requestedAt, ?string $approvedAt = null, ?string $revokedAt = null): void
+    private function insert(string $id, AccountIdentifier $delegate, AccountIdentifier $delegator, AccountIdentifier $requestedBy, string $status, string $requestedAt, ?string $approvedAt = null, ?string $rejectedAt = null): void
     {
         DB::table('account_delegations')->insert([
             'id' => $id, 'affiliation_id' => StrTestHelper::generateUuid(),
             'delegate_account_id' => (string) $delegate, 'delegator_account_id' => (string) $delegator,
             'requested_by_account_id' => (string) $requestedBy, 'status' => $status,
             'direction' => 'from_agency', 'requested_at' => $requestedAt,
-            'approved_at' => $approvedAt, 'revoked_at' => $revokedAt,
+            'approved_at' => $approvedAt, 'rejected_at' => $rejectedAt,
         ]);
     }
 

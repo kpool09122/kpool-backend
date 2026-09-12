@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('direction', 32)->comment('Delegation direction');
             $table->timestamp('requested_at')->comment('Requested at');
             $table->timestamp('approved_at')->nullable()->comment('Approved at');
-            $table->timestamp('revoked_at')->nullable()->comment('Revoked at');
+            $table->timestamp('rejected_at')->nullable()->comment('Rejected at');
         });
 
         DB::statement("CREATE UNIQUE INDEX account_delegations_open_affiliation_unique ON account_delegations (affiliation_id) WHERE status IN ('pending', 'approved')");

@@ -75,7 +75,7 @@ readonly class ListDelegations implements ListDelegationsInterface
             direction: $delegation->direction,
             requestedAt: $delegation->requested_at->format(DateTimeInterface::ATOM),
             approvedAt: $delegation->approved_at?->format(DateTimeInterface::ATOM),
-            revokedAt: $delegation->revoked_at?->format(DateTimeInterface::ATOM),
+            rejectedAt: $delegation->rejected_at?->format(DateTimeInterface::ATOM),
         );
     }
 

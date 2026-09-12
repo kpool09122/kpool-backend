@@ -24,7 +24,7 @@ class AccountDelegation
         private readonly DelegationDirection $direction,
         private readonly DateTimeImmutable $requestedAt,
         private ?DateTimeImmutable $approvedAt,
-        private readonly ?DateTimeImmutable $revokedAt,
+        private ?DateTimeImmutable $rejectedAt,
     ) {
     }
 
@@ -73,14 +73,24 @@ class AccountDelegation
         return $this->approvedAt;
     }
 
-    public function revokedAt(): ?DateTimeImmutable
+    public function rejectedAt(): ?DateTimeImmutable
     {
-        return $this->revokedAt;
+        return $this->rejectedAt;
     }
 
     public function isPending(): bool
     {
         return $this->status->isPending();
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status->isApproved();
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status->isRejected();
     }
 
     public function approve(): void
@@ -90,5 +100,14 @@ class AccountDelegation
         }
         $this->status = DelegationStatus::APPROVED;
         $this->approvedAt = new DateTimeImmutable();
+    }
+
+    public function reject(): void
+    {
+        if (! $this->isPending()) {
+            throw new DomainException('Only pending delegations can be rejected.');
+        }
+        $this->status = DelegationStatus::REJECTED;
+        $this->rejectedAt = new DateTimeImmutable();
     }
 }

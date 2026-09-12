@@ -1644,7 +1644,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
-        revokedAt:
+        rejectedAt:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
@@ -1989,56 +1989,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the permission was created.
       description: Delegation permission state.
-    DelegationSummary:
-      type: object
-      required:
-        - delegationIdentifier
-        - affiliationIdentifier
-        - delegateIdentifier
-        - delegatorIdentifier
-        - status
-        - direction
-        - requestedAt
-      properties:
-        delegationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegation identifier.
-        affiliationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier backing the delegation.
-        delegateIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegate identity identifier.
-        delegatorIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegator identity identifier.
-        status:
-          type: string
-          description: Delegation status.
-        direction:
-          type: string
-          description: Delegation direction.
-        requestedAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the delegation was requested.
-        approvedAt:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          nullable: true
-          description: Timestamp when the delegation was approved.
-        revokedAt:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          nullable: true
-          description: Timestamp when the delegation was revoked.
-      description: Delegation state.
     GrantDelegationPermissionRequestBody:
       type: object
       required:

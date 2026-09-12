@@ -16,11 +16,11 @@ readonly class DelegationReadModel
         private string $direction,
         private string $requestedAt,
         private ?string $approvedAt,
-        private ?string $revokedAt,
+        private ?string $rejectedAt,
     ) {
     }
 
-    /** @return array{delegationIdentifier: string, affiliationIdentifier: string, delegateAccountIdentifier: string, delegatorAccountIdentifier: string, requestedByAccountIdentifier: string, status: string, direction: string, requestedAt: string, approvedAt: string|null, revokedAt: string|null} */
+    /** @return array{delegationIdentifier: string, affiliationIdentifier: string, delegateAccountIdentifier: string, delegatorAccountIdentifier: string, requestedByAccountIdentifier: string, status: string, direction: string, requestedAt: string, approvedAt: string|null, rejectedAt: string|null} */
     public function toArray(): array
     {
         return [
@@ -33,7 +33,7 @@ readonly class DelegationReadModel
             'direction' => $this->direction,
             'requestedAt' => $this->requestedAt,
             'approvedAt' => $this->approvedAt,
-            'revokedAt' => $this->revokedAt,
+            'rejectedAt' => $this->rejectedAt,
         ];
     }
 }

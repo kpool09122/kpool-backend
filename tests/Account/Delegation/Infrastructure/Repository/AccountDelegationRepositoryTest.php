@@ -66,9 +66,9 @@ class AccountDelegationRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testRevokedDelegationAllowsANewRequest(): void
+    public function testRejectedDelegationAllowsANewRequest(): void
     {
-        $first = $this->delegation(status: DelegationStatus::REVOKED);
+        $first = $this->delegation(status: DelegationStatus::REJECTED);
         $repository = new AccountDelegationRepository();
         $repository->save($first);
         $repository->save($this->delegation($first->affiliationIdentifier()));
@@ -80,7 +80,7 @@ class AccountDelegationRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testDeletingRejectedPendingDelegationAllowsANewRequest(): void
+    public function testRejectedPendingDelegationAllowsANewRequest(): void
     {
         $rejected = $this->delegation();
         $repository = new AccountDelegationRepository();
@@ -88,10 +88,15 @@ class AccountDelegationRepositoryTest extends TestCase
 
         $found = $repository->findById($rejected->delegationIdentifier());
         $this->assertNotNull($found);
-        $repository->delete($found);
+        $found->reject();
+        $repository->save($found);
         $repository->save($this->delegation($rejected->affiliationIdentifier()));
 
         $this->assertNotNull($repository->findOpenByAffiliationId($rejected->affiliationIdentifier()));
+        $this->assertDatabaseHas('account_delegations', [
+            'id' => (string) $rejected->delegationIdentifier(),
+            'status' => 'rejected',
+        ]);
     }
 
     private function delegation(

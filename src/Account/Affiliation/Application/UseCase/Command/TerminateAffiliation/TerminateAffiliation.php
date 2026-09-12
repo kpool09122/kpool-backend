@@ -8,14 +8,12 @@ use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundExceptio
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
-use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class TerminateAffiliation implements TerminateAffiliationInterface
 {
     public function __construct(
         private AffiliationRepositoryInterface $affiliationRepository,
-        private DelegationTerminationServiceInterface $delegationTerminationService,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -35,8 +33,6 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
         if ($terminatorId !== $agencyId && $terminatorId !== $talentId) {
             throw new DisallowedAffiliationOperationException('Only the agency or talent can terminate this affiliation.');
         }
-
-        $this->delegationTerminationService->revokeAllDelegations($affiliation->affiliationIdentifier());
 
         $affiliation->terminate();
 

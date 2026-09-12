@@ -32,9 +32,10 @@ class RejectDelegationTest extends TestCase
 {
     public function testDelegatorAccountWithPolicyCanRejectPendingRequest(): void
     {
-        [$useCase, $input] = $this->scenario(true, true);
+        [$useCase, $input, $delegation] = $this->scenario(true, true);
         $useCase->process($input);
-        $this->addToAssertionCount(1);
+        $this->assertSame(DelegationStatus::REJECTED, $delegation->status());
+        $this->assertNotNull($delegation->rejectedAt());
     }
 
     public function testPolicyDeniedCannotReject(): void
@@ -81,7 +82,7 @@ class RejectDelegationTest extends TestCase
             $accounts->shouldReceive('findById')->with($talent)->andReturn($account);
             $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REJECT, Mockery::any())->andReturn($allowed);
             if ($allowed) {
-                $repository->shouldReceive('delete')->with($delegation)->once();
+                $repository->shouldReceive('save')->with($delegation)->once();
             }
         }
 

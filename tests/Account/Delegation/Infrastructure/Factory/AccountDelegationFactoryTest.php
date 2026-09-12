@@ -51,6 +51,6 @@ class AccountDelegationFactoryTest extends TestCase
         $this->assertSame($expectedDirection, $delegation->direction());
         $this->assertSame(DelegationStatus::PENDING, $delegation->status());
         $this->assertNull($delegation->approvedAt());
-        $this->assertNull($delegation->revokedAt());
+        $this->assertNull($delegation->rejectedAt());
     }
 }

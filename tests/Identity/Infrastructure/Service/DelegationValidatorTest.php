@@ -10,8 +10,8 @@ use Mockery;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
-use Source\Account\Delegation\Domain\Entity\Delegation;
-use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
@@ -19,7 +19,6 @@ use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Infrastructure\Service\DelegationValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,10 +32,10 @@ class DelegationValidatorTest extends TestCase
      */
     public function test__construct(): void
     {
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -58,7 +57,7 @@ class DelegationValidatorTest extends TestCase
         $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::APPROVED);
         $affiliation = $this->createAffiliation($affiliationId, AffiliationStatus::ACTIVE);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -70,7 +69,7 @@ class DelegationValidatorTest extends TestCase
             ->with($affiliationId)
             ->andReturn($affiliation);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -90,7 +89,7 @@ class DelegationValidatorTest extends TestCase
     {
         $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -98,7 +97,7 @@ class DelegationValidatorTest extends TestCase
 
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -121,7 +120,7 @@ class DelegationValidatorTest extends TestCase
 
         $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::PENDING);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -129,7 +128,7 @@ class DelegationValidatorTest extends TestCase
 
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -140,19 +139,19 @@ class DelegationValidatorTest extends TestCase
     }
 
     /**
-     * 異常系: 委譲が取り消し済みの場合falseを返すこと.
+     * 異常系: 委譲が拒否済みの場合falseを返すこと.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testIsValidReturnsFalseWhenDelegationIsRevoked(): void
+    public function testIsValidReturnsFalseWhenDelegationIsRejected(): void
     {
         $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
         $affiliationId = new AffiliationIdentifier(StrTestHelper::generateUuid());
 
-        $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::REVOKED);
+        $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::REJECTED);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -160,7 +159,7 @@ class DelegationValidatorTest extends TestCase
 
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -183,7 +182,7 @@ class DelegationValidatorTest extends TestCase
 
         $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::APPROVED);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -195,7 +194,7 @@ class DelegationValidatorTest extends TestCase
             ->with($affiliationId)
             ->andReturnNull();
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -219,7 +218,7 @@ class DelegationValidatorTest extends TestCase
         $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::APPROVED);
         $affiliation = $this->createAffiliation($affiliationId, AffiliationStatus::PENDING);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -231,7 +230,7 @@ class DelegationValidatorTest extends TestCase
             ->with($affiliationId)
             ->andReturn($affiliation);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -255,7 +254,7 @@ class DelegationValidatorTest extends TestCase
         $delegation = $this->createDelegation($delegationId, $affiliationId, DelegationStatus::APPROVED);
         $affiliation = $this->createAffiliation($affiliationId, AffiliationStatus::TERMINATED);
 
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
         $delegationRepository->shouldReceive('findById')
             ->once()
             ->with($delegationId)
@@ -267,7 +266,7 @@ class DelegationValidatorTest extends TestCase
             ->with($affiliationId)
             ->andReturn($affiliation);
 
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
+        $this->app->instance(AccountDelegationRepositoryInterface::class, $delegationRepository);
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
         $validator = $this->app->make(DelegationValidatorInterface::class);
@@ -281,17 +280,21 @@ class DelegationValidatorTest extends TestCase
         DelegationIdentifier $delegationId,
         AffiliationIdentifier $affiliationId,
         DelegationStatus $status,
-    ): Delegation {
-        return new Delegation(
+    ): AccountDelegation {
+        $delegateAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $delegatorAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
+
+        return new AccountDelegation(
             $delegationId,
             $affiliationId,
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $delegateAccountId,
+            $delegatorAccountId,
+            $delegateAccountId,
             $status,
             DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             $status->isApproved() ? new DateTimeImmutable() : null,
-            $status->isRevoked() ? new DateTimeImmutable() : null,
+            $status->isRejected() ? new DateTimeImmutable() : null,
         );
     }
 

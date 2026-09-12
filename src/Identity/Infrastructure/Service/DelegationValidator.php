@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Service;
 
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
-use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 readonly class DelegationValidator implements DelegationValidatorInterface
 {
     public function __construct(
-        private DelegationRepositoryInterface $delegationRepository,
+        private AccountDelegationRepositoryInterface $delegationRepository,
         private AffiliationRepositoryInterface $affiliationRepository,
     ) {
     }

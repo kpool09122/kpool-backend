@@ -20,7 +20,7 @@ model AccountDelegationSummary {
   direction: string;
   requestedAt: Timestamp;
   approvedAt?: Timestamp | null;
-  revokedAt?: Timestamp | null;
+  rejectedAt?: Timestamp | null;
 }
 
 @doc("Response returned when a delegation is created.")

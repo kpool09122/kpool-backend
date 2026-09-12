@@ -165,28 +165,6 @@ model ListDelegationsResponseBody {
   per_page: int32;
 }
 
-@doc("Delegation state.")
-model DelegationSummary {
-  @doc("Delegation identifier.")
-  delegationIdentifier: Uuid;
-  @doc("Affiliation identifier backing the delegation.")
-  affiliationIdentifier: Uuid;
-  @doc("Delegate identity identifier.")
-  delegateIdentifier: Uuid;
-  @doc("Delegator identity identifier.")
-  delegatorIdentifier: Uuid;
-  @doc("Delegation status.")
-  status: string;
-  @doc("Delegation direction.")
-  direction: string;
-  @doc("Timestamp when the delegation was requested.")
-  requestedAt: Timestamp;
-  @doc("Timestamp when the delegation was approved.")
-  approvedAt?: Timestamp | null;
-  @doc("Timestamp when the delegation was revoked.")
-  revokedAt?: Timestamp | null;
-}
-
 @doc("Delegation permission state.")
 model DelegationPermissionSummary {
   @doc("Delegation permission identifier.")

@@ -14,7 +14,5 @@ interface AccountDelegationRepositoryInterface
 
     public function findById(DelegationIdentifier $identifier): ?AccountDelegation;
 
-    public function delete(AccountDelegation $delegation): void;
-
     public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?AccountDelegation;
 }

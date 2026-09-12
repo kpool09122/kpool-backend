@@ -37,7 +37,7 @@ class ListDelegationsOutputTest extends TestCase
                 'direction' => 'from_agency',
                 'requestedAt' => '2026-09-12T10:00:00+00:00',
                 'approvedAt' => '2026-09-12T11:00:00+00:00',
-                'revokedAt' => null,
+                'rejectedAt' => null,
             ]],
             'current_page' => 2, 'last_page' => 5, 'total' => 41, 'per_page' => 10,
         ], $output->toArray());

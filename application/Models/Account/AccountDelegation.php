@@ -16,11 +16,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $direction
  * @property \Illuminate\Support\Carbon $requested_at
  * @property ?\Illuminate\Support\Carbon $approved_at
- * @property ?\Illuminate\Support\Carbon $revoked_at
+ * @property ?\Illuminate\Support\Carbon $rejected_at
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id', 'affiliation_id', 'delegate_account_id', 'delegator_account_id',
-    'requested_by_account_id', 'status', 'direction', 'requested_at', 'approved_at', 'revoked_at',
+    'requested_by_account_id', 'status', 'direction', 'requested_at', 'approved_at', 'rejected_at',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_delegations', keyType: 'string')]
 class AccountDelegation extends Model
@@ -31,6 +31,6 @@ class AccountDelegation extends Model
     #[\Override]
     protected function casts(): array
     {
-        return ['requested_at' => 'datetime', 'approved_at' => 'datetime', 'revoked_at' => 'datetime'];
+        return ['requested_at' => 'datetime', 'approved_at' => 'datetime', 'rejected_at' => 'datetime'];
     }
 }

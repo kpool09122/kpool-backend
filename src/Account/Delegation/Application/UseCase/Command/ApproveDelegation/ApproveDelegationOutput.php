@@ -32,7 +32,7 @@ class ApproveDelegationOutput implements ApproveDelegationOutputPort
             'direction' => $delegation->direction()->value,
             'requestedAt' => $delegation->requestedAt()->format(DateTimeInterface::ATOM),
             'approvedAt' => $delegation->approvedAt()?->format(DateTimeInterface::ATOM),
-            'revokedAt' => $delegation->revokedAt()?->format(DateTimeInterface::ATOM),
+            'rejectedAt' => $delegation->rejectedAt()?->format(DateTimeInterface::ATOM),
         ];
     }
 }
