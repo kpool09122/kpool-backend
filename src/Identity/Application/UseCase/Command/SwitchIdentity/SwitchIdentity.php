@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SwitchIdentity;
 
-use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -14,7 +13,6 @@ readonly class SwitchIdentity implements SwitchIdentityInterface
 {
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
-        private DelegationValidatorInterface $delegationValidator,
         private AuthServiceInterface $authService,
     ) {
     }
@@ -56,11 +54,6 @@ readonly class SwitchIdentity implements SwitchIdentityInterface
             $output->setIdentity($originalIdentity);
 
             return;
-        }
-
-        // Validate delegation
-        if (! $this->delegationValidator->isValid($targetDelegationIdentifier)) {
-            throw new InvalidDelegationException('Delegation is not valid.');
         }
 
         // Find the delegated identity

@@ -9,7 +9,6 @@ use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
-use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
@@ -31,7 +30,6 @@ use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService
 use Source\Identity\Infrastructure\Service\AuthCodeService;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
-use Source\Identity\Infrastructure\Service\DelegationValidator;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
 
 class DomainServiceProvider extends ServiceProvider
@@ -49,7 +47,6 @@ class DomainServiceProvider extends ServiceProvider
             config('app.frontend_url', 'http://localhost:3000'),
         ));
         $this->app->singleton(CollaboratorNotificationServiceInterface::class, CollaboratorNotificationService::class);
-        $this->app->singleton(DelegationValidatorInterface::class, DelegationValidator::class);
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);
         $this->app->singleton(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);
         $this->app->singleton(SignupSessionRepositoryInterface::class, SignupSessionRepository::class);
