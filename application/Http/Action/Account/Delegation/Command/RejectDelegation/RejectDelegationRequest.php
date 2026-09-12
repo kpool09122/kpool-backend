@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Delegation\Command\ApproveDelegation;
+namespace Application\Http\Action\Account\Delegation\Command\RejectDelegation;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApproveDelegationRequest extends FormRequest
+class RejectDelegationRequest extends FormRequest
 {
     use ResolvesLanguage;
 

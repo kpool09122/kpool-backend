@@ -971,7 +971,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DelegationSummary'
+                $ref: '#/components/schemas/AccountDelegationSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -1002,16 +1002,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApproveDelegationRequestBody'
-  /delegations/{delegationId}/revoke:
+  /delegations/{delegationId}/reject:
     post:
-      operationId: DelegationOperations_revokeDelegation
-      description: Revoke a delegation.
+      operationId: DelegationOperations_rejectDelegation
+      description: Reject a pending delegation.
       parameters:
         - name: delegationId
           in: path
@@ -1019,12 +1013,8 @@ paths:
           schema:
             $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
-        '200':
-          description: Response returned when a delegation operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DelegationSummary'
+        '204':
+          description: Response with no content.
         '401':
           description: Access is unauthorized.
           content:
@@ -1055,12 +1045,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RevokeDelegationRequestBody'
   /invitations:
     post:
       operationId: InvitationOperations_inviteMember
@@ -1791,16 +1775,6 @@ components:
           type: string
           description: Free-form contract notes.
       description: Affiliation contract terms.
-    ApproveDelegationRequestBody:
-      type: object
-      required:
-        - approverIdentifier
-      properties:
-        approverIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier approving the delegation.
-      description: Request body for approving a delegation.
     ContactAddressSummary:
       type: object
       properties:
@@ -2348,16 +2322,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier of the affiliation counterpart.
       description: Request body for requesting an account delegation.
-    RevokeDelegationRequestBody:
-      type: object
-      required:
-        - revokerIdentifier
-      properties:
-        revokerIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier revoking the delegation.
-      description: Request body for revoking a delegation.
     TerminateAffiliationRequestBody:
       type: object
       required:

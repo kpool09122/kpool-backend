@@ -43,6 +43,18 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
         }
     }
 
+    public function findById(DelegationIdentifier $identifier): ?AccountDelegation
+    {
+        $eloquent = AccountDelegationEloquent::query()->find((string) $identifier);
+
+        return $eloquent === null ? null : $this->toDomainEntity($eloquent);
+    }
+
+    public function delete(AccountDelegation $delegation): void
+    {
+        AccountDelegationEloquent::query()->where('id', (string) $delegation->delegationIdentifier())->delete();
+    }
+
     public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?AccountDelegation
     {
         $eloquent = AccountDelegationEloquent::query()
