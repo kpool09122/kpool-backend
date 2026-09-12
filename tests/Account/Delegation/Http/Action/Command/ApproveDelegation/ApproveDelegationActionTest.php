@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -41,7 +41,7 @@ class ApproveDelegationActionTest extends TestCase
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), $talent);
         $id = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $delegation = new AccountDelegation($id, new AffiliationIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), $talent, new AccountIdentifier(StrTestHelper::generateUuid()), DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), new DateTimeImmutable(), null);
+        $delegation = new Delegation($id, new AffiliationIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), $talent, new AccountIdentifier(StrTestHelper::generateUuid()), DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), new DateTimeImmutable(), null);
         /** @var ApproveDelegationRequest&Mockery\MockInterface $request */
         $request = Mockery::mock(ApproveDelegationRequest::class);
         $request->shouldReceive('delegationId')->andReturn((string) $id);

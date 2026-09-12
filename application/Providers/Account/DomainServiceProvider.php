@@ -25,14 +25,12 @@ use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Infrastructure\Factory\AffiliationFactory;
 use Source\Account\Affiliation\Infrastructure\Repository\AffiliationRepository;
-use Source\Account\Delegation\Domain\Factory\AccountDelegationFactoryInterface;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupService;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
-use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
-use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
-use Source\Account\Delegation\Infrastructure\Factory\AccountDelegationFactory;
-use Source\Account\Delegation\Infrastructure\Repository\AccountDelegationRepository;
+use Source\Account\Delegation\Infrastructure\Factory\DelegationFactory;
+use Source\Account\Delegation\Infrastructure\Repository\DelegationRepository;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
 use Source\Account\DelegationPermission\Infrastructure\Factory\DelegationPermissionFactory;
@@ -74,7 +72,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
         $this->app->singleton(DelegationPermissionFactoryInterface::class, DelegationPermissionFactory::class);
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
-        $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
         $this->app->singleton(DelegationPrincipalGroupServiceInterface::class, DelegationPrincipalGroupService::class);
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
@@ -84,8 +81,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
         $this->app->singleton(AffiliationFactoryInterface::class, AffiliationFactory::class);
         $this->app->singleton(AffiliationRepositoryInterface::class, AffiliationRepository::class);
-        $this->app->singleton(AccountDelegationFactoryInterface::class, AccountDelegationFactory::class);
-        $this->app->singleton(AccountDelegationRepositoryInterface::class, AccountDelegationRepository::class);
+        $this->app->singleton(DelegationFactoryInterface::class, DelegationFactory::class);
+        $this->app->singleton(DelegationRepositoryInterface::class, DelegationRepository::class);
 
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);

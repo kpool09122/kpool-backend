@@ -24,6 +24,7 @@ use Application\Http\Action\Account\Affiliation\Query\ListAffiliations\ListAffil
 use Application\Http\Action\Account\Delegation\Command\ApproveDelegation\ApproveDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RequestDelegation\RequestDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RejectDelegation\RejectDelegationAction;
+use Application\Http\Action\Account\Delegation\Query\ListDelegations\ListDelegationsAction;
 use Application\Http\Action\Account\DelegationPermission\Command\GrantDelegationPermission\GrantDelegationPermissionAction;
 use Application\Http\Action\Account\DelegationPermission\Command\RevokeDelegationPermission\RevokeDelegationPermissionAction;
 use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
@@ -50,6 +51,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
 
     // Delegation
+    Route::get('/delegations', ListDelegationsAction::class);
     Route::post('/delegations', RequestDelegationAction::class);
     Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
     Route::post('/delegations/{delegationId}/reject', RejectDelegationAction::class);

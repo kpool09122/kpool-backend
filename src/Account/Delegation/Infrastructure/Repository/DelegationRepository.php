@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Source\Account\Delegation\Infrastructure\Repository;
 
-use Application\Models\Account\AccountDelegation as AccountDelegationEloquent;
+use Application\Models\Account\Delegation as DelegationEloquent;
 use Illuminate\Database\QueryException;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
-class AccountDelegationRepository implements AccountDelegationRepositoryInterface
+class DelegationRepository implements DelegationRepositoryInterface
 {
-    public function save(AccountDelegation $delegation): void
+    public function save(Delegation $delegation): void
     {
         try {
-            AccountDelegationEloquent::query()->updateOrCreate(
+            DelegationEloquent::query()->updateOrCreate(
                 ['id' => (string) $delegation->delegationIdentifier()],
                 [
                     'affiliation_id' => (string) $delegation->affiliationIdentifier(),
@@ -31,33 +31,28 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
                     'direction' => $delegation->direction()->value,
                     'requested_at' => $delegation->requestedAt(),
                     'approved_at' => $delegation->approvedAt(),
-                    'revoked_at' => $delegation->revokedAt(),
+                    'rejected_at' => $delegation->rejectedAt(),
                 ],
             );
         } catch (QueryException $exception) {
             if (str_contains($exception->getMessage(), 'account_delegations_open_affiliation_unique')) {
-                throw new AccountDelegationAlreadyExistsException(previous: $exception);
+                throw new DelegationAlreadyExistsException(previous: $exception);
             }
 
             throw $exception;
         }
     }
 
-    public function findById(DelegationIdentifier $identifier): ?AccountDelegation
+    public function findById(DelegationIdentifier $identifier): ?Delegation
     {
-        $eloquent = AccountDelegationEloquent::query()->find((string) $identifier);
+        $eloquent = DelegationEloquent::query()->find((string) $identifier);
 
         return $eloquent === null ? null : $this->toDomainEntity($eloquent);
     }
 
-    public function delete(AccountDelegation $delegation): void
+    public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?Delegation
     {
-        AccountDelegationEloquent::query()->where('id', (string) $delegation->delegationIdentifier())->delete();
-    }
-
-    public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?AccountDelegation
-    {
-        $eloquent = AccountDelegationEloquent::query()
+        $eloquent = DelegationEloquent::query()
             ->where('affiliation_id', (string) $affiliationIdentifier)
             ->whereIn('status', [DelegationStatus::PENDING->value, DelegationStatus::APPROVED->value])
             ->first();
@@ -65,9 +60,9 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
         return $eloquent === null ? null : $this->toDomainEntity($eloquent);
     }
 
-    private function toDomainEntity(AccountDelegationEloquent $eloquent): AccountDelegation
+    private function toDomainEntity(DelegationEloquent $eloquent): Delegation
     {
-        return new AccountDelegation(
+        return new Delegation(
             new DelegationIdentifier($eloquent->id),
             new AffiliationIdentifier($eloquent->affiliation_id),
             new AccountIdentifier($eloquent->delegate_account_id),
@@ -77,7 +72,7 @@ class AccountDelegationRepository implements AccountDelegationRepositoryInterfac
             DelegationDirection::from($eloquent->direction),
             $eloquent->requested_at->toDateTimeImmutable(),
             $eloquent->approved_at?->toDateTimeImmutable(),
-            $eloquent->revoked_at?->toDateTimeImmutable(),
+            $eloquent->rejected_at?->toDateTimeImmutable(),
         );
     }
 }

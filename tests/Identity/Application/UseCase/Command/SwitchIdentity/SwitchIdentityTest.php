@@ -7,7 +7,6 @@ namespace Tests\Identity\Application\UseCase\Command\SwitchIdentity;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentity;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInput;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInterface;
@@ -39,11 +38,9 @@ class SwitchIdentityTest extends TestCase
     public function test__construct(): void
     {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -83,8 +80,6 @@ class SwitchIdentityTest extends TestCase
             ->with($originalIdentityId)
             ->andReturn($originalIdentity);
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-
         $authService = Mockery::mock(AuthServiceInterface::class);
         $authService->shouldReceive('logout')
             ->once()
@@ -95,7 +90,6 @@ class SwitchIdentityTest extends TestCase
             ->andReturn($originalIdentity);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -138,12 +132,6 @@ class SwitchIdentityTest extends TestCase
             ->with($delegationId)
             ->andReturn($delegatedIdentity);
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-        $delegationValidator->shouldReceive('isValid')
-            ->once()
-            ->with($delegationId)
-            ->andReturn(true);
-
         $authService = Mockery::mock(AuthServiceInterface::class);
         $authService->shouldReceive('logout')
             ->once()
@@ -154,7 +142,6 @@ class SwitchIdentityTest extends TestCase
             ->andReturn($delegatedIdentity);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -208,12 +195,6 @@ class SwitchIdentityTest extends TestCase
             ->with($targetDelegationId)
             ->andReturn($targetDelegatedIdentity);
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-        $delegationValidator->shouldReceive('isValid')
-            ->once()
-            ->with($targetDelegationId)
-            ->andReturn(true);
-
         $authService = Mockery::mock(AuthServiceInterface::class);
         $authService->shouldReceive('logout')
             ->once()
@@ -224,7 +205,6 @@ class SwitchIdentityTest extends TestCase
             ->andReturn($targetDelegatedIdentity);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -254,11 +234,9 @@ class SwitchIdentityTest extends TestCase
             ->with($currentIdentityId)
             ->andReturnNull();
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -300,11 +278,9 @@ class SwitchIdentityTest extends TestCase
             ->with($originalIdentityId)
             ->andReturnNull();
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -336,59 +312,15 @@ class SwitchIdentityTest extends TestCase
             ->with($originalIdentityId)
             ->andReturn($originalIdentity);
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
         $this->expectException(InvalidDelegationException::class);
         $this->expectExceptionMessage('Already using original identity.');
-
-        $output = new SwitchIdentityOutput();
-        $useCase->process($input, $output);
-    }
-
-    /**
-     * 異常系: 委譲が無効な場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testThrowsDomainExceptionWhenDelegationIsNotValid(): void
-    {
-        $originalIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
-
-        $originalIdentity = $this->createIdentity($originalIdentityId);
-
-        $input = new SwitchIdentityInput($originalIdentityId, $delegationId);
-
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $identityRepository->shouldReceive('findById')
-            ->once()
-            ->with($originalIdentityId)
-            ->andReturn($originalIdentity);
-
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-        $delegationValidator->shouldReceive('isValid')
-            ->once()
-            ->with($delegationId)
-            ->andReturn(false);
-
-        $authService = Mockery::mock(AuthServiceInterface::class);
-
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-
-        $useCase = $this->app->make(SwitchIdentityInterface::class);
-
-        $this->expectException(InvalidDelegationException::class);
-        $this->expectExceptionMessage('Delegation is not valid.');
 
         $output = new SwitchIdentityOutput();
         $useCase->process($input, $output);
@@ -419,16 +351,9 @@ class SwitchIdentityTest extends TestCase
             ->with($delegationId)
             ->andReturnNull();
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-        $delegationValidator->shouldReceive('isValid')
-            ->once()
-            ->with($delegationId)
-            ->andReturn(true);
-
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
@@ -472,16 +397,9 @@ class SwitchIdentityTest extends TestCase
             ->with($delegationId)
             ->andReturn($delegatedIdentity);
 
-        $delegationValidator = Mockery::mock(DelegationValidatorInterface::class);
-        $delegationValidator->shouldReceive('isValid')
-            ->once()
-            ->with($delegationId)
-            ->andReturn(true);
-
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(DelegationValidatorInterface::class, $delegationValidator);
         $this->app->instance(AuthServiceInterface::class, $authService);
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);

@@ -7,7 +7,7 @@ namespace Source\Account\Delegation\Application\UseCase\Command\RejectDelegation
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -16,7 +16,7 @@ readonly class RejectDelegation implements RejectDelegationInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
-        private AccountDelegationRepositoryInterface $delegationRepository,
+        private DelegationRepositoryInterface $delegationRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
@@ -41,6 +41,7 @@ readonly class RejectDelegation implements RejectDelegationInterface
         )) {
             throw new DisallowedDelegationOperationException('Delegation rejection is not allowed.');
         }
-        $this->delegationRepository->delete($delegation);
+        $delegation->reject();
+        $this->delegationRepository->save($delegation);
     }
 }

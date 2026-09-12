@@ -12,15 +12,15 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
-use Source\Account\Delegation\Application\Exception\AccountDelegationNotAllowedException;
-use Source\Account\Delegation\Application\Exception\AccountDelegationUnavailableException;
+use Source\Account\Delegation\Application\Exception\DelegationNotAllowedException;
+use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
-use Source\Account\Delegation\Domain\Factory\AccountDelegationFactoryInterface;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -49,32 +49,32 @@ class RequestDelegationTest extends TestCase
     public function testRejectsPrincipalWithoutPolicy(): void
     {
         [$useCase, $input, $output] = $this->createUseCase(allowed: false, targetExists: true, affiliationExists: true, duplicate: false);
-        $this->expectException(AccountDelegationNotAllowedException::class);
+        $this->expectException(DelegationNotAllowedException::class);
         $useCase->process($input, $output);
     }
 
     public function testDoesNotRevealMissingTarget(): void
     {
         [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: false, affiliationExists: false, duplicate: false);
-        $this->expectException(AccountDelegationUnavailableException::class);
+        $this->expectException(DelegationUnavailableException::class);
         $useCase->process($input, $output);
     }
 
     public function testDoesNotRevealMissingActiveAffiliation(): void
     {
         [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: true, affiliationExists: false, duplicate: false);
-        $this->expectException(AccountDelegationUnavailableException::class);
+        $this->expectException(DelegationUnavailableException::class);
         $useCase->process($input, $output);
     }
 
     public function testRejectsDuplicateOpenDelegation(): void
     {
         [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: true, affiliationExists: true, duplicate: true);
-        $this->expectException(AccountDelegationAlreadyExistsException::class);
+        $this->expectException(DelegationAlreadyExistsException::class);
         $useCase->process($input, $output);
     }
 
-    /** @return array{RequestDelegation, RequestDelegationInput, RequestDelegationOutput, AccountDelegation} */
+    /** @return array{RequestDelegation, RequestDelegationInput, RequestDelegationOutput, Delegation} */
     private function createUseCase(bool $allowed, bool $targetExists, bool $affiliationExists, bool $duplicate): array
     {
         $agencyId = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -118,7 +118,7 @@ class RequestDelegationTest extends TestCase
             $affiliationRepository->shouldReceive('findActiveBetweenAccounts')->with($agencyId, $talentId)->once()->andReturn($affiliationExists ? $affiliation : null);
         }
 
-        $delegation = new AccountDelegation(
+        $delegation = new Delegation(
             new DelegationIdentifier(StrTestHelper::generateUuid()),
             $affiliation->affiliationIdentifier(),
             $agencyId,
@@ -130,10 +130,10 @@ class RequestDelegationTest extends TestCase
             null,
             null,
         );
-        /** @var AccountDelegationRepositoryInterface&MockInterface $delegationRepository */
-        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
-        /** @var AccountDelegationFactoryInterface&MockInterface $factory */
-        $factory = Mockery::mock(AccountDelegationFactoryInterface::class);
+        /** @var DelegationRepositoryInterface&MockInterface $delegationRepository */
+        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        /** @var DelegationFactoryInterface&MockInterface $factory */
+        $factory = Mockery::mock(DelegationFactoryInterface::class);
         if ($allowed && $targetExists && $affiliationExists) {
             $delegationRepository->shouldReceive('findOpenByAffiliationId')
                 ->with($affiliation->affiliationIdentifier())

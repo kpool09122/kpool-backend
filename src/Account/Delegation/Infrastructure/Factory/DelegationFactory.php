@@ -8,16 +8,16 @@ use DateTimeImmutable;
 use DomainException;
 use Ramsey\Uuid\Uuid;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Factory\AccountDelegationFactoryInterface;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
-readonly class AccountDelegationFactory implements AccountDelegationFactoryInterface
+readonly class DelegationFactory implements DelegationFactoryInterface
 {
-    public function create(Affiliation $affiliation, AccountIdentifier $requestedByAccountIdentifier): AccountDelegation
+    public function create(Affiliation $affiliation, AccountIdentifier $requestedByAccountIdentifier): Delegation
     {
         $requestedBy = (string) $requestedByAccountIdentifier;
         $agency = (string) $affiliation->agencyAccountIdentifier();
@@ -27,7 +27,7 @@ readonly class AccountDelegationFactory implements AccountDelegationFactoryInter
             throw new DomainException('The requesting account is not part of the affiliation.');
         }
 
-        return new AccountDelegation(
+        return new Delegation(
             new DelegationIdentifier(Uuid::uuid7()->toString()),
             $affiliation->affiliationIdentifier(),
             $affiliation->agencyAccountIdentifier(),

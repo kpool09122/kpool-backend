@@ -7,24 +7,24 @@ namespace Tests\Account\Delegation\Infrastructure\Repository;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
-use Source\Account\Delegation\Infrastructure\Repository\AccountDelegationRepository;
+use Source\Account\Delegation\Infrastructure\Repository\DelegationRepository;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class AccountDelegationRepositoryTest extends TestCase
+class DelegationRepositoryTest extends TestCase
 {
     #[Group('useDb')]
     public function testPersistsAccountIdentifiersWithoutTimestamps(): void
     {
         $delegation = $this->delegation();
-        $repository = new AccountDelegationRepository();
+        $repository = new DelegationRepository();
         $repository->save($delegation);
 
         $persisted = $repository->findOpenByAffiliationId($delegation->affiliationIdentifier());
@@ -46,11 +46,11 @@ class AccountDelegationRepositoryTest extends TestCase
     public function testDatabaseConstraintRejectsConcurrentOpenDelegation(): void
     {
         $first = $this->delegation();
-        $repository = new AccountDelegationRepository();
+        $repository = new DelegationRepository();
         $repository->save($first);
         $second = $this->delegation($first->affiliationIdentifier());
 
-        $this->expectException(AccountDelegationAlreadyExistsException::class);
+        $this->expectException(DelegationAlreadyExistsException::class);
         $repository->save($second);
     }
 
@@ -58,18 +58,18 @@ class AccountDelegationRepositoryTest extends TestCase
     public function testApprovedDelegationAlsoBlocksAnotherOpenRequest(): void
     {
         $first = $this->delegation(status: DelegationStatus::APPROVED);
-        $repository = new AccountDelegationRepository();
+        $repository = new DelegationRepository();
         $repository->save($first);
 
-        $this->expectException(AccountDelegationAlreadyExistsException::class);
+        $this->expectException(DelegationAlreadyExistsException::class);
         $repository->save($this->delegation($first->affiliationIdentifier()));
     }
 
     #[Group('useDb')]
-    public function testRevokedDelegationAllowsANewRequest(): void
+    public function testRejectedDelegationAllowsANewRequest(): void
     {
-        $first = $this->delegation(status: DelegationStatus::REVOKED);
-        $repository = new AccountDelegationRepository();
+        $first = $this->delegation(status: DelegationStatus::REJECTED);
+        $repository = new DelegationRepository();
         $repository->save($first);
         $repository->save($this->delegation($first->affiliationIdentifier()));
 
@@ -80,28 +80,33 @@ class AccountDelegationRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testDeletingRejectedPendingDelegationAllowsANewRequest(): void
+    public function testRejectedPendingDelegationAllowsANewRequest(): void
     {
         $rejected = $this->delegation();
-        $repository = new AccountDelegationRepository();
+        $repository = new DelegationRepository();
         $repository->save($rejected);
 
         $found = $repository->findById($rejected->delegationIdentifier());
         $this->assertNotNull($found);
-        $repository->delete($found);
+        $found->reject();
+        $repository->save($found);
         $repository->save($this->delegation($rejected->affiliationIdentifier()));
 
         $this->assertNotNull($repository->findOpenByAffiliationId($rejected->affiliationIdentifier()));
+        $this->assertDatabaseHas('account_delegations', [
+            'id' => (string) $rejected->delegationIdentifier(),
+            'status' => 'rejected',
+        ]);
     }
 
     private function delegation(
         ?AffiliationIdentifier $affiliationIdentifier = null,
         DelegationStatus $status = DelegationStatus::PENDING,
-    ): AccountDelegation {
+    ): Delegation {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        return new AccountDelegation(
+        return new Delegation(
             new DelegationIdentifier(StrTestHelper::generateUuid()),
             $affiliationIdentifier ?? new AffiliationIdentifier(StrTestHelper::generateUuid()),
             $agency,

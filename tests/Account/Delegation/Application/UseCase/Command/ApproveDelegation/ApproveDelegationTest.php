@@ -12,8 +12,8 @@ use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperatio
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
@@ -62,15 +62,15 @@ class ApproveDelegationTest extends TestCase
         $useCase->process($input, $output);
     }
 
-    /** @return array{ApproveDelegation, ApproveDelegationInput, ApproveDelegationOutput, AccountDelegation} */
+    /** @return array{ApproveDelegation, ApproveDelegationInput, ApproveDelegationOutput, Delegation} */
     private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true): array
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
         $principal = $this->principal($talent);
-        $delegation = new AccountDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $agency, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
-        /** @var AccountDelegationRepositoryInterface&Mockery\MockInterface $repository */
-        $repository = Mockery::mock(AccountDelegationRepositoryInterface::class);
+        $delegation = new Delegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $agency, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
+        /** @var DelegationRepositoryInterface&Mockery\MockInterface $repository */
+        $repository = Mockery::mock(DelegationRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($delegation);
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
         $accounts = Mockery::mock(AccountRepositoryInterface::class);

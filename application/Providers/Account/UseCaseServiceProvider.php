@@ -45,6 +45,8 @@ use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\Rejec
 use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Query\ListDelegations\ListDelegationsInterface;
+use Source\Account\Delegation\Infrastructure\Query\ListDelegations;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermission;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
@@ -90,6 +92,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectDelegationInterface::class, RejectDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
+        $this->app->singleton(ListDelegationsInterface::class, ListDelegations::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);
         $this->app->singleton(ListAffiliationsInterface::class, ListAffiliations::class);
         $this->app->singleton(TerminateAffiliationInterface::class, TerminateAffiliation::class);

@@ -12,7 +12,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupService;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
@@ -47,7 +47,7 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             DeletionReadinessChecklist::ready(),
             new AccountDocuments([]),
         );
-        $delegation = new AccountDelegation(
+        $delegation = new Delegation(
             new DelegationIdentifier(StrTestHelper::generateUuid()),
             new AffiliationIdentifier(StrTestHelper::generateUuid()),
             $delegate,

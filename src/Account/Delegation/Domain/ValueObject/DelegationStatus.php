@@ -8,7 +8,7 @@ enum DelegationStatus: string
 {
     case PENDING = 'pending';
     case APPROVED = 'approved';
-    case REVOKED = 'revoked';
+    case REJECTED = 'rejected';
 
     public function isPending(): bool
     {
@@ -20,8 +20,8 @@ enum DelegationStatus: string
         return $this === self::APPROVED;
     }
 
-    public function isRevoked(): bool
+    public function isRejected(): bool
     {
-        return $this === self::REVOKED;
+        return $this === self::REJECTED;
     }
 }

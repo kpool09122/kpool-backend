@@ -7,11 +7,11 @@ namespace Source\Account\Delegation\Application\UseCase\Command\RequestDelegatio
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
-use Source\Account\Delegation\Application\Exception\AccountDelegationNotAllowedException;
-use Source\Account\Delegation\Application\Exception\AccountDelegationUnavailableException;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
-use Source\Account\Delegation\Domain\Factory\AccountDelegationFactoryInterface;
-use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
+use Source\Account\Delegation\Application\Exception\DelegationNotAllowedException;
+use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -21,8 +21,8 @@ readonly class RequestDelegation implements RequestDelegationInterface
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
         private AffiliationRepositoryInterface $affiliationRepository,
-        private AccountDelegationRepositoryInterface $delegationRepository,
-        private AccountDelegationFactoryInterface $delegationFactory,
+        private DelegationRepositoryInterface $delegationRepository,
+        private DelegationFactoryInterface $delegationFactory,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
@@ -39,11 +39,11 @@ readonly class RequestDelegation implements RequestDelegationInterface
             Action::DELEGATION_REQUEST_CREATE,
             Resource::account($requestingAccount->accountIdentifier(), $requestingAccount->type(), $requestingAccount->accountCategory()),
         )) {
-            throw new AccountDelegationNotAllowedException();
+            throw new DelegationNotAllowedException();
         }
 
         if ($this->accountRepository->findById($input->targetAccountIdentifier()) === null) {
-            throw new AccountDelegationUnavailableException();
+            throw new DelegationUnavailableException();
         }
 
         $affiliation = $this->affiliationRepository->findActiveBetweenAccounts(
@@ -51,11 +51,11 @@ readonly class RequestDelegation implements RequestDelegationInterface
             $input->targetAccountIdentifier(),
         );
         if ($affiliation === null) {
-            throw new AccountDelegationUnavailableException();
+            throw new DelegationUnavailableException();
         }
 
         if ($this->delegationRepository->findOpenByAffiliationId($affiliation->affiliationIdentifier()) !== null) {
-            throw new AccountDelegationAlreadyExistsException();
+            throw new DelegationAlreadyExistsException();
         }
 
         $delegation = $this->delegationFactory->create($affiliation, $requestingAccount->accountIdentifier());

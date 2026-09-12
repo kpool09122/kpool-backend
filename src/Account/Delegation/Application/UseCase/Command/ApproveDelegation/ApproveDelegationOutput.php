@@ -6,13 +6,13 @@ namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegatio
 
 use DateTimeInterface;
 use LogicException;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Entity\Delegation;
 
 class ApproveDelegationOutput implements ApproveDelegationOutputPort
 {
-    private ?AccountDelegation $delegation = null;
+    private ?Delegation $delegation = null;
 
-    public function setDelegation(AccountDelegation $delegation): void
+    public function setDelegation(Delegation $delegation): void
     {
         $this->delegation = $delegation;
     }
@@ -32,7 +32,7 @@ class ApproveDelegationOutput implements ApproveDelegationOutputPort
             'direction' => $delegation->direction()->value,
             'requestedAt' => $delegation->requestedAt()->format(DateTimeInterface::ATOM),
             'approvedAt' => $delegation->approvedAt()?->format(DateTimeInterface::ATOM),
-            'revokedAt' => $delegation->revokedAt()?->format(DateTimeInterface::ATOM),
+            'rejectedAt' => $delegation->rejectedAt()?->format(DateTimeInterface::ATOM),
         ];
     }
 }
