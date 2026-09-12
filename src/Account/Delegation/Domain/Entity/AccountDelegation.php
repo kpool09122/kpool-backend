@@ -5,25 +5,26 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Domain\Entity;
 
 use DateTimeImmutable;
+use DomainException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
-readonly class AccountDelegation
+class AccountDelegation
 {
     public function __construct(
-        private DelegationIdentifier $delegationIdentifier,
-        private AffiliationIdentifier $affiliationIdentifier,
-        private AccountIdentifier $delegateAccountIdentifier,
-        private AccountIdentifier $delegatorAccountIdentifier,
-        private AccountIdentifier $requestedByAccountIdentifier,
+        private readonly DelegationIdentifier $delegationIdentifier,
+        private readonly AffiliationIdentifier $affiliationIdentifier,
+        private readonly AccountIdentifier $delegateAccountIdentifier,
+        private readonly AccountIdentifier $delegatorAccountIdentifier,
+        private readonly AccountIdentifier $requestedByAccountIdentifier,
         private DelegationStatus $status,
-        private DelegationDirection $direction,
-        private DateTimeImmutable $requestedAt,
+        private readonly DelegationDirection $direction,
+        private readonly DateTimeImmutable $requestedAt,
         private ?DateTimeImmutable $approvedAt,
-        private ?DateTimeImmutable $revokedAt,
+        private readonly ?DateTimeImmutable $revokedAt,
     ) {
     }
 
@@ -75,5 +76,19 @@ readonly class AccountDelegation
     public function revokedAt(): ?DateTimeImmutable
     {
         return $this->revokedAt;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status->isPending();
+    }
+
+    public function approve(): void
+    {
+        if (! $this->isPending()) {
+            throw new DomainException('Only pending delegations can be approved.');
+        }
+        $this->status = DelegationStatus::APPROVED;
+        $this->approvedAt = new DateTimeImmutable();
     }
 }

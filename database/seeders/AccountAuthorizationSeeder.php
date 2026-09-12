@@ -93,6 +93,23 @@ class AccountAuthorizationSeeder extends Seeder
             Action::DELEGATION_REQUEST_CREATE,
             $this->affiliationRequestCreateCondition(),
         );
+        $delegationApprovePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000011',
+            'DELEGATION_APPROVE',
+            Action::DELEGATION_APPROVE,
+            $this->affiliationRequestCreateCondition(),
+        );
+        $delegationRejectPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000012',
+            'DELEGATION_REJECT',
+            Action::DELEGATION_REJECT,
+            $this->affiliationRequestCreateCondition(),
+        );
+        $delegationAccountSwitchPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000013',
+            'DELEGATION_ACCOUNT_SWITCH',
+            Action::DELEGATION_ACCOUNT_SWITCH,
+        );
 
         $ownerPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
@@ -104,6 +121,8 @@ class AccountAuthorizationSeeder extends Seeder
             $affiliationApprovePolicy->policyIdentifier(),
             $affiliationRejectPolicy->policyIdentifier(),
             $delegationRequestCreatePolicy->policyIdentifier(),
+            $delegationApprovePolicy->policyIdentifier(),
+            $delegationRejectPolicy->policyIdentifier(),
         ];
 
         $adminPolicyIdentifiers = [
@@ -114,12 +133,17 @@ class AccountAuthorizationSeeder extends Seeder
             $affiliationRequestReceivePolicy->policyIdentifier(),
             $affiliationApprovePolicy->policyIdentifier(),
             $affiliationRejectPolicy->policyIdentifier(),
+            $delegationApprovePolicy->policyIdentifier(),
+            $delegationRejectPolicy->policyIdentifier(),
         ];
 
         $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
         $this->saveRole(Role::ADMIN, $adminPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
+        ]);
+        $this->saveRole(Role::DELEGATION_ACCOUNT_SWITCHER, [
+            $delegationAccountSwitchPolicy->policyIdentifier(),
         ]);
 
         DB::table('account_principals')

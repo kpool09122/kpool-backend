@@ -23,18 +23,6 @@ model AccountDelegationSummary {
   revokedAt?: Timestamp | null;
 }
 
-@doc("Request body for approving a delegation.")
-model ApproveDelegationRequestBody {
-  @doc("Identity identifier approving the delegation.")
-  approverIdentifier: Uuid;
-}
-
-@doc("Request body for revoking a delegation.")
-model RevokeDelegationRequestBody {
-  @doc("Identity identifier revoking the delegation.")
-  revokerIdentifier: Uuid;
-}
-
 @doc("Response returned when a delegation is created.")
 model CreateDelegationResponse {
   @statusCode statusCode: 201;
@@ -44,7 +32,7 @@ model CreateDelegationResponse {
 @doc("Response returned when a delegation operation succeeds.")
 model OkDelegationResponse {
   @statusCode statusCode: 200;
-  @body body: DelegationSummary;
+  @body body: AccountDelegationSummary;
 }
 
 @route("/delegations")
@@ -60,14 +48,12 @@ interface DelegationOperations {
   @doc("Approve a delegation.")
   approveDelegation(
     @path delegationId: Uuid,
-    @body body: ApproveDelegationRequestBody,
   ): OkDelegationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/{delegationId}/revoke")
-  @doc("Revoke a delegation.")
-  revokeDelegation(
+  @route("/{delegationId}/reject")
+  @doc("Reject a pending delegation.")
+  rejectDelegation(
     @path delegationId: Uuid,
-    @body body: RevokeDelegationRequestBody,
-  ): OkDelegationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

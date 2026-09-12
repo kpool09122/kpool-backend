@@ -41,10 +41,10 @@ use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAf
 use Source\Account\Affiliation\Infrastructure\Query\ListAffiliations;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegation;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
-use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegation;
-use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegationInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermission;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
@@ -87,7 +87,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListAccountCategoryChangeRequestsInterface::class, ListAccountCategoryChangeRequests::class);
         $this->app->singleton(ListAccountDocumentsInterface::class, ListAccountDocuments::class);
         $this->app->singleton(GetAccountDocumentInterface::class, GetAccountDocument::class);
-        $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
+        $this->app->singleton(RejectDelegationInterface::class, RejectDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);

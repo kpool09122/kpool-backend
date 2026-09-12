@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Delegation\Application\UseCase\Command\ApproveDelegation;
+namespace Tests\Account\Delegation\Application\UseCase\Command\RejectDelegation;
 
 use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
-use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
-use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
-use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegation;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegationInput;
 use Source\Account\Delegation\Domain\Entity\AccountDelegation;
 use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
-use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -30,39 +28,38 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveDelegationTest extends TestCase
+class RejectDelegationTest extends TestCase
 {
-    public function testDelegatorAccountWithPolicyCanApproveAndCreatesPrincipalGroup(): void
+    public function testDelegatorAccountWithPolicyCanRejectPendingRequest(): void
     {
-        [$useCase, $input, $output, $delegation] = $this->scenario(true, true);
-        $useCase->process($input, $output);
-        $this->assertSame(DelegationStatus::APPROVED, $delegation->status());
-        $this->assertSame('approved', $output->toArray()['status']);
+        [$useCase, $input] = $this->scenario(true, true);
+        $useCase->process($input);
+        $this->addToAssertionCount(1);
     }
 
-    public function testPrincipalFromAnotherAccountCannotApprove(): void
+    public function testPolicyDeniedCannotReject(): void
     {
-        [$useCase, , $output, $delegation] = $this->scenario(true, true, false);
+        [$useCase, $input] = $this->scenario(false, true);
+        $this->expectException(DisallowedDelegationOperationException::class);
+        $useCase->process($input);
+    }
+
+    public function testNonPendingDelegationCannotReject(): void
+    {
+        [$useCase, $input] = $this->scenario(true, false);
+        $this->expectException(DisallowedDelegationOperationException::class);
+        $useCase->process($input);
+    }
+
+    public function testPrincipalFromAnotherAccountCannotReject(): void
+    {
+        [$useCase, , $delegation] = $this->scenario(true, true, false);
         $other = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         $this->expectException(DisallowedDelegationOperationException::class);
-        $useCase->process(new ApproveDelegationInput($delegation->delegationIdentifier(), $other), $output);
+        $useCase->process(new RejectDelegationInput($delegation->delegationIdentifier(), $other));
     }
 
-    public function testPolicyDeniedCannotApprove(): void
-    {
-        [$useCase, $input, $output] = $this->scenario(false, true);
-        $this->expectException(DisallowedDelegationOperationException::class);
-        $useCase->process($input, $output);
-    }
-
-    public function testNonPendingDelegationCannotApprove(): void
-    {
-        [$useCase, $input, $output] = $this->scenario(true, false);
-        $this->expectException(DisallowedDelegationOperationException::class);
-        $useCase->process($input, $output);
-    }
-
-    /** @return array{ApproveDelegation, ApproveDelegationInput, ApproveDelegationOutput, AccountDelegation} */
+    /** @return array{RejectDelegation, RejectDelegationInput, AccountDelegation} */
     private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true): array
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -76,22 +73,19 @@ class ApproveDelegationTest extends TestCase
         $accounts = Mockery::mock(AccountRepositoryInterface::class);
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
-        /** @var DelegationPrincipalGroupServiceInterface&Mockery\MockInterface $groups */
-        $groups = Mockery::mock(DelegationPrincipalGroupServiceInterface::class);
         if ($pending && $expectsAuthorization) {
             $account = Mockery::mock(Account::class);
             $account->shouldReceive('accountIdentifier')->andReturn($talent);
             $account->shouldReceive('type')->andReturn(AccountType::INDIVIDUAL);
             $account->shouldReceive('accountCategory')->andReturn(AccountCategory::TALENT);
             $accounts->shouldReceive('findById')->with($talent)->andReturn($account);
-            $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_APPROVE, Mockery::any())->andReturn($allowed);
+            $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REJECT, Mockery::any())->andReturn($allowed);
             if ($allowed) {
-                $groups->shouldReceive('createFor')->with($delegation)->once();
-                $repository->shouldReceive('save')->with($delegation)->once();
+                $repository->shouldReceive('delete')->with($delegation)->once();
             }
         }
 
-        return [new ApproveDelegation($accounts, $repository, $policy, $groups), new ApproveDelegationInput($delegation->delegationIdentifier(), $principal), new ApproveDelegationOutput(), $delegation];
+        return [new RejectDelegation($accounts, $repository, $policy), new RejectDelegationInput($delegation->delegationIdentifier(), $principal), $delegation];
     }
 
     private function principal(AccountIdentifier $account): Principal

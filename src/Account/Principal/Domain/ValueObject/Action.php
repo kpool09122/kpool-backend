@@ -16,4 +16,7 @@ enum Action: string
     case AFFILIATION_REQUEST_RECEIVE = 'account:affiliation-request:receive';
     case AFFILIATION_APPROVE = 'account:affiliation:approve';
     case AFFILIATION_REJECT = 'account:affiliation:reject';
+    case DELEGATION_APPROVE = 'account:delegation:approve';
+    case DELEGATION_REJECT = 'account:delegation:reject';
+    case DELEGATION_ACCOUNT_SWITCH = 'account:delegation-account:switch';
 }

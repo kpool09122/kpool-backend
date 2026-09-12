@@ -79,6 +79,21 @@ class AccountDelegationRepositoryTest extends TestCase
         $this->assertNotSame((string) $first->delegationIdentifier(), (string) $persisted->delegationIdentifier());
     }
 
+    #[Group('useDb')]
+    public function testDeletingRejectedPendingDelegationAllowsANewRequest(): void
+    {
+        $rejected = $this->delegation();
+        $repository = new AccountDelegationRepository();
+        $repository->save($rejected);
+
+        $found = $repository->findById($rejected->delegationIdentifier());
+        $this->assertNotNull($found);
+        $repository->delete($found);
+        $repository->save($this->delegation($rejected->affiliationIdentifier()));
+
+        $this->assertNotNull($repository->findOpenByAffiliationId($rejected->affiliationIdentifier()));
+    }
+
     private function delegation(
         ?AffiliationIdentifier $affiliationIdentifier = null,
         DelegationStatus $status = DelegationStatus::PENDING,
