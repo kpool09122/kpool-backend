@@ -112,17 +112,13 @@ model AffiliationAccountSummary {
 }
 
 @doc("Affiliation state.")
-model AffiliationSummary {
+model AffiliationCommandSummary {
   @doc("Affiliation identifier.")
   affiliationIdentifier: Uuid;
   @doc("Agency account identifier.")
   agencyAccountIdentifier: Uuid;
   @doc("Talent account identifier.")
   talentAccountIdentifier: Uuid;
-  @doc("Agency account.")
-  agencyAccount: AffiliationAccountSummary;
-  @doc("Talent account.")
-  talentAccount: AffiliationAccountSummary;
   @doc("Account that initiated the affiliation workflow.")
   requestedBy: Uuid;
   @doc("Affiliation status.")
@@ -135,6 +131,14 @@ model AffiliationSummary {
   activatedAt?: Timestamp | null;
   @doc("Timestamp when the affiliation was terminated.")
   terminatedAt?: Timestamp | null;
+}
+
+@doc("Affiliation state with related account summaries.")
+model AffiliationSummary extends AffiliationCommandSummary {
+  @doc("Agency account.")
+  agencyAccount: AffiliationAccountSummary;
+  @doc("Talent account.")
+  talentAccount: AffiliationAccountSummary;
 }
 
 @doc("Response body for affiliation list.")

@@ -642,15 +642,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
@@ -695,7 +689,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -785,7 +779,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -1728,14 +1722,12 @@ components:
           type: string
           description: Account email address.
       description: Account summary attached to an affiliation.
-    AffiliationSummary:
+    AffiliationCommandSummary:
       type: object
       required:
         - affiliationIdentifier
         - agencyAccountIdentifier
         - talentAccountIdentifier
-        - agencyAccount
-        - talentAccount
         - requestedBy
         - status
         - requestedAt
@@ -1752,14 +1744,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Talent account identifier.
-        agencyAccount:
-          allOf:
-            - $ref: '#/components/schemas/AffiliationAccountSummary'
-          description: Agency account.
-        talentAccount:
-          allOf:
-            - $ref: '#/components/schemas/AffiliationAccountSummary'
-          description: Talent account.
         requestedBy:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -1790,6 +1774,23 @@ components:
           nullable: true
           description: Timestamp when the affiliation was terminated.
       description: Affiliation state.
+    AffiliationSummary:
+      type: object
+      required:
+        - agencyAccount
+        - talentAccount
+      properties:
+        agencyAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Agency account.
+        talentAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Talent account.
+      allOf:
+        - $ref: '#/components/schemas/AffiliationCommandSummary'
+      description: Affiliation state with related account summaries.
     AffiliationTermsSummary:
       type: object
       properties:
