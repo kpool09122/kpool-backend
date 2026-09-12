@@ -35,8 +35,23 @@ model OkDelegationResponse {
   @body body: AccountDelegationSummary;
 }
 
+@doc("Response returned when listing delegations succeeds.")
+model ListDelegationsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListDelegationsResponseBody;
+}
+
 @route("/delegations")
 interface DelegationOperations {
+  @get
+  @doc("List delegations related to the authenticated account.")
+  listDelegations(
+    @query status?: string | null,
+    @query viewerRole?: string | null,
+    @query perPage?: int32 | null,
+    @query page?: int32 | null,
+  ): ListDelegationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @doc("Request a delegation.")
   requestDelegation(

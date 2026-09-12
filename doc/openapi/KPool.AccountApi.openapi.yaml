@@ -902,6 +902,71 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /delegations:
+    get:
+      operationId: DelegationOperations_listDelegations
+      description: List delegations related to the authenticated account.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: viewerRole
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when listing delegations succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDelegationsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     post:
       operationId: DelegationOperations_requestDelegation
       description: Request a delegation.
@@ -2157,6 +2222,37 @@ components:
           format: int32
           description: Number of items per page.
       description: Response body for affiliation list.
+    ListDelegationsResponseBody:
+      type: object
+      required:
+        - delegations
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        delegations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountDelegationSummary'
+          description: Delegations related to the authenticated account.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of delegations matching the filters.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of items per page.
+      description: Response body for delegation list.
     ListMembersResponseBody:
       type: object
       required:
