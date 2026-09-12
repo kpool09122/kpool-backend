@@ -151,6 +151,20 @@ model ListAffiliationsResponseBody {
   per_page: int32;
 }
 
+@doc("Response body for delegation list.")
+model ListDelegationsResponseBody {
+  @doc("Delegations related to the authenticated account.")
+  delegations: AccountDelegationSummary[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of delegations matching the filters.")
+  total: int32;
+  @doc("Number of items per page.")
+  per_page: int32;
+}
+
 @doc("Delegation state.")
 model DelegationSummary {
   @doc("Delegation identifier.")
