@@ -12,7 +12,7 @@ use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
-class AccountDelegation
+class Delegation
 {
     public function __construct(
         private readonly DelegationIdentifier $delegationIdentifier,

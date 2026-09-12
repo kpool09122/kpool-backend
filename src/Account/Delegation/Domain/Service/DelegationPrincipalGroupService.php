@@ -6,7 +6,7 @@ namespace Source\Account\Delegation\Domain\Service;
 
 use RuntimeException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -22,7 +22,7 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
     ) {
     }
 
-    public function createFor(AccountDelegation $delegation): void
+    public function createFor(Delegation $delegation): void
     {
         $switcherRole = $this->roleRepository->findByName(Role::DELEGATION_ACCOUNT_SWITCHER);
         if ($switcherRole === null) {

@@ -13,12 +13,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Delegation\Application\Exception\AccountDelegationNotAllowedException;
-use Source\Account\Delegation\Application\Exception\AccountDelegationUnavailableException;
+use Source\Account\Delegation\Application\Exception\DelegationNotAllowedException;
+use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -50,18 +50,18 @@ readonly class RequestDelegationAction
             try {
                 $this->requestDelegation->process($input, $output);
                 DB::commit();
-            } catch (AccountDelegationNotAllowedException $exception) {
+            } catch (DelegationNotAllowedException $exception) {
                 DB::rollBack();
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed_delegation_operation', $request->language()), previous: $exception);
-            } catch (AccountDelegationUnavailableException $exception) {
+            } catch (DelegationUnavailableException $exception) {
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('disallowed_delegation_operation', $request->language()), previous: $exception);
-            } catch (AccountDelegationAlreadyExistsException $exception) {
+            } catch (DelegationAlreadyExistsException $exception) {
                 DB::rollBack();
 
-                throw new ConflictHttpException(detail: error_message('account_delegation_already_exists', $request->language()), previous: $exception);
+                throw new ConflictHttpException(detail: error_message('delegation_already_exists', $request->language()), previous: $exception);
             } catch (Throwable $exception) {
                 DB::rollBack();
 

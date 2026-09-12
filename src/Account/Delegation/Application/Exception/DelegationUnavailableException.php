@@ -7,10 +7,10 @@ namespace Source\Account\Delegation\Application\Exception;
 use RuntimeException;
 use Throwable;
 
-class AccountDelegationNotAllowedException extends RuntimeException
+class DelegationUnavailableException extends RuntimeException
 {
     public function __construct(
-        string $message = 'Delegation request is not allowed.',
+        string $message = 'Delegation request target is not available.',
         ?Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

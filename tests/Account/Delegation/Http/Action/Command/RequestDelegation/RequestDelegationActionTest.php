@@ -11,12 +11,12 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
-use Source\Account\Delegation\Application\Exception\AccountDelegationNotAllowedException;
+use Source\Account\Delegation\Application\Exception\DelegationNotAllowedException;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
-use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationAlreadyExistsException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -76,12 +76,12 @@ class RequestDelegationActionTest extends TestCase
 
     public function testReturnsForbiddenWhenPolicyDenies(): void
     {
-        $this->assertErrorResponse(new AccountDelegationNotAllowedException(), Response::HTTP_FORBIDDEN);
+        $this->assertErrorResponse(new DelegationNotAllowedException(), Response::HTTP_FORBIDDEN);
     }
 
     public function testReturnsConflictForDuplicateOpenRequest(): void
     {
-        $this->assertErrorResponse(new AccountDelegationAlreadyExistsException(), Response::HTTP_CONFLICT);
+        $this->assertErrorResponse(new DelegationAlreadyExistsException(), Response::HTTP_CONFLICT);
     }
 
     private function assertErrorResponse(\Throwable $exception, int $expectedStatus): void
@@ -133,9 +133,9 @@ class RequestDelegationActionTest extends TestCase
         );
     }
 
-    private function delegation(AccountIdentifier $agency, AccountIdentifier $talent): AccountDelegation
+    private function delegation(AccountIdentifier $agency, AccountIdentifier $talent): Delegation
     {
-        return new AccountDelegation(
+        return new Delegation(
             new DelegationIdentifier(StrTestHelper::generateUuid()),
             new AffiliationIdentifier(StrTestHelper::generateUuid()),
             $agency,

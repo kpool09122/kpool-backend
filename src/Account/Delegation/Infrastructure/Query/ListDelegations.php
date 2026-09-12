@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Infrastructure\Query;
 
 use Application\Models\Account\Account as AccountModel;
-use Application\Models\Account\AccountDelegation as AccountDelegationModel;
+use Application\Models\Account\Delegation as DelegationModel;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
@@ -35,7 +35,7 @@ readonly class ListDelegations implements ListDelegationsInterface
         }
 
         $accountId = (string) $accountIdentifier;
-        $query = AccountDelegationModel::query()->where(static function ($query) use ($accountId): void {
+        $query = DelegationModel::query()->where(static function ($query) use ($accountId): void {
             $query->where('account_delegations.delegate_account_id', $accountId)
                 ->orWhere('account_delegations.delegator_account_id', $accountId);
         });
@@ -49,13 +49,13 @@ readonly class ListDelegations implements ListDelegationsInterface
             $query->where('account_delegations.requested_by_account_id', '<>', $accountId);
         }
 
-        /** @var LengthAwarePaginator<int, AccountDelegationModel> $paginator */
+        /** @var LengthAwarePaginator<int, DelegationModel> $paginator */
         $paginator = $query->orderByDesc('account_delegations.requested_at')
             ->orderByDesc('account_delegations.id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
 
         $output->output(
-            array_map(static fn (AccountDelegationModel $delegation): DelegationReadModel => self::toReadModel($delegation), $paginator->items()),
+            array_map(static fn (DelegationModel $delegation): DelegationReadModel => self::toReadModel($delegation), $paginator->items()),
             $paginator->currentPage(),
             $paginator->lastPage(),
             $paginator->total(),
@@ -63,7 +63,7 @@ readonly class ListDelegations implements ListDelegationsInterface
         );
     }
 
-    private static function toReadModel(AccountDelegationModel $delegation): DelegationReadModel
+    private static function toReadModel(DelegationModel $delegation): DelegationReadModel
     {
         return new DelegationReadModel(
             delegationIdentifier: $delegation->id,

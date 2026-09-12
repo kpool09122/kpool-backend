@@ -154,7 +154,7 @@ model ListAffiliationsResponseBody {
 @doc("Response body for delegation list.")
 model ListDelegationsResponseBody {
   @doc("Delegations related to the authenticated account.")
-  delegations: AccountDelegationSummary[];
+  delegations: DelegationSummary[];
   @doc("Current page number.")
   current_page: int32;
   @doc("Last page number.")

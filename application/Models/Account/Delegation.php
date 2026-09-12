@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
     'requested_by_account_id', 'status', 'direction', 'requested_at', 'approved_at', 'rejected_at',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_delegations', keyType: 'string')]
-class AccountDelegation extends Model
+class Delegation extends Model
 {
     public $incrementing = false;
     public $timestamps = false;

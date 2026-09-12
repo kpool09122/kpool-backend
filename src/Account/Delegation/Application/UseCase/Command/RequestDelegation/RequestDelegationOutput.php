@@ -6,13 +6,13 @@ namespace Source\Account\Delegation\Application\UseCase\Command\RequestDelegatio
 
 use DateTimeInterface;
 use LogicException;
-use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Entity\Delegation;
 
 class RequestDelegationOutput implements RequestDelegationOutputPort
 {
-    private ?AccountDelegation $delegation = null;
+    private ?Delegation $delegation = null;
 
-    public function setDelegation(AccountDelegation $delegation): void
+    public function setDelegation(Delegation $delegation): void
     {
         $this->delegation = $delegation;
     }

@@ -7,7 +7,7 @@ namespace Source\Account\Delegation\Domain\Exception;
 use DomainException;
 use Throwable;
 
-class AccountDelegationAlreadyExistsException extends DomainException
+class DelegationAlreadyExistsException extends DomainException
 {
     public function __construct(
         string $message = 'An active delegation request already exists.',
