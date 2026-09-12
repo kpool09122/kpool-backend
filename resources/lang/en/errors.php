@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => 'Cannot delete the last owner group with members.',
     'delegation_not_found' => 'The specified delegation was not found.',
     'disallowed_delegation_operation' => 'This delegation operation is not allowed.',
+    'account_delegation_already_exists' => 'An active delegation request already exists for this affiliation.',
     'invalid_delegation_approval' => 'Only pending delegations can be approved.',
     'invalid_delegation_revocation' => 'Only approved delegations can be revoked.',
     'affiliation_not_found' => 'The specified affiliation was not found.',

@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => '无法删除有成员的最后一个所有者组。',
     'delegation_not_found' => '找不到指定的委托。',
     'disallowed_delegation_operation' => '不允许此委托操作。',
+    'account_delegation_already_exists' => '此所属关系已存在有效的委托申请。',
     'invalid_delegation_approval' => '只能批准待处理的委托。',
     'invalid_delegation_revocation' => '只能撤销已批准的委托。',
     'affiliation_not_found' => '找不到指定的所属。',

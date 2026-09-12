@@ -63,6 +63,7 @@ return [
     'cannot_delete_last_owner_group' => 'メンバーがいる最後のオーナーグループは削除できません。',
     'delegation_not_found' => '指定された委任が見つかりません。',
     'disallowed_delegation_operation' => 'この委任操作は許可されていません。',
+    'account_delegation_already_exists' => 'この所属関係には有効な委任申請が既に存在します。',
     'invalid_delegation_approval' => '保留中の委任のみ承認できます。',
     'invalid_delegation_revocation' => '承認済みの委任のみ取り消しできます。',
     'affiliation_not_found' => '指定された所属が見つかりません。',

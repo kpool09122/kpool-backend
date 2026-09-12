@@ -4,30 +4,22 @@ declare(strict_types=1);
 
 namespace Source\Account\Delegation\Application\UseCase\Command\RequestDelegation;
 
-use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class RequestDelegationInput implements RequestDelegationInputPort
 {
-    public function __construct(
-        private AffiliationIdentifier $affiliationIdentifier,
-        private IdentityIdentifier $delegateIdentifier,
-        private IdentityIdentifier $delegatorIdentifier,
-    ) {
+    public function __construct(private Principal $principal, private AccountIdentifier $targetAccountIdentifier)
+    {
     }
 
-    public function affiliationIdentifier(): AffiliationIdentifier
+    public function principal(): Principal
     {
-        return $this->affiliationIdentifier;
+        return $this->principal;
     }
 
-    public function delegateIdentifier(): IdentityIdentifier
+    public function targetAccountIdentifier(): AccountIdentifier
     {
-        return $this->delegateIdentifier;
-    }
-
-    public function delegatorIdentifier(): IdentityIdentifier
-    {
-        return $this->delegatorIdentifier;
+        return $this->targetAccountIdentifier;
     }
 }

@@ -5,25 +5,31 @@ declare(strict_types=1);
 namespace Tests\Account\Delegation\Application\UseCase\Command\RequestDelegation;
 
 use DateTimeImmutable;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
-use Source\Account\Affiliation\Application\Exception\InvalidAffiliationStatusException;
+use Mockery\MockInterface;
+use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
-use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
+use Source\Account\Delegation\Application\Exception\AccountDelegationNotAllowedException;
+use Source\Account\Delegation\Application\Exception\AccountDelegationUnavailableException;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
-use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
-use Source\Account\Delegation\Domain\Entity\Delegation;
-use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
-use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\Entity\AccountDelegation;
+use Source\Account\Delegation\Domain\Exception\AccountDelegationAlreadyExistsException;
+use Source\Account\Delegation\Domain\Factory\AccountDelegationFactoryInterface;
+use Source\Account\Delegation\Domain\Repository\AccountDelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -32,247 +38,118 @@ use Tests\TestCase;
 
 class RequestDelegationTest extends TestCase
 {
-    /**
-     * 正常系: 正しくDIが動作すること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function test__construct(): void
+    public function testOwnerCanRequestDelegationFromActiveAffiliation(): void
     {
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
-        $delegationFactory = Mockery::mock(DelegationFactoryInterface::class);
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
-        $this->app->instance(DelegationFactoryInterface::class, $delegationFactory);
-        $useCase = $this->app->make(RequestDelegationInterface::class);
-        $this->assertInstanceOf(RequestDelegation::class, $useCase);
+        [$useCase, $input, $output, $delegation] = $this->createUseCase(allowed: true, targetExists: true, affiliationExists: true, duplicate: false);
+        $useCase->process($input, $output);
+        $this->assertSame((string) $delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
+        $this->assertSame('pending', $output->toArray()['status']);
     }
 
-    /**
-     * 正常系: 正しくデリゲーションを作成できること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testProcess(): void
+    public function testRejectsPrincipalWithoutPolicy(): void
     {
-        $testData = $this->createTestData();
-
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn($testData->affiliation);
-
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
-        $delegationRepository->shouldReceive('save')
-            ->once()
-            ->with($testData->delegation);
-
-        $delegationFactory = Mockery::mock(DelegationFactoryInterface::class);
-        $delegationFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                $testData->affiliationIdentifier,
-                $testData->delegateIdentifier,
-                $testData->delegatorIdentifier,
-            )
-            ->andReturn($testData->delegation);
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
-        $this->app->instance(DelegationFactoryInterface::class, $delegationFactory);
-
-        $useCase = $this->app->make(RequestDelegationInterface::class);
-
-        $output = new RequestDelegationOutput();
-
-        $useCase->process($testData->input, $output);
-
-        $this->assertSame((string) $testData->delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
+        [$useCase, $input, $output] = $this->createUseCase(allowed: false, targetExists: true, affiliationExists: true, duplicate: false);
+        $this->expectException(AccountDelegationNotAllowedException::class);
+        $useCase->process($input, $output);
     }
 
-    /**
-     * 異常系: アフィリエーションが存在しない場合、例外がスローされること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testThrowsWhenAffiliationNotFound(): void
+    public function testDoesNotRevealMissingTarget(): void
     {
-        $testData = $this->createTestData();
-
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturnNull();
-
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
-        $delegationFactory = Mockery::mock(DelegationFactoryInterface::class);
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
-        $this->app->instance(DelegationFactoryInterface::class, $delegationFactory);
-
-        $useCase = $this->app->make(RequestDelegationInterface::class);
-
-        $output = new RequestDelegationOutput();
-
-        $this->expectException(AffiliationNotFoundException::class);
-        $this->expectExceptionMessage('Affiliation not found.');
-
-        $useCase->process($testData->input, $output);
+        [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: false, affiliationExists: false, duplicate: false);
+        $this->expectException(AccountDelegationUnavailableException::class);
+        $useCase->process($input, $output);
     }
 
-    /**
-     * 異常系: アフィリエーションがアクティブでない場合、例外がスローされること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testThrowsWhenAffiliationNotActive(): void
+    public function testDoesNotRevealMissingActiveAffiliation(): void
     {
-        $testData = $this->createTestDataWithPendingAffiliation();
-
-        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $affiliationRepository->shouldReceive('findById')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn($testData->affiliation);
-
-        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
-        $delegationFactory = Mockery::mock(DelegationFactoryInterface::class);
-
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationRepositoryInterface::class, $delegationRepository);
-        $this->app->instance(DelegationFactoryInterface::class, $delegationFactory);
-
-        $useCase = $this->app->make(RequestDelegationInterface::class);
-
-        $output = new RequestDelegationOutput();
-
-        $this->expectException(InvalidAffiliationStatusException::class);
-        $this->expectExceptionMessage('Delegation can only be requested for active affiliations.');
-
-        $useCase->process($testData->input, $output);
+        [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: true, affiliationExists: false, duplicate: false);
+        $this->expectException(AccountDelegationUnavailableException::class);
+        $useCase->process($input, $output);
     }
 
-    private function createTestData(): RequestDelegationTestData
+    public function testRejectsDuplicateOpenDelegation(): void
     {
-        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $delegateIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegatorIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
+        [$useCase, $input, $output] = $this->createUseCase(allowed: true, targetExists: true, affiliationExists: true, duplicate: true);
+        $this->expectException(AccountDelegationAlreadyExistsException::class);
+        $useCase->process($input, $output);
+    }
+
+    /** @return array{RequestDelegation, RequestDelegationInput, RequestDelegationOutput, AccountDelegation} */
+    private function createUseCase(bool $allowed, bool $targetExists, bool $affiliationExists, bool $duplicate): array
+    {
+        $agencyId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talentId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $agencyId,
+        );
+        $requestingAccount = Mockery::mock(Account::class);
+        $requestingAccount->shouldReceive('accountIdentifier')->andReturn($agencyId);
+        $requestingAccount->shouldReceive('type')->andReturn(AccountType::CORPORATION);
+        $requestingAccount->shouldReceive('accountCategory')->andReturn(AccountCategory::AGENCY);
+        $targetAccount = Mockery::mock(Account::class);
+
+        /** @var AccountRepositoryInterface&MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->with($agencyId)->once()->andReturn($requestingAccount);
+        if ($allowed) {
+            $accountRepository->shouldReceive('findById')->with($talentId)->once()->andReturn($targetExists ? $targetAccount : null);
+        }
+
+        /** @var PolicyEvaluatorInterface&MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->with($principal, Mockery::any(), Mockery::type(Resource::class))->once()->andReturn($allowed);
 
         $affiliation = new Affiliation(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $agencyAccountIdentifier,
+            new AffiliationIdentifier(StrTestHelper::generateUuid()),
+            $agencyId,
+            $talentId,
+            $agencyId,
             AffiliationStatus::ACTIVE,
-            $terms,
+            null,
             new DateTimeImmutable('-1 day'),
             new DateTimeImmutable(),
             null,
         );
+        /** @var AffiliationRepositoryInterface&MockInterface $affiliationRepository */
+        $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
+        if ($allowed && $targetExists) {
+            $affiliationRepository->shouldReceive('findActiveBetweenAccounts')->with($agencyId, $talentId)->once()->andReturn($affiliationExists ? $affiliation : null);
+        }
 
-        $delegation = new Delegation(
-            $delegationIdentifier,
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
+        $delegation = new AccountDelegation(
+            new DelegationIdentifier(StrTestHelper::generateUuid()),
+            $affiliation->affiliationIdentifier(),
+            $agencyId,
+            $talentId,
+            $agencyId,
             DelegationStatus::PENDING,
             DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             null,
             null,
         );
+        /** @var AccountDelegationRepositoryInterface&MockInterface $delegationRepository */
+        $delegationRepository = Mockery::mock(AccountDelegationRepositoryInterface::class);
+        /** @var AccountDelegationFactoryInterface&MockInterface $factory */
+        $factory = Mockery::mock(AccountDelegationFactoryInterface::class);
+        if ($allowed && $targetExists && $affiliationExists) {
+            $delegationRepository->shouldReceive('findOpenByAffiliationId')
+                ->with($affiliation->affiliationIdentifier())
+                ->once()
+                ->andReturn($duplicate ? $delegation : null);
+            if (! $duplicate) {
+                $factory->shouldReceive('create')->with($affiliation, $agencyId)->once()->andReturn($delegation);
+                $delegationRepository->shouldReceive('save')->with($delegation)->once();
+            }
+        }
 
-        $input = new RequestDelegationInput(
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
-        );
-
-        return new RequestDelegationTestData(
-            $delegationIdentifier,
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
-            $affiliation,
+        return [
+            new RequestDelegation($accountRepository, $affiliationRepository, $delegationRepository, $factory, $policyEvaluator),
+            new RequestDelegationInput($principal, $talentId),
+            new RequestDelegationOutput(),
             $delegation,
-            $input,
-        );
-    }
-
-    private function createTestDataWithPendingAffiliation(): RequestDelegationTestData
-    {
-        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
-        $delegateIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegatorIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
-
-        $affiliation = new Affiliation(
-            $affiliationIdentifier,
-            $agencyAccountIdentifier,
-            $talentAccountIdentifier,
-            $agencyAccountIdentifier,
-            AffiliationStatus::PENDING,
-            $terms,
-            new DateTimeImmutable(),
-            null,
-            null,
-        );
-
-        $delegation = new Delegation(
-            $delegationIdentifier,
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
-            DelegationStatus::PENDING,
-            DelegationDirection::FROM_AGENCY,
-            new DateTimeImmutable(),
-            null,
-            null,
-        );
-
-        $input = new RequestDelegationInput(
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
-        );
-
-        return new RequestDelegationTestData(
-            $delegationIdentifier,
-            $affiliationIdentifier,
-            $delegateIdentifier,
-            $delegatorIdentifier,
-            $affiliation,
-            $delegation,
-            $input,
-        );
-    }
-}
-
-readonly class RequestDelegationTestData
-{
-    public function __construct(
-        public DelegationIdentifier   $delegationIdentifier,
-        public AffiliationIdentifier  $affiliationIdentifier,
-        public IdentityIdentifier     $delegateIdentifier,
-        public IdentityIdentifier     $delegatorIdentifier,
-        public Affiliation            $affiliation,
-        public Delegation             $delegation,
-        public RequestDelegationInput $input,
-    ) {
+        ];
     }
 }

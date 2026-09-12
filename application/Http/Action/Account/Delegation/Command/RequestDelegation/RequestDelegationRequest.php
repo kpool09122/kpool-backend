@@ -11,30 +11,14 @@ class RequestDelegationRequest extends FormRequest
 {
     use ResolvesLanguage;
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [
-            'affiliationIdentifier' => ['required', 'uuid'],
-            'delegateIdentifier' => ['required', 'uuid'],
-            'delegatorIdentifier' => ['required', 'uuid'],
-        ];
+        return ['targetAccountIdentifier' => ['required', 'uuid']];
     }
 
-    public function affiliationIdentifier(): string
+    public function targetAccountIdentifier(): string
     {
-        return (string) $this->input('affiliationIdentifier');
-    }
-
-    public function delegateIdentifier(): string
-    {
-        return (string) $this->input('delegateIdentifier');
-    }
-
-    public function delegatorIdentifier(): string
-    {
-        return (string) $this->input('delegatorIdentifier');
+        return (string) $this->input('targetAccountIdentifier');
     }
 }
