@@ -6,7 +6,6 @@ namespace Source\Identity\Infrastructure\Query;
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
-use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Account as AccountModel;
 use Application\Models\Identity\Identity as IdentityModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
@@ -21,7 +20,6 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
 {
     public function __construct(
         private AccountResolver $accountResolver,
-        private AuthContextCache $cache,
     ) {
     }
 
@@ -42,10 +40,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
         $accountContext = null;
 
         try {
-            $accountContext = $this->cache->resolveAccount(
-                $input->identityIdentifier(),
-                fn () => $this->accountResolver->resolve($input->identityIdentifier()),
-            );
+            $accountContext = $this->accountResolver->resolve($input->identityIdentifier());
         } catch (AccountNotFoundException) {
             $accountContext = null;
         }

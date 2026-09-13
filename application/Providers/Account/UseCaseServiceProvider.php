@@ -15,6 +15,8 @@ use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChan
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
+use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccount;
+use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
@@ -92,6 +94,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectDelegationInterface::class, RejectDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
+        $this->app->singleton(SwitchAccountInterface::class, SwitchAccount::class);
         $this->app->singleton(ListDelegationsInterface::class, ListDelegations::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);
         $this->app->singleton(ListAffiliationsInterface::class, ListAffiliations::class);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalOutput;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -24,6 +25,7 @@ class CreatePrincipalOutputTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $output = new CreatePrincipalOutput();

@@ -33,9 +33,11 @@ class PrincipalRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $result = $repository->findById($principalIdentifier);
@@ -43,6 +45,7 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $result->accountIdentifier());
     }
 
     /**
@@ -68,20 +71,23 @@ class PrincipalRepositoryTest extends TestCase
      * @throws JsonException
      */
     #[Group('useDb')]
-    public function testFindByIdentityIdentifier(): void
+    public function testFindByIdentityIdentifierAndAccountIdentifier(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
-        $result = $repository->findByIdentityIdentifier($identityIdentifier);
+        $result = $repository->findByIdentityIdentifierAndAccountIdentifier($identityIdentifier, $accountIdentifier);
 
         $this->assertNotNull($result);
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $result->accountIdentifier());
     }
 
     /**
@@ -91,12 +97,55 @@ class PrincipalRepositoryTest extends TestCase
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testFindByIdentityIdentifierWhenNotFound(): void
+    public function testFindByIdentityIdentifierAndAccountIdentifierWhenNotFound(): void
     {
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
-        $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $result = $repository->findByIdentityIdentifierAndAccountIdentifier(
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        );
 
         $this->assertNull($result);
+    }
+
+    /**
+     * 正常系: 同じ Identity に紐づく複数 Account のプリンシパルをすべて取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
+    #[Group('useDb')]
+    public function testFindByIdentityIdentifierReturnsPrincipalsForAllAccounts(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
+        CreateAccount::create((string) $otherAccountIdentifier);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $otherPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
+        CreatePrincipal::create($otherPrincipalIdentifier, $identityIdentifier, $otherAccountIdentifier);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByIdentityIdentifier($identityIdentifier);
+
+        $this->assertCount(2, $results);
+        $expectedAccountIdentifiers = [
+            (string) $accountIdentifier,
+            (string) $otherAccountIdentifier,
+        ];
+        $actualAccountIdentifiers = array_map(
+            static fn (Principal $principal): string => (string) $principal->accountIdentifier(),
+            $results,
+        );
+        sort($expectedAccountIdentifiers);
+        sort($actualAccountIdentifiers);
+
+        $this->assertSame($expectedAccountIdentifiers, $actualAccountIdentifiers);
     }
 
     /**
@@ -110,6 +159,8 @@ class PrincipalRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalId = StrTestHelper::generateUuid();
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
@@ -117,6 +168,7 @@ class PrincipalRepositoryTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityIdentifier,
+            $accountIdentifier,
             $delegationIdentifier,
         );
 
@@ -126,12 +178,14 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_principals', [
             'id' => $principalId,
             'identity_id' => (string) $identityIdentifier,
+            'account_id' => (string) $accountIdentifier,
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
         $saved = $repository->findById(new PrincipalIdentifier($principalId));
         $this->assertNotNull($saved);
         $this->assertSame((string) $identityIdentifier, (string) $saved->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $saved->accountIdentifier());
     }
 
     /**
@@ -146,14 +200,17 @@ class PrincipalRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
+            $accountIdentifier,
         );
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
@@ -176,24 +233,76 @@ class PrincipalRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier, [
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
-        $result = $repository->findByDelegation($delegationIdentifier);
+        $results = $repository->findByDelegation($delegationIdentifier);
 
-        $this->assertNotNull($result);
+        $this->assertCount(1, $results);
+        $result = $results[0];
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $result->accountIdentifier());
         $this->assertSame((string) $delegationIdentifier, (string) $result->delegationIdentifier());
     }
 
     /**
-     * 正常系: 指定したDelegation IDを持つプリンシパルが存在しない場合、NULLが返却されること.
+     * 正常系: 同じ Delegation ID に紐づく複数 Account のプリンシパルをすべて取得できること.
+     *
+     * @throws BindingResolutionException
+     * @throws JsonException
+     * @return void
+     */
+    #[Group('useDb')]
+    public function testFindByDelegationReturnsPrincipalsForAllAccounts(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
+        CreateAccount::create((string) $otherAccountIdentifier);
+
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            $identityIdentifier,
+            $accountIdentifier,
+            ['delegation_identifier' => (string) $delegationIdentifier],
+        );
+        CreatePrincipal::create(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            $identityIdentifier,
+            $otherAccountIdentifier,
+            ['delegation_identifier' => (string) $delegationIdentifier],
+        );
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByDelegation($delegationIdentifier);
+
+        $expectedAccountIdentifiers = [
+            (string) $accountIdentifier,
+            (string) $otherAccountIdentifier,
+        ];
+        $actualAccountIdentifiers = array_map(
+            static fn (Principal $principal): string => (string) $principal->accountIdentifier(),
+            $results,
+        );
+        sort($expectedAccountIdentifiers);
+        sort($actualAccountIdentifiers);
+
+        $this->assertSame($expectedAccountIdentifiers, $actualAccountIdentifiers);
+    }
+
+    /**
+     * 正常系: 指定したDelegation IDを持つプリンシパルが存在しない場合、空配列が返却されること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -204,7 +313,7 @@ class PrincipalRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $result = $repository->findByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
 
-        $this->assertNull($result);
+        $this->assertSame([], $result);
     }
 
     /**
@@ -219,10 +328,12 @@ class PrincipalRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier, [
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
@@ -275,12 +386,10 @@ class PrincipalRepositoryTest extends TestCase
         CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1);
-        $this->createAccountPrincipal($identityIdentifier1, $accountIdentifier);
+        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1, $accountIdentifier);
 
         $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2);
-        $this->createAccountPrincipal($identityIdentifier2, $accountIdentifier);
+        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByAccountId($accountIdentifier);
@@ -289,17 +398,6 @@ class PrincipalRepositoryTest extends TestCase
         $principalIds = array_map(fn ($p) => (string) $p->principalIdentifier(), $results);
         $this->assertContains((string) $principalIdentifier1, $principalIds);
         $this->assertContains((string) $principalIdentifier2, $principalIds);
-    }
-
-    private function createAccountPrincipal(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): void
-    {
-        \Illuminate\Support\Facades\DB::table('account_principals')->insert([
-            'id' => StrTestHelper::generateUuid(),
-            'identity_id' => (string) $identityIdentifier,
-            'account_id' => (string) $accountIdentifier,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 
     /**
@@ -345,14 +443,16 @@ class PrincipalRepositoryTest extends TestCase
             'email' => 'findbyids3@example.com',
             'identity_name' => 'findbyids-identity-3',
         ]);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier3 = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1);
-        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2);
-        CreatePrincipal::create($principalIdentifier3, $identityIdentifier3);
+        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1, $accountIdentifier);
+        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, $accountIdentifier);
+        CreatePrincipal::create($principalIdentifier3, $identityIdentifier3, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIds([$principalIdentifier1, $principalIdentifier2, $principalIdentifier3]);
@@ -398,11 +498,13 @@ class PrincipalRepositoryTest extends TestCase
             'email' => 'existing-principal@example.com',
             'identity_name' => 'existing-principal-user',
         ]);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $existingPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $nonExistingPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        CreatePrincipal::create($existingPrincipalId, $identityIdentifier);
+        CreatePrincipal::create($existingPrincipalId, $identityIdentifier, $accountIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIds([$existingPrincipalId, $nonExistingPrincipalId]);

@@ -39,12 +39,14 @@ class GetCurrentPrincipalTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
-        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier));
+        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
         $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
@@ -63,9 +65,11 @@ class GetCurrentPrincipalTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         CreatePolicy::create($policyIdentifier, [
@@ -96,11 +100,11 @@ class GetCurrentPrincipalTest extends TestCase
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         CreateRole::create($roleIdentifier, ['policies' => [(string) $policyIdentifier]]);
 
-        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier);
+        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier, $accountIdentifier);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier);
 
         $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
-        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier));
+        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
         $this->assertSame([
@@ -143,9 +147,11 @@ class GetCurrentPrincipalTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         CreatePolicy::create($policyIdentifier);
@@ -155,12 +161,12 @@ class GetCurrentPrincipalTest extends TestCase
         CreateRole::create($roleIdentifier1, ['policies' => [(string) $policyIdentifier]]);
         CreateRole::create($roleIdentifier2, ['policies' => [(string) $policyIdentifier]]);
 
-        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier);
+        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier, $accountIdentifier);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier1);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier2);
 
         $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
-        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier));
+        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
         $this->assertCount(1, $result['policies']);
@@ -176,18 +182,20 @@ class GetCurrentPrincipalTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         CreateRole::create($roleIdentifier);
 
-        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier);
+        $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier, $accountIdentifier);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier);
 
         $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
-        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier));
+        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
         $this->assertSame([], $result['policies']);
@@ -200,18 +208,37 @@ class GetCurrentPrincipalTest extends TestCase
     public function testProcessThrowsExceptionWhenPrincipalDoesNotExist(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $this->expectException(PrincipalNotFoundException::class);
 
         $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
-        $useCase->process(new GetCurrentPrincipalInput($identityIdentifier));
+        $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
     }
 
-    private function createPrincipalGroupWithMember(PrincipalIdentifier $principalIdentifier): PrincipalGroupIdentifier
+    #[Group('useDb')]
+    public function testProcessUsesIdentityAndAccountPair(): void
     {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $accountIdentifier);
+        CreateAccount::create((string) $otherAccountIdentifier);
 
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $otherPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
+        CreatePrincipal::create($otherPrincipalIdentifier, $identityIdentifier, $otherAccountIdentifier);
+
+        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $otherAccountIdentifier));
+
+        $this->assertSame((string) $otherPrincipalIdentifier, $readModel->toArray()['principalIdentifier']);
+    }
+
+    private function createPrincipalGroupWithMember(PrincipalIdentifier $principalIdentifier, AccountIdentifier $accountIdentifier): PrincipalGroupIdentifier
+    {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         CreatePrincipalGroup::create($principalGroupIdentifier, $accountIdentifier);
         CreatePrincipalGroupMembership::create((string) $principalGroupIdentifier, (string) $principalIdentifier);

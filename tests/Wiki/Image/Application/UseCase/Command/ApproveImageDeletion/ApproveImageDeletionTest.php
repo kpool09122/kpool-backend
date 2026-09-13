@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -117,7 +118,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
@@ -210,7 +211,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithoutDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
@@ -300,7 +301,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);

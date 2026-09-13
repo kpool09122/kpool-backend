@@ -192,16 +192,49 @@ class AuthContextCacheTest extends TestCase
     public function testResolveWikiSerializesAndDeserializes(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new WikiPrincipalIdentifier(StrTestHelper::generateUuid());
 
-        Redis::shouldReceive('get')->once()->andReturn(json_encode([
-            'principalIdentifier' => (string) $principalIdentifier,
-        ]));
+        Redis::shouldReceive('get')
+            ->once()
+            ->with('auth-context:wiki:' . $identityIdentifier . ':' . $accountIdentifier)
+            ->andReturn(json_encode([
+                'principalIdentifier' => (string) $principalIdentifier,
+            ]));
         Redis::shouldReceive('setex')->never();
 
         $context = (new AuthContextCache())->resolveWiki(
             $identityIdentifier,
+            $accountIdentifier,
             fn () => new WikiContext(new WikiPrincipalIdentifier(StrTestHelper::generateUuid())),
+        );
+
+        $this->assertSame((string) $principalIdentifier, (string) $context->principalIdentifier);
+    }
+
+    public function testResolveWikiStoresByIdentityAndAccount(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new WikiPrincipalIdentifier(StrTestHelper::generateUuid());
+
+        Redis::shouldReceive('get')
+            ->once()
+            ->with('auth-context:wiki:' . $identityIdentifier . ':' . $accountIdentifier)
+            ->andReturn(null);
+        Redis::shouldReceive('setex')
+            ->once()
+            ->withArgs(
+                fn (string $key, int $ttl, string $payload) =>
+                $key === 'auth-context:wiki:' . $identityIdentifier . ':' . $accountIdentifier
+                && $ttl === 3600
+                && json_decode($payload, true)['principalIdentifier'] === (string) $principalIdentifier
+            );
+
+        $context = (new AuthContextCache())->resolveWiki(
+            $identityIdentifier,
+            $accountIdentifier,
+            fn () => new WikiContext($principalIdentifier),
         );
 
         $this->assertSame((string) $principalIdentifier, (string) $context->principalIdentifier);

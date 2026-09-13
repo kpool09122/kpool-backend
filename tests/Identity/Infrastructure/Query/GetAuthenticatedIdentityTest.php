@@ -59,7 +59,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         ]);
 
         Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->once();
+        Redis::shouldReceive('set')->once();
 
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
@@ -103,7 +103,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         ]);
 
         Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->never();
+        Redis::shouldReceive('set')->never();
 
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));

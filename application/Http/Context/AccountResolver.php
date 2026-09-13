@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
-use Application\Models\Account\Account as AccountModel;
-use Application\Models\Account\Principal as PrincipalModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Service\CurrentAccount;
+use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Principal\Domain\Entity\Policy;
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Condition;
@@ -18,49 +21,48 @@ use Source\Account\Principal\Domain\ValueObject\ConditionClause;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Shared\Domain\ValueObject\AccountCategory;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class AccountResolver
 {
     public function __construct(
+        private CurrentAccountServiceInterface $currentAccountService,
+        private AccountRepositoryInterface $accountRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private DelegationRepositoryInterface $delegationRepository,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyRepositoryInterface $policyRepository,
     ) {
     }
 
-    /** @throws AccountNotFoundException */
+    /** @throws AccountNotFoundException|DelegationUnavailableException */
     public function resolve(IdentityIdentifier $identityIdentifier): AccountContext
     {
-        $principal = PrincipalModel::query()
-            ->where('identity_id', (string) $identityIdentifier)
-            ->first();
+        $currentAccount = $this->currentAccountService->find($identityIdentifier)
+            ?? $this->initialCurrentAccount($identityIdentifier);
 
-        if ($principal === null) {
-            throw new AccountNotFoundException('Account context not found.');
+        if ((string) $currentAccount->originalIdentityIdentifier !== (string) $identityIdentifier) {
+            throw new AccountNotFoundException('Current account does not belong to the authenticated identity.');
         }
 
-        $account = AccountModel::query()
-            ->where('id', $principal->account_id)
-            ->first();
+        $principal = $this->principalRepository->findById($currentAccount->effectivePrincipalIdentifier);
+        if ($principal === null
+            || (string) $principal->identityIdentifier() !== (string) $identityIdentifier
+            || (string) $principal->accountIdentifier() !== (string) $currentAccount->effectiveAccountIdentifier) {
+            throw new AccountNotFoundException('Selected account principal was not found.');
+        }
 
+        $this->assertDelegationIsActive($currentAccount);
+
+        $account = $this->accountRepository->findById($currentAccount->effectiveAccountIdentifier);
         if ($account === null) {
-            throw new AccountNotFoundException('Account context not found.');
+            throw new AccountNotFoundException('Selected account was not found.');
         }
-
-        $accountPrincipal = new Principal(
-            new PrincipalIdentifier($principal->id),
-            new IdentityIdentifier($principal->identity_id),
-            new AccountIdentifier($principal->account_id),
-        );
 
         $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
-            $accountPrincipal->accountIdentifier(),
-            $accountPrincipal->principalIdentifier(),
+            $principal->accountIdentifier(),
+            $principal->principalIdentifier(),
         );
         $roleIdentifiers = [];
         foreach ($principalGroups as $principalGroup) {
@@ -70,11 +72,64 @@ readonly class AccountResolver
         }
 
         return new AccountContext(
-            principal: $accountPrincipal,
-            accountType: AccountType::from($account->type),
+            principal: $principal,
+            accountType: $account->type(),
+            accountCategory: $account->accountCategory(),
             accountPolicies: $this->effectivePolicies(array_values($roleIdentifiers)),
-            accountCategory: AccountCategory::from($account->category),
+            originalIdentityIdentifier: $currentAccount->originalIdentityIdentifier,
+            originalAccountIdentifier: $currentAccount->originalAccountIdentifier,
+            originalPrincipalIdentifier: $currentAccount->originalPrincipalIdentifier,
+            delegationIdentifier: $currentAccount->delegationIdentifier,
         );
+    }
+
+    private function initialCurrentAccount(IdentityIdentifier $identityIdentifier): CurrentAccount
+    {
+        $principals = $this->principalRepository->findAllByIdentityIdentifier($identityIdentifier);
+        if (count($principals) !== 1) {
+            throw new AccountNotFoundException('Current account is not selected.');
+        }
+
+        $principal = $principals[0];
+        $currentAccount = new CurrentAccount(
+            originalIdentityIdentifier: $identityIdentifier,
+            originalAccountIdentifier: $principal->accountIdentifier(),
+            originalPrincipalIdentifier: $principal->principalIdentifier(),
+            effectiveAccountIdentifier: $principal->accountIdentifier(),
+            effectivePrincipalIdentifier: $principal->principalIdentifier(),
+            delegationIdentifier: null,
+        );
+        $this->currentAccountService->save($currentAccount);
+
+        return $currentAccount;
+    }
+
+    private function assertDelegationIsActive(CurrentAccount $currentAccount): void
+    {
+        if ($currentAccount->delegationIdentifier === null) {
+            if ((string) $currentAccount->originalAccountIdentifier !== (string) $currentAccount->effectiveAccountIdentifier
+                || (string) $currentAccount->originalPrincipalIdentifier !== (string) $currentAccount->effectivePrincipalIdentifier) {
+                throw new AccountNotFoundException('Non-delegated current account is inconsistent.');
+            }
+
+            return;
+        }
+
+        $delegation = $this->delegationRepository->findById($currentAccount->delegationIdentifier);
+        if ($delegation === null || ! $delegation->isApproved()
+            || (string) $delegation->delegateAccountIdentifier() !== (string) $currentAccount->originalAccountIdentifier
+            || (string) $delegation->delegatorAccountIdentifier() !== (string) $currentAccount->effectiveAccountIdentifier) {
+            $this->currentAccountService->save(new CurrentAccount(
+                originalIdentityIdentifier: $currentAccount->originalIdentityIdentifier,
+                originalAccountIdentifier: $currentAccount->originalAccountIdentifier,
+                originalPrincipalIdentifier: $currentAccount->originalPrincipalIdentifier,
+                effectiveAccountIdentifier: $currentAccount->originalAccountIdentifier,
+                effectivePrincipalIdentifier: $currentAccount->originalPrincipalIdentifier,
+                delegationIdentifier: null,
+            ));
+
+            throw new DelegationUnavailableException('Delegated account context is no longer active.');
+        }
     }
 
     /**

@@ -101,6 +101,7 @@ class PolicyEvaluatorTest extends TestCase
         return new Principal(
             new PrincipalIdentifier($principalId),
             new IdentityIdentifier($identityId),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 

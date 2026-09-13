@@ -25,6 +25,9 @@ interface PrincipalRepositoryInterface
 
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal;
 
+    /** @return Principal[] */
+    public function findAllByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array;
+
     public function findByIdentityIdentifierAndAccountIdentifier(
         IdentityIdentifier $identityIdentifier,
         AccountIdentifier $accountIdentifier,

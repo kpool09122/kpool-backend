@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('wiki_principals', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('プリンシパル ID');
             $table->uuid('identity_id')->comment('Identity ID');
+            $table->uuid('account_id')->comment('Account ID');
             $table->uuid('delegation_identifier')->nullable()->comment('委譲ID (nullなら本人)');
             $table->boolean('enabled')->default(true)->comment('有効フラグ');
             $table->timestamps();
 
             $table->foreign('identity_id')->references('id')->on('identities')->onDelete('cascade');
-            $table->unique('identity_id');
-            $table->unique('delegation_identifier');
+            $table->unique(['identity_id', 'account_id']);
+            $table->unique(['delegation_identifier', 'account_id']);
         });
     }
 

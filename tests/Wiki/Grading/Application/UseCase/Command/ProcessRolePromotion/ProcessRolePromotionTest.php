@@ -129,6 +129,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -642,6 +643,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -775,6 +777,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);

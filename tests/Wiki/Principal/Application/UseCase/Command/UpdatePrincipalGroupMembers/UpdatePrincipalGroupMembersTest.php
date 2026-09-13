@@ -219,7 +219,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function principal(AccountIdentifier $accountIdentifier): Principal
     {
-        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()));
+        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
     }
 
     private function principalGroup(AccountIdentifier $accountIdentifier, string $name): PrincipalGroup

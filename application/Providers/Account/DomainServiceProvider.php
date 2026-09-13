@@ -7,6 +7,7 @@ namespace Application\Providers\Account;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
+use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
@@ -20,6 +21,7 @@ use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeReques
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountContextInvalidationService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
+use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
@@ -76,6 +78,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
         $this->app->singleton(AccountContextInvalidationServiceInterface::class, AccountContextInvalidationService::class);
+        $this->app->bind(CurrentAccountServiceInterface::class, CurrentAccountService::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
