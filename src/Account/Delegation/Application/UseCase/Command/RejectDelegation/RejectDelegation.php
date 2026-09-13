@@ -30,10 +30,10 @@ readonly class RejectDelegation implements RejectDelegationInterface
         if (! $delegation->isPending()) {
             throw new DisallowedDelegationOperationException('Only pending delegations can be rejected.');
         }
-        if ((string) $delegation->delegatorAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
-            throw new DisallowedDelegationOperationException('Only the delegator account can reject this delegation.');
+        if ((string) $delegation->approverAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
+            throw new DisallowedDelegationOperationException('Only the requested account can reject this delegation.');
         }
-        $account = $this->accountRepository->findById($delegation->delegatorAccountIdentifier());
+        $account = $this->accountRepository->findById($delegation->approverAccountIdentifier());
         if ($account === null || ! $this->policyEvaluator->evaluate(
             $input->principal(),
             Action::DELEGATION_REJECT,

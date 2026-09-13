@@ -32,10 +32,10 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
         if (! $delegation->isPending()) {
             throw new DisallowedDelegationOperationException('Only pending delegations can be approved.');
         }
-        if ((string) $delegation->delegatorAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
-            throw new DisallowedDelegationOperationException('Only the delegator account can approve this delegation.');
+        if ((string) $delegation->approverAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
+            throw new DisallowedDelegationOperationException('Only the requested account can approve this delegation.');
         }
-        $account = $this->accountRepository->findById($delegation->delegatorAccountIdentifier());
+        $account = $this->accountRepository->findById($delegation->approverAccountIdentifier());
         if ($account === null || ! $this->policyEvaluator->evaluate(
             $input->principal(),
             Action::DELEGATION_APPROVE,

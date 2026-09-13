@@ -38,7 +38,10 @@ class ListDelegationsTest extends TestCase
         $related = new AccountIdentifier(StrTestHelper::generateUuid());
         $other1 = new AccountIdentifier(StrTestHelper::generateUuid());
         $other2 = new AccountIdentifier(StrTestHelper::generateUuid());
-        CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency']);
+        CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency', 'name' => 'Operator Agency', 'email' => 'operator@example.test']);
+        CreateAccount::create((string) $related, ['category' => 'talent', 'name' => 'Related Talent', 'email' => 'related@example.test']);
+        CreateAccount::create((string) $other1, ['category' => 'agency']);
+        CreateAccount::create((string) $other2, ['category' => 'talent']);
         $old = '00000000-0000-0000-0000-000000000001';
         $sameTimeHigh = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
         $sameTimeLow = '00000000-0000-0000-0000-000000000002';
@@ -54,6 +57,21 @@ class ListDelegationsTest extends TestCase
         $this->assertSame(3, $payload['total']);
         $this->assertSame(2, $payload['last_page']);
         $this->assertSame('2026-09-11T12:00:00+00:00', $payload['delegations'][0]['rejectedAt']);
+        $this->assertSame([
+            'accountIdentifier' => (string) $operator->accountIdentifier(),
+            'name' => 'Operator Agency',
+            'email' => 'operator@example.test',
+        ], $payload['delegations'][0]['delegateAccount']);
+        $this->assertSame([
+            'accountIdentifier' => (string) $related,
+            'name' => 'Related Talent',
+            'email' => 'related@example.test',
+        ], $payload['delegations'][0]['delegatorAccount']);
+        $this->assertSame([
+            'accountIdentifier' => (string) $related,
+            'name' => 'Related Talent',
+            'email' => 'related@example.test',
+        ], $payload['delegations'][0]['requestedByAccount']);
     }
 
     #[Group('useDb')]
@@ -62,13 +80,14 @@ class ListDelegationsTest extends TestCase
         $operator = $this->principal();
         $counterpart = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency']);
+        CreateAccount::create((string) $counterpart, ['category' => 'talent']);
         $requested = StrTestHelper::generateUuid();
         $awaiting = StrTestHelper::generateUuid();
         $this->insert($requested, $operator->accountIdentifier(), $counterpart, $operator->accountIdentifier(), 'pending', '2026-09-10 10:00:00');
-        $this->insert($awaiting, $counterpart, $operator->accountIdentifier(), $counterpart, 'pending', '2026-09-11 10:00:00');
+        $this->insert($awaiting, $operator->accountIdentifier(), $counterpart, $counterpart, 'pending', '2026-09-11 10:00:00');
 
         $requester = new ListDelegationsOutput();
-        (new ListDelegations($this->allowing($operator)))->process(new ListDelegationsInput($operator, 'pending', 'requester'), $requester);
+        (new ListDelegations($this->allowingRequest($operator)))->process(new ListDelegationsInput($operator, 'pending', 'requester'), $requester);
         $this->assertSame([$requested], array_column($requester->toArray()['delegations'], 'delegationIdentifier'));
 
         $approver = new ListDelegationsOutput();
@@ -82,6 +101,7 @@ class ListDelegationsTest extends TestCase
         $operator = $this->principal();
         $counterpart = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency']);
+        CreateAccount::create((string) $counterpart, ['category' => 'talent']);
         $pending = StrTestHelper::generateUuid();
         $approved = StrTestHelper::generateUuid();
         $this->insert($pending, $operator->accountIdentifier(), $counterpart, $operator->accountIdentifier(), 'pending', '2026-09-10 10:00:00');
@@ -92,21 +112,45 @@ class ListDelegationsTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testRequestPolicyAloneCannotListApproverView(): void
+    {
+        $operator = $this->principal();
+        CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency']);
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
+        $policy = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policy->shouldReceive('evaluate')->with($operator, Action::DELEGATION_APPROVE, Mockery::type(Resource::class))->andReturnFalse();
+        $policy->shouldReceive('evaluate')->with($operator, Action::DELEGATION_REJECT, Mockery::type(Resource::class))->andReturnFalse();
+
+        $this->expectException(DisallowedDelegationOperationException::class);
+        (new ListDelegations($policy))->process(new ListDelegationsInput($operator, 'pending', 'approver'), new ListDelegationsOutput());
+    }
+
+    #[Group('useDb')]
     public function testThrowsForbiddenWhenPolicyDenies(): void
     {
         $operator = $this->principal();
         CreateAccount::create((string) $operator->accountIdentifier(), ['category' => 'agency']);
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policy->shouldReceive('evaluate')->times(4)->andReturnFalse();
+        $policy->shouldReceive('evaluate')->times(5)->andReturnFalse();
         $this->expectException(DisallowedDelegationOperationException::class);
         (new ListDelegations($policy))->process(new ListDelegationsInput($operator), new ListDelegationsOutput());
+    }
+
+    private function allowingRequest(Principal $principal): PolicyEvaluatorInterface
+    {
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
+        $policy = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REQUEST_CREATE, Mockery::type(Resource::class))->andReturnTrue();
+
+        return $policy;
     }
 
     private function allowing(Principal $principal): PolicyEvaluatorInterface
     {
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REQUEST_CREATE, Mockery::type(Resource::class))->andReturnFalse();
         $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_APPROVE, Mockery::type(Resource::class))->andReturnTrue();
 
         return $policy;

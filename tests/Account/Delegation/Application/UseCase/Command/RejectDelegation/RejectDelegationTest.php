@@ -30,9 +30,17 @@ use Tests\TestCase;
 
 class RejectDelegationTest extends TestCase
 {
-    public function testDelegatorAccountWithPolicyCanRejectPendingRequest(): void
+    public function testAccountThatDidNotRequestCanRejectPendingRequest(): void
     {
         [$useCase, $input, $delegation] = $this->scenario(true, true);
+        $useCase->process($input);
+        $this->assertSame(DelegationStatus::REJECTED, $delegation->status());
+        $this->assertNotNull($delegation->rejectedAt());
+    }
+
+    public function testAgencyCanRejectRequestSentByTalent(): void
+    {
+        [$useCase, $input, $delegation] = $this->scenario(true, true, requestedByAgency: false);
         $useCase->process($input);
         $this->assertSame(DelegationStatus::REJECTED, $delegation->status());
         $this->assertNotNull($delegation->rejectedAt());
@@ -61,12 +69,14 @@ class RejectDelegationTest extends TestCase
     }
 
     /** @return array{RejectDelegation, RejectDelegationInput, Delegation} */
-    private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true): array
+    private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true, bool $requestedByAgency = true): array
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->principal($talent);
-        $delegation = new Delegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $agency, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
+        $requestedBy = $requestedByAgency ? $agency : $talent;
+        $approver = $requestedByAgency ? $talent : $agency;
+        $principal = $this->principal($approver);
+        $delegation = new Delegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $requestedBy, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, $requestedByAgency ? DelegationDirection::FROM_AGENCY : DelegationDirection::FROM_TALENT, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
         /** @var DelegationRepositoryInterface&Mockery\MockInterface $repository */
         $repository = Mockery::mock(DelegationRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($delegation);
@@ -76,10 +86,10 @@ class RejectDelegationTest extends TestCase
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
         if ($pending && $expectsAuthorization) {
             $account = Mockery::mock(Account::class);
-            $account->shouldReceive('accountIdentifier')->andReturn($talent);
-            $account->shouldReceive('type')->andReturn(AccountType::INDIVIDUAL);
-            $account->shouldReceive('accountCategory')->andReturn(AccountCategory::TALENT);
-            $accounts->shouldReceive('findById')->with($talent)->andReturn($account);
+            $account->shouldReceive('accountIdentifier')->andReturn($approver);
+            $account->shouldReceive('type')->andReturn($requestedByAgency ? AccountType::INDIVIDUAL : AccountType::CORPORATION);
+            $account->shouldReceive('accountCategory')->andReturn($requestedByAgency ? AccountCategory::TALENT : AccountCategory::AGENCY);
+            $accounts->shouldReceive('findById')->with($approver)->andReturn($account);
             $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REJECT, Mockery::any())->andReturn($allowed);
             if ($allowed) {
                 $repository->shouldReceive('save')->with($delegation)->once();
