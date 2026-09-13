@@ -32,9 +32,17 @@ use Tests\TestCase;
 
 class ApproveDelegationTest extends TestCase
 {
-    public function testDelegatorAccountWithPolicyCanApproveAndCreatesPrincipalGroup(): void
+    public function testAccountThatDidNotRequestCanApproveAndCreatesPrincipalGroup(): void
     {
         [$useCase, $input, $output, $delegation] = $this->scenario(true, true);
+        $useCase->process($input, $output);
+        $this->assertSame(DelegationStatus::APPROVED, $delegation->status());
+        $this->assertSame('approved', $output->toArray()['status']);
+    }
+
+    public function testAgencyCanApproveRequestSentByTalent(): void
+    {
+        [$useCase, $input, $output, $delegation] = $this->scenario(true, true, requestedByAgency: false);
         $useCase->process($input, $output);
         $this->assertSame(DelegationStatus::APPROVED, $delegation->status());
         $this->assertSame('approved', $output->toArray()['status']);
@@ -63,12 +71,14 @@ class ApproveDelegationTest extends TestCase
     }
 
     /** @return array{ApproveDelegation, ApproveDelegationInput, ApproveDelegationOutput, Delegation} */
-    private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true): array
+    private function scenario(bool $allowed, bool $pending, bool $expectsAuthorization = true, bool $requestedByAgency = true): array
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->principal($talent);
-        $delegation = new Delegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $agency, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, DelegationDirection::FROM_AGENCY, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
+        $requestedBy = $requestedByAgency ? $agency : $talent;
+        $approver = $requestedByAgency ? $talent : $agency;
+        $principal = $this->principal($approver);
+        $delegation = new Delegation(new DelegationIdentifier(StrTestHelper::generateUuid()), new AffiliationIdentifier(StrTestHelper::generateUuid()), $agency, $talent, $requestedBy, $pending ? DelegationStatus::PENDING : DelegationStatus::APPROVED, $requestedByAgency ? DelegationDirection::FROM_AGENCY : DelegationDirection::FROM_TALENT, new DateTimeImmutable(), $pending ? null : new DateTimeImmutable(), null);
         /** @var DelegationRepositoryInterface&Mockery\MockInterface $repository */
         $repository = Mockery::mock(DelegationRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($delegation);
@@ -80,10 +90,10 @@ class ApproveDelegationTest extends TestCase
         $groups = Mockery::mock(DelegationPrincipalGroupServiceInterface::class);
         if ($pending && $expectsAuthorization) {
             $account = Mockery::mock(Account::class);
-            $account->shouldReceive('accountIdentifier')->andReturn($talent);
-            $account->shouldReceive('type')->andReturn(AccountType::INDIVIDUAL);
-            $account->shouldReceive('accountCategory')->andReturn(AccountCategory::TALENT);
-            $accounts->shouldReceive('findById')->with($talent)->andReturn($account);
+            $account->shouldReceive('accountIdentifier')->andReturn($approver);
+            $account->shouldReceive('type')->andReturn($requestedByAgency ? AccountType::INDIVIDUAL : AccountType::CORPORATION);
+            $account->shouldReceive('accountCategory')->andReturn($requestedByAgency ? AccountCategory::TALENT : AccountCategory::AGENCY);
+            $accounts->shouldReceive('findById')->with($approver)->andReturn($account);
             $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_APPROVE, Mockery::any())->andReturn($allowed);
             if ($allowed) {
                 $groups->shouldReceive('createFor')->with($delegation)->once();

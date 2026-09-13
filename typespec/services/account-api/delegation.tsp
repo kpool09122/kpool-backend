@@ -16,6 +16,12 @@ model DelegationSummary {
   delegateAccountIdentifier: Uuid;
   delegatorAccountIdentifier: Uuid;
   requestedByAccountIdentifier: Uuid;
+  @doc("Delegate account.")
+  delegateAccount?: AffiliationAccountSummary;
+  @doc("Delegator account.")
+  delegatorAccount?: AffiliationAccountSummary;
+  @doc("Account that requested the delegation.")
+  requestedByAccount?: AffiliationAccountSummary;
   status: string;
   direction: string;
   requestedAt: Timestamp;

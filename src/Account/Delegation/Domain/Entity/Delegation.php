@@ -53,6 +53,13 @@ class Delegation
         return $this->requestedByAccountIdentifier;
     }
 
+    public function approverAccountIdentifier(): AccountIdentifier
+    {
+        return (string) $this->requestedByAccountIdentifier === (string) $this->delegateAccountIdentifier
+            ? $this->delegatorAccountIdentifier
+            : $this->delegateAccountIdentifier;
+    }
+
     public function status(): DelegationStatus
     {
         return $this->status;
