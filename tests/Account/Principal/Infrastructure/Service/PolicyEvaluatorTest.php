@@ -76,6 +76,100 @@ class PolicyEvaluatorTest extends TestCase
         ));
     }
 
+    public function testEvaluateAggregatesPoliciesFromMultiplePrincipalGroups(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = $this->createPrincipal($accountIdentifier);
+        $roleIdentifierA = new RoleIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifierB = new RoleIdentifier(StrTestHelper::generateUuid());
+        $principalGroupA = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $roleIdentifierA);
+        $principalGroupB = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $roleIdentifierB);
+        $unrelatedPolicy = $this->createPolicy('READ_ACCOUNT', Effect::ALLOW, [Action::READ]);
+        $allowPolicy = $this->createPolicy('ALLOW_INVITATION', Effect::ALLOW, [Action::INVITE_MEMBER]);
+
+        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
+            ->once()
+            ->with($accountIdentifier, $principal->principalIdentifier())
+            ->andReturn([$principalGroupA, $principalGroupB]);
+
+        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$roleIdentifierA, $roleIdentifierB])
+            ->andReturn([
+                (string) $roleIdentifierA => new Role($roleIdentifierA, 'Viewer', [$unrelatedPolicy->policyIdentifier()], false),
+                (string) $roleIdentifierB => new Role($roleIdentifierB, 'Inviter', [$allowPolicy->policyIdentifier()], false),
+            ]);
+
+        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$unrelatedPolicy->policyIdentifier(), $allowPolicy->policyIdentifier()])
+            ->andReturn([
+                (string) $unrelatedPolicy->policyIdentifier() => $unrelatedPolicy,
+                (string) $allowPolicy->policyIdentifier() => $allowPolicy,
+            ]);
+
+        $evaluator = $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository);
+
+        $this->assertTrue($evaluator->evaluate(
+            $principal,
+            Action::INVITE_MEMBER,
+            Resource::account($accountIdentifier),
+        ));
+    }
+
+    public function testEvaluatePrioritizesExplicitDenyAcrossMultiplePrincipalGroups(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = $this->createPrincipal($accountIdentifier);
+        $allowRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $denyRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $allowGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $allowRoleIdentifier);
+        $denyGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $denyRoleIdentifier);
+        $allowPolicy = $this->createPolicy('ALLOW_INVITATION', Effect::ALLOW, [Action::INVITE_MEMBER]);
+        $denyPolicy = $this->createPolicy('DENY_INVITATION', Effect::DENY, [Action::INVITE_MEMBER]);
+
+        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
+            ->once()
+            ->with($accountIdentifier, $principal->principalIdentifier())
+            ->andReturn([$allowGroup, $denyGroup]);
+
+        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$allowRoleIdentifier, $denyRoleIdentifier])
+            ->andReturn([
+                (string) $allowRoleIdentifier => new Role($allowRoleIdentifier, 'Inviter', [$allowPolicy->policyIdentifier()], false),
+                (string) $denyRoleIdentifier => new Role($denyRoleIdentifier, 'Blocked inviter', [$denyPolicy->policyIdentifier()], false),
+            ]);
+
+        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findByIds')
+            ->once()
+            ->with([$allowPolicy->policyIdentifier(), $denyPolicy->policyIdentifier()])
+            ->andReturn([
+                (string) $allowPolicy->policyIdentifier() => $allowPolicy,
+                (string) $denyPolicy->policyIdentifier() => $denyPolicy,
+            ]);
+
+        $evaluator = $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository);
+
+        $this->assertFalse($evaluator->evaluate(
+            $principal,
+            Action::INVITE_MEMBER,
+            Resource::account($accountIdentifier),
+        ));
+    }
+
     public function testEvaluateDeniesWhenNoPrincipalGroupExists(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());

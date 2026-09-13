@@ -58,7 +58,7 @@ return [
     'cannot_remove_last_owner' => '계정에서 마지막 소유자를 제거할 수 없습니다.',
     'cannot_remove_last_wiki_administrator' => 'Wiki Administrator가 최소 1명 필요합니다.',
     'cannot_remove_last_principal_group_manager' => 'PrincipalGroup 관리 권한을 가진 Principal이 최소 1명 필요합니다.',
-    'principal_already_assigned_to_principal_group' => 'Principal은 계정 내에서 하나의 PrincipalGroup에만 속할 수 있습니다.',
+
     'cannot_delete_default_identity_group' => '기본 아이덴티티 그룹은 삭제할 수 없습니다.',
     'cannot_delete_last_owner_group' => '멤버가 있는 마지막 소유자 그룹은 삭제할 수 없습니다.',
     'delegation_not_found' => '지정된 위임을 찾을 수 없습니다.',
