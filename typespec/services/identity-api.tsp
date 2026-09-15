@@ -95,6 +95,26 @@ model AuthenticatedAccountSummary {
   address?: AuthenticatedAccountAddressSummary | null;
 }
 
+@doc("Account reference used by account switching controls.")
+model AuthenticatedAccountReferenceSummary {
+  @doc("Account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Account display name.")
+  name: string;
+}
+
+@doc("Account that the authenticated identity can switch to through an approved delegation.")
+model SwitchableAccountSummary {
+  @doc("Approved delegation identifier used by POST /accounts/switch.")
+  delegationIdentifier: Uuid;
+  @doc("Target account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Target account information used for display.")
+  account: AuthenticatedAccountReferenceSummary;
+  @doc("Whether this delegation currently supplies the effective account context.")
+  isCurrent: boolean;
+}
+
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
@@ -105,8 +125,14 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
-  @doc("Detailed account information associated with the authenticated identity.")
+  @doc("Detailed information for the currently effective account.")
   account?: AuthenticatedAccountSummary | null;
+  @doc("Original account to return to when ending delegated account context.")
+  originalAccount: AuthenticatedAccountReferenceSummary | null;
+  @doc("Delegation currently supplying the effective account context.")
+  delegationIdentifier: Uuid | null;
+  @doc("Approved delegated accounts available from the original account.")
+  switchableAccounts: SwitchableAccountSummary[];
 }
 
 @doc("Public profile fields for a requested identity.")
