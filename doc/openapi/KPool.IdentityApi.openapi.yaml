@@ -495,6 +495,20 @@ components:
           nullable: true
           description: Secondary address line.
       description: Account contact address summary returned for authenticated account details.
+    AuthenticatedAccountReferenceSummary:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier.
+        name:
+          type: string
+          description: Account display name.
+      description: Account reference used by account switching controls.
     AuthenticatedAccountSummary:
       type: object
       required:
@@ -542,6 +556,9 @@ components:
         - accountPrincipalIdentifier
         - accountType
         - accountPolicies
+        - originalAccount
+        - delegationIdentifier
+        - switchableAccounts
       properties:
         accountIdentifier:
           type: string
@@ -569,7 +586,24 @@ components:
           allOf:
             - $ref: '#/components/schemas/AuthenticatedAccountSummary'
           nullable: true
-          description: Detailed account information associated with the authenticated identity.
+          description: Detailed information for the currently effective account.
+        originalAccount:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          nullable: true
+          description: Original account to return to when ending delegated account context.
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Delegation currently supplying the effective account context.
+        switchableAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SwitchableAccountSummary'
+          description: Approved delegated accounts available from the original account.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.
@@ -725,6 +759,30 @@ components:
           type: string
           description: Email address that will receive the auth code.
       description: Request body for sending an auth code.
+    SwitchableAccountSummary:
+      type: object
+      required:
+        - delegationIdentifier
+        - accountIdentifier
+        - account
+        - isCurrent
+      properties:
+        delegationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Approved delegation identifier used by POST /accounts/switch.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          description: Target account information used for display.
+        isCurrent:
+          type: boolean
+          description: Whether this delegation currently supplies the effective account context.
+      description: Account that the authenticated identity can switch to through an approved delegation.
     UpdateIdentityRequestBody:
       type: object
       properties:
