@@ -52,7 +52,7 @@ class AttachPolicyToRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -67,7 +67,7 @@ class AttachPolicyToRoleTest extends TestCase
                     null,
                 ),
             ],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -137,7 +137,7 @@ class AttachPolicyToRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -180,7 +180,7 @@ class AttachPolicyToRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [$policyIdentifier],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -188,7 +188,7 @@ class AttachPolicyToRoleTest extends TestCase
             $policyIdentifier,
             'Test Policy',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 

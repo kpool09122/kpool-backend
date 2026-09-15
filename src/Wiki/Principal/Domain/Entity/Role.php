@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 
@@ -17,7 +18,7 @@ class Role
         private readonly RoleIdentifier $roleIdentifier,
         private readonly string $name,
         private array $policies,
-        private readonly bool $isSystemRole,
+        private readonly ?AccountIdentifier $accountIdentifier,
         private readonly DateTimeImmutable $createdAt,
     ) {
     }
@@ -42,12 +43,27 @@ class Role
 
     public function isSystemRole(): bool
     {
-        return $this->isSystemRole;
+        return $this->accountIdentifier === null;
+    }
+
+    public function accountIdentifier(): ?AccountIdentifier
+    {
+        return $this->accountIdentifier;
     }
 
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function canAttachPolicy(Policy $policy): bool
+    {
+        if ($this->accountIdentifier === null) {
+            return $policy->accountIdentifier() === null;
+        }
+
+        return $policy->accountIdentifier() === null
+            || (string) $policy->accountIdentifier() === (string) $this->accountIdentifier;
     }
 
     public function addPolicy(PolicyIdentifier $policyIdentifier): void

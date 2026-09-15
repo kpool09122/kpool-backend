@@ -64,7 +64,7 @@ class PolicyEvaluatorTest extends TestCase
             ->once()
             ->with([$roleIdentifier])
             ->andReturn([
-                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], true),
+                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], null),
             ]);
 
         $evaluator = $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository);
@@ -100,8 +100,8 @@ class PolicyEvaluatorTest extends TestCase
             ->once()
             ->with([$roleIdentifierA, $roleIdentifierB])
             ->andReturn([
-                (string) $roleIdentifierA => new Role($roleIdentifierA, 'Viewer', [$unrelatedPolicy->policyIdentifier()], false),
-                (string) $roleIdentifierB => new Role($roleIdentifierB, 'Inviter', [$allowPolicy->policyIdentifier()], false),
+                (string) $roleIdentifierA => new Role($roleIdentifierA, 'Viewer', [$unrelatedPolicy->policyIdentifier()], null),
+                (string) $roleIdentifierB => new Role($roleIdentifierB, 'Inviter', [$allowPolicy->policyIdentifier()], null),
             ]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -147,8 +147,8 @@ class PolicyEvaluatorTest extends TestCase
             ->once()
             ->with([$allowRoleIdentifier, $denyRoleIdentifier])
             ->andReturn([
-                (string) $allowRoleIdentifier => new Role($allowRoleIdentifier, 'Inviter', [$allowPolicy->policyIdentifier()], false),
-                (string) $denyRoleIdentifier => new Role($denyRoleIdentifier, 'Blocked inviter', [$denyPolicy->policyIdentifier()], false),
+                (string) $allowRoleIdentifier => new Role($allowRoleIdentifier, 'Inviter', [$allowPolicy->policyIdentifier()], null),
+                (string) $denyRoleIdentifier => new Role($denyRoleIdentifier, 'Blocked inviter', [$denyPolicy->policyIdentifier()], null),
             ]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -235,7 +235,7 @@ class PolicyEvaluatorTest extends TestCase
                     $roleIdentifier,
                     Role::ADMIN,
                     [$allowPolicy->policyIdentifier(), $denyPolicy->policyIdentifier()],
-                    true,
+                    null,
                 ),
             ]);
 
@@ -304,7 +304,7 @@ class PolicyEvaluatorTest extends TestCase
             new PolicyIdentifier(StrTestHelper::generateUuid()),
             $name,
             [new Statement($effect, $actions, [ResourceType::ACCOUNT], $condition)],
-            true,
+            null,
             new DateTimeImmutable(),
         );
     }
@@ -348,7 +348,7 @@ class PolicyEvaluatorTest extends TestCase
             ->once()
             ->with([$roleIdentifier])
             ->andReturn([
-                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], true),
+                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], null),
             ]);
 
         return $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository)->evaluate(
@@ -426,7 +426,7 @@ class PolicyEvaluatorTest extends TestCase
             ->once()
             ->with([$roleIdentifier])
             ->andReturn([
-                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], true),
+                (string) $roleIdentifier => new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], null),
             ]);
 
         return $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository)->evaluate(

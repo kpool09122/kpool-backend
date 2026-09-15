@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 
 interface PolicyRepositoryInterface
 {
     public function save(Policy $policy): void;
+
+    public function findSystemByName(string $name): ?Policy;
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Policy;
 
     public function findById(PolicyIdentifier $policyIdentifier): ?Policy;
 

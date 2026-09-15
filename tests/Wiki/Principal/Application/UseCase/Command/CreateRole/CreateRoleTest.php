@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\CreateRole;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRole;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInterface;
@@ -53,7 +54,7 @@ class CreateRoleTest extends TestCase
             ->with(
                 $testData->name,
                 $testData->policies,
-                $testData->isSystemRole,
+                $testData->accountIdentifier,
             )
             ->andReturn($testData->role);
 
@@ -68,7 +69,7 @@ class CreateRoleTest extends TestCase
         $result = $output->toArray();
         $this->assertSame((string) $testData->roleIdentifier, $result['roleIdentifier']);
         $this->assertSame($testData->name, $result['name']);
-        $this->assertSame($testData->isSystemRole, $result['isSystemRole']);
+        $this->assertFalse($result['isSystemRole']);
     }
 
     private function createDummyTestData(): CreateRoleTestData
@@ -78,27 +79,27 @@ class CreateRoleTest extends TestCase
         $policies = [
             new PolicyIdentifier(StrTestHelper::generateUuid()),
         ];
-        $isSystemRole = false;
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $role = new Role(
             $roleIdentifier,
             $name,
             $policies,
-            $isSystemRole,
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
 
         $input = new CreateRoleInput(
             $name,
             $policies,
-            $isSystemRole,
+            $accountIdentifier,
         );
 
         return new CreateRoleTestData(
             $roleIdentifier,
             $name,
             $policies,
-            $isSystemRole,
+            $accountIdentifier,
             $role,
             $input,
         );
@@ -114,7 +115,7 @@ readonly class CreateRoleTestData
         public RoleIdentifier $roleIdentifier,
         public string $name,
         public array $policies,
-        public bool $isSystemRole,
+        public AccountIdentifier $accountIdentifier,
         public Role $role,
         public CreateRoleInput $input,
     ) {

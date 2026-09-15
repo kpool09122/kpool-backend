@@ -67,7 +67,7 @@ class DeletePrincipalGroupTest extends TestCase
             ->with($principalGroup)
             ->andReturnNull();
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
@@ -174,7 +174,7 @@ class DeletePrincipalGroupTest extends TestCase
             ->andReturn([$principalGroup]); // Only one OWNER group with members
         $repository->shouldNotReceive('delete');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
@@ -196,7 +196,7 @@ class DeletePrincipalGroupTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             Role::OWNER,
             [],
-            true,
+            null,
         );
     }
 }

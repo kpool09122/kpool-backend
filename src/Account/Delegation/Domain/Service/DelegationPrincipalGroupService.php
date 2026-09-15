@@ -24,7 +24,7 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
 
     public function createFor(Delegation $delegation): void
     {
-        $switcherRole = $this->roleRepository->findByName(Role::DELEGATION_ACCOUNT_SWITCHER);
+        $switcherRole = $this->roleRepository->findSystemByName(Role::DELEGATION_ACCOUNT_SWITCHER);
         if ($switcherRole === null) {
             throw new RuntimeException('Delegation account switcher role is not found.');
         }

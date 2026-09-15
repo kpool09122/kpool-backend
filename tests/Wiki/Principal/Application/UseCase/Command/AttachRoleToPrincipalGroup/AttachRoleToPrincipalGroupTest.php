@@ -58,7 +58,7 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -182,7 +182,7 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 

@@ -56,7 +56,7 @@ readonly class CreatePolicyAction
                 $input = new CreatePolicyInput(
                     $request->name(),
                     $statements,
-                    $request->isSystemPolicy(),
+                    $request->accountIdentifier(),
                 );
                 $output = new CreatePolicyOutput();
             } catch (InvalidArgumentException|ValueError $e) {

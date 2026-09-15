@@ -188,11 +188,12 @@ class PolicyEvaluatorTest extends TestCase
         array $policyIdentifiers = [],
         bool $isSystemRole = false,
     ): Role {
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $role = new Role(
-            new RoleIdentifier(StrTestHelper::generateUuid()),
-            'Test Role',
+            $roleIdentifier,
+            'Test Role ' . (string) $roleIdentifier,
             $policyIdentifiers,
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable()
         );
         $this->roleRepository->save($role);
@@ -209,11 +210,12 @@ class PolicyEvaluatorTest extends TestCase
         array $statements,
         bool $isSystemPolicy = false,
     ): Policy {
+        $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $policy = new Policy(
-            new PolicyIdentifier(StrTestHelper::generateUuid()),
-            'Test Policy',
+            $policyIdentifier,
+            'Test Policy ' . (string) $policyIdentifier,
             $statements,
-            $isSystemPolicy,
+            $isSystemPolicy ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable()
         );
         $this->policyRepository->save($policy);

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
+use Application\Models\Wiki\Policy as PolicyEloquent;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use Application\Models\Wiki\Role as RoleEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
+use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -20,11 +23,13 @@ class RoleRepository implements RoleRepositoryInterface
 {
     public function save(Role $role): void
     {
+        $this->assertPolicyScopes($role);
+
         RoleEloquent::query()->updateOrCreate(
             ['id' => (string) $role->roleIdentifier()],
             [
+                'account_id' => $role->accountIdentifier() !== null ? (string) $role->accountIdentifier() : null,
                 'name' => $role->name(),
-                'is_system_role' => $role->isSystemRole(),
             ]
         );
 
@@ -83,11 +88,12 @@ class RoleRepository implements RoleRepositoryInterface
         return $eloquentModels->map(fn (RoleEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
-    public function findByName(string $name): ?Role
+    public function findSystemByName(string $name): ?Role
     {
         $eloquent = RoleEloquent::query()
             ->with('policyAttachments')
             ->where('name', $name)
+            ->whereNull('account_id')
             ->first();
 
         if ($eloquent === null) {
@@ -95,6 +101,17 @@ class RoleRepository implements RoleRepositoryInterface
         }
 
         return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role
+    {
+        $eloquent = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->where('account_id', (string) $accountIdentifier)
+            ->where('name', $name)
+            ->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     public function delete(Role $role): void
@@ -157,6 +174,29 @@ class RoleRepository implements RoleRepositoryInterface
         }
     }
 
+    private function assertPolicyScopes(Role $role): void
+    {
+        $policyIds = array_map(static fn (PolicyIdentifier $id): string => (string) $id, $role->policies());
+        if ($policyIds === []) {
+            return;
+        }
+
+        $policies = PolicyEloquent::query()->whereIn('id', $policyIds)->get();
+        if ($policies->count() !== count($policyIds)) {
+            throw new InvalidArgumentException('Attached policy was not found.');
+        }
+
+        foreach ($policies as $policy) {
+            if ($role->accountIdentifier() === null && $policy->account_id !== null) {
+                throw new InvalidArgumentException('A global role cannot attach an account-local policy.');
+            }
+            if ($role->accountIdentifier() !== null && $policy->account_id !== null
+                && $policy->account_id !== (string) $role->accountIdentifier()) {
+                throw new InvalidArgumentException('A role cannot attach a policy from another account.');
+            }
+        }
+    }
+
     private function toDomainEntity(RoleEloquent $eloquent): Role
     {
         $policies = $eloquent->policyAttachments->map(
@@ -167,7 +207,7 @@ class RoleRepository implements RoleRepositoryInterface
             new RoleIdentifier($eloquent->id),
             $eloquent->name,
             $policies,
-            $eloquent->is_system_role,
+            $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
         );
     }

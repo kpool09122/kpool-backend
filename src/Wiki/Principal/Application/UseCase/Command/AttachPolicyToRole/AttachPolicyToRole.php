@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole;
 
+use InvalidArgumentException;
 use Source\Wiki\Principal\Application\Exception\PolicyNotFoundException;
 use Source\Wiki\Principal\Application\Exception\RoleNotFoundException;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -33,6 +34,10 @@ readonly class AttachPolicyToRole implements AttachPolicyToRoleInterface
 
         if ($policy === null) {
             throw new PolicyNotFoundException();
+        }
+
+        if (! $role->canAttachPolicy($policy)) {
+            throw new InvalidArgumentException('Role and policy account scopes are incompatible.');
         }
 
         $role->addPolicy($input->policyIdentifier());

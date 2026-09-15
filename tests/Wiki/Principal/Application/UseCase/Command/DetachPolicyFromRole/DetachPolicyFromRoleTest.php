@@ -44,7 +44,7 @@ class DetachPolicyFromRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [$policyIdentifier],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -106,7 +106,7 @@ class DetachPolicyFromRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 

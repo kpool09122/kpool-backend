@@ -83,7 +83,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             true,
         );
 
-        $role = $this->roleRepository->findByName(self::COLLABORATOR_ROLE);
+        $role = $this->roleRepository->findSystemByName(self::COLLABORATOR_ROLE);
         if ($role !== null) {
             $defaultPrincipalGroup->addRole($role->roleIdentifier());
         }
@@ -116,7 +116,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
     private function addRequiredRole(PrincipalGroup $principalGroup, string $roleName): void
     {
-        $role = $this->roleRepository->findByName($roleName);
+        $role = $this->roleRepository->findSystemByName($roleName);
         if ($role === null) {
             throw new SystemRoleNotFoundException($roleName);
         }
@@ -134,7 +134,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             return false;
         }
 
-        $ownerRole = $this->accountRoleRepository->findByName(AccountRole::OWNER);
+        $ownerRole = $this->accountRoleRepository->findSystemByName(AccountRole::OWNER);
         if ($ownerRole === null) {
             throw new RuntimeException('Owner account role is not found.');
         }

@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
@@ -30,7 +31,7 @@ class RoleTest extends TestCase
             $roleIdentifier,
             $name,
             $policies,
-            $isSystemRole,
+            null,
             $createdAt,
         );
 
@@ -156,7 +157,7 @@ class RoleTest extends TestCase
             $policies ?? [
                 new PolicyIdentifier(StrTestHelper::generateUuid()),
             ],
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
         );
     }

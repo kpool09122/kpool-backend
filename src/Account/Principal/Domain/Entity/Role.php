@@ -6,6 +6,7 @@ namespace Source\Account\Principal\Domain\Entity;
 
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class Role
 {
@@ -21,7 +22,7 @@ class Role
         private readonly RoleIdentifier $roleIdentifier,
         private readonly string $name,
         private array $policies,
-        private readonly bool $isSystemRole,
+        private readonly ?AccountIdentifier $accountIdentifier,
     ) {
     }
 
@@ -45,7 +46,22 @@ class Role
 
     public function isSystemRole(): bool
     {
-        return $this->isSystemRole;
+        return $this->accountIdentifier === null;
+    }
+
+    public function accountIdentifier(): ?AccountIdentifier
+    {
+        return $this->accountIdentifier;
+    }
+
+    public function canAttachPolicy(Policy $policy): bool
+    {
+        if ($this->accountIdentifier === null) {
+            return $policy->accountIdentifier() === null;
+        }
+
+        return $policy->accountIdentifier() === null
+            || (string) $policy->accountIdentifier() === (string) $this->accountIdentifier;
     }
 
     public function addPolicy(PolicyIdentifier $policyIdentifier): void

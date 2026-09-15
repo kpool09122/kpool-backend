@@ -6,12 +6,14 @@ namespace Tests\Wiki\Principal\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Principal\Infrastructure\Factory\PolicyFactory;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class PolicyFactoryTest extends TestCase
@@ -49,7 +51,7 @@ class PolicyFactoryTest extends TestCase
         $policy = $factory->create(
             $name,
             $statements,
-            $isSystemPolicy,
+            null,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $policy->policyIdentifier()));
@@ -81,7 +83,7 @@ class PolicyFactoryTest extends TestCase
         $policy = $factory->create(
             $name,
             $statements,
-            $isSystemPolicy,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $policy->policyIdentifier()));
@@ -106,7 +108,7 @@ class PolicyFactoryTest extends TestCase
         $policy = $factory->create(
             $name,
             $statements,
-            $isSystemPolicy,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $policy->policyIdentifier()));
@@ -143,7 +145,7 @@ class PolicyFactoryTest extends TestCase
         $policy = $factory->create(
             $name,
             $statements,
-            $isSystemPolicy,
+            null,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $policy->policyIdentifier()));

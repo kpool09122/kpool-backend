@@ -35,7 +35,7 @@ class CreatePolicyActionTest extends TestCase
                 'resourceTypes' => ['agency'],
             ],
         ]);
-        $request->shouldReceive('isSystemPolicy')->andReturn(false);
+        $request->shouldReceive('accountIdentifier')->andReturnNull();
         $request->shouldReceive('language')->andReturn('en');
 
         DB::shouldReceive('beginTransaction')->once();
@@ -56,7 +56,7 @@ class CreatePolicyActionTest extends TestCase
                         new PolicyIdentifier($policyIdentifier),
                         'Test Policy',
                         [],
-                        false,
+                        null,
                         new DateTimeImmutable(),
                     ));
 

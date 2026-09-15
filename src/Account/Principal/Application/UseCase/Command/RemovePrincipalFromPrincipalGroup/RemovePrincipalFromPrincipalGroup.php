@@ -31,7 +31,7 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
             throw new PrincipalGroupNotFoundException();
         }
 
-        $ownerRole = $this->roleRepository->findByName(Role::OWNER);
+        $ownerRole = $this->roleRepository->findSystemByName(Role::OWNER);
         if ($ownerRole === null) {
             throw new RuntimeException('Owner account role is not found.');
         }

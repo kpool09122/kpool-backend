@@ -763,7 +763,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         DB::table('account_roles')->insert([
             'id' => (string) $roleIdentifier,
             'name' => 'Role ' . StrTestHelper::generateSmallAlphaStr(8),
-            'is_system_role' => false,
+            'account_id' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
