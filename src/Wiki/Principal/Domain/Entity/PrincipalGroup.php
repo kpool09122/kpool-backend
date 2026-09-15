@@ -115,6 +115,12 @@ class PrincipalGroup
         return array_any($this->roles, fn ($role) => (string) $role === (string) $roleIdentifier);
     }
 
+    public function canAttachRole(Role $role): bool
+    {
+        return $role->accountIdentifier() === null
+            || (string) $role->accountIdentifier() === (string) $this->accountIdentifier;
+    }
+
     public function addRole(RoleIdentifier $roleIdentifier): void
     {
         if ($this->hasRole($roleIdentifier)) {

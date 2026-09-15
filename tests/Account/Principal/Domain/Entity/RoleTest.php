@@ -16,7 +16,7 @@ class RoleTest extends TestCase
     {
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-        $role = new Role($roleIdentifier, Role::OWNER, [], true);
+        $role = new Role($roleIdentifier, Role::OWNER, [], null);
 
         $role->addPolicy($policyIdentifier);
         $role->addPolicy($policyIdentifier);
@@ -35,7 +35,7 @@ class RoleTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             Role::ADMIN,
             [$policyIdentifier],
-            true,
+            null,
         );
 
         $role->removePolicy($policyIdentifier);

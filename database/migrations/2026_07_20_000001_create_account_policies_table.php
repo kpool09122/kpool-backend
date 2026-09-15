@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
@@ -11,18 +12,23 @@ return new class () extends Migration {
     {
         Schema::create('account_policies', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Account Policy ID');
-            $table->string('name', 255)->unique()->comment('Account Policy名');
+            $table->uuid('account_id')->nullable()->index()->comment('Account ID（null は system/global）');
+            $table->string('name', 255)->comment('Account Policy名');
             $table->json('statements')->comment('Statement の配列（JSON）');
-            $table->boolean('is_system_policy')->default(false)->comment('システムPolicyかどうか');
             $table->timestamps();
         });
 
         Schema::create('account_roles', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Account Role ID');
-            $table->string('name', 255)->unique()->comment('Account Role名');
-            $table->boolean('is_system_role')->default(false)->comment('システムRoleかどうか');
+            $table->uuid('account_id')->nullable()->index()->comment('Account ID（null は system/global）');
+            $table->string('name', 255)->comment('Account Role名');
             $table->timestamps();
         });
+
+        DB::statement('CREATE UNIQUE INDEX account_policies_system_name_unique ON account_policies (name) WHERE account_id IS NULL');
+        DB::statement('CREATE UNIQUE INDEX account_policies_account_name_unique ON account_policies (account_id, name) WHERE account_id IS NOT NULL');
+        DB::statement('CREATE UNIQUE INDEX account_roles_system_name_unique ON account_roles (name) WHERE account_id IS NULL');
+        DB::statement('CREATE UNIQUE INDEX account_roles_account_name_unique ON account_roles (account_id, name) WHERE account_id IS NOT NULL');
 
         Schema::create('account_role_policy_attachments', static function (Blueprint $table) {
             $table->uuid('role_id')->comment('Account Role ID');

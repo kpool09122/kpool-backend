@@ -59,7 +59,7 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             new DateTimeImmutable(),
             null,
         );
-        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::DELEGATION_ACCOUNT_SWITCHER, [], true);
+        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::DELEGATION_ACCOUNT_SWITCHER, [], null);
         $group = Mockery::mock(PrincipalGroup::class);
         $group->shouldReceive('addRole')->with($role->roleIdentifier())->once();
         /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $factory */
@@ -70,7 +70,7 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         $groups->shouldReceive('save')->with($group)->once();
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
         $roles = Mockery::mock(RoleRepositoryInterface::class);
-        $roles->shouldReceive('findByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturn($role);
+        $roles->shouldReceive('findSystemByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturn($role);
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
         $accounts = Mockery::mock(AccountRepositoryInterface::class);
         $accounts->shouldReceive('findById')->with($delegator)->once()->andReturn($delegatorAccount);

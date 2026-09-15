@@ -70,7 +70,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Mockery::on(fn (PrincipalGroup $arg) => ! $arg->hasMember($principalIdentifier)))
             ->andReturnNull();
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
@@ -141,7 +141,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
@@ -190,7 +190,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->andReturn([$principalGroup]); // Only one OWNER group with one member
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
@@ -243,7 +243,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->once()
             ->andReturnNull();
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
@@ -268,7 +268,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             Role::OWNER,
             [],
-            true,
+            null,
         );
     }
 }

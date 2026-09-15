@@ -65,7 +65,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -134,7 +134,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -229,6 +229,6 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function role(string $name): Role
     {
-        return new Role(new RoleIdentifier(StrTestHelper::generateUuid()), $name, [], true, new DateTimeImmutable());
+        return new Role(new RoleIdentifier(StrTestHelper::generateUuid()), $name, [], null, new DateTimeImmutable());
     }
 }

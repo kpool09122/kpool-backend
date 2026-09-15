@@ -37,7 +37,7 @@ readonly class AccountCategoryChangedHandler
             return;
         }
 
-        $role = $this->roleRepository->findByName($roleName);
+        $role = $this->roleRepository->findSystemByName($roleName);
         if ($role === null) {
             throw new RuntimeException("Wiki system role {$roleName} is not found.");
         }

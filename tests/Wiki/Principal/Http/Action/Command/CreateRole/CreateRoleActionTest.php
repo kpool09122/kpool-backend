@@ -29,7 +29,7 @@ class CreateRoleActionTest extends TestCase
         $request = Mockery::mock(CreateRoleRequest::class);
         $request->shouldReceive('name')->andReturn('Test Role');
         $request->shouldReceive('policies')->andReturn(null);
-        $request->shouldReceive('isSystemRole')->andReturn(false);
+        $request->shouldReceive('accountIdentifier')->andReturnNull();
         $request->shouldReceive('language')->andReturn('en');
 
         DB::shouldReceive('beginTransaction')->once();
@@ -50,7 +50,7 @@ class CreateRoleActionTest extends TestCase
                         new RoleIdentifier($roleIdentifier),
                         'Test Role',
                         [],
-                        false,
+                        null,
                         new DateTimeImmutable(),
                     ));
 

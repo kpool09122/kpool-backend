@@ -117,7 +117,7 @@ class CreateAccountTest extends TestCase
             ->andReturn($testData->ownerPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($testData->ownerRole);
@@ -209,7 +209,7 @@ class CreateAccountTest extends TestCase
             ->andReturn($testData->ownerPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($testData->ownerRole);
@@ -319,7 +319,7 @@ class CreateAccountTest extends TestCase
             ->andReturn($testData->ownerPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($testData->ownerRole);
@@ -378,7 +378,7 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldNotReceive('findByName');
+        $roleRepository->shouldNotReceive('findSystemByName');
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
@@ -436,7 +436,7 @@ class CreateAccountTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             Role::OWNER,
             [],
-            true,
+            null,
         );
 
         $defaultPrincipalGroup = new PrincipalGroup(

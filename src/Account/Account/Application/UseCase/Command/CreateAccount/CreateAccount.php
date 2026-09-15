@@ -75,7 +75,7 @@ readonly class CreateAccount implements CreateAccountInterface
             false,
         );
 
-        $ownerRole = $this->roleRepository->findByName(Role::OWNER);
+        $ownerRole = $this->roleRepository->findSystemByName(Role::OWNER);
         if ($ownerRole === null) {
             throw new RuntimeException('Owner account role is not found.');
         }

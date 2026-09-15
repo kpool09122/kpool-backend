@@ -491,7 +491,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
             $policyIdentifier,
             'Test Policy',
             [],
-            $isSystemPolicy,
+            $isSystemPolicy ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable(),
         );
     }
@@ -502,7 +502,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable(),
         );
     }

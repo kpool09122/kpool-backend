@@ -320,7 +320,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findByIds')->andReturn([
-            (string) $roleId => new Role($roleId, 'Manager', [$allowPolicyId, $denyPolicyId], false),
+            (string) $roleId => new Role($roleId, 'Manager', [$allowPolicyId, $denyPolicyId], null),
         ]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -330,14 +330,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
                 $allowPolicyId,
                 'Allow manage principal groups',
                 [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-                false,
+                null,
                 new DateTimeImmutable(),
             ),
             (string) $denyPolicyId => new Policy(
                 $denyPolicyId,
                 'Deny manage principal groups',
                 [new Statement(Effect::DENY, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-                false,
+                null,
                 new DateTimeImmutable(),
             ),
         ]);
@@ -407,7 +407,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     {
         /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Manager', [$policyId], false)]);
+        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Manager', [$policyId], null)]);
 
         return $roleRepository;
     }
@@ -420,7 +420,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
             $policyId,
             'Manage principal groups',
             [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-            false,
+            null,
             new DateTimeImmutable(),
         )]);
 
@@ -431,7 +431,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     {
         /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Member', [], false)]);
+        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Member', [], null)]);
 
         return $roleRepository;
     }

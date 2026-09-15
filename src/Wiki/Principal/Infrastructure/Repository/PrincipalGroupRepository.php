@@ -9,7 +9,9 @@ use Application\Models\Wiki\Principal as PrincipalEloquent;
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
+use Application\Models\Wiki\Role as RoleEloquent;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -21,6 +23,8 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
     public function save(PrincipalGroup $principalGroup): void
     {
+        $this->assertRoleScopes($principalGroup);
+
         $previousPrincipalIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
             ->pluck('principal_id')
@@ -217,6 +221,25 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
         if (! empty($records)) {
             PrincipalGroupRoleAttachmentEloquent::query()->insert($records);
+        }
+    }
+
+    private function assertRoleScopes(PrincipalGroup $principalGroup): void
+    {
+        $roleIds = array_map(static fn (RoleIdentifier $id): string => (string) $id, $principalGroup->roles());
+        if ($roleIds === []) {
+            return;
+        }
+
+        $roles = RoleEloquent::query()->whereIn('id', $roleIds)->get();
+        if ($roles->count() !== count($roleIds)) {
+            throw new InvalidArgumentException('Attached role was not found.');
+        }
+
+        foreach ($roles as $role) {
+            if ($role->account_id !== null && $role->account_id !== (string) $principalGroup->accountIdentifier()) {
+                throw new InvalidArgumentException('A principal group cannot attach a role from another account.');
+            }
         }
     }
 

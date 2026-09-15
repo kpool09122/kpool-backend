@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\AttachRoleToPrincipalGroup;
 
+use InvalidArgumentException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\Exception\RoleNotFoundException;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -33,6 +34,10 @@ readonly class AttachRoleToPrincipalGroup implements AttachRoleToPrincipalGroupI
 
         if ($role === null) {
             throw new RoleNotFoundException();
+        }
+
+        if (! $principalGroup->canAttachRole($role)) {
+            throw new InvalidArgumentException('Principal group and role account scopes are incompatible.');
         }
 
         $principalGroup->addRole($input->roleIdentifier());
