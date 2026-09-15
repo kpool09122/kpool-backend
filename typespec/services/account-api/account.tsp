@@ -29,10 +29,29 @@ model CreateAccountRequestBody {
   address?: ContactAddressSummary | null;
 }
 
+@doc("Request body for switching the current effective account context. Null switches back to the original account.")
+model SwitchAccountRequestBody {
+  delegationIdentifier?: Uuid | null;
+}
+
 @doc("Response returned when an account is created.")
 model CreateAccountResponse {
   @statusCode statusCode: 201;
   @body body: CreateAccountResult;
+}
+
+@doc("Selected account context.")
+model SwitchAccountResponseBody {
+  originalIdentityIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  accountPrincipalIdentifier: Uuid;
+  delegationIdentifier?: Uuid | null;
+}
+
+@doc("Response returned when account switching succeeds.")
+model SwitchAccountResponse {
+  @statusCode statusCode: 200;
+  @body body: SwitchAccountResponseBody;
 }
 
 @doc("Response returned when an account operation succeeds.")
@@ -97,6 +116,13 @@ interface AccountOperations {
   deleteAccount(
     @path accountId: Uuid,
   ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/switch")
+  @doc("Switch the current effective account context without changing the authenticated identity.")
+  switchAccount(
+    @body body: SwitchAccountRequestBody,
+  ): SwitchAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{accountId}/documents")

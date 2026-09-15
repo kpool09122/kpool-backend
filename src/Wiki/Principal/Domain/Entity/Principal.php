@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Exception\CannotChangeNonDelegatedPrincipalException;
@@ -14,12 +15,14 @@ class Principal
     /**
      * @param PrincipalIdentifier $principalIdentifier
      * @param IdentityIdentifier $identityIdentifier
+     * @param AccountIdentifier $accountIdentifier
      * @param DelegationIdentifier|null $delegationIdentifier
      * @param bool $enabled
      */
     public function __construct(
         private readonly PrincipalIdentifier $principalIdentifier,
         private readonly IdentityIdentifier  $identityIdentifier,
+        private readonly AccountIdentifier $accountIdentifier,
         private readonly ?DelegationIdentifier $delegationIdentifier = null,
         private bool                         $enabled = true,
     ) {
@@ -33,6 +36,11 @@ class Principal
     public function identityIdentifier(): IdentityIdentifier
     {
         return $this->identityIdentifier;
+    }
+
+    public function accountIdentifier(): AccountIdentifier
+    {
+        return $this->accountIdentifier;
     }
 
     public function delegationIdentifier(): ?DelegationIdentifier

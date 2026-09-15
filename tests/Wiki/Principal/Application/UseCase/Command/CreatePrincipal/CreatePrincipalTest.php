@@ -53,7 +53,7 @@ class CreatePrincipalTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier);
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $defaultPrincipalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
             $accountIdentifier,
@@ -70,8 +70,8 @@ class CreatePrincipalTest extends TestCase
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->with($identityIdentifier, $accountIdentifier)
             ->once()
             ->andReturnNull();
         $principalRepository->shouldReceive('save')
@@ -80,7 +80,7 @@ class CreatePrincipalTest extends TestCase
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
+            ->with($identityIdentifier, $accountIdentifier)
             ->once()
             ->andReturn($principal);
 
@@ -137,7 +137,7 @@ class CreatePrincipalTest extends TestCase
         $wikiAdministratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $collaboratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier);
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -171,11 +171,11 @@ class CreatePrincipalTest extends TestCase
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityIdentifier)->andReturnNull();
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->with($identityIdentifier, $accountIdentifier)->andReturnNull();
         $principalRepository->shouldReceive('save')->once()->with($principal);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier)->andReturn($principal);
+        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier, $accountIdentifier)->andReturn($principal);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndName')
@@ -238,7 +238,7 @@ class CreatePrincipalTest extends TestCase
         $accountPrincipalIdentifier = new AccountPrincipalIdentifier(StrTestHelper::generateUuid());
         $ownerRoleIdentifier = new AccountRoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier);
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -251,11 +251,11 @@ class CreatePrincipalTest extends TestCase
         $ownerGroup->addMember($accountPrincipalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityIdentifier)->andReturnNull();
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->with($identityIdentifier, $accountIdentifier)->andReturnNull();
         $principalRepository->shouldReceive('save')->once()->with($principal);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier)->andReturn($principal);
+        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier, $accountIdentifier)->andReturn($principal);
 
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -310,7 +310,7 @@ class CreatePrincipalTest extends TestCase
         $ownerRoleIdentifier = new AccountRoleIdentifier(StrTestHelper::generateUuid());
         $wikiAdministratorRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier);
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
         $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
         $ownerGroup = new AccountPrincipalGroup(
@@ -323,11 +323,11 @@ class CreatePrincipalTest extends TestCase
         $ownerGroup->addMember($accountPrincipalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityIdentifier)->andReturnNull();
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->with($identityIdentifier, $accountIdentifier)->andReturnNull();
         $principalRepository->shouldReceive('save')->once()->with($principal);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier)->andReturn($principal);
+        $principalFactory->shouldReceive('create')->once()->with($identityIdentifier, $accountIdentifier)->andReturn($principal);
 
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -393,7 +393,7 @@ class CreatePrincipalTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $principal = new Principal($principalIdentifier, $identityIdentifier);
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $defaultPrincipalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
@@ -403,8 +403,8 @@ class CreatePrincipalTest extends TestCase
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->with($identityIdentifier, $accountIdentifier)
             ->once()
             ->andReturnNull();
         $principalRepository->shouldReceive('save')
@@ -413,7 +413,7 @@ class CreatePrincipalTest extends TestCase
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
-            ->with($identityIdentifier)
+            ->with($identityIdentifier, $accountIdentifier)
             ->once()
             ->andReturn($principal);
 
@@ -465,12 +465,13 @@ class CreatePrincipalTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByIdentityIdentifier')
-            ->with($identityIdentifier)
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->with($identityIdentifier, $accountIdentifier)
             ->once()
             ->andReturn(new Principal(
                 new PrincipalIdentifier(StrTestHelper::generateUuid()),
                 $identityIdentifier,
+                $accountIdentifier,
             ));
         $principalRepository->shouldNotReceive('save');
 

@@ -190,7 +190,7 @@ class ApproveCertificationTest extends TestCase
 
     private function registerOperatorAuthorization(PrincipalIdentifier $principalIdentifier, bool $policyAllowed): void
     {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 

@@ -75,6 +75,16 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /** @return Principal[] */
+    public function findAllByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array
+    {
+        return PrincipalEloquent::query()
+            ->where('identity_id', (string) $identityIdentifier)
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     public function findByIdentityIdentifierAndAccountIdentifier(
         IdentityIdentifier $identityIdentifier,
         AccountIdentifier $accountIdentifier,

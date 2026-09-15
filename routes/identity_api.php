@@ -8,7 +8,6 @@ use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
-use Application\Http\Action\Identity\Command\SwitchIdentity\SwitchIdentityAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
@@ -30,6 +29,6 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
     Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
-    Route::post('/auth/switch-identity', SwitchIdentityAction::class);
+
     Route::patch('/identities/me', UpdateIdentityAction::class);
 });

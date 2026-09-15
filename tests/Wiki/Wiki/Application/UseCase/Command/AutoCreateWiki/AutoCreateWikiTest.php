@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -48,7 +49,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $generatedData = $this->makeGeneratedWikiData();
@@ -104,7 +105,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $generatedData = $this->makeGeneratedWikiData();
@@ -158,7 +159,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithUnauthorizedRole(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
 
@@ -229,7 +230,7 @@ class AutoCreateWikiTest extends TestCase
     public function testProcessWithEmptyGeneratedData(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $payload = $this->makePayload();
         $emptyGeneratedData = new GeneratedWikiData(

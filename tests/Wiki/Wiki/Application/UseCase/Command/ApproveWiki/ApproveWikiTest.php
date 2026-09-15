@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\ApproveWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -86,7 +87,7 @@ class ApproveWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -327,7 +328,7 @@ class ApproveWikiTest extends TestCase
         $dummyApproveWiki = $this->createDummyApproveWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new ApproveWikiInput(
             $dummyApproveWiki->wikiIdentifier,
@@ -384,7 +385,7 @@ class ApproveWikiTest extends TestCase
     public function testDuplicateSlug(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -451,7 +452,7 @@ class ApproveWikiTest extends TestCase
     public function testExistsApprovedDraftWiki(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -522,7 +523,7 @@ class ApproveWikiTest extends TestCase
     public function testInconsistentVersions(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,

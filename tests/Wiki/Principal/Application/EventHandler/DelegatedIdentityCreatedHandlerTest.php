@@ -58,6 +58,7 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         $originalIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable();
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $event = new DelegatedIdentityCreated(
             $delegationId,
@@ -67,16 +68,31 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         );
 
         $originalPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $otherOriginalPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $delegatedPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $otherDelegatedPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $originalPrincipal = $this->createPrincipal(
             $originalPrincipalId,
             $originalIdentityId,
+            $accountIdentifier,
+        );
+        $otherOriginalPrincipal = $this->createPrincipal(
+            $otherOriginalPrincipalId,
+            $originalIdentityId,
+            $otherAccountIdentifier,
         );
         $delegatedPrincipal = $this->createDelegatedPrincipal(
             $delegatedPrincipalId,
             $delegatedIdentityId,
             $delegationId,
+            $accountIdentifier,
+        );
+        $otherDelegatedPrincipal = $this->createDelegatedPrincipal(
+            $otherDelegatedPrincipalId,
+            $delegatedIdentityId,
+            $delegationId,
+            $otherAccountIdentifier,
         );
 
         $principalGroup = new PrincipalGroup(
@@ -87,30 +103,52 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
             new DateTimeImmutable(),
         );
         $principalGroup->addMember($originalPrincipalId);
+        $otherPrincipalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            $otherAccountIdentifier,
+            'Default',
+            true,
+            new DateTimeImmutable(),
+        );
+        $otherPrincipalGroup->addMember($otherOriginalPrincipalId);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIdentityIdentifier')
             ->once()
             ->with($originalIdentityId)
-            ->andReturn($originalPrincipal);
+            ->andReturn([$originalPrincipal, $otherOriginalPrincipal]);
         $principalRepository->shouldReceive('save')
             ->once()
             ->with($delegatedPrincipal);
+        $principalRepository->shouldReceive('save')
+            ->once()
+            ->with($otherDelegatedPrincipal);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('createDelegatedPrincipal')
             ->once()
             ->with($originalPrincipal, $delegationId, $delegatedIdentityId)
             ->andReturn($delegatedPrincipal);
+        $principalFactory->shouldReceive('createDelegatedPrincipal')
+            ->once()
+            ->with($otherOriginalPrincipal, $delegationId, $delegatedIdentityId)
+            ->andReturn($otherDelegatedPrincipal);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByPrincipalId')
             ->once()
             ->with($originalPrincipalId)
             ->andReturn([$principalGroup]);
+        $principalGroupRepository->shouldReceive('findByPrincipalId')
+            ->once()
+            ->with($otherOriginalPrincipalId)
+            ->andReturn([$otherPrincipalGroup]);
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with($principalGroup);
+        $principalGroupRepository->shouldReceive('save')
+            ->once()
+            ->with($otherPrincipalGroup);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -121,6 +159,7 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         $handler->handle($event);
 
         $this->assertTrue($principalGroup->hasMember($delegatedPrincipalId));
+        $this->assertTrue($otherPrincipalGroup->hasMember($otherDelegatedPrincipalId));
     }
 
     /**
@@ -147,7 +186,7 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         $principalRepository->shouldReceive('findByIdentityIdentifier')
             ->once()
             ->with($originalIdentityId)
-            ->andReturnNull();
+            ->andReturn([]);
         $principalRepository->shouldNotReceive('save');
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -169,10 +208,12 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
     private function createPrincipal(
         PrincipalIdentifier $principalIdentifier,
         IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
     ): Principal {
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
+            $accountIdentifier,
         );
     }
 
@@ -180,10 +221,12 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         PrincipalIdentifier $principalIdentifier,
         IdentityIdentifier $identityIdentifier,
         DelegationIdentifier $delegationIdentifier,
+        AccountIdentifier $accountIdentifier,
     ): Principal {
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
+            $accountIdentifier,
             $delegationIdentifier,
         );
     }

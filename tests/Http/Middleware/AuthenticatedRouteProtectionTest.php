@@ -115,7 +115,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             // Identity: 認証開始系以外の操作は認証必須
             'identity: me' => ['GET', '/api/identity/auth/me'],
             'identity: logout' => ['POST', '/api/identity/auth/logout'],
-            'identity: switch-identity' => ['POST', '/api/identity/auth/switch-identity'],
+            'account: switch account' => ['POST', '/api/account/accounts/switch'],
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
             // Account: signup 用の POST /accounts 以外は認証必須

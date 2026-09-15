@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -23,12 +24,15 @@ class PrincipalTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
+            $accountIdentifier,
         );
         $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
         $this->assertSame((string)$identityIdentifier, (string)$principal->identityIdentifier());
+        $this->assertSame((string)$accountIdentifier, (string)$principal->accountIdentifier());
     }
 
     /**
@@ -39,6 +43,7 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertNull($principal->delegationIdentifier());
@@ -55,6 +60,7 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             $delegationIdentifier,
             true,
         );
@@ -73,6 +79,7 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             $delegationIdentifier,
             true,
         );
@@ -94,6 +101,7 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->expectException(CannotChangeNonDelegatedPrincipalException::class);

@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -25,14 +26,17 @@ class PrincipalFactoryTest extends TestCase
     public function testCreate(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(PrincipalFactoryInterface::class);
         $principal = $factory->create(
             $identityIdentifier,
+            $accountIdentifier,
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$principal->principalIdentifier()));
         $this->assertSame($identityIdentifier, $principal->identityIdentifier());
+        $this->assertSame($accountIdentifier, $principal->accountIdentifier());
         $this->assertNull($principal->delegationIdentifier());
         $this->assertFalse($principal->isDelegatedPrincipal());
         $this->assertTrue($principal->isEnabled());
@@ -49,11 +53,11 @@ class PrincipalFactoryTest extends TestCase
         $originalPrincipal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
         $delegatedIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-
         $factory = $this->app->make(PrincipalFactoryInterface::class);
         $delegatedPrincipal = $factory->createDelegatedPrincipal(
             $originalPrincipal,
@@ -67,6 +71,7 @@ class PrincipalFactoryTest extends TestCase
             (string)$delegatedPrincipal->principalIdentifier()
         );
         $this->assertSame($delegatedIdentityIdentifier, $delegatedPrincipal->identityIdentifier());
+        $this->assertSame($originalPrincipal->accountIdentifier(), $delegatedPrincipal->accountIdentifier());
         $this->assertSame($delegationIdentifier, $delegatedPrincipal->delegationIdentifier());
         $this->assertTrue($delegatedPrincipal->isDelegatedPrincipal());
         $this->assertTrue($delegatedPrincipal->isEnabled());

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Service;
 
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -29,7 +30,7 @@ class PrincipalConditionValueResolverTest extends TestCase
     public function testResolvePrincipalValues(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $agencyWikiIdentifiers = [StrTestHelper::generateUuid()];
         $groupWikiIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $talentGroupWikiIdentifiers = [StrTestHelper::generateUuid()];
@@ -67,6 +68,7 @@ class PrincipalConditionValueResolverTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 

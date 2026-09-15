@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -71,7 +72,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $updatedBasic = new GroupBasic(
             name: new Name('ITZY'),
@@ -250,7 +251,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -306,7 +307,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -383,7 +384,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki($status);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,

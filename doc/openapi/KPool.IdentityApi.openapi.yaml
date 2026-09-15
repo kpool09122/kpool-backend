@@ -302,48 +302,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/switch-identity:
-    post:
-      operationId: IdentityAuthOperations_switchIdentity
-      description: Switch the current authenticated identity or clear delegation.
-      parameters: []
-      responses:
-        '200':
-          description: Response returned when identity switching succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SwitchedIdentitySummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SwitchIdentityRequestBody'
   /auth/verify-email:
     post:
       operationId: IdentityAuthOperations_verifyEmail
@@ -767,27 +725,6 @@ components:
           type: string
           description: Email address that will receive the auth code.
       description: Request body for sending an auth code.
-    SwitchIdentityRequestBody:
-      type: object
-      properties:
-        targetDelegationIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Delegation identifier to switch into. Null means returning to the original identity.
-      description: Request body for switching the active identity.
-    SwitchedIdentitySummary:
-      type: object
-      required:
-        - isDelegated
-      properties:
-        isDelegated:
-          type: boolean
-          description: Whether the active identity is delegated.
-      allOf:
-        - $ref: '#/components/schemas/IdentitySummary'
-      description: Identity summary returned after switching active identity.
     UpdateIdentityRequestBody:
       type: object
       properties:

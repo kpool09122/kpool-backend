@@ -7,6 +7,7 @@ namespace Tests\Wiki\OfficialCertification\Infrastructure\Query;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
@@ -149,7 +150,7 @@ class ListOfficialCertificationsTest extends TestCase
 
     private function registerAuthorizedPrincipal(PrincipalIdentifier $principalIdentifier, bool $allowed): void
     {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 

@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\SubmitWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -78,7 +79,7 @@ class SubmitWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummySubmitWiki = $this->createDummySubmitWiki(
             operatorIdentifier: $principalIdentifier,
@@ -239,7 +240,7 @@ class SubmitWikiTest extends TestCase
         $dummySubmitWiki = $this->createDummySubmitWiki(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new SubmitWikiInput(
             $dummySubmitWiki->wikiIdentifier,
@@ -289,7 +290,7 @@ class SubmitWikiTest extends TestCase
         $dummySubmitWiki = $this->createDummySubmitWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new SubmitWikiInput(
             $dummySubmitWiki->wikiIdentifier,

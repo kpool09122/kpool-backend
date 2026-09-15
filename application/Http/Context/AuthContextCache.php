@@ -74,9 +74,12 @@ class AuthContextCache
     }
 
     /** @param callable(): WikiContext $dbResolver */
-    public function resolveWiki(IdentityIdentifier $identityIdentifier, callable $dbResolver): WikiContext
-    {
-        $cached = $this->read($this->wikiKey($identityIdentifier));
+    public function resolveWiki(
+        IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
+        callable $dbResolver,
+    ): WikiContext {
+        $cached = $this->read($this->wikiKey($identityIdentifier, $accountIdentifier));
         if ($cached !== null) {
             $context = $this->wikiFromPayload($cached);
             if ($context !== null) {
@@ -85,7 +88,7 @@ class AuthContextCache
         }
 
         $context = $dbResolver();
-        $this->write($this->wikiKey($identityIdentifier), [
+        $this->write($this->wikiKey($identityIdentifier, $accountIdentifier), [
             'principalIdentifier' => (string) $context->principalIdentifier,
         ]);
 
@@ -102,9 +105,18 @@ class AuthContextCache
         $this->delete($this->accountKey($identityIdentifier));
     }
 
-    public function forgetWiki(IdentityIdentifier $identityIdentifier): void
+    public function forgetWiki(IdentityIdentifier $identityIdentifier, ?AccountIdentifier $accountIdentifier = null): void
     {
-        $this->delete($this->wikiKey($identityIdentifier));
+        if ($accountIdentifier !== null) {
+            $this->delete($this->wikiKey($identityIdentifier, $accountIdentifier));
+
+            return;
+        }
+
+        $this->delete(self::WIKI_KEY_PREFIX . $identityIdentifier);
+        foreach ($this->keys(self::WIKI_KEY_PREFIX . $identityIdentifier . ':*') as $key) {
+            $this->delete($key);
+        }
     }
 
     /** @param IdentityIdentifier[] $identityIdentifiers */
@@ -133,9 +145,9 @@ class AuthContextCache
         return self::ACCOUNT_KEY_PREFIX . $identityIdentifier;
     }
 
-    private function wikiKey(IdentityIdentifier $identityIdentifier): string
+    private function wikiKey(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): string
     {
-        return self::WIKI_KEY_PREFIX . $identityIdentifier;
+        return self::WIKI_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier;
     }
 
     /** @return ?array<string, mixed> */
@@ -177,6 +189,20 @@ class AuthContextCache
         } catch (Throwable) {
             // Cache invalidation is best effort; DB state remains source of truth.
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function keys(string $pattern): array
+    {
+        try {
+            $keys = Redis::keys($pattern);
+        } catch (Throwable) {
+            return [];
+        }
+
+        return is_array($keys) ? array_values(array_filter($keys, 'is_string')) : [];
     }
 
     /** @param array<string, mixed> $payload */

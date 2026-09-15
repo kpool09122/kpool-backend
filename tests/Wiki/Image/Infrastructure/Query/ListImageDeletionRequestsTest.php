@@ -6,6 +6,7 @@ namespace Tests\Wiki\Image\Infrastructure\Query;
 
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInterface;
@@ -157,7 +158,7 @@ class ListImageDeletionRequestsTest extends TestCase
     private function bindPrincipalRepository(): PrincipalIdentifier
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

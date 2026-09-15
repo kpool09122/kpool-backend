@@ -261,6 +261,54 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateAccountRequestBody'
+  /accounts/switch:
+    post:
+      operationId: AccountOperations_switchAccount
+      description: Switch the current effective account context without changing the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when account switching succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwitchAccountResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchAccountRequestBody'
   /accounts/{accountIdentifier}/category-change-requests:
     post:
       operationId: AccountCategoryChangeRequestOperations_requestAccountCategoryChange
@@ -1973,6 +2021,18 @@ components:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         requestedByAccountIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegateAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Delegate account.
+        delegatorAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Delegator account.
+        requestedByAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Account that requested the delegation.
         status:
           type: string
         direction:
@@ -2369,6 +2429,34 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier of the affiliation counterpart.
       description: Request body for requesting an delegation.
+    SwitchAccountRequestBody:
+      type: object
+      properties:
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+      description: Request body for switching the current effective account context. Null switches back to the original account.
+    SwitchAccountResponseBody:
+      type: object
+      required:
+        - originalIdentityIdentifier
+        - accountIdentifier
+        - accountPrincipalIdentifier
+      properties:
+        originalIdentityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountPrincipalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+      description: Selected account context.
     TerminateAffiliationRequestBody:
       type: object
       required:

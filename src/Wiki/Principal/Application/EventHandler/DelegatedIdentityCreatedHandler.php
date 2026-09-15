@@ -20,30 +20,32 @@ readonly class DelegatedIdentityCreatedHandler
 
     public function handle(DelegatedIdentityCreated $event): void
     {
-        $originalPrincipal = $this->principalRepository->findByIdentityIdentifier(
+        $originalPrincipals = $this->principalRepository->findByIdentityIdentifier(
             $event->originalIdentityIdentifier()
         );
 
-        if ($originalPrincipal === null) {
+        if ($originalPrincipals === []) {
             return;
         }
 
-        $delegatedPrincipal = $this->principalFactory->createDelegatedPrincipal(
-            $originalPrincipal,
-            $event->delegationIdentifier(),
-            $event->delegatedIdentityIdentifier(),
-        );
+        foreach ($originalPrincipals as $originalPrincipal) {
+            $delegatedPrincipal = $this->principalFactory->createDelegatedPrincipal(
+                $originalPrincipal,
+                $event->delegationIdentifier(),
+                $event->delegatedIdentityIdentifier(),
+            );
 
-        $this->principalRepository->save($delegatedPrincipal);
+            $this->principalRepository->save($delegatedPrincipal);
 
-        // 委譲 Principal を元の Principal と同じ PrincipalGroup(s) に追加
-        $principalGroups = $this->principalGroupRepository->findByPrincipalId(
-            $originalPrincipal->principalIdentifier()
-        );
+            // 委譲 Principal を元の Principal と同じ PrincipalGroup(s) に追加
+            $principalGroups = $this->principalGroupRepository->findByPrincipalId(
+                $originalPrincipal->principalIdentifier()
+            );
 
-        foreach ($principalGroups as $principalGroup) {
-            $principalGroup->addMember($delegatedPrincipal->principalIdentifier());
-            $this->principalGroupRepository->save($principalGroup);
+            foreach ($principalGroups as $principalGroup) {
+                $principalGroup->addMember($delegatedPrincipal->principalIdentifier());
+                $this->principalGroupRepository->save($principalGroup);
+            }
         }
     }
 }

@@ -44,8 +44,9 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
      */
     public function process(CreatePrincipalInputPort $input, CreatePrincipalOutputPort $output): void
     {
-        $existingPrincipal = $this->principalRepository->findByIdentityIdentifier(
-            $input->identityIdentifier()
+        $existingPrincipal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier(
+            $input->identityIdentifier(),
+            $input->accountIdentifier(),
         );
 
         if ($existingPrincipal !== null) {
@@ -54,6 +55,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
         $principal = $this->principalFactory->create(
             $input->identityIdentifier(),
+            $input->accountIdentifier(),
         );
 
         $this->principalRepository->save($principal);

@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Http\Middleware;
 
+use Application\Http\Context\AccountContext;
+use Application\Http\Context\AccountResolver;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\PrincipalResolver;
 use Application\Http\Context\WikiContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
 use Mockery;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -21,40 +27,31 @@ use Tests\TestCase;
 
 class ResolveWikiContextTest extends TestCase
 {
-    public function testBindsWikiContextToContainer(): void
+    public function testBindsWikiContextForEffectiveAccount(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wikiPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $accountContext = new AccountContext(
+            new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identityId, $accountId),
+            AccountType::CORPORATION,
+            AccountCategory::AGENCY,
+        );
+        app()->instance(ActorContext::class, new ActorContext($identityId, Language::ENGLISH, null, null));
+        app()->instance(AccountContext::class, $accountContext);
 
-        app()->instance(ActorContext::class, new ActorContext($identityIdentifier, Language::ENGLISH, null, null));
-
-        /** @var Principal&Mockery\MockInterface $principal */
         $principal = Mockery::mock(Principal::class);
-        $principal->shouldReceive('principalIdentifier')->once()->andReturn($principalIdentifier);
-
+        $principal->shouldReceive('principalIdentifier')->once()->andReturn($wikiPrincipalId);
         /** @var PrincipalRepositoryInterface&Mockery\MockInterface $repository */
         $repository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $repository->shouldReceive('findByIdentityIdentifier')
-            ->once()
-            ->with($identityIdentifier)
-            ->andReturn($principal);
+        $repository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->once()->with($identityId, $accountId)->andReturn($principal);
+        $accountResolver = app(AccountResolver::class);
 
-        $principalResolver = new PrincipalResolver($repository);
+        $middleware = new ResolveWikiContext(new PrincipalResolver($repository), $accountResolver);
+        $middleware->handle(Request::create('/api/wiki/test', 'GET'), fn () => response('ok'));
 
-        Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->once();
-
-        $middleware = new ResolveWikiContext($principalResolver, app(\Application\Http\Context\AuthContextCache::class));
-        $request = Request::create('/api/wiki/test', 'GET');
-
-        $middleware->handle($request, function () {
-            return response('ok');
-        });
-
-        $this->assertTrue(app()->bound(WikiContext::class));
-
-        /** @var WikiContext $wikiContext */
-        $wikiContext = app(WikiContext::class);
-        $this->assertSame($principalIdentifier, $wikiContext->principalIdentifier);
+        $this->assertSame($wikiPrincipalId, app(WikiContext::class)->principalIdentifier);
+        $this->assertSame($accountContext, app(AccountContext::class));
     }
 }

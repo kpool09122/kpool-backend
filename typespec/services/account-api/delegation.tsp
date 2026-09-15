@@ -77,4 +77,5 @@ interface DelegationOperations {
   rejectDelegation(
     @path delegationId: Uuid,
   ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
 }

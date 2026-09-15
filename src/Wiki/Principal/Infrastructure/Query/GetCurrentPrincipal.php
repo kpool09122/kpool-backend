@@ -21,6 +21,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
         $principal = PrincipalModel::query()
             ->with('memberships.principalGroup.roleAttachments.role.policyAttachments.policy')
             ->where('identity_id', (string) $input->identityIdentifier())
+            ->where('account_id', (string) $input->accountIdentifier())
             ->first();
 
         if ($principal === null) {

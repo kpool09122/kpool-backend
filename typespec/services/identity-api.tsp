@@ -127,12 +127,6 @@ model LoginIdentitySummary extends IdentitySummary {
   returnTo?: string | null;
 }
 
-@doc("Identity summary returned after switching active identity.")
-model SwitchedIdentitySummary extends IdentitySummary {
-  @doc("Whether the active identity is delegated.")
-  isDelegated: boolean;
-}
-
 @doc("Email verification result.")
 model VerifyEmailResult {
   @doc("Verified email address.")
@@ -198,12 +192,6 @@ model LoginRequestBody {
   return_to?: string | null;
 }
 
-@doc("Request body for switching the active identity.")
-model SwitchIdentityRequestBody {
-  @doc("Delegation identifier to switch into. Null means returning to the original identity.")
-  targetDelegationIdentifier?: Uuid | null;
-}
-
 @doc("Response returned when an endpoint succeeds with an empty JSON object.")
 model OkEmptyResponse {
   @statusCode statusCode: 200;
@@ -244,12 +232,6 @@ model IdentityProfileResponse {
 model VerifyEmailResponse {
   @statusCode statusCode: 200;
   @body body: VerifyEmailResult;
-}
-
-@doc("Response returned when identity switching succeeds.")
-model SwitchIdentityResponse {
-  @statusCode statusCode: 200;
-  @body body: SwitchedIdentitySummary;
 }
 
 @doc("Response returned by social login endpoints.")
@@ -324,12 +306,6 @@ interface IdentityAuthOperations {
     @path identityIdentifier: Uuid,
   ): IdentityProfileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
-  @post
-  @route("/switch-identity")
-  @doc("Switch the current authenticated identity or clear delegation.")
-  switchIdentity(
-    @body body: SwitchIdentityRequestBody,
-  ): SwitchIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/identities")

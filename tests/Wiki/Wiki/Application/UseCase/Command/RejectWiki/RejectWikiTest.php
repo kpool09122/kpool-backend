@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -78,7 +79,7 @@ class RejectWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyRejectWiki = $this->createDummyRejectWiki(
             operatorIdentifier: $principalIdentifier,
@@ -295,7 +296,7 @@ class RejectWikiTest extends TestCase
         $dummyRejectWiki = $this->createDummyRejectWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new RejectWikiInput(
             $dummyRejectWiki->wikiIdentifier,
