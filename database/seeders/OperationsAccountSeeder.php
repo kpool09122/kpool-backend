@@ -108,6 +108,7 @@ class OperationsAccountSeeder extends Seeder
         DB::table('wiki_principals')->upsert([[
             'id' => $principalId,
             'identity_id' => $identityId,
+            'account_id' => $accountId,
             'delegation_identifier' => null,
             'enabled' => true,
             'created_at' => $now,

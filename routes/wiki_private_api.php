@@ -120,7 +120,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 });
 
 // Principal
-Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.account']);
 Route::post('/principal/create', CreatePrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::middleware('auth.api')->group(function () {
     Route::get('/principal-groups', ListPrincipalGroupsAction::class);
