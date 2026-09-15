@@ -819,7 +819,7 @@ model PolicyConditionClause {
   @doc("Operator used for the comparison.")
   operator: string;
   @doc("Value to compare against.")
-  value: string | boolean;
+  value: string | string[] | boolean;
 }
 
 @doc("Conditional constraints for a policy statement.")

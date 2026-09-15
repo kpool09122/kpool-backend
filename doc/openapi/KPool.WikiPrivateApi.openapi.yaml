@@ -4511,6 +4511,9 @@ components:
         value:
           anyOf:
             - type: string
+            - type: array
+              items:
+                type: string
             - type: boolean
           description: Value to compare against.
       description: Single condition clause in a policy.

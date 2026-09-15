@@ -26,7 +26,7 @@ model AccountPolicyConditionClause {
   @doc("Operator used for the comparison.")
   operator: string;
   @doc("Value to compare against.")
-  value: string | boolean;
+  value: string | string[] | boolean;
 }
 
 @doc("Conditional constraints for an account policy statement.")
