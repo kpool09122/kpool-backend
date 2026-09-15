@@ -16,6 +16,7 @@ use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrin
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
+use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
@@ -70,7 +71,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Mockery::on(fn (PrincipalGroup $arg) => ! $arg->hasMember($principalIdentifier)))
             ->andReturnNull();
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
@@ -141,7 +142,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
@@ -176,7 +177,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             false,
             new DateTimeImmutable(),
         );
-        $principalGroup->addRole($ownerRole->roleIdentifier());
+        $principalGroup->addRole($ownerRole);
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -190,7 +191,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->andReturn([$principalGroup]); // Only one OWNER group with one member
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
@@ -226,7 +227,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             false,
             new DateTimeImmutable(),
         );
-        $principalGroup->addRole($ownerRole->roleIdentifier());
+        $principalGroup->addRole($ownerRole);
         $principalGroup->addMember($principalIdentifier);
         $principalGroup->addMember($anotherPrincipalIdentifier);
 
@@ -243,7 +244,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->once()
             ->andReturnNull();
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->once()
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
@@ -262,13 +263,53 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $this->assertContains((string) $anotherPrincipalIdentifier, $result['members']);
     }
 
+    public function testThrowsDedicatedExceptionWhenOwnerRoleIsMissing(): void
+    {
+        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup = new PrincipalGroup(
+            $principalGroupIdentifier,
+            $accountIdentifier,
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addMember($principalIdentifier);
+
+        $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findById')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->andReturn($principalGroup);
+        $repository->shouldNotReceive('save');
+
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findSystemByName')
+            ->once()
+            ->with(Role::OWNER)
+            ->andReturnNull();
+
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+
+        $this->expectException(SystemRoleNotFoundException::class);
+        $this->expectExceptionMessage('Owner account role is not found.');
+
+        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
+        $output = new RemovePrincipalFromPrincipalGroupOutput();
+        $useCase->process($input, $output);
+    }
+
     private function createOwnerRole(): Role
     {
         return new Role(
             new RoleIdentifier(StrTestHelper::generateUuid()),
             Role::OWNER,
             [],
-            true,
+            null,
         );
     }
 }

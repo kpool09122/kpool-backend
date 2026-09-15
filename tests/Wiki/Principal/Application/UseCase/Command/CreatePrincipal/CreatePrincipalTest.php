@@ -65,7 +65,7 @@ class CreatePrincipalTest extends TestCase
             $roleIdentifier,
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -100,7 +100,7 @@ class CreatePrincipalTest extends TestCase
             ->andReturn($defaultPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->once()
             ->andReturn($collaboratorRole);
@@ -139,7 +139,7 @@ class CreatePrincipalTest extends TestCase
 
         $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
-        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
+        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], null);
         $ownerGroup = new AccountPrincipalGroup(
             new AccountPrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
@@ -159,14 +159,14 @@ class CreatePrincipalTest extends TestCase
             $wikiAdministratorRoleIdentifier,
             'WIKI_ADMINISTRATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
         $collaboratorRole = new Role(
             $collaboratorRoleIdentifier,
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -191,8 +191,8 @@ class CreatePrincipalTest extends TestCase
             ->andReturn($wikiAdministratorPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
-        $roleRepository->shouldReceive('findByName')->once()->with('COLLABORATOR')->andReturn($collaboratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('COLLABORATOR')->andReturn($collaboratorRole);
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
@@ -201,7 +201,7 @@ class CreatePrincipalTest extends TestCase
             ->andReturn($accountPrincipal);
 
         $accountRoleRepository = Mockery::mock(AccountRoleRepositoryInterface::class);
-        $accountRoleRepository->shouldReceive('findByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
+        $accountRoleRepository->shouldReceive('findSystemByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
 
         $accountPrincipalGroupRepository = Mockery::mock(AccountPrincipalGroupRepositoryInterface::class);
         $accountPrincipalGroupRepository->shouldReceive('findByAccountIdAndRole')
@@ -240,7 +240,7 @@ class CreatePrincipalTest extends TestCase
 
         $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
-        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
+        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], null);
         $ownerGroup = new AccountPrincipalGroup(
             new AccountPrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
@@ -272,13 +272,13 @@ class CreatePrincipalTest extends TestCase
         $principalGroupFactory->shouldReceive('create')->once()->andReturn($principalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->with('WIKI_ADMINISTRATOR')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturnNull();
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturn($accountPrincipal);
 
         $accountRoleRepository = Mockery::mock(AccountRoleRepositoryInterface::class);
-        $accountRoleRepository->shouldReceive('findByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
+        $accountRoleRepository->shouldReceive('findSystemByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
 
         $accountPrincipalGroupRepository = Mockery::mock(AccountPrincipalGroupRepositoryInterface::class);
         $accountPrincipalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()->andReturn($ownerGroup);
@@ -312,7 +312,7 @@ class CreatePrincipalTest extends TestCase
 
         $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
         $accountPrincipal = new AccountPrincipal($accountPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
-        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], true);
+        $ownerRole = new AccountRole($ownerRoleIdentifier, AccountRole::OWNER, [], null);
         $ownerGroup = new AccountPrincipalGroup(
             new AccountPrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
@@ -347,18 +347,18 @@ class CreatePrincipalTest extends TestCase
             $wikiAdministratorRoleIdentifier,
             'WIKI_ADMINISTRATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
-        $roleRepository->shouldReceive('findByName')->once()->with('COLLABORATOR')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('COLLABORATOR')->andReturnNull();
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturn($accountPrincipal);
 
         $accountRoleRepository = Mockery::mock(AccountRoleRepositoryInterface::class);
-        $accountRoleRepository->shouldReceive('findByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
+        $accountRoleRepository->shouldReceive('findSystemByName')->once()->with(AccountRole::OWNER)->andReturn($ownerRole);
 
         $accountPrincipalGroupRepository = Mockery::mock(AccountPrincipalGroupRepositoryInterface::class);
         $accountPrincipalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()->andReturn($ownerGroup);
@@ -430,7 +430,7 @@ class CreatePrincipalTest extends TestCase
         $principalGroupFactory->shouldNotReceive('create');
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldNotReceive('findByName');
+        $roleRepository->shouldNotReceive('findSystemByName');
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);

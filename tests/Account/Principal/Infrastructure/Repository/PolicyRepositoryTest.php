@@ -49,7 +49,7 @@ class PolicyRepositoryTest extends TestCase
                     ),
                 ]),
             )],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -59,7 +59,7 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('account_policies', [
             'id' => (string) $policy->policyIdentifier(),
             'name' => 'ACCOUNT_INVITE_MEMBER_TEST',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
 
         $foundPolicies = $repository->findByIds([$policy->policyIdentifier()]);

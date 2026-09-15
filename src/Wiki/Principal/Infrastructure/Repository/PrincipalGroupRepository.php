@@ -222,20 +222,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
+        $roles = $eloquent->roleAttachments->map(
+            static fn (PrincipalGroupRoleAttachmentEloquent $attachment) => new RoleIdentifier($attachment->role_id)
+        )->all();
+
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($eloquent->id),
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
             $eloquent->is_default,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            $roles,
         );
 
         foreach ($eloquent->memberships as $membership) {
             $principalGroup->addMember(new PrincipalIdentifier($membership->principal_id));
-        }
-
-        foreach ($eloquent->roleAttachments as $roleAttachment) {
-            $principalGroup->addRole(new RoleIdentifier($roleAttachment->role_id));
         }
 
         return $principalGroup;

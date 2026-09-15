@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
+use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -180,9 +181,10 @@ class PrincipalGroupTest extends TestCase
     public function testAddRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
 
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
 
         $this->assertTrue($principalGroup->hasRole($roleIdentifier));
         $this->assertCount(1, $principalGroup->roles());
@@ -194,11 +196,13 @@ class PrincipalGroupTest extends TestCase
     public function testAddMultipleRoles(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier1 = new RoleIdentifier(StrTestHelper::generateUuid());
-        $roleIdentifier2 = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role1 = $this->createRole($principalGroup->accountIdentifier());
+        $role2 = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier1 = $role1->roleIdentifier();
+        $roleIdentifier2 = $role2->roleIdentifier();
 
-        $principalGroup->addRole($roleIdentifier1);
-        $principalGroup->addRole($roleIdentifier2);
+        $principalGroup->addRole($role1);
+        $principalGroup->addRole($role2);
 
         $this->assertCount(2, $principalGroup->roles());
         $this->assertTrue($principalGroup->hasRole($roleIdentifier1));
@@ -211,10 +215,10 @@ class PrincipalGroupTest extends TestCase
     public function testAddRoleDuplicate(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
 
-        $principalGroup->addRole($roleIdentifier);
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
+        $principalGroup->addRole($role);
 
         $this->assertCount(1, $principalGroup->roles());
     }
@@ -225,9 +229,10 @@ class PrincipalGroupTest extends TestCase
     public function testRemoveRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
 
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
         $principalGroup->removeRole($roleIdentifier);
 
         $this->assertFalse($principalGroup->hasRole($roleIdentifier));
@@ -240,7 +245,8 @@ class PrincipalGroupTest extends TestCase
     public function testRemoveRoleNotFound(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
 
         $principalGroup->removeRole($roleIdentifier);
 
@@ -253,13 +259,22 @@ class PrincipalGroupTest extends TestCase
     public function testHasRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
         $otherRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
 
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
 
         $this->assertTrue($principalGroup->hasRole($roleIdentifier));
         $this->assertFalse($principalGroup->hasRole($otherRoleIdentifier));
+    }
+
+    public function testAddRoleRejectsRoleFromAnotherAccount(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $principalGroup->addRole($this->createRole(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 
     private function createPrincipalGroup(): PrincipalGroup
@@ -269,6 +284,17 @@ class PrincipalGroupTest extends TestCase
             new AccountIdentifier(StrTestHelper::generateUuid()),
             'Test Group',
             false,
+            new DateTimeImmutable(),
+        );
+    }
+
+    private function createRole(?AccountIdentifier $accountIdentifier): Role
+    {
+        return new Role(
+            new RoleIdentifier(StrTestHelper::generateUuid()),
+            'Test Role',
+            [],
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
     }

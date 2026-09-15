@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Infrastructure\Factory\RoleFactory;
@@ -42,7 +43,7 @@ class RoleFactoryTest extends TestCase
         $role = $factory->create(
             $name,
             $policies,
-            $isSystemRole,
+            null,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $role->roleIdentifier()));
@@ -69,7 +70,7 @@ class RoleFactoryTest extends TestCase
         $role = $factory->create(
             $name,
             $policies,
-            $isSystemRole,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $role->roleIdentifier()));
@@ -94,7 +95,7 @@ class RoleFactoryTest extends TestCase
         $role = $factory->create(
             $name,
             $policies,
-            $isSystemRole,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $role->roleIdentifier()));
@@ -121,7 +122,7 @@ class RoleFactoryTest extends TestCase
         $role = $factory->create(
             $name,
             $policies,
-            $isSystemRole,
+            null,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $role->roleIdentifier()));

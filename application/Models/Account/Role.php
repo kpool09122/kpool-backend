@@ -11,30 +11,22 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
+ * @property ?string $account_id
  * @property string $name
- * @property bool $is_system_role
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Collection<int, RolePolicyAttachment> $policyAttachments
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
+    'account_id',
     'name',
-    'is_system_role',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_roles', keyType: 'string')]
 class Role extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'is_system_role' => 'boolean',
-        ];
-    }
 
     /**
      * @return HasMany<RolePolicyAttachment, $this>

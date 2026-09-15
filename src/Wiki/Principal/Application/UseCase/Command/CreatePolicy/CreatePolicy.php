@@ -20,7 +20,7 @@ readonly class CreatePolicy implements CreatePolicyInterface
         $policy = $this->policyFactory->create(
             $input->name(),
             $input->statements(),
-            $input->isSystemPolicy(),
+            $input->accountIdentifier(),
         );
 
         $this->policyRepository->save($policy);

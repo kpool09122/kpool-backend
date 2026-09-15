@@ -169,9 +169,13 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $grant = $this->createAffiliationGrant($affiliationIdentifier, AffiliationGrantType::TALENT_SIDE);
-        $affiliationGroup = $this->createPrincipalGroup($accountIdentifier, false, 'Affiliation - Agency 1');
+        $affiliationGroup = $this->createPrincipalGroup(
+            $accountIdentifier,
+            false,
+            'Affiliation - Agency 1',
+            [$grant->roleIdentifier()],
+        );
         $affiliationGroup->addMember($principalIdentifier);
-        $affiliationGroup->addRole($grant->roleIdentifier());
         $defaultGroup = $this->createPrincipalGroup($accountIdentifier, true, 'Default');
 
         $principalGroupRepository = $this->mockPrincipalGroupRepositoryForSingleGrant($grant, $affiliationGroup, $defaultGroup);
@@ -471,10 +475,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         );
     }
 
+    /** @param RoleIdentifier[] $roles */
     private function createPrincipalGroup(
         AccountIdentifier $accountIdentifier,
         bool $isDefault,
         string $name = 'Affiliation - Test',
+        array $roles = [],
     ): PrincipalGroup {
         return new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -482,6 +488,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
             $name,
             $isDefault,
             new DateTimeImmutable(),
+            $roles,
         );
     }
 
@@ -491,7 +498,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
             $policyIdentifier,
             'Test Policy',
             [],
-            $isSystemPolicy,
+            $isSystemPolicy ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable(),
         );
     }
@@ -502,7 +509,7 @@ class AffiliationTerminatedHandlerTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable(),
         );
     }

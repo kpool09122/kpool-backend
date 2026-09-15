@@ -32,8 +32,8 @@ class CreatePrincipalGroupOutputTest extends TestCase
             'Test Group',
             false,
             $createdAt,
+            [$roleIdentifier],
         );
-        $principalGroup->addRole($roleIdentifier);
 
         $output = new CreatePrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);

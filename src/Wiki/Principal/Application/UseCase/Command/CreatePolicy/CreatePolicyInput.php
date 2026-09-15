@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 
 readonly class CreatePolicyInput implements CreatePolicyInputPort
@@ -14,7 +15,7 @@ readonly class CreatePolicyInput implements CreatePolicyInputPort
     public function __construct(
         private string $name,
         private array $statements,
-        private bool $isSystemPolicy,
+        private ?AccountIdentifier $accountIdentifier,
     ) {
     }
 
@@ -31,8 +32,8 @@ readonly class CreatePolicyInput implements CreatePolicyInputPort
         return $this->statements;
     }
 
-    public function isSystemPolicy(): bool
+    public function accountIdentifier(): ?AccountIdentifier
     {
-        return $this->isSystemPolicy;
+        return $this->accountIdentifier;
     }
 }
