@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
+use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -86,11 +87,14 @@ readonly class AccountResolver
     private function initialCurrentAccount(IdentityIdentifier $identityIdentifier): CurrentAccount
     {
         $principals = $this->principalRepository->findAllByIdentityIdentifier($identityIdentifier);
-        if (count($principals) !== 1) {
+        $principal = count($principals) === 1
+            ? $principals[0]
+            : $this->originalPrincipalFromDelegatedPrincipals($principals);
+
+        if ($principal === null) {
             throw new AccountNotFoundException('Current account is not selected.');
         }
 
-        $principal = $principals[0];
         $currentAccount = new CurrentAccount(
             originalIdentityIdentifier: $identityIdentifier,
             originalAccountIdentifier: $principal->accountIdentifier(),
@@ -102,6 +106,44 @@ readonly class AccountResolver
         $this->currentAccountService->save($currentAccount);
 
         return $currentAccount;
+    }
+
+    /**
+     * @param array<int, Principal> $principals
+     */
+    private function originalPrincipalFromDelegatedPrincipals(array $principals): ?Principal
+    {
+        if ($principals === []) {
+            return null;
+        }
+
+        $principalsByAccountId = [];
+        foreach ($principals as $principal) {
+            $principalsByAccountId[(string) $principal->accountIdentifier()] = $principal;
+        }
+
+        $delegations = $this->delegationRepository->findApprovedBetweenAccountIds(
+            array_map(
+                static fn (Principal $principal) => $principal->accountIdentifier(),
+                $principals,
+            ),
+        );
+        $delegatedAccountIds = [];
+        foreach ($delegations as $delegation) {
+            $delegateAccountId = (string) $delegation->delegateAccountIdentifier();
+            $delegatorAccountId = (string) $delegation->delegatorAccountIdentifier();
+
+            if (isset($principalsByAccountId[$delegateAccountId], $principalsByAccountId[$delegatorAccountId])) {
+                $delegatedAccountIds[$delegatorAccountId] = true;
+            }
+        }
+
+        $originalPrincipalCandidates = array_values(array_filter(
+            $principals,
+            static fn (Principal $principal): bool => ! isset($delegatedAccountIds[(string) $principal->accountIdentifier()]),
+        ));
+
+        return count($originalPrincipalCandidates) === 1 ? $originalPrincipalCandidates[0] : null;
     }
 
     private function assertDelegationIsActive(CurrentAccount $currentAccount): void

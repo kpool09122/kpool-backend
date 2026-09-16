@@ -85,6 +85,43 @@ class AccountResolverTest extends TestCase
         $resolver->resolve($identity);
     }
 
+    public function testResolvesOriginalPrincipalWhenDelegatedPrincipalRemainsAfterSessionReset(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $originalAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        $effectiveAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        $originalPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $effectivePrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
+        $originalPrincipal = new Principal($originalPrincipalId, $identity, $originalAccount);
+        $effectivePrincipal = new Principal($effectivePrincipalId, $identity, $effectiveAccount);
+        [$resolver, $deps] = $this->resolver();
+        $deps['currentAccountService']->shouldReceive('find')->with($identity)->once()->andReturn(null);
+        $deps['principals']->shouldReceive('findAllByIdentityIdentifier')->with($identity)->once()->andReturn([
+            $originalPrincipal,
+            $effectivePrincipal,
+        ]);
+        $deps['delegations']->shouldReceive('findApprovedBetweenAccountIds')->once()->withArgs(
+            fn (array $accountIdentifiers): bool => array_map('strval', $accountIdentifiers) === [
+                (string) $originalAccount,
+                (string) $effectiveAccount,
+            ],
+        )->andReturn([$this->delegation($delegationId, $originalAccount, $effectiveAccount, DelegationStatus::APPROVED)]);
+        $deps['currentAccountService']->shouldReceive('save')->once()->withArgs(
+            fn (CurrentAccount $currentAccount): bool => $currentAccount->delegationIdentifier === null
+                && (string) $currentAccount->originalAccountIdentifier === (string) $originalAccount
+                && (string) $currentAccount->effectiveAccountIdentifier === (string) $originalAccount,
+        );
+        $deps['principals']->shouldReceive('findById')->with($originalPrincipalId)->once()->andReturn($originalPrincipal);
+        $deps['accounts']->shouldReceive('findById')->with($originalAccount)->once()->andReturn($this->account($originalAccount));
+        $deps['groups']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
+
+        $currentAccount = $resolver->resolve($identity);
+
+        $this->assertSame($originalAccount, $currentAccount->principal()->accountIdentifier());
+        $this->assertNull($currentAccount->delegationIdentifier());
+    }
+
     public function testDoesNotUseAmbiguousIdentityOnlyFallback(): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -94,6 +131,7 @@ class AccountResolverTest extends TestCase
             new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
             new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
         ]);
+        $deps['delegations']->shouldReceive('findApprovedBetweenAccountIds')->once()->andReturn([]);
         $deps['principals']->shouldNotReceive('findByIdentityIdentifier');
 
         $this->expectException(AccountNotFoundException::class);
