@@ -60,6 +60,26 @@ class DelegationRepository implements DelegationRepositoryInterface
         return $eloquent === null ? null : $this->toDomainEntity($eloquent);
     }
 
+    public function findApprovedBetweenAccountIds(array $accountIdentifiers): array
+    {
+        $accountIds = array_values(array_unique(array_map(
+            static fn (AccountIdentifier $accountIdentifier): string => (string) $accountIdentifier,
+            $accountIdentifiers,
+        )));
+
+        if ($accountIds === []) {
+            return [];
+        }
+
+        return DelegationEloquent::query()
+            ->where('status', DelegationStatus::APPROVED->value)
+            ->whereIn('delegate_account_id', $accountIds)
+            ->whereIn('delegator_account_id', $accountIds)
+            ->get()
+            ->map(fn (DelegationEloquent $eloquent): Delegation => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     private function toDomainEntity(DelegationEloquent $eloquent): Delegation
     {
         return new Delegation(

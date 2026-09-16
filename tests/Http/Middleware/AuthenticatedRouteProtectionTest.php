@@ -193,7 +193,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki my owned wikis resolves actor and account' => ['GET', '/api/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],
             'wiki related wikis resolves actor, account and wiki' => ['GET', '/api/wiki/wiki/agency/00000000-0000-0000-0000-000000000014/related-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
-            'wiki current principal resolves actor' => ['GET', '/api/wiki/principal/me', ['resolve.actor']],
+            'wiki current principal resolves actor and account' => ['GET', '/api/wiki/principal/me', ['resolve.actor', 'resolve.account']],
             'wiki update principal group members resolves actor, account and wiki' => ['PATCH', '/api/wiki/principal-groups/members', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
             'wiki image upload resolves actor and wiki' => ['POST', '/api/wiki/image/upload', ['resolve.actor', 'resolve.wiki']],
             'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],

@@ -6,6 +6,7 @@ namespace Source\Account\Delegation\Domain\Repository;
 
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 interface DelegationRepositoryInterface
@@ -15,4 +16,10 @@ interface DelegationRepositoryInterface
     public function findById(DelegationIdentifier $identifier): ?Delegation;
 
     public function findOpenByAffiliationId(AffiliationIdentifier $affiliationIdentifier): ?Delegation;
+
+    /**
+     * @param AccountIdentifier[] $accountIdentifiers
+     * @return Delegation[]
+     */
+    public function findApprovedBetweenAccountIds(array $accountIdentifiers): array;
 }
