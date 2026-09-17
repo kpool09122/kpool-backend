@@ -92,6 +92,13 @@ class PolicyRepository implements PolicyRepositoryInterface
             ->all();
     }
 
+    public function delete(Policy $policy): void
+    {
+        $policyId = (string) $policy->policyIdentifier();
+        $this->forgetAccountContextsForRoles($this->rolesAttachedToPolicy($policyId));
+        PolicyEloquent::query()->where('id', $policyId)->delete();
+    }
+
     /**
      * @param Statement[] $statements
      * @return array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool|list<string>}>|null}>

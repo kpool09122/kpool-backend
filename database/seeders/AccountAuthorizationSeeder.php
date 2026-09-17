@@ -105,12 +105,6 @@ class AccountAuthorizationSeeder extends Seeder
             Action::DELEGATION_REJECT,
             $this->affiliationRequestCreateCondition(),
         );
-        $delegationAccountSwitchPolicy = $this->createPolicy(
-            '01982020-0456-7000-8000-000000000013',
-            'DELEGATION_ACCOUNT_SWITCH',
-            Action::DELEGATION_ACCOUNT_SWITCH,
-        );
-
         $ownerPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
@@ -141,9 +135,6 @@ class AccountAuthorizationSeeder extends Seeder
         $this->saveRole(Role::ADMIN, $adminPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
-        ]);
-        $this->saveRole(Role::DELEGATION_ACCOUNT_SWITCHER, [
-            $delegationAccountSwitchPolicy->policyIdentifier(),
         ]);
 
         DB::table('account_principals')

@@ -25,8 +25,6 @@ use Application\Http\Action\Account\Delegation\Command\ApproveDelegation\Approve
 use Application\Http\Action\Account\Delegation\Command\RejectDelegation\RejectDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RequestDelegation\RequestDelegationAction;
 use Application\Http\Action\Account\Delegation\Query\ListDelegations\ListDelegationsAction;
-use Application\Http\Action\Account\DelegationPermission\Command\GrantDelegationPermission\GrantDelegationPermissionAction;
-use Application\Http\Action\Account\DelegationPermission\Command\RevokeDelegationPermission\RevokeDelegationPermissionAction;
 use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
 use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
@@ -56,10 +54,6 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::post('/delegations', RequestDelegationAction::class);
     Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
     Route::post('/delegations/{delegationId}/reject', RejectDelegationAction::class);
-
-    // DelegationPermission
-    Route::post('/delegation-permissions', GrantDelegationPermissionAction::class);
-    Route::delete('/delegation-permissions/{delegationPermissionId}', RevokeDelegationPermissionAction::class);
 
     // Member
     Route::get('/members', ListMembersAction::class);

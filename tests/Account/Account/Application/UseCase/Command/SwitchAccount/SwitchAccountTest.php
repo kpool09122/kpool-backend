@@ -30,6 +30,7 @@ use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -68,7 +69,11 @@ class SwitchAccountTest extends TestCase
             existingPrincipal: true,
         );
         $deps->policy->shouldReceive('evaluate')->once()->withArgs(
-            fn (Principal $principal): bool => (string) $principal->accountIdentifier() !== (string) $targetAccount,
+            fn (Principal $principal, mixed $action, Resource $resource): bool =>
+                (string) $principal->accountIdentifier() !== (string) $targetAccount
+                && (string) $resource->accountIdentifier() === (string) $principal->accountIdentifier()
+                && (string) $resource->delegationIdentifier() === (string) $input->targetDelegationIdentifier()
+                && (string) $resource->targetAccountIdentifier() === (string) $targetAccount,
         )->andReturnTrue();
         $deps->currentAccountService->shouldReceive('save')->once();
 

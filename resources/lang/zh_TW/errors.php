@@ -73,7 +73,6 @@ return [
     'invalid_affiliation_approval' => '只有待處理的所屬才能被批准。',
     'invalid_affiliation_termination' => '只有有效的所屬才能被終止。',
     'invalid_account_category_for_affiliation' => '用於所屬的帳戶類別無效。',
-    'delegation_permission_not_found' => '找不到指定的委託權限。',
     'invalid_verification_approval' => '只能核准待處理的身分驗證申請。',
     'invalid_verification_rejection' => '只能拒絕待處理的身分驗證申請。',
     'invalid_account_category_for_verification' => '此帳戶類型無法申請身分驗證。',

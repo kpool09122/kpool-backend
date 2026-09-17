@@ -169,20 +169,6 @@ model ListDelegationsResponseBody {
   per_page: int32;
 }
 
-@doc("Delegation permission state.")
-model DelegationPermissionSummary {
-  @doc("Delegation permission identifier.")
-  delegationPermissionIdentifier: Uuid;
-  @doc("Principal group identifier that owns the permission.")
-  principalGroupIdentifier: Uuid;
-  @doc("Target account identifier.")
-  targetAccountIdentifier: Uuid;
-  @doc("Affiliation identifier covered by the permission.")
-  affiliationIdentifier: Uuid;
-  @doc("Timestamp when the permission was created.")
-  createdAt: Timestamp;
-}
-
 @doc("Principal group assigned to an account member.")
 model MemberPrincipalGroupSummary {
   @doc("Principal group identifier.")

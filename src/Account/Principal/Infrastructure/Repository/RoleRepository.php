@@ -98,6 +98,13 @@ class RoleRepository implements RoleRepositoryInterface
         return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
+    public function delete(Role $role): void
+    {
+        $roleId = (string) $role->roleIdentifier();
+        $this->forgetAccountContextsForRole($roleId);
+        RoleEloquent::query()->where('id', $roleId)->delete();
+    }
+
     private function syncPolicies(Role $role): void
     {
         $roleId = (string) $role->roleIdentifier();

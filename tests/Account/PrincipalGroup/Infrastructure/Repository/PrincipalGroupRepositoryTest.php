@@ -15,6 +15,7 @@ use Source\Account\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -226,6 +227,44 @@ class PrincipalGroupRepositoryTest extends TestCase
         $result = $repository->findById(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
+    }
+
+    #[Group('useDb')]
+    public function testFindByDelegationId(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $targetAccountId = StrTestHelper::generateUuid();
+        $delegationId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+        CreateAccount::create($targetAccountId);
+        DB::table('account_delegations')->insert([
+            'id' => $delegationId,
+            'affiliation_id' => StrTestHelper::generateUuid(),
+            'delegate_account_id' => $accountId,
+            'delegator_account_id' => $targetAccountId,
+            'requested_by_account_id' => $accountId,
+            'status' => 'approved',
+            'direction' => 'from_agency',
+            'requested_at' => now(),
+            'approved_at' => now(),
+        ]);
+        $group = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Delegation Group',
+            false,
+            new DateTimeImmutable(),
+            [],
+            new DelegationIdentifier($delegationId),
+        );
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository->save($group);
+
+        $result = $repository->findByDelegationId(new DelegationIdentifier($delegationId));
+
+        $this->assertNotNull($result);
+        $this->assertSame($delegationId, (string) $result->delegationIdentifier());
+        $this->assertSame($accountId, (string) $result->accountIdentifier());
     }
 
     /**

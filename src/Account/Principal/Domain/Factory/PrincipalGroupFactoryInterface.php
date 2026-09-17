@@ -6,6 +6,7 @@ namespace Source\Account\Principal\Domain\Factory;
 
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 interface PrincipalGroupFactoryInterface
 {
@@ -13,5 +14,11 @@ interface PrincipalGroupFactoryInterface
         AccountIdentifier $accountIdentifier,
         string $name,
         bool $isDefault,
+    ): PrincipalGroup;
+
+    public function createForDelegation(
+        AccountIdentifier $accountIdentifier,
+        string $name,
+        DelegationIdentifier $delegationIdentifier,
     ): PrincipalGroup;
 }

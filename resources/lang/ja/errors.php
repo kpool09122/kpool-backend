@@ -73,7 +73,6 @@ return [
     'invalid_affiliation_approval' => '承認できるのは保留中の所属のみです。',
     'invalid_affiliation_termination' => '終了できるのは有効な所属のみです。',
     'invalid_account_category_for_affiliation' => '所属に対するアカウント種別が無効です。',
-    'delegation_permission_not_found' => '指定された委任許可が見つかりません。',
     'invalid_verification_approval' => '保留中の本人確認申請のみ承認できます。',
     'invalid_verification_rejection' => '保留中の本人確認申請のみ却下できます。',
     'invalid_account_category_for_verification' => 'このアカウント種別では本人確認を申請できません。',

@@ -9,11 +9,6 @@ use Throwable;
 
 class DelegationPrincipalGroupCreationException extends DomainException
 {
-    public static function switcherRoleNotFound(?Throwable $previous = null): self
-    {
-        return new self('Delegation account switcher role is not found.', $previous);
-    }
-
     public static function delegatorAccountNotFound(?Throwable $previous = null): self
     {
         return new self('Delegator account is not found.', $previous);

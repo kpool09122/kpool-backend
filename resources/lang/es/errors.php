@@ -73,7 +73,6 @@ return [
     'invalid_affiliation_approval' => 'Solo se pueden aprobar las afiliaciones pendientes.',
     'invalid_affiliation_termination' => 'Solo se pueden finalizar las afiliaciones activas.',
     'invalid_account_category_for_affiliation' => 'La categoria de la cuenta es invalida para la afiliacion.',
-    'delegation_permission_not_found' => 'No se encontró el permiso de delegación especificado.',
     'invalid_verification_approval' => 'Solo se pueden aprobar las verificaciones pendientes.',
     'invalid_verification_rejection' => 'Solo se pueden rechazar las verificaciones pendientes.',
     'invalid_account_category_for_verification' => 'Este tipo de cuenta no puede solicitar verificación.',

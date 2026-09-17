@@ -9,6 +9,7 @@ use Source\Account\Principal\Application\Exception\CannotDeleteLastOwnerGroupExc
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
+use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 
@@ -17,6 +18,7 @@ readonly class DeletePrincipalGroup implements DeletePrincipalGroupInterface
     public function __construct(
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
+        private PolicyRepositoryInterface $policyRepository,
     ) {
     }
 
@@ -57,6 +59,24 @@ readonly class DeletePrincipalGroup implements DeletePrincipalGroupInterface
             }
         }
 
+        $delegationRoles = [];
+        $delegationPolicies = [];
+        if ($principalGroup->delegationIdentifier() !== null) {
+            $delegationRoles = $this->roleRepository->findByIds($principalGroup->roles());
+            foreach ($delegationRoles as $role) {
+                foreach ($this->policyRepository->findByIds($role->policies()) as $policy) {
+                    $delegationPolicies[(string) $policy->policyIdentifier()] = $policy;
+                }
+            }
+        }
+
         $this->principalGroupRepository->delete($principalGroup);
+
+        foreach ($delegationRoles as $role) {
+            $this->roleRepository->delete($role);
+        }
+        foreach ($delegationPolicies as $policy) {
+            $this->policyRepository->delete($policy);
+        }
     }
 }

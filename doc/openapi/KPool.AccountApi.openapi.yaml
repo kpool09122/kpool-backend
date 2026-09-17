@@ -864,85 +864,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TerminateAffiliationRequestBody'
-  /delegation-permissions:
-    post:
-      operationId: DelegationPermissionOperations_grantDelegationPermission
-      description: Grant a delegation permission.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when a delegation permission is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DelegationPermissionSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GrantDelegationPermissionRequestBody'
-  /delegation-permissions/{delegationPermissionId}:
-    delete:
-      operationId: DelegationPermissionOperations_revokeDelegationPermission
-      description: Revoke a delegation permission.
-      parameters:
-        - name: delegationPermissionId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '204':
-          description: Response with no content.
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /delegations:
     get:
       operationId: DelegationOperations_listDelegations
@@ -1969,36 +1890,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/PrincipalGroupSummary'
       description: Principal group snapshot returned immediately after creation.
-    DelegationPermissionSummary:
-      type: object
-      required:
-        - delegationPermissionIdentifier
-        - principalGroupIdentifier
-        - targetAccountIdentifier
-        - affiliationIdentifier
-        - createdAt
-      properties:
-        delegationPermissionIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegation permission identifier.
-        principalGroupIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Principal group identifier that owns the permission.
-        targetAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Target account identifier.
-        affiliationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier covered by the permission.
-        createdAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the permission was created.
-      description: Delegation permission state.
     DelegationSummary:
       type: object
       required:
@@ -2050,26 +1941,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
       description: Delegation request state.
-    GrantDelegationPermissionRequestBody:
-      type: object
-      required:
-        - principalGroupIdentifier
-        - targetAccountIdentifier
-        - affiliationIdentifier
-      properties:
-        principalGroupIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity group identifier receiving the permission.
-        targetAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier that can be delegated.
-        affiliationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier covered by the permission.
-      description: Request body for granting a delegation permission.
     InvitationSummary:
       type: object
       required:
