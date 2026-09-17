@@ -40,6 +40,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/wiki')
             ->group($routePath('wiki_private_api.php'));
+        RouteFacade::middleware(['api', 'session'])
+            ->prefix('api/site-management')
+            ->group($routePath('siteManagiment_public_api.php'));
+        RouteFacade::prefix('webhook')
+            ->group($routePath('webhook.php'));
     }
 
     #[DataProvider('authenticatedRouteProvider')]
@@ -68,6 +73,17 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public function testPublicExceptionRoutesDoNotIncludeAuthApiMiddleware(string $method, string $uri): void
     {
         $this->assertNotContains('auth.api', $this->routeFor($method, $uri)->gatherMiddleware());
+    }
+
+    #[DataProvider('disabledRouteProvider')]
+    public function testUnusedRoutesAreNotRegistered(string $method, string $uri): void
+    {
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            $this->assertFalse(
+                $route->uri() === $uri && in_array($method, $route->methods(), true),
+                sprintf('%s %s must not be registered.', $method, $uri),
+            );
+        }
     }
 
     public function testEnsureAuthenticatedMiddlewareRejectsUnauthenticatedRequests(): void
@@ -121,7 +137,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
             // Account: signup 用の POST /accounts 以外は認証必須
             'account: get account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: update account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
-            'account: delete account' => ['DELETE', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: list my account documents' => ['GET', '/api/account/my/documents'],
             'account: view account document' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration'],
             'account: list account category change requests' => ['GET', '/api/account/account-category-change-requests'],
@@ -130,11 +145,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account: list members' => ['GET', '/api/account/members'],
             'account: list principal groups' => ['GET', '/api/account/principal-groups'],
             'account: update principal group members' => ['PATCH', '/api/account/principal-groups/members'],
-
-            // Monetization: bootstrap/app.php のグループ設定で全 route が認証必須
-            'monetization: provision account' => ['POST', '/api/monetization/accounts'],
-            'monetization: authorize payment' => ['POST', '/api/monetization/payments/authorize'],
-            'monetization: execute transfer' => ['POST', '/api/monetization/transfers/00000000-0000-0000-0000-000000000002/execute'],
 
             // Wiki command / review / draft / admin / auxiliary edit APIs
             'wiki: create wiki' => ['POST', '/api/wiki/wiki/create'],
@@ -154,21 +164,12 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki: image upload' => ['POST', '/api/wiki/image/upload'],
             'wiki: current principal' => ['GET', '/api/wiki/principal/me'],
             'wiki: create principal' => ['POST', '/api/wiki/principal/create'],
-            'wiki: create principal group' => ['POST', '/api/wiki/principal-group/create'],
-            'wiki: add principal group member' => ['POST', '/api/wiki/principal-group/00000000-0000-0000-0000-000000000007/add-member'],
-            'wiki: delete principal group' => ['DELETE', '/api/wiki/principal-group/00000000-0000-0000-0000-000000000008'],
-            'wiki: create role' => ['POST', '/api/wiki/role/create'],
-            'wiki: delete role' => ['DELETE', '/api/wiki/role/00000000-0000-0000-0000-000000000009'],
-            'wiki: attach policy' => ['POST', '/api/wiki/role/00000000-0000-0000-0000-000000000010/attach-policy'],
-            'wiki: create policy' => ['POST', '/api/wiki/policy/create'],
-            'wiki: delete policy' => ['DELETE', '/api/wiki/policy/00000000-0000-0000-0000-000000000011'],
             'wiki: official certifications list' => ['GET', '/api/wiki/official-certifications'],
             'wiki: my official certifications list' => ['GET', '/api/wiki/my/official-certifications'],
             'wiki: official certification request' => ['POST', '/api/wiki/official-certification/request'],
             'wiki: official certification owned wikis sync' => ['PUT', '/api/wiki/official-certification/owned-wikis'],
             'wiki: official certification approve' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000012/approve'],
             'wiki: official certification reject' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000013/reject'],
-            'wiki: video link save' => ['POST', '/api/wiki/video-link/save'],
         ];
     }
 
@@ -188,7 +189,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account view document resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
             'account list account category change requests resolves actor and account' => ['GET', '/api/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
-            'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki my owned wikis resolves actor and account' => ['GET', '/api/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],
@@ -200,7 +200,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki official certifications resolves actor and wiki' => ['GET', '/api/wiki/official-certifications', ['resolve.actor', 'resolve.wiki']],
             'wiki my official certifications resolves actor, account and wiki' => ['GET', '/api/wiki/my/official-certifications', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
             'wiki official certification owned sync resolves actor, account and wiki' => ['PUT', '/api/wiki/official-certification/owned-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
-            'wiki video link resolves actor and wiki' => ['POST', '/api/wiki/video-link/save', ['resolve.actor', 'resolve.wiki']],
         ];
     }
 
@@ -211,7 +210,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             // Identity: 認証開始に必要な公開API
-            'identity: send auth code' => ['POST', '/api/identity/auth/send-auth-code'],
             'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
             'identity: register' => ['POST', '/api/identity/auth/register'],
             'identity: login' => ['POST', '/api/identity/auth/login'],
@@ -221,6 +219,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             // Account: signup フローで利用する公開例外
             'account: create account' => ['POST', '/api/account/accounts'],
 
+            // SiteManagement: kpool-frontend の問い合わせフォームで利用する公開API
+            'site management: submit contact' => ['POST', '/api/site-management/contact/submit/v1'],
+
             // Wiki: トップページ・Wiki一覧・Wiki詳細で必要な公開取得API
             'wiki: list wikis' => ['GET', '/api/wiki/wikis/ja'],
             'wiki: related profiles' => ['GET', '/api/wiki/wiki/ja/group-slug/related-profiles'],
@@ -228,6 +229,54 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki: group detail' => ['GET', '/api/wiki/wiki/ja/group/group-slug'],
             'wiki: song detail' => ['GET', '/api/wiki/wiki/ja/song/song-slug'],
             'wiki: talent detail' => ['GET', '/api/wiki/wiki/ja/talent/talent-slug'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function disabledRouteProvider(): array
+    {
+        return [
+            'identity: send auth code' => ['POST', 'api/identity/auth/send-auth-code'],
+            'identity: get identity profile' => ['GET', 'api/identity/auth/identities/{identityIdentifier}/profile'],
+            'account: delete account' => ['DELETE', 'api/account/accounts/{accountId}'],
+            'account: create delegation permission' => ['POST', 'api/account/delegation-permissions'],
+            'account: delete delegation permission' => ['DELETE', 'api/account/delegation-permissions/{delegationPermissionId}'],
+            'account: create principal group' => ['POST', 'api/account/principal-groups'],
+            'account: add principal group member' => ['POST', 'api/account/principal-groups/{principalGroupId}/add-member'],
+            'account: remove principal group member' => ['POST', 'api/account/principal-groups/{principalGroupId}/remove-member'],
+            'account: delete principal group' => ['DELETE', 'api/account/principal-groups/{principalGroupId}'],
+            'account: terminate affiliation' => ['POST', 'api/account/affiliations/{affiliationId}/terminate'],
+            'wiki: merge' => ['POST', 'api/wiki/wiki/{wikiId}/merge'],
+            'wiki: rollback' => ['POST', 'api/wiki/wiki/{wikiId}/rollback'],
+            'wiki: delete image' => ['DELETE', 'api/wiki/image/{imageId}'],
+            'wiki: unhide image' => ['POST', 'api/wiki/image/{imageId}/unhide'],
+            'wiki: create principal group' => ['POST', 'api/wiki/principal-group/create'],
+            'wiki: add principal group member' => ['POST', 'api/wiki/principal-group/{principalGroupId}/add-member'],
+            'wiki: remove principal group member' => ['POST', 'api/wiki/principal-group/{principalGroupId}/remove-member'],
+            'wiki: delete principal group' => ['DELETE', 'api/wiki/principal-group/{principalGroupId}'],
+            'wiki: attach role' => ['POST', 'api/wiki/principal-group/{principalGroupId}/attach-role'],
+            'wiki: detach role' => ['POST', 'api/wiki/principal-group/{principalGroupId}/detach-role'],
+            'wiki: create role' => ['POST', 'api/wiki/role/create'],
+            'wiki: delete role' => ['DELETE', 'api/wiki/role/{roleId}'],
+            'wiki: attach policy' => ['POST', 'api/wiki/role/{roleId}/attach-policy'],
+            'wiki: detach policy' => ['POST', 'api/wiki/role/{roleId}/detach-policy'],
+            'wiki: create policy' => ['POST', 'api/wiki/policy/create'],
+            'wiki: delete policy' => ['DELETE', 'api/wiki/policy/{policyId}'],
+            'wiki: save video link' => ['POST', 'api/wiki/video-link/save'],
+            'monetization: provision account' => ['POST', 'api/monetization/accounts'],
+            'monetization: onboard seller' => ['POST', 'api/monetization/accounts/{monetizationAccountId}/onboard-seller'],
+            'monetization: register payment method' => ['POST', 'api/monetization/accounts/{monetizationAccountId}/register-payment-method'],
+            'monetization: sync payout account' => ['POST', 'api/monetization/accounts/sync-payout-account'],
+            'monetization: authorize payment' => ['POST', 'api/monetization/payments/authorize'],
+            'monetization: capture payment' => ['POST', 'api/monetization/payments/{paymentId}/capture'],
+            'monetization: refund payment' => ['POST', 'api/monetization/payments/{paymentId}/refund'],
+            'monetization: create invoice' => ['POST', 'api/monetization/invoices'],
+            'monetization: record payment' => ['POST', 'api/monetization/invoices/{invoiceId}/record-payment'],
+            'monetization: execute transfer' => ['POST', 'api/monetization/transfers/{transferId}/execute'],
+            'monetization: settle revenue' => ['POST', 'api/monetization/settlements/settle-revenue'],
+            'webhook: stripe' => ['POST', 'webhook/stripe'],
         ];
     }
 
