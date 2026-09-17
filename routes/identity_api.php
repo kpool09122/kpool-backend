@@ -5,17 +5,15 @@ declare(strict_types=1);
 use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
 use Application\Http\Action\Identity\Command\Login\LoginAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
-use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
-use Application\Http\Action\Identity\Query\GetIdentityProfile\GetIdentityProfileAction;
 use Illuminate\Support\Facades\Route;
 
 // Public Auth
-Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
+// Disabled by #605: Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
 Route::post('/auth/verify-email', VerifyEmailAction::class);
 Route::post('/auth/register', CreateIdentityAction::class);
 Route::post('/auth/login', LoginAction::class);
@@ -27,7 +25,7 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 // Authenticated
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
-    Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
+    // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
 
     Route::patch('/identities/me', UpdateIdentityAction::class);

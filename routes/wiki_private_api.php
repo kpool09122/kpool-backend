@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 use Application\Http\Action\Wiki\Image\Command\ApproveImage\ApproveImageAction;
 use Application\Http\Action\Wiki\Image\Command\ApproveImageDeletion\ApproveImageDeletionAction;
-use Application\Http\Action\Wiki\Image\Command\DeleteImage\DeleteImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageDeletion\RejectImageDeletionAction;
 use Application\Http\Action\Wiki\Image\Command\RequestImageDeletion\RequestImageDeletionAction;
-use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Image\Query\ListImageDeletionRequests\ListImageDeletionRequestsAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
@@ -19,32 +17,17 @@ use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertificat
 use Application\Http\Action\Wiki\OfficialCertification\Command\SyncOwnedWikiCertifications\SyncOwnedWikiCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListOfficialCertifications\ListOfficialCertificationsAction;
-use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
-use Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole\AttachPolicyToRoleAction;
-use Application\Http\Action\Wiki\Principal\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupAction;
-use Application\Http\Action\Wiki\Principal\Command\CreatePolicy\CreatePolicyAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
-use Application\Http\Action\Wiki\Principal\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
-use Application\Http\Action\Wiki\Principal\Command\CreateRole\CreateRoleAction;
-use Application\Http\Action\Wiki\Principal\Command\DeletePolicy\DeletePolicyAction;
-use Application\Http\Action\Wiki\Principal\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
-use Application\Http\Action\Wiki\Principal\Command\DeleteRole\DeleteRoleAction;
-use Application\Http\Action\Wiki\Principal\Command\DetachPolicyFromRole\DetachPolicyFromRoleAction;
-use Application\Http\Action\Wiki\Principal\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupAction;
-use Application\Http\Action\Wiki\Principal\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
-use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\DeleteWiki\DeleteWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\EditWiki\EditWikiAction;
-use Application\Http\Action\Wiki\Wiki\Command\MergeWiki\MergeWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\PublishWiki\PublishWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RejectWiki\RejectWikiAction;
-use Application\Http\Action\Wiki\Wiki\Command\RollbackWiki\RollbackWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\WithdrawWiki\WithdrawWikiAction;
@@ -77,10 +60,10 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::delete('/wiki/{wikiId}', DeleteWikiAction::class);
     Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
     Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
-    Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
+    // Disabled by #605: Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
     Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
     Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
-    Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
+    // Disabled by #605: Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
     Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
     Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
     Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
@@ -113,9 +96,9 @@ Route::get('/draft-images', ListDraftImagesAction::class)->middleware('auth.api'
 Route::get('/images', ListUploadedImagesAction::class)->middleware('auth.api');
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
     Route::post('/image/{imageId}/approve', ApproveImageAction::class);
-    Route::delete('/image/{imageId}', DeleteImageAction::class);
+    // Disabled by #605: Route::delete('/image/{imageId}', DeleteImageAction::class);
     Route::post('/image/{imageId}/reject', RejectImageAction::class);
-    Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
+    // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
     Route::post('/image/upload', UploadImageAction::class);
 });
 
@@ -124,20 +107,20 @@ Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth
 Route::post('/principal/create', CreatePrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::middleware('auth.api')->group(function () {
     Route::get('/principal-groups', ListPrincipalGroupsAction::class);
-    Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
-    Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
-    Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
     Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class)
         ->middleware(['resolve.actor', 'resolve.account', 'resolve.wiki']);
-    Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
-    Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
-    Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
-    Route::post('/role/create', CreateRoleAction::class);
-    Route::delete('/role/{roleId}', DeleteRoleAction::class);
-    Route::post('/role/{roleId}/attach-policy', AttachPolicyToRoleAction::class);
-    Route::post('/role/{roleId}/detach-policy', DetachPolicyFromRoleAction::class);
-    Route::post('/policy/create', CreatePolicyAction::class);
-    Route::delete('/policy/{policyId}', DeletePolicyAction::class);
+    // Disabled by #605: Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
+    // Disabled by #605: Route::post('/role/create', CreateRoleAction::class);
+    // Disabled by #605: Route::delete('/role/{roleId}', DeleteRoleAction::class);
+    // Disabled by #605: Route::post('/role/{roleId}/attach-policy', AttachPolicyToRoleAction::class);
+    // Disabled by #605: Route::post('/role/{roleId}/detach-policy', DetachPolicyFromRoleAction::class);
+    // Disabled by #605: Route::post('/policy/create', CreatePolicyAction::class);
+    // Disabled by #605: Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 });
 
 // ImageDeletionRequest
@@ -163,4 +146,4 @@ Route::post('/official-certification/{certificationId}/reject', RejectCertificat
     ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 
 // VideoLink
-Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
+// Disabled by #605: Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
