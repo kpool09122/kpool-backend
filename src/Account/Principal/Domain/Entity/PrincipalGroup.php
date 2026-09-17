@@ -12,6 +12,7 @@ use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 class PrincipalGroup
 {
@@ -31,8 +32,14 @@ class PrincipalGroup
         private readonly bool $isDefault,
         private readonly DateTimeImmutable $createdAt,
         array $roles = [],
+        private readonly ?DelegationIdentifier $delegationIdentifier = null,
     ) {
         $this->roles = $roles;
+    }
+
+    public function delegationIdentifier(): ?DelegationIdentifier
+    {
+        return $this->delegationIdentifier;
     }
 
     public function principalGroupIdentifier(): PrincipalGroupIdentifier

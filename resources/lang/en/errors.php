@@ -73,7 +73,6 @@ return [
     'invalid_affiliation_approval' => 'Only pending affiliations can be approved.',
     'invalid_affiliation_termination' => 'Only active affiliations can be terminated.',
     'invalid_account_category_for_affiliation' => 'The account category is invalid for affiliation.',
-    'delegation_permission_not_found' => 'The specified delegation permission was not found.',
     'invalid_verification_approval' => 'Only pending verifications can be approved.',
     'invalid_verification_rejection' => 'Only pending verifications can be rejected.',
     'invalid_account_category_for_verification' => 'This account category cannot request verification.',

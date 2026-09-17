@@ -14,7 +14,6 @@ class Role
     public const string OWNER = 'Owner';
     public const string ADMIN = 'Admin';
     public const string OPERATIONS = 'Operations';
-    public const string DELEGATION_ACCOUNT_SWITCHER = 'DelegationAccountSwitcher';
 
     /**
      * @param PolicyIdentifier[] $policies

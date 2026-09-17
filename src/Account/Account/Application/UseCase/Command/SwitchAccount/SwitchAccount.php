@@ -71,7 +71,11 @@ readonly class SwitchAccount implements SwitchAccountInterface
         if ($delegateAccount === null || ! $this->policyEvaluator->evaluate(
             $originalPrincipal,
             Action::DELEGATION_ACCOUNT_SWITCH,
-            Resource::account($delegateAccount->accountIdentifier(), $delegateAccount->type(), $delegateAccount->accountCategory()),
+            Resource::delegationAccount(
+                $delegateAccount->accountIdentifier(),
+                $delegation->delegationIdentifier(),
+                $delegation->delegatorAccountIdentifier(),
+            ),
         )) {
             throw new DisallowedDelegationOperationException('Delegated account switch is not allowed.');
         }

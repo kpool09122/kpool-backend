@@ -23,4 +23,6 @@ interface RoleRepositoryInterface
     public function findSystemByName(string $name): ?Role;
 
     public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role;
+
+    public function delete(Role $role): void;
 }

@@ -73,7 +73,6 @@ return [
     'invalid_affiliation_approval' => '대기 중인 소속만 승인할 수 있습니다.',
     'invalid_affiliation_termination' => '활성 소속만 종료할 수 있습니다.',
     'invalid_account_category_for_affiliation' => '소속에 대한 계정 카테고리가 올바르지 않습니다.',
-    'delegation_permission_not_found' => '지정된 위임 권한을 찾을 수 없습니다.',
     'invalid_verification_approval' => '보류 중인 본인 확인 신청만 승인할 수 있습니다.',
     'invalid_verification_rejection' => '보류 중인 본인 확인 신청만 거부할 수 있습니다.',
     'invalid_account_category_for_verification' => '이 계정 유형으로는 본인 확인을 신청할 수 없습니다.',

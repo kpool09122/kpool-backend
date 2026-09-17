@@ -30,6 +30,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -293,6 +294,33 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::TALENT, AccountCategory::TALENT));
         $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::AGENCY, AccountCategory::AGENCY));
         $this->assertFalse($this->evaluateAffiliationRequestReceive(AccountCategory::GENERAL, AccountCategory::AGENCY));
+    }
+
+    public function testEvaluateRequiresMatchingDelegationAndTargetAccount(): void
+    {
+        $source = new AccountIdentifier(StrTestHelper::generateUuid());
+        $delegation = new DelegationIdentifier(StrTestHelper::generateUuid());
+        $target = new AccountIdentifier(StrTestHelper::generateUuid());
+        $condition = new Condition([
+            new ConditionClause(ConditionKey::RESOURCE_DELEGATION_ID, ConditionOperator::EQUALS, (string) $delegation),
+            new ConditionClause(ConditionKey::RESOURCE_TARGET_ACCOUNT_ID, ConditionOperator::EQUALS, (string) $target),
+        ]);
+
+        $this->assertTrue($this->evaluateWithCondition(
+            Action::DELEGATION_ACCOUNT_SWITCH,
+            $condition,
+            Resource::delegationAccount($source, $delegation, $target),
+        ));
+        $this->assertFalse($this->evaluateWithCondition(
+            Action::DELEGATION_ACCOUNT_SWITCH,
+            $condition,
+            Resource::delegationAccount($source, new DelegationIdentifier(StrTestHelper::generateUuid()), $target),
+        ));
+        $this->assertFalse($this->evaluateWithCondition(
+            Action::DELEGATION_ACCOUNT_SWITCH,
+            $condition,
+            Resource::delegationAccount($source, $delegation, new AccountIdentifier(StrTestHelper::generateUuid())),
+        ));
     }
 
     /**

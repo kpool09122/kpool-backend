@@ -129,7 +129,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsOnlyApprovedSwitchableAccounts(): void
+    public function testProcessReturnsOnlyAuthorizedApprovedSwitchableAccounts(): void
     {
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e001');
         $originalAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e002');
@@ -145,7 +145,7 @@ class GetAuthenticatedIdentityTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $statuses = ['approved', 'pending', 'rejected'];
+        $statuses = ['approved', 'approved', 'pending', 'rejected'];
         foreach ($statuses as $index => $status) {
             $suffix = (string) ($index + 4);
             $targetAccountIdentifier = "019de7f3-78f3-7b55-9ed5-17f63e14e00{$suffix}";
@@ -176,6 +176,8 @@ class GetAuthenticatedIdentityTest extends TestCase
             $originalPrincipalIdentifier,
             new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e008'),
             '019de7f3-78f3-7b55-9ed5-17f63e14e009',
+            '019de7f3-78f3-7b55-9ed5-17f63e14e014',
+            '019de7f3-78f3-7b55-9ed5-17f63e14e004',
         );
 
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
@@ -222,12 +224,6 @@ class GetAuthenticatedIdentityTest extends TestCase
                 'updated_at' => now(),
             ],
         ]);
-        $this->grantSwitchPermission(
-            $originalAccountIdentifier,
-            $originalPrincipalIdentifier,
-            new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e108'),
-            '019de7f3-78f3-7b55-9ed5-17f63e14e109',
-        );
         DB::table('account_delegations')->insert([
             'id' => $delegationIdentifier,
             'affiliation_id' => '019de7f3-78f3-7b55-9ed5-17f63e14e107',
@@ -240,6 +236,14 @@ class GetAuthenticatedIdentityTest extends TestCase
             'approved_at' => now(),
             'rejected_at' => null,
         ]);
+        $this->grantSwitchPermission(
+            $originalAccountIdentifier,
+            $originalPrincipalIdentifier,
+            new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e108'),
+            '019de7f3-78f3-7b55-9ed5-17f63e14e109',
+            $delegationIdentifier,
+            (string) $effectiveAccountIdentifier,
+        );
 
         Redis::shouldReceive('get')->once()->andReturn(json_encode([
             'originalIdentityIdentifier' => (string) $identityIdentifier,
@@ -280,11 +284,40 @@ class GetAuthenticatedIdentityTest extends TestCase
         string $principalIdentifier,
         PrincipalGroupIdentifier $groupIdentifier,
         string $membershipIdentifier,
+        string $delegationIdentifier,
+        string $targetAccountIdentifier,
     ): void {
-        $switcherRoleId = DB::table('account_roles')->where('name', 'DelegationAccountSwitcher')->value('id');
-        $this->assertIsString($switcherRoleId);
+        $policyId = StrTestHelper::generateUuid();
+        $roleId = StrTestHelper::generateUuid();
+        DB::table('account_policies')->insert([
+            'id' => $policyId,
+            'account_id' => (string) $accountIdentifier,
+            'name' => "Delegation Policy - {$delegationIdentifier}",
+            'statements' => json_encode([[
+                'effect' => 'allow',
+                'actions' => ['account:delegation-account:switch'],
+                'resource_types' => ['account'],
+                'condition' => [
+                    ['key' => 'resource:delegationId', 'operator' => 'eq', 'value' => $delegationIdentifier],
+                    ['key' => 'resource:targetAccountId', 'operator' => 'eq', 'value' => $targetAccountIdentifier],
+                ],
+            ]], JSON_THROW_ON_ERROR),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('account_roles')->insert([
+            'id' => $roleId,
+            'account_id' => (string) $accountIdentifier,
+            'name' => "Delegation Role - {$delegationIdentifier}",
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('account_role_policy_attachments')->insert(['role_id' => $roleId, 'policy_id' => $policyId]);
         CreateAccountPrincipalGroup::create($groupIdentifier, $accountIdentifier, [
-            'role_ids' => [$switcherRoleId],
+            'role_ids' => [$roleId],
+        ]);
+        DB::table('account_principal_groups')->where('id', (string) $groupIdentifier)->update([
+            'delegation_id' => $delegationIdentifier,
         ]);
         DB::table('account_principal_group_memberships')->insert([
             'id' => $membershipIdentifier,

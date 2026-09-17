@@ -31,6 +31,7 @@ return new class extends Migration
         Schema::create('account_principal_groups', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('PrincipalグループID');
             $table->uuid('account_id')->index()->comment('アカウントID');
+            $table->uuid('delegation_id')->nullable()->unique()->comment('委譲ID');
             $table->string('name', 100)->comment('グループ名');
             $table->boolean('is_default')->default(false)->comment('デフォルトグループかどうか');
             $table->timestamps();
@@ -38,6 +39,10 @@ return new class extends Migration
             $table->foreign('account_id')
                 ->references('id')
                 ->on('accounts')
+                ->cascadeOnDelete();
+            $table->foreign('delegation_id')
+                ->references('id')
+                ->on('account_delegations')
                 ->cascadeOnDelete();
         });
 

@@ -141,6 +141,12 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             ConditionKey::RESOURCE_ACCOUNT_TYPE => $resource->accountType()?->value,
             ConditionKey::RESOURCE_ACCOUNT_CATEGORY => $resource->accountCategory()?->value,
             ConditionKey::AFFILIATION_REQUEST_PAIR_ALLOWED => $this->affiliationRequestPairAllowed($resource),
+            ConditionKey::RESOURCE_DELEGATION_ID => $resource->delegationIdentifier() !== null
+                ? (string) $resource->delegationIdentifier()
+                : null,
+            ConditionKey::RESOURCE_TARGET_ACCOUNT_ID => $resource->targetAccountIdentifier() !== null
+                ? (string) $resource->targetAccountIdentifier()
+                : null,
         };
     }
 

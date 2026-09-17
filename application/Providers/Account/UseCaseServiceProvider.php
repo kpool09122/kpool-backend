@@ -49,10 +49,6 @@ use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\Requ
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Query\ListDelegations\ListDelegationsInterface;
 use Source\Account\Delegation\Infrastructure\Query\ListDelegations;
-use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermission;
-use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
-use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
-use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermissionInterface as RevokeDelegationPermissionInterfaceNew;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
@@ -82,8 +78,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(ListMembersInterface::class, ListMembers::class);
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
-        $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
-        $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
         $this->app->singleton(UpdateAccountInterface::class, UpdateAccount::class);
         $this->app->singleton(GetAccountInterface::class, GetAccount::class);

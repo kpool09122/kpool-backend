@@ -26,4 +26,6 @@ interface PolicyRepositoryInterface
      * @return Policy[]
      */
     public function findAll(): array;
+
+    public function delete(Policy $policy): void;
 }

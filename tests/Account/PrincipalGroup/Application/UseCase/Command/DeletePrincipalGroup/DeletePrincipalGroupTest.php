@@ -13,15 +13,19 @@ use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundExcepti
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
+use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
+use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -226,6 +230,47 @@ class DeletePrincipalGroupTest extends TestCase
         $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
         $useCase->process($input);
+    }
+
+    public function testDeletesDedicatedRoleAndPolicyWithDelegationGroup(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), 'Delegation Role', [], $accountIdentifier);
+        $policy = new Policy(
+            new PolicyIdentifier(StrTestHelper::generateUuid()),
+            'Delegation Policy',
+            [],
+            $accountIdentifier,
+            new DateTimeImmutable(),
+        );
+        $role->addPolicy($policy);
+        $group = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
+            'Delegation Group',
+            false,
+            new DateTimeImmutable(),
+            [$role->roleIdentifier()],
+            new DelegationIdentifier(StrTestHelper::generateUuid()),
+        );
+
+        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $groups->shouldReceive('findById')->once()->andReturn($group);
+        $groups->shouldReceive('delete')->once()->with($group);
+        $roles = Mockery::mock(RoleRepositoryInterface::class);
+        $roles->shouldReceive('findSystemByName')->once()->with(Role::OWNER)->andReturn($this->createOwnerRole());
+        $roles->shouldReceive('findByIds')->once()->with([$role->roleIdentifier()])->andReturn([(string) $role->roleIdentifier() => $role]);
+        $roles->shouldReceive('delete')->once()->with($role);
+        $policies = Mockery::mock(PolicyRepositoryInterface::class);
+        $policies->shouldReceive('findByIds')->once()->with([$policy->policyIdentifier()])->andReturn([(string) $policy->policyIdentifier() => $policy]);
+        $policies->shouldReceive('delete')->once()->with($policy);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $groups);
+        $this->app->instance(RoleRepositoryInterface::class, $roles);
+        $this->app->instance(PolicyRepositoryInterface::class, $policies);
+
+        $this->app->make(DeletePrincipalGroupInterface::class)->process(
+            new DeletePrincipalGroupInput($group->principalGroupIdentifier()),
+        );
     }
 
     private function createOwnerRole(): Role
