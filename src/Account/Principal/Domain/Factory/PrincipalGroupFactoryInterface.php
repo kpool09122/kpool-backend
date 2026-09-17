@@ -14,11 +14,6 @@ interface PrincipalGroupFactoryInterface
         AccountIdentifier $accountIdentifier,
         string $name,
         bool $isDefault,
-    ): PrincipalGroup;
-
-    public function createForDelegation(
-        AccountIdentifier $accountIdentifier,
-        string $name,
-        DelegationIdentifier $delegationIdentifier,
+        ?DelegationIdentifier $delegationIdentifier = null,
     ): PrincipalGroup;
 }

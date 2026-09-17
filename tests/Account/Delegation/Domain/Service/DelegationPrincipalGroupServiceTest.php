@@ -70,7 +70,12 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         $groups->shouldReceive('save')->once()->with($group);
         /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $groupFactory */
         $groupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $groupFactory->shouldReceive('createForDelegation')->once()->with($source, 'Delegation - Target', $delegation->delegationIdentifier())->andReturn($group);
+        $groupFactory->shouldReceive('create')->once()->with(
+            $source,
+            'Delegation - Target',
+            false,
+            $delegation->delegationIdentifier(),
+        )->andReturn($group);
         /** @var PolicyFactoryInterface&Mockery\MockInterface $policyFactory */
         $policyFactory = Mockery::mock(PolicyFactoryInterface::class);
         $policyFactory->shouldReceive('create')->once()->withArgs(function (string $name, array $statements, AccountIdentifier $account) use ($delegation, $source, $target): bool {

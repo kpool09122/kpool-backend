@@ -81,9 +81,10 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
         $role->addPolicy($policy);
         $this->roleRepository->save($role);
 
-        $principalGroup = $this->principalGroupFactory->createForDelegation(
+        $principalGroup = $this->principalGroupFactory->create(
             $delegation->delegateAccountIdentifier(),
             sprintf('Delegation - %s', $delegatorAccount->name()),
+            false,
             $delegation->delegationIdentifier(),
         );
         $principalGroup->addRole($role);

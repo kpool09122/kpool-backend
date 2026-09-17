@@ -23,26 +23,13 @@ readonly class PrincipalGroupFactory implements PrincipalGroupFactoryInterface
         AccountIdentifier $accountIdentifier,
         string $name,
         bool $isDefault,
+        ?DelegationIdentifier $delegationIdentifier = null,
     ): PrincipalGroup {
         return new PrincipalGroup(
             new PrincipalGroupIdentifier($this->generator->generate()),
             $accountIdentifier,
             $name,
             $isDefault,
-            new DateTimeImmutable(),
-        );
-    }
-
-    public function createForDelegation(
-        AccountIdentifier $accountIdentifier,
-        string $name,
-        DelegationIdentifier $delegationIdentifier,
-    ): PrincipalGroup {
-        return new PrincipalGroup(
-            new PrincipalGroupIdentifier($this->generator->generate()),
-            $accountIdentifier,
-            $name,
-            false,
             new DateTimeImmutable(),
             delegationIdentifier: $delegationIdentifier,
         );
