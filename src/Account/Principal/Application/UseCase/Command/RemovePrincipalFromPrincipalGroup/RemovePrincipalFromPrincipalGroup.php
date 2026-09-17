@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup;
 
-use RuntimeException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastOwnerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 
@@ -31,9 +31,9 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
             throw new PrincipalGroupNotFoundException();
         }
 
-        $ownerRole = $this->roleRepository->findByName(Role::OWNER);
+        $ownerRole = $this->roleRepository->findSystemByName(Role::OWNER);
         if ($ownerRole === null) {
-            throw new RuntimeException('Owner account role is not found.');
+            throw SystemRoleNotFoundException::owner();
         }
 
         if ($principalGroup->hasRole($ownerRole->roleIdentifier())) {

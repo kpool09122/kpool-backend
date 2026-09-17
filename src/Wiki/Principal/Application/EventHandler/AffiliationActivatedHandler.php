@@ -81,7 +81,7 @@ readonly class AffiliationActivatedHandler
         $policy = $this->policyFactory->create(
             "Affiliation Policy - Agency {$event->agencyAccountName()}",
             $this->createTalentSideStatements($agencyId),
-            false,
+            $event->talentAccountIdentifier(),
         );
         $this->policyRepository->save($policy);
 
@@ -89,12 +89,12 @@ readonly class AffiliationActivatedHandler
         $role = $this->roleFactory->create(
             "Affiliation Role - Agency {$event->agencyAccountName()}",
             [$policy->policyIdentifier()],
-            false,
+            $event->talentAccountIdentifier(),
         );
         $this->roleRepository->save($role);
 
         // PrincipalGroup に Role をアタッチ
-        $principalGroup->addRole($role->roleIdentifier());
+        $principalGroup->addRole($role);
         $this->principalGroupRepository->save($principalGroup);
 
         // AffiliationGrant 記録を保存
@@ -133,7 +133,7 @@ readonly class AffiliationActivatedHandler
         $policy = $this->policyFactory->create(
             "Affiliation Policy - Talent {$event->talentAccountName()}",
             $this->createAgencySideStatements(),
-            false,
+            $event->agencyAccountIdentifier(),
         );
         $this->policyRepository->save($policy);
 
@@ -141,12 +141,12 @@ readonly class AffiliationActivatedHandler
         $role = $this->roleFactory->create(
             "Affiliation Role - Talent {$event->talentAccountName()}",
             [$policy->policyIdentifier()],
-            false,
+            $event->agencyAccountIdentifier(),
         );
         $this->roleRepository->save($role);
 
         // PrincipalGroup に Role をアタッチ
-        $principalGroup->addRole($role->roleIdentifier());
+        $principalGroup->addRole($role);
         if ($event->agencyAccountType() === AccountType::INDIVIDUAL) {
             $principals = $this->principalRepository->findByAccountId($event->agencyAccountIdentifier());
             foreach ($principals as $principal) {

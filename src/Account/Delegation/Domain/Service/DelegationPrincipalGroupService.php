@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Account\Delegation\Domain\Service;
 
-use RuntimeException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationPrincipalGroupCreationException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -24,13 +24,13 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
 
     public function createFor(Delegation $delegation): void
     {
-        $switcherRole = $this->roleRepository->findByName(Role::DELEGATION_ACCOUNT_SWITCHER);
+        $switcherRole = $this->roleRepository->findSystemByName(Role::DELEGATION_ACCOUNT_SWITCHER);
         if ($switcherRole === null) {
-            throw new RuntimeException('Delegation account switcher role is not found.');
+            throw DelegationPrincipalGroupCreationException::switcherRoleNotFound();
         }
         $delegatorAccount = $this->accountRepository->findById($delegation->delegatorAccountIdentifier());
         if ($delegatorAccount === null) {
-            throw new RuntimeException('Delegator account is not found.');
+            throw DelegationPrincipalGroupCreationException::delegatorAccountNotFound();
         }
 
         $principalGroup = $this->principalGroupFactory->create(
@@ -38,7 +38,7 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
             sprintf('Delegation - %s', $delegatorAccount->name()),
             false,
         );
-        $principalGroup->addRole($switcherRole->roleIdentifier());
+        $principalGroup->addRole($switcherRole);
         $this->principalGroupRepository->save($principalGroup);
     }
 }

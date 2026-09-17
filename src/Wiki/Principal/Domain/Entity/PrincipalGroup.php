@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
@@ -20,13 +21,18 @@ class PrincipalGroup
     /** @var RoleIdentifier[] */
     private array $roles = [];
 
+    /**
+     * @param RoleIdentifier[] $roles
+     */
     public function __construct(
         private readonly PrincipalGroupIdentifier $principalGroupIdentifier,
         private readonly AccountIdentifier $accountIdentifier,
         private readonly string $name,
         private readonly bool $isDefault,
         private readonly DateTimeImmutable $createdAt,
+        array $roles = [],
     ) {
+        $this->roles = $roles;
     }
 
     public function principalGroupIdentifier(): PrincipalGroupIdentifier
@@ -115,13 +121,17 @@ class PrincipalGroup
         return array_any($this->roles, fn ($role) => (string) $role === (string) $roleIdentifier);
     }
 
-    public function addRole(RoleIdentifier $roleIdentifier): void
+    public function addRole(Role $role): void
     {
-        if ($this->hasRole($roleIdentifier)) {
+        if (! $this->canAttachRole($role)) {
+            throw new InvalidArgumentException('A principal group cannot attach a role from another account.');
+        }
+
+        if ($this->hasRole($role->roleIdentifier())) {
             return;
         }
 
-        $this->roles[] = $roleIdentifier;
+        $this->roles[] = $role->roleIdentifier();
     }
 
     public function removeRole(RoleIdentifier $roleIdentifier): void
@@ -130,5 +140,11 @@ class PrincipalGroup
             $this->roles,
             fn (RoleIdentifier $r) => (string) $r !== (string) $roleIdentifier
         ));
+    }
+
+    private function canAttachRole(Role $role): bool
+    {
+        return $role->accountIdentifier() === null
+            || (string) $role->accountIdentifier() === (string) $this->accountIdentifier;
     }
 }

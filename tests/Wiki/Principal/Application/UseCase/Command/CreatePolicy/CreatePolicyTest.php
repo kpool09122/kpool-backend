@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePolicy;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInterface;
@@ -56,7 +57,7 @@ class CreatePolicyTest extends TestCase
             ->with(
                 $testData->name,
                 $testData->statements,
-                $testData->isSystemPolicy,
+                $testData->accountIdentifier,
             )
             ->andReturn($testData->policy);
 
@@ -71,7 +72,7 @@ class CreatePolicyTest extends TestCase
         $result = $output->toArray();
         $this->assertSame((string) $testData->policyIdentifier, $result['policyIdentifier']);
         $this->assertSame($testData->name, $result['name']);
-        $this->assertSame($testData->isSystemPolicy, $result['isSystemPolicy']);
+        $this->assertFalse($result['isSystemPolicy']);
     }
 
     private function createDummyTestData(): CreatePolicyTestData
@@ -86,27 +87,27 @@ class CreatePolicyTest extends TestCase
                 null,
             ),
         ];
-        $isSystemPolicy = false;
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $policy = new Policy(
             $policyIdentifier,
             $name,
             $statements,
-            $isSystemPolicy,
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
 
         $input = new CreatePolicyInput(
             $name,
             $statements,
-            $isSystemPolicy,
+            $accountIdentifier,
         );
 
         return new CreatePolicyTestData(
             $policyIdentifier,
             $name,
             $statements,
-            $isSystemPolicy,
+            $accountIdentifier,
             $policy,
             $input,
         );
@@ -122,7 +123,7 @@ readonly class CreatePolicyTestData
         public PolicyIdentifier $policyIdentifier,
         public string $name,
         public array $statements,
-        public bool $isSystemPolicy,
+        public AccountIdentifier $accountIdentifier,
         public Policy $policy,
         public CreatePolicyInput $input,
     ) {

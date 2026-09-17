@@ -88,7 +88,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
         return [
             'policyIdentifier' => $policy->id,
             'name' => $policy->name,
-            'isSystemPolicy' => $policy->is_system_policy,
+            'isSystemPolicy' => $policy->account_id === null,
             'statements' => array_map($this->toStatementArray(...), $policy->statements),
         ];
     }

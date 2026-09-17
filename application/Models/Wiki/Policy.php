@@ -9,17 +9,17 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
+ * @property ?string $account_id
  * @property string $name
  * @property array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string}>|null}> $statements
- * @property bool $is_system_policy
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'name',
+    'account_id',
     'statements',
-    'is_system_policy',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_policies', keyType: 'string')]
 class Policy extends Model
@@ -32,7 +32,6 @@ class Policy extends Model
     {
         return [
             'statements' => 'array',
-            'is_system_policy' => 'boolean',
         ];
     }
 }

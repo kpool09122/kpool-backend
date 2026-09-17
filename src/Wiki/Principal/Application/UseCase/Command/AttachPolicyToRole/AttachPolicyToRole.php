@@ -35,7 +35,7 @@ readonly class AttachPolicyToRole implements AttachPolicyToRoleInterface
             throw new PolicyNotFoundException();
         }
 
-        $role->addPolicy($input->policyIdentifier());
+        $role->addPolicy($policy);
 
         $this->roleRepository->save($role);
     }

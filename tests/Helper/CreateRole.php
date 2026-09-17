@@ -12,7 +12,7 @@ class CreateRole
     /**
      * @param array{
      *     name?: string,
-     *     is_system_role?: bool,
+     *     account_id?: string|null,
      *     policies?: string[],
      * } $overrides
      */
@@ -22,8 +22,8 @@ class CreateRole
     ): void {
         DB::table('wiki_roles')->insert([
             'id' => (string) $roleIdentifier,
-            'name' => $overrides['name'] ?? 'Test Role',
-            'is_system_role' => $overrides['is_system_role'] ?? false,
+            'name' => $overrides['name'] ?? 'Test Role ' . (string) $roleIdentifier,
+            'account_id' => $overrides['account_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

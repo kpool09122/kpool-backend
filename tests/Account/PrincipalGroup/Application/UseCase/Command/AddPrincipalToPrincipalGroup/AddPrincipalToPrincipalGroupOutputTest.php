@@ -32,9 +32,9 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
         $principalGroup->addMember($principalIdentifier);
-        $principalGroup->addRole($roleIdentifier);
 
         $output = new AddPrincipalToPrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);

@@ -13,6 +13,7 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\DelegationPrincipalGroupCreationException;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupService;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
@@ -59,9 +60,9 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             new DateTimeImmutable(),
             null,
         );
-        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::DELEGATION_ACCOUNT_SWITCHER, [], true);
+        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::DELEGATION_ACCOUNT_SWITCHER, [], null);
         $group = Mockery::mock(PrincipalGroup::class);
-        $group->shouldReceive('addRole')->with($role->roleIdentifier())->once();
+        $group->shouldReceive('addRole')->with($role)->once();
         /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $factory */
         $factory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $factory->shouldReceive('create')->with($delegate, 'Delegation - 相手アカウント', false)->once()->andReturn($group);
@@ -70,11 +71,71 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         $groups->shouldReceive('save')->with($group)->once();
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
         $roles = Mockery::mock(RoleRepositoryInterface::class);
-        $roles->shouldReceive('findByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturn($role);
+        $roles->shouldReceive('findSystemByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturn($role);
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
         $accounts = Mockery::mock(AccountRepositoryInterface::class);
         $accounts->shouldReceive('findById')->with($delegator)->once()->andReturn($delegatorAccount);
         (new DelegationPrincipalGroupService($factory, $groups, $roles, $accounts))->createFor($delegation);
         $this->addToAssertionCount(1);
+    }
+
+    public function testThrowsDedicatedExceptionWhenDelegationAccountSwitcherRoleIsMissing(): void
+    {
+        $delegation = $this->createDelegation();
+        /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $factory */
+        $factory = Mockery::mock(PrincipalGroupFactoryInterface::class);
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $groups */
+        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
+        $roles = Mockery::mock(RoleRepositoryInterface::class);
+        $roles->shouldReceive('findSystemByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturnNull();
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
+        $accounts = Mockery::mock(AccountRepositoryInterface::class);
+
+        $this->expectException(DelegationPrincipalGroupCreationException::class);
+        $this->expectExceptionMessage('Delegation account switcher role is not found.');
+
+        (new DelegationPrincipalGroupService($factory, $groups, $roles, $accounts))->createFor($delegation);
+    }
+
+    public function testThrowsDedicatedExceptionWhenDelegatorAccountIsMissing(): void
+    {
+        $delegator = new AccountIdentifier(StrTestHelper::generateUuid());
+        $delegation = $this->createDelegation(delegator: $delegator);
+        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::DELEGATION_ACCOUNT_SWITCHER, [], null);
+        /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $factory */
+        $factory = Mockery::mock(PrincipalGroupFactoryInterface::class);
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $groups */
+        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
+        $roles = Mockery::mock(RoleRepositoryInterface::class);
+        $roles->shouldReceive('findSystemByName')->with(Role::DELEGATION_ACCOUNT_SWITCHER)->once()->andReturn($role);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
+        $accounts = Mockery::mock(AccountRepositoryInterface::class);
+        $accounts->shouldReceive('findById')->with($delegator)->once()->andReturnNull();
+
+        $this->expectException(DelegationPrincipalGroupCreationException::class);
+        $this->expectExceptionMessage('Delegator account is not found.');
+
+        (new DelegationPrincipalGroupService($factory, $groups, $roles, $accounts))->createFor($delegation);
+    }
+
+    private function createDelegation(?AccountIdentifier $delegate = null, ?AccountIdentifier $delegator = null): Delegation
+    {
+        $delegate ??= new AccountIdentifier(StrTestHelper::generateUuid());
+        $delegator ??= new AccountIdentifier(StrTestHelper::generateUuid());
+
+        return new Delegation(
+            new DelegationIdentifier(StrTestHelper::generateUuid()),
+            new AffiliationIdentifier(StrTestHelper::generateUuid()),
+            $delegate,
+            $delegator,
+            $delegate,
+            DelegationStatus::APPROVED,
+            DelegationDirection::FROM_AGENCY,
+            new DateTimeImmutable(),
+            new DateTimeImmutable(),
+            null,
+        );
     }
 }

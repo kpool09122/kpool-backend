@@ -48,8 +48,8 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
-        $principalGroup->addRole($roleIdentifier);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')

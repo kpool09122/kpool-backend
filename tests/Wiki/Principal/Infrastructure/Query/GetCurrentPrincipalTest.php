@@ -74,7 +74,7 @@ class GetCurrentPrincipalTest extends TestCase
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         CreatePolicy::create($policyIdentifier, [
             'name' => 'Wiki Editor',
-            'is_system_policy' => true,
+            'account_id' => null,
             'statements' => [
                 [
                     'effect' => 'allow',

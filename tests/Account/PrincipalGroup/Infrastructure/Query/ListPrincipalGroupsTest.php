@@ -70,7 +70,7 @@ class ListPrincipalGroupsTest extends TestCase
         DB::table('account_roles')->insert([
             'id' => $roleId,
             'name' => 'Admin Role',
-            'is_system_role' => false,
+            'account_id' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

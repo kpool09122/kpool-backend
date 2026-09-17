@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\DeletePolicy;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\Exception\CannotDeleteSystemPolicyException;
 use Source\Wiki\Principal\Application\Exception\PolicyNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicy;
@@ -53,7 +54,7 @@ class DeletePolicyTest extends TestCase
                     null,
                 ),
             ],
-            false, // isSystemPolicy = false
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
         );
 
@@ -117,7 +118,7 @@ class DeletePolicyTest extends TestCase
                     null,
                 ),
             ],
-            true, // isSystemPolicy = true
+            null, // isSystemPolicy = true
             new DateTimeImmutable(),
         );
 

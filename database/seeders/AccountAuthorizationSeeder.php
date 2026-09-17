@@ -203,7 +203,7 @@ class AccountAuthorizationSeeder extends Seeder
                     condition: $condition,
                 ),
             ],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -229,7 +229,7 @@ class AccountAuthorizationSeeder extends Seeder
             ['name' => $name],
             [
                 'id' => $roleId,
-                'is_system_role' => true,
+                'account_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
