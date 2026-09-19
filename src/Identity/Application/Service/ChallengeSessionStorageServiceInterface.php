@@ -4,18 +4,26 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\Service;
 
-use Source\Identity\Domain\Entity\ChallengeSession;
-use Source\Identity\Domain\ValueObject\ChallengePurpose;
-use Source\Identity\Domain\ValueObject\ChallengeSessionIdentifier;
+use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
+use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
+use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 interface ChallengeSessionStorageServiceInterface
 {
-    public function store(ChallengeSession $session): void;
+    public function storeRegistration(RegistrationChallenge $challenge): void;
 
-    public function consume(
-        ChallengeSessionIdentifier $identifier,
-        ChallengePurpose $expectedPurpose,
-        ?IdentityIdentifier $expectedIdentityIdentifier = null,
-    ): ChallengeSession;
+    public function consumeRegistration(ChallengeSessionKey $key): RegistrationChallenge;
+
+    public function storeAuthentication(AuthenticationChallenge $challenge): void;
+
+    public function consumeAuthentication(ChallengeSessionKey $key): AuthenticationChallenge;
+
+    public function storeAddition(AdditionChallenge $challenge): void;
+
+    public function consumeAddition(
+        ChallengeSessionKey $key,
+        IdentityIdentifier $expectedIdentityIdentifier,
+    ): AdditionChallenge;
 }

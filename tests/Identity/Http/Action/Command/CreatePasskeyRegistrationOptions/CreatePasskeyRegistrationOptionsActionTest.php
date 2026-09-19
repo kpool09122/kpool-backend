@@ -12,7 +12,7 @@ use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsOutputPort;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
-use Source\Identity\Domain\ValueObject\ChallengeSessionIdentifier;
+use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Tests\TestCase;
 
 class CreatePasskeyRegistrationOptionsActionTest extends TestCase
@@ -41,7 +41,7 @@ class CreatePasskeyRegistrationOptionsActionTest extends TestCase
                     && $input->signupSession()->returnTo() === '/welcome'),
                 Mockery::on(static function (CreatePasskeyRegistrationOptionsOutputPort $output): bool {
                     $output->setOptions(
-                        new ChallengeSessionIdentifier('01994e3a-a15e-72d3-a456-426614174000'),
+                        new ChallengeSessionKey('01994e3a-a15e-72d3-a456-426614174000'),
                         new WebAuthnOptions('{"challenge":"challenge"}'),
                     );
 
@@ -57,7 +57,7 @@ class CreatePasskeyRegistrationOptionsActionTest extends TestCase
         ]);
 
         $response->assertOk()->assertExactJson([
-            'challengeIdentifier' => '01994e3a-a15e-72d3-a456-426614174000',
+            'challengeKey' => '01994e3a-a15e-72d3-a456-426614174000',
             'options' => ['challenge' => 'challenge'],
         ]);
     }

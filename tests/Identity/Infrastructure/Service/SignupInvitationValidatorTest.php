@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Invitation\Infrastructure\Service;
+namespace Tests\Identity\Infrastructure\Service;
 
 use Mockery;
 use Mockery\MockInterface;
@@ -10,9 +10,9 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Exception\InvitationAlreadyUsedOrRevokedException;
 use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
-use Source\Account\Invitation\Infrastructure\Service\SignupInvitationValidator;
 use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
 use Source\Identity\Domain\Exception\InvalidSignupInvitationException;
+use Source\Identity\Infrastructure\Service\SignupInvitationValidator;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\TestCase;

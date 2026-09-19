@@ -8,12 +8,12 @@ use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class ChallengeSessionIdentifier extends StringBaseValue
+class ChallengeSessionKey extends StringBaseValue
 {
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Challenge session identifier must be a UUIDv7.');
+            throw new InvalidArgumentException('Challenge session key must be a UUIDv7.');
         }
     }
 }

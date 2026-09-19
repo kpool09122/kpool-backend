@@ -889,13 +889,13 @@ components:
     PasskeyRegistrationOptionsResult:
       type: object
       required:
-        - challengeIdentifier
+        - challengeKey
         - options
       properties:
-        challengeIdentifier:
+        challengeKey:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identifier used to submit the registration attestation.
+          description: Key used to submit the registration attestation.
         options:
           $ref: '#/components/schemas/PasskeyRegistrationOptions'
       description: Result for starting passkey registration.

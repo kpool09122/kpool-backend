@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Invitation\Infrastructure\Service;
+namespace Source\Identity\Infrastructure\Service;
 
 use Source\Account\Invitation\Domain\Exception\InvitationAlreadyUsedOrRevokedException;
 use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;

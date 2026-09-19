@@ -39,7 +39,6 @@ use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
-use Source\Account\Invitation\Infrastructure\Service\SignupInvitationValidator;
 use Source\Account\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -58,7 +57,6 @@ use Source\Account\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Account\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator as PolicyEvaluator;
-use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
@@ -92,7 +90,6 @@ class DomainServiceProvider extends ServiceProvider
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);
         $this->app->singleton(InvitationRepositoryInterface::class, InvitationRepository::class);
-        $this->app->singleton(SignupInvitationValidatorInterface::class, SignupInvitationValidator::class);
         $this->app->singleton(InvitationMailServiceInterface::class, fn ($app) => new InvitationMailService(
             $app->make(AccountRepositoryInterface::class),
             $app->make(IdentityRepositoryInterface::class),

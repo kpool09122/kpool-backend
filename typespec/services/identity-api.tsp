@@ -235,8 +235,8 @@ model PasskeyRegistrationOptions {
 
 @doc("Result for starting passkey registration.")
 model PasskeyRegistrationOptionsResult {
-  @doc("Identifier used to submit the registration attestation.")
-  challengeIdentifier: Uuid;
+  @doc("Key used to submit the registration attestation.")
+  challengeKey: Uuid;
   options: PasskeyRegistrationOptions;
 }
 
