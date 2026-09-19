@@ -104,8 +104,11 @@ class ListContactsTest extends TestCase
         $this->insertReply(StrTestHelper::generateUuid(), $failedContact, '2026-08-16 11:00:00', '2026-08-16 11:01:00');
 
         $hasReplyOutput = new ListContactsOutput();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
         $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
 
+        $this->assertCount(2, DB::getQueryLog());
         $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray(), 'contactIdentifier'));
         $this->assertSame([[$sentReply]], array_column($hasReplyOutput->toArray(), 'replyIdentifiers'));
 
