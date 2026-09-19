@@ -181,6 +181,65 @@ model VerifyEmailRequestBody {
   authCode: string;
 }
 
+@doc("Request body for starting passkey registration.")
+model CreatePasskeyRegistrationOptionsRequestBody {
+  @doc("Verified or invited email address.")
+  email: string;
+  @doc("Account type retained for signup completion.")
+  accountType?: string | null;
+  @doc("Invitation token retained for signup completion.")
+  oneTimeToken?: string | null;
+  @doc("Application return path retained for signup completion.")
+  return_to?: string | null;
+}
+
+model PasskeyRelyingPartyEntity {
+  name: string;
+  id: string;
+}
+
+model PasskeyUserEntity {
+  name: string;
+  id: string;
+  displayName: string;
+}
+
+model PasskeyCredentialParameter {
+  type: string;
+  alg: int32;
+}
+
+model PasskeyCredentialDescriptor {
+  type: string;
+  id: string;
+  transports?: string[] | null;
+}
+
+model PasskeyAuthenticatorSelection {
+  residentKey: string;
+  userVerification: string;
+  requireResidentKey?: boolean | null;
+}
+
+@doc("WebAuthn PublicKeyCredentialCreationOptions returned to the browser.")
+model PasskeyRegistrationOptions {
+  rp: PasskeyRelyingPartyEntity;
+  user: PasskeyUserEntity;
+  challenge: string;
+  pubKeyCredParams: PasskeyCredentialParameter[];
+  timeout: int32;
+  excludeCredentials: PasskeyCredentialDescriptor[];
+  authenticatorSelection: PasskeyAuthenticatorSelection;
+  attestation: string;
+}
+
+@doc("Result for starting passkey registration.")
+model PasskeyRegistrationOptionsResult {
+  @doc("Key used to submit the registration attestation.")
+  challengeKey: Uuid;
+  options: PasskeyRegistrationOptions;
+}
+
 @doc("Request body for registering a new identity.")
 model CreateIdentityRequestBody {
   @doc("Requested identityName.")
@@ -222,6 +281,12 @@ model LoginRequestBody {
 model OkEmptyResponse {
   @statusCode statusCode: 200;
   @body body: EmptyJsonObject;
+}
+
+@doc("Response returned when passkey registration options are created.")
+model PasskeyRegistrationOptionsResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyRegistrationOptionsResult;
 }
 
 @doc("Response returned when an identity is created.")
@@ -281,6 +346,13 @@ interface IdentityAuthOperations {
   verifyEmail(
     @body body: VerifyEmailRequestBody,
   ): VerifyEmailResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/registration/options")
+  @doc("Create WebAuthn registration options for a verified or invited email address.")
+  createPasskeyRegistrationOptions(
+    @body body: CreatePasskeyRegistrationOptionsRequestBody,
+  ): PasskeyRegistrationOptionsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/register")

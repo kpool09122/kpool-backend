@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Domain\ValueObject;
+namespace Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions;
 
+use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Shared\Domain\ValueObject\Email;
 
-readonly class PasskeyRegistrationContext
+readonly class CreatePasskeyRegistrationOptionsInput implements CreatePasskeyRegistrationOptionsInputPort
 {
     public function __construct(
         private Email $email,

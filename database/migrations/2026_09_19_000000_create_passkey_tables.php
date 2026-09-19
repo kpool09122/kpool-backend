@@ -8,9 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('passkey_users', static function (Blueprint $table): void {
+            $table->uuid('id')->primary()->comment('パスキーユーザーID兼WebAuthn user handle');
+            $table->uuid('identity_id')->nullable()->unique()->comment('Identity ID');
+            $table->timestamp('created_at')->useCurrent()->comment('作成日時');
+
+            $table->foreign('identity_id')->references('id')->on('identities')->cascadeOnDelete();
+        });
+
         Schema::create('passkey_credentials', static function (Blueprint $table): void {
             $table->uuid('id')->primary()->comment('パスキー資格情報ID');
-            $table->uuid('identity_id')->index()->comment('Identity ID');
+            $table->uuid('passkey_user_id')->index()->comment('パスキーユーザーID');
             $table->text('credential_id')->unique()->comment('WebAuthn credential ID (base64url)');
             $table->jsonb('credential_source')->comment('WebAuthn credential record');
             $table->unsignedBigInteger('sign_count')->default(0)->comment('署名カウンター');
@@ -21,12 +29,13 @@ return new class extends Migration
             $table->timestamp('last_used_at')->nullable()->comment('最終利用日時');
             $table->timestamps();
 
-            $table->foreign('identity_id')->references('id')->on('identities')->cascadeOnDelete();
+            $table->foreign('passkey_user_id')->references('id')->on('passkey_users')->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('passkey_credentials');
+        Schema::dropIfExists('passkey_users');
     }
 };

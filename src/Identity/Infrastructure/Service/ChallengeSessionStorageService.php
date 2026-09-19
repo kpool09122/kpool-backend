@@ -8,13 +8,15 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
-use Source\Identity\Domain\Entity\ChallengeSession;
+use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
+use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
+use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
-use Source\Identity\Domain\ValueObject\ChallengePurpose;
-use Source\Identity\Domain\ValueObject\ChallengeSessionIdentifier;
-use Source\Identity\Domain\ValueObject\PasskeyRegistrationContext;
+use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Shared\Domain\ValueObject\Email;
@@ -24,103 +26,173 @@ use Source\Shared\Domain\ValueObject\OneTimeToken;
 class ChallengeSessionStorageService implements ChallengeSessionStorageServiceInterface
 {
     private const string KEY_PREFIX = 'webauthn_challenge:';
+    private const string REGISTRATION = 'registration';
+    private const string AUTHENTICATION = 'authentication';
+    private const string ADDITION = 'addition';
 
-    public function store(ChallengeSession $session): void
+    public function storeRegistration(RegistrationChallenge $challenge): void
     {
-        $ttl = $session->expiresAt()->getTimestamp() - time();
+        $signupSession = $challenge->signupSession;
+        $this->store(
+            $challenge->key,
+            $challenge->challenge,
+            $challenge->options,
+            $challenge->expiresAt,
+            self::REGISTRATION,
+            [
+                'passkey_user_id' => (string) $challenge->passkeyUserIdentifier,
+                'email' => (string) $challenge->email,
+                'account_type' => $signupSession->accountType()?->value,
+                'one_time_token' => $signupSession->oneTimeToken() !== null
+                    ? (string) $signupSession->oneTimeToken()
+                    : null,
+                'return_to' => $signupSession->returnTo(),
+            ],
+        );
+    }
+
+    public function consumeRegistration(ChallengeSessionKey $key): RegistrationChallenge
+    {
+        $data = $this->consume($key, self::REGISTRATION);
+        if (! isset($data['passkey_user_id'], $data['email'])) {
+            throw new ChallengeSessionNotFoundException();
+        }
+
+        return new RegistrationChallenge(
+            $key,
+            new WebAuthnChallenge($data['challenge']),
+            new WebAuthnOptions($data['options']),
+            new DateTimeImmutable($data['expires_at']),
+            new PasskeyUserIdentifier($data['passkey_user_id']),
+            new Email($data['email']),
+            $this->signupSession($data),
+        );
+    }
+
+    public function storeAuthentication(AuthenticationChallenge $challenge): void
+    {
+        $this->store(
+            $challenge->key,
+            $challenge->challenge,
+            $challenge->options,
+            $challenge->expiresAt,
+            self::AUTHENTICATION,
+        );
+    }
+
+    public function consumeAuthentication(ChallengeSessionKey $key): AuthenticationChallenge
+    {
+        $data = $this->consume($key, self::AUTHENTICATION);
+
+        return new AuthenticationChallenge(
+            $key,
+            new WebAuthnChallenge($data['challenge']),
+            new WebAuthnOptions($data['options']),
+            new DateTimeImmutable($data['expires_at']),
+        );
+    }
+
+    public function storeAddition(AdditionChallenge $challenge): void
+    {
+        $this->store(
+            $challenge->key,
+            $challenge->challenge,
+            $challenge->options,
+            $challenge->expiresAt,
+            self::ADDITION,
+            ['identity_id' => (string) $challenge->identityIdentifier],
+        );
+    }
+
+    public function consumeAddition(
+        ChallengeSessionKey $key,
+        IdentityIdentifier $expectedIdentityIdentifier,
+    ): AdditionChallenge {
+        $data = $this->consume($key, self::ADDITION);
+        if (! isset($data['identity_id'])) {
+            throw new ChallengeSessionNotFoundException();
+        }
+        $identityIdentifier = new IdentityIdentifier($data['identity_id']);
+        if ((string) $identityIdentifier !== (string) $expectedIdentityIdentifier) {
+            throw new ChallengeSessionIdentityMismatchException();
+        }
+
+        return new AdditionChallenge(
+            $key,
+            new WebAuthnChallenge($data['challenge']),
+            new WebAuthnOptions($data['options']),
+            new DateTimeImmutable($data['expires_at']),
+            $identityIdentifier,
+        );
+    }
+
+    /** @param array<string, string|null> $context */
+    private function store(
+        ChallengeSessionKey $key,
+        WebAuthnChallenge $challenge,
+        WebAuthnOptions $options,
+        DateTimeImmutable $expiresAt,
+        string $purpose,
+        array $context = [],
+    ): void {
+        $ttl = $expiresAt->getTimestamp() - time();
         if ($ttl <= 0) {
             throw new ChallengeSessionNotFoundException('Challenge session has already expired.');
         }
 
-        $registrationContext = $session->registrationContext();
         Redis::setex(
-            $this->key($session->identifier()),
+            $this->redisKey($key),
             $ttl,
             json_encode([
-                'challenge' => (string) $session->challenge(),
-                'purpose' => $session->purpose()->value,
-                'options' => $session->options(),
-                'expires_at' => $session->expiresAt()->format(DATE_ATOM),
-                'identity_id' => $session->identityIdentifier() !== null
-                    ? (string) $session->identityIdentifier()
-                    : null,
-                'registration_context' => $registrationContext === null ? null : [
-                    'email' => (string) $registrationContext->email(),
-                    'account_type' => $registrationContext->signupSession()->accountType()?->value,
-                    'one_time_token' => $registrationContext->signupSession()->oneTimeToken() !== null
-                        ? (string) $registrationContext->signupSession()->oneTimeToken()
-                        : null,
-                    'return_to' => $registrationContext->signupSession()->returnTo(),
-                ],
+                'challenge' => (string) $challenge,
+                'purpose' => $purpose,
+                'options' => $options->json(),
+                'expires_at' => $expiresAt->format(DATE_ATOM),
+                ...$context,
             ], JSON_THROW_ON_ERROR),
         );
     }
 
-    public function consume(
-        ChallengeSessionIdentifier $identifier,
-        ChallengePurpose $expectedPurpose,
-        ?IdentityIdentifier $expectedIdentityIdentifier = null,
-    ): ChallengeSession {
-        $raw = Redis::command('GETDEL', [$this->key($identifier)]);
+    /** @return array<string, string|null> */
+    private function consume(ChallengeSessionKey $key, string $expectedPurpose): array
+    {
+        $raw = Redis::command('GETDEL', [$this->redisKey($key)]);
         if (! is_string($raw)) {
             throw new ChallengeSessionNotFoundException();
         }
 
         $data = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-        if (! is_array($data) || ! isset($data['purpose'], $data['challenge'], $data['options'], $data['expires_at'])) {
+        if (! is_array($data)
+            || ! isset($data['purpose'], $data['challenge'], $data['options'], $data['expires_at'])) {
             throw new ChallengeSessionNotFoundException();
         }
-        $purpose = ChallengePurpose::tryFrom((string) $data['purpose']);
-        if ($purpose !== $expectedPurpose) {
+        if ($data['purpose'] !== $expectedPurpose) {
             throw new ChallengeSessionPurposeMismatchException();
-        }
-        $identityIdentifier = isset($data['identity_id']) && is_string($data['identity_id'])
-            ? new IdentityIdentifier($data['identity_id'])
-            : null;
-        if ($expectedIdentityIdentifier !== null && (string) $identityIdentifier !== (string) $expectedIdentityIdentifier) {
-            throw new ChallengeSessionIdentityMismatchException();
         }
         $expiresAt = new DateTimeImmutable((string) $data['expires_at']);
         if ($expiresAt <= new DateTimeImmutable()) {
             throw new ChallengeSessionNotFoundException();
         }
 
-        return new ChallengeSession(
-            $identifier,
-            new WebAuthnChallenge((string) $data['challenge']),
-            $purpose,
-            (string) $data['options'],
-            $expiresAt,
-            $identityIdentifier,
-            $this->registrationContext($data['registration_context'] ?? null),
-        );
+        /** @var array<string, string|null> $data */
+        return $data;
     }
 
-    private function key(ChallengeSessionIdentifier $identifier): string
+    /** @param array<string, string|null> $data */
+    private function signupSession(array $data): SignupSession
     {
-        return self::KEY_PREFIX . $identifier;
-    }
-
-    /** @param mixed $data */
-    private function registrationContext(mixed $data): ?PasskeyRegistrationContext
-    {
-        if (! is_array($data) || ! isset($data['email'])) {
-            return null;
-        }
-        $accountType = isset($data['account_type']) && is_string($data['account_type'])
+        $accountType = isset($data['account_type'])
             ? AccountType::tryFrom($data['account_type'])
             : null;
-        $oneTimeToken = isset($data['one_time_token']) && is_string($data['one_time_token'])
+        $oneTimeToken = isset($data['one_time_token'])
             ? new OneTimeToken($data['one_time_token'])
             : null;
 
-        return new PasskeyRegistrationContext(
-            new Email((string) $data['email']),
-            new SignupSession(
-                $accountType,
-                $oneTimeToken,
-                isset($data['return_to']) && is_string($data['return_to']) ? $data['return_to'] : null,
-            ),
-        );
+        return new SignupSession($accountType, $oneTimeToken, $data['return_to'] ?? null);
+    }
+
+    private function redisKey(ChallengeSessionKey $key): string
+    {
+        return self::KEY_PREFIX . $key;
     }
 }

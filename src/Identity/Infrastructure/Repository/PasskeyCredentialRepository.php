@@ -12,6 +12,7 @@ use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -22,7 +23,7 @@ class PasskeyCredentialRepository implements PasskeyCredentialRepositoryInterfac
         PasskeyCredentialEloquent::query()->updateOrCreate(
             ['id' => (string) $credential->identifier()],
             [
-                'identity_id' => (string) $credential->identityIdentifier(),
+                'passkey_user_id' => (string) $credential->passkeyUserIdentifier(),
                 'credential_id' => (string) $credential->credentialId(),
                 'credential_source' => json_decode((string) $credential->credentialSource(), true, flags: JSON_THROW_ON_ERROR),
                 'sign_count' => $credential->signCount(),
@@ -54,7 +55,8 @@ class PasskeyCredentialRepository implements PasskeyCredentialRepositoryInterfac
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array
     {
         return PasskeyCredentialEloquent::query()
-            ->where('identity_id', (string) $identityIdentifier)
+            ->whereHas('passkeyUser', static fn ($query) => $query
+                ->where('identity_id', (string) $identityIdentifier))
             ->orderBy('created_at')
             ->get()
             ->map(fn (PasskeyCredentialEloquent $model): PasskeyCredential => $this->toDomainEntity($model))
@@ -71,7 +73,7 @@ class PasskeyCredentialRepository implements PasskeyCredentialRepositoryInterfac
     {
         return new PasskeyCredential(
             new PasskeyCredentialIdentifier($model->id),
-            new IdentityIdentifier($model->identity_id),
+            new PasskeyUserIdentifier($model->passkey_user_id),
             new WebAuthnCredentialId($model->credential_id),
             new CredentialSource(json_encode($model->credential_source, JSON_THROW_ON_ERROR)),
             $model->sign_count,

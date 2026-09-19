@@ -99,6 +99,36 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $middleware->handle($request, fn () => response('ok'));
     }
 
+    public function testIdentityRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
+    {
+        $actualPublicIdentityRouteUris = [];
+
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/identity/')) {
+                continue;
+            }
+
+            if (! in_array('auth.api', $route->gatherMiddleware(), true)) {
+                $actualPublicIdentityRouteUris[] = $route->uri();
+            }
+        }
+
+        $actualPublicIdentityRouteUris = array_values(array_unique($actualPublicIdentityRouteUris));
+        sort($actualPublicIdentityRouteUris);
+
+        $expected = [
+            'api/identity/auth/login',
+            'api/identity/auth/passkeys/registration/options',
+            'api/identity/auth/register',
+            'api/identity/auth/social/{provider}/callback',
+            'api/identity/auth/social/{provider}/redirect',
+            'api/identity/auth/verify-email',
+        ];
+        sort($expected);
+
+        $this->assertSame($expected, $actualPublicIdentityRouteUris);
+    }
+
     public function testWikiRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
     {
         $actualPublicWikiRouteUris = [];
@@ -212,6 +242,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             // Identity: 認証開始に必要な公開API
             'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
             'identity: register' => ['POST', '/api/identity/auth/register'],
+            'identity: passkey registration options' => ['POST', '/api/identity/auth/passkeys/registration/options'],
             'identity: login' => ['POST', '/api/identity/auth/login'],
             'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
             'identity: social callback' => ['GET', '/api/identity/auth/social/google/callback'],

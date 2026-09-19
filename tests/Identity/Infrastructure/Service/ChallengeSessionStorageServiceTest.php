@@ -9,13 +9,15 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
-use Source\Identity\Domain\Entity\ChallengeSession;
+use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
+use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
+use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
-use Source\Identity\Domain\ValueObject\ChallengePurpose;
-use Source\Identity\Domain\ValueObject\ChallengeSessionIdentifier;
-use Source\Identity\Domain\ValueObject\PasskeyRegistrationContext;
+use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
@@ -25,6 +27,8 @@ use Tests\TestCase;
 
 class ChallengeSessionStorageServiceTest extends TestCase
 {
+    private const string CHALLENGE = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY';
+
     protected function tearDown(): void
     {
         Redis::flushdb();
@@ -45,87 +49,123 @@ class ChallengeSessionStorageServiceTest extends TestCase
     }
 
     /** @throws BindingResolutionException */
-    public function testItIsBoundAndConsumesARegistrationSessionExactlyOnce(): void
+    public function testItIsBoundAndConsumesARegistrationChallengeExactlyOnce(): void
     {
         $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
         $this->assertInstanceOf(ChallengeSessionStorageService::class, $service);
 
-        $identifier = new ChallengeSessionIdentifier('123e4567-e89b-72d3-a456-426614174010');
-        $session = new ChallengeSession(
-            $identifier,
-            new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
-            ChallengePurpose::REGISTRATION,
-            '{"publicKey":"options"}',
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174010');
+        $challenge = new RegistrationChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"options"}'),
             new DateTimeImmutable('+5 minutes'),
-            registrationContext: new PasskeyRegistrationContext(
-                new Email('passkey@example.com'),
-                new SignupSession(AccountType::INDIVIDUAL),
-            ),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174001'),
+            new Email('passkey@example.com'),
+            new SignupSession(AccountType::INDIVIDUAL),
         );
 
-        $service->store($session);
-        $consumed = $service->consume($identifier, ChallengePurpose::REGISTRATION);
+        $service->storeRegistration($challenge);
+        $consumed = $service->consumeRegistration($key);
 
-        $this->assertSame((string) $session->challenge(), (string) $consumed->challenge());
-        $this->assertSame('passkey@example.com', (string) $consumed->registrationContext()?->email());
-        $this->assertSame(AccountType::INDIVIDUAL, $consumed->registrationContext()?->signupSession()->accountType());
+        $this->assertSame((string) $challenge->challenge, (string) $consumed->challenge);
+        $this->assertSame('{"publicKey":"options"}', $consumed->options->json());
+        $this->assertSame(
+            '123e4567-e89b-72d3-a456-426614174001',
+            (string) $consumed->passkeyUserIdentifier,
+        );
+        $this->assertSame('passkey@example.com', (string) $consumed->email);
+        $this->assertSame(AccountType::INDIVIDUAL, $consumed->signupSession->accountType());
 
         $this->expectException(ChallengeSessionNotFoundException::class);
-        $service->consume($identifier, ChallengePurpose::REGISTRATION);
+        $service->consumeRegistration($key);
     }
 
-    public function testPurposeMismatchConsumesTheSession(): void
+    public function testItStoresAndConsumesAnAuthenticationChallenge(): void
     {
         $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
-        $identifier = new ChallengeSessionIdentifier('123e4567-e89b-72d3-a456-426614174011');
-        $service->store(new ChallengeSession(
-            $identifier,
-            new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
-            ChallengePurpose::AUTHENTICATION,
-            '{"publicKey":"options"}',
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174011');
+        $challenge = new AuthenticationChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"authentication"}'),
+            new DateTimeImmutable('+5 minutes'),
+        );
+
+        $service->storeAuthentication($challenge);
+        $consumed = $service->consumeAuthentication($key);
+
+        $this->assertSame((string) $challenge->challenge, (string) $consumed->challenge);
+        $this->assertSame('{"publicKey":"authentication"}', $consumed->options->json());
+    }
+
+    public function testItStoresAndConsumesAnAdditionChallengeForTheExpectedIdentity(): void
+    {
+        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174012');
+        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        $challenge = new AdditionChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"addition"}'),
+            new DateTimeImmutable('+5 minutes'),
+            $identityIdentifier,
+        );
+
+        $service->storeAddition($challenge);
+        $consumed = $service->consumeAddition($key, $identityIdentifier);
+
+        $this->assertSame((string) $identityIdentifier, (string) $consumed->identityIdentifier);
+    }
+
+    public function testPurposeMismatchConsumesTheChallenge(): void
+    {
+        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174013');
+        $service->storeAuthentication(new AuthenticationChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"options"}'),
             new DateTimeImmutable('+5 minutes'),
         ));
 
         try {
-            $service->consume($identifier, ChallengePurpose::REGISTRATION);
+            $service->consumeRegistration($key);
             $this->fail('Purpose mismatch was not rejected.');
         } catch (ChallengeSessionPurposeMismatchException) {
             $this->expectException(ChallengeSessionNotFoundException::class);
-            $service->consume($identifier, ChallengePurpose::AUTHENTICATION);
+            $service->consumeAuthentication($key);
         }
     }
 
     public function testIdentityMismatchIsRejectedAndConsumed(): void
     {
         $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
-        $identifier = new ChallengeSessionIdentifier('123e4567-e89b-72d3-a456-426614174012');
-        $service->store(new ChallengeSession(
-            $identifier,
-            new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
-            ChallengePurpose::ADDITION,
-            '{"publicKey":"options"}',
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174014');
+        $service->storeAddition(new AdditionChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"options"}'),
             new DateTimeImmutable('+5 minutes'),
-            identityIdentifier: new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
         ));
 
         $this->expectException(ChallengeSessionIdentityMismatchException::class);
-        $service->consume(
-            $identifier,
-            ChallengePurpose::ADDITION,
+        $service->consumeAddition(
+            $key,
             new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174099'),
         );
     }
 
-    public function testExpiredSessionCannotBeStored(): void
+    public function testExpiredChallengeCannotBeStored(): void
     {
         $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
 
         $this->expectException(ChallengeSessionNotFoundException::class);
-        $service->store(new ChallengeSession(
-            new ChallengeSessionIdentifier('123e4567-e89b-72d3-a456-426614174013'),
-            new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
-            ChallengePurpose::AUTHENTICATION,
-            '{"publicKey":"options"}',
+        $service->storeAuthentication(new AuthenticationChallenge(
+            new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174015'),
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"options"}'),
             new DateTimeImmutable('-1 second'),
         ));
     }

@@ -12,18 +12,18 @@ use Source\Identity\Domain\Exception\PasskeyBackupEligibilityChangedException;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PasskeyCredentialTest extends TestCase
 {
     public function testItRepresentsSyncedPlatformAndSecurityKeyCredentials(): void
     {
-        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        $passkeyUserIdentifier = new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000');
 
-        $synced = $this->credential($identityIdentifier, true, true, ['internal', 'hybrid']);
-        $platform = $this->credential($identityIdentifier, false, false, ['internal']);
-        $securityKey = $this->credential($identityIdentifier, false, false, ['usb', 'nfc']);
+        $synced = $this->credential($passkeyUserIdentifier, true, true, ['internal', 'hybrid']);
+        $platform = $this->credential($passkeyUserIdentifier, false, false, ['internal']);
+        $securityKey = $this->credential($passkeyUserIdentifier, false, false, ['usb', 'nfc']);
 
         $this->assertTrue($synced->backupEligible());
         $this->assertTrue($synced->backupState());
@@ -31,7 +31,7 @@ class PasskeyCredentialTest extends TestCase
         $this->assertFalse($platform->backupEligible());
         $this->assertSame(['internal'], $platform->transports());
         $this->assertSame(['usb', 'nfc'], $securityKey->transports());
-        $this->assertSame((string) $identityIdentifier, (string) $securityKey->identityIdentifier());
+        $this->assertSame($passkeyUserIdentifier, $securityKey->passkeyUserIdentifier());
     }
 
     public function testItRejectsBackedUpStateForNonBackupEligibleCredential(): void
@@ -39,7 +39,7 @@ class PasskeyCredentialTest extends TestCase
         $this->expectException(InvalidPasskeyBackupStateException::class);
 
         $this->credential(
-            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000'),
             false,
             true,
             ['internal'],
@@ -49,7 +49,7 @@ class PasskeyCredentialTest extends TestCase
     public function testAuthenticationUpdatesMutableStateAndAllowsNonIncreasingCounterForSyncedCredential(): void
     {
         $credential = $this->credential(
-            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000'),
             true,
             false,
             ['internal', 'hybrid'],
@@ -67,7 +67,7 @@ class PasskeyCredentialTest extends TestCase
     public function testAuthenticationRejectsBackupEligibilityChange(): void
     {
         $credential = $this->credential(
-            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000'),
             true,
             false,
             ['internal'],
@@ -85,14 +85,14 @@ class PasskeyCredentialTest extends TestCase
 
     /** @param string[] $transports */
     private function credential(
-        IdentityIdentifier $identityIdentifier,
+        PasskeyUserIdentifier $passkeyUserIdentifier,
         bool $backupEligible,
         bool $backupState,
         array $transports,
     ): PasskeyCredential {
         return new PasskeyCredential(
             new PasskeyCredentialIdentifier('123e4567-e89b-72d3-a456-426614174001'),
-            $identityIdentifier,
+            $passkeyUserIdentifier,
             new WebAuthnCredentialId('Y3JlZGVudGlhbC1pZA'),
             new CredentialSource('{"credential":"source"}'),
             5,

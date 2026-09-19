@@ -7,10 +7,13 @@ namespace Tests\Identity\Infrastructure\Repository;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\PasskeyCredential;
+use Source\Identity\Domain\Entity\PasskeyUser;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Identity\Infrastructure\Repository\PasskeyCredentialRepository;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -32,6 +35,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'passkey-repo@example.com']);
+        $this->createPasskeyUser($identityIdentifier);
         $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
 
         $credentials = [
@@ -66,6 +70,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'passkey-unique@example.com']);
+        $this->createPasskeyUser($identityIdentifier);
         $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
         $repository->save($this->credential('123e4567-e89b-72d3-a456-426614174001', 'ZHVwbGljYXRl', false, false, ['usb']));
 
@@ -78,7 +83,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
     {
         return new PasskeyCredential(
             new PasskeyCredentialIdentifier($id),
-            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174010'),
             new WebAuthnCredentialId($credentialId),
             new CredentialSource('{"credential":"source"}'),
             5,
@@ -88,5 +93,15 @@ class PasskeyCredentialRepositoryTest extends TestCase
             new PasskeyDisplayName('Passkey'),
             null,
         );
+    }
+
+    private function createPasskeyUser(IdentityIdentifier $identityIdentifier): void
+    {
+        $user = new PasskeyUser(
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174010'),
+            null,
+        );
+        $user->linkToIdentity($identityIdentifier);
+        $this->app->make(PasskeyUserRepositoryInterface::class)->save($user);
     }
 }
