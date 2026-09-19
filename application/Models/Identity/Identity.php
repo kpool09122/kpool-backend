@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property string $language
  * @property ?string $profile_image
- * @property string $password
  * @property ?Carbon $email_verified_at
  * @property ?string $delegation_identifier
  * @property ?string $original_identity_identifier
@@ -29,13 +28,9 @@ use Illuminate\Support\Carbon;
     'email',
     'language',
     'profile_image',
-    'password',
     'email_verified_at',
     'delegation_identifier',
     'original_identity_identifier',
-])]
-#[\Illuminate\Database\Eloquent\Attributes\Hidden([
-    'password',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identities', keyType: 'string')]
 class Identity extends Authenticatable
@@ -57,5 +52,11 @@ class Identity extends Authenticatable
     public function socialConnections(): HasMany
     {
         return $this->hasMany(IdentitySocialConnection::class, 'identity_id', 'id');
+    }
+
+    /** @return HasMany<PasskeyCredential, $this> */
+    public function passkeyCredentials(): HasMany
+    {
+        return $this->hasMany(PasskeyCredential::class, 'identity_id', 'id');
     }
 }

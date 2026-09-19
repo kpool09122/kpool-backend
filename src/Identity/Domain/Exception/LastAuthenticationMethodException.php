@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Identity\Domain\Exception;
+
+use DomainException;
+use Throwable;
+
+class LastAuthenticationMethodException extends DomainException
+{
+    public function __construct(string $message = 'The last authentication method cannot be removed.', ?Throwable $previous = null)
+    {
+        parent::__construct($message, 0, $previous);
+    }
+}

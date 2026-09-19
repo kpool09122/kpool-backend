@@ -147,12 +147,6 @@ model IdentityProfileSummary {
   profileImage?: string | null;
 }
 
-@doc("Identity summary returned after email login.")
-model LoginIdentitySummary extends IdentitySummary {
-  @doc("Normalized application return path after login.")
-  returnTo?: string | null;
-}
-
 @doc("Email verification result.")
 model VerifyEmailResult {
   @doc("Verified email address.")
@@ -181,22 +175,57 @@ model VerifyEmailRequestBody {
   authCode: string;
 }
 
-@doc("Request body for registering a new identity.")
-model CreateIdentityRequestBody {
-  @doc("Requested identityName.")
+@doc("Request body for beginning passkey signup.")
+model BeginPasskeySignupRequestBody {
   identityName: string;
-  @doc("Email address.")
   email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Password confirmation.")
-  confirmedPassword: string;
-  @doc("Base64-encoded profile image.")
+  language: string;
   base64EncodedImage?: string | null;
-  @doc("One-time token used during signup.")
   oneTimeToken?: string | null;
 }
 
+@doc("Browser WebAuthn credential response.")
+model PasskeyCredentialResponse {
+  type: string;
+  id: string;
+  rawId: string;
+  response: Record<unknown>;
+  clientExtensionResults?: Record<unknown>;
+}
+
+model FinishPasskeyRegistrationRequestBody {
+  challengeIdentifier: Uuid;
+  credential: PasskeyCredentialResponse;
+  displayName: string;
+}
+
+model FinishPasskeyLoginRequestBody {
+  challengeIdentifier: Uuid;
+  credential: PasskeyCredentialResponse;
+}
+
+model PasskeyOptionsResult {
+  challengeIdentifier: Uuid;
+  publicKey: Record<unknown>;
+}
+
+model PasskeySummary {
+  passkeyIdentifier: Uuid;
+  displayName: string;
+  transports: string[];
+  backupEligible: boolean;
+  backupState: boolean;
+  lastUsedAt?: Timestamp | null;
+  createdAt?: Timestamp | null;
+}
+
+model PasskeyListResult {
+  passkeys: PasskeySummary[];
+}
+
+model RenamePasskeyRequestBody {
+  displayName: string;
+}
 
 @doc("Request body for updating an identity profile.")
 model UpdateIdentityRequestBody {
@@ -206,16 +235,6 @@ model UpdateIdentityRequestBody {
   language?: string | null;
   @doc("Base64-encoded profile image.")
   base64EncodedImage?: string | null;
-}
-
-@doc("Request body for logging in.")
-model LoginRequestBody {
-  @doc("Email address.")
-  email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Application return path after login.")
-  return_to?: string | null;
 }
 
 @doc("Response returned when an endpoint succeeds with an empty JSON object.")
@@ -236,10 +255,25 @@ model OkIdentityResponse {
   @body body: IdentitySummary;
 }
 
-@doc("Response returned when email login succeeds.")
+@doc("Response returned when passkey login succeeds.")
 model OkLoginResponse {
   @statusCode statusCode: 200;
-  @body body: LoginIdentitySummary;
+  @body body: IdentitySummary;
+}
+
+model PasskeyOptionsResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyOptionsResult;
+}
+
+model PasskeyListResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyListResult;
+}
+
+model CreatedPasskeyResponse {
+  @statusCode statusCode: 201;
+  @body body: PasskeySummary;
 }
 
 @doc("Response returned when fetching the current authenticated identity succeeds.")
@@ -283,18 +317,62 @@ interface IdentityAuthOperations {
   ): VerifyEmailResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/register")
-  @doc("Register a new identity.")
-  createIdentity(
-    @body body: CreateIdentityRequestBody,
-  ): CreateIdentityResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @route("/passkey/register/options")
+  @doc("Create registration options for passkey signup after email verification.")
+  beginPasskeySignup(
+    @body body: BeginPasskeySignupRequestBody,
+  ): PasskeyOptionsResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/login")
-  @doc("Authenticate with email and password.")
-  login(
-    @body body: LoginRequestBody,
-  ): OkLoginResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @route("/passkey/register/verify")
+  @doc("Verify attestation and create an identity with its first passkey.")
+  finishPasskeySignup(
+    @body body: FinishPasskeyRegistrationRequestBody,
+  ): CreateIdentityResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkey/login/options")
+  @doc("Create discoverable-credential authentication options.")
+  beginPasskeyLogin(): PasskeyOptionsResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkey/login/verify")
+  @doc("Verify a passkey assertion and establish the login session.")
+  finishPasskeyLogin(
+    @body body: FinishPasskeyLoginRequestBody,
+  ): OkLoginResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/passkeys")
+  @doc("List passkeys registered for the authenticated identity.")
+  listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/options")
+  @doc("Create registration options for an additional passkey.")
+  beginAddPasskey(): PasskeyOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/verify")
+  @doc("Verify and store an additional passkey.")
+  finishAddPasskey(
+    @body body: FinishPasskeyRegistrationRequestBody,
+  ): CreatedPasskeyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Rename a passkey.")
+  renamePasskey(
+    @path passkeyIdentifier: Uuid,
+    @body body: RenamePasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @delete
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Delete a passkey without removing the identity's final login method.")
+  deletePasskey(
+    @path passkeyIdentifier: Uuid,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/redirect")

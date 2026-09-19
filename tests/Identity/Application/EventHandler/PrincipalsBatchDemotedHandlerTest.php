@@ -11,9 +11,7 @@ use Source\Identity\Application\EventHandler\PrincipalsBatchDemotedHandler;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -122,7 +120,6 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
             new Email($email),
             $language,
             null,
-            HashedPassword::fromPlain(new PlainPassword('Password1!')),
             new DateTimeImmutable(),
         );
     }

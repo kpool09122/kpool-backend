@@ -33,11 +33,9 @@ return [
     'settlement_schedule_not_found' => '指定された精算スケジュールが見つかりません。',
 
     // Identity
-    'invalid_credentials' => 'メールアドレスまたはパスワードが正しくありません。',
     'social_connection_already_exists' => 'このソーシャルアカウントは既に連携されています。',
     'auth_code_expired' => '認証コードの有効期限が切れています。',
     'invalid_auth_code' => '認証コードが一致しません。',
-    'password_mismatch' => 'パスワードが一致しません。',
     'invalid_delegation' => '委任の操作が無効です。',
     'identity_not_found' => '指定されたアイデンティティが見つかりません。',
     'already_user_exists' => 'ユーザーは既に存在します。',

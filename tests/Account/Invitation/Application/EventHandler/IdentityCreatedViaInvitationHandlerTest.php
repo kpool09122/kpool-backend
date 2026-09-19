@@ -27,7 +27,6 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -493,7 +492,6 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             $email,
             Language::JAPANESE,
             null,
-            new HashedPassword(password_hash('secret-password', PASSWORD_DEFAULT)),
             new DateTimeImmutable(),
         );
     }

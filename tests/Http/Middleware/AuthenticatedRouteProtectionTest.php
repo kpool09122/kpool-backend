@@ -180,6 +180,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
+            'identity passkey list resolves actor' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
+            'identity passkey addition resolves actor' => ['POST', '/api/identity/auth/passkeys/options', ['resolve.actor']],
+            'identity passkey addition verification resolves actor' => ['POST', '/api/identity/auth/passkeys/verify', ['resolve.actor']],
+            'identity passkey rename resolves actor' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
+            'identity passkey deletion resolves actor' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
             'account principal groups resolve actor and account' => ['GET', '/api/account/principal-groups', ['resolve.actor', 'resolve.account']],
@@ -210,9 +215,12 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             // Identity: 認証開始に必要な公開API
+            'identity: send auth code' => ['POST', '/api/identity/auth/send-auth-code'],
             'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
-            'identity: register' => ['POST', '/api/identity/auth/register'],
-            'identity: login' => ['POST', '/api/identity/auth/login'],
+            'identity: passkey signup options' => ['POST', '/api/identity/auth/passkey/register/options'],
+            'identity: passkey signup verify' => ['POST', '/api/identity/auth/passkey/register/verify'],
+            'identity: passkey login options' => ['POST', '/api/identity/auth/passkey/login/options'],
+            'identity: passkey login verify' => ['POST', '/api/identity/auth/passkey/login/verify'],
             'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
             'identity: social callback' => ['GET', '/api/identity/auth/social/google/callback'],
 
@@ -238,7 +246,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function disabledRouteProvider(): array
     {
         return [
-            'identity: send auth code' => ['POST', 'api/identity/auth/send-auth-code'],
+            'identity: password register' => ['POST', 'api/identity/auth/register'],
+            'identity: password login' => ['POST', 'api/identity/auth/login'],
             'identity: get identity profile' => ['GET', 'api/identity/auth/identities/{identityIdentifier}/profile'],
             'account: delete account' => ['DELETE', 'api/account/accounts/{accountId}'],
             'account: create delegation permission' => ['POST', 'api/account/delegation-permissions'],

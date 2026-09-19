@@ -9,11 +9,14 @@ use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
+use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyChallengeSessionRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
@@ -25,12 +28,15 @@ use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Identity\Infrastructure\Repository\AuthCodeSessionRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Identity\Infrastructure\Repository\OAuthStateRepository;
+use Source\Identity\Infrastructure\Repository\PasskeyChallengeSessionRepository;
+use Source\Identity\Infrastructure\Repository\PasskeyCredentialRepository;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
 use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService;
 use Source\Identity\Infrastructure\Service\AuthCodeService;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
+use Source\Identity\Infrastructure\Service\WebAuthnService;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -50,6 +56,13 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);
         $this->app->singleton(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);
         $this->app->singleton(SignupSessionRepositoryInterface::class, SignupSessionRepository::class);
+        $this->app->singleton(PasskeyChallengeSessionRepositoryInterface::class, PasskeyChallengeSessionRepository::class);
+        $this->app->singleton(PasskeyCredentialRepositoryInterface::class, PasskeyCredentialRepository::class);
+        $this->app->singleton(WebAuthnServiceInterface::class, static fn () => new WebAuthnService(
+            (string) config('webauthn.rp_id'),
+            (string) config('webauthn.rp_name'),
+            (array) config('webauthn.allowed_origins', []),
+        ));
 
         $this->app->singleton(SocialOAuthServiceInterface::class, function ($app) {
             /** @var \Illuminate\Contracts\Foundation\Application $app */

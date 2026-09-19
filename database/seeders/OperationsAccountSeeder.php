@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use Application\Http\Context\AuthContextCache;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -61,7 +60,6 @@ class OperationsAccountSeeder extends Seeder
             'email' => 'operations@example.com',
             'language' => 'ja',
             'profile_image' => null,
-            'password' => Hash::make('password'),
             'email_verified_at' => $now,
             'delegation_identifier' => null,
             'original_identity_identifier' => null,

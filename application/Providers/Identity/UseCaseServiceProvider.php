@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Application\Providers\Identity;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
-use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
-use Source\Identity\Application\UseCase\Command\Login\Login;
-use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
 use Source\Identity\Application\UseCase\Command\Logout\Logout;
 use Source\Identity\Application\UseCase\Command\Logout\LogoutInterface;
+use Source\Identity\Application\UseCase\Command\Passkey\PasskeyUseCase;
+use Source\Identity\Application\UseCase\Command\Passkey\PasskeyUseCaseInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCode;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
@@ -30,11 +28,11 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(LoginInterface::class, Login::class);
+        $this->app->singleton(PasskeyUseCaseInterface::class, PasskeyUseCase::class);
         $this->app->singleton(LogoutInterface::class, Logout::class);
         $this->app->singleton(SendAuthCodeInterface::class, SendAuthCode::class);
         $this->app->singleton(VerifyEmailInterface::class, VerifyEmail::class);
-        $this->app->singleton(CreateIdentityInterface::class, CreateIdentity::class);
+
         $this->app->singleton(SocialLoginRedirectInterface::class, SocialLoginRedirect::class);
         $this->app->singleton(SocialLoginCallbackInterface::class, SocialLoginCallback::class);
 

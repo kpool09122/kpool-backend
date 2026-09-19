@@ -6,10 +6,10 @@ namespace Source\Identity\Domain\Factory;
 
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 
 interface IdentityFactoryInterface
@@ -18,7 +18,9 @@ interface IdentityFactoryInterface
         IdentityName      $identityName,
         Email         $email,
         Language      $language,
-        PlainPassword $plainPassword
+        ?DelegationIdentifier $delegationIdentifier = null,
+        ?Identity $originalIdentity = null,
+        ?IdentityIdentifier $identityIdentifier = null,
     ): Identity;
 
     public function createFromSocialProfile(SocialProfile $profile): Identity;

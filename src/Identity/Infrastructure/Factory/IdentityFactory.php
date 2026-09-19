@@ -6,9 +6,7 @@ namespace Source\Identity\Infrastructure\Factory;
 
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
@@ -20,41 +18,54 @@ use Source\Shared\Domain\ValueObject\Language;
 readonly class IdentityFactory implements IdentityFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
 
     public function create(
-        IdentityName      $identityName,
-        Email         $email,
-        Language      $language,
-        PlainPassword $plainPassword,
+        IdentityName $identityName,
+        Email $email,
+        Language $language,
+        ?DelegationIdentifier $delegationIdentifier = null,
+        ?Identity $originalIdentity = null,
+        ?IdentityIdentifier $identityIdentifier = null,
     ): Identity {
         return new Identity(
-            new IdentityIdentifier($this->ulidGenerator->generate()),
+            $identityIdentifier ?? new IdentityIdentifier($this->uuidGenerator->generate()),
             $identityName,
             $email,
             $language,
+            $originalIdentity?->profileImage(),
             null,
-            HashedPassword::fromPlain($plainPassword),
-            null,
+            [],
+            $delegationIdentifier,
+            $originalIdentity?->identityIdentifier(),
         );
     }
 
     public function createFromSocialProfile(SocialProfile $profile): Identity
     {
-        $identityName = $this->buildIdentityName($profile);
-        $password = $this->generateRandomPassword();
-
         return new Identity(
-            new IdentityIdentifier($this->ulidGenerator->generate()),
-            $identityName,
+            new IdentityIdentifier($this->uuidGenerator->generate()),
+            $this->buildIdentityName($profile),
             $profile->email(),
             Language::ENGLISH,
             null,
-            HashedPassword::fromPlain($password),
             null,
             [new SocialConnection($profile->provider(), $profile->providerUserId())],
+        );
+    }
+
+    public function createDelegatedIdentity(
+        Identity $originalIdentity,
+        DelegationIdentifier $delegationIdentifier,
+    ): Identity {
+        return $this->create(
+            $originalIdentity->identityName(),
+            $originalIdentity->email(),
+            $originalIdentity->language(),
+            $delegationIdentifier,
+            $originalIdentity,
         );
     }
 
@@ -62,34 +73,9 @@ readonly class IdentityFactory implements IdentityFactoryInterface
     {
         $name = $profile->name();
         if ($name === null || $name === '') {
-            $name = strstr((string)$profile->email(), '@', true) ?: $profile->providerUserId();
+            $name = strstr((string) $profile->email(), '@', true) ?: $profile->providerUserId();
         }
 
         return new IdentityName(mb_substr($name, 0, IdentityName::MAX_LENGTH));
-    }
-
-    private function generateRandomPassword(): PlainPassword
-    {
-        $random = substr($this->ulidGenerator->generate(), 0, PlainPassword::MIN_LENGTH);
-
-        return new PlainPassword($random);
-    }
-
-    public function createDelegatedIdentity(
-        Identity $originalIdentity,
-        DelegationIdentifier $delegationIdentifier,
-    ): Identity {
-        return new Identity(
-            new IdentityIdentifier($this->ulidGenerator->generate()),
-            $originalIdentity->identityName(),
-            $originalIdentity->email(),
-            $originalIdentity->language(),
-            $originalIdentity->profileImage(),
-            HashedPassword::fromPlain($this->generateRandomPassword()),
-            null,
-            [],
-            $delegationIdentifier,
-            $originalIdentity->identityIdentifier(),
-        );
     }
 }

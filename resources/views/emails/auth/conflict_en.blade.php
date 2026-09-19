@@ -26,7 +26,7 @@
                                 If you already have an account, please log in from the login page.
                             </p>
                             <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.8; color: #555555;">
-                                If you forgot your password, please use the "Forgot Password" option on the login page to reset it.
+                                Sign in with a linked SSO provider or a registered passkey.
                             </p>
                         </td>
                     </tr>
