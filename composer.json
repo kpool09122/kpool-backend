@@ -12,7 +12,8 @@
         "ext-gd": "*",
         "google/cloud-translate": "^2.1",
         "sentry/sentry-laravel": "^4.25",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "web-auth/webauthn-lib": "^5.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
