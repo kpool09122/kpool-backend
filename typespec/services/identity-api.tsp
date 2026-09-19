@@ -240,6 +240,22 @@ model PasskeyRegistrationOptionsResult {
   options: PasskeyRegistrationOptions;
 }
 
+@doc("WebAuthn PublicKeyCredentialRequestOptions returned to the browser.")
+model PasskeyAuthenticationOptions {
+  challenge: string;
+  timeout: int32;
+  rpId: string;
+  allowCredentials: PasskeyCredentialDescriptor[];
+  userVerification: string;
+}
+
+@doc("Result for starting passkey authentication.")
+model PasskeyAuthenticationOptionsResult {
+  @doc("Key used to submit the authentication assertion.")
+  challengeKey: Uuid;
+  options: PasskeyAuthenticationOptions;
+}
+
 @doc("Request body for registering a new identity.")
 model CreateIdentityRequestBody {
   @doc("Requested identityName.")
@@ -287,6 +303,12 @@ model OkEmptyResponse {
 model PasskeyRegistrationOptionsResponse {
   @statusCode statusCode: 200;
   @body body: PasskeyRegistrationOptionsResult;
+}
+
+@doc("Response returned when passkey authentication options are created.")
+model PasskeyAuthenticationOptionsResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyAuthenticationOptionsResult;
 }
 
 @doc("Response returned when an identity is created.")
@@ -353,6 +375,11 @@ interface IdentityAuthOperations {
   createPasskeyRegistrationOptions(
     @body body: CreatePasskeyRegistrationOptionsRequestBody,
   ): PasskeyRegistrationOptionsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/authentication/options")
+  @doc("Create discoverable WebAuthn authentication options without requiring an email address.")
+  createPasskeyAuthenticationOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/register")
