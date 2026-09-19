@@ -135,6 +135,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/registration/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyRegistrationOptions
+      description: Create WebAuthn registration options for a verified or invited email address.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey registration options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRegistrationOptionsResult'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePasskeyRegistrationOptionsRequestBody'
   /auth/register:
     post:
       operationId: IdentityAuthOperations_createIdentity
@@ -639,6 +687,27 @@ components:
           nullable: true
           description: One-time token used during signup.
       description: Request body for registering a new identity.
+    CreatePasskeyRegistrationOptionsRequestBody:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: Verified or invited email address.
+        accountType:
+          type: string
+          nullable: true
+          description: Account type retained for signup completion.
+        oneTimeToken:
+          type: string
+          nullable: true
+          description: Invitation token retained for signup completion.
+        return_to:
+          type: string
+          nullable: true
+          description: Application return path retained for signup completion.
+      description: Request body for starting passkey registration.
     IdentityProfileSummary:
       type: object
       required:
@@ -744,6 +813,115 @@ components:
           nullable: true
           description: Application return path after login.
       description: Request body for logging in.
+    PasskeyAuthenticatorSelection:
+      type: object
+      required:
+        - residentKey
+        - userVerification
+      properties:
+        residentKey:
+          type: string
+        userVerification:
+          type: string
+        requireResidentKey:
+          type: boolean
+          nullable: true
+    PasskeyCredentialDescriptor:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        transports:
+          type: array
+          items:
+            type: string
+          nullable: true
+    PasskeyCredentialParameter:
+      type: object
+      required:
+        - type
+        - alg
+      properties:
+        type:
+          type: string
+        alg:
+          type: integer
+          format: int32
+    PasskeyRegistrationOptions:
+      type: object
+      required:
+        - rp
+        - user
+        - challenge
+        - pubKeyCredParams
+        - timeout
+        - excludeCredentials
+        - authenticatorSelection
+        - attestation
+      properties:
+        rp:
+          $ref: '#/components/schemas/PasskeyRelyingPartyEntity'
+        user:
+          $ref: '#/components/schemas/PasskeyUserEntity'
+        challenge:
+          type: string
+        pubKeyCredParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialParameter'
+        timeout:
+          type: integer
+          format: int32
+        excludeCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialDescriptor'
+        authenticatorSelection:
+          $ref: '#/components/schemas/PasskeyAuthenticatorSelection'
+        attestation:
+          type: string
+      description: WebAuthn PublicKeyCredentialCreationOptions returned to the browser.
+    PasskeyRegistrationOptionsResult:
+      type: object
+      required:
+        - challengeIdentifier
+        - options
+      properties:
+        challengeIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identifier used to submit the registration attestation.
+        options:
+          $ref: '#/components/schemas/PasskeyRegistrationOptions'
+      description: Result for starting passkey registration.
+    PasskeyRelyingPartyEntity:
+      type: object
+      required:
+        - name
+        - id
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+    PasskeyUserEntity:
+      type: object
+      required:
+        - name
+        - id
+        - displayName
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        displayName:
+          type: string
     RedirectUrlResult:
       type: object
       required:

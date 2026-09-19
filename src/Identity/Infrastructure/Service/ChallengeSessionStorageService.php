@@ -46,6 +46,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
                     : null,
                 'registration_context' => $registrationContext === null ? null : [
                     'email' => (string) $registrationContext->email(),
+                    'identity_id' => (string) $registrationContext->identityIdentifier(),
                     'account_type' => $registrationContext->signupSession()->accountType()?->value,
                     'one_time_token' => $registrationContext->signupSession()->oneTimeToken() !== null
                         ? (string) $registrationContext->signupSession()->oneTimeToken()
@@ -104,7 +105,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
     /** @param mixed $data */
     private function registrationContext(mixed $data): ?PasskeyRegistrationContext
     {
-        if (! is_array($data) || ! isset($data['email'])) {
+        if (! is_array($data) || ! isset($data['email'], $data['identity_id'])) {
             return null;
         }
         $accountType = isset($data['account_type']) && is_string($data['account_type'])
@@ -116,6 +117,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
 
         return new PasskeyRegistrationContext(
             new Email((string) $data['email']),
+            new IdentityIdentifier((string) $data['identity_id']),
             new SignupSession(
                 $accountType,
                 $oneTimeToken,

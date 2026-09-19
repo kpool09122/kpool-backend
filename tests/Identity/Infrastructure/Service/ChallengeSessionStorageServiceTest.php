@@ -59,6 +59,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
             new DateTimeImmutable('+5 minutes'),
             registrationContext: new PasskeyRegistrationContext(
                 new Email('passkey@example.com'),
+                new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
                 new SignupSession(AccountType::INDIVIDUAL),
             ),
         );
@@ -68,6 +69,10 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
         $this->assertSame((string) $session->challenge(), (string) $consumed->challenge());
         $this->assertSame('passkey@example.com', (string) $consumed->registrationContext()?->email());
+        $this->assertSame(
+            '123e4567-e89b-72d3-a456-426614174000',
+            (string) $consumed->registrationContext()?->identityIdentifier(),
+        );
         $this->assertSame(AccountType::INDIVIDUAL, $consumed->registrationContext()?->signupSession()->accountType());
 
         $this->expectException(ChallengeSessionNotFoundException::class);

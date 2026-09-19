@@ -7,6 +7,8 @@ namespace Application\Providers\Identity;
 use Illuminate\Support\ServiceProvider;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptions;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\Login\Login;
 use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
 use Source\Identity\Application\UseCase\Command\Logout\Logout;
@@ -35,6 +37,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(SendAuthCodeInterface::class, SendAuthCode::class);
         $this->app->singleton(VerifyEmailInterface::class, VerifyEmail::class);
         $this->app->singleton(CreateIdentityInterface::class, CreateIdentity::class);
+        $this->app->singleton(
+            CreatePasskeyRegistrationOptionsInterface::class,
+            CreatePasskeyRegistrationOptions::class,
+        );
         $this->app->singleton(SocialLoginRedirectInterface::class, SocialLoginRedirect::class);
         $this->app->singleton(SocialLoginCallbackInterface::class, SocialLoginCallback::class);
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
+use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
 use Application\Http\Action\Identity\Command\Login\LoginAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 // Disabled by #605: Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
 Route::post('/auth/verify-email', VerifyEmailAction::class);
 Route::post('/auth/register', CreateIdentityAction::class);
+Route::post('/auth/passkeys/registration/options', CreatePasskeyRegistrationOptionsAction::class);
 Route::post('/auth/login', LoginAction::class);
 
 // Social Login (public)
