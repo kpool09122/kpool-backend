@@ -118,6 +118,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
         $expected = [
             'api/identity/auth/login',
+            'api/identity/auth/passkeys/authentication/options',
             'api/identity/auth/passkeys/registration/options',
             'api/identity/auth/register',
             'api/identity/auth/social/{provider}/callback',
@@ -242,6 +243,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             // Identity: 認証開始に必要な公開API
             'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
             'identity: register' => ['POST', '/api/identity/auth/register'],
+            'identity: passkey authentication options' => ['POST', '/api/identity/auth/passkeys/authentication/options'],
             'identity: passkey registration options' => ['POST', '/api/identity/auth/passkeys/registration/options'],
             'identity: login' => ['POST', '/api/identity/auth/login'],
             'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
