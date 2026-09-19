@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Collection<int, IdentitySocialConnection> $socialConnections
+ * @property-read Collection<int, PasskeyCredential> $passkeyCredentials
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -57,5 +58,13 @@ class Identity extends Authenticatable
     public function socialConnections(): HasMany
     {
         return $this->hasMany(IdentitySocialConnection::class, 'identity_id', 'id');
+    }
+
+    /**
+     * @return HasMany<PasskeyCredential, $this>
+     */
+    public function passkeyCredentials(): HasMany
+    {
+        return $this->hasMany(PasskeyCredential::class, 'identity_id', 'id');
     }
 }
