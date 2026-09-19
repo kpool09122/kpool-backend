@@ -8,10 +8,10 @@ use Mockery;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Identity\Infrastructure\Factory\PasskeyCredentialFactory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\TestCase;
 
 class PasskeyCredentialFactoryTest extends TestCase
@@ -33,13 +33,13 @@ class PasskeyCredentialFactoryTest extends TestCase
         $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
         $factory = $this->app->make(PasskeyCredentialFactoryInterface::class);
 
-        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        $passkeyUserIdentifier = new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000');
         $credentialId = new WebAuthnCredentialId('Y3JlZGVudGlhbC1pZA');
         $credentialSource = new CredentialSource('{"credential":"source"}');
         $displayName = new PasskeyDisplayName('My passkey');
 
         $credential = $factory->create(
-            $identityIdentifier,
+            $passkeyUserIdentifier,
             $credentialId,
             $credentialSource,
             1,
@@ -50,7 +50,7 @@ class PasskeyCredentialFactoryTest extends TestCase
         );
 
         $this->assertSame('123e4567-e89b-72d3-a456-426614174001', (string) $credential->identifier());
-        $this->assertSame($identityIdentifier, $credential->identityIdentifier());
+        $this->assertSame($passkeyUserIdentifier, $credential->passkeyUserIdentifier());
         $this->assertSame($credentialId, $credential->credentialId());
         $this->assertSame($credentialSource, $credential->credentialSource());
         $this->assertSame(1, $credential->signCount());

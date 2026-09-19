@@ -11,8 +11,8 @@ use Source\Identity\Domain\Exception\PasskeyBackupEligibilityChangedException;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PasskeyCredential
 {
@@ -21,7 +21,7 @@ class PasskeyCredential
     /** @param string[] $transports */
     public function __construct(
         private readonly PasskeyCredentialIdentifier $identifier,
-        private readonly IdentityIdentifier $identityIdentifier,
+        private readonly PasskeyUserIdentifier $passkeyUserIdentifier,
         private readonly WebAuthnCredentialId $credentialId,
         private CredentialSource $credentialSource,
         private int $signCount,
@@ -52,9 +52,9 @@ class PasskeyCredential
         return $this->identifier;
     }
 
-    public function identityIdentifier(): IdentityIdentifier
+    public function passkeyUserIdentifier(): PasskeyUserIdentifier
     {
-        return $this->identityIdentifier;
+        return $this->passkeyUserIdentifier;
     }
 
     public function credentialId(): WebAuthnCredentialId

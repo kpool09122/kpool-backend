@@ -9,9 +9,9 @@ use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class PasskeyCredentialFactory implements PasskeyCredentialFactoryInterface
 {
@@ -21,7 +21,7 @@ readonly class PasskeyCredentialFactory implements PasskeyCredentialFactoryInter
     }
 
     public function create(
-        IdentityIdentifier $identityIdentifier,
+        PasskeyUserIdentifier $passkeyUserIdentifier,
         WebAuthnCredentialId $credentialId,
         CredentialSource $credentialSource,
         int $signCount,
@@ -32,7 +32,7 @@ readonly class PasskeyCredentialFactory implements PasskeyCredentialFactoryInter
     ): PasskeyCredential {
         return new PasskeyCredential(
             new PasskeyCredentialIdentifier($this->uuidGenerator->generate()),
-            $identityIdentifier,
+            $passkeyUserIdentifier,
             $credentialId,
             $credentialSource,
             $signCount,

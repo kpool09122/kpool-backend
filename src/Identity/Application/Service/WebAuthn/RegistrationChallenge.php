@@ -6,7 +6,7 @@ namespace Source\Identity\Application\Service\WebAuthn;
 
 use DateTimeImmutable;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
-use Source\Identity\Domain\ValueObject\PasskeyUserHandle;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Shared\Domain\ValueObject\Email;
@@ -18,7 +18,7 @@ readonly class RegistrationChallenge
         public WebAuthnChallenge $challenge,
         public WebAuthnOptions $options,
         public DateTimeImmutable $expiresAt,
-        public PasskeyUserHandle $userHandle,
+        public PasskeyUserIdentifier $passkeyUserIdentifier,
         public Email $email,
         public SignupSession $signupSession,
     ) {

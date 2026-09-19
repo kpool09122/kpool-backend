@@ -16,7 +16,7 @@ use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
-use Source\Identity\Domain\ValueObject\PasskeyUserHandle;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Shared\Domain\ValueObject\Email;
@@ -40,7 +40,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
             $challenge->expiresAt,
             self::REGISTRATION,
             [
-                'user_handle' => (string) $challenge->userHandle,
+                'passkey_user_id' => (string) $challenge->passkeyUserIdentifier,
                 'email' => (string) $challenge->email,
                 'account_type' => $signupSession->accountType()?->value,
                 'one_time_token' => $signupSession->oneTimeToken() !== null
@@ -54,7 +54,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
     public function consumeRegistration(ChallengeSessionKey $key): RegistrationChallenge
     {
         $data = $this->consume($key, self::REGISTRATION);
-        if (! isset($data['user_handle'], $data['email'])) {
+        if (! isset($data['passkey_user_id'], $data['email'])) {
             throw new ChallengeSessionNotFoundException();
         }
 
@@ -63,7 +63,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
             new WebAuthnChallenge($data['challenge']),
             new WebAuthnOptions($data['options']),
             new DateTimeImmutable($data['expires_at']),
-            new PasskeyUserHandle($data['user_handle']),
+            new PasskeyUserIdentifier($data['passkey_user_id']),
             new Email($data['email']),
             $this->signupSession($data),
         );

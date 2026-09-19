@@ -8,12 +8,12 @@ use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class PasskeyUserHandle extends StringBaseValue
+class PasskeyUserIdentifier extends StringBaseValue
 {
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Passkey user handle must be a UUIDv7.');
+            throw new InvalidArgumentException('Passkey user identifier must be a UUIDv7.');
         }
     }
 }

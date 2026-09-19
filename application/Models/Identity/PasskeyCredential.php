@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $identity_id
+ * @property string $passkey_user_id
  * @property string $credential_id
  * @property array<string, mixed> $credential_source
  * @property int $sign_count
@@ -23,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $last_used_at
  */
 #[Fillable([
-    'id', 'identity_id', 'credential_id', 'credential_source', 'sign_count',
+    'id', 'passkey_user_id', 'credential_id', 'credential_source', 'sign_count',
     'backup_eligible', 'backup_state', 'transports', 'display_name', 'last_used_at',
 ])]
 #[Hidden([
@@ -34,6 +35,12 @@ class PasskeyCredential extends Model
 {
     #[\Override]
     public $incrementing = false;
+
+    /** @return BelongsTo<PasskeyUser, $this> */
+    public function passkeyUser(): BelongsTo
+    {
+        return $this->belongsTo(PasskeyUser::class, 'passkey_user_id', 'id');
+    }
 
     #[\Override]
     protected function casts(): array

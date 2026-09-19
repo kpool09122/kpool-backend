@@ -13,11 +13,12 @@ use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
+use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
-use Source\Identity\Domain\ValueObject\PasskeyUserHandle;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 
 readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistrationOptionsInterface
@@ -27,6 +28,8 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
     public function __construct(
         private AuthCodeSessionRepositoryInterface $authCodeSessionRepository,
         private IdentityRepositoryInterface $identityRepository,
+        private PasskeyUserFactoryInterface $passkeyUserFactory,
+        private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private SignupInvitationValidatorInterface $signupInvitationValidator,
         private WebAuthnChallengeGeneratorInterface $challengeGenerator,
         private WebAuthnServiceInterface $webAuthnService,
@@ -57,12 +60,14 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
             }
         }
 
+        $passkeyUser = $this->passkeyUserFactory->create();
+        $this->passkeyUserRepository->save($passkeyUser);
+
         $challengeKey = new ChallengeSessionKey($this->uuidGenerator->generate());
-        $userHandle = new PasskeyUserHandle($this->uuidGenerator->generate());
         $challenge = $this->challengeGenerator->generate();
         $options = $this->webAuthnService->createRegistrationOptions(new RegistrationOptionsInput(
             $challenge,
-            (string) $userHandle,
+            (string) $passkeyUser->identifier(),
             (string) $input->email(),
             (string) $input->email(),
             [],
@@ -72,7 +77,7 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
             $challenge,
             $options,
             new DateTimeImmutable('+' . self::CHALLENGE_TTL_SECONDS . ' seconds'),
-            $userHandle,
+            $passkeyUser->identifier(),
             $input->email(),
             $input->signupSession(),
         ));

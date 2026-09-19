@@ -17,7 +17,7 @@ use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
-use Source\Identity\Domain\ValueObject\PasskeyUserHandle;
+use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
@@ -60,7 +60,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
             new WebAuthnChallenge(self::CHALLENGE),
             new WebAuthnOptions('{"publicKey":"options"}'),
             new DateTimeImmutable('+5 minutes'),
-            new PasskeyUserHandle('123e4567-e89b-72d3-a456-426614174001'),
+            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174001'),
             new Email('passkey@example.com'),
             new SignupSession(AccountType::INDIVIDUAL),
         );
@@ -70,7 +70,10 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
         $this->assertSame((string) $challenge->challenge, (string) $consumed->challenge);
         $this->assertSame('{"publicKey":"options"}', $consumed->options->json());
-        $this->assertSame('123e4567-e89b-72d3-a456-426614174001', (string) $consumed->userHandle);
+        $this->assertSame(
+            '123e4567-e89b-72d3-a456-426614174001',
+            (string) $consumed->passkeyUserIdentifier,
+        );
         $this->assertSame('passkey@example.com', (string) $consumed->email);
         $this->assertSame(AccountType::INDIVIDUAL, $consumed->signupSession->accountType());
 

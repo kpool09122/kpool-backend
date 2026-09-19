@@ -6,6 +6,7 @@ namespace Application\Models\Identity;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
 
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Collection<int, IdentitySocialConnection> $socialConnections
- * @property-read Collection<int, PasskeyCredential> $passkeyCredentials
+ * @property-read ?PasskeyUser $passkeyUser
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -61,10 +62,10 @@ class Identity extends Authenticatable
     }
 
     /**
-     * @return HasMany<PasskeyCredential, $this>
+     * @return HasOne<PasskeyUser, $this>
      */
-    public function passkeyCredentials(): HasMany
+    public function passkeyUser(): HasOne
     {
-        return $this->hasMany(PasskeyCredential::class, 'identity_id', 'id');
+        return $this->hasOne(PasskeyUser::class, 'identity_id', 'id');
     }
 }
