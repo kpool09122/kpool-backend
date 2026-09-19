@@ -86,6 +86,22 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $middleware->handle($request, fn () => response('ok'));
     }
 
+    public function testSiteManagementIdentityContactsRouteIsRegistered(): void
+    {
+        $expectedUri = 'api/site-management/contacts';
+
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {
+                $this->assertContains('auth.api', $route->gatherMiddleware());
+                $this->assertContains('resolve.actor', $route->gatherMiddleware());
+
+                return;
+            }
+        }
+
+        $this->fail(sprintf('Expected GET route [%s] was not registered.', $expectedUri));
+    }
+
     public function testWikiRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
     {
         $actualPublicWikiRouteUris = [];
