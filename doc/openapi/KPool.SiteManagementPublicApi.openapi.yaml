@@ -57,7 +57,7 @@ paths:
         - name: hasReply
           in: query
           required: false
-          description: Whether the inquiry has at least one successfully sent reply.
+          description: Whether the inquiry has at least one successfully sent reply. When omitted (null), no reply-status filter is applied.
           schema:
             type: boolean
             nullable: true

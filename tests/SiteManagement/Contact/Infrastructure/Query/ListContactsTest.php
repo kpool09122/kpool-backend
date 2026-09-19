@@ -114,6 +114,12 @@ class ListContactsTest extends TestCase
 
         $this->assertSame([$failedContact, $unrepliedContact], array_column($hasNoReplyOutput->toArray(), 'contactIdentifier'));
         $this->assertSame([[], []], array_column($hasNoReplyOutput->toArray(), 'replyIdentifiers'));
+
+        $allContactsOutput = new ListContactsOutput();
+        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
+
+        $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray(), 'contactIdentifier'));
+        $this->assertSame([[$sentReply], [], []], array_column($allContactsOutput->toArray(), 'replyIdentifiers'));
     }
 
     private function insertContact(string $id, ?string $identityIdentifier, string $email, string $createdAt): void
