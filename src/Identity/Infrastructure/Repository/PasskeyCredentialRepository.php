@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Repository;
 
 use Application\Models\Identity\PasskeyCredential as PasskeyCredentialEloquent;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use JsonException;
 use Source\Identity\Domain\Entity\PasskeyCredential;
+use Source\Identity\Domain\Exception\PasskeyCredentialAlreadyExistsException;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
@@ -20,22 +22,26 @@ class PasskeyCredentialRepository implements PasskeyCredentialRepositoryInterfac
 {
     public function save(PasskeyCredential $credential): void
     {
-        PasskeyCredentialEloquent::query()->updateOrCreate(
-            ['id' => (string) $credential->identifier()],
-            [
-                'passkey_user_id' => (string) $credential->passkeyUserIdentifier(),
-                'credential_id' => (string) $credential->credentialId(),
-                'credential_source' => json_decode((string) $credential->credentialSource(), true, flags: JSON_THROW_ON_ERROR),
-                'sign_count' => $credential->signCount(),
-                'backup_eligible' => $credential->backupEligible(),
-                'backup_state' => $credential->backupState(),
-                'transports' => $credential->transports(),
-                'display_name' => (string) $credential->displayName(),
-                'last_used_at' => $credential->lastUsedAt() !== null
-                    ? Carbon::createFromImmutable($credential->lastUsedAt())
-                    : null,
-            ],
-        );
+        try {
+            PasskeyCredentialEloquent::query()->updateOrCreate(
+                ['id' => (string) $credential->identifier()],
+                [
+                    'passkey_user_id' => (string) $credential->passkeyUserIdentifier(),
+                    'credential_id' => (string) $credential->credentialId(),
+                    'credential_source' => json_decode((string) $credential->credentialSource(), true, flags: JSON_THROW_ON_ERROR),
+                    'sign_count' => $credential->signCount(),
+                    'backup_eligible' => $credential->backupEligible(),
+                    'backup_state' => $credential->backupState(),
+                    'transports' => $credential->transports(),
+                    'display_name' => (string) $credential->displayName(),
+                    'last_used_at' => $credential->lastUsedAt() !== null
+                        ? Carbon::createFromImmutable($credential->lastUsedAt())
+                        : null,
+                ],
+            );
+        } catch (UniqueConstraintViolationException $exception) {
+            throw new PasskeyCredentialAlreadyExistsException(previous: $exception);
+        }
     }
 
     public function findByIdentifier(PasskeyCredentialIdentifier $identifier): ?PasskeyCredential

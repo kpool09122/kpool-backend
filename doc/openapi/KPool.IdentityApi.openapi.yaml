@@ -159,6 +159,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/addition:
+    post:
+      operationId: IdentityAuthOperations_addPasskey
+      description: Verify and register an additional passkey for the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPasskeyRequestBody'
   /auth/passkeys/addition/options:
     post:
       operationId: IdentityAuthOperations_addPasskeyOptions
@@ -632,6 +680,21 @@ components:
           nullable: true
           description: Optional condition attached to the statement.
       description: Policy statement returned for account effective policies.
+    AddPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - displayName
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        displayName:
+          type: string
+          maxLength: 64
+        credential:
+          $ref: '#/components/schemas/PasskeyRegistrationCredential'
+      description: Request body for completing registration of an additional passkey.
     AuthenticateWithPasskeyRequestBody:
       type: object
       required:
@@ -1016,6 +1079,21 @@ components:
         userHandle:
           type: string
           nullable: true
+    PasskeyAuthenticatorAttestationResponse:
+      type: object
+      required:
+        - clientDataJSON
+        - attestationObject
+      properties:
+        clientDataJSON:
+          type: string
+        attestationObject:
+          type: string
+        transports:
+          type: array
+          items:
+            type: string
+          nullable: true
     PasskeyAuthenticatorSelection:
       type: object
       required:
@@ -1065,6 +1143,32 @@ components:
           items:
             $ref: '#/components/schemas/PasskeySummary'
       description: Registered passkeys belonging to the authenticated identity.
+    PasskeyRegistrationCredential:
+      type: object
+      required:
+        - id
+        - rawId
+        - type
+        - response
+      properties:
+        id:
+          type: string
+        rawId:
+          type: string
+        type:
+          type: string
+          enum:
+            - public-key
+        response:
+          $ref: '#/components/schemas/PasskeyAuthenticatorAttestationResponse'
+        authenticatorAttachment:
+          type: string
+          nullable: true
+        clientExtensionResults:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+          nullable: true
     PasskeyRegistrationOptions:
       type: object
       required:

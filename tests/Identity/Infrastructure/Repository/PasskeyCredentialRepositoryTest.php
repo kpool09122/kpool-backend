@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Entity\PasskeyUser;
+use Source\Identity\Domain\Exception\PasskeyCredentialAlreadyExistsException;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
@@ -74,7 +75,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
         $repository->save($this->credential('123e4567-e89b-72d3-a456-426614174001', 'ZHVwbGljYXRl', false, false, ['usb']));
 
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(PasskeyCredentialAlreadyExistsException::class);
         $repository->save($this->credential('123e4567-e89b-72d3-a456-426614174002', 'ZHVwbGljYXRl', false, false, ['nfc']));
     }
 

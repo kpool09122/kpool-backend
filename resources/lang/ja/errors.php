@@ -35,6 +35,9 @@ return [
     // Identity
     'invalid_credentials' => 'メールアドレスまたはパスワードが正しくありません。',
     'invalid_passkey_authentication' => 'パスキー認証に失敗しました。',
+    'invalid_passkey_registration' => 'パスキー登録に失敗しました。',
+    'passkey_credential_already_exists' => 'このパスキーは既に登録されています。',
+    'passkey_user_not_found' => 'パスキーユーザーが見つかりません。',
     'social_connection_already_exists' => 'このソーシャルアカウントは既に連携されています。',
     'auth_code_expired' => '認証コードの有効期限が切れています。',
     'invalid_auth_code' => '認証コードが一致しません。',

@@ -35,6 +35,9 @@ return [
     // Identity
     'invalid_credentials' => '邮箱地址或密码不正确。',
     'invalid_passkey_authentication' => '通行密钥认证失败。',
+    'invalid_passkey_registration' => '通行密钥注册失败。',
+    'passkey_credential_already_exists' => '此通行密钥已注册。',
+    'passkey_user_not_found' => '未找到通行密钥用户。',
     'social_connection_already_exists' => '该社交账号已关联。',
     'auth_code_expired' => '验证码已过期。',
     'invalid_auth_code' => '验证码不匹配。',

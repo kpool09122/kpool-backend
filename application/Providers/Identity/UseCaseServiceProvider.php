@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Providers\Identity;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskey;
+use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskeyInterface;
 use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptions;
 use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsInterface;
 use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskey;
@@ -40,6 +42,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(AddPasskeyInterface::class, AddPasskey::class);
         $this->app->singleton(AddPasskeyOptionsInterface::class, AddPasskeyOptions::class);
         $this->app->singleton(AuthenticateWithPasskeyInterface::class, AuthenticateWithPasskey::class);
         $this->app->singleton(LoginInterface::class, Login::class);
