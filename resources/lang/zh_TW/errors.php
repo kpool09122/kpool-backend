@@ -37,6 +37,7 @@ return [
     'invalid_passkey_authentication' => '通行密鑰驗證失敗。',
     'invalid_passkey_registration' => '通行密鑰註冊失敗。',
     'passkey_credential_already_exists' => '此通行密鑰已註冊。',
+    'passkey_credential_not_found' => '找不到通行密鑰。',
     'passkey_user_not_found' => '找不到通行密鑰使用者。',
     'social_connection_already_exists' => '該社交帳號已關聯。',
     'auth_code_expired' => '驗證碼已過期。',

@@ -13,6 +13,7 @@ use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
+use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
@@ -37,6 +38,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/passkeys', ListPasskeysAction::class);
     Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
     Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
+    Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
     // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
 

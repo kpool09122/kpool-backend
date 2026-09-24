@@ -318,6 +318,14 @@ model AddPasskeyRequestBody {
   credential: PasskeyRegistrationCredential;
 }
 
+@doc("Request body for updating a registered passkey.")
+model UpdatePasskeyRequestBody {
+  @minLength(1)
+  @maxLength(64)
+  @doc("New user-visible name for the passkey.")
+  displayName: string;
+}
+
 @doc("Request body for completing passkey authentication.")
 model AuthenticateWithPasskeyRequestBody {
   challengeKey: Uuid;
@@ -521,6 +529,14 @@ interface IdentityAuthOperations {
   addPasskey(
     @body body: AddPasskeyRequestBody,
   ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Update a passkey belonging to the authenticated identity.")
+  updatePasskey(
+    @path passkeyIdentifier: Uuid,
+    @body body: UpdatePasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/identities/{identityIdentifier}/profile")
