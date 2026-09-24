@@ -9,8 +9,6 @@ use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskey;
 use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskeyInterface;
 use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskey;
 use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyInterface;
-use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
-use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptions;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptions;
@@ -19,10 +17,10 @@ use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskey;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInterface;
-use Source\Identity\Application\UseCase\Command\Login\Login;
-use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
 use Source\Identity\Application\UseCase\Command\Logout\Logout;
 use Source\Identity\Application\UseCase\Command\Logout\LogoutInterface;
+use Source\Identity\Application\UseCase\Command\RegisterWithPasskey\RegisterWithPasskey;
+use Source\Identity\Application\UseCase\Command\RegisterWithPasskey\RegisterWithPasskeyInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCode;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
@@ -50,11 +48,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeletePasskeyInterface::class, DeletePasskey::class);
         $this->app->singleton(CreatePasskeyOptionsInterface::class, CreatePasskeyOptions::class);
         $this->app->singleton(AuthenticateWithPasskeyInterface::class, AuthenticateWithPasskey::class);
-        $this->app->singleton(LoginInterface::class, Login::class);
         $this->app->singleton(LogoutInterface::class, Logout::class);
+        $this->app->singleton(RegisterWithPasskeyInterface::class, RegisterWithPasskey::class);
         $this->app->singleton(SendAuthCodeInterface::class, SendAuthCode::class);
         $this->app->singleton(VerifyEmailInterface::class, VerifyEmail::class);
-        $this->app->singleton(CreateIdentityInterface::class, CreateIdentity::class);
         $this->app->singleton(
             CreatePasskeyRegistrationOptionsInterface::class,
             CreatePasskeyRegistrationOptions::class,

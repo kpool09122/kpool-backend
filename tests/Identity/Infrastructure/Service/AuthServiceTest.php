@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -135,7 +133,6 @@ class AuthServiceTest extends TestCase
             new Email('test@example.com'),
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
         );
     }

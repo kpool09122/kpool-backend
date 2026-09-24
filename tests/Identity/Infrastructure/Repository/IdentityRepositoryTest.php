@@ -9,9 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
@@ -134,7 +132,6 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::JAPANESE,
             new ImagePath('/images/profile.jpg'),
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             $emailVerifiedAt,
             [new SocialConnection(SocialProvider::GOOGLE, 'google-new-identity')]
         );
@@ -187,7 +184,6 @@ class IdentityRepositoryTest extends TestCase
             new Email('updated@example.com'),
             Language::KOREAN,
             null,
-            HashedPassword::fromPlain(new PlainPassword('newpassword')),
             new DateTimeImmutable('2024-06-01 00:00:00'),
             []
         );
@@ -222,7 +218,6 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::ENGLISH,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
             []
         );
@@ -254,7 +249,6 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
             [
                 new SocialConnection(SocialProvider::GOOGLE, 'google-id-1'),

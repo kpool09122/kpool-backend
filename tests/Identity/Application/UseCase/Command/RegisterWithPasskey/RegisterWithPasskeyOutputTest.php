@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Application\UseCase\Command\AuthenticateWithPasskey;
+namespace Tests\Identity\Application\UseCase\Command\RegisterWithPasskey;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyOutput;
+use Source\Identity\Application\UseCase\Command\RegisterWithPasskey\RegisterWithPasskeyOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Shared\Domain\ValueObject\Email;
@@ -15,22 +15,20 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 
-class AuthenticateWithPasskeyOutputTest extends TestCase
+class RegisterWithPasskeyOutputTest extends TestCase
 {
-    public function testToArrayReturnsEmptyWhenIdentityIsNull(): void
+    public function testToArrayReturnsEmptyBeforeIdentityIsSet(): void
     {
-        $output = new AuthenticateWithPasskeyOutput();
-
-        $this->assertSame([], $output->toArray());
+        $this->assertSame([], (new RegisterWithPasskeyOutput())->toArray());
     }
 
-    public function testToArrayReturnsIdentityData(): void
+    public function testToArrayReturnsIdentityAndReturnTo(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $identityName = new IdentityName('test-user');
-        $email = new Email('user@example.com');
-        $language = Language::JAPANESE;
-        $profileImage = new ImagePath('/resources/path/test.png');
+        $identityName = new IdentityName('Passkey User');
+        $email = new Email('passkey@example.com');
+        $language = Language::ENGLISH;
+        $profileImage = new ImagePath('/images/passkey-user.png');
         $identity = new Identity(
             $identityIdentifier,
             $identityName,
@@ -40,8 +38,8 @@ class AuthenticateWithPasskeyOutputTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $output = new AuthenticateWithPasskeyOutput();
-        $output->setIdentity($identity);
+        $output = new RegisterWithPasskeyOutput();
+        $output->setIdentity($identity, '/dashboard');
 
         $this->assertSame([
             'identityIdentifier' => (string) $identityIdentifier,
@@ -49,22 +47,24 @@ class AuthenticateWithPasskeyOutputTest extends TestCase
             'email' => (string) $email,
             'language' => $language->value,
             'profileImage' => (string) $profileImage,
+            'returnTo' => '/dashboard',
         ], $output->toArray());
     }
 
-    public function testToArrayReturnsNullProfileImageWhenNotSet(): void
+    public function testToArrayReturnsNullOptionalValues(): void
     {
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new IdentityName('test-user'),
-            new Email('user@example.com'),
+            new IdentityName('Passkey User'),
+            new Email('passkey@example.com'),
             Language::JAPANESE,
             null,
             new DateTimeImmutable(),
         );
-        $output = new AuthenticateWithPasskeyOutput();
-        $output->setIdentity($identity);
+        $output = new RegisterWithPasskeyOutput();
+        $output->setIdentity($identity, null);
 
         $this->assertNull($output->toArray()['profileImage']);
+        $this->assertNull($output->toArray()['returnTo']);
     }
 }

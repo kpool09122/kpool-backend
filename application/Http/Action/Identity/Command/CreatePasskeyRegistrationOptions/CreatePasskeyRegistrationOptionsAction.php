@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions;
 
+use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -44,7 +45,7 @@ readonly class CreatePasskeyRegistrationOptionsAction
                     new SignupSession(
                         $request->accountType() !== null ? AccountType::from($request->accountType()) : null,
                         $request->oneTimeToken() !== null ? new OneTimeToken($request->oneTimeToken()) : null,
-                        $request->returnTo(),
+                        ReturnToUrl::normalize($request->returnTo()),
                     ),
                 );
                 $output = new CreatePasskeyRegistrationOptionsOutput();

@@ -45,42 +45,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/login:
-    post:
-      operationId: IdentityAuthOperations_login
-      description: Authenticate with email and password.
-      parameters: []
-      responses:
-        '200':
-          description: Response returned when email login succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginIdentitySummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequestBody'
   /auth/logout:
     post:
       operationId: IdentityAuthOperations_logout
@@ -297,6 +261,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/registration:
+    post:
+      operationId: IdentityAuthOperations_registerWithPasskey
+      description: Verify a WebAuthn attestation, create an identity and establish an authenticated session.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when passkey-based identity registration succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyIdentityRegistrationResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterWithPasskeyRequestBody'
   /auth/passkeys/registration/options:
     post:
       operationId: IdentityAuthOperations_createPasskeyRegistrationOptions
@@ -438,54 +444,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/register:
-    post:
-      operationId: IdentityAuthOperations_createIdentity
-      description: Register a new identity.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when an identity is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IdentitySummary'
-        '403':
-          description: Access is forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '409':
-          description: The request conflicts with the current state of the server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateIdentityRequestBody'
   /auth/send-auth-code:
     post:
       operationId: IdentityAuthOperations_sendAuthCode
@@ -939,35 +897,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.
-    CreateIdentityRequestBody:
-      type: object
-      required:
-        - identityName
-        - email
-        - password
-        - confirmedPassword
-      properties:
-        identityName:
-          type: string
-          description: Requested identityName.
-        email:
-          type: string
-          description: Email address.
-        password:
-          type: string
-          description: Plain text password.
-        confirmedPassword:
-          type: string
-          description: Password confirmation.
-        base64EncodedImage:
-          type: string
-          nullable: true
-          description: Base64-encoded profile image.
-        oneTimeToken:
-          type: string
-          nullable: true
-          description: One-time token used during signup.
-      description: Request body for registering a new identity.
     CreatePasskeyRegistrationOptionsRequestBody:
       type: object
       required:
@@ -1067,33 +996,6 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
-    LoginIdentitySummary:
-      type: object
-      properties:
-        returnTo:
-          type: string
-          nullable: true
-          description: Normalized application return path after login.
-      allOf:
-        - $ref: '#/components/schemas/IdentitySummary'
-      description: Identity summary returned after email login.
-    LoginRequestBody:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          description: Email address.
-        password:
-          type: string
-          description: Plain text password.
-        return_to:
-          type: string
-          nullable: true
-          description: Application return path after login.
-      description: Request body for logging in.
     PasskeyAuthenticationCredential:
       type: object
       required:
@@ -1226,6 +1128,15 @@ components:
         alg:
           type: integer
           format: int32
+    PasskeyIdentityRegistrationResult:
+      type: object
+      properties:
+        returnTo:
+          type: string
+          nullable: true
+      allOf:
+        - $ref: '#/components/schemas/IdentitySummary'
+      description: Identity and retained navigation state returned after passkey registration.
     PasskeyListResult:
       type: object
       required:
@@ -1381,6 +1292,33 @@ components:
           type: string
           description: Client redirect URL returned by the backend.
       description: Redirect URL payload used by social login endpoints.
+    RegisterWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - identityName
+        - displayName
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityName:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: Requested identity name.
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: User-visible name for the passkey.
+        base64EncodedImage:
+          type: string
+          nullable: true
+          description: Base64-encoded profile image.
+        credential:
+          $ref: '#/components/schemas/PasskeyRegistrationCredential'
+      description: Request body for completing passkey-based identity registration.
     SendAuthCodeRequestBody:
       type: object
       required:

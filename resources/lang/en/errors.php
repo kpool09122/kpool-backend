@@ -33,7 +33,6 @@ return [
     'settlement_schedule_not_found' => 'The specified settlement schedule was not found.',
 
     // Identity
-    'invalid_credentials' => 'The email address or password is incorrect.',
     'invalid_passkey_authentication' => 'Passkey authentication failed.',
     'invalid_passkey_registration' => 'Passkey registration failed.',
     'passkey_credential_already_exists' => 'This passkey is already registered.',
@@ -43,7 +42,6 @@ return [
     'social_connection_already_exists' => 'This social account is already linked.',
     'auth_code_expired' => 'The authentication code has expired.',
     'invalid_auth_code' => 'The authentication code does not match.',
-    'password_mismatch' => 'The passwords do not match.',
     'invalid_delegation' => 'The delegation operation is invalid.',
     'identity_not_found' => 'The specified identity was not found.',
     'already_user_exists' => 'The user already exists.',

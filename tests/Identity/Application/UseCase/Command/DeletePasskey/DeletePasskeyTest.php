@@ -21,7 +21,6 @@ use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
@@ -211,7 +210,6 @@ class DeletePasskeyTest extends TestCase
             new Email('test@example.com'),
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new \Source\Identity\Domain\ValueObject\PlainPassword('Password1!')),
             new DateTimeImmutable(),
             $socialConnections,
         );

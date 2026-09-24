@@ -117,11 +117,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
         sort($actualPublicIdentityRouteUris);
 
         $expected = [
-            'api/identity/auth/login',
+            'api/identity/auth/passkeys/registration',
             'api/identity/auth/passkeys/authentication',
             'api/identity/auth/passkeys/authentication/options',
             'api/identity/auth/passkeys/registration/options',
-            'api/identity/auth/register',
+            'api/identity/auth/send-auth-code',
             'api/identity/auth/social/{provider}/callback',
             'api/identity/auth/social/{provider}/redirect',
             'api/identity/auth/verify-email',
@@ -252,11 +252,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             // Identity: 認証開始に必要な公開API
+            'identity: send auth code' => ['POST', '/api/identity/auth/send-auth-code'],
             'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
-            'identity: register' => ['POST', '/api/identity/auth/register'],
+            'identity: complete passkey registration' => ['POST', '/api/identity/auth/passkeys/registration'],
             'identity: passkey authentication options' => ['POST', '/api/identity/auth/passkeys/authentication/options'],
             'identity: passkey registration options' => ['POST', '/api/identity/auth/passkeys/registration/options'],
-            'identity: login' => ['POST', '/api/identity/auth/login'],
             'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
             'identity: social callback' => ['GET', '/api/identity/auth/social/google/callback'],
 
@@ -282,7 +282,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function disabledRouteProvider(): array
     {
         return [
-            'identity: send auth code' => ['POST', 'api/identity/auth/send-auth-code'],
+            'identity: removed register route' => ['POST', 'api/identity/auth/register'],
+            'identity: removed login route' => ['POST', 'api/identity/auth/login'],
             'identity: get identity profile' => ['GET', 'api/identity/auth/identities/{identityIdentifier}/profile'],
             'account: delete account' => ['DELETE', 'api/account/accounts/{accountId}'],
             'account: create delegation permission' => ['POST', 'api/account/delegation-permissions'],
