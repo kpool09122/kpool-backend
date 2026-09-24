@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Query;
 
 use Application\Models\Identity\PasskeyCredential as PasskeyCredentialModel;
-use Application\Models\Identity\PasskeyUser as PasskeyUserModel;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInputPort;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Application\UseCase\Query\PasskeyReadModel;
@@ -14,15 +13,6 @@ readonly class ListPasskeys implements ListPasskeysInterface
 {
     public function process(ListPasskeysInputPort $input): array
     {
-        $passkeyUser = PasskeyUserModel::query()
-            ->select('id')
-            ->where('identity_id', (string) $input->identityIdentifier())
-            ->first();
-
-        if ($passkeyUser === null) {
-            return [];
-        }
-
         return PasskeyCredentialModel::query()
             ->select([
                 'id',
@@ -33,7 +23,7 @@ readonly class ListPasskeys implements ListPasskeysInterface
                 'last_used_at',
                 'created_at',
             ])
-            ->where('passkey_user_id', $passkeyUser->id)
+            ->whereRelation('passkeyUser', 'identity_id', (string) $input->identityIdentifier())
             ->orderBy('created_at')
             ->get()
             ->map(static fn (PasskeyCredentialModel $credential): PasskeyReadModel => new PasskeyReadModel(
