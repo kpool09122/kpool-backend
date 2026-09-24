@@ -34,6 +34,7 @@ return [
 
     // Identity
     'invalid_credentials' => 'La dirección de correo electrónico o la contraseña es incorrecta.',
+    'invalid_passkey_authentication' => 'La autenticación con clave de acceso ha fallado.',
     'social_connection_already_exists' => 'Esta cuenta social ya está vinculada.',
     'auth_code_expired' => 'El código de autenticación ha expirado.',
     'invalid_auth_code' => 'El código de autenticación no coincide.',

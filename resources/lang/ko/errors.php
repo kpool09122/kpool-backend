@@ -34,6 +34,7 @@ return [
 
     // Identity
     'invalid_credentials' => '이메일 주소 또는 비밀번호가 올바르지 않습니다.',
+    'invalid_passkey_authentication' => '패스키 인증에 실패했습니다.',
     'social_connection_already_exists' => '이 소셜 계정은 이미 연결되어 있습니다.',
     'auth_code_expired' => '인증 코드의 유효기간이 만료되었습니다.',
     'invalid_auth_code' => '인증 코드가 일치하지 않습니다.',

@@ -34,6 +34,7 @@ return [
 
     // Identity
     'invalid_credentials' => 'The email address or password is incorrect.',
+    'invalid_passkey_authentication' => 'Passkey authentication failed.',
     'social_connection_already_exists' => 'This social account is already linked.',
     'auth_code_expired' => 'The authentication code has expired.',
     'invalid_auth_code' => 'The authentication code does not match.',

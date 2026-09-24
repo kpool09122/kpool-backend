@@ -118,6 +118,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
         $expected = [
             'api/identity/auth/login',
+            'api/identity/auth/passkeys/authentication',
             'api/identity/auth/passkeys/authentication/options',
             'api/identity/auth/passkeys/registration/options',
             'api/identity/auth/register',

@@ -34,6 +34,7 @@ return [
 
     // Identity
     'invalid_credentials' => '電子郵件地址或密碼不正確。',
+    'invalid_passkey_authentication' => '通行密鑰驗證失敗。',
     'social_connection_already_exists' => '該社交帳號已關聯。',
     'auth_code_expired' => '驗證碼已過期。',
     'invalid_auth_code' => '驗證碼不匹配。',

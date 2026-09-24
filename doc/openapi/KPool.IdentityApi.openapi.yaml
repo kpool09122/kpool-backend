@@ -135,6 +135,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/authentication:
+    post:
+      operationId: IdentityAuthOperations_authenticateWithPasskey
+      description: Verify a WebAuthn assertion and establish an authenticated session.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an identity operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticateWithPasskeyRequestBody'
   /auth/passkeys/authentication/options:
     post:
       operationId: IdentityAuthOperations_createPasskeyAuthenticationOptions
@@ -536,6 +572,17 @@ components:
           nullable: true
           description: Optional condition attached to the statement.
       description: Policy statement returned for account effective policies.
+    AuthenticateWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        credential:
+          $ref: '#/components/schemas/PasskeyAuthenticationCredential'
+      description: Request body for completing passkey authentication.
     AuthenticatedAccountAddressSummary:
       type: object
       properties:
@@ -831,6 +878,32 @@ components:
           nullable: true
           description: Application return path after login.
       description: Request body for logging in.
+    PasskeyAuthenticationCredential:
+      type: object
+      required:
+        - id
+        - rawId
+        - type
+        - response
+      properties:
+        id:
+          type: string
+        rawId:
+          type: string
+        type:
+          type: string
+          enum:
+            - public-key
+        response:
+          $ref: '#/components/schemas/PasskeyAuthenticatorAssertionResponse'
+        authenticatorAttachment:
+          type: string
+          nullable: true
+        clientExtensionResults:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+          nullable: true
     PasskeyAuthenticationOptions:
       type: object
       required:
@@ -867,6 +940,22 @@ components:
         options:
           $ref: '#/components/schemas/PasskeyAuthenticationOptions'
       description: Result for starting passkey authentication.
+    PasskeyAuthenticatorAssertionResponse:
+      type: object
+      required:
+        - clientDataJSON
+        - authenticatorData
+        - signature
+      properties:
+        clientDataJSON:
+          type: string
+        authenticatorData:
+          type: string
+        signature:
+          type: string
+        userHandle:
+          type: string
+          nullable: true
     PasskeyAuthenticatorSelection:
       type: object
       required:
