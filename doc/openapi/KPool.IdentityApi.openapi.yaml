@@ -135,6 +135,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys:
+    get:
+      operationId: IdentityAuthOperations_listPasskeys
+      description: List passkeys registered by the current authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when registered passkeys are listed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyListResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/passkeys/authentication:
     post:
       operationId: IdentityAuthOperations_authenticateWithPasskey
@@ -995,6 +1019,16 @@ components:
         alg:
           type: integer
           format: int32
+    PasskeyListResult:
+      type: object
+      required:
+        - passkeys
+      properties:
+        passkeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeySummary'
+      description: Registered passkeys belonging to the authenticated identity.
     PasskeyRegistrationOptions:
       type: object
       required:
@@ -1052,6 +1086,46 @@ components:
           type: string
         id:
           type: string
+    PasskeySummary:
+      type: object
+      required:
+        - passkeyIdentifier
+        - displayName
+        - transports
+        - backupEligible
+        - backupState
+        - lastUsedAt
+        - createdAt
+      properties:
+        passkeyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Application identifier for the registered passkey.
+        displayName:
+          type: string
+          description: User-visible name for the passkey.
+        transports:
+          type: array
+          items:
+            type: string
+          description: Authenticator transports reported at registration.
+        backupEligible:
+          type: boolean
+          description: Whether the credential is eligible for backup and synchronization.
+        backupState:
+          type: boolean
+          description: Whether the credential is currently backed up.
+        lastUsedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp of the most recent successful authentication.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the passkey was registered.
+      description: Public metadata for a passkey registered by the authenticated identity.
     PasskeyUserEntity:
       type: object
       required:

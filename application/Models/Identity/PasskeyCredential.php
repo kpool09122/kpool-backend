@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property string[] $transports
  * @property string $display_name
  * @property ?Carbon $last_used_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 #[Fillable([
     'id', 'passkey_user_id', 'credential_id', 'credential_source', 'sign_count',
