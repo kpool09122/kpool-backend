@@ -162,6 +162,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         return [
             // Identity: 認証開始系以外の操作は認証必須
             'identity: me' => ['GET', '/api/identity/auth/me'],
+            'identity: list passkeys' => ['GET', '/api/identity/auth/passkeys'],
             'identity: logout' => ['POST', '/api/identity/auth/logout'],
             'account: switch account' => ['POST', '/api/account/accounts/switch'],
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
@@ -212,6 +213,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
+            'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
             'account principal groups resolve actor and account' => ['GET', '/api/account/principal-groups', ['resolve.actor', 'resolve.account']],

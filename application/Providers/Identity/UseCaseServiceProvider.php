@@ -29,8 +29,10 @@ use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
+use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Infrastructure\Query\GetAuthenticatedIdentity;
 use Source\Identity\Infrastructure\Query\GetIdentityProfile;
+use Source\Identity\Infrastructure\Query\ListPasskeys;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -56,5 +58,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(UpdateIdentityInterface::class, UpdateIdentity::class);
         $this->app->singleton(GetAuthenticatedIdentityInterface::class, GetAuthenticatedIdentity::class);
         $this->app->singleton(GetIdentityProfileInterface::class, GetIdentityProfile::class);
+        $this->app->singleton(ListPasskeysInterface::class, ListPasskeys::class);
     }
 }

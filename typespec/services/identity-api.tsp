@@ -256,6 +256,29 @@ model PasskeyAuthenticationOptionsResult {
   options: PasskeyAuthenticationOptions;
 }
 
+@doc("Public metadata for a passkey registered by the authenticated identity.")
+model PasskeySummary {
+  @doc("Application identifier for the registered passkey.")
+  passkeyIdentifier: Uuid;
+  @doc("User-visible name for the passkey.")
+  displayName: string;
+  @doc("Authenticator transports reported at registration.")
+  transports: string[];
+  @doc("Whether the credential is eligible for backup and synchronization.")
+  backupEligible: boolean;
+  @doc("Whether the credential is currently backed up.")
+  backupState: boolean;
+  @doc("Timestamp of the most recent successful authentication.")
+  lastUsedAt: Timestamp | null;
+  @doc("Timestamp when the passkey was registered.")
+  createdAt: Timestamp;
+}
+
+@doc("Registered passkeys belonging to the authenticated identity.")
+model PasskeyListResult {
+  passkeys: PasskeySummary[];
+}
+
 model PasskeyAuthenticatorAssertionResponse {
   clientDataJSON: string;
   authenticatorData: string;
@@ -331,6 +354,12 @@ model PasskeyRegistrationOptionsResponse {
 model PasskeyAuthenticationOptionsResponse {
   @statusCode statusCode: 200;
   @body body: PasskeyAuthenticationOptionsResult;
+}
+
+@doc("Response returned when registered passkeys are listed.")
+model PasskeyListResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyListResult;
 }
 
 @doc("Response returned when an identity is created.")
@@ -452,6 +481,11 @@ interface IdentityAuthOperations {
   @route("/me")
   @doc("Get the current authenticated identity.")
   getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/passkeys")
+  @doc("List passkeys registered by the current authenticated identity.")
+  listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/identities/{identityIdentifier}/profile")
