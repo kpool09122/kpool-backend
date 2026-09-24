@@ -38,6 +38,7 @@ return [
     'invalid_passkey_registration' => 'Error al registrar la clave de acceso.',
     'passkey_credential_already_exists' => 'Esta clave de acceso ya está registrada.',
     'passkey_credential_not_found' => 'No se encontró la clave de acceso.',
+    'cannot_delete_last_authentication_method' => 'No se puede eliminar el último método de autenticación.',
     'passkey_user_not_found' => 'No se encontró el usuario de la clave de acceso.',
     'social_connection_already_exists' => 'Esta cuenta social ya está vinculada.',
     'auth_code_expired' => 'El código de autenticación ha expirado.',

@@ -392,6 +392,52 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatePasskeyRequestBody'
+    delete:
+      operationId: IdentityAuthOperations_deletePasskey
+      description: Delete a passkey belonging to the authenticated identity while preserving another authentication method.
+      parameters:
+        - name: passkeyIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/register:
     post:
       operationId: IdentityAuthOperations_createIdentity

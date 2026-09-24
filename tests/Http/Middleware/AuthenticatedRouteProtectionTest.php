@@ -167,6 +167,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: add passkey options' => ['POST', '/api/identity/auth/passkeys/addition/options'],
             'identity: add passkey' => ['POST', '/api/identity/auth/passkeys/addition'],
             'identity: update passkey' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
+            'identity: delete passkey' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
             'account: switch account' => ['POST', '/api/account/accounts/switch'],
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
@@ -219,6 +220,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity add passkey options resolves actor' => ['POST', '/api/identity/auth/passkeys/addition/options', ['resolve.actor']],
             'identity add passkey resolves actor' => ['POST', '/api/identity/auth/passkeys/addition', ['resolve.actor']],
             'identity update passkey resolves actor' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
+            'identity delete passkey resolves actor' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
             'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],

@@ -80,6 +80,21 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $repository->save($this->credential('123e4567-e89b-72d3-a456-426614174002', 'ZHVwbGljYXRl', false, false, ['nfc']));
     }
 
+    #[Group('useDb')]
+    public function testItDeletesACredentialByIdentifier(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        CreateIdentity::create($identityIdentifier, ['email' => 'passkey-delete@example.com']);
+        $this->createPasskeyUser($identityIdentifier);
+        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $identifier = new PasskeyCredentialIdentifier('123e4567-e89b-72d3-a456-426614174001');
+        $repository->save($this->credential((string) $identifier, 'ZGVsZXRlLW1l', false, false, ['internal']));
+
+        $repository->delete($identifier);
+
+        $this->assertNull($repository->findByIdentifier($identifier));
+    }
+
     /** @param string[] $transports */
     private function credential(string $id, string $credentialId, bool $be, bool $bs, array $transports): PasskeyCredential
     {
