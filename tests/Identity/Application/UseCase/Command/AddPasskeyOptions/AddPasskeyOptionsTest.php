@@ -21,7 +21,6 @@ use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Entity\PasskeyUser;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
-use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
@@ -36,7 +35,6 @@ use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -95,7 +93,7 @@ class AddPasskeyOptionsTest extends TestCase
 
         $output = new AddPasskeyOptionsOutput();
         $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier(), null, null),
+            new AddPasskeyOptionsInput($identity->identityIdentifier()),
             $output,
         );
 
@@ -131,7 +129,7 @@ class AddPasskeyOptionsTest extends TestCase
         $this->bindDefaults($identityRepository, $passkeyUserRepository, $factory, $credentials);
 
         $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier(), null, null),
+            new AddPasskeyOptionsInput($identity->identityIdentifier()),
             new AddPasskeyOptionsOutput(),
         );
     }
@@ -162,7 +160,7 @@ class AddPasskeyOptionsTest extends TestCase
 
         $this->expectException(RuntimeException::class);
         $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier(), null, null),
+            new AddPasskeyOptionsInput($identity->identityIdentifier()),
             new AddPasskeyOptionsOutput(),
         );
     }
@@ -191,25 +189,7 @@ class AddPasskeyOptionsTest extends TestCase
 
         $this->expectException(RuntimeException::class);
         $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier(), null, null),
-            new AddPasskeyOptionsOutput(),
-        );
-    }
-
-    public function testItRejectsADelegatedIdentityBeforeLoadingIdentityData(): void
-    {
-        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $identityRepository->shouldNotReceive('findById');
-        $this->bindDefaults(identityRepository: $identityRepository);
-
-        $this->expectException(InvalidDelegationException::class);
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput(
-                new IdentityIdentifier(self::IDENTITY_ID),
-                new DelegationIdentifier('01994e3a-a15e-72d3-a456-426614174099'),
-                new IdentityIdentifier('01994e3a-a15e-72d3-a456-426614174098'),
-            ),
+            new AddPasskeyOptionsInput($identity->identityIdentifier()),
             new AddPasskeyOptionsOutput(),
         );
     }
@@ -223,7 +203,7 @@ class AddPasskeyOptionsTest extends TestCase
 
         $this->expectException(IdentityNotFoundException::class);
         $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID), null, null),
+            new AddPasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID)),
             new AddPasskeyOptionsOutput(),
         );
     }

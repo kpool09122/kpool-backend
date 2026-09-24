@@ -43,7 +43,7 @@ readonly class AuthenticateWithPasskey implements AuthenticateWithPasskeyInterfa
         }
 
         $identity = $this->identityRepository->findById($identityIdentifier);
-        if ($identity === null || $identity->isDelegatedIdentity()) {
+        if ($identity === null) {
             throw new PasskeyAuthenticationFailedException();
         }
 

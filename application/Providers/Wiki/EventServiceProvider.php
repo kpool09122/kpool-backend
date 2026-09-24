@@ -9,13 +9,9 @@ use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
-use Source\Identity\Domain\Event\DelegatedIdentityCreated;
-use Source\Identity\Domain\Event\DelegatedIdentityDeleted;
 use Source\Wiki\Principal\Application\EventHandler\AccountCategoryChangedHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationActivatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationTerminatedHandler;
-use Source\Wiki\Principal\Application\EventHandler\DelegatedIdentityCreatedHandler;
-use Source\Wiki\Principal\Application\EventHandler\DelegatedIdentityDeletedHandler;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -23,16 +19,6 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
-
-        $events->listen(
-            DelegatedIdentityCreated::class,
-            [DelegatedIdentityCreatedHandler::class, 'handle'],
-        );
-
-        $events->listen(
-            DelegatedIdentityDeleted::class,
-            [DelegatedIdentityDeletedHandler::class, 'handle'],
-        );
 
         $events->listen(
             AffiliationActivated::class,

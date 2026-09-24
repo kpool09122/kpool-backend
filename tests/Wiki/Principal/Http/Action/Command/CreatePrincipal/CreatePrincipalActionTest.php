@@ -200,8 +200,6 @@ class CreatePrincipalActionTest extends TestCase
         return new ActorContext(
             new IdentityIdentifier($identityIdentifier),
             Language::ENGLISH,
-            null,
-            null,
         );
     }
 

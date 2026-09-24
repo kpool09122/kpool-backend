@@ -12,7 +12,6 @@ use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -73,23 +72,5 @@ readonly class IdentityFactory implements IdentityFactoryInterface
         $random = substr($this->ulidGenerator->generate(), 0, PlainPassword::MIN_LENGTH);
 
         return new PlainPassword($random);
-    }
-
-    public function createDelegatedIdentity(
-        Identity $originalIdentity,
-        DelegationIdentifier $delegationIdentifier,
-    ): Identity {
-        return new Identity(
-            new IdentityIdentifier($this->ulidGenerator->generate()),
-            $originalIdentity->identityName(),
-            $originalIdentity->email(),
-            $originalIdentity->language(),
-            $originalIdentity->profileImage(),
-            HashedPassword::fromPlain($this->generateRandomPassword()),
-            null,
-            [],
-            $delegationIdentifier,
-            $originalIdentity->identityIdentifier(),
-        );
     }
 }

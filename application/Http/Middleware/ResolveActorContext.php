@@ -10,7 +10,6 @@ use Application\Models\Identity\Identity;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,12 +35,6 @@ class ResolveActorContext
                 return new ActorContext(
                     identityIdentifier: $identityIdentifier,
                     language: $language,
-                    delegationIdentifier: $identity->delegation_identifier !== null
-                        ? new DelegationIdentifier($identity->delegation_identifier)
-                        : null,
-                    originalIdentityIdentifier: $identity->original_identity_identifier !== null
-                        ? new IdentityIdentifier($identity->original_identity_identifier)
-                        : null,
                 );
             },
         );

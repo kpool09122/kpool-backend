@@ -33,7 +33,6 @@ use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -131,26 +130,6 @@ class AuthenticateWithPasskeyTest extends TestCase
         $this->app->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
     }
 
-    public function testItRejectsDelegatedIdentity(): void
-    {
-        $credential = $this->credential();
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentialRepository */
-        $credentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentialRepository->shouldReceive('findByCredentialId')->once()->andReturn($credential);
-        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
-        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturn(
-            new PasskeyUser(new PasskeyUserIdentifier(self::PASSKEY_USER_ID), new IdentityIdentifier(self::IDENTITY_ID)),
-        );
-        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $identityRepository->shouldReceive('findById')->once()->andReturn($this->identity(true));
-        $this->bindDependencies($credentialRepository, $passkeyUserRepository, $identityRepository);
-
-        $this->expectException(PasskeyAuthenticationFailedException::class);
-        $this->app->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
-    }
-
     private function input(): AuthenticateWithPasskeyInput
     {
         return new AuthenticateWithPasskeyInput(
@@ -186,7 +165,7 @@ class AuthenticateWithPasskeyTest extends TestCase
         );
     }
 
-    private function identity(bool $delegated = false): Identity
+    private function identity(): Identity
     {
         return new Identity(
             new IdentityIdentifier(self::IDENTITY_ID),
@@ -196,9 +175,6 @@ class AuthenticateWithPasskeyTest extends TestCase
             null,
             new HashedPassword(password_hash('password', PASSWORD_BCRYPT)),
             new DateTimeImmutable(),
-            [],
-            $delegated ? new DelegationIdentifier('123e4567-e89b-72d3-a456-426614174004') : null,
-            $delegated ? new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174005') : null,
         );
     }
 

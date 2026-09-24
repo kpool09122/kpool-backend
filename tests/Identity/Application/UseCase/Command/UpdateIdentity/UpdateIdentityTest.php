@@ -11,14 +11,12 @@ use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityInp
 use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
-use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Application\Service\ImageServiceInterface;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -65,8 +63,6 @@ class UpdateIdentityTest extends TestCase
 
         $input = new UpdateIdentityInput(
             identityIdentifier: $identityIdentifier,
-            delegationIdentifier: null,
-            originalIdentityIdentifier: null,
             identityName: $updatedName,
             language: Language::KOREAN,
             base64EncodedImage: $base64Image,
@@ -111,8 +107,6 @@ class UpdateIdentityTest extends TestCase
 
         $input = new UpdateIdentityInput(
             identityIdentifier: $identityIdentifier,
-            delegationIdentifier: null,
-            originalIdentityIdentifier: null,
             identityName: null,
             language: null,
             base64EncodedImage: null,
@@ -150,8 +144,6 @@ class UpdateIdentityTest extends TestCase
 
         $input = new UpdateIdentityInput(
             identityIdentifier: $identityIdentifier,
-            delegationIdentifier: null,
-            originalIdentityIdentifier: null,
             identityName: null,
             language: null,
             base64EncodedImage: null,
@@ -163,34 +155,6 @@ class UpdateIdentityTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertNull($output->toArray()['profileImage']);
-    }
-
-    public function testProcessRejectsDelegatedSession(): void
-    {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $repository */
-        $repository = Mockery::mock(IdentityRepositoryInterface::class);
-        $repository->shouldNotReceive('findById');
-        /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldNotReceive('delete');
-        /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
-        $authService = Mockery::mock(AuthServiceInterface::class);
-
-        $this->expectException(InvalidDelegationException::class);
-
-        (new UpdateIdentity($repository, $imageService, $authService))->process(
-            new UpdateIdentityInput(
-                identityIdentifier: $identityIdentifier,
-                delegationIdentifier: new DelegationIdentifier(StrTestHelper::generateUuid()),
-                originalIdentityIdentifier: null,
-                identityName: null,
-                language: null,
-                base64EncodedImage: null,
-                profileImageProvided: false,
-            ),
-            new UpdateIdentityOutput(),
-        );
     }
 
     public function testProcessThrowsWhenTargetIdentityNotFound(): void
@@ -210,8 +174,6 @@ class UpdateIdentityTest extends TestCase
         (new UpdateIdentity($repository, $imageService, $authService))->process(
             new UpdateIdentityInput(
                 identityIdentifier: $identityIdentifier,
-                delegationIdentifier: null,
-                originalIdentityIdentifier: null,
                 identityName: null,
                 language: null,
                 base64EncodedImage: null,

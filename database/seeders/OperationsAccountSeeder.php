@@ -63,8 +63,6 @@ class OperationsAccountSeeder extends Seeder
             'profile_image' => null,
             'password' => Hash::make('password'),
             'email_verified_at' => $now,
-            'delegation_identifier' => null,
-            'original_identity_identifier' => null,
             'created_at' => $now,
             'updated_at' => $now,
         ]], ['id']);

@@ -11,7 +11,6 @@ use Source\Identity\Application\Service\WebAuthn\RegistrationOptionsInput;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
-use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
@@ -38,10 +37,6 @@ readonly class AddPasskeyOptions implements AddPasskeyOptionsInterface
 
     public function process(AddPasskeyOptionsInputPort $input, AddPasskeyOptionsOutputPort $output): void
     {
-        if ($input->delegationIdentifier() !== null || $input->originalIdentityIdentifier() !== null) {
-            throw new InvalidDelegationException('Delegated identity cannot add authentication credentials.');
-        }
-
         $identity = $this->identityRepository->findById($input->identityIdentifier());
         if ($identity === null) {
             throw new IdentityNotFoundException('Identity not found.');
