@@ -37,7 +37,7 @@ class ResolveWikiContextTest extends TestCase
             AccountType::CORPORATION,
             AccountCategory::AGENCY,
         );
-        app()->instance(ActorContext::class, new ActorContext($identityId, Language::ENGLISH, null, null));
+        app()->instance(ActorContext::class, new ActorContext($identityId, Language::ENGLISH));
         app()->instance(AccountContext::class, $accountContext);
 
         $principal = Mockery::mock(Principal::class);

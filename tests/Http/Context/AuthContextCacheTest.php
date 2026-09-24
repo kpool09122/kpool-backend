@@ -26,17 +26,12 @@ class AuthContextCacheTest extends TestCase
     public function testResolveActorReturnsCachedContextWithoutCallingDbResolver(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationIdentifier = StrTestHelper::generateUuid();
-        $originalIdentityIdentifier = StrTestHelper::generateUuid();
-
         Redis::shouldReceive('get')
             ->once()
             ->with('auth-context:actor:' . $identityIdentifier)
             ->andReturn(json_encode([
                 'identityIdentifier' => (string) $identityIdentifier,
                 'language' => 'ja',
-                'delegationIdentifier' => $delegationIdentifier,
-                'originalIdentityIdentifier' => $originalIdentityIdentifier,
             ]));
         Redis::shouldReceive('setex')->never();
 
@@ -47,8 +42,6 @@ class AuthContextCacheTest extends TestCase
 
         $this->assertSame((string) $identityIdentifier, (string) $context->identityIdentifier);
         $this->assertSame(Language::JAPANESE, $context->language);
-        $this->assertSame($delegationIdentifier, (string) $context->delegationIdentifier);
-        $this->assertSame($originalIdentityIdentifier, (string) $context->originalIdentityIdentifier);
     }
 
     public function testResolveActorFallsBackToDbAndStoresOnMiss(): void
@@ -67,7 +60,7 @@ class AuthContextCacheTest extends TestCase
 
         $context = (new AuthContextCache())->resolveActor(
             $identityIdentifier,
-            fn () => new ActorContext($identityIdentifier, Language::ENGLISH, null, null),
+            fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
 
         $this->assertSame(Language::ENGLISH, $context->language);
@@ -82,7 +75,7 @@ class AuthContextCacheTest extends TestCase
 
         $context = (new AuthContextCache())->resolveActor(
             $identityIdentifier,
-            fn () => new ActorContext($identityIdentifier, Language::ENGLISH, null, null),
+            fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
 
         $this->assertSame((string) $identityIdentifier, (string) $context->identityIdentifier);
@@ -97,7 +90,7 @@ class AuthContextCacheTest extends TestCase
 
         $context = (new AuthContextCache())->resolveActor(
             $identityIdentifier,
-            fn () => new ActorContext($identityIdentifier, Language::ENGLISH, null, null),
+            fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
 
         $this->assertSame(Language::ENGLISH, $context->language);
@@ -249,7 +242,7 @@ class AuthContextCacheTest extends TestCase
 
         $context = (new AuthContextCache())->resolveActor(
             $identityIdentifier,
-            fn () => new ActorContext($identityIdentifier, Language::ENGLISH, null, null),
+            fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
 
         $this->assertSame(Language::ENGLISH, $context->language);

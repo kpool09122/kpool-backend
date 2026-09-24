@@ -18,8 +18,6 @@ use Illuminate\Support\Carbon;
  * @property ?string $profile_image
  * @property string $password
  * @property ?Carbon $email_verified_at
- * @property ?string $delegation_identifier
- * @property ?string $original_identity_identifier
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Collection<int, IdentitySocialConnection> $socialConnections
@@ -33,8 +31,6 @@ use Illuminate\Support\Carbon;
     'profile_image',
     'password',
     'email_verified_at',
-    'delegation_identifier',
-    'original_identity_identifier',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Hidden([
     'password',

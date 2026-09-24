@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\UpdateIdentity;
 
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
-use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
@@ -24,15 +23,10 @@ readonly class UpdateIdentity implements UpdateIdentityInterface
 
     /**
      * @throws IdentityNotFoundException
-     * @throws InvalidDelegationException
      * @throws InvalidBase64ImageException
      */
     public function process(UpdateIdentityInputPort $input, UpdateIdentityOutputPort $output): void
     {
-        if ($input->delegationIdentifier() !== null || $input->originalIdentityIdentifier() !== null) {
-            throw new InvalidDelegationException('Delegated identity cannot update profile.');
-        }
-
         $identity = $this->identityRepository->findById($input->identityIdentifier());
         if ($identity === null) {
             throw new IdentityNotFoundException('Identity not found.');

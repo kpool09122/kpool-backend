@@ -487,6 +487,11 @@ interface IdentityAuthOperations {
   @doc("List passkeys registered by the current authenticated identity.")
   listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
+  @post
+  @route("/passkeys/addition/options")
+  @doc("Create WebAuthn registration options for adding a passkey to the authenticated identity.")
+  addPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @get
   @route("/identities/{identityIdentifier}/profile")
   @doc("Get profile fields for the requested identity. Any authenticated identity may fetch the profile.")

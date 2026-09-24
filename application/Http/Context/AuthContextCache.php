@@ -10,7 +10,6 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
@@ -38,8 +37,6 @@ class AuthContextCache
         $this->write($this->actorKey($identityIdentifier), [
             'identityIdentifier' => (string) $context->identityIdentifier,
             'language' => $context->language->value,
-            'delegationIdentifier' => $context->delegationIdentifier !== null ? (string) $context->delegationIdentifier : null,
-            'originalIdentityIdentifier' => $context->originalIdentityIdentifier !== null ? (string) $context->originalIdentityIdentifier : null,
         ]);
 
         return $context;
@@ -220,12 +217,6 @@ class AuthContextCache
         return new ActorContext(
             identityIdentifier: new IdentityIdentifier($payload['identityIdentifier']),
             language: $language,
-            delegationIdentifier: is_string($payload['delegationIdentifier'] ?? null)
-                ? new DelegationIdentifier($payload['delegationIdentifier'])
-                : null,
-            originalIdentityIdentifier: is_string($payload['originalIdentityIdentifier'] ?? null)
-                ? new IdentityIdentifier($payload['originalIdentityIdentifier'])
-                : null,
         );
     }
 
