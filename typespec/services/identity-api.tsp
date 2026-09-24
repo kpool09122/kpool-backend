@@ -295,6 +295,29 @@ model PasskeyAuthenticationCredential {
   clientExtensionResults?: EmptyJsonObject | null;
 }
 
+model PasskeyAuthenticatorAttestationResponse {
+  clientDataJSON: string;
+  attestationObject: string;
+  transports?: string[] | null;
+}
+
+model PasskeyRegistrationCredential {
+  id: string;
+  rawId: string;
+  type: "public-key";
+  response: PasskeyAuthenticatorAttestationResponse;
+  authenticatorAttachment?: string | null;
+  clientExtensionResults?: EmptyJsonObject | null;
+}
+
+@doc("Request body for completing registration of an additional passkey.")
+model AddPasskeyRequestBody {
+  challengeKey: Uuid;
+  @maxLength(64)
+  displayName: string;
+  credential: PasskeyRegistrationCredential;
+}
+
 @doc("Request body for completing passkey authentication.")
 model AuthenticateWithPasskeyRequestBody {
   challengeKey: Uuid;
@@ -490,7 +513,14 @@ interface IdentityAuthOperations {
   @post
   @route("/passkeys/addition/options")
   @doc("Create WebAuthn registration options for adding a passkey to the authenticated identity.")
-  addPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  createPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/addition")
+  @doc("Verify and register an additional passkey for the authenticated identity.")
+  addPasskey(
+    @body body: AddPasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/identities/{identityIdentifier}/profile")

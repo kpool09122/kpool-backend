@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\AddPasskeyOptions;
+namespace Source\Identity\Application\UseCase\Command\CreatePasskeyOptions;
 
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 
-class AddPasskeyOptionsOutput implements AddPasskeyOptionsOutputPort
+class CreatePasskeyOptionsOutput implements CreatePasskeyOptionsOutputPort
 {
     private ?ChallengeSessionKey $challengeKey = null;
     private ?WebAuthnOptions $options = null;

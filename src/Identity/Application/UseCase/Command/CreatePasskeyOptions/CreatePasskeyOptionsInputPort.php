@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\AddPasskeyOptions;
+namespace Source\Identity\Application\UseCase\Command\CreatePasskeyOptions;
 
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-interface AddPasskeyOptionsInputPort
+interface CreatePasskeyOptionsInputPort
 {
     public function identityIdentifier(): IdentityIdentifier;
 }

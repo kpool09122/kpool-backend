@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Application\UseCase\Command\AddPasskeyOptions;
+namespace Tests\Identity\Application\UseCase\Command\CreatePasskeyOptions;
 
 use DateTimeImmutable;
 use Mockery;
@@ -13,10 +13,10 @@ use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
 use Source\Identity\Application\Service\WebAuthn\RegistrationOptionsInput;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptions;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsInput;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsInterface;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsOutput;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptions;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsInput;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsInterface;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Entity\PasskeyUser;
@@ -40,7 +40,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\TestCase;
 
-class AddPasskeyOptionsTest extends TestCase
+class CreatePasskeyOptionsTest extends TestCase
 {
     private const string IDENTITY_ID = '01994e3a-a15e-72d3-a456-426614174000';
     private const string PASSKEY_USER_ID = '01994e3a-a15e-72d3-a456-426614174001';
@@ -51,7 +51,7 @@ class AddPasskeyOptionsTest extends TestCase
     {
         $this->bindDefaults();
 
-        $this->assertInstanceOf(AddPasskeyOptions::class, $this->app->make(AddPasskeyOptionsInterface::class));
+        $this->assertInstanceOf(CreatePasskeyOptions::class, $this->app->make(CreatePasskeyOptionsInterface::class));
     }
 
     public function testItReusesTheExistingPasskeyUserAndExcludesAllExistingCredentials(): void
@@ -91,9 +91,9 @@ class AddPasskeyOptionsTest extends TestCase
         ));
         $this->bindDefaults($identityRepository, $passkeyUserRepository, $factory, $credentials, $webAuthn, $storage);
 
-        $output = new AddPasskeyOptionsOutput();
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier()),
+        $output = new CreatePasskeyOptionsOutput();
+        $this->app->make(CreatePasskeyOptionsInterface::class)->process(
+            new CreatePasskeyOptionsInput($identity->identityIdentifier()),
             $output,
         );
 
@@ -128,9 +128,9 @@ class AddPasskeyOptionsTest extends TestCase
         $credentials->shouldReceive('findByIdentityIdentifier')->once()->andReturn([]);
         $this->bindDefaults($identityRepository, $passkeyUserRepository, $factory, $credentials);
 
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier()),
-            new AddPasskeyOptionsOutput(),
+        $this->app->make(CreatePasskeyOptionsInterface::class)->process(
+            new CreatePasskeyOptionsInput($identity->identityIdentifier()),
+            new CreatePasskeyOptionsOutput(),
         );
     }
 
@@ -159,9 +159,9 @@ class AddPasskeyOptionsTest extends TestCase
         $this->bindDefaults($identityRepository, $passkeyUserRepository, $factory, $credentials, $webAuthn, $storage);
 
         $this->expectException(RuntimeException::class);
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier()),
-            new AddPasskeyOptionsOutput(),
+        $this->app->make(CreatePasskeyOptionsInterface::class)->process(
+            new CreatePasskeyOptionsInput($identity->identityIdentifier()),
+            new CreatePasskeyOptionsOutput(),
         );
     }
 
@@ -188,9 +188,9 @@ class AddPasskeyOptionsTest extends TestCase
         $this->bindDefaults($identityRepository, $passkeyUserRepository, $factory, $credentials, storage: $storage);
 
         $this->expectException(RuntimeException::class);
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput($identity->identityIdentifier()),
-            new AddPasskeyOptionsOutput(),
+        $this->app->make(CreatePasskeyOptionsInterface::class)->process(
+            new CreatePasskeyOptionsInput($identity->identityIdentifier()),
+            new CreatePasskeyOptionsOutput(),
         );
     }
 
@@ -202,9 +202,9 @@ class AddPasskeyOptionsTest extends TestCase
         $this->bindDefaults(identityRepository: $identityRepository);
 
         $this->expectException(IdentityNotFoundException::class);
-        $this->app->make(AddPasskeyOptionsInterface::class)->process(
-            new AddPasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID)),
-            new AddPasskeyOptionsOutput(),
+        $this->app->make(CreatePasskeyOptionsInterface::class)->process(
+            new CreatePasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID)),
+            new CreatePasskeyOptionsOutput(),
         );
     }
 

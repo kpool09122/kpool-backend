@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Identity\Command\AddPasskeyOptions;
+namespace Application\Http\Action\Identity\Command\CreatePasskeyOptions;
 
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsInput;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsInterface;
-use Source\Identity\Application\UseCase\Command\AddPasskeyOptions\AddPasskeyOptionsOutput;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsInput;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsInterface;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsOutput;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-readonly class AddPasskeyOptionsAction
+readonly class CreatePasskeyOptionsAction
 {
     public function __construct(
-        private AddPasskeyOptionsInterface $addPasskeyOptions,
+        private CreatePasskeyOptionsInterface $createPasskeyOptions,
         private ActorContext $actorContext,
         // 防御的catch内でのみ利用され、PHPStanのchecked exception解析では未到達扱いになるため。
         // @phpstan-ignore property.onlyWritten
@@ -30,8 +30,8 @@ readonly class AddPasskeyOptionsAction
     public function __invoke(): JsonResponse
     {
         try {
-            $output = new AddPasskeyOptionsOutput();
-            $this->addPasskeyOptions->process(new AddPasskeyOptionsInput(
+            $output = new CreatePasskeyOptionsOutput();
+            $this->createPasskeyOptions->process(new CreatePasskeyOptionsInput(
                 $this->actorContext->identityIdentifier,
             ), $output);
         } catch (IdentityNotFoundException $exception) {

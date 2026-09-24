@@ -165,6 +165,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: list passkeys' => ['GET', '/api/identity/auth/passkeys'],
             'identity: logout' => ['POST', '/api/identity/auth/logout'],
             'identity: add passkey options' => ['POST', '/api/identity/auth/passkeys/addition/options'],
+            'identity: add passkey' => ['POST', '/api/identity/auth/passkeys/addition'],
             'account: switch account' => ['POST', '/api/account/accounts/switch'],
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
@@ -215,6 +216,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         return [
             'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
             'identity add passkey options resolves actor' => ['POST', '/api/identity/auth/passkeys/addition/options', ['resolve.actor']],
+            'identity add passkey resolves actor' => ['POST', '/api/identity/auth/passkeys/addition', ['resolve.actor']],
             'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
