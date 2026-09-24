@@ -147,12 +147,6 @@ model IdentityProfileSummary {
   profileImage?: string | null;
 }
 
-@doc("Identity summary returned after email login.")
-model LoginIdentitySummary extends IdentitySummary {
-  @doc("Normalized application return path after login.")
-  returnTo?: string | null;
-}
-
 @doc("Email verification result.")
 model VerifyEmailResult {
   @doc("Verified email address.")
@@ -310,6 +304,27 @@ model PasskeyRegistrationCredential {
   clientExtensionResults?: EmptyJsonObject | null;
 }
 
+@doc("Request body for completing passkey-based identity registration.")
+model RegisterWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  @doc("Requested identity name.")
+  @minLength(1)
+  @maxLength(32)
+  identityName: string;
+  @minLength(1)
+  @maxLength(64)
+  @doc("User-visible name for the passkey.")
+  displayName: string;
+  @doc("Base64-encoded profile image.")
+  base64EncodedImage?: string | null;
+  credential: PasskeyRegistrationCredential;
+}
+
+@doc("Identity and retained navigation state returned after passkey registration.")
+model PasskeyIdentityRegistrationResult extends IdentitySummary {
+  returnTo?: string | null;
+}
+
 @doc("Request body for completing registration of an additional passkey.")
 model AddPasskeyRequestBody {
   challengeKey: Uuid;
@@ -332,23 +347,6 @@ model AuthenticateWithPasskeyRequestBody {
   credential: PasskeyAuthenticationCredential;
 }
 
-@doc("Request body for registering a new identity.")
-model CreateIdentityRequestBody {
-  @doc("Requested identityName.")
-  identityName: string;
-  @doc("Email address.")
-  email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Password confirmation.")
-  confirmedPassword: string;
-  @doc("Base64-encoded profile image.")
-  base64EncodedImage?: string | null;
-  @doc("One-time token used during signup.")
-  oneTimeToken?: string | null;
-}
-
-
 @doc("Request body for updating an identity profile.")
 model UpdateIdentityRequestBody {
   @doc("Identity display name.")
@@ -357,16 +355,6 @@ model UpdateIdentityRequestBody {
   language?: string | null;
   @doc("Base64-encoded profile image.")
   base64EncodedImage?: string | null;
-}
-
-@doc("Request body for logging in.")
-model LoginRequestBody {
-  @doc("Email address.")
-  email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Application return path after login.")
-  return_to?: string | null;
 }
 
 @doc("Response returned when an endpoint succeeds with an empty JSON object.")
@@ -393,22 +381,16 @@ model PasskeyListResponse {
   @body body: PasskeyListResult;
 }
 
-@doc("Response returned when an identity is created.")
-model CreateIdentityResponse {
+@doc("Response returned when passkey-based identity registration succeeds.")
+model PasskeyIdentityRegistrationResponse {
   @statusCode statusCode: 201;
-  @body body: IdentitySummary;
+  @body body: PasskeyIdentityRegistrationResult;
 }
 
 @doc("Response returned when an identity operation succeeds.")
 model OkIdentityResponse {
   @statusCode statusCode: 200;
   @body body: IdentitySummary;
-}
-
-@doc("Response returned when email login succeeds.")
-model OkLoginResponse {
-  @statusCode statusCode: 200;
-  @body body: LoginIdentitySummary;
 }
 
 @doc("Response returned when fetching the current authenticated identity succeeds.")
@@ -459,6 +441,13 @@ interface IdentityAuthOperations {
   ): PasskeyRegistrationOptionsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
+  @route("/passkeys/registration")
+  @doc("Verify a WebAuthn attestation, create an identity and establish an authenticated session.")
+  registerWithPasskey(
+    @body body: RegisterWithPasskeyRequestBody,
+  ): PasskeyIdentityRegistrationResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
   @route("/passkeys/authentication/options")
   @doc("Create discoverable WebAuthn authentication options without requiring an email address.")
   createPasskeyAuthenticationOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.InternalServerErrorProblemResponse;
@@ -469,20 +458,6 @@ interface IdentityAuthOperations {
   authenticateWithPasskey(
     @body body: AuthenticateWithPasskeyRequestBody,
   ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
-
-  @post
-  @route("/register")
-  @doc("Register a new identity.")
-  createIdentity(
-    @body body: CreateIdentityRequestBody,
-  ): CreateIdentityResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
-
-  @post
-  @route("/login")
-  @doc("Authenticate with email and password.")
-  login(
-    @body body: LoginRequestBody,
-  ): OkLoginResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/redirect")

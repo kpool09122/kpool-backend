@@ -33,7 +33,6 @@ return [
     'settlement_schedule_not_found' => 'No se encontró el programa de liquidación especificado.',
 
     // Identity
-    'invalid_credentials' => 'La dirección de correo electrónico o la contraseña es incorrecta.',
     'invalid_passkey_authentication' => 'La autenticación con clave de acceso ha fallado.',
     'invalid_passkey_registration' => 'Error al registrar la clave de acceso.',
     'passkey_credential_already_exists' => 'Esta clave de acceso ya está registrada.',
@@ -43,7 +42,6 @@ return [
     'social_connection_already_exists' => 'Esta cuenta social ya está vinculada.',
     'auth_code_expired' => 'El código de autenticación ha expirado.',
     'invalid_auth_code' => 'El código de autenticación no coincide.',
-    'password_mismatch' => 'Las contraseñas no coinciden.',
     'invalid_delegation' => 'La operación de delegación no es válida.',
     'identity_not_found' => 'No se encontró la identidad especificada.',
     'already_user_exists' => 'El usuario ya existe.',

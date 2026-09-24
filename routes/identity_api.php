@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Application\Http\Action\Identity\Command\AddPasskey\AddPasskeyAction;
 use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
-use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
 use Application\Http\Action\Identity\Command\DeletePasskey\DeletePasskeyAction;
-use Application\Http\Action\Identity\Command\Login\LoginAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
+use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
+use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
@@ -21,13 +21,12 @@ use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
 use Illuminate\Support\Facades\Route;
 
 // Public Auth
-// Disabled by #605: Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
+Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
 Route::post('/auth/verify-email', VerifyEmailAction::class);
-Route::post('/auth/register', CreateIdentityAction::class);
 Route::post('/auth/passkeys/registration/options', CreatePasskeyRegistrationOptionsAction::class);
+Route::post('/auth/passkeys/registration', RegisterWithPasskeyAction::class);
 Route::post('/auth/passkeys/authentication/options', CreatePasskeyAuthenticationOptionsAction::class);
 Route::post('/auth/passkeys/authentication', AuthenticateWithPasskeyAction::class);
-Route::post('/auth/login', LoginAction::class);
 
 // Social Login (public)
 Route::get('/auth/social/{provider}/redirect', SocialLoginRedirectAction::class);

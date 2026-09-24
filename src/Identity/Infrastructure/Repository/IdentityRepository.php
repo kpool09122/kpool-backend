@@ -10,7 +10,6 @@ use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnec
 use Illuminate\Support\Carbon;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
@@ -67,7 +66,6 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 'email' => (string) $identity->email(),
                 'language' => $identity->language()->value,
                 'profile_image' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,
-                'password' => (string) $identity->hashedPassword(),
                 'email_verified_at' => $identity->emailVerifiedAt() !== null
                     ? Carbon::createFromImmutable($identity->emailVerifiedAt())
                     : null,
@@ -146,7 +144,6 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
             new Email($eloquent->email),
             Language::from($eloquent->language),
             $eloquent->profile_image !== null ? new ImagePath($eloquent->profile_image) : null,
-            new HashedPassword($eloquent->password),
             $eloquent->email_verified_at !== null
                 ? $eloquent->email_verified_at->toDateTimeImmutable()
                 : null,

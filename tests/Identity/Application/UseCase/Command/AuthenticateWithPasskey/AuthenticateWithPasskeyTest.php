@@ -27,7 +27,6 @@ use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Identity\Domain\ValueObject\CredentialSource;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
@@ -173,7 +172,6 @@ class AuthenticateWithPasskeyTest extends TestCase
             new Email('test@example.com'),
             Language::JAPANESE,
             null,
-            new HashedPassword(password_hash('password', PASSWORD_BCRYPT)),
             new DateTimeImmutable(),
         );
     }

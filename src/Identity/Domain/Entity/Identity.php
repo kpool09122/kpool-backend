@@ -8,9 +8,7 @@ use DateTimeImmutable;
 use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -25,19 +23,17 @@ class Identity
      * @param Email $email
      * @param Language $language
      * @param ?ImagePath $profileImage
-     * @param HashedPassword $hashedPassword
      * @param DateTimeImmutable|null $emailVerifiedAt
      * @param SocialConnection[] $socialConnections
      */
     public function __construct(
         private readonly IdentityIdentifier $identityIdentifier,
-        private IdentityName                    $identityName,
-        private readonly Email                       $email,
-        private Language                    $language,
-        private ?ImagePath                  $profileImage,
-        private readonly HashedPassword              $hashedPassword,
-        private ?DateTimeImmutable          $emailVerifiedAt,
-        private array                       $socialConnections = [],
+        private IdentityName $identityName,
+        private readonly Email $email,
+        private Language $language,
+        private ?ImagePath $profileImage,
+        private ?DateTimeImmutable $emailVerifiedAt,
+        private array $socialConnections = [],
     ) {
     }
 
@@ -81,11 +77,6 @@ class Identity
         $this->profileImage = $image;
     }
 
-    public function hashedPassword(): HashedPassword
-    {
-        return $this->hashedPassword;
-    }
-
     public function emailVerifiedAt(): ?DateTimeImmutable
     {
         return $this->emailVerifiedAt;
@@ -116,19 +107,7 @@ class Identity
     public function isEmailVerified(): void
     {
         if ($this->emailVerifiedAt === null) {
-            throw new InvalidCredentialsException('メールアドレスまたはパスワードが正しくありません');
-        }
-    }
-
-    /**
-     * @param PlainPassword $plainPassword
-     * @return void
-     * @throws InvalidCredentialsException
-     */
-    public function verifyPassword(PlainPassword $plainPassword): void
-    {
-        if (! password_verify((string)$plainPassword, (string)$this->hashedPassword)) {
-            throw new InvalidCredentialsException('メールアドレスまたはパスワードが正しくありません');
+            throw new InvalidCredentialsException('認証情報が正しくありません');
         }
     }
 

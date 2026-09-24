@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('email', 255)->unique()->comment('メールアドレス');
             $table->string('language', 8)->comment('言語設定');
             $table->string('profile_image', 2048)->nullable()->comment('プロフィール画像');
-            $table->string('password', 255)->comment('パスワード');
             $table->timestamp('email_verified_at')->nullable()->comment('メール認証日時');
             $table->timestamps();
         });

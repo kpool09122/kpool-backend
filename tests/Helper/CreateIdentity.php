@@ -6,7 +6,6 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -19,7 +18,6 @@ class CreateIdentity
      *     email?: string,
      *     language?: string,
      *     profile_image?: ?string,
-     *     password?: string,
      *     email_verified_at?: ?DateTimeImmutable
      * } $overrides
      */
@@ -31,7 +29,6 @@ class CreateIdentity
             'email' => $overrides['email'] ?? 'test@example.com',
             'language' => $overrides['language'] ?? 'ja',
             'profile_image' => $overrides['profile_image'] ?? null,
-            'password' => Hash::make($overrides['password'] ?? 'password123'),
             'email_verified_at' => isset($overrides['email_verified_at'])
                 ? $overrides['email_verified_at']->format('Y-m-d H:i:s')
                 : null,

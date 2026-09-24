@@ -16,7 +16,6 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property string $language
  * @property ?string $profile_image
- * @property string $password
  * @property ?Carbon $email_verified_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -29,11 +28,7 @@ use Illuminate\Support\Carbon;
     'email',
     'language',
     'profile_image',
-    'password',
     'email_verified_at',
-])]
-#[\Illuminate\Database\Eloquent\Attributes\Hidden([
-    'password',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identities', keyType: 'string')]
 class Identity extends Authenticatable

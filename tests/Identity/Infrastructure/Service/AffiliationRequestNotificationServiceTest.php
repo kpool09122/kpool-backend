@@ -11,7 +11,6 @@ use Mockery;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService;
 use Source\Shared\Domain\ValueObject\Email;
@@ -114,6 +113,6 @@ class AffiliationRequestNotificationServiceTest extends TestCase
 
     private function identity(Email $email, Language $language): Identity
     {
-        return new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Target'), $email, $language, null, new HashedPassword(password_hash('password', PASSWORD_BCRYPT)), null);
+        return new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Target'), $email, $language, null, null);
     }
 }

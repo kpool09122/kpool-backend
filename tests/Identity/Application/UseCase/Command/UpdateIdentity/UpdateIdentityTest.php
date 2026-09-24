@@ -13,9 +13,7 @@ use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -193,7 +191,6 @@ class UpdateIdentityTest extends TestCase
             new Email('identity@example.com'),
             Language::ENGLISH,
             $profileImage,
-            HashedPassword::fromPlain(new PlainPassword('Password123!')),
             new DateTimeImmutable(),
         );
     }

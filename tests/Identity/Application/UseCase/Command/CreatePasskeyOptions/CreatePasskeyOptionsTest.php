@@ -27,7 +27,6 @@ use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
@@ -247,7 +246,6 @@ class CreatePasskeyOptionsTest extends TestCase
             new Email('passkey@example.com'),
             Language::ENGLISH,
             null,
-            new HashedPassword(password_hash('Password1!', PASSWORD_DEFAULT)),
             new DateTimeImmutable(),
         );
     }

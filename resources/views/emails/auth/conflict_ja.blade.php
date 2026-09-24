@@ -25,9 +25,6 @@
                             <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.8; color: #555555;">
                                 既にアカウントをお持ちの場合は、ログインページからログインしてください。
                             </p>
-                            <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.8; color: #555555;">
-                                パスワードをお忘れの場合は、ログインページの「パスワードを忘れた方」からパスワードの再設定を行ってください。
-                            </p>
                         </td>
                     </tr>
                     <tr>

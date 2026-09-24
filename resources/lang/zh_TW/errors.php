@@ -33,7 +33,6 @@ return [
     'settlement_schedule_not_found' => '找不到指定的結算計劃。',
 
     // Identity
-    'invalid_credentials' => '電子郵件地址或密碼不正確。',
     'invalid_passkey_authentication' => '通行密鑰驗證失敗。',
     'invalid_passkey_registration' => '通行密鑰註冊失敗。',
     'passkey_credential_already_exists' => '此通行密鑰已註冊。',
@@ -43,7 +42,6 @@ return [
     'social_connection_already_exists' => '該社交帳號已關聯。',
     'auth_code_expired' => '驗證碼已過期。',
     'invalid_auth_code' => '驗證碼不匹配。',
-    'password_mismatch' => '密碼不一致。',
     'invalid_delegation' => '委託操作無效。',
     'identity_not_found' => '找不到指定的身分。',
     'already_user_exists' => '使用者已存在。',
