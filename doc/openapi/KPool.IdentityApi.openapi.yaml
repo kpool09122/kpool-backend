@@ -345,6 +345,53 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePasskeyRegistrationOptionsRequestBody'
+  /auth/passkeys/{passkeyIdentifier}:
+    patch:
+      operationId: IdentityAuthOperations_updatePasskey
+      description: Update a passkey belonging to the authenticated identity.
+      parameters:
+        - name: passkeyIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasskeyRequestBody'
   /auth/register:
     post:
       operationId: IdentityAuthOperations_createIdentity
@@ -1337,6 +1384,17 @@ components:
           nullable: true
           description: Base64-encoded profile image.
       description: Request body for updating an identity profile.
+    UpdatePasskeyRequestBody:
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: New user-visible name for the passkey.
+      description: Request body for updating a registered passkey.
     VerifyEmailRequestBody:
       type: object
       required:

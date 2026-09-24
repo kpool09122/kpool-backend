@@ -37,6 +37,7 @@ return [
     'invalid_passkey_authentication' => 'Passkey authentication failed.',
     'invalid_passkey_registration' => 'Passkey registration failed.',
     'passkey_credential_already_exists' => 'This passkey is already registered.',
+    'passkey_credential_not_found' => 'The passkey was not found.',
     'passkey_user_not_found' => 'The passkey user was not found.',
     'social_connection_already_exists' => 'This social account is already linked.',
     'auth_code_expired' => 'The authentication code has expired.',

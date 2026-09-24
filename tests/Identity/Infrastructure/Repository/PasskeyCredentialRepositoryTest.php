@@ -56,12 +56,14 @@ class PasskeyCredentialRepositoryTest extends TestCase
 
         $usedAt = new DateTimeImmutable('2026-09-19T12:00:00+00:00');
         $found[0]->recordAuthentication(new CredentialSource('{"counter":7}'), 7, true, false, $usedAt);
+        $found[0]->rename(new PasskeyDisplayName('Renamed passkey'));
         $repository->save($found[0]);
         $reloaded = $repository->findByCredentialId(new WebAuthnCredentialId('c3luY2Vk'));
 
         $this->assertNotNull($reloaded);
         $this->assertSame(7, $reloaded->signCount());
         $this->assertFalse($reloaded->backupState());
+        $this->assertSame('Renamed passkey', (string) $reloaded->displayName());
         $this->assertSame($usedAt->format('Y-m-d H:i:s'), $reloaded->lastUsedAt()?->format('Y-m-d H:i:s'));
     }
 

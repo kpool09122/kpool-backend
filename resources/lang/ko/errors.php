@@ -37,6 +37,7 @@ return [
     'invalid_passkey_authentication' => '패스키 인증에 실패했습니다.',
     'invalid_passkey_registration' => '패스키 등록에 실패했습니다.',
     'passkey_credential_already_exists' => '이 패스키는 이미 등록되어 있습니다.',
+    'passkey_credential_not_found' => '패스키를 찾을 수 없습니다.',
     'passkey_user_not_found' => '패스키 사용자를 찾을 수 없습니다.',
     'social_connection_already_exists' => '이 소셜 계정은 이미 연결되어 있습니다.',
     'auth_code_expired' => '인증 코드의 유효기간이 만료되었습니다.',
