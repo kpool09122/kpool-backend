@@ -7,6 +7,8 @@ namespace Application\Providers\Identity;
 use Illuminate\Support\ServiceProvider;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptions;
+use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptions;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\Login\Login;
@@ -40,6 +42,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(
             CreatePasskeyRegistrationOptionsInterface::class,
             CreatePasskeyRegistrationOptions::class,
+        );
+        $this->app->singleton(
+            CreatePasskeyAuthenticationOptionsInterface::class,
+            CreatePasskeyAuthenticationOptions::class,
         );
         $this->app->singleton(SocialLoginRedirectInterface::class, SocialLoginRedirect::class);
         $this->app->singleton(SocialLoginCallbackInterface::class, SocialLoginCallback::class);

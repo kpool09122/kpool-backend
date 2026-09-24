@@ -135,6 +135,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/authentication/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyAuthenticationOptions
+      description: Create discoverable WebAuthn authentication options without requiring an email address.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey authentication options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyAuthenticationOptionsResult'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/passkeys/registration/options:
     post:
       operationId: IdentityAuthOperations_createPasskeyRegistrationOptions
@@ -813,6 +831,42 @@ components:
           nullable: true
           description: Application return path after login.
       description: Request body for logging in.
+    PasskeyAuthenticationOptions:
+      type: object
+      required:
+        - challenge
+        - timeout
+        - rpId
+        - allowCredentials
+        - userVerification
+      properties:
+        challenge:
+          type: string
+        timeout:
+          type: integer
+          format: int32
+        rpId:
+          type: string
+        allowCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialDescriptor'
+        userVerification:
+          type: string
+      description: WebAuthn PublicKeyCredentialRequestOptions returned to the browser.
+    PasskeyAuthenticationOptionsResult:
+      type: object
+      required:
+        - challengeKey
+        - options
+      properties:
+        challengeKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Key used to submit the authentication assertion.
+        options:
+          $ref: '#/components/schemas/PasskeyAuthenticationOptions'
+      description: Result for starting passkey authentication.
     PasskeyAuthenticatorSelection:
       type: object
       required:
