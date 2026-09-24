@@ -209,7 +209,7 @@ paths:
               $ref: '#/components/schemas/AddPasskeyRequestBody'
   /auth/passkeys/addition/options:
     post:
-      operationId: IdentityAuthOperations_addPasskeyOptions
+      operationId: IdentityAuthOperations_createPasskeyOptions
       description: Create WebAuthn registration options for adding a passkey to the authenticated identity.
       parameters: []
       responses:

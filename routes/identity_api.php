@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
 use Application\Http\Action\Identity\Command\AddPasskey\AddPasskeyAction;
-use Application\Http\Action\Identity\Command\AddPasskeyOptions\AddPasskeyOptionsAction;
+use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
@@ -35,7 +35,7 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
     Route::get('/auth/passkeys', ListPasskeysAction::class);
-    Route::post('/auth/passkeys/addition/options', AddPasskeyOptionsAction::class);
+    Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
     Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
     // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);

@@ -513,7 +513,7 @@ interface IdentityAuthOperations {
   @post
   @route("/passkeys/addition/options")
   @doc("Create WebAuthn registration options for adding a passkey to the authenticated identity.")
-  addPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  createPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/passkeys/addition")

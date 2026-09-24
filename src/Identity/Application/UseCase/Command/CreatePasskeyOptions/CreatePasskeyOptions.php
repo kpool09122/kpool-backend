@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\AddPasskeyOptions;
+namespace Source\Identity\Application\UseCase\Command\CreatePasskeyOptions;
 
 use DateTimeImmutable;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
@@ -19,7 +19,7 @@ use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 
-readonly class AddPasskeyOptions implements AddPasskeyOptionsInterface
+readonly class CreatePasskeyOptions implements CreatePasskeyOptionsInterface
 {
     private const int CHALLENGE_TTL_SECONDS = 300;
 
@@ -35,7 +35,7 @@ readonly class AddPasskeyOptions implements AddPasskeyOptionsInterface
     ) {
     }
 
-    public function process(AddPasskeyOptionsInputPort $input, AddPasskeyOptionsOutputPort $output): void
+    public function process(CreatePasskeyOptionsInputPort $input, CreatePasskeyOptionsOutputPort $output): void
     {
         $identity = $this->identityRepository->findById($input->identityIdentifier());
         if ($identity === null) {
