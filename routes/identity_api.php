@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
 use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
@@ -20,6 +21,7 @@ Route::post('/auth/verify-email', VerifyEmailAction::class);
 Route::post('/auth/register', CreateIdentityAction::class);
 Route::post('/auth/passkeys/registration/options', CreatePasskeyRegistrationOptionsAction::class);
 Route::post('/auth/passkeys/authentication/options', CreatePasskeyAuthenticationOptionsAction::class);
+Route::post('/auth/passkeys/authentication', AuthenticateWithPasskeyAction::class);
 Route::post('/auth/login', LoginAction::class);
 
 // Social Login (public)

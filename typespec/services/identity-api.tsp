@@ -256,6 +256,28 @@ model PasskeyAuthenticationOptionsResult {
   options: PasskeyAuthenticationOptions;
 }
 
+model PasskeyAuthenticatorAssertionResponse {
+  clientDataJSON: string;
+  authenticatorData: string;
+  signature: string;
+  userHandle?: string | null;
+}
+
+model PasskeyAuthenticationCredential {
+  id: string;
+  rawId: string;
+  type: "public-key";
+  response: PasskeyAuthenticatorAssertionResponse;
+  authenticatorAttachment?: string | null;
+  clientExtensionResults?: EmptyJsonObject | null;
+}
+
+@doc("Request body for completing passkey authentication.")
+model AuthenticateWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  credential: PasskeyAuthenticationCredential;
+}
+
 @doc("Request body for registering a new identity.")
 model CreateIdentityRequestBody {
   @doc("Requested identityName.")
@@ -380,6 +402,13 @@ interface IdentityAuthOperations {
   @route("/passkeys/authentication/options")
   @doc("Create discoverable WebAuthn authentication options without requiring an email address.")
   createPasskeyAuthenticationOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/authentication")
+  @doc("Verify a WebAuthn assertion and establish an authenticated session.")
+  authenticateWithPasskey(
+    @body body: AuthenticateWithPasskeyRequestBody,
+  ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/register")
