@@ -538,6 +538,13 @@ interface IdentityAuthOperations {
     @body body: UpdatePasskeyRequestBody,
   ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
+  @delete
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Delete a passkey belonging to the authenticated identity while preserving another authentication method.")
+  deletePasskey(
+    @path passkeyIdentifier: Uuid,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @get
   @route("/identities/{identityIdentifier}/profile")
   @doc("Get profile fields for the requested identity. Any authenticated identity may fetch the profile.")

@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
 use Application\Http\Action\Identity\Command\AddPasskey\AddPasskeyAction;
-use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
+use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
 use Application\Http\Action\Identity\Command\CreateIdentity\CreateIdentityAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
+use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
+use Application\Http\Action\Identity\Command\DeletePasskey\DeletePasskeyAction;
 use Application\Http\Action\Identity\Command\Login\LoginAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
@@ -39,6 +40,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
     Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
     Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
+    Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
     // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
 

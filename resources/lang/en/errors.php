@@ -38,6 +38,7 @@ return [
     'invalid_passkey_registration' => 'Passkey registration failed.',
     'passkey_credential_already_exists' => 'This passkey is already registered.',
     'passkey_credential_not_found' => 'The passkey was not found.',
+    'cannot_delete_last_authentication_method' => 'The last authentication method cannot be deleted.',
     'passkey_user_not_found' => 'The passkey user was not found.',
     'social_connection_already_exists' => 'This social account is already linked.',
     'auth_code_expired' => 'The authentication code has expired.',

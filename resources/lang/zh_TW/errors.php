@@ -38,6 +38,7 @@ return [
     'invalid_passkey_registration' => '通行密鑰註冊失敗。',
     'passkey_credential_already_exists' => '此通行密鑰已註冊。',
     'passkey_credential_not_found' => '找不到通行密鑰。',
+    'cannot_delete_last_authentication_method' => '無法刪除最後一種驗證方式。',
     'passkey_user_not_found' => '找不到通行密鑰使用者。',
     'social_connection_already_exists' => '該社交帳號已關聯。',
     'auth_code_expired' => '驗證碼已過期。',

@@ -17,6 +17,8 @@ use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePassk
 use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptions;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
+use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskey;
+use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInterface;
 use Source\Identity\Application\UseCase\Command\Login\Login;
 use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
 use Source\Identity\Application\UseCase\Command\Logout\Logout;
@@ -45,6 +47,7 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(AddPasskeyInterface::class, AddPasskey::class);
+        $this->app->singleton(DeletePasskeyInterface::class, DeletePasskey::class);
         $this->app->singleton(CreatePasskeyOptionsInterface::class, CreatePasskeyOptions::class);
         $this->app->singleton(AuthenticateWithPasskeyInterface::class, AuthenticateWithPasskey::class);
         $this->app->singleton(LoginInterface::class, Login::class);
