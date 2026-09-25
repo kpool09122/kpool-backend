@@ -8,6 +8,7 @@ use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInter
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyOutput;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Exception\PasskeyCredentialNotFoundException;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -71,12 +73,19 @@ readonly class DeletePasskeyAction
                     detail: error_message('cannot_delete_last_authentication_method', $request->language()),
                     previous: $exception,
                 );
+            } catch (StepUpAuthenticationRequiredException $exception) {
+                DB::rollBack();
+
+                throw new UnauthorizedHttpException(
+                    detail: 'Recent passkey management authentication is required.',
+                    previous: $exception,
+                );
             } catch (Throwable $exception) {
                 DB::rollBack();
 
                 throw $exception;
             }
-        } catch (ConflictHttpException|NotFoundHttpException|UnprocessableEntityHttpException $exception) {
+        } catch (ConflictHttpException|NotFoundHttpException|UnauthorizedHttpException|UnprocessableEntityHttpException $exception) {
             $this->logger->error((string) $exception);
 
             return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());

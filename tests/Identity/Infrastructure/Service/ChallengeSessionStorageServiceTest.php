@@ -12,6 +12,7 @@ use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Application\Service\WebAuthn\StepUpAuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
@@ -154,6 +155,45 @@ class ChallengeSessionStorageServiceTest extends TestCase
         $service->consumeAddition(
             $key,
             new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174099'),
+        );
+    }
+
+    public function testItConsumesAnIdentityBoundStepUpChallengeExactlyOnce(): void
+    {
+        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174020');
+        $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174021');
+        $service->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"step-up"}'),
+            new DateTimeImmutable('+5 minutes'),
+            $identity,
+        ));
+
+        $consumed = $service->consumeStepUpAuthentication($key, $identity);
+        $this->assertSame((string) $identity, (string) $consumed->identityIdentifier);
+
+        $this->expectException(ChallengeSessionNotFoundException::class);
+        $service->consumeStepUpAuthentication($key, $identity);
+    }
+
+    public function testItRejectsStepUpChallengeForAnotherIdentity(): void
+    {
+        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174022');
+        $service->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
+            $key,
+            new WebAuthnChallenge(self::CHALLENGE),
+            new WebAuthnOptions('{"publicKey":"step-up"}'),
+            new DateTimeImmutable('+5 minutes'),
+            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174023'),
+        ));
+
+        $this->expectException(ChallengeSessionIdentityMismatchException::class);
+        $service->consumeStepUpAuthentication(
+            $key,
+            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174024'),
         );
     }
 

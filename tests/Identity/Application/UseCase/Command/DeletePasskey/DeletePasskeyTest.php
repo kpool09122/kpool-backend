@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use Source\Identity\Application\Exception\CannotDeleteLastAuthenticationMethodException;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskey;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInput;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInterface;
@@ -17,6 +18,7 @@ use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Entity\PasskeyUser;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Exception\PasskeyCredentialNotFoundException;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
@@ -27,6 +29,9 @@ use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -56,7 +61,19 @@ class DeletePasskeyTest extends TestCase
         $credentials->shouldReceive('delete')->once()->with(Mockery::on(
             static fn (PasskeyCredentialIdentifier $identifier): bool => (string) $identifier === self::PASSKEY_ID,
         ));
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()));
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldReceive('requireValid')->once()->with(
+            Mockery::on(static fn (IdentityIdentifier $id): bool => (string) $id === self::IDENTITY_ID),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+        )->andReturn(new StepUpAuthentication(
+            new IdentityIdentifier(self::IDENTITY_ID),
+            StepUpAuthenticationMethod::PASSKEY,
+            new DateTimeImmutable(),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            new DateTimeImmutable('+10 minutes'),
+        ));
+        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
 
         $output = new DeletePasskeyOutput();
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), $output);
@@ -163,6 +180,20 @@ class DeletePasskeyTest extends TestCase
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
+    public function testItRejectsDeletionWithoutStepUpAuthorization(): void
+    {
+        $credential = $this->credential(self::PASSKEY_ID);
+        $credentials = $this->credentialsForOwnedPasskey($credential, [$credential, $this->credential(self::OTHER_PASSKEY_ID)]);
+        $credentials->shouldNotReceive('delete');
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldReceive('requireValid')->once()->andThrow(new StepUpAuthenticationRequiredException());
+        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
+
+        $this->expectException(StepUpAuthenticationRequiredException::class);
+        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+    }
+
     /** @param PasskeyCredential[] $identityCredentials */
     private function credentialsForOwnedPasskey(
         PasskeyCredential $credential,
@@ -243,18 +274,30 @@ class DeletePasskeyTest extends TestCase
         ?PasskeyCredentialRepositoryInterface $credentials = null,
         ?PasskeyUserRepositoryInterface $users = null,
         ?IdentityRepositoryInterface $identities = null,
+        ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
     ): void {
         $credentials ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $users ??= Mockery::mock(PasskeyUserRepositoryInterface::class);
         $identities ??= Mockery::mock(IdentityRepositoryInterface::class);
-        foreach ([$credentials, $users, $identities] as $mock) {
+        $stepUp ??= Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        foreach ([$credentials, $users, $identities, $stepUp] as $mock) {
             if ($mock instanceof MockInterface) {
                 $mock->shouldIgnoreMissing();
             }
+        }
+        if ($stepUp instanceof MockInterface) {
+            $stepUp->shouldReceive('requireValid')->zeroOrMoreTimes()->andReturn(new StepUpAuthentication(
+                new IdentityIdentifier(self::IDENTITY_ID),
+                StepUpAuthenticationMethod::PASSKEY,
+                new DateTimeImmutable(),
+                StepUpAuthenticationScope::PASSKEY_MANAGE,
+                new DateTimeImmutable('+10 minutes'),
+            ));
         }
 
         $this->app->instance(PasskeyCredentialRepositoryInterface::class, $credentials);
         $this->app->instance(PasskeyUserRepositoryInterface::class, $users);
         $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 }

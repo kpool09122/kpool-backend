@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Query;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInput;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateIdentity;
 use Tests\TestCase;
@@ -21,6 +29,7 @@ class ListPasskeysTest extends TestCase
         $otherIdentityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174100');
         CreateIdentity::create($identityIdentifier, ['email' => 'owner@example.com']);
         CreateIdentity::create($otherIdentityIdentifier, ['email' => 'other@example.com']);
+        $this->authorizePasskeyManagement($identityIdentifier);
         $this->insertPasskeyUser('123e4567-e89b-72d3-a456-426614174010', $identityIdentifier);
         $this->insertPasskeyUser('123e4567-e89b-72d3-a456-426614174110', $otherIdentityIdentifier);
         $this->insertCredential(
@@ -79,11 +88,44 @@ class ListPasskeysTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'without-passkey@example.com']);
+        $this->authorizePasskeyManagement($identityIdentifier);
 
         $passkeys = $this->app->make(ListPasskeysInterface::class)
             ->process(new ListPasskeysInput($identityIdentifier));
 
         $this->assertSame([], $passkeys);
+    }
+
+    public function testProcessRejectsListingWithoutStepUpAuthorization(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldReceive('requireValid')->once()->with(
+            Mockery::on(static fn (IdentityIdentifier $identifier): bool => (string) $identifier === (string) $identityIdentifier),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+        )->andThrow(new StepUpAuthenticationRequiredException());
+        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+
+        $this->expectException(StepUpAuthenticationRequiredException::class);
+        $this->app->make(ListPasskeysInterface::class)->process(new ListPasskeysInput($identityIdentifier));
+    }
+
+    private function authorizePasskeyManagement(IdentityIdentifier $identityIdentifier): void
+    {
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldReceive('requireValid')->once()->with(
+            Mockery::on(static fn (IdentityIdentifier $identifier): bool => (string) $identifier === (string) $identityIdentifier),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+        )->andReturn(new StepUpAuthentication(
+            $identityIdentifier,
+            StepUpAuthenticationMethod::PASSKEY,
+            new DateTimeImmutable(),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            new DateTimeImmutable('+10 minutes'),
+        ));
+        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 
     private function insertPasskeyUser(string $id, IdentityIdentifier $identityIdentifier): void

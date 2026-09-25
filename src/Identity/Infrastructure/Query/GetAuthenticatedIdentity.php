@@ -9,6 +9,7 @@ use Application\Http\Context\AccountResolver;
 use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\Delegation as DelegationModel;
 use Application\Models\Identity\Identity as IdentityModel;
+use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnectionModel;
 use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -18,6 +19,7 @@ use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Identity\Application\UseCase\Query\AuthenticatedAccountReferenceReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedAccountSummaryReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
+use Source\Identity\Application\UseCase\Query\AuthenticationMethodsReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\SwitchableAccountReadModel;
@@ -41,6 +43,12 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
     public function process(GetAuthenticatedIdentityInputPort $input): AuthenticatedIdentityReadModel
     {
         $model = IdentityModel::query()
+            ->withCount('passkeyCredentials')
+            ->addSelect([
+                'linked_social_providers' => IdentitySocialConnectionModel::query()
+                    ->selectRaw("COALESCE(jsonb_agg(DISTINCT provider ORDER BY provider), '[]'::jsonb)")
+                    ->whereColumn('identity_id', 'identities.id'),
+            ])
             ->where('id', (string) $input->identityIdentifier())
             ->first();
 
@@ -148,6 +156,10 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
             accountType: $accountContext?->accountType()->value,
+            authenticationMethods: new AuthenticationMethodsReadModel(
+                passkeyCount: $model->passkey_credentials_count,
+                linkedSocialProviders: $model->linked_social_providers,
+            ),
             accountPolicies: $accountContext?->accountPolicies() ?? [],
             account: $account,
             originalAccount: $originalAccount,

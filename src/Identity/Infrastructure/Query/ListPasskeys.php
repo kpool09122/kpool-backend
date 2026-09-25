@@ -5,14 +5,26 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Query;
 
 use Application\Models\Identity\PasskeyCredential as PasskeyCredentialModel;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInputPort;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Application\UseCase\Query\PasskeyReadModel;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 
 readonly class ListPasskeys implements ListPasskeysInterface
 {
+    public function __construct(
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+    ) {
+    }
+
     public function process(ListPasskeysInputPort $input): array
     {
+        $this->stepUpAuthenticationStorage->requireValid(
+            $input->identityIdentifier(),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+        );
+
         return PasskeyCredentialModel::query()
             ->select([
                 'id',

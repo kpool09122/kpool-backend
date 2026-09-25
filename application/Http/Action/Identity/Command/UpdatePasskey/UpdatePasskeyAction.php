@@ -7,6 +7,7 @@ namespace Application\Http\Action\Identity\Command\UpdatePasskey;
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use Source\Identity\Application\UseCase\Command\UpdatePasskey\UpdatePasskeyInput
 use Source\Identity\Application\UseCase\Command\UpdatePasskey\UpdatePasskeyInterface;
 use Source\Identity\Application\UseCase\Command\UpdatePasskey\UpdatePasskeyOutput;
 use Source\Identity\Domain\Exception\PasskeyCredentialNotFoundException;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,12 +58,19 @@ readonly class UpdatePasskeyAction
                     detail: error_message('passkey_credential_not_found', $request->language()),
                     previous: $exception,
                 );
+            } catch (StepUpAuthenticationRequiredException $exception) {
+                DB::rollBack();
+
+                throw new UnauthorizedHttpException(
+                    detail: 'Recent passkey management authentication is required.',
+                    previous: $exception,
+                );
             } catch (Throwable $exception) {
                 DB::rollBack();
 
                 throw $exception;
             }
-        } catch (NotFoundHttpException|UnprocessableEntityHttpException $exception) {
+        } catch (NotFoundHttpException|UnauthorizedHttpException|UnprocessableEntityHttpException $exception) {
             $this->logger->error((string) $exception);
 
             return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());

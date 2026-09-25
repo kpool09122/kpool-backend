@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\AddPasskey;
 
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthn\RegistrationVerificationInput;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Exception\PasskeyCredentialAlreadyExistsException;
@@ -12,6 +13,7 @@ use Source\Identity\Domain\Exception\PasskeyUserNotFoundException;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 
 readonly class AddPasskey implements AddPasskeyInterface
 {
@@ -21,6 +23,7 @@ readonly class AddPasskey implements AddPasskeyInterface
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyCredentialFactoryInterface $passkeyCredentialFactory,
         private WebAuthnServiceInterface $webAuthnService,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
     ) {
     }
 
@@ -43,6 +46,10 @@ readonly class AddPasskey implements AddPasskeyInterface
             throw new PasskeyCredentialAlreadyExistsException();
         }
 
+        $this->stepUpAuthenticationStorage->requireValid(
+            $input->identityIdentifier(),
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+        );
         $this->passkeyCredentialRepository->save($this->passkeyCredentialFactory->create(
             $passkeyUser->identifier(),
             $verified->credentialId,

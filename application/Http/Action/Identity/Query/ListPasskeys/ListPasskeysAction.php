@@ -6,11 +6,13 @@ namespace Application\Http\Action\Identity\Query\ListPasskeys;
 
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInput;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Application\UseCase\Query\PasskeyReadModel;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -32,6 +34,14 @@ readonly class ListPasskeysAction
             $passkeys = $this->listPasskeys->process(
                 new ListPasskeysInput($this->actorContext->identityIdentifier),
             );
+        } catch (StepUpAuthenticationRequiredException $e) {
+            $exception = new UnauthorizedHttpException(
+                detail: 'Recent passkey management authentication is required.',
+                previous: $e,
+            );
+            $this->logger->error((string) $exception);
+
+            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
         } catch (Throwable $e) {
             $this->logger->error((string) $e);
 

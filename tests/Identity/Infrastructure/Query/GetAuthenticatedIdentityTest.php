@@ -12,6 +12,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
@@ -95,6 +96,63 @@ class GetAuthenticatedIdentityTest extends TestCase
         ], $readModel->originalAccount()?->toArray());
         $this->assertNull($readModel->delegationIdentifier());
         $this->assertSame([], $readModel->switchableAccounts());
+        $this->assertSame([
+            'passkeyCount' => 0,
+            'linkedSocialProviders' => [],
+        ], $readModel->authenticationMethods()->toArray());
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsOnlyAuthenticationMethodSummary(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
+        CreateIdentity::create($identityIdentifier);
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, 'line-user');
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, 'another-line-user');
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'google-user');
+        DB::table('passkey_users')->insert([
+            'id' => '019de7f3-78f3-7b55-9ed5-17f63e14d501',
+            'identity_id' => (string) $identityIdentifier,
+            'created_at' => now(),
+        ]);
+        foreach (['502', '503'] as $suffix) {
+            DB::table('passkey_credentials')->insert([
+                'id' => '019de7f3-78f3-7b55-9ed5-17f63e14d'.$suffix,
+                'passkey_user_id' => '019de7f3-78f3-7b55-9ed5-17f63e14d501',
+                'credential_id' => 'credential-'.$suffix,
+                'credential_source' => '{}',
+                'sign_count' => 0,
+                'backup_eligible' => false,
+                'backup_state' => false,
+                'transports' => '[]',
+                'display_name' => 'Passkey '.$suffix,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('set')->never();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $readModel = $this->app->make(GetAuthenticatedIdentityInterface::class)
+            ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        $authenticationMethodQueries = array_values(array_filter(
+            DB::getQueryLog(),
+            static fn (array $query): bool => str_contains($query['query'], 'from "identities"')
+                || str_contains($query['query'], 'from "passkey_credentials"')
+                || str_contains($query['query'], 'from "identity_social_connections"'),
+        ));
+        DB::disableQueryLog();
+
+        $this->assertSame([
+            'passkeyCount' => 2,
+            'linkedSocialProviders' => ['google', 'line'],
+        ], $readModel->authenticationMethods()->toArray());
+        $this->assertArrayNotHasKey('passkeys', $readModel->toArray()['authenticationMethods']);
+        $this->assertArrayNotHasKey('providerUserIds', $readModel->toArray()['authenticationMethods']);
+        $this->assertCount(1, $authenticationMethodQueries);
     }
 
     #[Group('useDb')]
