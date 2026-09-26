@@ -15,7 +15,9 @@
         "ext-fileinfo": "*",
         "web-auth/webauthn-lib": "^5.3",
         "stackkit/laravel-google-cloud-tasks-queue": "^6.0",
-        "google/auth": "^1.50"
+        "google/auth": "^1.50",
+        "symfony/cache": "^8.0",
+        "phpseclib/phpseclib": "^3.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
