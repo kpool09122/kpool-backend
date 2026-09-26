@@ -374,6 +374,7 @@ model UpdateIdentityRequestBody {
 }
 
 @doc("Empty JSON array returned by endpoints with no payload.")
+@maxItems(0)
 model EmptyJsonArray is Array<unknown>;
 
 @doc("Response returned when an endpoint succeeds with an empty JSON array.")

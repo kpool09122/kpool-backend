@@ -1050,6 +1050,7 @@ components:
     EmptyJsonArray:
       type: array
       items: {}
+      maxItems: 0
       description: Empty JSON array returned by endpoints with no payload.
     IdentityProfileSummary:
       type: object
