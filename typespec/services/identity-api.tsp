@@ -373,10 +373,14 @@ model UpdateIdentityRequestBody {
   base64EncodedImage?: string | null;
 }
 
-@doc("Response returned when an endpoint succeeds with an empty JSON object.")
+@doc("Empty JSON array returned by endpoints with no payload.")
+@maxItems(0)
+model EmptyJsonArray is Array<unknown>;
+
+@doc("Response returned when an endpoint succeeds with an empty JSON array.")
 model OkEmptyResponse {
   @statusCode statusCode: 200;
-  @body body: EmptyJsonObject;
+  @body body: EmptyJsonArray;
 }
 
 @doc("Response returned when passkey registration options are created.")
