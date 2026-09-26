@@ -115,6 +115,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     public function testQueueFailureIsLoggedWithoutFailingTheRequest(): void
     {
         $failure = new RuntimeException('Queue unavailable');
+        /** @var LoggerInterface&\Mockery\MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once()->with('Failed to queue passkey recovery code email.', ['exception' => $failure]);
         $pending = Mockery::mock(PendingMail::class);

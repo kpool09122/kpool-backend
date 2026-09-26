@@ -26,6 +26,7 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
     public function testMissingConfigurationRejectsRequestBeforeTokenVerification(): void
     {
         config(['queue.connections.passkey_recovery.handler' => '']);
+        /** @var AccessToken&\Mockery\MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldNotReceive('verify');
 
@@ -36,6 +37,7 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
 
     public function testMissingTokenRejectsRequestBeforeTaskExecution(): void
     {
+        /** @var AccessToken&\Mockery\MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldNotReceive('verify');
 
@@ -48,6 +50,7 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
     #[DataProvider('tokenClaims')]
     public function testOnlyVerifiedTokensFromTheConfiguredServiceAccountAreAccepted(array|false $claims, int $status): void
     {
+        /** @var AccessToken&\Mockery\MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldReceive('verify')->once()->with('signed-token', [
             'audience' => 'https://tasks.example.com/internal/queue/passkey-recovery',

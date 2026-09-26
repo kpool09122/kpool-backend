@@ -48,7 +48,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
         config(['queue.default' => 'sync']);
         Mail::fake();
         DB::shouldReceive('transactionLevel')->once()->andReturn(0);
-        DB::shouldNotReceive('afterCommit');
+        DB::shouldReceive('afterCommit')->never();
 
         (new PasskeyRecoveryNotificationService(new NullLogger()))->notifyCompleted(new Email('user@example.com'), Language::JAPANESE);
 
@@ -62,6 +62,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
     public function testQueueFailureIsLoggedWithoutEscaping(int $transactionLevel): void
     {
         $failure = new RuntimeException('Queue unavailable');
+        /** @var LoggerInterface&\Mockery\MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once()->with('Failed to queue passkey recovery completion email.', ['exception' => $failure]);
         $pending = Mockery::mock(PendingMail::class);
@@ -71,7 +72,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
         if ($transactionLevel > 0) {
             DB::shouldReceive('afterCommit')->once()->andReturnUsing(static fn (Closure $callback) => $callback());
         } else {
-            DB::shouldNotReceive('afterCommit');
+            DB::shouldReceive('afterCommit')->never();
         }
 
         (new PasskeyRecoveryNotificationService($logger))->notifyCompleted(new Email('user@example.com'), Language::JAPANESE);

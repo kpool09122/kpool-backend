@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Config;
 
-use Illuminate\Support\Env;
+use Dotenv\Repository\Adapter\PutenvAdapter;
+use Dotenv\Repository\RepositoryBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +14,7 @@ class PasskeyRecoveryQueueConfigTest extends TestCase
     #[DataProvider('environments')]
     public function testRecoveryQueueDriverDependsOnEnvironment(string $environment, string $driver): void
     {
-        $repository = Env::getRepository();
+        $repository = RepositoryBuilder::createWithDefaultAdapters()->addAdapter(PutenvAdapter::class)->make();
         $original = $repository->get('APP_ENV');
         $repository->clear('APP_ENV');
         $repository->set('APP_ENV', $environment);
