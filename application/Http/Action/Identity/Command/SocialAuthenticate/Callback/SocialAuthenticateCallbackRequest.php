@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Identity\Command\SocialLogin\Callback;
+namespace Application\Http\Action\Identity\Command\SocialAuthenticate\Callback;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SocialLoginCallbackRequest extends FormRequest
+class SocialAuthenticateCallbackRequest extends FormRequest
 {
     use ResolvesLanguage;
 

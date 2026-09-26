@@ -16,7 +16,7 @@ use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPas
 use Application\Http\Action\Identity\Command\RecoverPasskey\RecoverPasskeyAction;
 use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailAction;
-use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCallbackAction;
+use Application\Http\Action\Identity\Command\SocialAuthenticate\Callback\SocialAuthenticateCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
@@ -41,9 +41,9 @@ Route::get('/auth/passkeys/recovery/social/{provider}/redirect', StartPasskeyRec
 Route::post('/auth/passkeys/recovery/options', CreatePasskeyRecoveryOptionsAction::class);
 Route::post('/auth/passkeys/recovery', RecoverPasskeyAction::class);
 
-// Social Login (public)
+// Social authentication (public)
 Route::get('/auth/social/{provider}/redirect', SocialLoginRedirectAction::class);
-Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class);
+Route::get('/auth/social/{provider}/callback', SocialAuthenticateCallbackAction::class);
 
 // Authenticated
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
