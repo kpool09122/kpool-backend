@@ -37,6 +37,9 @@ PR番号、コミット番号、またはmainブランチとの差分を対象�
 - 他コンテキストのRepositoryやEntityを直接参照しない
 - イベントはDomain層、EventHandlerはApplication層
 - 同一コンテキスト内でも interface 経由を優先
+- Repository は Entity / Aggregate の永続化・再構築を抽象化するものに限定する
+- TTL付きの一時状態、ワークフロー間の受け渡し、読み出しと削除を一体化した一回消費（`consume`）は Repository に置かず、Application Service の interface と Infrastructure Service の実装に分離する
+- Repository に `consume` がある場合は、このプロジェクトでは明確な設計違反として指摘する。一般的なDDDで許容される場合があることや、既存コードにも類例があることを理由に判定を弱めない
 - プリミティブ値は必要に応じて値オブジェクトでラップする
 - Enum、readonly、Factory、Repository interface の使い方が既存方針と一致している
 
