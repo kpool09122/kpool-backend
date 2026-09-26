@@ -38,6 +38,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->prefix('api/account')
             ->group($routePath('account_api.php'));
         RouteFacade::middleware(['api', 'session'])
+            ->prefix('api/site-management')
+            ->group($routePath('siteManagiment_public_api.php'));
+        RouteFacade::middleware(['api', 'session'])
             ->prefix('api/wiki')
             ->group($routePath('wiki_private_api.php'));
         RouteFacade::middleware(['api', 'session'])
@@ -183,6 +186,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account: list principal groups' => ['GET', '/api/account/principal-groups'],
             'account: update principal group members' => ['PATCH', '/api/account/principal-groups/members'],
 
+            // Site management: 自身の問い合わせは認証必須
+            'site management: list my contacts' => ['GET', '/api/site-management/my/contact'],
+
             // Wiki command / review / draft / admin / auxiliary edit APIs
             'wiki: create wiki' => ['POST', '/api/wiki/wiki/create'],
             'wiki: master search' => ['GET', '/api/wiki/wikis/ja/masters'],
@@ -231,6 +237,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account view document resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
             'account list account category change requests resolves actor and account' => ['GET', '/api/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'site management list my contacts resolves actor' => ['GET', '/api/site-management/my/contact', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki my owned wikis resolves actor and account' => ['GET', '/api/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],
