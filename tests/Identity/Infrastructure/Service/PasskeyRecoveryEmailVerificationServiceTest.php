@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Mail\PasskeyRecoveryCodeMail;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
+use Mockery;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use RuntimeException;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryEmailVerificationService;
@@ -43,7 +48,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         $email = new Email(self::EMAIL);
         $code = new AuthCode('123456');
         $this->storeVerification($email, $code, 0);
-        $service = new PasskeyRecoveryEmailVerificationService();
+        $service = new PasskeyRecoveryEmailVerificationService(new NullLogger());
         $this->assertSame('123e4567-e89b-72d3-a456-426614174000', (string) $service->verify($email, $code));
         $this->expectException(PasskeyRecoveryVerificationFailedException::class);
         $service->verify($email, $code);
@@ -52,7 +57,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     public function testExpiredCodeIsRejected(): void
     {
         $this->expectException(PasskeyRecoveryVerificationFailedException::class);
-        (new PasskeyRecoveryEmailVerificationService())->verify(new Email(self::EMAIL), new AuthCode('123456'));
+        (new PasskeyRecoveryEmailVerificationService(new NullLogger()))->verify(new Email(self::EMAIL), new AuthCode('123456'));
     }
 
     public function testAttemptLimitDeletesTheVerification(): void
@@ -62,7 +67,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         $key = $this->verificationKey($email);
 
         try {
-            (new PasskeyRecoveryEmailVerificationService())->verify($email, new AuthCode('654321'));
+            (new PasskeyRecoveryEmailVerificationService(new NullLogger()))->verify($email, new AuthCode('654321'));
             $this->fail('Attempt limit was not enforced.');
         } catch (PasskeyRecoveryVerificationFailedException) {
             $this->assertNull(Redis::get($key));
@@ -73,13 +78,54 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email(self::EMAIL);
-        $service = new PasskeyRecoveryEmailVerificationService();
+        $service = new PasskeyRecoveryEmailVerificationService(new NullLogger());
         $hash = hash('sha256', self::EMAIL);
         for ($i = 0; $i < 6; $i++) {
             $service->send($email, new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
             Cache::store('redis')->forget('passkey_recovery_email_cooldown:' . $hash);
         }
-        Mail::assertSent(PasskeyRecoveryCodeMail::class, 5);
+        Mail::assertQueued(PasskeyRecoveryCodeMail::class, 5);
+        Mail::assertNothingSent();
+    }
+
+    public function testCodeUsesRecoveryConnectionEvenWhenDefaultConnectionIsSync(): void
+    {
+        config(['queue.default' => 'sync']);
+        Mail::fake();
+        $email = new Email(self::EMAIL);
+        $identityId = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        $service = new PasskeyRecoveryEmailVerificationService(new NullLogger());
+        $service->send($email, $identityId, Language::JAPANESE);
+
+        Mail::assertQueued(PasskeyRecoveryCodeMail::class, function (PasskeyRecoveryCodeMail $mail) use ($service, $email, $identityId): bool {
+            $this->assertEquals($identityId, $service->verify($email, new AuthCode($mail->code)));
+
+            return $mail->hasTo(self::EMAIL) && $mail->connection === 'passkey_recovery' && $mail->language === Language::JAPANESE;
+        });
+        Mail::assertNothingSent();
+    }
+
+    public function testUnknownEmailDoesNotQueueMail(): void
+    {
+        Mail::fake();
+        (new PasskeyRecoveryEmailVerificationService(new NullLogger()))->send(new Email(self::EMAIL), null, Language::JAPANESE);
+        Mail::assertNothingOutgoing();
+    }
+
+    public function testQueueFailureIsLoggedWithoutFailingTheRequest(): void
+    {
+        $failure = new RuntimeException('Queue unavailable');
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once()->with('Failed to queue passkey recovery code email.', ['exception' => $failure]);
+        $pending = Mockery::mock(PendingMail::class);
+        Mail::shouldReceive('to')->once()->with(self::EMAIL)->andReturn($pending);
+        $pending->shouldReceive('queue')->once()->andThrow($failure);
+
+        (new PasskeyRecoveryEmailVerificationService($logger))->send(
+            new Email(self::EMAIL),
+            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'),
+            Language::JAPANESE,
+        );
     }
 
     private function storeVerification(Email $email, AuthCode $code, int $attempts): void

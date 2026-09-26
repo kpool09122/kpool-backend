@@ -100,8 +100,8 @@ class RecoverPasskeyTest extends TestCase
         $context['passkeyCredentialRepository']->shouldReceive('deleteAllExcept')->once()->with($context['identityId'], $newCredential->identifier())->ordered();
         $context['sessions']->shouldReceive('consume')->once()->with($context['recoveryKey'], $context['identityId']);
         $context['auth']->shouldReceive('invalidateAllSessions')->once()->with($context['identityId']);
-        $context['notification']->shouldReceive('notifyCompleted')->once()->with($context['identity']->email(), $context['identity']->language());
-        $context['events']->shouldReceive('record')->once()->with('passkey.recovery.completed', $context['identityId'], ['method' => 'sso']);
+        $context['events']->shouldReceive('record')->once()->with('passkey.recovery.completed', $context['identityId'], ['method' => 'sso'])->globally()->ordered();
+        $context['notification']->shouldReceive('notifyCompleted')->once()->with($context['identity']->email(), $context['identity']->language())->globally()->ordered();
         $context['identityRepository']->shouldNotReceive('save');
 
         $this->useCase($context)->process($context['input']);

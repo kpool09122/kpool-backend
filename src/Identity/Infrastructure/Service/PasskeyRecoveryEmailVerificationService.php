@@ -8,12 +8,14 @@ use Application\Mail\PasskeyRecoveryCodeMail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
+use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Throwable;
 
 class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVerificationServiceInterface
 {
@@ -21,6 +23,10 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
     private const int COOLDOWN_SECONDS = 60;
     private const int MAX_SENDS = 5;
     private const int MAX_ATTEMPTS = 5;
+
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
 
     public function send(Email $email, ?IdentityIdentifier $identityIdentifier, Language $language): void
     {
@@ -48,7 +54,11 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
             'code_hash' => hash_hmac('sha256', $code, (string) config('app.key')),
         ], JSON_THROW_ON_ERROR));
         if ($identityIdentifier !== null) {
-            Mail::to((string) $email)->send(new PasskeyRecoveryCodeMail($language, $code));
+            try {
+                Mail::to((string) $email)->queue(new PasskeyRecoveryCodeMail($language, $code)->onConnection('passkey_recovery'));
+            } catch (Throwable $exception) {
+                $this->logger->error('Failed to queue passkey recovery code email.', ['exception' => $exception]);
+            }
         }
     }
 

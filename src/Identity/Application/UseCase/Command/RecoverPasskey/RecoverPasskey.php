@@ -40,7 +40,7 @@ readonly class RecoverPasskey implements RecoverPasskeyInterface
         $this->passkeyCredentialRepository->deleteAllExcept($session->identityIdentifier, $credential->identifier());
         $this->sessions->consume($input->recoveryKey(), $session->identityIdentifier);
         $this->auth->invalidateAllSessions($session->identityIdentifier);
-        $this->notification->notifyCompleted($identity->email(), $identity->language());
         $this->securityEvents->record('passkey.recovery.completed', $session->identityIdentifier, ['method' => $session->method]);
+        $this->notification->notifyCompleted($identity->email(), $identity->language());
     }
 }
