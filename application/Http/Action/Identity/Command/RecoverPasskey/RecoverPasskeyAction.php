@@ -14,6 +14,7 @@ use JsonException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Command\RecoverPasskey\RecoverPasskeyInput;
 use Source\Identity\Application\UseCase\Command\RecoverPasskey\RecoverPasskeyInterface;
+use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
@@ -71,6 +72,7 @@ readonly class RecoverPasskeyAction
                 );
             } catch (
                 ChallengeSessionNotFoundException
+                |ChallengeSessionIdentityMismatchException
                 |ChallengeSessionPurposeMismatchException
                 |InvalidPasskeyBackupStateException
                 |PasskeyRecoverySessionInvalidException
