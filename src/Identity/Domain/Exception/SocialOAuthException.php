@@ -10,7 +10,7 @@ use Throwable;
 class SocialOAuthException extends DomainException
 {
     public function __construct(
-        string $message,
+        string $message = 'Social OAuth failed.',
         ?Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

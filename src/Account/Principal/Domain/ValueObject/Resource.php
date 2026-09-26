@@ -7,6 +7,7 @@ namespace Source\Account\Principal\Domain\ValueObject;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 final readonly class Resource
 {
@@ -16,7 +17,22 @@ final readonly class Resource
         private ?AccountType $accountType = null,
         private ?AccountCategory $accountCategory = null,
         private ?AccountCategory $affiliationRequestingAccountCategory = null,
+        private ?DelegationIdentifier $delegationIdentifier = null,
+        private ?AccountIdentifier $targetAccountIdentifier = null,
     ) {
+    }
+
+    public static function delegationAccount(
+        AccountIdentifier $sourceAccountIdentifier,
+        DelegationIdentifier $delegationIdentifier,
+        AccountIdentifier $targetAccountIdentifier,
+    ): self {
+        return new self(
+            ResourceType::ACCOUNT,
+            $sourceAccountIdentifier,
+            delegationIdentifier: $delegationIdentifier,
+            targetAccountIdentifier: $targetAccountIdentifier,
+        );
     }
 
     public static function account(
@@ -57,5 +73,15 @@ final readonly class Resource
     public function affiliationRequestingAccountCategory(): ?AccountCategory
     {
         return $this->affiliationRequestingAccountCategory;
+    }
+
+    public function delegationIdentifier(): ?DelegationIdentifier
+    {
+        return $this->delegationIdentifier;
+    }
+
+    public function targetAccountIdentifier(): ?AccountIdentifier
+    {
+        return $this->targetAccountIdentifier;
     }
 }

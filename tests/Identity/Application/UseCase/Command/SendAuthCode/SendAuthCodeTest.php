@@ -17,9 +17,7 @@ use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -118,8 +116,6 @@ class SendAuthCodeTest extends TestCase
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $profileImage = new ImagePath('/resources/path/test.png');
-        $plainPassword = new PlainPassword('PlainPass1!');
-        $hashedPassword = HashedPassword::fromPlain($plainPassword);
         $emailVerifiedAt = new DateTimeImmutable();
         $identity = new Identity(
             $identityIdentifier,
@@ -127,7 +123,6 @@ class SendAuthCodeTest extends TestCase
             $email,
             $language,
             $profileImage,
-            $hashedPassword,
             $emailVerifiedAt,
         );
 

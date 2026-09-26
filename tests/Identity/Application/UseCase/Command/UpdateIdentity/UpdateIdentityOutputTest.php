@@ -8,9 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -33,7 +31,6 @@ class UpdateIdentityOutputTest extends TestCase
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/updated.png');
-        $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $emailVerifiedAt = new DateTimeImmutable();
 
         $identity = new Identity(
@@ -42,7 +39,6 @@ class UpdateIdentityOutputTest extends TestCase
             $email,
             $language,
             $profileImage,
-            $hashedPassword,
             $emailVerifiedAt,
         );
 
@@ -66,7 +62,6 @@ class UpdateIdentityOutputTest extends TestCase
             new Email('user@example.com'),
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('PlainPass1!')),
             new DateTimeImmutable(),
         );
 

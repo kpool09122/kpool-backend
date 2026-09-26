@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\RollbackWiki;
 
 use DateTimeImmutable;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -90,6 +91,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(
@@ -185,6 +187,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(
@@ -279,6 +282,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(
@@ -425,6 +429,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(
@@ -493,6 +498,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(
@@ -552,6 +558,7 @@ class RollbackWikiTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $input = new RollbackWikiInput(

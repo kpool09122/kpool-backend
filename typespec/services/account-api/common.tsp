@@ -112,17 +112,13 @@ model AffiliationAccountSummary {
 }
 
 @doc("Affiliation state.")
-model AffiliationSummary {
+model AffiliationCommandSummary {
   @doc("Affiliation identifier.")
   affiliationIdentifier: Uuid;
   @doc("Agency account identifier.")
   agencyAccountIdentifier: Uuid;
   @doc("Talent account identifier.")
   talentAccountIdentifier: Uuid;
-  @doc("Agency account.")
-  agencyAccount: AffiliationAccountSummary;
-  @doc("Talent account.")
-  talentAccount: AffiliationAccountSummary;
   @doc("Account that initiated the affiliation workflow.")
   requestedBy: Uuid;
   @doc("Affiliation status.")
@@ -135,6 +131,14 @@ model AffiliationSummary {
   activatedAt?: Timestamp | null;
   @doc("Timestamp when the affiliation was terminated.")
   terminatedAt?: Timestamp | null;
+}
+
+@doc("Affiliation state with related account summaries.")
+model AffiliationSummary extends AffiliationCommandSummary {
+  @doc("Agency account.")
+  agencyAccount: AffiliationAccountSummary;
+  @doc("Talent account.")
+  talentAccount: AffiliationAccountSummary;
 }
 
 @doc("Response body for affiliation list.")
@@ -151,40 +155,18 @@ model ListAffiliationsResponseBody {
   per_page: int32;
 }
 
-@doc("Delegation state.")
-model DelegationSummary {
-  @doc("Delegation identifier.")
-  delegationIdentifier: Uuid;
-  @doc("Affiliation identifier backing the delegation.")
-  affiliationIdentifier: Uuid;
-  @doc("Delegate identity identifier.")
-  delegateIdentifier: Uuid;
-  @doc("Delegator identity identifier.")
-  delegatorIdentifier: Uuid;
-  @doc("Delegation status.")
-  status: string;
-  @doc("Delegation direction.")
-  direction: string;
-  @doc("Timestamp when the delegation was requested.")
-  requestedAt: Timestamp;
-  @doc("Timestamp when the delegation was approved.")
-  approvedAt?: Timestamp | null;
-  @doc("Timestamp when the delegation was revoked.")
-  revokedAt?: Timestamp | null;
-}
-
-@doc("Delegation permission state.")
-model DelegationPermissionSummary {
-  @doc("Delegation permission identifier.")
-  delegationPermissionIdentifier: Uuid;
-  @doc("Principal group identifier that owns the permission.")
-  principalGroupIdentifier: Uuid;
-  @doc("Target account identifier.")
-  targetAccountIdentifier: Uuid;
-  @doc("Affiliation identifier covered by the permission.")
-  affiliationIdentifier: Uuid;
-  @doc("Timestamp when the permission was created.")
-  createdAt: Timestamp;
+@doc("Response body for delegation list.")
+model ListDelegationsResponseBody {
+  @doc("Delegations related to the authenticated account.")
+  delegations: DelegationSummary[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of delegations matching the filters.")
+  total: int32;
+  @doc("Number of items per page.")
+  per_page: int32;
 }
 
 @doc("Principal group assigned to an account member.")

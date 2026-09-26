@@ -55,8 +55,8 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         $now = new DateTimeImmutable();
 
         // Load roles once
-        $seniorCollaboratorRole = $this->roleRepository->findByName(self::SENIOR_COLLABORATOR_ROLE);
-        $collaboratorRole = $this->roleRepository->findByName(self::COLLABORATOR_ROLE);
+        $seniorCollaboratorRole = $this->roleRepository->findSystemByName(self::SENIOR_COLLABORATOR_ROLE);
+        $collaboratorRole = $this->roleRepository->findSystemByName(self::COLLABORATOR_ROLE);
 
         // Step 1: Calculate cumulative points for last 3 months
         $yearMonths = $this->getEvaluationPeriodMonths($yearMonth);
@@ -328,7 +328,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                         self::SENIOR_COLLABORATOR_GROUP_NAME,
                         false,
                     );
-                    $seniorCollaboratorGroup->addRole($seniorCollaboratorRole->roleIdentifier());
+                    $seniorCollaboratorGroup->addRole($seniorCollaboratorRole);
                 }
 
                 if ($defaultGroup->hasMember($principalIdentifier)) {

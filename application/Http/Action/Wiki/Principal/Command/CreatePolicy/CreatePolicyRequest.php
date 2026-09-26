@@ -6,6 +6,7 @@ namespace Application\Http\Action\Wiki\Principal\Command\CreatePolicy;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreatePolicyRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class CreatePolicyRequest extends FormRequest
         return [
             'name' => ['required', 'string'],
             'statements' => ['required', 'array'],
-            'isSystemPolicy' => ['required', 'boolean'],
+            'accountId' => ['nullable', 'uuid'],
         ];
     }
 
@@ -36,8 +37,10 @@ class CreatePolicyRequest extends FormRequest
         return (array) $this->input('statements');
     }
 
-    public function isSystemPolicy(): bool
+    public function accountIdentifier(): ?AccountIdentifier
     {
-        return (bool) $this->input('isSystemPolicy');
+        $accountId = $this->input('accountId');
+
+        return is_string($accountId) ? new AccountIdentifier($accountId) : null;
     }
 }

@@ -639,9 +639,8 @@ class PrincipalGroupRepositoryTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [new RoleIdentifier($roleId1), new RoleIdentifier($roleId2)],
         );
-        $principalGroup->addRole(new RoleIdentifier($roleId1));
-        $principalGroup->addRole(new RoleIdentifier($roleId2));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -700,8 +699,8 @@ class PrincipalGroupRepositoryTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [new RoleIdentifier($roleId1)],
         );
-        $principalGroup->addRole(new RoleIdentifier($roleId1));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);

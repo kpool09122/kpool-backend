@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -100,7 +101,7 @@ class PublishWikiTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: true,
@@ -209,7 +210,7 @@ class PublishWikiTest extends TestCase
     public function testProcessUsesDraftPublishedWikiIdentifier(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: true,
@@ -319,7 +320,7 @@ class PublishWikiTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: false,
@@ -412,7 +413,7 @@ class PublishWikiTest extends TestCase
     public function testProcessForNewTranslatedLanguageUsesResolvedLatestVersion(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: false,
@@ -667,7 +668,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -725,7 +726,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki(hasPublishedWiki: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -787,7 +788,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -841,7 +842,7 @@ class PublishWikiTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -932,7 +933,7 @@ class PublishWikiTest extends TestCase
     public function testProcessGrantsContributionPointsOnNewCreation(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
@@ -1053,7 +1054,7 @@ class PublishWikiTest extends TestCase
     public function testProcessGrantsContributionPointsOnUpdate(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 

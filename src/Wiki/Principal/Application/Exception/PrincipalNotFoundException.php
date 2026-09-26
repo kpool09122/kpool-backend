@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\Exception;
 
 use RuntimeException;
+use Throwable;
 
 class PrincipalNotFoundException extends RuntimeException
 {
-    public function __construct(string $message = 'Principal not found.', int $code = 0, ?RuntimeException $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
+    public function __construct(
+        string $message = 'Principal not found.',
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct($message, 0, $previous);
     }
 }

@@ -69,7 +69,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
         /** @var WikiRepositoryInterface&Mockery\MockInterface $wikiRepository */
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $resolver = new PrincipalWikiScopeResolver($affiliationRepository, $wikiRepository);
-        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier);
+        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier, new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([$agencyWikiIdentifier], $resolver->agencyWikiIdentifiers($principal));
         $this->assertSame([$groupWikiIdentifier], $resolver->groupWikiIdentifiers($principal));
@@ -84,7 +84,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier);
+        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier, new AccountIdentifier(StrTestHelper::generateUuid()));
 
         CreateIdentity::create($identityIdentifier);
         CreateAccount::create((string) $agencyAccountIdentifier);

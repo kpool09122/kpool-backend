@@ -10,7 +10,7 @@ use Throwable;
 class InvalidPaymentStatusException extends DomainException
 {
     public function __construct(
-        string $message,
+        string $message = 'Payment status is invalid.',
         ?Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

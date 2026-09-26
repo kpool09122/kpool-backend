@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
@@ -11,10 +12,13 @@ return new class () extends Migration {
     {
         Schema::create('wiki_roles', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->uuid('account_id')->nullable()->index()->comment('Account ID（null は system/global）');
             $table->string('name');
-            $table->boolean('is_system_role')->default(false);
             $table->timestamps();
         });
+
+        DB::statement('CREATE UNIQUE INDEX wiki_roles_system_name_unique ON wiki_roles (name) WHERE account_id IS NULL');
+        DB::statement('CREATE UNIQUE INDEX wiki_roles_account_name_unique ON wiki_roles (account_id, name) WHERE account_id IS NOT NULL');
     }
 
     public function down(): void

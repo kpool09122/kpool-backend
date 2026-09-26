@@ -261,6 +261,54 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateAccountRequestBody'
+  /accounts/switch:
+    post:
+      operationId: AccountOperations_switchAccount
+      description: Switch the current effective account context without changing the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when account switching succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwitchAccountResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchAccountRequestBody'
   /accounts/{accountIdentifier}/category-change-requests:
     post:
       operationId: AccountCategoryChangeRequestOperations_requestAccountCategoryChange
@@ -642,15 +690,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
@@ -695,7 +737,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -785,7 +827,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AffiliationSummary'
+                $ref: '#/components/schemas/AffiliationCommandSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -822,86 +864,72 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TerminateAffiliationRequestBody'
-  /delegation-permissions:
-    post:
-      operationId: DelegationPermissionOperations_grantDelegationPermission
-      description: Grant a delegation permission.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when a delegation permission is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DelegationPermissionSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GrantDelegationPermissionRequestBody'
-  /delegation-permissions/{delegationPermissionId}:
-    delete:
-      operationId: DelegationPermissionOperations_revokeDelegationPermission
-      description: Revoke a delegation permission.
-      parameters:
-        - name: delegationPermissionId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '204':
-          description: Response with no content.
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /delegations:
+    get:
+      operationId: DelegationOperations_listDelegations
+      description: List delegations related to the authenticated account.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: viewerRole
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when listing delegations succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDelegationsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     post:
       operationId: DelegationOperations_requestDelegation
       description: Request a delegation.
@@ -919,8 +947,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
           content:
             application/json:
               schema:
@@ -990,16 +1030,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApproveDelegationRequestBody'
-  /delegations/{delegationId}/revoke:
+  /delegations/{delegationId}/reject:
     post:
-      operationId: DelegationOperations_revokeDelegation
-      description: Revoke a delegation.
+      operationId: DelegationOperations_rejectDelegation
+      description: Reject a pending delegation.
       parameters:
         - name: delegationId
           in: path
@@ -1007,12 +1041,8 @@ paths:
           schema:
             $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
-        '200':
-          description: Response returned when a delegation operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DelegationSummary'
+        '204':
+          description: Response with no content.
         '401':
           description: Access is unauthorized.
           content:
@@ -1043,12 +1073,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RevokeDelegationRequestBody'
   /invitations:
     post:
       operationId: InvitationOperations_inviteMember
@@ -1667,14 +1691,12 @@ components:
           type: string
           description: Account email address.
       description: Account summary attached to an affiliation.
-    AffiliationSummary:
+    AffiliationCommandSummary:
       type: object
       required:
         - affiliationIdentifier
         - agencyAccountIdentifier
         - talentAccountIdentifier
-        - agencyAccount
-        - talentAccount
         - requestedBy
         - status
         - requestedAt
@@ -1691,14 +1713,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Talent account identifier.
-        agencyAccount:
-          allOf:
-            - $ref: '#/components/schemas/AffiliationAccountSummary'
-          description: Agency account.
-        talentAccount:
-          allOf:
-            - $ref: '#/components/schemas/AffiliationAccountSummary'
-          description: Talent account.
         requestedBy:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -1729,6 +1743,23 @@ components:
           nullable: true
           description: Timestamp when the affiliation was terminated.
       description: Affiliation state.
+    AffiliationSummary:
+      type: object
+      required:
+        - agencyAccount
+        - talentAccount
+      properties:
+        agencyAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Agency account.
+        talentAccount:
+          allOf:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Talent account.
+      allOf:
+        - $ref: '#/components/schemas/AffiliationCommandSummary'
+      description: Affiliation state with related account summaries.
     AffiliationTermsSummary:
       type: object
       properties:
@@ -1740,16 +1771,6 @@ components:
           type: string
           description: Free-form contract notes.
       description: Affiliation contract terms.
-    ApproveDelegationRequestBody:
-      type: object
-      required:
-        - approverIdentifier
-      properties:
-        approverIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier approving the delegation.
-      description: Request body for approving a delegation.
     ContactAddressSummary:
       type: object
       properties:
@@ -1869,106 +1890,57 @@ components:
       allOf:
         - $ref: '#/components/schemas/PrincipalGroupSummary'
       description: Principal group snapshot returned immediately after creation.
-    DelegationPermissionSummary:
-      type: object
-      required:
-        - delegationPermissionIdentifier
-        - principalGroupIdentifier
-        - targetAccountIdentifier
-        - affiliationIdentifier
-        - createdAt
-      properties:
-        delegationPermissionIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegation permission identifier.
-        principalGroupIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Principal group identifier that owns the permission.
-        targetAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Target account identifier.
-        affiliationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier covered by the permission.
-        createdAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the permission was created.
-      description: Delegation permission state.
     DelegationSummary:
       type: object
       required:
         - delegationIdentifier
         - affiliationIdentifier
-        - delegateIdentifier
-        - delegatorIdentifier
+        - delegateAccountIdentifier
+        - delegatorAccountIdentifier
+        - requestedByAccountIdentifier
         - status
         - direction
         - requestedAt
       properties:
         delegationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegation identifier.
+          $ref: '#/components/schemas/KPool.Common.Uuid'
         affiliationIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegateAccountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegatorAccountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        requestedByAccountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegateAccount:
           allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier backing the delegation.
-        delegateIdentifier:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Delegate account.
+        delegatorAccount:
           allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegate identity identifier.
-        delegatorIdentifier:
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Delegator account.
+        requestedByAccount:
           allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Delegator identity identifier.
+            - $ref: '#/components/schemas/AffiliationAccountSummary'
+          description: Account that requested the delegation.
         status:
           type: string
-          description: Delegation status.
         direction:
           type: string
-          description: Delegation direction.
         requestedAt:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the delegation was requested.
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
         approvedAt:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
-          description: Timestamp when the delegation was approved.
-        revokedAt:
+        rejectedAt:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
-          description: Timestamp when the delegation was revoked.
-      description: Delegation state.
-    GrantDelegationPermissionRequestBody:
-      type: object
-      required:
-        - principalGroupIdentifier
-        - targetAccountIdentifier
-        - affiliationIdentifier
-      properties:
-        principalGroupIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity group identifier receiving the permission.
-        targetAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier that can be delegated.
-        affiliationIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier covered by the permission.
-      description: Request body for granting a delegation permission.
+      description: Delegation request state.
     InvitationSummary:
       type: object
       required:
@@ -2132,6 +2104,37 @@ components:
           format: int32
           description: Number of items per page.
       description: Response body for affiliation list.
+    ListDelegationsResponseBody:
+      type: object
+      required:
+        - delegations
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        delegations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DelegationSummary'
+          description: Delegations related to the authenticated account.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of delegations matching the filters.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of items per page.
+      description: Response body for delegation list.
     ListMembersResponseBody:
       type: object
       required:
@@ -2290,33 +2293,41 @@ components:
     RequestDelegationRequestBody:
       type: object
       required:
-        - affiliationIdentifier
-        - delegateIdentifier
-        - delegatorIdentifier
+        - targetAccountIdentifier
       properties:
-        affiliationIdentifier:
+        targetAccountIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Affiliation identifier used for delegation.
-        delegateIdentifier:
+          description: Account identifier of the affiliation counterpart.
+      description: Request body for requesting an delegation.
+    SwitchAccountRequestBody:
+      type: object
+      properties:
+        delegationIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier of the delegate.
-        delegatorIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier of the delegator.
-      description: Request body for requesting a delegation.
-    RevokeDelegationRequestBody:
+          nullable: true
+      description: Request body for switching the current effective account context. Null switches back to the original account.
+    SwitchAccountResponseBody:
       type: object
       required:
-        - revokerIdentifier
+        - originalIdentityIdentifier
+        - accountIdentifier
+        - accountPrincipalIdentifier
       properties:
-        revokerIdentifier:
+        originalIdentityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountPrincipalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegationIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier revoking the delegation.
-      description: Request body for revoking a delegation.
+          nullable: true
+      description: Selected account context.
     TerminateAffiliationRequestBody:
       type: object
       required:

@@ -19,6 +19,11 @@ interface AffiliationRepositoryInterface
 
     public function findActiveByTalentAccount(AccountIdentifier $talentAccountIdentifier): ?Affiliation;
 
+    public function findActiveBetweenAccounts(
+        AccountIdentifier $firstAccountIdentifier,
+        AccountIdentifier $secondAccountIdentifier,
+    ): ?Affiliation;
+
     /**
      * @return Affiliation[]
      */

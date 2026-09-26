@@ -52,6 +52,16 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return $result;
     }
 
+    /** @return Principal[] */
+    public function findByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        return PrincipalEloquent::query()
+            ->where('account_id', (string) $accountIdentifier)
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
@@ -63,6 +73,16 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         }
 
         return $this->toDomainEntity($eloquent);
+    }
+
+    /** @return Principal[] */
+    public function findAllByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array
+    {
+        return PrincipalEloquent::query()
+            ->where('identity_id', (string) $identityIdentifier)
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
     }
 
     public function findByIdentityIdentifierAndAccountIdentifier(

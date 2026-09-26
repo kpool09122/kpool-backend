@@ -10,7 +10,7 @@ use Throwable;
 class InvalidInvoiceAmountsException extends DomainException
 {
     public function __construct(
-        string $message,
+        string $message = 'Invoice amounts are invalid.',
         ?Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

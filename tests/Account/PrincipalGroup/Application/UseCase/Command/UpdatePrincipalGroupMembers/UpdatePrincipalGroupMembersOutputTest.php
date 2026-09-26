@@ -30,8 +30,8 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
             'Managers',
             true,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
-        $principalGroupA->addRole($roleIdentifier);
         $principalGroupA->addMember($principalIdentifierA);
         $principalGroupB = new PrincipalGroup(
             $principalGroupIdentifierB,

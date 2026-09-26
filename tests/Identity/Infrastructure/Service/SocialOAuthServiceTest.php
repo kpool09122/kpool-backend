@@ -180,6 +180,42 @@ class SocialOAuthServiceTest extends TestCase
         $this->assertSame('https://example.com/avatar.jpg', $profile->avatarUrl());
     }
 
+    public function testFetchProfileForGoogleThrowsExceptionWhenEmailNotAvailable(): void
+    {
+        $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
+
+        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app->instance(LoggerInterface::class, new NullLogger());
+        $this->app->when(SocialOAuthService::class)
+            ->needs('$config')
+            ->give($this->getConfig());
+
+        $service = $this->app->make(SocialOAuthService::class);
+        $code = new OAuthCode('google-auth-code');
+
+        $oAuthHttpClient
+            ->shouldReceive('exchangeCodeForToken')
+            ->once()
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                $this->createJsonResponse([
+                    'access_token' => 'google-access-token',
+                    'id_token' => null,
+                ]),
+            ));
+        $oAuthHttpClient
+            ->shouldReceive('fetchUser')
+            ->once()
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
+                'id' => '123456789',
+                'name' => 'Test User',
+            ])));
+
+        $this->expectException(SocialOAuthException::class);
+        $this->expectExceptionMessage('Email not available from Google. Please grant email permission.');
+
+        $service->fetchProfile(SocialProvider::GOOGLE, $code);
+    }
+
     /**
      * 正常系: LINEプロバイダーでプロファイルをfetchできること.
      *

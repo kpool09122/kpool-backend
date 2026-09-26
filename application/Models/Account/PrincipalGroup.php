@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $account_id
+ * @property string|null $delegation_id
  * @property string $name
  * @property bool $is_default
  * @property Carbon $created_at
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'account_id',
+    'delegation_id',
     'name',
     'is_default',
 ])]

@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\DeleteRole;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\Exception\CannotDeleteSystemRoleException;
 use Source\Wiki\Principal\Application\Exception\RoleNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\DeleteRole\DeleteRole;
@@ -42,7 +43,7 @@ class DeleteRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false, // isSystemRole = false
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
         );
 
@@ -99,7 +100,7 @@ class DeleteRoleTest extends TestCase
             $roleIdentifier,
             'System Role',
             [],
-            true, // isSystemRole = true
+            null, // isSystemRole = true
             new DateTimeImmutable(),
         );
 

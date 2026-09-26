@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -119,7 +120,7 @@ class CreateWikiTest extends TestCase
         $testData = $this->createDummyCreateWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);
@@ -179,7 +180,7 @@ class CreateWikiTest extends TestCase
         $testData = $this->createDummyCreateWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);

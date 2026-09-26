@@ -69,7 +69,7 @@ class PolicyRepositoryTest extends TestCase
                     null,
                 ),
             ],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -79,7 +79,7 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Full Access',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -97,7 +97,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             [
                 'name' => 'Test Policy',
-                'is_system_policy' => true,
+                'account_id' => null,
             ]
         );
 
@@ -189,7 +189,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Test Policy',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -213,7 +213,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             [
                 'name' => 'Original Name',
-                'is_system_policy' => false,
+                'account_id' => null,
             ]
         );
 
@@ -221,7 +221,7 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Original Name',
-            'is_system_policy' => false,
+            'account_id' => null,
         ]);
 
         $repository = $this->app->make(PolicyRepositoryInterface::class);
@@ -230,7 +230,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Updated Name',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -240,7 +240,7 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Updated Name',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -275,7 +275,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Agency Management',
             $statements,
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -331,7 +331,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Mixed Policy',
             $statements,
-            false,
+            null,
             new DateTimeImmutable(),
         );
 

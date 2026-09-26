@@ -6,22 +6,34 @@ namespace Source\Identity\Infrastructure\Query;
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
-use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Account as AccountModel;
+use Application\Models\Account\Delegation as DelegationModel;
 use Application\Models\Identity\Identity as IdentityModel;
+use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnectionModel;
+use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Identity\Application\UseCase\Query\AuthenticatedAccountReferenceReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedAccountSummaryReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
+use Source\Identity\Application\UseCase\Query\AuthenticationMethodsReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
+use Source\Identity\Application\UseCase\Query\SwitchableAccountReadModel;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 
 readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInterface
 {
     public function __construct(
         private AccountResolver $accountResolver,
-        private AuthContextCache $cache,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -31,6 +43,12 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
     public function process(GetAuthenticatedIdentityInputPort $input): AuthenticatedIdentityReadModel
     {
         $model = IdentityModel::query()
+            ->withCount('passkeyCredentials')
+            ->addSelect([
+                'linked_social_providers' => IdentitySocialConnectionModel::query()
+                    ->selectRaw("COALESCE(jsonb_agg(DISTINCT provider ORDER BY provider), '[]'::jsonb)")
+                    ->whereColumn('identity_id', 'identities.id'),
+            ])
             ->where('id', (string) $input->identityIdentifier())
             ->first();
 
@@ -42,15 +60,13 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
         $accountContext = null;
 
         try {
-            $accountContext = $this->cache->resolveAccount(
-                $input->identityIdentifier(),
-                fn () => $this->accountResolver->resolve($input->identityIdentifier()),
-            );
+            $accountContext = $this->accountResolver->resolve($input->identityIdentifier());
         } catch (AccountNotFoundException) {
-            $accountContext = null;
         }
 
         $account = null;
+        $originalAccount = null;
+        $switchableAccounts = [];
         if ($accountContext !== null) {
             $accountModel = AccountModel::query()
                 ->select([
@@ -83,6 +99,52 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                     address: self::address($accountModel),
                 );
             }
+
+            $originalAccountModel = AccountModel::query()
+                ->select(['id', 'name'])
+                ->where('id', (string) $accountContext->originalAccountIdentifier())
+                ->first();
+            if ($originalAccountModel !== null) {
+                $originalAccount = self::accountReference($originalAccountModel);
+            }
+
+            $originalPrincipal = $this->principalRepository->findById($accountContext->originalPrincipalIdentifier());
+            if ($originalPrincipal !== null) {
+                /** @var Collection<int, DelegationModel> $delegations */
+                $delegations = DelegationModel::query()
+                    ->with('delegatorAccount:id,name')
+                    ->where('delegate_account_id', (string) $accountContext->originalAccountIdentifier())
+                    ->where('status', 'approved')
+                    ->whereHas('delegatorAccount')
+                    ->orderBy('id')
+                    ->get();
+
+                foreach ($delegations as $delegation) {
+                    $delegatorAccount = $delegation->delegatorAccount;
+                    if (! $delegatorAccount instanceof AccountModel) {
+                        continue;
+                    }
+
+                    if (! $this->policyEvaluator->evaluate(
+                        $originalPrincipal,
+                        Action::DELEGATION_ACCOUNT_SWITCH,
+                        Resource::delegationAccount(
+                            $accountContext->originalAccountIdentifier(),
+                            new DelegationIdentifier($delegation->id),
+                            new AccountIdentifier($delegation->delegator_account_id),
+                        ),
+                    )) {
+                        continue;
+                    }
+
+                    $switchableAccounts[] = new SwitchableAccountReadModel(
+                        delegationIdentifier: $delegation->id,
+                        accountIdentifier: $delegation->delegator_account_id,
+                        account: self::accountReference($delegatorAccount),
+                        isCurrent: (string) $accountContext->delegationIdentifier() === $delegation->id,
+                    );
+                }
+            }
         }
 
         return new AuthenticatedIdentityReadModel(
@@ -94,8 +156,25 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
             accountType: $accountContext?->accountType()->value,
+            authenticationMethods: new AuthenticationMethodsReadModel(
+                passkeyCount: $model->passkey_credentials_count,
+                linkedSocialProviders: $model->linked_social_providers,
+            ),
             accountPolicies: $accountContext?->accountPolicies() ?? [],
             account: $account,
+            originalAccount: $originalAccount,
+            delegationIdentifier: $accountContext?->delegationIdentifier() === null
+                ? null
+                : (string) $accountContext->delegationIdentifier(),
+            switchableAccounts: $switchableAccounts,
+        );
+    }
+
+    private static function accountReference(AccountModel $account): AuthenticatedAccountReferenceReadModel
+    {
+        return new AuthenticatedAccountReferenceReadModel(
+            accountIdentifier: $account->id,
+            name: $account->name,
         );
     }
 

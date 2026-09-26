@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 
@@ -24,7 +25,9 @@ interface RoleRepositoryInterface
      */
     public function findAll(): array;
 
-    public function findByName(string $name): ?Role;
+    public function findSystemByName(string $name): ?Role;
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role;
 
     public function delete(Role $role): void;
 }

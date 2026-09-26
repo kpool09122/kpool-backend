@@ -6,6 +6,7 @@ namespace Source\Account\Principal\Domain\Repository;
 
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface RoleRepositoryInterface
 {
@@ -19,5 +20,9 @@ interface RoleRepositoryInterface
      */
     public function findByIds(array $roleIdentifiers): array;
 
-    public function findByName(string $name): ?Role;
+    public function findSystemByName(string $name): ?Role;
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role;
+
+    public function delete(Role $role): void;
 }

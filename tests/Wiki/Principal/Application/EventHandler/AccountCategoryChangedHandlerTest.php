@@ -77,7 +77,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
 
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($event);
@@ -112,7 +112,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([]);
 
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findByName')->once()->with('TALENT_ACTOR')->andReturn($role);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('TALENT_ACTOR')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($event);
@@ -148,7 +148,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository->shouldNotReceive('findByAccountId');
 
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($event);
@@ -160,7 +160,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principal = $this->principal($accountIdentifier);
         $role = $this->role('AGENCY_ACTOR');
         $existingGroup = $this->principalGroup($accountIdentifier, 'Agency Actor');
-        $existingGroup->addRole($role->roleIdentifier());
+        $existingGroup->addRole($role);
         $existingGroup->addMember($principal->principalIdentifier());
         $defaultPrincipalGroup = $this->principalGroup($accountIdentifier, 'Default', true);
         $defaultPrincipalGroup->addMember($principal->principalIdentifier());
@@ -183,7 +183,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
 
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($this->event($accountIdentifier, AccountCategory::AGENCY, new AccountIdentifier(StrTestHelper::generateUuid()), AccountType::INDIVIDUAL));
@@ -209,7 +209,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([]);
 
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('AGENCY_ACTOR')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($this->event($accountIdentifier, AccountCategory::AGENCY, new AccountIdentifier(StrTestHelper::generateUuid()), AccountType::INDIVIDUAL));
@@ -225,7 +225,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalRepository = self::principalRepositoryMock();
         $principalRepository->shouldNotReceive('findByAccountId');
         $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldNotReceive('findByName');
+        $roleRepository->shouldNotReceive('findSystemByName');
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($this->event(new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategory::GENERAL, new AccountIdentifier(StrTestHelper::generateUuid()), AccountType::INDIVIDUAL));
@@ -292,6 +292,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 
@@ -312,7 +313,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             $name,
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
     }

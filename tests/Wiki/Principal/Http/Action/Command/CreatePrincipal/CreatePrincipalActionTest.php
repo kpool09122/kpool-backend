@@ -11,6 +11,7 @@ use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
@@ -54,6 +55,7 @@ class CreatePrincipalActionTest extends TestCase
                     $output->setPrincipal(new \Source\Wiki\Principal\Domain\Entity\Principal(
                         new \Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier($principalIdentifier),
                         new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityIdentifier),
+                        new AccountIdentifier(StrTestHelper::generateUuid()),
                     ));
 
                     return true;
@@ -198,8 +200,6 @@ class CreatePrincipalActionTest extends TestCase
         return new ActorContext(
             new IdentityIdentifier($identityIdentifier),
             Language::ENGLISH,
-            null,
-            null,
         );
     }
 

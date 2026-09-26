@@ -6,6 +6,8 @@ namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
@@ -30,7 +32,7 @@ class RoleTest extends TestCase
             $roleIdentifier,
             $name,
             $policies,
-            $isSystemRole,
+            null,
             $createdAt,
         );
 
@@ -82,9 +84,10 @@ class RoleTest extends TestCase
     public function testAddPolicy(): void
     {
         $role = $this->createRole(policies: []);
-        $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
+        $policy = $this->createPolicy($role->accountIdentifier());
+        $policyIdentifier = $policy->policyIdentifier();
 
-        $role->addPolicy($policyIdentifier);
+        $role->addPolicy($policy);
 
         $this->assertCount(1, $role->policies());
         $this->assertTrue($role->hasPolicy($policyIdentifier));
@@ -97,10 +100,19 @@ class RoleTest extends TestCase
     {
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $role = $this->createRole(policies: [$policyIdentifier]);
+        $policy = new Policy($policyIdentifier, 'Test Policy', [], $role->accountIdentifier(), new DateTimeImmutable());
 
-        $role->addPolicy($policyIdentifier);
+        $role->addPolicy($policy);
 
         $this->assertCount(1, $role->policies());
+    }
+
+    public function testAddPolicyRejectsPolicyFromAnotherAccount(): void
+    {
+        $role = $this->createRole(policies: []);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $role->addPolicy($this->createPolicy(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 
     /**
@@ -156,7 +168,18 @@ class RoleTest extends TestCase
             $policies ?? [
                 new PolicyIdentifier(StrTestHelper::generateUuid()),
             ],
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier(StrTestHelper::generateUuid()),
+            new DateTimeImmutable(),
+        );
+    }
+
+    private function createPolicy(?AccountIdentifier $accountIdentifier): Policy
+    {
+        return new Policy(
+            new PolicyIdentifier(StrTestHelper::generateUuid()),
+            'Test Policy',
+            [],
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
     }

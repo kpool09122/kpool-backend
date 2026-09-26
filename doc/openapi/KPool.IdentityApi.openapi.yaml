@@ -45,42 +45,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/login:
-    post:
-      operationId: IdentityAuthOperations_login
-      description: Authenticate with email and password.
-      parameters: []
-      responses:
-        '200':
-          description: Response returned when email login succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginIdentitySummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequestBody'
   /auth/logout:
     post:
       operationId: IdentityAuthOperations_logout
@@ -135,18 +99,222 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/register:
-    post:
-      operationId: IdentityAuthOperations_createIdentity
-      description: Register a new identity.
+  /auth/passkeys:
+    get:
+      operationId: IdentityAuthOperations_listPasskeys
+      description: List passkeys registered by the current authenticated identity after recent passkey management authentication.
       parameters: []
       responses:
-        '201':
-          description: Response returned when an identity is created.
+        '200':
+          description: Response returned when registered passkeys are listed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyListResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/addition:
+    post:
+      operationId: IdentityAuthOperations_addPasskey
+      description: Verify and register an additional passkey for the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPasskeyRequestBody'
+  /auth/passkeys/addition/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyOptions
+      description: Create WebAuthn registration options for adding a passkey to the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey registration options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRegistrationOptionsResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/authentication:
+    post:
+      operationId: IdentityAuthOperations_authenticateWithPasskey
+      description: Verify a WebAuthn assertion and establish an authenticated session.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an identity operation succeeds.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticateWithPasskeyRequestBody'
+  /auth/passkeys/authentication/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyAuthenticationOptions
+      description: Create discoverable WebAuthn authentication options without requiring an email address.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey authentication options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyAuthenticationOptionsResult'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/registration:
+    post:
+      operationId: IdentityAuthOperations_registerWithPasskey
+      description: Verify a WebAuthn attestation, create an identity and establish an authenticated session.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when passkey-based identity registration succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyIdentityRegistrationResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterWithPasskeyRequestBody'
+  /auth/passkeys/registration/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyRegistrationOptions
+      description: Create WebAuthn registration options for a verified or invited email address.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey registration options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRegistrationOptionsResult'
         '403':
           description: Access is forbidden.
           content:
@@ -182,7 +350,100 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateIdentityRequestBody'
+              $ref: '#/components/schemas/CreatePasskeyRegistrationOptionsRequestBody'
+  /auth/passkeys/{passkeyIdentifier}:
+    patch:
+      operationId: IdentityAuthOperations_updatePasskey
+      description: Update a passkey belonging to the authenticated identity after recent passkey management authentication.
+      parameters:
+        - name: passkeyIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasskeyRequestBody'
+    delete:
+      operationId: IdentityAuthOperations_deletePasskey
+      description: Delete a passkey belonging to the authenticated identity while preserving another authentication method.
+      parameters:
+        - name: passkeyIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/send-auth-code:
     post:
       operationId: IdentityAuthOperations_sendAuthCode
@@ -302,26 +563,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /auth/switch-identity:
+  /auth/step-up/passkey:
     post:
-      operationId: IdentityAuthOperations_switchIdentity
-      description: Switch the current authenticated identity or clear delegation.
+      operationId: IdentityAuthOperations_completeStepUpWithPasskey
+      description: Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.
       parameters: []
       responses:
         '200':
-          description: Response returned when identity switching succeeds.
+          description: Response returned when an endpoint succeeds with an empty JSON object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SwitchedIdentitySummary'
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
         '401':
           description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
@@ -343,7 +598,72 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SwitchIdentityRequestBody'
+              $ref: '#/components/schemas/CompleteStepUpWithPasskeyRequestBody'
+  /auth/step-up/passkey/options:
+    post:
+      operationId: IdentityAuthOperations_createStepUpPasskeyOptions
+      description: Create identity-bound WebAuthn options for passkey management step-up authentication.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey authentication options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyAuthenticationOptionsResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/step-up/social/{provider}/redirect:
+    get:
+      operationId: IdentityAuthOperations_startStepUpWithSocial
+      description: Create a linked-SSO reauthentication URL for initial passkey registration.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/verify-email:
     post:
       operationId: IdentityAuthOperations_verifyEmail
@@ -479,6 +799,9 @@ components:
         value:
           anyOf:
             - type: string
+            - type: array
+              items:
+                type: string
             - type: boolean
           description: Value to compare against.
       description: Single condition clause in an account policy.
@@ -509,6 +832,32 @@ components:
           nullable: true
           description: Optional condition attached to the statement.
       description: Policy statement returned for account effective policies.
+    AddPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - displayName
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        displayName:
+          type: string
+          maxLength: 64
+        credential:
+          $ref: '#/components/schemas/PasskeyRegistrationCredential'
+      description: Request body for completing registration of an additional passkey.
+    AuthenticateWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        credential:
+          $ref: '#/components/schemas/PasskeyAuthenticationCredential'
+      description: Request body for completing passkey authentication.
     AuthenticatedAccountAddressSummary:
       type: object
       properties:
@@ -537,6 +886,20 @@ components:
           nullable: true
           description: Secondary address line.
       description: Account contact address summary returned for authenticated account details.
+    AuthenticatedAccountReferenceSummary:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier.
+        name:
+          type: string
+          description: Account display name.
+      description: Account reference used by account switching controls.
     AuthenticatedAccountSummary:
       type: object
       required:
@@ -584,6 +947,10 @@ components:
         - accountPrincipalIdentifier
         - accountType
         - accountPolicies
+        - originalAccount
+        - delegationIdentifier
+        - switchableAccounts
+        - authenticationMethods
       properties:
         accountIdentifier:
           type: string
@@ -611,39 +978,79 @@ components:
           allOf:
             - $ref: '#/components/schemas/AuthenticatedAccountSummary'
           nullable: true
-          description: Detailed account information associated with the authenticated identity.
+          description: Detailed information for the currently effective account.
+        originalAccount:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          nullable: true
+          description: Original account to return to when ending delegated account context.
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Delegation currently supplying the effective account context.
+        switchableAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SwitchableAccountSummary'
+          description: Approved delegated accounts available from the original account.
+        authenticationMethods:
+          allOf:
+            - $ref: '#/components/schemas/AuthenticationMethodsSummary'
+          description: Authentication methods available to the current identity.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.
-    CreateIdentityRequestBody:
+    AuthenticationMethodsSummary:
       type: object
       required:
-        - identityName
-        - email
-        - password
-        - confirmedPassword
+        - passkeyCount
+        - linkedSocialProviders
       properties:
-        identityName:
-          type: string
-          description: Requested identityName.
+        passkeyCount:
+          type: integer
+          format: int32
+          description: Number of passkeys registered by the current identity.
+        linkedSocialProviders:
+          type: array
+          items:
+            type: string
+          description: Social providers linked to the current identity.
+      description: Authentication methods available to the current identity without exposing passkey or provider-account details.
+    CompleteStepUpWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        credential:
+          $ref: '#/components/schemas/PasskeyAuthenticationCredential'
+      description: Request body for completing passkey step-up authentication.
+    CreatePasskeyRegistrationOptionsRequestBody:
+      type: object
+      required:
+        - email
+      properties:
         email:
           type: string
-          description: Email address.
-        password:
-          type: string
-          description: Plain text password.
-        confirmedPassword:
-          type: string
-          description: Password confirmation.
-        base64EncodedImage:
+          description: Verified or invited email address.
+        accountType:
           type: string
           nullable: true
-          description: Base64-encoded profile image.
+          description: Account type retained for signup completion.
         oneTimeToken:
           type: string
           nullable: true
-          description: One-time token used during signup.
-      description: Request body for registering a new identity.
+          description: Invitation token retained for signup completion.
+        return_to:
+          type: string
+          nullable: true
+          description: Application return path retained for signup completion.
+      description: Request body for starting passkey registration.
     IdentityProfileSummary:
       type: object
       required:
@@ -722,33 +1129,293 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
-    LoginIdentitySummary:
+    PasskeyAuthenticationCredential:
+      type: object
+      required:
+        - id
+        - rawId
+        - type
+        - response
+      properties:
+        id:
+          type: string
+        rawId:
+          type: string
+        type:
+          type: string
+          enum:
+            - public-key
+        response:
+          $ref: '#/components/schemas/PasskeyAuthenticatorAssertionResponse'
+        authenticatorAttachment:
+          type: string
+          nullable: true
+        clientExtensionResults:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+          nullable: true
+    PasskeyAuthenticationOptions:
+      type: object
+      required:
+        - challenge
+        - timeout
+        - rpId
+        - allowCredentials
+        - userVerification
+      properties:
+        challenge:
+          type: string
+        timeout:
+          type: integer
+          format: int32
+        rpId:
+          type: string
+        allowCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialDescriptor'
+        userVerification:
+          type: string
+      description: WebAuthn PublicKeyCredentialRequestOptions returned to the browser.
+    PasskeyAuthenticationOptionsResult:
+      type: object
+      required:
+        - challengeKey
+        - options
+      properties:
+        challengeKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Key used to submit the authentication assertion.
+        options:
+          $ref: '#/components/schemas/PasskeyAuthenticationOptions'
+      description: Result for starting passkey authentication.
+    PasskeyAuthenticatorAssertionResponse:
+      type: object
+      required:
+        - clientDataJSON
+        - authenticatorData
+        - signature
+      properties:
+        clientDataJSON:
+          type: string
+        authenticatorData:
+          type: string
+        signature:
+          type: string
+        userHandle:
+          type: string
+          nullable: true
+    PasskeyAuthenticatorAttestationResponse:
+      type: object
+      required:
+        - clientDataJSON
+        - attestationObject
+      properties:
+        clientDataJSON:
+          type: string
+        attestationObject:
+          type: string
+        transports:
+          type: array
+          items:
+            type: string
+          nullable: true
+    PasskeyAuthenticatorSelection:
+      type: object
+      required:
+        - residentKey
+        - userVerification
+      properties:
+        residentKey:
+          type: string
+        userVerification:
+          type: string
+        requireResidentKey:
+          type: boolean
+          nullable: true
+    PasskeyCredentialDescriptor:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        transports:
+          type: array
+          items:
+            type: string
+          nullable: true
+    PasskeyCredentialParameter:
+      type: object
+      required:
+        - type
+        - alg
+      properties:
+        type:
+          type: string
+        alg:
+          type: integer
+          format: int32
+    PasskeyIdentityRegistrationResult:
       type: object
       properties:
         returnTo:
           type: string
           nullable: true
-          description: Normalized application return path after login.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
-      description: Identity summary returned after email login.
-    LoginRequestBody:
+      description: Identity and retained navigation state returned after passkey registration.
+    PasskeyListResult:
       type: object
       required:
-        - email
-        - password
+        - passkeys
       properties:
-        email:
+        passkeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeySummary'
+      description: Registered passkeys belonging to the authenticated identity.
+    PasskeyRegistrationCredential:
+      type: object
+      required:
+        - id
+        - rawId
+        - type
+        - response
+      properties:
+        id:
           type: string
-          description: Email address.
-        password:
+        rawId:
           type: string
-          description: Plain text password.
-        return_to:
+        type:
+          type: string
+          enum:
+            - public-key
+        response:
+          $ref: '#/components/schemas/PasskeyAuthenticatorAttestationResponse'
+        authenticatorAttachment:
           type: string
           nullable: true
-          description: Application return path after login.
-      description: Request body for logging in.
+        clientExtensionResults:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+          nullable: true
+    PasskeyRegistrationOptions:
+      type: object
+      required:
+        - rp
+        - user
+        - challenge
+        - pubKeyCredParams
+        - timeout
+        - excludeCredentials
+        - authenticatorSelection
+        - attestation
+      properties:
+        rp:
+          $ref: '#/components/schemas/PasskeyRelyingPartyEntity'
+        user:
+          $ref: '#/components/schemas/PasskeyUserEntity'
+        challenge:
+          type: string
+        pubKeyCredParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialParameter'
+        timeout:
+          type: integer
+          format: int32
+        excludeCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyCredentialDescriptor'
+        authenticatorSelection:
+          $ref: '#/components/schemas/PasskeyAuthenticatorSelection'
+        attestation:
+          type: string
+      description: WebAuthn PublicKeyCredentialCreationOptions returned to the browser.
+    PasskeyRegistrationOptionsResult:
+      type: object
+      required:
+        - challengeKey
+        - options
+      properties:
+        challengeKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Key used to submit the registration attestation.
+        options:
+          $ref: '#/components/schemas/PasskeyRegistrationOptions'
+      description: Result for starting passkey registration.
+    PasskeyRelyingPartyEntity:
+      type: object
+      required:
+        - name
+        - id
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+    PasskeySummary:
+      type: object
+      required:
+        - passkeyIdentifier
+        - displayName
+        - transports
+        - backupEligible
+        - backupState
+        - lastUsedAt
+        - createdAt
+      properties:
+        passkeyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Application identifier for the registered passkey.
+        displayName:
+          type: string
+          description: User-visible name for the passkey.
+        transports:
+          type: array
+          items:
+            type: string
+          description: Authenticator transports reported at registration.
+        backupEligible:
+          type: boolean
+          description: Whether the credential is eligible for backup and synchronization.
+        backupState:
+          type: boolean
+          description: Whether the credential is currently backed up.
+        lastUsedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp of the most recent successful authentication.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the passkey was registered.
+      description: Public metadata for a passkey registered by the authenticated identity.
+    PasskeyUserEntity:
+      type: object
+      required:
+        - name
+        - id
+        - displayName
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        displayName:
+          type: string
     RedirectUrlResult:
       type: object
       required:
@@ -758,6 +1425,33 @@ components:
           type: string
           description: Client redirect URL returned by the backend.
       description: Redirect URL payload used by social login endpoints.
+    RegisterWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - identityName
+        - displayName
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityName:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: Requested identity name.
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: User-visible name for the passkey.
+        base64EncodedImage:
+          type: string
+          nullable: true
+          description: Base64-encoded profile image.
+        credential:
+          $ref: '#/components/schemas/PasskeyRegistrationCredential'
+      description: Request body for completing passkey-based identity registration.
     SendAuthCodeRequestBody:
       type: object
       required:
@@ -767,27 +1461,30 @@ components:
           type: string
           description: Email address that will receive the auth code.
       description: Request body for sending an auth code.
-    SwitchIdentityRequestBody:
-      type: object
-      properties:
-        targetDelegationIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Delegation identifier to switch into. Null means returning to the original identity.
-      description: Request body for switching the active identity.
-    SwitchedIdentitySummary:
+    SwitchableAccountSummary:
       type: object
       required:
-        - isDelegated
+        - delegationIdentifier
+        - accountIdentifier
+        - account
+        - isCurrent
       properties:
-        isDelegated:
+        delegationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Approved delegation identifier used by POST /accounts/switch.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Target account identifier.
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          description: Target account information used for display.
+        isCurrent:
           type: boolean
-          description: Whether the active identity is delegated.
-      allOf:
-        - $ref: '#/components/schemas/IdentitySummary'
-      description: Identity summary returned after switching active identity.
+          description: Whether this delegation currently supplies the effective account context.
+      description: Account that the authenticated identity can switch to through an approved delegation.
     UpdateIdentityRequestBody:
       type: object
       properties:
@@ -804,6 +1501,17 @@ components:
           nullable: true
           description: Base64-encoded profile image.
       description: Request body for updating an identity profile.
+    UpdatePasskeyRequestBody:
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: New user-visible name for the passkey.
+      description: Request body for updating a registered passkey.
     VerifyEmailRequestBody:
       type: object
       required:

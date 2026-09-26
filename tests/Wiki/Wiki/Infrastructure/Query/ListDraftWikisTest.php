@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
@@ -25,6 +26,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisOutp
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateImage;
 use Tests\Helper\CreateWiki;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class ListDraftWikisTest extends TestCase
@@ -209,6 +211,7 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f712'),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f611', 'group', [
@@ -251,6 +254,7 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f742'),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f641', 'group', [
@@ -309,6 +313,7 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f722'),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f621', 'talent', [
@@ -479,6 +484,7 @@ class ListDraftWikisTest extends TestCase
         $principal = new Principal(
             $this->defaultPrincipalIdentifier(),
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);

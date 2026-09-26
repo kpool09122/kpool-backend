@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 
@@ -17,7 +19,7 @@ class Role
         private readonly RoleIdentifier $roleIdentifier,
         private readonly string $name,
         private array $policies,
-        private readonly bool $isSystemRole,
+        private readonly ?AccountIdentifier $accountIdentifier,
         private readonly DateTimeImmutable $createdAt,
     ) {
     }
@@ -42,7 +44,12 @@ class Role
 
     public function isSystemRole(): bool
     {
-        return $this->isSystemRole;
+        return $this->accountIdentifier === null;
+    }
+
+    public function accountIdentifier(): ?AccountIdentifier
+    {
+        return $this->accountIdentifier;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -50,13 +57,17 @@ class Role
         return $this->createdAt;
     }
 
-    public function addPolicy(PolicyIdentifier $policyIdentifier): void
+    public function addPolicy(Policy $policy): void
     {
-        if ($this->hasPolicy($policyIdentifier)) {
+        if (! $this->canAttachPolicy($policy)) {
+            throw new InvalidArgumentException('Role and policy account scopes are incompatible.');
+        }
+
+        if ($this->hasPolicy($policy->policyIdentifier())) {
             return;
         }
 
-        $this->policies[] = $policyIdentifier;
+        $this->policies[] = $policy->policyIdentifier();
     }
 
     public function removePolicy(PolicyIdentifier $policyIdentifier): void
@@ -70,5 +81,15 @@ class Role
     public function hasPolicy(PolicyIdentifier $policyIdentifier): bool
     {
         return array_any($this->policies, fn ($policy) => (string) $policy === (string) $policyIdentifier);
+    }
+
+    private function canAttachPolicy(Policy $policy): bool
+    {
+        if ($this->accountIdentifier === null) {
+            return $policy->accountIdentifier() === null;
+        }
+
+        return $policy->accountIdentifier() === null
+            || (string) $policy->accountIdentifier() === (string) $this->accountIdentifier;
     }
 }

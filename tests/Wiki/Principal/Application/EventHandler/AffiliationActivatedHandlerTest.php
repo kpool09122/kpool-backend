@@ -167,7 +167,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
                     return true;
                 }),
-                false,
+                $talentAccountIdentifier,
             )
             ->andReturn($talentSidePolicy);
         $policyFactory
@@ -180,7 +180,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
                     return true;
                 }),
-                false,
+                $agencyAccountIdentifier,
             )
             ->andReturn($agencySidePolicy);
 
@@ -520,7 +520,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
                     return true;
                 }),
-                false,
+                $talentAccountIdentifier,
             )
             ->andReturn($talentSidePolicy);
         $policyFactory
@@ -533,7 +533,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
                     return true;
                 }),
-                false,
+                $agencyAccountIdentifier,
             )
             ->andReturn($agencySidePolicy);
 
@@ -648,6 +648,7 @@ class AffiliationActivatedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 
@@ -668,7 +669,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             new PolicyIdentifier(StrTestHelper::generateUuid()),
             'Test Policy',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
     }
@@ -679,7 +680,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
     }

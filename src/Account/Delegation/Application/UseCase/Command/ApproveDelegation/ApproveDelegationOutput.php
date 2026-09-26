@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation;
 
 use DateTimeInterface;
+use LogicException;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 
 class ApproveDelegationOutput implements ApproveDelegationOutputPort
@@ -16,27 +17,22 @@ class ApproveDelegationOutput implements ApproveDelegationOutputPort
         $this->delegation = $delegation;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
-        if ($this->delegation === null) {
-            return [];
-        }
-
-        $delegation = $this->delegation;
+        $delegation = $this->delegation ?? throw new LogicException('Account delegation has not been set.');
 
         return [
             'delegationIdentifier' => (string) $delegation->delegationIdentifier(),
             'affiliationIdentifier' => (string) $delegation->affiliationIdentifier(),
-            'delegateIdentifier' => (string) $delegation->delegateIdentifier(),
-            'delegatorIdentifier' => (string) $delegation->delegatorIdentifier(),
+            'delegateAccountIdentifier' => (string) $delegation->delegateAccountIdentifier(),
+            'delegatorAccountIdentifier' => (string) $delegation->delegatorAccountIdentifier(),
+            'requestedByAccountIdentifier' => (string) $delegation->requestedByAccountIdentifier(),
             'status' => $delegation->status()->value,
             'direction' => $delegation->direction()->value,
             'requestedAt' => $delegation->requestedAt()->format(DateTimeInterface::ATOM),
             'approvedAt' => $delegation->approvedAt()?->format(DateTimeInterface::ATOM),
-            'revokedAt' => $delegation->revokedAt()?->format(DateTimeInterface::ATOM),
+            'rejectedAt' => $delegation->rejectedAt()?->format(DateTimeInterface::ATOM),
         ];
     }
 }

@@ -244,7 +244,7 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         PrincipalIdentifier $principalIdentifier,
         bool $policyAllowed,
     ): void {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

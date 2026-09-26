@@ -32,9 +32,9 @@ class RemovePrincipalFromPrincipalGroupOutputTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
         $principalGroup->addMember($remainingMember);
-        $principalGroup->addRole($roleIdentifier);
 
         $output = new RemovePrincipalFromPrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);

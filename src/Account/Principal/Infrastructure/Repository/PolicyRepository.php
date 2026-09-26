@@ -22,6 +22,7 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PolicyRepository implements PolicyRepositoryInterface
@@ -34,13 +35,27 @@ class PolicyRepository implements PolicyRepositoryInterface
         PolicyEloquent::query()->updateOrCreate(
             ['id' => $policyIdentifier],
             [
+                'account_id' => $policy->accountIdentifier() !== null ? (string) $policy->accountIdentifier() : null,
                 'name' => $policy->name(),
                 'statements' => $this->serializeStatements($policy->statements()),
-                'is_system_policy' => $policy->isSystemPolicy(),
             ]
         );
 
         $this->forgetAccountContextsForRoles($affectedRoles);
+    }
+
+    public function findSystemByName(string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->whereNull('account_id')->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->where('account_id', (string) $accountIdentifier)->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     /**
@@ -75,6 +90,13 @@ class PolicyRepository implements PolicyRepositoryInterface
             ->get()
             ->map(fn (PolicyEloquent $policy) => $this->toDomainEntity($policy))
             ->all();
+    }
+
+    public function delete(Policy $policy): void
+    {
+        $policyId = (string) $policy->policyIdentifier();
+        $this->forgetAccountContextsForRoles($this->rolesAttachedToPolicy($policyId));
+        PolicyEloquent::query()->where('id', $policyId)->delete();
     }
 
     /**
@@ -122,7 +144,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             new PolicyIdentifier($eloquent->id),
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
-            $eloquent->is_system_policy,
+            $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
         );
     }

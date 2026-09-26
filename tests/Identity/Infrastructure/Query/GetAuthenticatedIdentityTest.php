@@ -12,6 +12,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
@@ -59,7 +60,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         ]);
 
         Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->once();
+        Redis::shouldReceive('set')->once();
 
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
@@ -89,6 +90,69 @@ class GetAuthenticatedIdentityTest extends TestCase
                 ],
             ],
         ], $inviteStatement['condition']);
+        $this->assertSame([
+            'accountIdentifier' => (string) $accountIdentifier,
+            'name' => 'Test Account',
+        ], $readModel->originalAccount()?->toArray());
+        $this->assertNull($readModel->delegationIdentifier());
+        $this->assertSame([], $readModel->switchableAccounts());
+        $this->assertSame([
+            'passkeyCount' => 0,
+            'linkedSocialProviders' => [],
+        ], $readModel->authenticationMethods()->toArray());
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsOnlyAuthenticationMethodSummary(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
+        CreateIdentity::create($identityIdentifier);
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, 'line-user');
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, 'another-line-user');
+        CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'google-user');
+        DB::table('passkey_users')->insert([
+            'id' => '019de7f3-78f3-7b55-9ed5-17f63e14d501',
+            'identity_id' => (string) $identityIdentifier,
+            'created_at' => now(),
+        ]);
+        foreach (['502', '503'] as $suffix) {
+            DB::table('passkey_credentials')->insert([
+                'id' => '019de7f3-78f3-7b55-9ed5-17f63e14d'.$suffix,
+                'passkey_user_id' => '019de7f3-78f3-7b55-9ed5-17f63e14d501',
+                'credential_id' => 'credential-'.$suffix,
+                'credential_source' => '{}',
+                'sign_count' => 0,
+                'backup_eligible' => false,
+                'backup_state' => false,
+                'transports' => '[]',
+                'display_name' => 'Passkey '.$suffix,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('set')->never();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $readModel = $this->app->make(GetAuthenticatedIdentityInterface::class)
+            ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        $authenticationMethodQueries = array_values(array_filter(
+            DB::getQueryLog(),
+            static fn (array $query): bool => str_contains($query['query'], 'from "identities"')
+                || str_contains($query['query'], 'from "passkey_credentials"')
+                || str_contains($query['query'], 'from "identity_social_connections"'),
+        ));
+        DB::disableQueryLog();
+
+        $this->assertSame([
+            'passkeyCount' => 2,
+            'linkedSocialProviders' => ['google', 'line'],
+        ], $readModel->authenticationMethods()->toArray());
+        $this->assertArrayNotHasKey('passkeys', $readModel->toArray()['authenticationMethods']);
+        $this->assertArrayNotHasKey('providerUserIds', $readModel->toArray()['authenticationMethods']);
+        $this->assertCount(1, $authenticationMethodQueries);
     }
 
     #[Group('useDb')]
@@ -103,7 +167,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         ]);
 
         Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->never();
+        Redis::shouldReceive('set')->never();
 
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
@@ -117,6 +181,148 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertNull($readModel->accountPrincipalIdentifier());
         $this->assertNull($readModel->accountType());
         $this->assertSame([], $readModel->accountPolicies());
+        $this->assertNull($readModel->originalAccount());
+        $this->assertNull($readModel->delegationIdentifier());
+        $this->assertSame([], $readModel->switchableAccounts());
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsOnlyAuthorizedApprovedSwitchableAccounts(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e001');
+        $originalAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e002');
+        $originalPrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e003';
+        $this->app->make(AccountAuthorizationSeeder::class)->run();
+        CreateIdentity::create($identityIdentifier);
+        CreateAccount::create((string) $originalAccountIdentifier, ['name' => 'Original Account']);
+        DB::table('account_principals')->insert([
+            'id' => $originalPrincipalIdentifier,
+            'identity_id' => (string) $identityIdentifier,
+            'account_id' => (string) $originalAccountIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $statuses = ['approved', 'approved', 'pending', 'rejected'];
+        foreach ($statuses as $index => $status) {
+            $suffix = (string) ($index + 4);
+            $targetAccountIdentifier = "019de7f3-78f3-7b55-9ed5-17f63e14e00{$suffix}";
+            CreateAccount::create($targetAccountIdentifier, ['name' => ucfirst($status) . ' Account']);
+            DB::table('account_delegations')->insert([
+                'id' => "019de7f3-78f3-7b55-9ed5-17f63e14e01{$suffix}",
+                'affiliation_id' => "019de7f3-78f3-7b55-9ed5-17f63e14e02{$suffix}",
+                'delegate_account_id' => (string) $originalAccountIdentifier,
+                'delegator_account_id' => $targetAccountIdentifier,
+                'requested_by_account_id' => (string) $originalAccountIdentifier,
+                'status' => $status,
+                'direction' => 'from_agency',
+                'requested_at' => now(),
+                'approved_at' => $status === 'approved' ? now() : null,
+                'rejected_at' => $status === 'rejected' ? now() : null,
+            ]);
+        }
+
+        Redis::shouldReceive('get')->twice()->andReturn(null);
+        Redis::shouldReceive('set')->twice();
+
+        $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
+        $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        $this->assertSame([], $readModel->switchableAccounts());
+
+        $this->grantSwitchPermission(
+            $originalAccountIdentifier,
+            $originalPrincipalIdentifier,
+            new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e008'),
+            '019de7f3-78f3-7b55-9ed5-17f63e14e009',
+            '019de7f3-78f3-7b55-9ed5-17f63e14e014',
+            '019de7f3-78f3-7b55-9ed5-17f63e14e004',
+        );
+
+        $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+
+        $this->assertSame([
+            [
+                'delegationIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14e014',
+                'accountIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14e004',
+                'account' => [
+                    'accountIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14e004',
+                    'name' => 'Approved Account',
+                ],
+                'isCurrent' => false,
+            ],
+        ], array_map(static fn ($account): array => $account->toArray(), $readModel->switchableAccounts()));
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsDelegatedCurrentAndOriginalAccountContext(): void
+    {
+        $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e101');
+        $originalAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e102');
+        $effectiveAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e103');
+        $originalPrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e104';
+        $effectivePrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e105';
+        $delegationIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e106';
+        $this->app->make(AccountAuthorizationSeeder::class)->run();
+        CreateIdentity::create($identityIdentifier);
+        CreateAccount::create((string) $originalAccountIdentifier, ['name' => 'Original Account']);
+        CreateAccount::create((string) $effectiveAccountIdentifier, ['name' => 'Effective Account']);
+        DB::table('account_principals')->insert([
+            [
+                'id' => $originalPrincipalIdentifier,
+                'identity_id' => (string) $identityIdentifier,
+                'account_id' => (string) $originalAccountIdentifier,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => $effectivePrincipalIdentifier,
+                'identity_id' => (string) $identityIdentifier,
+                'account_id' => (string) $effectiveAccountIdentifier,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+        DB::table('account_delegations')->insert([
+            'id' => $delegationIdentifier,
+            'affiliation_id' => '019de7f3-78f3-7b55-9ed5-17f63e14e107',
+            'delegate_account_id' => (string) $originalAccountIdentifier,
+            'delegator_account_id' => (string) $effectiveAccountIdentifier,
+            'requested_by_account_id' => (string) $originalAccountIdentifier,
+            'status' => 'approved',
+            'direction' => 'from_agency',
+            'requested_at' => now(),
+            'approved_at' => now(),
+            'rejected_at' => null,
+        ]);
+        $this->grantSwitchPermission(
+            $originalAccountIdentifier,
+            $originalPrincipalIdentifier,
+            new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e108'),
+            '019de7f3-78f3-7b55-9ed5-17f63e14e109',
+            $delegationIdentifier,
+            (string) $effectiveAccountIdentifier,
+        );
+
+        Redis::shouldReceive('get')->once()->andReturn(json_encode([
+            'originalIdentityIdentifier' => (string) $identityIdentifier,
+            'originalAccountIdentifier' => (string) $originalAccountIdentifier,
+            'originalPrincipalIdentifier' => $originalPrincipalIdentifier,
+            'effectiveAccountIdentifier' => (string) $effectiveAccountIdentifier,
+            'effectivePrincipalIdentifier' => $effectivePrincipalIdentifier,
+            'delegationIdentifier' => $delegationIdentifier,
+        ], JSON_THROW_ON_ERROR));
+        Redis::shouldReceive('set')->never();
+
+        $readModel = $this->app->make(GetAuthenticatedIdentityInterface::class)
+            ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+
+        $this->assertSame((string) $effectiveAccountIdentifier, $readModel->accountIdentifier());
+        $this->assertSame([
+            'accountIdentifier' => (string) $originalAccountIdentifier,
+            'name' => 'Original Account',
+        ], $readModel->originalAccount()?->toArray());
+        $this->assertSame($delegationIdentifier, $readModel->delegationIdentifier());
+        $this->assertTrue($readModel->switchableAccounts()[0]->toArray()['isCurrent']);
     }
 
     #[Group('useDb')]
@@ -129,6 +335,55 @@ class GetAuthenticatedIdentityTest extends TestCase
         $useCase->process(new GetAuthenticatedIdentityInput(
             new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5ff'),
         ));
+    }
+
+    private function grantSwitchPermission(
+        AccountIdentifier $accountIdentifier,
+        string $principalIdentifier,
+        PrincipalGroupIdentifier $groupIdentifier,
+        string $membershipIdentifier,
+        string $delegationIdentifier,
+        string $targetAccountIdentifier,
+    ): void {
+        $policyId = StrTestHelper::generateUuid();
+        $roleId = StrTestHelper::generateUuid();
+        DB::table('account_policies')->insert([
+            'id' => $policyId,
+            'account_id' => (string) $accountIdentifier,
+            'name' => "Delegation Policy - {$delegationIdentifier}",
+            'statements' => json_encode([[
+                'effect' => 'allow',
+                'actions' => ['account:delegation-account:switch'],
+                'resource_types' => ['account'],
+                'condition' => [
+                    ['key' => 'resource:delegationId', 'operator' => 'eq', 'value' => $delegationIdentifier],
+                    ['key' => 'resource:targetAccountId', 'operator' => 'eq', 'value' => $targetAccountIdentifier],
+                ],
+            ]], JSON_THROW_ON_ERROR),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('account_roles')->insert([
+            'id' => $roleId,
+            'account_id' => (string) $accountIdentifier,
+            'name' => "Delegation Role - {$delegationIdentifier}",
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('account_role_policy_attachments')->insert(['role_id' => $roleId, 'policy_id' => $policyId]);
+        CreateAccountPrincipalGroup::create($groupIdentifier, $accountIdentifier, [
+            'role_ids' => [$roleId],
+        ]);
+        DB::table('account_principal_groups')->where('id', (string) $groupIdentifier)->update([
+            'delegation_id' => $delegationIdentifier,
+        ]);
+        DB::table('account_principal_group_memberships')->insert([
+            'id' => $membershipIdentifier,
+            'principal_group_id' => (string) $groupIdentifier,
+            'principal_id' => $principalIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

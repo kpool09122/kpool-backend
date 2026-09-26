@@ -3325,7 +3325,6 @@ components:
       required:
         - name
         - statements
-        - isSystemPolicy
       properties:
         name:
           type: string
@@ -3335,9 +3334,12 @@ components:
           items:
             $ref: '#/components/schemas/PolicyStatement'
           description: Statements that define the policy.
-        isSystemPolicy:
-          type: boolean
-          description: Whether this is a system policy.
+        accountId:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Account identifier. Omit or null for a system/global policy.
       description: Request body for creating a policy.
     CreatePrincipalGroupRequestBody:
       type: object
@@ -3372,7 +3374,6 @@ components:
       type: object
       required:
         - name
-        - isSystemRole
       properties:
         name:
           type: string
@@ -3382,9 +3383,12 @@ components:
           items:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Policy identifiers attached to the role.
-        isSystemRole:
-          type: boolean
-          description: Whether this is a system role.
+        accountId:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Account identifier. Omit or null for a system/global role.
       description: Request body for creating a role.
     CreateWikiRequestBody:
       type: object
@@ -4511,6 +4515,9 @@ components:
         value:
           anyOf:
             - type: string
+            - type: array
+              items:
+                type: string
             - type: boolean
           description: Value to compare against.
       description: Single condition clause in a policy.

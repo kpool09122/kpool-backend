@@ -270,7 +270,7 @@ class RequestCertificationTest extends TestCase
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')->with($wikiId)->andReturn([$wiki]);
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 

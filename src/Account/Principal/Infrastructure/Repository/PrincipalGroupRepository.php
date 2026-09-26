@@ -16,6 +16,7 @@ use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\Uid\Uuid;
 
@@ -32,6 +33,9 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ['id' => (string) $principalGroup->principalGroupIdentifier()],
             [
                 'account_id' => (string) $principalGroup->accountIdentifier(),
+                'delegation_id' => $principalGroup->delegationIdentifier() !== null
+                    ? (string) $principalGroup->delegationIdentifier()
+                    : null,
                 'name' => $principalGroup->name(),
                 'is_default' => $principalGroup->isDefault(),
             ]
@@ -120,6 +124,16 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         }
 
         return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByDelegationId(DelegationIdentifier $delegationIdentifier): ?PrincipalGroup
+    {
+        $eloquent = PrincipalGroupEloquent::query()
+            ->with(['members', 'roleAttachments'])
+            ->where('delegation_id', (string) $delegationIdentifier)
+            ->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     public function findByAccountIdAndRole(
@@ -212,20 +226,22 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
+        $roles = $eloquent->roleAttachments->map(
+            static fn (PrincipalGroupRoleAttachmentEloquent $attachment) => new RoleIdentifier($attachment->role_id)
+        )->all();
+
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($eloquent->id),
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
             $eloquent->is_default,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            $roles,
+            $eloquent->delegation_id !== null ? new DelegationIdentifier($eloquent->delegation_id) : null,
         );
 
         foreach ($eloquent->members as $member) {
             $principalGroup->addMember(new PrincipalIdentifier($member->principal_id));
-        }
-
-        foreach ($eloquent->roleAttachments as $roleAttachment) {
-            $principalGroup->addRole(new RoleIdentifier($roleAttachment->role_id));
         }
 
         return $principalGroup;

@@ -58,7 +58,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($collaboratorRoleId),
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -66,7 +66,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -78,7 +78,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
-        $principalGroup->addRole(new RoleIdentifier($collaboratorRoleId));
+        $principalGroup->addRole($collaboratorRole);
 
         $summary = new ContributionPointSummary(
             new ContributionPointSummaryIdentifier(StrTestHelper::generateUuid()),
@@ -114,10 +114,10 @@ class ProcessRolePromotionTest extends TestCase
             ->twice();
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn($collaboratorRole);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -129,6 +129,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -188,7 +189,7 @@ class ProcessRolePromotionTest extends TestCase
         $promotionHistoryRepository = Mockery::mock(PromotionHistoryRepositoryInterface::class);
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->andReturn(null);
+        $roleRepository->shouldReceive('findSystemByName')->andReturn(null);
         $principalGroupRepository->shouldReceive('findByRole')->andReturn([]);
 
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
@@ -232,7 +233,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($collaboratorRoleId),
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -240,7 +241,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -251,7 +252,7 @@ class ProcessRolePromotionTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
-        $defaultGroup->addRole(new RoleIdentifier($collaboratorRoleId));
+        $defaultGroup->addRole($collaboratorRole);
 
         $seniorGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($seniorGroupId),
@@ -261,7 +262,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $seniorGroup->addMember(new PrincipalIdentifier($principalId));
-        $seniorGroup->addRole(new RoleIdentifier($seniorCollaboratorRoleId));
+        $seniorGroup->addRole($seniorCollaboratorRole);
 
         // 既存の警告（warningCount=2）
         $warning = new DemotionWarning(
@@ -307,10 +308,10 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$seniorGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn($collaboratorRole);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -356,7 +357,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($collaboratorRoleId),
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -364,7 +365,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -376,7 +377,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
-        $principalGroup->addRole(new RoleIdentifier($seniorCollaboratorRoleId));
+        $principalGroup->addRole($seniorCollaboratorRole);
 
         // 上位10%に入らない低いポイント
         $summary = new ContributionPointSummary(
@@ -413,10 +414,10 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$principalGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn($collaboratorRole);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -463,7 +464,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -495,10 +496,10 @@ class ProcessRolePromotionTest extends TestCase
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         // COLLABORATORロールが見つからない → processDemotionsとprocessPromotionsでearly return
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn(null);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -545,7 +546,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($collaboratorRoleId),
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -553,7 +554,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -564,7 +565,7 @@ class ProcessRolePromotionTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
-        $defaultGroup->addRole(new RoleIdentifier($collaboratorRoleId));
+        $defaultGroup->addRole($collaboratorRole);
 
         $seniorGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($seniorGroupId),
@@ -574,7 +575,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $seniorGroup->addMember(new PrincipalIdentifier($principalId));
-        $seniorGroup->addRole(new RoleIdentifier($seniorCollaboratorRoleId));
+        $seniorGroup->addRole($seniorCollaboratorRole);
 
         $warning = new DemotionWarning(
             new DemotionWarningIdentifier($warningId),
@@ -627,10 +628,10 @@ class ProcessRolePromotionTest extends TestCase
             ->twice();
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn($collaboratorRole);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -642,6 +643,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -697,7 +699,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($collaboratorRoleId),
             'COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -705,7 +707,7 @@ class ProcessRolePromotionTest extends TestCase
             new RoleIdentifier($seniorCollaboratorRoleId),
             'SENIOR_COLLABORATOR',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -717,7 +719,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
-        $principalGroup->addRole(new RoleIdentifier($seniorCollaboratorRoleId));
+        $principalGroup->addRole($seniorCollaboratorRole);
 
         // WarningCount=1の既存警告（processDemotionsでincrementされて2になり、isReachedWarningThreshold=trueになる）
         $warning = new DemotionWarning(
@@ -760,10 +762,10 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$principalGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('COLLABORATOR')
             ->andReturn($collaboratorRole);
-        $roleRepository->shouldReceive('findByName')
+        $roleRepository->shouldReceive('findSystemByName')
             ->with('SENIOR_COLLABORATOR')
             ->andReturn($seniorCollaboratorRole);
 
@@ -775,6 +777,7 @@ class ProcessRolePromotionTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityId,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);

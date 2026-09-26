@@ -6,7 +6,6 @@ namespace Source\Identity\Domain\Repository;
 
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -25,13 +24,4 @@ interface IdentityRepositoryInterface
      * @return Identity[]
      */
     public function findByIds(array $identifiers): array;
-
-    public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Identity;
-
-    /**
-     * @return Identity[]
-     */
-    public function findDelegatedIdentities(IdentityIdentifier $originalIdentityIdentifier): array;
-
-    public function deleteByDelegation(DelegationIdentifier $delegationIdentifier): void;
 }

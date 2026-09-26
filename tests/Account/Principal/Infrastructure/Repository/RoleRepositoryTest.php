@@ -31,12 +31,12 @@ class RoleRepositoryTest extends TestCase
         $repository = $this->app->make(RoleRepositoryInterface::class);
         $this->createPolicy($policyIdentifier);
 
-        $repository->save(new Role($roleIdentifier, Role::ADMIN, [$policyIdentifier], true));
+        $repository->save(new Role($roleIdentifier, Role::ADMIN, [$policyIdentifier], null));
 
         $this->assertDatabaseHas('account_roles', [
             'id' => (string) $roleIdentifier,
             'name' => Role::ADMIN,
-            'is_system_role' => true,
+            'account_id' => null,
         ]);
 
         $this->assertDatabaseHas('account_role_policy_attachments', [
@@ -61,8 +61,8 @@ class RoleRepositoryTest extends TestCase
         $this->createPolicy($oldPolicyIdentifier);
         $this->createPolicy($newPolicyIdentifier);
 
-        $repository->save(new Role($roleIdentifier, Role::OWNER, [$oldPolicyIdentifier], true));
-        $repository->save(new Role($roleIdentifier, Role::OWNER, [$newPolicyIdentifier], true));
+        $repository->save(new Role($roleIdentifier, Role::OWNER, [$oldPolicyIdentifier], null));
+        $repository->save(new Role($roleIdentifier, Role::OWNER, [$newPolicyIdentifier], null));
 
         $this->assertDatabaseMissing('account_role_policy_attachments', [
             'role_id' => (string) $roleIdentifier,
@@ -81,9 +81,9 @@ class RoleRepositoryTest extends TestCase
         $roleName = 'Role ' . (string) $roleIdentifier;
         $repository = $this->app->make(RoleRepositoryInterface::class);
 
-        $repository->save(new Role($roleIdentifier, $roleName, [], true));
+        $repository->save(new Role($roleIdentifier, $roleName, [], null));
 
-        $result = $repository->findByName($roleName);
+        $result = $repository->findSystemByName($roleName);
 
         $this->assertNotNull($result);
         $this->assertSame((string) $roleIdentifier, (string) $result->roleIdentifier());
@@ -96,7 +96,7 @@ class RoleRepositoryTest extends TestCase
             'id' => (string) $policyIdentifier,
             'name' => 'POLICY_' . str_replace('-', '_', (string) $policyIdentifier),
             'statements' => '[]',
-            'is_system_policy' => true,
+            'account_id' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

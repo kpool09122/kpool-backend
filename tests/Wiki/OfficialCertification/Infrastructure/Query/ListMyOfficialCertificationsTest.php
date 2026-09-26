@@ -140,7 +140,7 @@ class ListMyOfficialCertificationsTest extends TestCase
 
     private function registerAuthorizedPrincipal(PrincipalIdentifier $principalIdentifier, bool $allowed): void
     {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 

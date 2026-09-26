@@ -8,6 +8,7 @@ readonly class AuthenticatedIdentityReadModel
 {
     /**
      * @param array<int, array<string, mixed>> $accountPolicies
+     * @param SwitchableAccountReadModel[] $switchableAccounts
      */
     public function __construct(
         private string $identityIdentifier,
@@ -18,8 +19,12 @@ readonly class AuthenticatedIdentityReadModel
         private ?string $accountIdentifier,
         private ?string $accountPrincipalIdentifier,
         private ?string $accountType,
+        private AuthenticationMethodsReadModel $authenticationMethods,
         private array $accountPolicies = [],
         private ?AuthenticatedAccountSummaryReadModel $account = null,
+        private ?AuthenticatedAccountReferenceReadModel $originalAccount = null,
+        private ?string $delegationIdentifier = null,
+        private array $switchableAccounts = [],
     ) {
     }
 
@@ -76,6 +81,27 @@ readonly class AuthenticatedIdentityReadModel
         return $this->account;
     }
 
+    public function originalAccount(): ?AuthenticatedAccountReferenceReadModel
+    {
+        return $this->originalAccount;
+    }
+
+    public function delegationIdentifier(): ?string
+    {
+        return $this->delegationIdentifier;
+    }
+
+    /** @return SwitchableAccountReadModel[] */
+    public function switchableAccounts(): array
+    {
+        return $this->switchableAccounts;
+    }
+
+    public function authenticationMethods(): AuthenticationMethodsReadModel
+    {
+        return $this->authenticationMethods;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -92,6 +118,13 @@ readonly class AuthenticatedIdentityReadModel
             'accountType' => $this->accountType,
             'accountPolicies' => $this->accountPolicies,
             'account' => $this->account?->toArray(),
+            'originalAccount' => $this->originalAccount?->toArray(),
+            'delegationIdentifier' => $this->delegationIdentifier,
+            'switchableAccounts' => array_map(
+                static fn (SwitchableAccountReadModel $account): array => $account->toArray(),
+                $this->switchableAccounts,
+            ),
+            'authenticationMethods' => $this->authenticationMethods->toArray(),
         ];
     }
 }

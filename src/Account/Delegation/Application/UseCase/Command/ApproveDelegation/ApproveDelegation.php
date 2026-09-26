@@ -4,43 +4,48 @@ declare(strict_types=1);
 
 namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation;
 
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
-use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
 
 readonly class ApproveDelegation implements ApproveDelegationInterface
 {
     public function __construct(
+        private AccountRepositoryInterface $accountRepository,
         private DelegationRepositoryInterface $delegationRepository,
-        private EventDispatcherInterface $eventDispatcher,
+        private PolicyEvaluatorInterface $policyEvaluator,
+        private DelegationPrincipalGroupServiceInterface $principalGroupService,
     ) {
     }
 
     public function process(ApproveDelegationInputPort $input, ApproveDelegationOutputPort $output): void
     {
         $delegation = $this->delegationRepository->findById($input->delegationIdentifier());
-
         if ($delegation === null) {
             throw new DelegationNotFoundException('Delegation not found.');
         }
-
-        if ((string) $delegation->delegatorIdentifier() !== (string) $input->approverIdentifier()) {
-            throw new DisallowedDelegationOperationException('Only the delegator can approve this delegation.');
+        if (! $delegation->isPending()) {
+            throw new DisallowedDelegationOperationException('Only pending delegations can be approved.');
         }
-
+        if ((string) $delegation->approverAccountIdentifier() !== (string) $input->principal()->accountIdentifier()) {
+            throw new DisallowedDelegationOperationException('Only the requested account can approve this delegation.');
+        }
+        $account = $this->accountRepository->findById($delegation->approverAccountIdentifier());
+        if ($account === null || ! $this->policyEvaluator->evaluate(
+            $input->principal(),
+            Action::DELEGATION_APPROVE,
+            Resource::account($account->accountIdentifier(), $account->type(), $account->accountCategory()),
+        )) {
+            throw new DisallowedDelegationOperationException('Delegation approval is not allowed.');
+        }
         $delegation->approve();
-
+        $this->principalGroupService->createFor($delegation);
         $this->delegationRepository->save($delegation);
-
-        $this->eventDispatcher->dispatch(new DelegationApproved(
-            $delegation->delegationIdentifier(),
-            $delegation->delegateIdentifier(),
-            $delegation->delegatorIdentifier(),
-            $delegation->approvedAt(),
-        ));
-
         $output->setDelegation($delegation);
     }
 }
