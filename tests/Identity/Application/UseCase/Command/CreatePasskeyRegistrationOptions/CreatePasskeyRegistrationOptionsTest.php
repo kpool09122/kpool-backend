@@ -59,12 +59,12 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $signupSession = new SignupSession();
         $session = $this->verifiedSession($email);
 
-        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authSessions */
-        $authSessions = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authSessions->shouldReceive('findByEmail')->once()->with($email)->andReturn($session);
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
+        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authCodeSessionRepository */
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($session);
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
         $passkeyUser = new PasskeyUser(new PasskeyUserIdentifier(self::PASSKEY_USER_ID), null);
         /** @var MockInterface&PasskeyUserFactoryInterface $passkeyUsers */
         $passkeyUsers = Mockery::mock(PasskeyUserFactoryInterface::class);
@@ -97,8 +97,8 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
             }));
 
         $useCase = $this->useCase(
-            $authSessions,
-            $identities,
+            $authCodeSessionRepository,
+            $identityRepository,
             $passkeyUsers,
             $passkeyUserRepository,
             $webAuthn,
@@ -124,14 +124,14 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $email = new Email('invited@example.com');
         $token = new OneTimeToken(str_repeat('a', OneTimeToken::TOKEN_LENGTH));
         $signupSession = new SignupSession(oneTimeToken: $token);
-        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authSessions */
-        $authSessions = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authSessions->shouldNotReceive('findByEmail');
+        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authCodeSessionRepository */
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldNotReceive('findByEmail');
         /** @var MockInterface&SignupInvitationValidatorInterface $invitationValidator */
         $invitationValidator = Mockery::mock(SignupInvitationValidatorInterface::class);
         $invitationValidator->shouldReceive('validate')->once()->with($token, $email);
 
-        $this->bindHappyPathDependencies($authSessions, invitationValidator: $invitationValidator);
+        $this->bindHappyPathDependencies($authCodeSessionRepository, invitationValidator: $invitationValidator);
         $output = new CreatePasskeyRegistrationOptionsOutput();
         $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)
             ->process(new CreatePasskeyRegistrationOptionsInput($email, $signupSession), $output);
@@ -154,10 +154,10 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
     public function testItRejectsAMissingEmailVerificationSession(): void
     {
         $email = new Email('missing@example.com');
-        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authSessions */
-        $authSessions = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authSessions->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
-        $this->bindHappyPathDependencies($authSessions, email: $email);
+        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authCodeSessionRepository */
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
+        $this->bindHappyPathDependencies($authCodeSessionRepository, email: $email);
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
         $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
@@ -169,14 +169,14 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
     public function testItRejectsAnUnverifiedEmailSession(): void
     {
         $email = new Email('unverified@example.com');
-        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authSessions */
-        $authSessions = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authSessions->shouldReceive('findByEmail')->once()->andReturn(new AuthCodeSession(
+        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authCodeSessionRepository */
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')->once()->andReturn(new AuthCodeSession(
             $email,
             new AuthCode('123456'),
             new DateTimeImmutable(),
         ));
-        $this->bindHappyPathDependencies($authSessions, email: $email);
+        $this->bindHappyPathDependencies($authCodeSessionRepository, email: $email);
 
         $this->expectException(UnauthorizedEmailException::class);
         $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
@@ -189,15 +189,15 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
     {
         $email = new Email('expired@example.com');
         $verifiedAt = new DateTimeImmutable('-16 minutes');
-        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authSessions */
-        $authSessions = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $authSessions->shouldReceive('findByEmail')->once()->andReturn(new AuthCodeSession(
+        /** @var MockInterface&AuthCodeSessionRepositoryInterface $authCodeSessionRepository */
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')->once()->andReturn(new AuthCodeSession(
             $email,
             new AuthCode('123456'),
             $verifiedAt,
             $verifiedAt,
         ));
-        $this->bindHappyPathDependencies($authSessions, email: $email);
+        $this->bindHappyPathDependencies($authCodeSessionRepository, email: $email);
 
         $this->expectException(AuthCodeExpiredException::class);
         $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
@@ -214,19 +214,19 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
     }
 
     private function bindHappyPathDependencies(
-        ?AuthCodeSessionRepositoryInterface $authSessions = null,
+        ?AuthCodeSessionRepositoryInterface $authCodeSessionRepository = null,
         bool $identityExists = false,
         ?Email $email = null,
         ?SignupInvitationValidatorInterface $invitationValidator = null,
     ): void {
         $email ??= new Email('passkey@example.com');
-        $authSessions ??= Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        if ($authSessions instanceof \Mockery\MockInterface) {
-            $authSessions->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($this->verifiedSession($email));
+        $authCodeSessionRepository ??= Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        if ($authCodeSessionRepository instanceof \Mockery\MockInterface) {
+            $authCodeSessionRepository->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($this->verifiedSession($email));
         }
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($identityExists ? Mockery::mock(\Source\Identity\Domain\Entity\Identity::class) : null);
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($identityExists ? Mockery::mock(\Source\Identity\Domain\Entity\Identity::class) : null);
         $passkeyUser = new PasskeyUser(new PasskeyUserIdentifier(self::PASSKEY_USER_ID), null);
         /** @var MockInterface&PasskeyUserFactoryInterface $passkeyUsers */
         $passkeyUsers = Mockery::mock(PasskeyUserFactoryInterface::class);
@@ -247,8 +247,8 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $invitationValidator ??= Mockery::mock(SignupInvitationValidatorInterface::class);
         $invitationValidator->shouldReceive('validate')->zeroOrMoreTimes();
 
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authSessions);
-        $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
         $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
         $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
@@ -259,15 +259,15 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
     }
 
     private function useCase(
-        AuthCodeSessionRepositoryInterface $authSessions,
-        IdentityRepositoryInterface $identities,
+        AuthCodeSessionRepositoryInterface $authCodeSessionRepository,
+        IdentityRepositoryInterface $identityRepository,
         PasskeyUserFactoryInterface $passkeyUsers,
         PasskeyUserRepositoryInterface $passkeyUserRepository,
         WebAuthnServiceInterface $webAuthn,
         ChallengeSessionStorageServiceInterface $storage,
     ): CreatePasskeyRegistrationOptionsInterface {
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authSessions);
-        $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
         $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
         $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);

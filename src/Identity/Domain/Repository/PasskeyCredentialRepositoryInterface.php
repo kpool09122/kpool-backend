@@ -21,4 +21,9 @@ interface PasskeyCredentialRepositoryInterface
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array;
 
     public function delete(PasskeyCredentialIdentifier $identifier): void;
+
+    public function deleteAllExcept(
+        IdentityIdentifier $identityIdentifier,
+        PasskeyCredentialIdentifier $preservedIdentifier,
+    ): void;
 }

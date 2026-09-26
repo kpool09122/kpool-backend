@@ -254,19 +254,19 @@ class DeletePrincipalGroupTest extends TestCase
             new DelegationIdentifier(StrTestHelper::generateUuid()),
         );
 
-        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $groups->shouldReceive('findById')->once()->andReturn($group);
-        $groups->shouldReceive('delete')->once()->with($group);
-        $roles = Mockery::mock(RoleRepositoryInterface::class);
-        $roles->shouldReceive('findSystemByName')->once()->with(Role::OWNER)->andReturn($this->createOwnerRole());
-        $roles->shouldReceive('findByIds')->once()->with([$role->roleIdentifier()])->andReturn([(string) $role->roleIdentifier() => $role]);
-        $roles->shouldReceive('delete')->once()->with($role);
-        $policies = Mockery::mock(PolicyRepositoryInterface::class);
-        $policies->shouldReceive('findByIds')->once()->with([$policy->policyIdentifier()])->andReturn([(string) $policy->policyIdentifier() => $policy]);
-        $policies->shouldReceive('delete')->once()->with($policy);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $groups);
-        $this->app->instance(RoleRepositoryInterface::class, $roles);
-        $this->app->instance(PolicyRepositoryInterface::class, $policies);
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findById')->once()->andReturn($group);
+        $principalGroupRepository->shouldReceive('delete')->once()->with($group);
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with(Role::OWNER)->andReturn($this->createOwnerRole());
+        $roleRepository->shouldReceive('findByIds')->once()->with([$role->roleIdentifier()])->andReturn([(string) $role->roleIdentifier() => $role]);
+        $roleRepository->shouldReceive('delete')->once()->with($role);
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('findByIds')->once()->with([$policy->policyIdentifier()])->andReturn([(string) $policy->policyIdentifier() => $policy]);
+        $policyRepository->shouldReceive('delete')->once()->with($policy);
+        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
 
         $this->app->make(DeletePrincipalGroupInterface::class)->process(
             new DeletePrincipalGroupInput($group->principalGroupIdentifier()),

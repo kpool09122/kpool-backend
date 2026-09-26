@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route as RouteFacade;
+use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Identity\Domain\Service\AuthServiceInterface;
 use Tests\TestCase;
 
 class AuthenticatedRouteProtectionTest extends TestCase
@@ -95,7 +97,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
         $request = Request::create('/api/wiki/principal/me', 'GET');
         $request->headers->set('Accept-Language', 'en');
-        $middleware = new EnsureAuthenticated();
+        /** @var AuthServiceInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $middleware = new EnsureAuthenticated($authService);
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -124,6 +128,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'api/identity/auth/passkeys/authentication',
             'api/identity/auth/passkeys/authentication/options',
             'api/identity/auth/passkeys/registration/options',
+            'api/identity/auth/passkeys/recovery',
+            'api/identity/auth/passkeys/recovery/email',
+            'api/identity/auth/passkeys/recovery/email/verification',
+            'api/identity/auth/passkeys/recovery/options',
+            'api/identity/auth/passkeys/recovery/social/{provider}/redirect',
             'api/identity/auth/send-auth-code',
             'api/identity/auth/social/{provider}/callback',
             'api/identity/auth/social/{provider}/redirect',
@@ -266,6 +275,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: passkey registration options' => ['POST', '/api/identity/auth/passkeys/registration/options'],
             'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
             'identity: social callback' => ['GET', '/api/identity/auth/social/google/callback'],
+            'identity: send passkey recovery email' => ['POST', '/api/identity/auth/passkeys/recovery/email'],
+            'identity: verify passkey recovery email' => ['POST', '/api/identity/auth/passkeys/recovery/email/verification'],
+            'identity: passkey recovery social redirect' => ['GET', '/api/identity/auth/passkeys/recovery/social/google/redirect'],
+            'identity: passkey recovery options' => ['POST', '/api/identity/auth/passkeys/recovery/options'],
+            'identity: recover passkey' => ['POST', '/api/identity/auth/passkeys/recovery'],
 
             // Account: signup フローで利用する公開例外
             'account: create account' => ['POST', '/api/account/accounts'],

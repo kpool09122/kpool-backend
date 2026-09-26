@@ -95,12 +95,49 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $this->assertNull($repository->findByIdentifier($identifier));
     }
 
-    /** @param string[] $transports */
-    private function credential(string $id, string $credentialId, bool $be, bool $bs, array $transports): PasskeyCredential
+    #[Group('useDb')]
+    public function testItDeletesOnlyOtherCredentialsOwnedByTheSameIdentity(): void
     {
+        $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
+        $otherIdentityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174020');
+        CreateIdentity::create($identityIdentifier, ['email' => 'passkey-recovery@example.com']);
+        CreateIdentity::create($otherIdentityIdentifier, ['email' => 'other-passkey@example.com']);
+        $this->createPasskeyUser($identityIdentifier);
+        $this->createPasskeyUser($otherIdentityIdentifier, '123e4567-e89b-72d3-a456-426614174030');
+        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $preserved = $this->credential('123e4567-e89b-72d3-a456-426614174001', 'cHJlc2VydmVk', false, false, ['internal']);
+        $deleted = $this->credential('123e4567-e89b-72d3-a456-426614174002', 'ZGVsZXRlZA', false, false, ['usb']);
+        $other = $this->credential(
+            '123e4567-e89b-72d3-a456-426614174003',
+            'b3RoZXI',
+            false,
+            false,
+            ['nfc'],
+            '123e4567-e89b-72d3-a456-426614174030',
+        );
+        $repository->save($preserved);
+        $repository->save($deleted);
+        $repository->save($other);
+
+        $repository->deleteAllExcept($identityIdentifier, $preserved->identifier());
+
+        $this->assertNotNull($repository->findByIdentifier($preserved->identifier()));
+        $this->assertNull($repository->findByIdentifier($deleted->identifier()));
+        $this->assertNotNull($repository->findByIdentifier($other->identifier()));
+    }
+
+    /** @param string[] $transports */
+    private function credential(
+        string $id,
+        string $credentialId,
+        bool $be,
+        bool $bs,
+        array $transports,
+        string $passkeyUserIdentifier = '123e4567-e89b-72d3-a456-426614174010',
+    ): PasskeyCredential {
         return new PasskeyCredential(
             new PasskeyCredentialIdentifier($id),
-            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174010'),
+            new PasskeyUserIdentifier($passkeyUserIdentifier),
             new WebAuthnCredentialId($credentialId),
             new CredentialSource('{"credential":"source"}'),
             5,
@@ -112,10 +149,12 @@ class PasskeyCredentialRepositoryTest extends TestCase
         );
     }
 
-    private function createPasskeyUser(IdentityIdentifier $identityIdentifier): void
-    {
+    private function createPasskeyUser(
+        IdentityIdentifier $identityIdentifier,
+        string $passkeyUserIdentifier = '123e4567-e89b-72d3-a456-426614174010',
+    ): void {
         $user = new PasskeyUser(
-            new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174010'),
+            new PasskeyUserIdentifier($passkeyUserIdentifier),
             null,
         );
         $user->linkToIdentity($identityIdentifier);

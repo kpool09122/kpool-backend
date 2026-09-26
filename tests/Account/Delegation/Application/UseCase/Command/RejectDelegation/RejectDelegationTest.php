@@ -80,8 +80,8 @@ class RejectDelegationTest extends TestCase
         /** @var DelegationRepositoryInterface&Mockery\MockInterface $repository */
         $repository = Mockery::mock(DelegationRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($delegation);
-        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
-        $accounts = Mockery::mock(AccountRepositoryInterface::class);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
         if ($pending && $expectsAuthorization) {
@@ -89,14 +89,14 @@ class RejectDelegationTest extends TestCase
             $account->shouldReceive('accountIdentifier')->andReturn($approver);
             $account->shouldReceive('type')->andReturn($requestedByAgency ? AccountType::INDIVIDUAL : AccountType::CORPORATION);
             $account->shouldReceive('accountCategory')->andReturn($requestedByAgency ? AccountCategory::TALENT : AccountCategory::AGENCY);
-            $accounts->shouldReceive('findById')->with($approver)->andReturn($account);
+            $accountRepository->shouldReceive('findById')->with($approver)->andReturn($account);
             $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_REJECT, Mockery::any())->andReturn($allowed);
             if ($allowed) {
                 $repository->shouldReceive('save')->with($delegation)->once();
             }
         }
 
-        return [new RejectDelegation($accounts, $repository, $policy), new RejectDelegationInput($delegation->delegationIdentifier(), $principal), $delegation];
+        return [new RejectDelegation($accountRepository, $repository, $policy), new RejectDelegationInput($delegation->delegationIdentifier(), $principal), $delegation];
     }
 
     private function principal(AccountIdentifier $account): Principal

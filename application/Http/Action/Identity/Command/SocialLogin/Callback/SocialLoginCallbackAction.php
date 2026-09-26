@@ -13,10 +13,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial\CompletePasskeyRecoveryWithSocialInput;
+use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial\CompletePasskeyRecoveryWithSocialInterface;
+use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial\CompletePasskeyRecoveryWithSocialOutput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackOutput;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
+use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\ValueObject\OAuthCode;
@@ -28,6 +32,7 @@ readonly class SocialLoginCallbackAction
 {
     public function __construct(
         private SocialLoginCallbackInterface $socialLoginCallback,
+        private CompletePasskeyRecoveryWithSocialInterface $completePasskeyRecoveryWithSocial,
         private LoggerInterface $logger,
     ) {
     }
@@ -41,12 +46,16 @@ readonly class SocialLoginCallbackAction
     {
         try {
             try {
-                $input = new SocialLoginCallbackInput(
-                    provider: SocialProvider::fromString($request->provider()),
-                    code: new OAuthCode($request->code()),
-                    state: new OAuthState($request->state(), new DateTimeImmutable('+10 minutes')),
-                );
-                $output = new SocialLoginCallbackOutput();
+                $provider = SocialProvider::fromString($request->provider());
+                $code = new OAuthCode($request->code());
+                $state = new OAuthState($request->state(), new DateTimeImmutable('+10 minutes'));
+                $isPasskeyRecovery = str_starts_with((string) $state, 'passkey-recovery-');
+                $input = $isPasskeyRecovery
+                    ? new CompletePasskeyRecoveryWithSocialInput($provider, $code, $state)
+                    : new SocialLoginCallbackInput($provider, $code, $state);
+                $output = $isPasskeyRecovery
+                    ? new CompletePasskeyRecoveryWithSocialOutput()
+                    : new SocialLoginCallbackOutput();
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }
@@ -56,7 +65,13 @@ readonly class SocialLoginCallbackAction
             $language = $request->language();
 
             try {
-                $this->socialLoginCallback->process($input, $output);
+                if ($input instanceof CompletePasskeyRecoveryWithSocialInput) {
+                    /** @var CompletePasskeyRecoveryWithSocialOutput $output */
+                    $this->completePasskeyRecoveryWithSocial->process($input, $output);
+                } else {
+                    /** @var SocialLoginCallbackOutput $output */
+                    $this->socialLoginCallback->process($input, $output);
+                }
                 DB::commit();
             } catch (InvalidOAuthStateException $e) {
                 DB::rollBack();
@@ -70,6 +85,13 @@ readonly class SocialLoginCallbackAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: 'Social step-up authentication failed.', previous: $e);
+            } catch (PasskeyRecoveryVerificationFailedException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(
+                    detail: error_message('social_oauth_error', $language),
+                    previous: $e,
+                );
             } catch (Throwable $e) {
                 DB::rollBack();
 
