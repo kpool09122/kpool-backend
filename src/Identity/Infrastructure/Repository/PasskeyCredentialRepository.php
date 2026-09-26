@@ -68,6 +68,17 @@ class PasskeyCredentialRepository implements PasskeyCredentialRepositoryInterfac
         PasskeyCredentialEloquent::query()->whereKey((string) $identifier)->delete();
     }
 
+    public function deleteAllExcept(
+        IdentityIdentifier $identityIdentifier,
+        PasskeyCredentialIdentifier $preservedIdentifier,
+    ): void {
+        PasskeyCredentialEloquent::query()
+            ->whereHas('passkeyUser', static fn ($query) => $query
+                ->where('identity_id', (string) $identityIdentifier))
+            ->whereKeyNot((string) $preservedIdentifier)
+            ->delete();
+    }
+
     /** @throws JsonException */
     private function toDomainEntity(PasskeyCredentialEloquent $model): PasskeyCredential
     {

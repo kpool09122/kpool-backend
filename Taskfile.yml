@@ -62,11 +62,11 @@ tasks:
       - docker-compose logs -f {{.API_SERVICES}}
 
   queue-work:
-    desc: "Start Laravel queue worker. Usage: task queue-work [queue=default] [once=1]"
+    desc: "Start Laravel queue worker. Usage: task queue-work [connection=redis] [queue=default] [once=1]"
     cmds:
       - docker-compose up -d php db redis mail
       - task: wait-for-db
-      - '{{.PHP_EXEC}} php artisan queue:work {{if .queue}}--queue={{.queue}}{{end}} {{if (index . "once")}}--once{{end}}'
+      - '{{.PHP_EXEC}} php artisan queue:work {{if .connection}}{{.connection}}{{end}} {{if .queue}}--queue={{.queue}}{{end}} {{if (index . "once")}}--once{{end}}'
 
   shell:
     desc: Open a shell in the php container
@@ -92,6 +92,11 @@ tasks:
     desc: Install composer dependencies
     cmds:
       - '{{.PHP_RUN}} composer install'
+
+  composer:
+    desc: "Run Composer in the PHP container. Usage: task composer -- require vendor/package"
+    cmds:
+      - '{{.PHP_RUN}} composer {{.CLI_ARGS}}'
 
   openapi:
     desc: Install TypeSpec dependencies and generate OpenAPI specs

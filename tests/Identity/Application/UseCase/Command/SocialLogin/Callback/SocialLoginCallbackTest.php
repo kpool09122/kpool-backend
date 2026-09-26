@@ -651,8 +651,8 @@ class SocialLoginCallbackTest extends TestCase
         $profile = new SocialProfile(SocialProvider::GOOGLE, 'provider-user', new Email('test@example.com'), 'Test User');
         $social ??= Mockery::mock(SocialOAuthServiceInterface::class);
         $social->shouldReceive('fetchProfile')->zeroOrMoreTimes()->with(SocialProvider::GOOGLE, Mockery::type(OAuthCode::class))->andReturn($profile);
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findBySocialConnection')->zeroOrMoreTimes()->with(SocialProvider::GOOGLE, 'provider-user')->andReturn($resolvedIdentity);
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findBySocialConnection')->zeroOrMoreTimes()->with(SocialProvider::GOOGLE, 'provider-user')->andReturn($resolvedIdentity);
         $passkeyRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $passkeyRepository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->with(Mockery::on(
             static fn (IdentityIdentifier $id): bool => (string) $id === self::STEP_UP_IDENTITY_ID,
@@ -671,7 +671,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthState);
         $this->app->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
         $this->app->instance(SocialOAuthServiceInterface::class, $social);
-        $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyRepository);
         $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
         $this->app->instance(AuthServiceInterface::class, $auth);

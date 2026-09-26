@@ -82,8 +82,8 @@ class ApproveDelegationTest extends TestCase
         /** @var DelegationRepositoryInterface&Mockery\MockInterface $repository */
         $repository = Mockery::mock(DelegationRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($delegation);
-        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
-        $accounts = Mockery::mock(AccountRepositoryInterface::class);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policy */
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
         /** @var DelegationPrincipalGroupServiceInterface&Mockery\MockInterface $groups */
@@ -93,7 +93,7 @@ class ApproveDelegationTest extends TestCase
             $account->shouldReceive('accountIdentifier')->andReturn($approver);
             $account->shouldReceive('type')->andReturn($requestedByAgency ? AccountType::INDIVIDUAL : AccountType::CORPORATION);
             $account->shouldReceive('accountCategory')->andReturn($requestedByAgency ? AccountCategory::TALENT : AccountCategory::AGENCY);
-            $accounts->shouldReceive('findById')->with($approver)->andReturn($account);
+            $accountRepository->shouldReceive('findById')->with($approver)->andReturn($account);
             $policy->shouldReceive('evaluate')->with($principal, Action::DELEGATION_APPROVE, Mockery::any())->andReturn($allowed);
             if ($allowed) {
                 $groups->shouldReceive('createFor')->with($delegation)->once();
@@ -101,7 +101,7 @@ class ApproveDelegationTest extends TestCase
             }
         }
 
-        return [new ApproveDelegation($accounts, $repository, $policy, $groups), new ApproveDelegationInput($delegation->delegationIdentifier(), $principal), new ApproveDelegationOutput(), $delegation];
+        return [new ApproveDelegation($accountRepository, $repository, $policy, $groups), new ApproveDelegationInput($delegation->delegationIdentifier(), $principal), new ApproveDelegationOutput(), $delegation];
     }
 
     private function principal(AccountIdentifier $account): Principal

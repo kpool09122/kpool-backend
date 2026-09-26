@@ -52,10 +52,10 @@ class AccountResolverTest extends TestCase
         $delegation = $this->delegation($delegationId, $originalAccount, $effectiveAccount, DelegationStatus::APPROVED);
         [$resolver, $deps] = $this->resolver();
         $deps['currentAccountService']->shouldReceive('find')->with($identity)->once()->andReturn($selected);
-        $deps['principals']->shouldReceive('findById')->with($effectivePrincipal)->once()->andReturn($principal);
-        $deps['delegations']->shouldReceive('findById')->with($delegationId)->once()->andReturn($delegation);
-        $deps['accounts']->shouldReceive('findById')->with($effectiveAccount)->once()->andReturn($this->account($effectiveAccount));
-        $deps['groups']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
+        $deps['principalRepository']->shouldReceive('findById')->with($effectivePrincipal)->once()->andReturn($principal);
+        $deps['delegationRepository']->shouldReceive('findById')->with($delegationId)->once()->andReturn($delegation);
+        $deps['accountRepository']->shouldReceive('findById')->with($effectiveAccount)->once()->andReturn($this->account($effectiveAccount));
+        $deps['principalGroupRepository']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
 
         $currentAccount = $resolver->resolve($identity);
 
@@ -74,8 +74,8 @@ class AccountResolverTest extends TestCase
         $selected = new CurrentAccount($identity, $originalAccount, new PrincipalIdentifier(StrTestHelper::generateUuid()), $effectiveAccount, $effectivePrincipal, $delegationId);
         [$resolver, $deps] = $this->resolver();
         $deps['currentAccountService']->shouldReceive('find')->andReturn($selected);
-        $deps['principals']->shouldReceive('findById')->andReturn(new Principal($effectivePrincipal, $identity, $effectiveAccount));
-        $deps['delegations']->shouldReceive('findById')->andReturn($this->delegation($delegationId, $originalAccount, $effectiveAccount, DelegationStatus::REJECTED));
+        $deps['principalRepository']->shouldReceive('findById')->andReturn(new Principal($effectivePrincipal, $identity, $effectiveAccount));
+        $deps['delegationRepository']->shouldReceive('findById')->andReturn($this->delegation($delegationId, $originalAccount, $effectiveAccount, DelegationStatus::REJECTED));
         $deps['currentAccountService']->shouldReceive('save')->once()->withArgs(
             fn (CurrentAccount $currentAccount): bool => $currentAccount->delegationIdentifier === null
                 && (string) $currentAccount->effectiveAccountIdentifier === (string) $originalAccount,
@@ -97,11 +97,11 @@ class AccountResolverTest extends TestCase
         $effectivePrincipal = new Principal($effectivePrincipalId, $identity, $effectiveAccount);
         [$resolver, $deps] = $this->resolver();
         $deps['currentAccountService']->shouldReceive('find')->with($identity)->once()->andReturn(null);
-        $deps['principals']->shouldReceive('findAllByIdentityIdentifier')->with($identity)->once()->andReturn([
+        $deps['principalRepository']->shouldReceive('findAllByIdentityIdentifier')->with($identity)->once()->andReturn([
             $originalPrincipal,
             $effectivePrincipal,
         ]);
-        $deps['delegations']->shouldReceive('findApprovedBetweenAccountIds')->once()->withArgs(
+        $deps['delegationRepository']->shouldReceive('findApprovedBetweenAccountIds')->once()->withArgs(
             fn (array $accountIdentifiers): bool => array_map('strval', $accountIdentifiers) === [
                 (string) $originalAccount,
                 (string) $effectiveAccount,
@@ -112,9 +112,9 @@ class AccountResolverTest extends TestCase
                 && (string) $currentAccount->originalAccountIdentifier === (string) $originalAccount
                 && (string) $currentAccount->effectiveAccountIdentifier === (string) $originalAccount,
         );
-        $deps['principals']->shouldReceive('findById')->with($originalPrincipalId)->once()->andReturn($originalPrincipal);
-        $deps['accounts']->shouldReceive('findById')->with($originalAccount)->once()->andReturn($this->account($originalAccount));
-        $deps['groups']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
+        $deps['principalRepository']->shouldReceive('findById')->with($originalPrincipalId)->once()->andReturn($originalPrincipal);
+        $deps['accountRepository']->shouldReceive('findById')->with($originalAccount)->once()->andReturn($this->account($originalAccount));
+        $deps['principalGroupRepository']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
 
         $currentAccount = $resolver->resolve($identity);
 
@@ -127,12 +127,12 @@ class AccountResolverTest extends TestCase
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         [$resolver, $deps] = $this->resolver();
         $deps['currentAccountService']->shouldReceive('find')->andReturn(null);
-        $deps['principals']->shouldReceive('findAllByIdentityIdentifier')->with($identity)->once()->andReturn([
+        $deps['principalRepository']->shouldReceive('findAllByIdentityIdentifier')->with($identity)->once()->andReturn([
             new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
             new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
         ]);
-        $deps['delegations']->shouldReceive('findApprovedBetweenAccountIds')->once()->andReturn([]);
-        $deps['principals']->shouldNotReceive('findByIdentityIdentifier');
+        $deps['delegationRepository']->shouldReceive('findApprovedBetweenAccountIds')->once()->andReturn([]);
+        $deps['principalRepository']->shouldNotReceive('findByIdentityIdentifier');
 
         $this->expectException(AccountNotFoundException::class);
         $resolver->resolve($identity);
@@ -143,20 +143,20 @@ class AccountResolverTest extends TestCase
     {
         /** @var CurrentAccountServiceInterface&Mockery\MockInterface $currentAccountService */
         $currentAccountService = Mockery::mock(CurrentAccountServiceInterface::class);
-        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
-        $accounts = Mockery::mock(AccountRepositoryInterface::class);
-        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principals */
-        $principals = Mockery::mock(PrincipalRepositoryInterface::class);
-        /** @var DelegationRepositoryInterface&Mockery\MockInterface $delegations */
-        $delegations = Mockery::mock(DelegationRepositoryInterface::class);
-        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $groups */
-        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
-        $roles = Mockery::mock(RoleRepositoryInterface::class);
-        /** @var PolicyRepositoryInterface&Mockery\MockInterface $policies */
-        $policies = Mockery::mock(PolicyRepositoryInterface::class);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        /** @var DelegationRepositoryInterface&Mockery\MockInterface $delegationRepository */
+        $delegationRepository = Mockery::mock(DelegationRepositoryInterface::class);
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        /** @var PolicyRepositoryInterface&Mockery\MockInterface $policyRepository */
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
 
-        return [new AccountResolver($currentAccountService, $accounts, $principals, $delegations, $groups, $roles, $policies), compact('currentAccountService', 'accounts', 'principals', 'delegations', 'groups', 'roles', 'policies')];
+        return [new AccountResolver($currentAccountService, $accountRepository, $principalRepository, $delegationRepository, $principalGroupRepository, $roleRepository, $policyRepository), compact('currentAccountService', 'accountRepository', 'principalRepository', 'delegationRepository', 'principalGroupRepository', 'roleRepository', 'policyRepository')];
     }
 
     private function delegation(DelegationIdentifier $id, AccountIdentifier $delegate, AccountIdentifier $delegator, DelegationStatus $status): Delegation

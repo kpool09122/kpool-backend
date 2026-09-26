@@ -44,9 +44,9 @@ class StartStepUpWithSocialTest extends TestCase
     public function testItStartsReauthenticationForALinkedProviderWhenNoPasskeyExists(): void
     {
         $generatedState = new OAuthState('generated-state', new DateTimeImmutable('+10 minutes'));
-        /** @var MockInterface&OAuthStateRepositoryInterface $states */
-        $states = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $states->shouldReceive('store')->once()->with(Mockery::on(
+        /** @var MockInterface&OAuthStateRepositoryInterface $oauthStateRepository */
+        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthStateRepository->shouldReceive('store')->once()->with(Mockery::on(
             static fn (OAuthState $state): bool => (string) $state === 'step-up-generated-state',
         ));
         /** @var MockInterface&StepUpOAuthSessionStorageServiceInterface $sessions */
@@ -64,7 +64,7 @@ class StartStepUpWithSocialTest extends TestCase
             SocialProvider::GOOGLE,
             Mockery::on(static fn (OAuthState $state): bool => (string) $state === 'step-up-generated-state'),
         )->andReturn('https://accounts.example.test/authorize');
-        $this->bindDependencies($this->identity(), [], $states, $sessions, $oauth, $generatedState);
+        $this->bindDependencies($this->identity(), [], $oauthStateRepository, $sessions, $oauth, $generatedState);
 
         $output = new StartStepUpWithSocialOutput();
         $this->app->make(StartStepUpWithSocialInterface::class)->process($this->input(), $output);
@@ -94,19 +94,19 @@ class StartStepUpWithSocialTest extends TestCase
     private function bindDependencies(
         ?Identity $identity,
         array $credentials,
-        ?OAuthStateRepositoryInterface $states = null,
+        ?OAuthStateRepositoryInterface $oauthStateRepository = null,
         ?StepUpOAuthSessionStorageServiceInterface $sessions = null,
         ?SocialOAuthServiceInterface $oauth = null,
         ?OAuthState $generatedState = null,
     ): void {
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findById')->zeroOrMoreTimes()->andReturn($identity);
-        $passkeys = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $passkeys->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->andReturn($credentials);
-        $states ??= Mockery::mock(OAuthStateRepositoryInterface::class);
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findById')->zeroOrMoreTimes()->andReturn($identity);
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->andReturn($credentials);
+        $oauthStateRepository ??= Mockery::mock(OAuthStateRepositoryInterface::class);
         $sessions ??= Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
         $oauth ??= Mockery::mock(SocialOAuthServiceInterface::class);
-        foreach ([$states, $sessions, $oauth] as $mock) {
+        foreach ([$oauthStateRepository, $sessions, $oauth] as $mock) {
             if ($mock instanceof MockInterface) {
                 $mock->shouldIgnoreMissing();
             }
@@ -114,9 +114,9 @@ class StartStepUpWithSocialTest extends TestCase
         $generator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $generator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn($generatedState ?? new OAuthState('state', new DateTimeImmutable('+10 minutes')));
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identities);
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeys);
-        $this->app->instance(OAuthStateRepositoryInterface::class, $states);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
         $this->app->instance(SocialOAuthServiceInterface::class, $oauth);
         $this->app->instance(OAuthStateGeneratorInterface::class, $generator);

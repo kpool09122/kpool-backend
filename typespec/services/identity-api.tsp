@@ -185,6 +185,34 @@ model VerifyEmailRequestBody {
   authCode: string;
 }
 
+@doc("Request body for sending a passkey recovery verification code.")
+model SendPasskeyRecoveryEmailRequestBody {
+  @doc("Registered email address that will receive the recovery code when it exists.")
+  email: string;
+}
+
+@doc("Request body for verifying a passkey recovery email code.")
+model VerifyPasskeyRecoveryEmailRequestBody {
+  @doc("Email address used to request the recovery code.")
+  email: string;
+  @doc("Six-digit recovery code delivered to the email address.")
+  @minLength(6)
+  @maxLength(6)
+  authCode: string;
+}
+
+@doc("Result of successful passkey recovery identity verification.")
+model PasskeyRecoveryVerificationResult {
+  @doc("Short-lived, one-time key authorizing passkey recovery registration.")
+  recoveryKey: Uuid;
+}
+
+@doc("Request body for creating passkey recovery registration options.")
+model CreatePasskeyRecoveryOptionsRequestBody {
+  @doc("Short-lived passkey recovery authorization key.")
+  recoveryKey: Uuid;
+}
+
 @doc("Request body for starting passkey registration.")
 model CreatePasskeyRegistrationOptionsRequestBody {
   @doc("Verified or invited email address.")
@@ -343,6 +371,19 @@ model AddPasskeyRequestBody {
   credential: PasskeyRegistrationCredential;
 }
 
+@doc("Request body for replacing all existing passkeys during account recovery.")
+model RecoverPasskeyRequestBody {
+  @doc("Short-lived passkey recovery authorization key.")
+  recoveryKey: Uuid;
+  @doc("Key returned with the recovery registration options.")
+  challengeKey: Uuid;
+  @minLength(1)
+  @maxLength(64)
+  @doc("User-visible name for the replacement passkey.")
+  displayName: string;
+  credential: PasskeyRegistrationCredential;
+}
+
 @doc("Request body for updating a registered passkey.")
 model UpdatePasskeyRequestBody {
   @minLength(1)
@@ -431,6 +472,12 @@ model VerifyEmailResponse {
   @body body: VerifyEmailResult;
 }
 
+@doc("Response returned after passkey recovery identity verification succeeds.")
+model PasskeyRecoveryVerificationResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyRecoveryVerificationResult;
+}
+
 @doc("Response returned by social login endpoints.")
 model RedirectUrlResponse {
   @statusCode statusCode: 200;
@@ -478,6 +525,42 @@ interface IdentityAuthOperations {
   authenticateWithPasskey(
     @body body: AuthenticateWithPasskeyRequestBody,
   ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/email")
+  @doc("Send a passkey recovery code while returning the same response whether or not the email is registered.")
+  sendPasskeyRecoveryEmail(
+    @body body: SendPasskeyRecoveryEmailRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/email/verification")
+  @doc("Verify a passkey recovery email code and issue a short-lived recovery key.")
+  verifyPasskeyRecoveryEmail(
+    @body body: VerifyPasskeyRecoveryEmailRequestBody,
+  ): PasskeyRecoveryVerificationResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/passkeys/recovery/social/{provider}/redirect")
+  @doc("Create a reauthentication URL for a social account already linked to the recovery target identity.")
+  startPasskeyRecoveryWithSocial(
+    @path provider: string,
+    @query identityIdentifier: Uuid,
+  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/options")
+  @doc("Create WebAuthn registration options authorized by a passkey recovery key.")
+  createPasskeyRecoveryOptions(
+    @body body: CreatePasskeyRecoveryOptionsRequestBody,
+  ): PasskeyRegistrationOptionsResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery")
+  @doc("Register a replacement passkey, remove all previous passkeys, and invalidate existing login sessions.")
+  recoverPasskey(
+    @body body: RecoverPasskeyRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/redirect")

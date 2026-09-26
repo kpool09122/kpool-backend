@@ -64,10 +64,10 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             delegationIdentifier: $delegation->delegationIdentifier(),
         );
 
-        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $groups */
-        $groups = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $groups->shouldReceive('findByDelegationId')->twice()->andReturn(null, $group);
-        $groups->shouldReceive('save')->once()->with($group);
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByDelegationId')->twice()->andReturn(null, $group);
+        $principalGroupRepository->shouldReceive('save')->once()->with($group);
         /** @var PrincipalGroupFactoryInterface&Mockery\MockInterface $groupFactory */
         $groupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')->once()->with(
@@ -91,9 +91,9 @@ class DelegationPrincipalGroupServiceTest extends TestCase
                 && $clauses[1]->key() === ConditionKey::RESOURCE_TARGET_ACCOUNT_ID
                 && $clauses[1]->value() === (string) $target;
         })->andReturn($policy);
-        /** @var PolicyRepositoryInterface&Mockery\MockInterface $policies */
-        $policies = Mockery::mock(PolicyRepositoryInterface::class);
-        $policies->shouldReceive('save')->once()->with($policy);
+        /** @var PolicyRepositoryInterface&Mockery\MockInterface $policyRepository */
+        $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
+        $policyRepository->shouldReceive('save')->once()->with($policy);
         /** @var RoleFactoryInterface&Mockery\MockInterface $roleFactory */
         $roleFactory = Mockery::mock(RoleFactoryInterface::class);
         $roleFactory->shouldReceive('create')->once()->with(
@@ -101,17 +101,17 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             [],
             $source,
         )->andReturn($role);
-        /** @var RoleRepositoryInterface&Mockery\MockInterface $roles */
-        $roles = Mockery::mock(RoleRepositoryInterface::class);
-        $roles->shouldReceive('save')->once()->with($role);
-        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principals */
-        $principals = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principals->shouldReceive('findByAccountId')->once()->with($source)->andReturn([$principal]);
-        /** @var AccountRepositoryInterface&Mockery\MockInterface $accounts */
-        $accounts = Mockery::mock(AccountRepositoryInterface::class);
-        $accounts->shouldReceive('findById')->once()->with($target)->andReturn($this->account($target));
+        /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('save')->once()->with($role);
+        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findByAccountId')->once()->with($source)->andReturn([$principal]);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($target)->andReturn($this->account($target));
 
-        $service = new DelegationPrincipalGroupService($groupFactory, $groups, $policyFactory, $policies, $roleFactory, $roles, $principals, $accounts);
+        $service = new DelegationPrincipalGroupService($groupFactory, $principalGroupRepository, $policyFactory, $policyRepository, $roleFactory, $roleRepository, $principalRepository, $accountRepository);
         $service->createFor($delegation);
         $service->createFor($delegation);
 

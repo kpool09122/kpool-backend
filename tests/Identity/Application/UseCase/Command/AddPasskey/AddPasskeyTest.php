@@ -94,9 +94,9 @@ class AddPasskeyTest extends TestCase
             Mockery::on(static fn (ChallengeSessionKey $key): bool => (string) $key === self::CHALLENGE_KEY),
             Mockery::on(static fn (IdentityIdentifier $id): bool => (string) $id === self::IDENTITY_ID),
         )->andReturn($challenge);
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentityIdentifier')->once()->andReturn($passkeyUser);
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentityIdentifier')->once()->andReturn($passkeyUser);
         /** @var MockInterface&WebAuthnServiceInterface $webAuthn */
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->with(Mockery::on(
@@ -104,10 +104,10 @@ class AddPasskeyTest extends TestCase
                 $verification->responseJson === '{"id":"' . self::CREDENTIAL_ID . '"}'
                 && $verification->optionsJson === $challenge->options->json(),
         ))->andReturn($verified);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByCredentialId')->once()->with($verified->credentialId)->andReturnNull();
-        $credentials->shouldReceive('save')->once()->with($credential);
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByCredentialId')->once()->with($verified->credentialId)->andReturnNull();
+        $passkeyCredentialRepository->shouldReceive('save')->once()->with($credential);
         /** @var MockInterface&PasskeyCredentialFactoryInterface $factory */
         $factory = Mockery::mock(PasskeyCredentialFactoryInterface::class);
         $factory->shouldReceive('create')->once()->with(
@@ -132,7 +132,7 @@ class AddPasskeyTest extends TestCase
             StepUpAuthenticationScope::PASSKEY_MANAGE,
             new DateTimeImmutable('+10 minutes'),
         ));
-        $this->bindDependencies($storage, $users, $credentials, $factory, $webAuthn, $stepUp);
+        $this->bindDependencies($storage, $passkeyUserRepository, $passkeyCredentialRepository, $factory, $webAuthn, $stepUp);
 
         $output = new AddPasskeyOutput();
         $this->app->make(AddPasskeyInterface::class)->process($input, $output);
@@ -160,19 +160,19 @@ class AddPasskeyTest extends TestCase
             false,
             ['usb'],
         );
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentityIdentifier')->once()->andReturn(new PasskeyUser(
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentityIdentifier')->once()->andReturn(new PasskeyUser(
             new PasskeyUserIdentifier(self::PASSKEY_USER_ID),
             new IdentityIdentifier(self::IDENTITY_ID),
         ));
         /** @var MockInterface&WebAuthnServiceInterface $webAuthn */
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->andReturn($verified);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByCredentialId')->once()->andReturn(Mockery::mock(PasskeyCredential::class));
-        $this->bindDependencies(users: $users, credentials: $credentials, webAuthn: $webAuthn);
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByCredentialId')->once()->andReturn(Mockery::mock(PasskeyCredential::class));
+        $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository, passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn);
 
         $this->expectException(PasskeyCredentialAlreadyExistsException::class);
         $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
@@ -180,10 +180,10 @@ class AddPasskeyTest extends TestCase
 
     public function testItRejectsIdentityWithoutPasskeyUser(): void
     {
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentityIdentifier')->once()->andReturnNull();
-        $this->bindDependencies(users: $users);
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentityIdentifier')->once()->andReturnNull();
+        $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserNotFoundException::class);
         $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
@@ -203,20 +203,20 @@ class AddPasskeyTest extends TestCase
             false,
             ['internal'],
         );
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentityIdentifier')->once()->andReturn($passkeyUser);
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentityIdentifier')->once()->andReturn($passkeyUser);
         /** @var MockInterface&WebAuthnServiceInterface $webAuthn */
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->andReturn($verified);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByCredentialId')->once()->andReturnNull();
-        $credentials->shouldNotReceive('save');
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByCredentialId')->once()->andReturnNull();
+        $passkeyCredentialRepository->shouldNotReceive('save');
         /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
         $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
         $stepUp->shouldReceive('requireValid')->once()->andThrow(new StepUpAuthenticationRequiredException());
-        $this->bindDependencies(users: $users, credentials: $credentials, webAuthn: $webAuthn, stepUp: $stepUp);
+        $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository, passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn, stepUp: $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
         $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
@@ -245,19 +245,19 @@ class AddPasskeyTest extends TestCase
 
     private function bindDependencies(
         ?ChallengeSessionStorageServiceInterface $storage = null,
-        ?PasskeyUserRepositoryInterface $users = null,
-        ?PasskeyCredentialRepositoryInterface $credentials = null,
+        ?PasskeyUserRepositoryInterface $passkeyUserRepository = null,
+        ?PasskeyCredentialRepositoryInterface $passkeyCredentialRepository = null,
         ?PasskeyCredentialFactoryInterface $factory = null,
         ?WebAuthnServiceInterface $webAuthn = null,
         ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
     ): void {
         $storage ??= Mockery::mock(ChallengeSessionStorageServiceInterface::class);
-        $users ??= Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $credentials ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyUserRepository ??= Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyCredentialRepository ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $factory ??= Mockery::mock(PasskeyCredentialFactoryInterface::class);
         $webAuthn ??= Mockery::mock(WebAuthnServiceInterface::class);
         $stepUp ??= Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
-        foreach ([$storage, $users, $credentials, $factory, $webAuthn, $stepUp] as $mock) {
+        foreach ([$storage, $passkeyUserRepository, $passkeyCredentialRepository, $factory, $webAuthn, $stepUp] as $mock) {
             if ($mock instanceof MockInterface) {
                 $mock->shouldIgnoreMissing();
             }
@@ -276,8 +276,8 @@ class AddPasskeyTest extends TestCase
         }
 
         $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $users);
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $credentials);
+        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
         $this->app->instance(PasskeyCredentialFactoryInterface::class, $factory);
         $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
         $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);

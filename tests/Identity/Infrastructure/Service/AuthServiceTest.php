@@ -6,6 +6,7 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
@@ -123,6 +124,25 @@ class AuthServiceTest extends TestCase
         $authService = $this->app->make(AuthServiceInterface::class);
 
         $this->assertFalse($authService->isLoggedIn());
+    }
+
+    public function testCurrentSessionBecomesInvalidWhenGenerationAdvances(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $authService = $this->app->make(AuthServiceInterface::class);
+        $generationKey = 'identity_session_generation:' . $identityIdentifier;
+        Redis::del($generationKey);
+
+        try {
+            $this->app['session']->put('identity_session_generation', 0);
+            $this->assertTrue($authService->isCurrentSessionValid($identityIdentifier));
+
+            Redis::incr($generationKey);
+
+            $this->assertFalse($authService->isCurrentSessionValid($identityIdentifier));
+        } finally {
+            Redis::del($generationKey);
+        }
     }
 
     private function createIdentityEntity(IdentityIdentifier $identityIdentifier): Identity

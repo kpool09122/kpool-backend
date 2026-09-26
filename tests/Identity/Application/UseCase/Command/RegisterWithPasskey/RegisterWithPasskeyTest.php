@@ -104,12 +104,12 @@ class RegisterWithPasskeyTest extends TestCase
 
         $storage = Mockery::mock(ChallengeSessionStorageServiceInterface::class);
         $storage->shouldReceive('consumeRegistration')->once()->with($challengeKey)->andReturn($challenge);
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->with($passkeyUserId)->andReturn($passkeyUser);
-        $users->shouldReceive('save')->once()->with($passkeyUser);
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
-        $identities->shouldReceive('save')->once()->with($identity);
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->with($passkeyUserId)->andReturn($passkeyUser);
+        $passkeyUserRepository->shouldReceive('save')->once()->with($passkeyUser);
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
+        $identityRepository->shouldReceive('save')->once()->with($identity);
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')->once()->with(
             Mockery::on(static fn (IdentityName $name): bool => (string) $name === 'Passkey User'),
@@ -121,9 +121,9 @@ class RegisterWithPasskeyTest extends TestCase
             static fn (RegistrationVerificationInput $verification): bool => $verification->responseJson === '{"id":"Y3JlZGVudGlhbA"}'
                 && $verification->optionsJson === $challenge->options->json(),
         ))->andReturn($verified);
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByCredentialId')->once()->with($verified->credentialId)->andReturnNull();
-        $credentials->shouldReceive('save')->once()->with($credential);
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByCredentialId')->once()->with($verified->credentialId)->andReturnNull();
+        $passkeyCredentialRepository->shouldReceive('save')->once()->with($credential);
         $credentialFactory = Mockery::mock(PasskeyCredentialFactoryInterface::class);
         $credentialFactory->shouldReceive('create')->once()->andReturn($credential);
         $events = Mockery::mock(EventDispatcherInterface::class);
@@ -154,11 +154,11 @@ class RegisterWithPasskeyTest extends TestCase
         foreach ([
             ChallengeSessionStorageServiceInterface::class => $storage,
             SignupInvitationValidatorInterface::class => $invitationValidator,
-            PasskeyUserRepositoryInterface::class => $users,
-            IdentityRepositoryInterface::class => $identities,
+            PasskeyUserRepositoryInterface::class => $passkeyUserRepository,
+            IdentityRepositoryInterface::class => $identityRepository,
             IdentityFactoryInterface::class => $identityFactory,
             WebAuthnServiceInterface::class => $webAuthn,
-            PasskeyCredentialRepositoryInterface::class => $credentials,
+            PasskeyCredentialRepositoryInterface::class => $passkeyCredentialRepository,
             PasskeyCredentialFactoryInterface::class => $credentialFactory,
             EventDispatcherInterface::class => $events,
             AuthServiceInterface::class => $auth,
@@ -204,10 +204,10 @@ class RegisterWithPasskeyTest extends TestCase
 
     public function testItRejectsMissingPasskeyUser(): void
     {
-        /** @var PasskeyUserRepositoryInterface&Mockery\MockInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->andReturnNull();
-        $this->bindFailureDependencies(users: $users);
+        /** @var PasskeyUserRepositoryInterface&Mockery\MockInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturnNull();
+        $this->bindFailureDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserNotFoundException::class);
         $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
@@ -215,13 +215,13 @@ class RegisterWithPasskeyTest extends TestCase
 
     public function testItRejectsAlreadyLinkedPasskeyUser(): void
     {
-        /** @var PasskeyUserRepositoryInterface&Mockery\MockInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
+        /** @var PasskeyUserRepositoryInterface&Mockery\MockInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
             new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174001'),
             new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174099'),
         ));
-        $this->bindFailureDependencies(users: $users);
+        $this->bindFailureDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserAlreadyLinkedException::class);
         $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
@@ -229,10 +229,10 @@ class RegisterWithPasskeyTest extends TestCase
 
     public function testItRejectsDuplicateEmail(): void
     {
-        /** @var IdentityRepositoryInterface&Mockery\MockInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findByEmail')->once()->andReturn(Mockery::mock(Identity::class));
-        $this->bindFailureDependencies(identities: $identities);
+        /** @var IdentityRepositoryInterface&Mockery\MockInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')->once()->andReturn(Mockery::mock(Identity::class));
+        $this->bindFailureDependencies(identityRepository: $identityRepository);
 
         $this->expectException(AlreadyUserExistsException::class);
         $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
@@ -262,10 +262,10 @@ class RegisterWithPasskeyTest extends TestCase
         /** @var WebAuthnServiceInterface&Mockery\MockInterface $webAuthn */
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->andReturn($verified);
-        /** @var PasskeyCredentialRepositoryInterface&Mockery\MockInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByCredentialId')->once()->andReturn(Mockery::mock(PasskeyCredential::class));
-        $this->bindFailureDependencies(credentials: $credentials, webAuthn: $webAuthn);
+        /** @var PasskeyCredentialRepositoryInterface&Mockery\MockInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByCredentialId')->once()->andReturn(Mockery::mock(PasskeyCredential::class));
+        $this->bindFailureDependencies(passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn);
 
         $this->expectException(PasskeyCredentialAlreadyExistsException::class);
         $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
@@ -327,9 +327,9 @@ class RegisterWithPasskeyTest extends TestCase
 
     private function bindFailureDependencies(
         ?ChallengeSessionStorageServiceInterface $storage = null,
-        ?PasskeyUserRepositoryInterface $users = null,
-        ?IdentityRepositoryInterface $identities = null,
-        ?PasskeyCredentialRepositoryInterface $credentials = null,
+        ?PasskeyUserRepositoryInterface $passkeyUserRepository = null,
+        ?IdentityRepositoryInterface $identityRepository = null,
+        ?PasskeyCredentialRepositoryInterface $passkeyCredentialRepository = null,
         ?WebAuthnServiceInterface $webAuthn = null,
         ?SignupInvitationValidatorInterface $invitationValidator = null,
     ): void {
@@ -337,27 +337,27 @@ class RegisterWithPasskeyTest extends TestCase
             $storage = Mockery::mock(ChallengeSessionStorageServiceInterface::class);
             $storage->shouldReceive('consumeRegistration')->zeroOrMoreTimes()->andReturn($this->challenge());
         }
-        if ($users === null) {
-            $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-            $users->shouldReceive('findByIdentifier')->zeroOrMoreTimes()->andReturn(new PasskeyUser(
+        if ($passkeyUserRepository === null) {
+            $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+            $passkeyUserRepository->shouldReceive('findByIdentifier')->zeroOrMoreTimes()->andReturn(new PasskeyUser(
                 new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174001'),
                 null,
             ));
         }
-        if ($identities === null) {
-            $identities = Mockery::mock(IdentityRepositoryInterface::class);
-            $identities->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturnNull();
+        if ($identityRepository === null) {
+            $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+            $identityRepository->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturnNull();
         }
-        $credentials ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $webAuthn ??= Mockery::mock(WebAuthnServiceInterface::class);
         $invitationValidator ??= Mockery::mock(SignupInvitationValidatorInterface::class);
 
         foreach ([
             ChallengeSessionStorageServiceInterface::class => $storage,
             SignupInvitationValidatorInterface::class => $invitationValidator,
-            PasskeyUserRepositoryInterface::class => $users,
-            IdentityRepositoryInterface::class => $identities,
-            PasskeyCredentialRepositoryInterface::class => $credentials,
+            PasskeyUserRepositoryInterface::class => $passkeyUserRepository,
+            IdentityRepositoryInterface::class => $identityRepository,
+            PasskeyCredentialRepositoryInterface::class => $passkeyCredentialRepository,
             WebAuthnServiceInterface::class => $webAuthn,
             IdentityFactoryInterface::class => Mockery::mock(IdentityFactoryInterface::class),
             PasskeyCredentialFactoryInterface::class => Mockery::mock(PasskeyCredentialFactoryInterface::class),
