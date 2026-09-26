@@ -115,6 +115,14 @@ model SwitchableAccountSummary {
   isCurrent: boolean;
 }
 
+@doc("Authentication methods available to the current identity without exposing passkey or provider-account details.")
+model AuthenticationMethodsSummary {
+  @doc("Number of passkeys registered by the current identity.")
+  passkeyCount: int32;
+  @doc("Social providers linked to the current identity.")
+  linkedSocialProviders: string[];
+}
+
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
@@ -133,6 +141,8 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   delegationIdentifier: Uuid | null;
   @doc("Approved delegated accounts available from the original account.")
   switchableAccounts: SwitchableAccountSummary[];
+  @doc("Authentication methods available to the current identity.")
+  authenticationMethods: AuthenticationMethodsSummary;
 }
 
 @doc("Public profile fields for a requested identity.")
@@ -347,6 +357,12 @@ model AuthenticateWithPasskeyRequestBody {
   credential: PasskeyAuthenticationCredential;
 }
 
+@doc("Request body for completing passkey step-up authentication.")
+model CompleteStepUpWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  credential: PasskeyAuthenticationCredential;
+}
+
 @doc("Request body for updating an identity profile.")
 model UpdateIdentityRequestBody {
   @doc("Identity display name.")
@@ -490,8 +506,27 @@ interface IdentityAuthOperations {
 
   @get
   @route("/passkeys")
-  @doc("List passkeys registered by the current authenticated identity.")
+  @doc("List passkeys registered by the current authenticated identity after recent passkey management authentication.")
   listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/step-up/passkey/options")
+  @doc("Create identity-bound WebAuthn options for passkey management step-up authentication.")
+  createStepUpPasskeyOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/step-up/passkey")
+  @doc("Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.")
+  completeStepUpWithPasskey(
+    @body body: CompleteStepUpWithPasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/step-up/social/{provider}/redirect")
+  @doc("Create a linked-SSO reauthentication URL for initial passkey registration.")
+  startStepUpWithSocial(
+    @path provider: string,
+  ): RedirectUrlResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/passkeys/addition/options")
@@ -507,7 +542,7 @@ interface IdentityAuthOperations {
 
   @patch
   @route("/passkeys/{passkeyIdentifier}")
-  @doc("Update a passkey belonging to the authenticated identity.")
+  @doc("Update a passkey belonging to the authenticated identity after recent passkey management authentication.")
   updatePasskey(
     @path passkeyIdentifier: Uuid,
     @body body: UpdatePasskeyRequestBody,

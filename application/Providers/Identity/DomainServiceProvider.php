@@ -11,6 +11,8 @@ use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInt
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
@@ -45,6 +47,8 @@ use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
 use Source\Identity\Infrastructure\Service\SignupInvitationValidator;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
+use Source\Identity\Infrastructure\Service\StepUpAuthenticationStorageService;
+use Source\Identity\Infrastructure\Service\StepUpOAuthSessionStorageService;
 use Source\Identity\Infrastructure\Service\WebAuthnChallengeGenerator;
 use Source\Identity\Infrastructure\Service\WebAuthnService;
 
@@ -73,6 +77,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);
         $this->app->singleton(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);
         $this->app->singleton(SignupSessionRepositoryInterface::class, SignupSessionRepository::class);
+        $this->app->singleton(StepUpAuthenticationStorageServiceInterface::class, StepUpAuthenticationStorageService::class);
+        $this->app->singleton(StepUpOAuthSessionStorageServiceInterface::class, StepUpOAuthSessionStorageService::class);
         $this->app->singleton(WebAuthnServiceInterface::class, static fn (): WebAuthnService => new WebAuthnService(
             (string) config('webauthn.rp_id'),
             (string) config('webauthn.rp_name'),

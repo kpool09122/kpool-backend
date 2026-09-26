@@ -7,18 +7,24 @@ namespace Tests\Identity\Application\UseCase\Command\SocialLogin\Callback;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Mockery\MockInterface;
 use RuntimeException;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackOutput;
 use Source\Identity\Domain\Entity\Identity;
+use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
+use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
@@ -29,6 +35,10 @@ use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
+use Source\Identity\Domain\ValueObject\StepUpOAuthSession;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -39,6 +49,9 @@ use Tests\TestCase;
 
 class SocialLoginCallbackTest extends TestCase
 {
+    private const string STEP_UP_IDENTITY_ID = '123e4567-e89b-72d3-a456-426614174001';
+    private const string OTHER_STEP_UP_IDENTITY_ID = '123e4567-e89b-72d3-a456-426614174002';
+
     /**
      * 正しくDIが動作していること.
      *
@@ -537,6 +550,148 @@ class SocialLoginCallbackTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $useCase->process($input, $output);
+    }
+
+    public function testSuccessfulReauthenticationIssuesSsoStepUpWithoutLoggingInAgain(): void
+    {
+        $identity = $this->stepUpIdentity(self::STEP_UP_IDENTITY_ID);
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldReceive('store')->once()->with(Mockery::on(
+            static fn (StepUpAuthentication $authentication): bool => (string) $authentication->identityIdentifier === self::STEP_UP_IDENTITY_ID
+                && $authentication->method === StepUpAuthenticationMethod::SSO
+                && $authentication->expiresAt > $authentication->verifiedAt,
+        ));
+        $this->bindStepUpDependencies($identity, [], $stepUp);
+        $output = new SocialLoginCallbackOutput();
+
+        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), $output);
+
+        $this->assertSame('/settings/passkeys?stepUp=complete', $output->redirectUrl());
+    }
+
+    public function testStepUpRejectsAProfileLinkedToAnotherIdentity(): void
+    {
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldNotReceive('store');
+        $this->bindStepUpDependencies($this->stepUpIdentity(self::OTHER_STEP_UP_IDENTITY_ID), [], $stepUp);
+
+        $this->expectException(StepUpSocialAuthenticationFailedException::class);
+        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+    }
+
+    public function testStepUpRejectsSsoCompletionIfAPasskeyWasRegisteredAfterTheFlowStarted(): void
+    {
+        /** @var MockInterface&PasskeyCredential $credential */
+        $credential = Mockery::mock(PasskeyCredential::class);
+        /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
+        $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUp->shouldNotReceive('store');
+        $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [$credential], $stepUp);
+
+        $this->expectException(StepUpSocialAuthenticationFailedException::class);
+        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+    }
+
+    public function testStepUpRejectsAMissingOrExpiredSessionBeforeFetchingProfile(): void
+    {
+        /** @var MockInterface&OAuthStateRepositoryInterface $oauthState */
+        $oauthState = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthState->shouldReceive('consume')->once();
+        /** @var MockInterface&StepUpOAuthSessionStorageServiceInterface $sessions */
+        $sessions = Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
+        $sessions->shouldReceive('consume')->once()->andReturnNull();
+        /** @var MockInterface&SocialOAuthServiceInterface $social */
+        $social = Mockery::mock(SocialOAuthServiceInterface::class);
+        $social->shouldNotReceive('fetchProfile');
+        $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [], sessions: $sessions, oauthState: $oauthState, social: $social);
+
+        $this->expectException(StepUpSocialAuthenticationFailedException::class);
+        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+    }
+
+    public function testStepUpRejectsAProviderMismatchBeforeFetchingProfile(): void
+    {
+        /** @var MockInterface&SocialOAuthServiceInterface $social */
+        $social = Mockery::mock(SocialOAuthServiceInterface::class);
+        $social->shouldNotReceive('fetchProfile');
+        $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [], social: $social);
+
+        $this->expectException(StepUpSocialAuthenticationFailedException::class);
+        $this->app->make(SocialLoginCallbackInterface::class)->process(
+            $this->stepUpInput(SocialProvider::LINE),
+            new SocialLoginCallbackOutput(),
+        );
+    }
+
+    /** @param PasskeyCredential[] $passkeys */
+    private function bindStepUpDependencies(
+        Identity $resolvedIdentity,
+        array $passkeys,
+        ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
+        ?StepUpOAuthSessionStorageServiceInterface $sessions = null,
+        ?OAuthStateRepositoryInterface $oauthState = null,
+        ?SocialOAuthServiceInterface $social = null,
+    ): void {
+        $oauthState ??= Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthState->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(
+            static fn (OAuthState $candidate): bool => (string) $candidate === 'step-up-state',
+        ));
+        $sessions ??= Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
+        $sessions->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(
+            static fn (OAuthState $candidate): bool => (string) $candidate === 'step-up-state',
+        ))->andReturn(new StepUpOAuthSession(
+            new IdentityIdentifier(self::STEP_UP_IDENTITY_ID),
+            SocialProvider::GOOGLE,
+            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            new DateTimeImmutable('+10 minutes'),
+            '/settings/passkeys?stepUp=complete',
+        ));
+        $profile = new SocialProfile(SocialProvider::GOOGLE, 'provider-user', new Email('test@example.com'), 'Test User');
+        $social ??= Mockery::mock(SocialOAuthServiceInterface::class);
+        $social->shouldReceive('fetchProfile')->zeroOrMoreTimes()->with(SocialProvider::GOOGLE, Mockery::type(OAuthCode::class))->andReturn($profile);
+        $identities = Mockery::mock(IdentityRepositoryInterface::class);
+        $identities->shouldReceive('findBySocialConnection')->zeroOrMoreTimes()->with(SocialProvider::GOOGLE, 'provider-user')->andReturn($resolvedIdentity);
+        $passkeyRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyRepository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->with(Mockery::on(
+            static fn (IdentityIdentifier $id): bool => (string) $id === self::STEP_UP_IDENTITY_ID,
+        ))->andReturn($passkeys);
+        $stepUp ??= Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $auth = Mockery::mock(AuthServiceInterface::class);
+        $auth->shouldNotReceive('login');
+        $signup = Mockery::mock(SignupSessionRepositoryInterface::class);
+        $signup->shouldNotReceive('find');
+        $signup->shouldNotReceive('delete');
+        $factory = Mockery::mock(IdentityFactoryInterface::class);
+        $factory->shouldNotReceive('createFromSocialProfile');
+        $events = Mockery::mock(EventDispatcherInterface::class);
+        $events->shouldNotReceive('dispatch');
+
+        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthState);
+        $this->app->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
+        $this->app->instance(SocialOAuthServiceInterface::class, $social);
+        $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyRepository);
+        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app->instance(AuthServiceInterface::class, $auth);
+        $this->app->instance(SignupSessionRepositoryInterface::class, $signup);
+        $this->app->instance(IdentityFactoryInterface::class, $factory);
+        $this->app->instance(EventDispatcherInterface::class, $events);
+    }
+
+    private function stepUpInput(SocialProvider $provider = SocialProvider::GOOGLE): SocialLoginCallbackInput
+    {
+        return new SocialLoginCallbackInput($provider, new OAuthCode('code'), new OAuthState('step-up-state', new DateTimeImmutable('+10 minutes')));
+    }
+
+    private function stepUpIdentity(string $identityId): Identity
+    {
+        return $this->createIdentity(
+            new Email('test@example.com'),
+            new IdentityIdentifier($identityId),
+            [new SocialConnection(SocialProvider::GOOGLE, 'provider-user')],
+        );
     }
 
     /**

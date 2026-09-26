@@ -18,6 +18,7 @@ use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLogin
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackOutput;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Exception\SocialOAuthException;
+use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\ValueObject\OAuthCode;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
@@ -65,6 +66,10 @@ readonly class SocialLoginCallbackAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('social_oauth_error', $language), previous: $e);
+            } catch (StepUpSocialAuthenticationFailedException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: 'Social step-up authentication failed.', previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

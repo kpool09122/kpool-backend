@@ -19,6 +19,7 @@ readonly class AuthenticatedIdentityReadModel
         private ?string $accountIdentifier,
         private ?string $accountPrincipalIdentifier,
         private ?string $accountType,
+        private AuthenticationMethodsReadModel $authenticationMethods,
         private array $accountPolicies = [],
         private ?AuthenticatedAccountSummaryReadModel $account = null,
         private ?AuthenticatedAccountReferenceReadModel $originalAccount = null,
@@ -96,6 +97,11 @@ readonly class AuthenticatedIdentityReadModel
         return $this->switchableAccounts;
     }
 
+    public function authenticationMethods(): AuthenticationMethodsReadModel
+    {
+        return $this->authenticationMethods;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -118,6 +124,7 @@ readonly class AuthenticatedIdentityReadModel
                 static fn (SwitchableAccountReadModel $account): array => $account->toArray(),
                 $this->switchableAccounts,
             ),
+            'authenticationMethods' => $this->authenticationMethods->toArray(),
         ];
     }
 }

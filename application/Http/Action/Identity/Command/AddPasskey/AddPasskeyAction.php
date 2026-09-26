@@ -8,6 +8,7 @@ use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,7 @@ use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
 use Source\Identity\Domain\Exception\InvalidPasskeyBackupStateException;
 use Source\Identity\Domain\Exception\PasskeyCredentialAlreadyExistsException;
 use Source\Identity\Domain\Exception\PasskeyUserNotFoundException;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\Exception\WebAuthnVerificationException;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
@@ -72,6 +74,13 @@ readonly class AddPasskeyAction
                     detail: error_message('passkey_user_not_found', $request->language()),
                     previous: $exception,
                 );
+            } catch (StepUpAuthenticationRequiredException $exception) {
+                DB::rollBack();
+
+                throw new UnauthorizedHttpException(
+                    detail: 'Recent passkey management authentication is required.',
+                    previous: $exception,
+                );
             } catch (
                 ChallengeSessionIdentityMismatchException
                 |ChallengeSessionNotFoundException
@@ -90,7 +99,7 @@ readonly class AddPasskeyAction
 
                 throw $exception;
             }
-        } catch (ConflictHttpException|NotFoundHttpException|UnprocessableEntityHttpException $exception) {
+        } catch (ConflictHttpException|NotFoundHttpException|UnauthorizedHttpException|UnprocessableEntityHttpException $exception) {
             $this->logger->error((string) $exception);
 
             return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());

@@ -7,6 +7,7 @@ namespace Source\Identity\Application\Service;
 use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Application\Service\WebAuthn\StepUpAuthenticationChallenge;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -26,4 +27,11 @@ interface ChallengeSessionStorageServiceInterface
         ChallengeSessionKey $key,
         IdentityIdentifier $expectedIdentityIdentifier,
     ): AdditionChallenge;
+
+    public function storeStepUpAuthentication(StepUpAuthenticationChallenge $challenge): void;
+
+    public function consumeStepUpAuthentication(
+        ChallengeSessionKey $key,
+        IdentityIdentifier $expectedIdentityIdentifier,
+    ): StepUpAuthenticationChallenge;
 }

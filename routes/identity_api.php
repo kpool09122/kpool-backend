@@ -7,6 +7,8 @@ use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\Authenticat
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
+use Application\Http\Action\Identity\Command\CreateStepUpPasskeyOptions\CreateStepUpPasskeyOptionsAction;
+use Application\Http\Action\Identity\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskeyAction;
 use Application\Http\Action\Identity\Command\DeletePasskey\DeletePasskeyAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
@@ -15,6 +17,7 @@ use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCal
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
+use Application\Http\Action\Identity\Command\StartStepUpWithSocial\StartStepUpWithSocialAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
@@ -36,6 +39,9 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
     Route::get('/auth/passkeys', ListPasskeysAction::class);
+    Route::post('/auth/step-up/passkey/options', CreateStepUpPasskeyOptionsAction::class);
+    Route::post('/auth/step-up/passkey', CompleteStepUpWithPasskeyAction::class);
+    Route::get('/auth/step-up/social/{provider}/redirect', StartStepUpWithSocialAction::class);
     Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
     Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
     Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);

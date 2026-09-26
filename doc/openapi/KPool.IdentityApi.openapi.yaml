@@ -102,7 +102,7 @@ paths:
   /auth/passkeys:
     get:
       operationId: IdentityAuthOperations_listPasskeys
-      description: List passkeys registered by the current authenticated identity.
+      description: List passkeys registered by the current authenticated identity after recent passkey management authentication.
       parameters: []
       responses:
         '200':
@@ -354,7 +354,7 @@ paths:
   /auth/passkeys/{passkeyIdentifier}:
     patch:
       operationId: IdentityAuthOperations_updatePasskey
-      description: Update a passkey belonging to the authenticated identity.
+      description: Update a passkey belonging to the authenticated identity after recent passkey management authentication.
       parameters:
         - name: passkeyIdentifier
           in: path
@@ -551,6 +551,107 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RedirectUrlResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/step-up/passkey:
+    post:
+      operationId: IdentityAuthOperations_completeStepUpWithPasskey
+      description: Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteStepUpWithPasskeyRequestBody'
+  /auth/step-up/passkey/options:
+    post:
+      operationId: IdentityAuthOperations_createStepUpPasskeyOptions
+      description: Create identity-bound WebAuthn options for passkey management step-up authentication.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey authentication options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyAuthenticationOptionsResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/step-up/social/{provider}/redirect:
+    get:
+      operationId: IdentityAuthOperations_startStepUpWithSocial
+      description: Create a linked-SSO reauthentication URL for initial passkey registration.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -849,6 +950,7 @@ components:
         - originalAccount
         - delegationIdentifier
         - switchableAccounts
+        - authenticationMethods
       properties:
         accountIdentifier:
           type: string
@@ -894,9 +996,40 @@ components:
           items:
             $ref: '#/components/schemas/SwitchableAccountSummary'
           description: Approved delegated accounts available from the original account.
+        authenticationMethods:
+          allOf:
+            - $ref: '#/components/schemas/AuthenticationMethodsSummary'
+          description: Authentication methods available to the current identity.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.
+    AuthenticationMethodsSummary:
+      type: object
+      required:
+        - passkeyCount
+        - linkedSocialProviders
+      properties:
+        passkeyCount:
+          type: integer
+          format: int32
+          description: Number of passkeys registered by the current identity.
+        linkedSocialProviders:
+          type: array
+          items:
+            type: string
+          description: Social providers linked to the current identity.
+      description: Authentication methods available to the current identity without exposing passkey or provider-account details.
+    CompleteStepUpWithPasskeyRequestBody:
+      type: object
+      required:
+        - challengeKey
+        - credential
+      properties:
+        challengeKey:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        credential:
+          $ref: '#/components/schemas/PasskeyAuthenticationCredential'
+      description: Request body for completing passkey step-up authentication.
     CreatePasskeyRegistrationOptionsRequestBody:
       type: object
       required:

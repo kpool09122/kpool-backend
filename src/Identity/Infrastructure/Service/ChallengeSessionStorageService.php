@@ -11,6 +11,7 @@ use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
+use Source\Identity\Application\Service\WebAuthn\StepUpAuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
@@ -29,6 +30,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
     private const string REGISTRATION = 'registration';
     private const string AUTHENTICATION = 'authentication';
     private const string ADDITION = 'addition';
+    private const string STEP_UP_AUTHENTICATION = 'step_up_authentication';
 
     public function storeRegistration(RegistrationChallenge $challenge): void
     {
@@ -118,6 +120,40 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
         }
 
         return new AdditionChallenge(
+            $key,
+            new WebAuthnChallenge($data['challenge']),
+            new WebAuthnOptions($data['options']),
+            new DateTimeImmutable($data['expires_at']),
+            $identityIdentifier,
+        );
+    }
+
+    public function storeStepUpAuthentication(StepUpAuthenticationChallenge $challenge): void
+    {
+        $this->store(
+            $challenge->key,
+            $challenge->challenge,
+            $challenge->options,
+            $challenge->expiresAt,
+            self::STEP_UP_AUTHENTICATION,
+            ['identity_id' => (string) $challenge->identityIdentifier],
+        );
+    }
+
+    public function consumeStepUpAuthentication(
+        ChallengeSessionKey $key,
+        IdentityIdentifier $expectedIdentityIdentifier,
+    ): StepUpAuthenticationChallenge {
+        $data = $this->consume($key, self::STEP_UP_AUTHENTICATION);
+        if (! isset($data['identity_id'])) {
+            throw new ChallengeSessionNotFoundException();
+        }
+        $identityIdentifier = new IdentityIdentifier($data['identity_id']);
+        if ((string) $identityIdentifier !== (string) $expectedIdentityIdentifier) {
+            throw new ChallengeSessionIdentityMismatchException();
+        }
+
+        return new StepUpAuthenticationChallenge(
             $key,
             new WebAuthnChallenge($data['challenge']),
             new WebAuthnOptions($data['options']),

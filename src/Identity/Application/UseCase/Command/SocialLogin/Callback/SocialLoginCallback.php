@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
+use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
+use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
+use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
 use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
@@ -32,6 +39,9 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         private SignupSessionRepositoryInterface   $signupSessionRepository,
         private AuthServiceInterface               $authService,
         private EventDispatcherInterface           $eventDispatcher,
+        private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private ImageServiceInterface              $imageService,
         private LoggerInterface                    $logger,
     ) {
@@ -46,6 +56,39 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     public function process(SocialLoginCallbackInputPort $input, SocialLoginCallbackOutputPort $output): void
     {
         $this->oauthStateRepository->consume($input->state());
+        $isStepUp = str_starts_with((string) $input->state(), 'step-up-');
+        $stepUpSession = $isStepUp
+            ? $this->stepUpOAuthSessionStorage->consume($input->state())
+            : null;
+        if ($isStepUp && $stepUpSession === null) {
+            throw new StepUpSocialAuthenticationFailedException('Step-up OAuth session is missing or expired.');
+        }
+        if ($stepUpSession !== null) {
+            if ($stepUpSession->provider !== $input->provider()) {
+                throw new StepUpSocialAuthenticationFailedException();
+            }
+
+            $profile = $this->socialOAuthClient->fetchProfile($input->provider(), $input->code());
+            $connection = new SocialConnection($input->provider(), $profile->providerUserId());
+            $identity = $this->identityRepository->findBySocialConnection($connection->provider(), $connection->providerUserId());
+            if ($identity === null
+                || (string) $identity->identityIdentifier() !== (string) $stepUpSession->identityIdentifier
+                || $this->passkeyCredentialRepository->findByIdentityIdentifier($stepUpSession->identityIdentifier) !== []) {
+                throw new StepUpSocialAuthenticationFailedException();
+            }
+
+            $now = new DateTimeImmutable();
+            $this->stepUpAuthenticationStorage->store(new StepUpAuthentication(
+                $stepUpSession->identityIdentifier,
+                StepUpAuthenticationMethod::SSO,
+                $now,
+                $stepUpSession->scope,
+                $now->modify('+600 seconds'),
+            ));
+            $output->setRedirectUrl($stepUpSession->returnTo);
+
+            return;
+        }
         $signupSession = $this->signupSessionRepository->find($input->state());
         $redirectUrl = $signupSession?->returnTo() ?? self::DEFAULT_REDIRECT_URL;
 
