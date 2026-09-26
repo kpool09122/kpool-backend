@@ -107,6 +107,23 @@ model ListContactsByIdentityResponse {
   @body body: MyContactSummary[];
 }
 
+@doc("Response containing contact inquiries.")
+model ListContactsResponse {
+  @statusCode statusCode: 200;
+  @body body: MyContactSummary[];
+}
+
+@route("/contacts")
+interface ContactListOperations {
+  @get
+  @doc("List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.")
+  listContacts(
+    @query identityIdentifier?: Uuid | null,
+    @doc("Whether the inquiry has at least one successfully sent reply. When omitted (null), no reply-status filter is applied.")
+    @query hasReply?: boolean | null,
+  ): ListContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/contact")
 interface ContactOperations {
   @get
