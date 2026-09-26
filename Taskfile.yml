@@ -93,6 +93,11 @@ tasks:
     cmds:
       - '{{.PHP_RUN}} composer install'
 
+  composer:
+    desc: "Run Composer in the PHP container. Usage: task composer -- require vendor/package"
+    cmds:
+      - '{{.PHP_RUN}} composer {{.CLI_ARGS}}'
+
   openapi:
     desc: Install TypeSpec dependencies and generate OpenAPI specs
     cmds:
