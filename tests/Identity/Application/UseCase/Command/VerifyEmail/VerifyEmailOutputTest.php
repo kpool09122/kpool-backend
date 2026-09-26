@@ -8,8 +8,8 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailOutput;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 
 class VerifyEmailOutputTest extends TestCase

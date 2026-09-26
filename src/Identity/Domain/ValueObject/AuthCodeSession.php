@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Domain\Entity;
+namespace Source\Identity\Domain\ValueObject;
 
 use DateTimeImmutable;
 use Source\Identity\Domain\Exception\AuthCodeExpiredException;
 use Source\Identity\Domain\Exception\InvalidAuthCodeException;
-use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Shared\Domain\ValueObject\Email;
 
 readonly class AuthCodeSession

@@ -2,24 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Infrastructure\Repository;
+namespace Source\Identity\Infrastructure\Service;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Redis;
-use Source\Identity\Domain\Entity\AuthCodeSession;
-use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
+use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 
-class AuthCodeSessionRepository implements AuthCodeSessionRepositoryInterface
+class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInterface
 {
     private const string KEY_PREFIX = 'auth_code_session:';
-    private const int TTL_SECONDS = 900; // 15 minutes
+    private const int TTL_SECONDS = 900;
 
     public function findByEmail(Email $email): ?AuthCodeSession
     {
-        $key = $this->buildKey($email);
-        $data = Redis::get($key);
+        $data = Redis::get($this->buildKey($email));
 
         if ($data === null) {
             return null;
@@ -38,8 +37,6 @@ class AuthCodeSessionRepository implements AuthCodeSessionRepositoryInterface
 
     public function save(AuthCodeSession $authCodeSession): void
     {
-        $key = $this->buildKey($authCodeSession->email());
-
         $data = json_encode([
             'email' => (string) $authCodeSession->email(),
             'authCode' => (string) $authCodeSession->authCode(),
@@ -47,13 +44,12 @@ class AuthCodeSessionRepository implements AuthCodeSessionRepositoryInterface
             'verifiedAt' => $authCodeSession->verifiedAt()?->format(DateTimeImmutable::ATOM),
         ]);
 
-        Redis::setex($key, self::TTL_SECONDS, $data);
+        Redis::setex($this->buildKey($authCodeSession->email()), self::TTL_SECONDS, $data);
     }
 
     public function delete(Email $email): void
     {
-        $key = $this->buildKey($email);
-        Redis::del($key);
+        Redis::del($this->buildKey($email));
     }
 
     private function buildKey(Email $email): string

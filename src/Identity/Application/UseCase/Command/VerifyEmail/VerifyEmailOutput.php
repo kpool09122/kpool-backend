@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\VerifyEmail;
 
 use DateTimeInterface;
-use Source\Identity\Domain\Entity\AuthCodeSession;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 
 class VerifyEmailOutput implements VerifyEmailOutputPort
 {

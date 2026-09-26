@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Domain\Entity;
+namespace Tests\Identity\Domain\ValueObject;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Exception\AuthCodeExpiredException;
 use Source\Identity\Domain\Exception\InvalidAuthCodeException;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 
 class AuthCodeSessionTest extends TestCase

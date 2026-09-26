@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions;
 
 use DateTimeImmutable;
+use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
 use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
@@ -14,7 +15,6 @@ use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
-use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
@@ -26,7 +26,7 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
     private const int CHALLENGE_TTL_SECONDS = 300;
 
     public function __construct(
-        private AuthCodeSessionRepositoryInterface $authCodeSessionRepository,
+        private AuthCodeSessionStorageServiceInterface $authCodeSessionStorageService,
         private IdentityRepositoryInterface $identityRepository,
         private PasskeyUserFactoryInterface $passkeyUserFactory,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
@@ -50,7 +50,7 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
         if ($oneTimeToken !== null) {
             $this->signupInvitationValidator->validate($oneTimeToken, $input->email());
         } else {
-            $session = $this->authCodeSessionRepository->findByEmail($input->email());
+            $session = $this->authCodeSessionStorageService->findByEmail($input->email());
             if ($session === null) {
                 throw new AuthCodeSessionNotFoundException();
             }

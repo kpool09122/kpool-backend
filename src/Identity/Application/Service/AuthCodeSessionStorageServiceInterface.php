@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Domain\Repository;
+namespace Source\Identity\Application\Service;
 
-use Source\Identity\Domain\Entity\AuthCodeSession;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 
-interface AuthCodeSessionRepositoryInterface
+interface AuthCodeSessionStorageServiceInterface
 {
     public function findByEmail(Email $email): ?AuthCodeSession;
 

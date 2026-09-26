@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Shared\Domain\ValueObject\Email;
