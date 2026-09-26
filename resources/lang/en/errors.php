@@ -40,6 +40,7 @@ return [
     'password_mismatch' => 'The passwords do not match.',
     'invalid_delegation' => 'The delegation operation is invalid.',
     'identity_not_found' => 'The specified identity was not found.',
+    'contact_not_found' => 'The specified contact inquiry was not found.',
     'already_user_exists' => 'The user already exists.',
     'unauthorized_email' => 'The email address has not been verified.',
     'auth_code_session_not_found' => 'The authentication code session was not found.',

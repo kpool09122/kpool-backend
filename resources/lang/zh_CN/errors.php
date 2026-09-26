@@ -40,6 +40,7 @@ return [
     'password_mismatch' => '密码不一致。',
     'invalid_delegation' => '委托操作无效。',
     'identity_not_found' => '找不到指定的身份。',
+    'contact_not_found' => '找不到指定的咨询。',
     'already_user_exists' => '用户已存在。',
     'unauthorized_email' => '邮箱地址尚未验证。',
     'auth_code_session_not_found' => '找不到验证码会话。',

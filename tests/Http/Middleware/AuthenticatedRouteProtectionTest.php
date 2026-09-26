@@ -86,20 +86,20 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $middleware->handle($request, fn () => response('ok'));
     }
 
-    public function testSiteManagementIdentityContactsRouteIsRegistered(): void
+    public function testSiteManagementContactsRoutesAreRegistered(): void
     {
-        $expectedUri = 'api/site-management/contacts';
+        foreach (['api/site-management/contacts', 'api/site-management/contact/identities/{identityIdentifier}'] as $expectedUri) {
+            foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+                if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {
+                    $this->assertContains('auth.api', $route->gatherMiddleware());
+                    $this->assertContains('resolve.actor', $route->gatherMiddleware());
 
-        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
-            if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {
-                $this->assertContains('auth.api', $route->gatherMiddleware());
-                $this->assertContains('resolve.actor', $route->gatherMiddleware());
-
-                return;
+                    continue 2;
+                }
             }
-        }
 
-        $this->fail(sprintf('Expected GET route [%s] was not registered.', $expectedUri));
+            $this->fail(sprintf('Expected GET route [%s] was not registered.', $expectedUri));
+        }
     }
 
     public function testWikiRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
