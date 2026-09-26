@@ -440,7 +440,7 @@ interface IdentityAuthOperations {
   @doc("Send an auth code to the specified email address.")
   sendAuthCode(
     @body body: SendAuthCodeRequestBody,
-  ): OkEmptyResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/verify-email")

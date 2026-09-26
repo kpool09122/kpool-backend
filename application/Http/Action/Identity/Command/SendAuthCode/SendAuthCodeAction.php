@@ -6,7 +6,6 @@ namespace Application\Http\Action\Identity\Command\SendAuthCode;
 
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -27,10 +26,10 @@ readonly class SendAuthCodeAction
 
     /**
      * @param SendAuthCodeRequest $request
-     * @return JsonResponse
+     * @return Response
      * @throws InternalServerErrorHttpException
      */
-    public function __invoke(SendAuthCodeRequest $request): JsonResponse
+    public function __invoke(SendAuthCodeRequest $request): Response
     {
         try {
             try {
@@ -62,6 +61,6 @@ readonly class SendAuthCodeAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json([], Response::HTTP_OK);
+        return response()->noContent();
     }
 }

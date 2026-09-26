@@ -450,12 +450,8 @@ paths:
       description: Send an auth code to the specified email address.
       parameters: []
       responses:
-        '200':
-          description: Response returned when an endpoint succeeds with an empty JSON object.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
+        '204':
+          description: Response with no content.
         '422':
           description: Client error
           content:
