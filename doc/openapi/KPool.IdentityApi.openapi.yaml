@@ -261,6 +261,171 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/passkeys/recovery:
+    post:
+      operationId: IdentityAuthOperations_recoverPasskey
+      description: Register a replacement passkey, remove all previous passkeys, and invalidate existing login sessions.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoverPasskeyRequestBody'
+  /auth/passkeys/recovery/email:
+    post:
+      operationId: IdentityAuthOperations_sendPasskeyRecoveryEmail
+      description: Send a passkey recovery code while returning the same response whether or not the email is registered.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendPasskeyRecoveryEmailRequestBody'
+  /auth/passkeys/recovery/email/verification:
+    post:
+      operationId: IdentityAuthOperations_verifyPasskeyRecoveryEmail
+      description: Verify a passkey recovery email code and issue a short-lived recovery key.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned after passkey recovery identity verification succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRecoveryVerificationResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPasskeyRecoveryEmailRequestBody'
+  /auth/passkeys/recovery/options:
+    post:
+      operationId: IdentityAuthOperations_createPasskeyRecoveryOptions
+      description: Create WebAuthn registration options authorized by a passkey recovery key.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when passkey registration options are created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRegistrationOptionsResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePasskeyRecoveryOptionsRequestBody'
+  /auth/passkeys/recovery/social/{provider}/redirect:
+    get:
+      operationId: IdentityAuthOperations_startPasskeyRecoveryWithSocial
+      description: Create a reauthentication URL for a social account already linked to the recovery target identity.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: identityIdentifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          explode: false
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/passkeys/registration:
     post:
       operationId: IdentityAuthOperations_registerWithPasskey
@@ -1026,6 +1191,16 @@ components:
         credential:
           $ref: '#/components/schemas/PasskeyAuthenticationCredential'
       description: Request body for completing passkey step-up authentication.
+    CreatePasskeyRecoveryOptionsRequestBody:
+      type: object
+      required:
+        - recoveryKey
+      properties:
+        recoveryKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Short-lived passkey recovery authorization key.
+      description: Request body for creating passkey recovery registration options.
     CreatePasskeyRegistrationOptionsRequestBody:
       type: object
       required:
@@ -1281,6 +1456,16 @@ components:
           items:
             $ref: '#/components/schemas/PasskeySummary'
       description: Registered passkeys belonging to the authenticated identity.
+    PasskeyRecoveryVerificationResult:
+      type: object
+      required:
+        - recoveryKey
+      properties:
+        recoveryKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Short-lived, one-time key authorizing passkey recovery registration.
+      description: Result of successful passkey recovery identity verification.
     PasskeyRegistrationCredential:
       type: object
       required:
@@ -1417,6 +1602,30 @@ components:
           type: string
         displayName:
           type: string
+    RecoverPasskeyRequestBody:
+      type: object
+      required:
+        - recoveryKey
+        - challengeKey
+        - displayName
+        - credential
+      properties:
+        recoveryKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Short-lived passkey recovery authorization key.
+        challengeKey:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Key returned with the recovery registration options.
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: User-visible name for the replacement passkey.
+        credential:
+          $ref: '#/components/schemas/PasskeyRegistrationCredential'
+      description: Request body for replacing all existing passkeys during account recovery.
     RedirectUrlResult:
       type: object
       required:
@@ -1462,6 +1671,15 @@ components:
           type: string
           description: Email address that will receive the auth code.
       description: Request body for sending an auth code.
+    SendPasskeyRecoveryEmailRequestBody:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: Registered email address that will receive the recovery code when it exists.
+      description: Request body for sending a passkey recovery verification code.
     SwitchableAccountSummary:
       type: object
       required:
@@ -1541,6 +1759,21 @@ components:
           nullable: true
           description: Timestamp when the email was verified.
       description: Email verification result.
+    VerifyPasskeyRecoveryEmailRequestBody:
+      type: object
+      required:
+        - email
+        - authCode
+      properties:
+        email:
+          type: string
+          description: Email address used to request the recovery code.
+        authCode:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: Six-digit recovery code delivered to the email address.
+      description: Request body for verifying a passkey recovery email code.
 servers:
   - url: /api/identity
     description: Laravel route prefix from bootstrap/app.php.

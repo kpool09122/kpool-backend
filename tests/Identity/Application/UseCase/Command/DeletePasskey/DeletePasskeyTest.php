@@ -57,8 +57,8 @@ class DeletePasskeyTest extends TestCase
     {
         $credential = $this->credential(self::PASSKEY_ID);
         $otherCredential = $this->credential(self::OTHER_PASSKEY_ID);
-        $credentials = $this->credentialsForOwnedPasskey($credential, [$credential, $otherCredential]);
-        $credentials->shouldReceive('delete')->once()->with(Mockery::on(
+        $passkeyCredentialRepository = $this->credentialsForOwnedPasskey($credential, [$credential, $otherCredential]);
+        $passkeyCredentialRepository->shouldReceive('delete')->once()->with(Mockery::on(
             static fn (PasskeyCredentialIdentifier $identifier): bool => (string) $identifier === self::PASSKEY_ID,
         ));
         /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
@@ -73,7 +73,7 @@ class DeletePasskeyTest extends TestCase
             StepUpAuthenticationScope::PASSKEY_MANAGE,
             new DateTimeImmutable('+10 minutes'),
         ));
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
+        $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
 
         $output = new DeletePasskeyOutput();
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), $output);
@@ -84,12 +84,12 @@ class DeletePasskeyTest extends TestCase
     public function testItDeletesTheLastPasskeyWhenSsoRemains(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        $credentials = $this->credentialsForOwnedPasskey($credential, [$credential]);
-        $credentials->shouldReceive('delete')->once()->with(Mockery::type(PasskeyCredentialIdentifier::class));
+        $passkeyCredentialRepository = $this->credentialsForOwnedPasskey($credential, [$credential]);
+        $passkeyCredentialRepository->shouldReceive('delete')->once()->with(Mockery::type(PasskeyCredentialIdentifier::class));
         $identity = $this->identity([
             new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id'),
         ]);
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($identity));
+        $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($identity));
 
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
 
@@ -99,9 +99,9 @@ class DeletePasskeyTest extends TestCase
     public function testItRejectsDeletingTheLastAuthenticationMethod(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        $credentials = $this->credentialsForOwnedPasskey($credential, [$credential]);
-        $credentials->shouldNotReceive('delete');
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()));
+        $passkeyCredentialRepository = $this->credentialsForOwnedPasskey($credential, [$credential]);
+        $passkeyCredentialRepository->shouldNotReceive('delete');
+        $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()));
 
         $this->expectException(CannotDeleteLastAuthenticationMethodException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -109,17 +109,17 @@ class DeletePasskeyTest extends TestCase
 
     public function testItDoesNotRevealAMissingCredential(): void
     {
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByIdentifier')->once()->andReturnNull();
-        $credentials->shouldNotReceive('findByIdentityIdentifier', 'delete');
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldNotReceive('findByIdentifier');
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldNotReceive('findById');
-        $this->bindDependencies($credentials, $users, $identities);
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentifier')->once()->andReturnNull();
+        $passkeyCredentialRepository->shouldNotReceive('findByIdentityIdentifier', 'delete');
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldNotReceive('findByIdentifier');
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldNotReceive('findById');
+        $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -128,17 +128,17 @@ class DeletePasskeyTest extends TestCase
     public function testItDoesNotRevealACredentialWithAMissingPasskeyUser(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByIdentifier')->once()->andReturn($credential);
-        $credentials->shouldNotReceive('findByIdentityIdentifier', 'delete');
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->andReturnNull();
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldNotReceive('findById');
-        $this->bindDependencies($credentials, $users, $identities);
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentifier')->once()->andReturn($credential);
+        $passkeyCredentialRepository->shouldNotReceive('findByIdentityIdentifier', 'delete');
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturnNull();
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldNotReceive('findById');
+        $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -147,20 +147,20 @@ class DeletePasskeyTest extends TestCase
     public function testItDoesNotRevealAnotherIdentitysCredential(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByIdentifier')->once()->andReturn($credential);
-        $credentials->shouldNotReceive('findByIdentityIdentifier', 'delete');
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentifier')->once()->andReturn($credential);
+        $passkeyCredentialRepository->shouldNotReceive('findByIdentityIdentifier', 'delete');
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
             new PasskeyUserIdentifier(self::PASSKEY_USER_ID),
             new IdentityIdentifier(self::OTHER_IDENTITY_ID),
         ));
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldNotReceive('findById');
-        $this->bindDependencies($credentials, $users, $identities);
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldNotReceive('findById');
+        $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -169,12 +169,12 @@ class DeletePasskeyTest extends TestCase
     public function testItRejectsDeletionWhenTheAuthenticatedIdentityCannotBeResolved(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByIdentifier')->once()->andReturn($credential);
-        $credentials->shouldNotReceive('findByIdentityIdentifier', 'delete');
-        $identities = $this->identityRepository(null);
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $identities);
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentifier')->once()->andReturn($credential);
+        $passkeyCredentialRepository->shouldNotReceive('findByIdentityIdentifier', 'delete');
+        $identityRepository = $this->identityRepository(null);
+        $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $identityRepository);
 
         $this->expectException(IdentityNotFoundException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -183,12 +183,12 @@ class DeletePasskeyTest extends TestCase
     public function testItRejectsDeletionWithoutStepUpAuthorization(): void
     {
         $credential = $this->credential(self::PASSKEY_ID);
-        $credentials = $this->credentialsForOwnedPasskey($credential, [$credential, $this->credential(self::OTHER_PASSKEY_ID)]);
-        $credentials->shouldNotReceive('delete');
+        $passkeyCredentialRepository = $this->credentialsForOwnedPasskey($credential, [$credential, $this->credential(self::OTHER_PASSKEY_ID)]);
+        $passkeyCredentialRepository->shouldNotReceive('delete');
         /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
         $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
         $stepUp->shouldReceive('requireValid')->once()->andThrow(new StepUpAuthenticationRequiredException());
-        $this->bindDependencies($credentials, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
+        $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
         $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
@@ -199,37 +199,37 @@ class DeletePasskeyTest extends TestCase
         PasskeyCredential $credential,
         array $identityCredentials,
     ): MockInterface&PasskeyCredentialRepositoryInterface {
-        /** @var MockInterface&PasskeyCredentialRepositoryInterface $credentials */
-        $credentials = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $credentials->shouldReceive('findByIdentifier')->once()->andReturn($credential);
-        $credentials->shouldReceive('findByIdentityIdentifier')->once()->with(Mockery::on(
+        /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
+        $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyCredentialRepository->shouldReceive('findByIdentifier')->once()->andReturn($credential);
+        $passkeyCredentialRepository->shouldReceive('findByIdentityIdentifier')->once()->with(Mockery::on(
             static fn (IdentityIdentifier $identifier): bool => (string) $identifier === self::IDENTITY_ID,
         ))->andReturn($identityCredentials);
 
-        return $credentials;
+        return $passkeyCredentialRepository;
     }
 
     private function ownedPasskeyUserRepository(): MockInterface&PasskeyUserRepositoryInterface
     {
-        /** @var MockInterface&PasskeyUserRepositoryInterface $users */
-        $users = Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $users->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
+        /** @var MockInterface&PasskeyUserRepositoryInterface $passkeyUserRepository */
+        $passkeyUserRepository = Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $passkeyUserRepository->shouldReceive('findByIdentifier')->once()->andReturn(new PasskeyUser(
             new PasskeyUserIdentifier(self::PASSKEY_USER_ID),
             new IdentityIdentifier(self::IDENTITY_ID),
         ));
 
-        return $users;
+        return $passkeyUserRepository;
     }
 
     private function identityRepository(?Identity $identity): MockInterface&IdentityRepositoryInterface
     {
-        /** @var MockInterface&IdentityRepositoryInterface $identities */
-        $identities = Mockery::mock(IdentityRepositoryInterface::class);
-        $identities->shouldReceive('findById')->once()->with(Mockery::on(
+        /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findById')->once()->with(Mockery::on(
             static fn (IdentityIdentifier $identifier): bool => (string) $identifier === self::IDENTITY_ID,
         ))->andReturn($identity);
 
-        return $identities;
+        return $identityRepository;
     }
 
     /** @param SocialConnection[] $socialConnections */
@@ -271,16 +271,16 @@ class DeletePasskeyTest extends TestCase
     }
 
     private function bindDependencies(
-        ?PasskeyCredentialRepositoryInterface $credentials = null,
-        ?PasskeyUserRepositoryInterface $users = null,
-        ?IdentityRepositoryInterface $identities = null,
+        ?PasskeyCredentialRepositoryInterface $passkeyCredentialRepository = null,
+        ?PasskeyUserRepositoryInterface $passkeyUserRepository = null,
+        ?IdentityRepositoryInterface $identityRepository = null,
         ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
     ): void {
-        $credentials ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $users ??= Mockery::mock(PasskeyUserRepositoryInterface::class);
-        $identities ??= Mockery::mock(IdentityRepositoryInterface::class);
+        $passkeyCredentialRepository ??= Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeyUserRepository ??= Mockery::mock(PasskeyUserRepositoryInterface::class);
+        $identityRepository ??= Mockery::mock(IdentityRepositoryInterface::class);
         $stepUp ??= Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
-        foreach ([$credentials, $users, $identities, $stepUp] as $mock) {
+        foreach ([$passkeyCredentialRepository, $passkeyUserRepository, $identityRepository, $stepUp] as $mock) {
             if ($mock instanceof MockInterface) {
                 $mock->shouldIgnoreMissing();
             }
@@ -295,9 +295,9 @@ class DeletePasskeyTest extends TestCase
             ));
         }
 
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $credentials);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $users);
-        $this->app->instance(IdentityRepositoryInterface::class, $identities);
+        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 }

@@ -8,6 +8,8 @@ use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Middleware\EnsureAuthenticated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Mockery;
+use Source\Identity\Domain\Service\AuthServiceInterface;
 use Tests\TestCase;
 
 class EnsureAuthenticatedTest extends TestCase
@@ -17,7 +19,9 @@ class EnsureAuthenticatedTest extends TestCase
         Auth::shouldReceive('check')->once()->andReturn(false);
 
         $request = Request::create('/api/test', 'GET');
-        $middleware = new EnsureAuthenticated();
+        /** @var AuthServiceInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $middleware = new EnsureAuthenticated($authService);
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -27,9 +31,13 @@ class EnsureAuthenticatedTest extends TestCase
     public function testPassesWhenAuthenticated(): void
     {
         Auth::shouldReceive('check')->once()->andReturn(true);
+        Auth::shouldReceive('id')->once()->andReturn('01965bb2-bcc9-7c6f-8b90-89f7f217f001');
+        /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldReceive('isCurrentSessionValid')->once()->andReturn(true);
 
         $request = Request::create('/api/test', 'GET');
-        $middleware = new EnsureAuthenticated();
+        $middleware = new EnsureAuthenticated($authService);
 
         $response = $middleware->handle($request, fn () => response('ok'));
 

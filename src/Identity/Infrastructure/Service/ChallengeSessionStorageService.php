@@ -10,6 +10,7 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationChallenge;
+use Source\Identity\Application\Service\WebAuthn\RecoveryRegistrationChallenge;
 use Source\Identity\Application\Service\WebAuthn\RegistrationChallenge;
 use Source\Identity\Application\Service\WebAuthn\StepUpAuthenticationChallenge;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
@@ -17,6 +18,7 @@ use Source\Identity\Domain\Exception\ChallengeSessionIdentityMismatchException;
 use Source\Identity\Domain\Exception\ChallengeSessionNotFoundException;
 use Source\Identity\Domain\Exception\ChallengeSessionPurposeMismatchException;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
+use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
@@ -31,6 +33,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
     private const string AUTHENTICATION = 'authentication';
     private const string ADDITION = 'addition';
     private const string STEP_UP_AUTHENTICATION = 'step_up_authentication';
+    private const string RECOVERY_REGISTRATION = 'recovery_registration';
 
     public function storeRegistration(RegistrationChallenge $challenge): void
     {
@@ -159,6 +162,47 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
             new WebAuthnOptions($data['options']),
             new DateTimeImmutable($data['expires_at']),
             $identityIdentifier,
+        );
+    }
+
+    public function storeRecoveryRegistration(RecoveryRegistrationChallenge $challenge): void
+    {
+        $this->store(
+            $challenge->key,
+            $challenge->challenge,
+            $challenge->options,
+            $challenge->expiresAt,
+            self::RECOVERY_REGISTRATION,
+            [
+                'identity_id' => (string) $challenge->identityIdentifier,
+                'recovery_key' => (string) $challenge->recoveryKey,
+            ],
+        );
+    }
+
+    public function consumeRecoveryRegistration(
+        ChallengeSessionKey $key,
+        IdentityIdentifier $expectedIdentityIdentifier,
+        PasskeyRecoveryKey $expectedRecoveryKey,
+    ): RecoveryRegistrationChallenge {
+        $data = $this->consume($key, self::RECOVERY_REGISTRATION);
+        if (! isset($data['identity_id'], $data['recovery_key'])) {
+            throw new ChallengeSessionNotFoundException();
+        }
+        if ($data['identity_id'] !== (string) $expectedIdentityIdentifier) {
+            throw new ChallengeSessionIdentityMismatchException();
+        }
+        if ($data['recovery_key'] !== (string) $expectedRecoveryKey) {
+            throw new ChallengeSessionIdentityMismatchException('Recovery session does not own this challenge.');
+        }
+
+        return new RecoveryRegistrationChallenge(
+            $key,
+            new WebAuthnChallenge($data['challenge']),
+            new WebAuthnOptions($data['options']),
+            new DateTimeImmutable($data['expires_at']),
+            $expectedIdentityIdentifier,
+            $expectedRecoveryKey,
         );
     }
 
