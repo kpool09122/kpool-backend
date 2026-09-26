@@ -72,7 +72,7 @@ class SystemRoleSeeder extends Seeder
                 ...$this->globalPolicyNames(),
                 'GLOBAL_OFFICIAL_CERTIFICATION_READ',
             ]),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -83,7 +83,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'SENIOR_COLLABORATOR',
             policies: $this->getPolicyIdentifiers([...$this->globalPolicyNames(), 'DENY_ROLLBACK']),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -94,7 +94,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'AGENCY_ACTOR',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->agencyManagementPolicyNames()]),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -105,7 +105,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'TALENT_ACTOR',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -116,7 +116,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'WIKI_ADMINISTRATOR',
             policies: $this->getPolicyIdentifiers(['GLOBAL_PRINCIPAL_GROUP_MANAGE']),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -127,7 +127,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'COLLABORATOR',
             policies: $this->getPolicyIdentifiers($this->basicEditingPolicyNames()),
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);
@@ -138,7 +138,7 @@ class SystemRoleSeeder extends Seeder
         $role = $this->roleFactory->create(
             name: 'NONE',
             policies: [],
-            isSystemRole: true,
+            accountIdentifier: null,
         );
 
         $this->roleRepository->save($role);

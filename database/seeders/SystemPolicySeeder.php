@@ -77,7 +77,7 @@ class SystemPolicySeeder extends Seeder
                     condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
                 ),
             ],
-            isSystemPolicy: true,
+            accountIdentifier: null,
         );
 
         $this->policyRepository->save($policy);
@@ -222,7 +222,7 @@ class SystemPolicySeeder extends Seeder
                     condition: $condition,
                 ),
             ],
-            isSystemPolicy: true,
+            accountIdentifier: null,
         );
 
         $this->policyRepository->save($policy);
