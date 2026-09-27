@@ -15,7 +15,6 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -44,7 +43,6 @@ readonly class CreateAccountAction
                 $address = $request->address();
                 $input = new CreateAccountInput(
                     email: new Email($request->email()),
-                    accountType: AccountType::from($request->accountType()),
                     accountName: new AccountName($request->accountName()),
                     identityIdentifier: $request->identityIdentifier() !== null
                         ? new IdentityIdentifier($request->identityIdentifier())

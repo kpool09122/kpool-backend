@@ -16,6 +16,7 @@ use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryCha
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -42,6 +43,26 @@ use Tests\Helper\StrTestHelper;
 
 class RequestAccountCategoryChangeTest extends TestCase
 {
+    public function testRejectsMissingAccountTypeBeforeCreatingRequest(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $requestRepository = new FakeRequestRepository();
+        $useCase = new RequestAccountCategoryChange(
+            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [], accountType: null)),
+            $requestRepository,
+            new FixedFactory(),
+            new AccountDocumentRequirementValidator(),
+        );
+
+        $this->expectException(AccountSetupUnavailableException::class);
+
+        try {
+            $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+        } finally {
+            $this->assertNull($requestRepository->saved);
+        }
+    }
+
     public function testCreatesPendingRequestWhenDocumentsSatisfyRequestedCategory(): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -256,7 +277,7 @@ class RequestAccountCategoryChangeTest extends TestCase
         array $documentTypes,
         ?Phone $phone = new Phone('+81-90-1234-5678'),
         ?ContactAddress $address = null,
-        AccountType $accountType = AccountType::CORPORATION,
+        ?AccountType $accountType = AccountType::CORPORATION,
     ): Account {
         $address ??= ContactAddress::fromArray([
             'countryCode' => 'JP',
@@ -272,7 +293,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             new Email('test@example.com'),
             $accountType,
             new AccountName('テストアカウント'),
-            AccountStatus::ACTIVE,
+            $accountType === null ? AccountStatus::PENDING : AccountStatus::ACTIVE,
             $accountCategory,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(array_map(

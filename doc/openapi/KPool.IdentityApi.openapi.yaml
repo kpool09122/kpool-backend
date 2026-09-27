@@ -759,12 +759,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: accountType
-          in: query
-          required: false
-          schema:
-            type: string
-          explode: false
         - name: oneTimeToken
           in: query
           required: false
@@ -1153,7 +1147,8 @@ components:
           description: Account email address.
         type:
           type: string
-          description: Account type.
+          nullable: true
+          description: Account type. Null while initial setup is pending.
         name:
           type: string
           description: Account display name.
@@ -1282,10 +1277,6 @@ components:
         email:
           type: string
           description: Verified or invited email address.
-        accountType:
-          type: string
-          nullable: true
-          description: Account type retained for signup completion.
         oneTimeToken:
           type: string
           nullable: true
@@ -1370,6 +1361,9 @@ components:
         instance:
           type: string
           description: URI reference identifying the specific occurrence.
+        code:
+          type: string
+          description: Machine-readable application error code.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string

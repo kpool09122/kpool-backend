@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('accounts', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Account ID');
             $table->string('email', 255)->unique()->comment('Account Email');
-            $table->string('type', 32)->comment('Account Type (corporation, individual)');
+            $table->string('type', 32)->nullable()->comment('Account Type (corporation, individual; null while setup is pending)');
             $table->string('name', 64)->comment('Account Name');
             $table->string('status', 32)->comment('Account Status (active, pending, suspended)');
             $table->string('category', 32)->default('general')->comment('Account Category (agency, talent, general)');

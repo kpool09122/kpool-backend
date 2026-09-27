@@ -94,7 +94,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountName)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -192,7 +192,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountName)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -267,7 +267,6 @@ class CreateAccountTest extends TestCase
         $testData = $this->createDummyAccountTestData();
         $input = new CreateAccountInput(
             email: $testData->email,
-            accountType: $testData->accountType,
             accountName: $testData->accountName,
             identityIdentifier: $testData->identityIdentifier,
             language: $testData->language,
@@ -301,7 +300,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountName)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -428,7 +427,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->with($testData->email, $testData->accountName)
             ->andReturn($testData->account);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -526,7 +525,6 @@ class CreateAccountTest extends TestCase
 
         $input = new CreateAccountInput(
             $email,
-            $accountType,
             $accountName,
             $includeIdentityIdentifier ? $identityIdentifier : null,
             $language,

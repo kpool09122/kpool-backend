@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\CreatePasskeyRecoveryOptions;
 
-use LogicException;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRecoveryOptions\CreatePasskeyRecoveryOptionsOutput;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 use Tests\TestCase;
 
 class CreatePasskeyRecoveryOptionsOutputTest extends TestCase
@@ -21,7 +21,7 @@ class CreatePasskeyRecoveryOptionsOutputTest extends TestCase
 
     public function testItRejectsSerializationBeforeOptionsAreSet(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(OutputNotInitializedException::class);
         (new CreatePasskeyRecoveryOptionsOutput())->toArray();
     }
 }

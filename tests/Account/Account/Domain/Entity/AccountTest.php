@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Domain\Entity;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
@@ -20,6 +21,35 @@ use Tests\Helper\StrTestHelper;
 
 class AccountTest extends TestCase
 {
+    public function testCompleteInitialSetupSelectsTypeAndActivatesPendingAccount(): void
+    {
+        $account = $this->accountWithStatus(AccountStatus::PENDING);
+        $account->completeInitialSetup(AccountType::INDIVIDUAL);
+
+        $this->assertSame(AccountType::INDIVIDUAL, $account->type());
+        $this->assertSame(AccountStatus::ACTIVE, $account->status());
+    }
+
+    public function testCompleteInitialSetupRejectsActiveAccountWithoutOverwritingType(): void
+    {
+        $account = $this->accountWithStatus(AccountStatus::ACTIVE, AccountType::CORPORATION);
+        $this->expectException(AccountSetupUnavailableException::class);
+
+        try {
+            $account->completeInitialSetup(AccountType::INDIVIDUAL);
+        } finally {
+            $this->assertSame(AccountType::CORPORATION, $account->type());
+            $this->assertSame(AccountStatus::ACTIVE, $account->status());
+        }
+    }
+
+    public function testCompleteInitialSetupRejectsSuspendedAccount(): void
+    {
+        $account = $this->accountWithStatus(AccountStatus::SUSPENDED, AccountType::CORPORATION);
+        $this->expectException(AccountSetupUnavailableException::class);
+        $account->completeInitialSetup(AccountType::INDIVIDUAL);
+    }
+
     /**
      * 正常系: インスタンスが正しく作成できること.
      */
@@ -140,6 +170,20 @@ class AccountTest extends TestCase
             $accountCategory,
             $account,
             $deletionReadiness,
+        );
+    }
+
+    private function accountWithStatus(AccountStatus $status, ?AccountType $type = null): Account
+    {
+        return new Account(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new Email('setup@example.com'),
+            $type,
+            new AccountName('Setup Account'),
+            $status,
+            AccountCategory::GENERAL,
+            DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
         );
     }
 }

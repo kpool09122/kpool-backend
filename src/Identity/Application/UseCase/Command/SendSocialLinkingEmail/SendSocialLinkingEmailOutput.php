@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail;
 
-use LogicException;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class SendSocialLinkingEmailOutput implements SendSocialLinkingEmailOutputPort
 {
@@ -17,7 +17,7 @@ class SendSocialLinkingEmailOutput implements SendSocialLinkingEmailOutputPort
 
     public function accepted(): bool
     {
-        return $this->accepted ?? throw new LogicException('Output is not set.');
+        return $this->accepted ?? throw new OutputNotInitializedException('Output is not set.');
     }
 
     /** @return array{accepted: bool} */

@@ -55,6 +55,7 @@ class AccountResolverTest extends TestCase
         $deps['principalRepository']->shouldReceive('findById')->with($effectivePrincipal)->once()->andReturn($principal);
         $deps['delegationRepository']->shouldReceive('findById')->with($delegationId)->once()->andReturn($delegation);
         $deps['accountRepository']->shouldReceive('findById')->with($effectiveAccount)->once()->andReturn($this->account($effectiveAccount));
+        $deps['accountRepository']->shouldReceive('findById')->with($originalAccount)->once()->andReturn($this->account($originalAccount));
         $deps['principalGroupRepository']->shouldReceive('findByAccountIdAndPrincipal')->once()->andReturn([]);
 
         $currentAccount = $resolver->resolve($identity);

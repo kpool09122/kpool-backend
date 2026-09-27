@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\SendSocialLinkingEmail;
 
-use LogicException;
 use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmailOutput;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 use Tests\TestCase;
 
 class SendSocialLinkingEmailOutputTest extends TestCase
@@ -20,7 +20,7 @@ class SendSocialLinkingEmailOutputTest extends TestCase
 
     public function testUnsetOutputFails(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(OutputNotInitializedException::class);
         (new SendSocialLinkingEmailOutput())->toArray();
     }
 }

@@ -59,8 +59,8 @@ model AccountSummary {
   accountIdentifier: Uuid;
   @doc("Account email address.")
   email: string;
-  @doc("Account category.")
-  type: string;
+  @doc("Account type. Null while initial setup is pending.")
+  type: string | null;
   @doc("Account display name.")
   name: string;
   @doc("Account status.")

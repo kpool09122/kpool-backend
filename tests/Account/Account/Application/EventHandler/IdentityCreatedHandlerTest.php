@@ -10,7 +10,6 @@ use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInputPort;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutputPort;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -29,13 +28,11 @@ class IdentityCreatedHandlerTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@example.com');
-        $accountType = AccountType::INDIVIDUAL;
         $name = 'Test User';
 
         $event = new IdentityCreated(
             identityIdentifier: $identityIdentifier,
             email: $email,
-            accountType: $accountType,
             name: $name,
         );
 
@@ -44,7 +41,6 @@ class IdentityCreatedHandlerTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
-                    && $input->accountType() === $accountType
                     && (string) $input->accountName() === $name
                     && (string) $input->identityIdentifier() === (string) $identityIdentifier),
                 Mockery::type(CreateAccountOutputPort::class),
@@ -66,12 +62,10 @@ class IdentityCreatedHandlerTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@example.com');
-        $accountType = AccountType::CORPORATION;
 
         $event = new IdentityCreated(
             identityIdentifier: $identityIdentifier,
             email: $email,
-            accountType: $accountType,
             name: null,
         );
 
@@ -80,7 +74,6 @@ class IdentityCreatedHandlerTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
-                    && $input->accountType() === $accountType
                     && (string) $input->accountName() === 'My Account'
                     && (string) $input->identityIdentifier() === (string) $identityIdentifier),
                 Mockery::type(CreateAccountOutputPort::class),

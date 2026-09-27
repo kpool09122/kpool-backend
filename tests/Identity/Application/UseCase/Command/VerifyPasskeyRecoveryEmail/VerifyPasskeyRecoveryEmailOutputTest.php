@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail;
 
-use LogicException;
 use Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmailOutput;
 use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 use Tests\TestCase;
 
 class VerifyPasskeyRecoveryEmailOutputTest extends TestCase
@@ -20,7 +20,7 @@ class VerifyPasskeyRecoveryEmailOutputTest extends TestCase
 
     public function testItRejectsSerializationBeforeAKeyIsSet(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(OutputNotInitializedException::class);
         (new VerifyPasskeyRecoveryEmailOutput())->toArray();
     }
 }

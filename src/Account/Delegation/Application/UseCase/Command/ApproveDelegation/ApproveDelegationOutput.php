@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation;
 
 use DateTimeInterface;
-use LogicException;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class ApproveDelegationOutput implements ApproveDelegationOutputPort
 {
@@ -20,7 +20,7 @@ class ApproveDelegationOutput implements ApproveDelegationOutputPort
     /** @return array{delegationIdentifier: string, affiliationIdentifier: string, delegateAccountIdentifier: string, delegatorAccountIdentifier: string, requestedByAccountIdentifier: string, status: string, direction: string, requestedAt: string, approvedAt: string|null, rejectedAt: string|null} */
     public function toArray(): array
     {
-        $delegation = $this->delegation ?? throw new LogicException('Account delegation has not been set.');
+        $delegation = $this->delegation ?? throw new OutputNotInitializedException('Account delegation has not been set.');
 
         return [
             'delegationIdentifier' => (string) $delegation->delegationIdentifier(),

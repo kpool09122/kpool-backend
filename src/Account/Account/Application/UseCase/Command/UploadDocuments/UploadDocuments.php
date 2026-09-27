@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -36,8 +37,10 @@ readonly class UploadDocuments implements UploadDocumentsInterface
             throw new AccountDocumentUploadForbiddenException();
         }
 
+        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+
         $this->documentRequirementValidator->validate(
-            $account->type(),
+            $accountType,
             array_map(static fn (DocumentData $document) => $document->documentType, $input->documents()),
         );
 

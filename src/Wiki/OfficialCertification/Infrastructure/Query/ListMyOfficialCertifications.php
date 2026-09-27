@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationOwnerAccountTypeMissingException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInputPort;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsOutputPort;
@@ -124,7 +125,7 @@ readonly class ListMyOfficialCertifications implements ListMyOfficialCertificati
             ownerAccount: $ownerAccount === null ? null : new OfficialCertificationOwnerAccountReadModel(
                 accountIdentifier: $ownerAccount->id,
                 email: $ownerAccount->email,
-                type: $ownerAccount->type,
+                type: $ownerAccount->type ?? throw new OfficialCertificationOwnerAccountTypeMissingException(),
                 name: $ownerAccount->name,
                 status: $ownerAccount->status,
                 category: $ownerAccount->category,

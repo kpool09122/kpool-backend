@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\EventHandler;
 
-use LogicException;
 use Source\Account\Invitation\Application\Exception\InvitationEmailMismatchException;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
@@ -15,6 +14,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Exception\MissingLifecycleTimestampException;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class IdentityCreatedViaInvitationHandler
@@ -73,7 +73,7 @@ readonly class IdentityCreatedViaInvitationHandler
             invitationIdentifier: $invitation->invitationIdentifier(),
             accountIdentifier: $invitation->accountIdentifier(),
             acceptedByIdentityIdentifier: $event->identityIdentifier,
-            acceptedAt: $invitation->acceptedAt() ?? throw new LogicException('Lifecycle transition did not set its timestamp.'),
+            acceptedAt: $invitation->acceptedAt() ?? throw new MissingLifecycleTimestampException(),
         ));
     }
 }

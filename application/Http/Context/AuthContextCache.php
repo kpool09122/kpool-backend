@@ -6,11 +6,13 @@ namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
@@ -63,9 +65,17 @@ class AuthContextCache
             'principalIdentifier' => (string) $principal->principalIdentifier(),
             'identityIdentifier' => (string) $principal->identityIdentifier(),
             'accountIdentifier' => (string) $principal->accountIdentifier(),
-            'accountType' => $context->accountType()->value,
+            'accountType' => $context->nullableAccountType()?->value,
+            'accountStatus' => $context->accountStatus()->value,
+            'originalAccountStatus' => $context->originalAccountStatus()->value,
             'accountCategory' => $context->accountCategory()->value,
             'accountPolicies' => $context->accountPolicies(),
+            'originalIdentityIdentifier' => (string) $context->originalIdentityIdentifier(),
+            'originalAccountIdentifier' => (string) $context->originalAccountIdentifier(),
+            'originalPrincipalIdentifier' => (string) $context->originalPrincipalIdentifier(),
+            'delegationIdentifier' => $context->delegationIdentifier() !== null
+                ? (string) $context->delegationIdentifier()
+                : null,
         ]);
 
         return $context;
@@ -228,16 +238,24 @@ class AuthContextCache
             ! is_string($payload['principalIdentifier'] ?? null)
             || ! is_string($payload['identityIdentifier'] ?? null)
             || ! is_string($payload['accountIdentifier'] ?? null)
-            || ! is_string($payload['accountType'] ?? null)
+            || (! is_string($payload['accountType'] ?? null) && ($payload['accountType'] ?? null) !== null)
+            || ! is_string($payload['accountStatus'] ?? null)
+            || ! is_string($payload['originalAccountStatus'] ?? null)
             || ! is_string($payload['accountCategory'] ?? null)
             || ! is_array($payload['accountPolicies'] ?? null)
+            || ! is_string($payload['originalIdentityIdentifier'] ?? null)
+            || ! is_string($payload['originalAccountIdentifier'] ?? null)
+            || ! is_string($payload['originalPrincipalIdentifier'] ?? null)
+            || (! is_string($payload['delegationIdentifier'] ?? null) && ($payload['delegationIdentifier'] ?? null) !== null)
         ) {
             return null;
         }
 
-        $accountType = AccountType::tryFrom($payload['accountType']);
+        $accountType = is_string($payload['accountType']) ? AccountType::tryFrom($payload['accountType']) : null;
+        $accountStatus = AccountStatus::tryFrom($payload['accountStatus']);
+        $originalAccountStatus = AccountStatus::tryFrom($payload['originalAccountStatus']);
         $accountCategory = AccountCategory::tryFrom($payload['accountCategory']);
-        if ($accountType === null || $accountCategory === null) {
+        if ($accountStatus === null || $originalAccountStatus === null || $accountCategory === null) {
             return null;
         }
 
@@ -248,8 +266,16 @@ class AuthContextCache
                 new AccountIdentifier($payload['accountIdentifier']),
             ),
             accountType: $accountType,
+            accountStatus: $accountStatus,
             accountCategory: $accountCategory,
             accountPolicies: $payload['accountPolicies'],
+            originalIdentityIdentifier: new IdentityIdentifier($payload['originalIdentityIdentifier']),
+            originalAccountIdentifier: new AccountIdentifier($payload['originalAccountIdentifier']),
+            originalPrincipalIdentifier: new AccountPrincipalIdentifier($payload['originalPrincipalIdentifier']),
+            delegationIdentifier: is_string($payload['delegationIdentifier'])
+                ? new DelegationIdentifier($payload['delegationIdentifier'])
+                : null,
+            originalAccountStatus: $originalAccountStatus,
         );
     }
 

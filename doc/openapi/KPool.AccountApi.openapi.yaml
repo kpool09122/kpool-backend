@@ -261,6 +261,50 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateAccountRequestBody'
+  /accounts/setup:
+    post:
+      operationId: AccountOperations_completeInitialSetup
+      description: Select the account type and activate a pending account.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteInitialSetupRequestBody'
   /accounts/switch:
     post:
       operationId: AccountOperations_switchAccount
@@ -1653,7 +1697,8 @@ components:
           description: Account email address.
         type:
           type: string
-          description: Account category.
+          nullable: true
+          description: Account type. Null while initial setup is pending.
         name:
           type: string
           description: Account display name.
@@ -1771,6 +1816,18 @@ components:
           type: string
           description: Free-form contract notes.
       description: Affiliation contract terms.
+    CompleteInitialSetupRequestBody:
+      type: object
+      required:
+        - accountType
+      properties:
+        accountType:
+          type: string
+          enum:
+            - corporation
+            - individual
+          description: Selected account type.
+      description: Request body for completing initial account setup.
     ContactAddressSummary:
       type: object
       properties:
@@ -1802,15 +1859,11 @@ components:
       type: object
       required:
         - email
-        - accountType
         - accountName
       properties:
         email:
           type: string
           description: Account email address.
-        accountType:
-          type: string
-          description: Account type.
         accountName:
           type: string
           description: Account display name.
@@ -2023,6 +2076,9 @@ components:
         instance:
           type: string
           description: URI reference identifying the specific occurrence.
+        code:
+          type: string
+          description: Machine-readable application error code.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string

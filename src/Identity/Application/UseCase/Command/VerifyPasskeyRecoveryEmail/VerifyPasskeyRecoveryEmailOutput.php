@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail;
 
-use LogicException;
 use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class VerifyPasskeyRecoveryEmailOutput implements VerifyPasskeyRecoveryEmailOutputPort
 {
@@ -20,7 +20,7 @@ class VerifyPasskeyRecoveryEmailOutput implements VerifyPasskeyRecoveryEmailOutp
     public function toArray(): array
     {
         if ($this->key === null) {
-            throw new LogicException('Recovery key is not set.');
+            throw new OutputNotInitializedException('Recovery key is not set.');
         }
 
         return ['recoveryKey' => (string) $this->key];

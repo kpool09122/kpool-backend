@@ -18,6 +18,9 @@ model ProblemDetails {
 
   @doc("URI reference identifying the specific occurrence.")
   instance?: string;
+
+  @doc("Machine-readable application error code.")
+  code?: string;
 }
 
 model UnauthorizedProblemResponse {

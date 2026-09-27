@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\RegisterWithPasskey;
 
 use DateTimeImmutable;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
 use Source\Identity\Application\Service\WebAuthn\RegistrationVerificationInput;
@@ -102,7 +101,6 @@ readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
             $this->eventDispatcher->dispatch(new IdentityCreated(
                 $identity->identityIdentifier(),
                 $challenge->email,
-                $challenge->signupSession->accountType() ?? AccountType::INDIVIDUAL,
                 (string) $input->identityName(),
             ));
         }

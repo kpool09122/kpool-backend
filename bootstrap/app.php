@@ -81,8 +81,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->group('auth.api', [
+            \Application\Http\Middleware\EnsureAuthenticated::class,
+            \Application\Http\Middleware\EnsureAccountActive::class,
+        ]);
         $middleware->alias([
-            'auth.api' => \Application\Http\Middleware\EnsureAuthenticated::class,
             'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
             'resolve.account' => \Application\Http\Middleware\ResolveAccountContext::class,
             'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,

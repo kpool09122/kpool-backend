@@ -23,7 +23,6 @@ class CreateAccountRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
-            'accountType' => ['required', 'string'],
             'accountName' => ['required', 'string'],
             'identityIdentifier' => ['nullable', 'uuid'],
             'phone' => ['nullable', 'string'],
@@ -46,11 +45,6 @@ class CreateAccountRequest extends FormRequest
     public function email(): string
     {
         return RequestValue::string($this->input('email'));
-    }
-
-    public function accountType(): string
-    {
-        return RequestValue::string($this->input('accountType'));
     }
 
     public function accountName(): string

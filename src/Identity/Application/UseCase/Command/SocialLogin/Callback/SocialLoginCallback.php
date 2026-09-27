@@ -6,7 +6,6 @@ namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
@@ -121,8 +120,6 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             return;
         }
 
-        $accountType = $signupSession?->accountType() ?? AccountType::INDIVIDUAL;
-
         $newIdentity = $this->identityFactory->createFromSocialProfile($profile);
         if ($profile->avatarUrl() !== null) {
             try {
@@ -150,7 +147,6 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             $this->eventDispatcher->dispatch(new IdentityCreated(
                 identityIdentifier: $newIdentity->identityIdentifier(),
                 email: $profile->email(),
-                accountType: $accountType,
                 name: $profile->name(),
             ));
         }

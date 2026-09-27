@@ -14,7 +14,7 @@ use Override;
 /**
  * @property string $id
  * @property string $email
- * @property string $type
+ * @property ?string $type
  * @property string $name
  * @property string $status
  * @property string $category

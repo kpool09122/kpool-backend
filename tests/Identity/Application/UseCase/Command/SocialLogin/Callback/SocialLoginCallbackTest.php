@@ -325,7 +325,6 @@ class SocialLoginCallbackTest extends TestCase
                 fn ($event) => $event instanceof IdentityCreated
                     && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
                     && (string) $event->email === (string) $email
-                    && $event->accountType === AccountType::CORPORATION
                     && $event->name === $profile->name()
             ));
 
@@ -506,7 +505,6 @@ class SocialLoginCallbackTest extends TestCase
                 fn ($event) => $event instanceof IdentityCreated
                     && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
                     && (string) $event->email === (string) $email
-                    && $event->accountType === AccountType::INDIVIDUAL
                     && $event->name === $profile->name()
             ));
 

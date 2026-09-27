@@ -55,7 +55,6 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $account = $this->accountFactory->create(
             $input->email(),
-            $input->accountType(),
             $input->accountName(),
         );
         $account->changePhone($input->phone());

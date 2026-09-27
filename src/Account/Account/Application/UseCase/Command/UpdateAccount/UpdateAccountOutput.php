@@ -16,7 +16,7 @@ class UpdateAccountOutput implements UpdateAccountOutputPort
     }
 
     /**
-     * @return array{}|array{accountIdentifier: string, email: string, type: string, name: string, status: string, accountCategory: string, phone: string|null, address: array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null}
+     * @return array{}|array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null}
      */
     public function toArray(): array
     {
@@ -29,7 +29,7 @@ class UpdateAccountOutput implements UpdateAccountOutputPort
         return [
             'accountIdentifier' => (string) $account->accountIdentifier(),
             'email' => (string) $account->email(),
-            'type' => $account->type()->value,
+            'type' => $account->type()?->value,
             'name' => (string) $account->name(),
             'status' => $account->status()->value,
             'accountCategory' => $account->accountCategory()->value,

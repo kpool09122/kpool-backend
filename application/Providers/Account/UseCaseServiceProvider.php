@@ -7,6 +7,8 @@ namespace Application\Providers\Account;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
+use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetup;
+use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
@@ -71,6 +73,7 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
+        $this->app->singleton(CompleteInitialSetupInterface::class, CompleteInitialSetup::class);
         $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);

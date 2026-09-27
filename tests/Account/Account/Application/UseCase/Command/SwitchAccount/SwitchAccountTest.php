@@ -45,6 +45,31 @@ use Tests\TestCase;
 
 class SwitchAccountTest extends TestCase
 {
+    #[DataProvider('inactiveAccountStatuses')]
+    public function testRejectsSwitchWhenAnAccountIsInactive(AccountStatus $status, bool $originalAccount): void
+    {
+        [$useCase, $input, $output, $deps, , $targetAccountId, $originalPrincipal] = $this->scenario(existingPrincipal: false);
+        $accountId = $originalAccount ? $originalPrincipal->accountIdentifier() : $targetAccountId;
+        $deps->accountRepository->shouldReceive('findById')->with($accountId)->andReturn($this->account($accountId, $status))->byDefault();
+        $deps->principalFactory->shouldNotReceive('create');
+        $deps->principalRepository->shouldNotReceive('save');
+        $deps->currentAccountService->shouldNotReceive('save');
+
+        $this->expectException(DisallowedDelegationOperationException::class);
+        $useCase->process($input, $output);
+    }
+
+    /** @return array<string, array{AccountStatus, bool}> */
+    public static function inactiveAccountStatuses(): array
+    {
+        return [
+            'original pending' => [AccountStatus::PENDING, true],
+            'original suspended' => [AccountStatus::SUSPENDED, true],
+            'target pending' => [AccountStatus::PENDING, false],
+            'target suspended' => [AccountStatus::SUSPENDED, false],
+        ];
+    }
+
     public function testSwitchesToDelegatedAccountByReusingExistingPrincipal(): void
     {
         [$useCase, $input, $output, $deps, $targetPrincipal] = $this->scenario(existingPrincipal: true);
@@ -221,6 +246,7 @@ class SwitchAccountTest extends TestCase
         $currentAccountService = Mockery::mock(CurrentAccountServiceInterface::class);
         $delegationRepository->shouldReceive('findById')->with($delegation->delegationIdentifier())->andReturn($delegation)->byDefault();
         $accountRepository->shouldReceive('findById')->with($delegateAccountId)->andReturn($this->account($delegateAccountId))->byDefault();
+        $accountRepository->shouldReceive('findById')->with($targetAccountId)->andReturn($this->account($targetAccountId))->byDefault();
         $principalRepository->shouldReceive('findById')->with($originalPrincipal->principalIdentifier())->andReturn($originalPrincipal)->byDefault();
         $policy->shouldReceive('evaluate')->andReturn(true)->byDefault();
         $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
@@ -239,14 +265,14 @@ class SwitchAccountTest extends TestCase
         ];
     }
 
-    private function account(AccountIdentifier $id): Account
+    private function account(AccountIdentifier $id, AccountStatus $status = AccountStatus::ACTIVE): Account
     {
         return new Account(
             $id,
             new Email('account@example.com'),
             AccountType::CORPORATION,
             new AccountName('Account'),
-            AccountStatus::ACTIVE,
+            $status,
             AccountCategory::AGENCY,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments([]),
