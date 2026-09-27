@@ -30,6 +30,6 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'noreply@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Kpool'),
+        'name' => env('MAIL_FROM_NAME', 'k-pool'),
     ],
 ];
