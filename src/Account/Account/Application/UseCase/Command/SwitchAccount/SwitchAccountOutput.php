@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\SwitchAccount;
 
-use LogicException;
 use Source\Account\Account\Application\Service\CurrentAccount;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class SwitchAccountOutput implements SwitchAccountOutputPort
 {
@@ -18,7 +18,7 @@ class SwitchAccountOutput implements SwitchAccountOutputPort
 
     public function currentAccount(): CurrentAccount
     {
-        return $this->currentAccount ?? throw new LogicException('Current account has not been set.');
+        return $this->currentAccount ?? throw new OutputNotInitializedException('Current account has not been set.');
     }
 
     /** @return array{originalIdentityIdentifier: string, accountIdentifier: string, accountPrincipalIdentifier: string, delegationIdentifier: ?string} */

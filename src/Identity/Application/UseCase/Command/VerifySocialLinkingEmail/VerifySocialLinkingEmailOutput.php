@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail;
 
-use LogicException;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class VerifySocialLinkingEmailOutput implements VerifySocialLinkingEmailOutputPort
 {
@@ -17,7 +17,7 @@ class VerifySocialLinkingEmailOutput implements VerifySocialLinkingEmailOutputPo
 
     public function redirectUrl(): string
     {
-        return $this->redirectUrl ?? throw new LogicException('Output is not set.');
+        return $this->redirectUrl ?? throw new OutputNotInitializedException('Output is not set.');
     }
 
     /** @return array{redirectUrl: string} */

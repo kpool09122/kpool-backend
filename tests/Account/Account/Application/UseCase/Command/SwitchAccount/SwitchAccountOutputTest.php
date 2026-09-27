@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Application\UseCase\Command\SwitchAccount;
 
-use LogicException;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountOutput;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -58,7 +58,7 @@ class SwitchAccountOutputTest extends TestCase
 
     public function testCurrentAccountWithoutSet(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(OutputNotInitializedException::class);
 
         (new SwitchAccountOutput())->currentAccount();
     }

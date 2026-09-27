@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\CreatePasskeyRecoveryOptions;
 
 use JsonException;
-use LogicException;
 use Source\Identity\Application\Service\WebAuthn\WebAuthnOptions;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class CreatePasskeyRecoveryOptionsOutput implements CreatePasskeyRecoveryOptionsOutputPort
 {
@@ -24,7 +24,7 @@ class CreatePasskeyRecoveryOptionsOutput implements CreatePasskeyRecoveryOptions
     public function toArray(): array
     {
         if ($this->key === null || $this->options === null) {
-            throw new LogicException('Options are not set.');
+            throw new OutputNotInitializedException('Options are not set.');
         }
 
         return ['challengeKey' => (string)$this->key,'options' => json_decode($this->options->json(), true, flags: JSON_THROW_ON_ERROR)];

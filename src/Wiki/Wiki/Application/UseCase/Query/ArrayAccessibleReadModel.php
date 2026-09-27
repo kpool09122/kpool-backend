@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Query;
 
 use InvalidArgumentException;
-use LogicException;
 use OutOfBoundsException;
+use Source\Wiki\Wiki\Application\Exception\ImmutableReadModelException;
 
 trait ArrayAccessibleReadModel
 {
@@ -30,11 +30,11 @@ trait ArrayAccessibleReadModel
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new LogicException('ReadModel is immutable.');
+        throw new ImmutableReadModelException();
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        throw new LogicException('ReadModel is immutable.');
+        throw new ImmutableReadModelException();
     }
 }

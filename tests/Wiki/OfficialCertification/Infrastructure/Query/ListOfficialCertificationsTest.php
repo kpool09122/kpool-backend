@@ -9,6 +9,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationOwnerAccountTypeMissingException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsOutput;
@@ -29,6 +30,22 @@ use Tests\TestCase;
 
 class ListOfficialCertificationsTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testRejectsOwnerAccountWithoutType(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = StrTestHelper::generateUuid();
+        $this->registerAuthorizedPrincipal($principalIdentifier, true);
+        CreateAccount::create($accountIdentifier, ['type' => null, 'status' => 'active']);
+        $this->insertCertification(CertificationStatus::APPROVED, '2024-01-01 00:00:00', ownerAccountIdentifier: $accountIdentifier);
+
+        $this->expectException(OfficialCertificationOwnerAccountTypeMissingException::class);
+        $this->app()->make(ListOfficialCertificationsInterface::class)->process(
+            new ListOfficialCertificationsInput($principalIdentifier),
+            new ListOfficialCertificationsOutput(),
+        );
+    }
+
     public function test__construct(): void
     {
         $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));

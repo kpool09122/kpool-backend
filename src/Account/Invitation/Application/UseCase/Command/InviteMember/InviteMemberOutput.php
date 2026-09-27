@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
-use LogicException;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class InviteMemberOutput implements InviteMemberOutputPort
 {
@@ -33,7 +33,7 @@ class InviteMemberOutput implements InviteMemberOutputPort
         }
 
         if ($this->invitedByPrincipalIdentifier === null) {
-            throw new LogicException('Invited by principal identifier is not set.');
+            throw new OutputNotInitializedException('Invited by principal identifier is not set.');
         }
 
         return array_map(fn (Invitation $invitation) => [

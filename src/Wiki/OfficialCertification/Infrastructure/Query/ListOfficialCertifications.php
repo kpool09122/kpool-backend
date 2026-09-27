@@ -15,9 +15,9 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
-use LogicException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationOwnerAccountTypeMissingException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInputPort;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsOutputPort;
@@ -121,7 +121,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
             ownerAccount: $ownerAccount === null ? null : new OfficialCertificationOwnerAccountReadModel(
                 accountIdentifier: $ownerAccount->id,
                 email: $ownerAccount->email,
-                type: $ownerAccount->type ?? throw new LogicException('Active certification owner account must have a type.'),
+                type: $ownerAccount->type ?? throw new OfficialCertificationOwnerAccountTypeMissingException(),
                 name: $ownerAccount->name,
                 status: $ownerAccount->status,
                 category: $ownerAccount->category,
