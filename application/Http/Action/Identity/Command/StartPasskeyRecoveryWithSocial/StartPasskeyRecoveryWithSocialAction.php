@@ -12,9 +12,7 @@ use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialInput;
 use Source\Identity\Application\UseCase\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialInterface;
 use Source\Identity\Application\UseCase\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialOutput;
-use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -33,7 +31,6 @@ readonly class StartPasskeyRecoveryWithSocialAction
         try {
             try {
                 $input = new StartPasskeyRecoveryWithSocialInput(
-                    new IdentityIdentifier($request->identityIdentifier()),
                     SocialProvider::fromString($request->provider()),
                 );
             } catch (InvalidArgumentException $exception) {
@@ -41,14 +38,7 @@ readonly class StartPasskeyRecoveryWithSocialAction
             }
             $output = new StartPasskeyRecoveryWithSocialOutput();
 
-            try {
-                $this->useCase->process($input, $output);
-            } catch (PasskeyRecoveryVerificationFailedException $exception) {
-                throw new UnprocessableEntityHttpException(
-                    detail: error_message('social_oauth_error', $request->language()),
-                    previous: $exception,
-                );
-            }
+            $this->useCase->process($input, $output);
         } catch (UnprocessableEntityHttpException $exception) {
             $this->logger->error((string) $exception);
 

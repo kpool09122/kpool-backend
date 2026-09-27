@@ -44,12 +44,11 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
             $connection->providerUserId(),
         );
         if ($identity === null
-            || (string) $identity->identityIdentifier() !== (string) $oauthSession->identityIdentifier
-            || $this->passkeyCredentialRepository->findByIdentityIdentifier($oauthSession->identityIdentifier) === []) {
-            throw new PasskeyRecoveryVerificationFailedException('The reauthenticated social account does not match.');
+            || $this->passkeyCredentialRepository->findByIdentityIdentifier($identity->identityIdentifier()) === []) {
+            throw new PasskeyRecoveryVerificationFailedException('The social account is not linked or has no passkey to recover.');
         }
 
-        $recoveryKey = $this->recoverySessions->issue($oauthSession->identityIdentifier, 'sso');
+        $recoveryKey = $this->recoverySessions->issue($identity->identityIdentifier(), 'sso');
         $output->setRedirectUrl(self::RETURN_TO . rawurlencode((string) $recoveryKey));
     }
 }

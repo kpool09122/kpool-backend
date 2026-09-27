@@ -11,7 +11,6 @@ use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSess
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthSessionStorageServiceInterface
 {
@@ -25,7 +24,6 @@ class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthS
         }
 
         Redis::setex($this->key($state), $ttl, json_encode([
-            'identity_id' => (string) $session->identityIdentifier,
             'provider' => $session->provider->value,
             'expires_at' => $session->expiresAt->format(DATE_ATOM),
         ], JSON_THROW_ON_ERROR));
@@ -39,7 +37,7 @@ class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthS
         }
 
         $data = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-        if (! is_array($data) || ! isset($data['identity_id'], $data['provider'], $data['expires_at'])) {
+        if (! is_array($data) || ! isset($data['provider'], $data['expires_at'])) {
             return null;
         }
 
@@ -49,7 +47,6 @@ class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthS
         }
 
         return new PasskeyRecoveryOAuthSession(
-            new IdentityIdentifier((string) $data['identity_id']),
             SocialProvider::from((string) $data['provider']),
             $expiresAt,
         );
