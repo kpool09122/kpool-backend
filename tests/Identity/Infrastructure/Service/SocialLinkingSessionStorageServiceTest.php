@@ -25,6 +25,11 @@ use Tests\TestCase;
 
 class SocialLinkingSessionStorageServiceTest extends TestCase
 {
+    private const string IDENTITY_IDENTIFIER = '123e4567-e89b-72d3-a456-426614174001';
+
+    /** @var list<string> */
+    private array $redisKeys = [];
+
     /** @phpstan-ignore property.uninitialized */
     private Request $request;
 
@@ -44,8 +49,13 @@ class SocialLinkingSessionStorageServiceTest extends TestCase
 
     protected function tearDown(): void
     {
-        Redis::flushdb();
-        parent::tearDown();
+        try {
+            if ($this->redisKeys !== []) {
+                Redis::del(...array_unique($this->redisKeys));
+            }
+        } finally {
+            parent::tearDown();
+        }
     }
 
     #[Override]
@@ -61,7 +71,7 @@ class SocialLinkingSessionStorageServiceTest extends TestCase
     {
         $this->issue();
         $pending = $this->socialLinkingSessionStorageService->requireValid();
-        $this->assertSame('123e4567-e89b-72d3-a456-426614174001', (string) $pending->identityIdentifier);
+        $this->assertSame(self::IDENTITY_IDENTIFIER, (string) $pending->identityIdentifier);
         $this->assertSame('target@example.com', (string) $pending->email);
         $this->assertSame(SocialProvider::GOOGLE, $pending->connection->provider());
         $this->assertSame('authenticated-provider-user', $pending->connection->providerUserId());
@@ -258,11 +268,13 @@ class SocialLinkingSessionStorageServiceTest extends TestCase
     private function issue(string $returnTo = '/settings?tab=login'): void
     {
         $this->socialLinkingSessionStorageService->issue(
-            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'),
+            new IdentityIdentifier(self::IDENTITY_IDENTIFIER),
             new Email('target@example.com'),
             new SocialConnection(SocialProvider::GOOGLE, 'authenticated-provider-user'),
             $returnTo,
         );
+        $this->redisKeys[] = $this->key();
+        $this->redisKeys[] = 'social_linking_email_sends:' . hash('sha256', self::IDENTITY_IDENTIFIER);
     }
 
     private function sendCode(): string
