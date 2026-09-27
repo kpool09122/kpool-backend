@@ -28,7 +28,7 @@ class WikiHistoryFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $wikiHistoryFactory = $this->app->make(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory = $this->app()->make(WikiHistoryFactoryInterface::class);
         $this->assertInstanceOf(WikiHistoryFactory::class, $wikiHistoryFactory);
     }
 
@@ -48,7 +48,7 @@ class WikiHistoryFactoryTest extends TestCase
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new Name('TWICE');
 
-        $wikiHistoryFactory = $this->app->make(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory = $this->app()->make(WikiHistoryFactoryInterface::class);
         $wikiHistory = $wikiHistoryFactory->create(
             $actionType,
             $actorIdentifier,
@@ -91,7 +91,7 @@ class WikiHistoryFactoryTest extends TestCase
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new Name('NewJeans');
 
-        $wikiHistoryFactory = $this->app->make(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory = $this->app()->make(WikiHistoryFactoryInterface::class);
         $wikiHistory = $wikiHistoryFactory->create(
             $actionType,
             $actorIdentifier,
@@ -134,7 +134,7 @@ class WikiHistoryFactoryTest extends TestCase
         $toVersion = new Version(2);
         $subjectName = new Name('TWICE');
 
-        $wikiHistoryFactory = $this->app->make(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory = $this->app()->make(WikiHistoryFactoryInterface::class);
         $wikiHistory = $wikiHistoryFactory->create(
             $actionType,
             $actorIdentifier,
@@ -156,7 +156,11 @@ class WikiHistoryFactoryTest extends TestCase
         $this->assertNull($wikiHistory->draftWikiIdentifier());
         $this->assertNull($wikiHistory->fromStatus());
         $this->assertNull($wikiHistory->toStatus());
+
+        $this->assertNotNull($wikiHistory->fromVersion());
         $this->assertSame($fromVersion->value(), $wikiHistory->fromVersion()->value());
+
+        $this->assertNotNull($wikiHistory->toVersion());
         $this->assertSame($toVersion->value(), $wikiHistory->toVersion()->value());
         $this->assertSame($subjectName, $wikiHistory->subjectName());
         $this->assertNotNull($wikiHistory->recordedAt());

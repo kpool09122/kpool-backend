@@ -63,7 +63,7 @@ class ListPasskeysTest extends TestCase
             createdAt: '2026-09-19 04:05:06',
         );
 
-        $passkeys = $this->app->make(ListPasskeysInterface::class)
+        $passkeys = $this->app()->make(ListPasskeysInterface::class)
             ->process(new ListPasskeysInput($identityIdentifier));
 
         $this->assertCount(2, $passkeys);
@@ -90,7 +90,7 @@ class ListPasskeysTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => 'without-passkey@example.com']);
         $this->authorizePasskeyManagement($identityIdentifier);
 
-        $passkeys = $this->app->make(ListPasskeysInterface::class)
+        $passkeys = $this->app()->make(ListPasskeysInterface::class)
             ->process(new ListPasskeysInput($identityIdentifier));
 
         $this->assertSame([], $passkeys);
@@ -105,10 +105,10 @@ class ListPasskeysTest extends TestCase
             Mockery::on(static fn (IdentityIdentifier $identifier): bool => (string) $identifier === (string) $identityIdentifier),
             StepUpAuthenticationScope::PASSKEY_MANAGE,
         )->andThrow(new StepUpAuthenticationRequiredException());
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app->make(ListPasskeysInterface::class)->process(new ListPasskeysInput($identityIdentifier));
+        $this->app()->make(ListPasskeysInterface::class)->process(new ListPasskeysInput($identityIdentifier));
     }
 
     private function authorizePasskeyManagement(IdentityIdentifier $identityIdentifier): void
@@ -125,7 +125,7 @@ class ListPasskeysTest extends TestCase
             StepUpAuthenticationScope::PASSKEY_MANAGE,
             new DateTimeImmutable('+10 minutes'),
         ));
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 
     private function insertPasskeyUser(string $id, IdentityIdentifier $identityIdentifier): void

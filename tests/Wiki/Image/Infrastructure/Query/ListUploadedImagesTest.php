@@ -169,7 +169,7 @@ class ListUploadedImagesTest extends TestCase
 
     private function listUploadedImages(): ListUploadedImagesInterface
     {
-        return $this->app->make(ListUploadedImagesInterface::class);
+        return $this->app()->make(ListUploadedImagesInterface::class);
     }
 
     private function process(ListUploadedImagesInput $input): ListUploadedImagesOutput

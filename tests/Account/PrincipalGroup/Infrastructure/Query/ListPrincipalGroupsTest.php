@@ -29,8 +29,8 @@ class ListPrincipalGroupsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app->make(ListPrincipalGroupsInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app()->make(ListPrincipalGroupsInterface::class));
     }
 
     #[Group('useDb')]

@@ -33,7 +33,7 @@ class WebAuthnServiceTest extends TestCase
 
     public function testItIsBoundWithoutLeakingLibraryTypesThroughTheInterface(): void
     {
-        $service = $this->app->make(WebAuthnServiceInterface::class);
+        $service = $this->app()->make(WebAuthnServiceInterface::class);
 
         $this->assertInstanceOf(WebAuthnService::class, $service);
         $interface = new \ReflectionClass(WebAuthnServiceInterface::class);
@@ -56,7 +56,10 @@ class WebAuthnServiceTest extends TestCase
             [],
         ));
         $data = json_decode($options->json(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertIsArray($data);
 
+        $this->assertIsArray($data['rp']);
+        $this->assertIsArray($data['authenticatorSelection']);
         $this->assertSame('example.com', $data['rp']['id']);
         $this->assertSame('required', $data['authenticatorSelection']['residentKey']);
         $this->assertSame('required', $data['authenticatorSelection']['userVerification']);
@@ -70,6 +73,7 @@ class WebAuthnServiceTest extends TestCase
             new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
         ));
         $data = json_decode($options->json(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertIsArray($data);
 
         $this->assertSame('example.com', $data['rpId']);
         $this->assertSame('required', $data['userVerification']);
@@ -121,7 +125,7 @@ class WebAuthnServiceTest extends TestCase
 
     private function service(): WebAuthnServiceInterface
     {
-        return $this->app->make(WebAuthnServiceInterface::class);
+        return $this->app()->make(WebAuthnServiceInterface::class);
     }
 
     private function assertAuthenticationRejected(string $origin, string $rpIdHash, string $reason): void
@@ -175,6 +179,8 @@ class WebAuthnServiceTest extends TestCase
         $details = openssl_pkey_get_details($privateKey);
         $this->assertIsArray($details);
         $this->assertIsArray($details['ec']);
+        $this->assertIsString($details['ec']['x']);
+        $this->assertIsString($details['ec']['y']);
         $publicKey = (string) MapObject::create()
             ->add(UnsignedIntegerObject::create(1), UnsignedIntegerObject::create(2))
             ->add(UnsignedIntegerObject::create(3), NegativeIntegerObject::create(-7))

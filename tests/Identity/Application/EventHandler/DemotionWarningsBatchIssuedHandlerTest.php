@@ -32,10 +32,10 @@ class DemotionWarningsBatchIssuedHandlerTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(DemotionWarningsBatchIssuedHandler::class);
+        $handler = $this->app()->make(DemotionWarningsBatchIssuedHandler::class);
 
         $this->assertInstanceOf(DemotionWarningsBatchIssuedHandler::class, $handler);
     }
@@ -72,10 +72,10 @@ class DemotionWarningsBatchIssuedHandlerTest extends TestCase
             ->with($identity2->email(), Language::ENGLISH)
             ->once();
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(DemotionWarningsBatchIssuedHandler::class);
+        $handler = $this->app()->make(DemotionWarningsBatchIssuedHandler::class);
 
         $handler->handle($event);
     }
@@ -101,10 +101,10 @@ class DemotionWarningsBatchIssuedHandlerTest extends TestCase
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
         $notificationService->shouldNotReceive('sendDemotionWarning');
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(DemotionWarningsBatchIssuedHandler::class);
+        $handler = $this->app()->make(DemotionWarningsBatchIssuedHandler::class);
 
         $handler->handle($event);
     }

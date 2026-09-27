@@ -27,9 +27,9 @@ class VerifyEmailTest extends TestCase
      */
     public function test__construct(): void
     {
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, Mockery::mock(AuthCodeSessionStorageServiceInterface::class));
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, Mockery::mock(AuthCodeSessionStorageServiceInterface::class));
 
-        $this->assertInstanceOf(VerifyEmail::class, $this->app->make(VerifyEmailInterface::class));
+        $this->assertInstanceOf(VerifyEmail::class, $this->app()->make(VerifyEmailInterface::class));
     }
 
     /**
@@ -59,10 +59,11 @@ class VerifyEmailTest extends TestCase
                 return true;
             }));
 
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
         $output = new VerifyEmailOutput();
-        $this->app->make(VerifyEmailInterface::class)->process(new VerifyEmailInput($email, $authCode), $output);
+        $this->app()->make(VerifyEmailInterface::class)->process(new VerifyEmailInput($email, $authCode), $output);
 
+        self::assertTrue(array_key_exists('email', $output->toArray()));
         $this->assertSame((string) $email, $output->toArray()['email']);
         $this->assertNotNull($output->toArray()['verifiedAt']);
     }
@@ -110,11 +111,11 @@ class VerifyEmailTest extends TestCase
         $storageService->shouldReceive('findByEmail')->once()->with($email)->andReturn($session);
         $storageService->shouldNotReceive('delete');
         $storageService->shouldNotReceive('store');
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
 
         $this->expectException($expectedException);
 
-        $this->app->make(VerifyEmailInterface::class)->process(
+        $this->app()->make(VerifyEmailInterface::class)->process(
             new VerifyEmailInput($email, $inputCode),
             new VerifyEmailOutput(),
         );

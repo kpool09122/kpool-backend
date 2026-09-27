@@ -49,7 +49,7 @@ class TranslationServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
 
         $this->assertInstanceOf(TranslationService::class, $service);
     }
@@ -69,9 +69,9 @@ class TranslationServiceTest extends TestCase
             'ソン・チェヨン', // real_name
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedBasic = $result->translatedBasic();
@@ -96,9 +96,9 @@ class TranslationServiceTest extends TestCase
             'パク・ジニョン',           // ceo
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedBasic = $result->translatedBasic();
@@ -122,9 +122,9 @@ class TranslationServiceTest extends TestCase
             'トゥワイス', // name
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedBasic = $result->translatedBasic();
@@ -149,9 +149,9 @@ class TranslationServiceTest extends TestCase
             'ブラック',     // arranger
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedBasic = $result->translatedBasic();
@@ -190,9 +190,9 @@ class TranslationServiceTest extends TestCase
             'チェヨンはTWICEのメンバーです。',           // text block content
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedSections = $result->translatedSections();
@@ -252,9 +252,9 @@ class TranslationServiceTest extends TestCase
             'セル2',                               // table cell 2
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $section = $result->translatedSections()->all()[0];
@@ -311,9 +311,9 @@ class TranslationServiceTest extends TestCase
             'メディア',       // section title
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $section = $result->translatedSections()->all()[0];
@@ -342,9 +342,9 @@ class TranslationServiceTest extends TestCase
 
         $googleTranslateClient = $this->createGoogleTranslateClientMock([]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $result = $service->translateWiki($wiki, $targetLanguage);
 
         $translatedBasic = $result->translatedBasic();
@@ -376,9 +376,9 @@ class TranslationServiceTest extends TestCase
             })
             ->andReturn(new TranslateTextsResponse(['チェヨン', 'ソン・チェヨン']));
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
         $service->translateWiki($wiki, $targetLanguage);
 
         $this->assertNotNull($capturedRequest);
@@ -410,7 +410,7 @@ class TranslationServiceTest extends TestCase
             new Version(1),
         );
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported basic type: unknown');
@@ -450,9 +450,9 @@ class TranslationServiceTest extends TestCase
             'translated-real-name',
         ]);
 
-        $this->app->instance(GoogleTranslateClient::class, $googleTranslateClient);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
 
-        $service = $this->app->make(TranslationServiceInterface::class);
+        $service = $this->app()->make(TranslationServiceInterface::class);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported basic type: unknown');

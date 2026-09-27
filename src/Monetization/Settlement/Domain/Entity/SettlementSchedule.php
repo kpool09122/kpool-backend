@@ -69,7 +69,7 @@ class SettlementSchedule
             }
             $this->assertThresholdCurrency($availableBalance);
 
-            return $availableBalance->amount() >= $this->threshold->amount();
+            return $availableBalance->amount() >= ($this->threshold ?? throw new DomainException('Threshold is required.'))->amount();
         }
 
         return $currentDate >= $this->nextPayoutDate();

@@ -82,7 +82,7 @@ class ListVersionInconsistentWikisTest extends TestCase
 
     private function listVersionInconsistentWikis(): ListVersionInconsistentWikisInterface
     {
-        return $this->app->make(ListVersionInconsistentWikisInterface::class);
+        return $this->app()->make(ListVersionInconsistentWikisInterface::class);
     }
 
     private function process(ListVersionInconsistentWikisInput $input): ListVersionInconsistentWikisOutput
@@ -110,7 +110,7 @@ class ListVersionInconsistentWikisTest extends TestCase
                 'published_at' => '2026-04-01 00:00:00',
                 'title' => "Talent {$language} v{$version} Wiki",
                 'meta_description' => "Talent {$language} v{$version} profile.",
-                'keywords' => json_encode(["Talent {$language} v{$version}", 'talent']),
+                'keywords' => json_encode(["Talent {$language} v{$version}", 'talent'], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => "Talent {$language} v{$version}",

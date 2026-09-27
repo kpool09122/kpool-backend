@@ -22,7 +22,7 @@ class GetGroupDraftWikiTest extends TestCase
     {
         $this->seed(WikiEditorSampleSeeder::class);
 
-        $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
         $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f002')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
@@ -73,7 +73,7 @@ class GetGroupDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
         $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', $readModel->basic()['agencyIdentifier']);
@@ -119,7 +119,7 @@ class GetGroupDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
         $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f204')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f204', $readModel->wikiIdentifier());
@@ -129,7 +129,7 @@ class GetGroupDraftWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenDraftGroupWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 
@@ -141,7 +141,7 @@ class GetGroupDraftWikiTest extends TestCase
     {
         $this->seed(WikiEditorSampleSeeder::class);
 
-        $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

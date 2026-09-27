@@ -102,7 +102,11 @@ class AccountResolverTest extends TestCase
             $effectivePrincipal,
         ]);
         $deps['delegationRepository']->shouldReceive('findApprovedBetweenAccountIds')->once()->withArgs(
-            fn (array $accountIdentifiers): bool => array_map('strval', $accountIdentifiers) === [
+            fn (array $accountIdentifiers): bool => array_map(static function (mixed $identifier): string {
+                self::assertInstanceOf(AccountIdentifier::class, $identifier);
+
+                return (string) $identifier;
+            }, $accountIdentifiers) === [
                 (string) $originalAccount,
                 (string) $effectiveAccount,
             ],

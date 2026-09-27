@@ -44,7 +44,7 @@ class SettlementBatchRepositoryTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));
 
         $this->assertNotNull($result);
@@ -69,7 +69,7 @@ class SettlementBatchRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $result = $repository->findById(new SettlementBatchIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -117,7 +117,7 @@ class SettlementBatchRepositoryTest extends TestCase
             'failure_reason' => 'Transfer failed',
         ]);
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
 
         $pendingBatches = $repository->findByStatus(SettlementStatus::PENDING);
         $failedBatches = $repository->findByStatus(SettlementStatus::FAILED);
@@ -178,7 +178,7 @@ class SettlementBatchRepositoryTest extends TestCase
             'period_end' => '2024-01-31',
         ]);
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
 
         $account1Batches = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier($monetizationAccountId1)
@@ -227,7 +227,7 @@ class SettlementBatchRepositoryTest extends TestCase
             new Money(5000, Currency::JPY),
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         $this->assertDatabaseHas('settlement_batches', [
@@ -267,7 +267,7 @@ class SettlementBatchRepositoryTest extends TestCase
             new Money(1000, Currency::JPY),
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         // PENDING → PROCESSING
@@ -291,6 +291,7 @@ class SettlementBatchRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));
+        $this->assertNotNull($result);
         $this->assertSame(SettlementStatus::PAID, $result->status());
         $this->assertNotNull($result->processedAt());
         $this->assertNotNull($result->paidAt());
@@ -322,7 +323,7 @@ class SettlementBatchRepositoryTest extends TestCase
             new Money(1000, Currency::JPY),
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         // 失敗
@@ -332,6 +333,7 @@ class SettlementBatchRepositoryTest extends TestCase
 
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));
 
+        $this->assertNotNull($result);
         $this->assertSame(SettlementStatus::FAILED, $result->status());
         $this->assertNotNull($result->failedAt());
         $this->assertSame('Bank account not found', $result->failureReason());
@@ -366,7 +368,7 @@ class SettlementBatchRepositoryTest extends TestCase
             $processedAt,
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));
@@ -404,7 +406,7 @@ class SettlementBatchRepositoryTest extends TestCase
             $paidAt,
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));
@@ -439,7 +441,7 @@ class SettlementBatchRepositoryTest extends TestCase
             new Money(0, Currency::JPY),
         );
 
-        $repository = $this->app->make(SettlementBatchRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementBatchRepositoryInterface::class);
         $repository->save($settlementBatch);
 
         $result = $repository->findById(new SettlementBatchIdentifier($settlementBatchId));

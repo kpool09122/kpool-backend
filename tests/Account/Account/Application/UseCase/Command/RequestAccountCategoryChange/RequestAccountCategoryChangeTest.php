@@ -64,6 +64,7 @@ class RequestAccountCategoryChangeTest extends TestCase
         $this->assertSame(AccountCategoryChangeRequestStatus::PENDING, $repository->saved->status());
         $this->assertSame(AccountCategory::GENERAL, $repository->saved->currentAccountCategory());
         $this->assertSame(AccountCategory::AGENCY, $repository->saved->requestedAccountCategory());
+        self::assertTrue(array_key_exists('requestIdentifier', $output->toArray()));
         $this->assertSame((string) $repository->saved->requestIdentifier(), $output->toArray()['requestIdentifier']);
     }
 

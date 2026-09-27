@@ -122,7 +122,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($model->published_date->toDateTimeImmutable()),
+            new PublishedDate(($model->published_date ?? throw new \UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable()),
         );
     }
 
@@ -135,7 +135,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($model->published_date->toDateTimeImmutable()),
+            new PublishedDate(($model->published_date ?? throw new \UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable()),
         );
     }
 }

@@ -25,7 +25,7 @@ readonly class RelatedProfileReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikiIdentifier: string, slug: string, language: string, resourceType: string, name: string, normalizedName: string, imageIdentifier: string|null, imageUrl: string|null, imageAltText: string|null}
      */
     public function toArray(): array
     {

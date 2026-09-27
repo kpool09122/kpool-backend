@@ -16,7 +16,7 @@ class RequestAccountCategoryChangeOutput implements RequestAccountCategoryChange
         $this->request = $request;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{}|array{requestIdentifier: string, accountIdentifier: string, currentAccountCategory: string, requestedAccountCategory: string, status: string, requestedAt: string, reviewedBy: string|null, reviewedAt: string|null, rejectionReason: array{code: string, detail: string|null}|null} */
     public function toArray(): array
     {
         if ($this->request === null) {

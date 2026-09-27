@@ -17,6 +17,7 @@ use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRe
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Shared\Domain\Support\TypedValue;
 
 readonly class ListAccountCategoryChangeRequests implements ListAccountCategoryChangeRequestsInterface
 {
@@ -163,13 +164,13 @@ readonly class ListAccountCategoryChangeRequests implements ListAccountCategoryC
 
     private static function stringAttribute(AccountCategoryChangeRequestModel $request, string $key): string
     {
-        return (string) $request->getAttribute($key);
+        return TypedValue::string($request->getAttribute($key));
     }
 
     private static function nullableStringAttribute(AccountCategoryChangeRequestModel $request, string $key): ?string
     {
         $value = $request->getAttribute($key);
 
-        return $value === null ? null : (string) $value;
+        return TypedValue::nullableString($value);
     }
 }

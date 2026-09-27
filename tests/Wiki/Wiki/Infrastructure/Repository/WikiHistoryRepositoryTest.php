@@ -30,7 +30,7 @@ class WikiHistoryRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(WikiHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
         $this->assertInstanceOf(WikiHistoryRepository::class, $repository);
     }
 
@@ -64,7 +64,7 @@ class WikiHistoryRepositoryTest extends TestCase
             $recordedAt,
         );
 
-        $repository = $this->app->make(WikiHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
         $repository->save($wikiHistory);
 
         $this->assertDatabaseHas('wiki_histories', [
@@ -110,7 +110,7 @@ class WikiHistoryRepositoryTest extends TestCase
             $recordedAt,
         );
 
-        $repository = $this->app->make(WikiHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
         $repository->save($wikiHistory);
 
         $this->assertDatabaseHas('wiki_histories', [
@@ -157,7 +157,7 @@ class WikiHistoryRepositoryTest extends TestCase
             $recordedAt,
         );
 
-        $repository = $this->app->make(WikiHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
         $repository->save($wikiHistory);
 
         $this->assertDatabaseHas('wiki_histories', [

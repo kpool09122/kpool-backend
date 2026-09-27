@@ -9,6 +9,7 @@ use Application\Models\Wiki\Wiki as WikiEloquent;
 use Illuminate\Support\Facades\DB;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -46,7 +47,7 @@ readonly class PrincipalWikiScopeResolver implements PrincipalWikiScopeResolverI
         return DB::table('wiki_talent_basic_groups')
             ->whereIn('wiki_id', $talentWikiIdentifiers)
             ->pluck('group_identifier')
-            ->map(static fn (mixed $id): string => (string) $id)
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->unique()
             ->values()
             ->all();
@@ -96,7 +97,7 @@ readonly class PrincipalWikiScopeResolver implements PrincipalWikiScopeResolverI
             ->whereIn('owner_account_id', $accountIdentifiers)
             ->where('resource_type', $resourceType->value)
             ->pluck('id')
-            ->map(static fn (mixed $id): string => (string) $id)
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
     }
 
@@ -106,7 +107,7 @@ readonly class PrincipalWikiScopeResolver implements PrincipalWikiScopeResolverI
         return AccountPrincipalEloquent::query()
             ->where('identity_id', (string) $principal->identityIdentifier())
             ->pluck('account_id')
-            ->map(static fn (mixed $id): string => (string) $id)
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->unique()
             ->values()
             ->all();

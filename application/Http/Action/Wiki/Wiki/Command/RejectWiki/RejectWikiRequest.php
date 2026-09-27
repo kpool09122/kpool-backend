@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Wiki\Command\RejectWiki;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RejectWikiRequest extends FormRequest
@@ -12,7 +13,7 @@ class RejectWikiRequest extends FormRequest
     use ResolvesLanguage;
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     public function validationData(): array
     {
@@ -46,19 +47,19 @@ class RejectWikiRequest extends FormRequest
 
     public function resourceType(): string
     {
-        return (string) $this->input('resourceType');
+        return RequestValue::string($this->input('resourceType'));
     }
 
     public function rejectionReason(): string
     {
-        return (string) $this->input('rejectionReason');
+        return RequestValue::string($this->input('rejectionReason'));
     }
 
     public function agencyIdentifier(): ?string
     {
         $value = $this->input('agencyIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /**
@@ -66,7 +67,7 @@ class RejectWikiRequest extends FormRequest
      */
     public function groupIdentifiers(): array
     {
-        return (array) ($this->input('groupIdentifiers') ?? []);
+        return RequestValue::strings($this->input('groupIdentifiers') ?? []);
     }
 
     /**
@@ -74,6 +75,6 @@ class RejectWikiRequest extends FormRequest
      */
     public function talentIdentifiers(): array
     {
-        return (array) ($this->input('talentIdentifiers') ?? []);
+        return RequestValue::strings($this->input('talentIdentifiers') ?? []);
     }
 }

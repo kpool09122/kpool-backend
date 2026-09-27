@@ -43,10 +43,10 @@ class WikiServiceTest extends TestCase
     public function test__construct(): void
     {
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
         $this->assertInstanceOf(WikiService::class, $wikiService);
     }
 
@@ -68,9 +68,9 @@ class WikiServiceTest extends TestCase
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->hasConsistentVersions($translationSetIdentifier);
 
@@ -97,9 +97,9 @@ class WikiServiceTest extends TestCase
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->hasConsistentVersions($translationSetIdentifier);
 
@@ -128,9 +128,9 @@ class WikiServiceTest extends TestCase
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->hasConsistentVersions($translationSetIdentifier);
 
@@ -158,9 +158,9 @@ class WikiServiceTest extends TestCase
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->hasConsistentVersions($translationSetIdentifier);
 
@@ -189,9 +189,9 @@ class WikiServiceTest extends TestCase
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->hasConsistentVersions($translationSetIdentifier);
 
@@ -231,9 +231,9 @@ class WikiServiceTest extends TestCase
             ->with($translationSetIdentifier)
             ->andReturn([$approvedDraftWiki, $excludeDraftWiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->existsApprovedDraftWiki(
             $translationSetIdentifier,
@@ -276,9 +276,9 @@ class WikiServiceTest extends TestCase
             ->with($translationSetIdentifier)
             ->andReturn([$pendingDraftWiki, $excludeDraftWiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->existsApprovedDraftWiki(
             $translationSetIdentifier,
@@ -314,9 +314,9 @@ class WikiServiceTest extends TestCase
             ->with($translationSetIdentifier)
             ->andReturn([$selfDraftWiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->existsApprovedDraftWiki(
             $translationSetIdentifier,
@@ -344,9 +344,9 @@ class WikiServiceTest extends TestCase
             ->with($translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->existsApprovedDraftWiki(
             $translationSetIdentifier,
@@ -396,9 +396,9 @@ class WikiServiceTest extends TestCase
             ->with($translationSetIdentifier)
             ->andReturn([$koreanDraftWiki, $englishDraftWiki, $japaneseDraftWiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $result = $wikiService->existsApprovedDraftWiki(
             $translationSetIdentifier,
@@ -435,9 +435,9 @@ class WikiServiceTest extends TestCase
             ->andReturn([$koreanWiki, $japaneseWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $this->assertTrue($wikiService->canApproveDraftWiki($draftWiki));
         $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
@@ -468,9 +468,9 @@ class WikiServiceTest extends TestCase
             ->andReturn([$koreanWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
     }
@@ -501,9 +501,9 @@ class WikiServiceTest extends TestCase
             ->andReturn([$japaneseWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
     }
@@ -527,9 +527,9 @@ class WikiServiceTest extends TestCase
             ->andReturn([$japaneseWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
     }
@@ -559,9 +559,9 @@ class WikiServiceTest extends TestCase
             ->andReturn([$koreanWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $wikiService = $this->app->make(WikiServiceInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app()->make(WikiServiceInterface::class);
 
         $this->assertSame(3, $wikiService->resolvePublishVersion($draftWiki)?->value());
     }

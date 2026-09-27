@@ -23,7 +23,7 @@ class PayoutAccountFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PayoutAccountFactoryInterface::class);
+        $factory = $this->app()->make(PayoutAccountFactoryInterface::class);
         $this->assertInstanceOf(PayoutAccountFactory::class, $factory);
     }
 
@@ -37,7 +37,7 @@ class PayoutAccountFactoryTest extends TestCase
         $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $externalAccountId = new ExternalAccountId('ba_' . StrTestHelper::generateStr(10));
 
-        $factory = $this->app->make(PayoutAccountFactoryInterface::class);
+        $factory = $this->app()->make(PayoutAccountFactoryInterface::class);
         $payoutAccount = $factory->create(
             $monetizationAccountIdentifier,
             $externalAccountId,

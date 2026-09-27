@@ -25,7 +25,7 @@ class InvitationFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
         $this->assertInstanceOf(InvitationFactory::class, $factory);
     }
 
@@ -40,7 +40,7 @@ class InvitationFactoryTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
 
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
         $invitation = $factory->create(
             $accountIdentifier,
             $inviterIdentityIdentifier,
@@ -68,7 +68,7 @@ class InvitationFactoryTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
 
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
         $invitation = $factory->create(
             $accountIdentifier,
             $inviterIdentityIdentifier,
@@ -92,7 +92,7 @@ class InvitationFactoryTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
 
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
         $invitation = $factory->create(
             $accountIdentifier,
             $inviterIdentityIdentifier,
@@ -120,7 +120,7 @@ class InvitationFactoryTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
 
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
         $invitation = $factory->create(
             $accountIdentifier,
             $inviterIdentityIdentifier,
@@ -142,7 +142,7 @@ class InvitationFactoryTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
 
-        $factory = $this->app->make(InvitationFactoryInterface::class);
+        $factory = $this->app()->make(InvitationFactoryInterface::class);
 
         $invitation1 = $factory->create($accountIdentifier, $inviterIdentityIdentifier, $email);
         $invitation2 = $factory->create($accountIdentifier, $inviterIdentityIdentifier, $email);

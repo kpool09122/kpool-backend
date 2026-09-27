@@ -24,7 +24,7 @@ class ContributionPointSummaryFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(ContributionPointSummaryFactoryInterface::class);
+        $factory = $this->app()->make(ContributionPointSummaryFactoryInterface::class);
         $this->assertInstanceOf(ContributionPointSummaryFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class ContributionPointSummaryFactoryTest extends TestCase
         $yearMonth = YearMonth::fromDateTime(new DateTimeImmutable());
         $points = new Point(100);
 
-        $factory = $this->app->make(ContributionPointSummaryFactoryInterface::class);
+        $factory = $this->app()->make(ContributionPointSummaryFactoryInterface::class);
         $summary = $factory->create(
             $principalIdentifier,
             $yearMonth,

@@ -36,6 +36,7 @@ class UpdateAccountOutputTest extends TestCase
         $output->setAccount($account);
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $account->accountIdentifier(), $result['accountIdentifier']);
         $this->assertSame('Updated Account', $result['name']);
     }

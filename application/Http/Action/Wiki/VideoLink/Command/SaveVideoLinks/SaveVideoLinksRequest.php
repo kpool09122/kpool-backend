@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveVideoLinksRequest extends FormRequest
@@ -31,12 +32,12 @@ class SaveVideoLinksRequest extends FormRequest
 
     public function resourceType(): string
     {
-        return (string) $this->input('resourceType');
+        return RequestValue::string($this->input('resourceType'));
     }
 
     public function wikiIdentifier(): string
     {
-        return (string) $this->input('wikiIdentifier');
+        return RequestValue::string($this->input('wikiIdentifier'));
     }
 
     /**
@@ -44,9 +45,6 @@ class SaveVideoLinksRequest extends FormRequest
      */
     public function videoLinks(): array
     {
-        /** @var array<int, array<string, mixed>> $videoLinks */
-        $videoLinks = $this->input('videoLinks', []);
-
-        return $videoLinks;
+        return RequestValue::objects($this->input('videoLinks', []));
     }
 }

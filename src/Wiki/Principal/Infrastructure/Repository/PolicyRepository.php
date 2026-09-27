@@ -11,6 +11,7 @@ use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembership
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -135,6 +136,7 @@ class PolicyRepository implements PolicyRepositoryInterface
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         if (empty($principalIds)) {
@@ -144,10 +146,11 @@ class PolicyRepository implements PolicyRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -202,7 +205,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 
@@ -247,7 +250,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $conditionData
         );
 
-        return new Condition($clauses);
+        return new Condition(array_values($clauses));
     }
 
     private function deserializeConditionValue(string|bool $value): ConditionValue|string|bool

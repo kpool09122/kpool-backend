@@ -56,13 +56,18 @@ class WikiSectionReadModelBuilderTest extends TestCase
             ],
         ]);
 
+        self::assertIsArray($sections[0]['contents']);
         $imageBlock = $sections[0]['contents'][0];
         $profileBlock = $sections[0]['contents'][1];
 
+        self::assertIsArray($imageBlock);
         $this->assertSame('http://127.0.0.1:8080/images/wiki/section.jpg', $imageBlock['src']);
         $this->assertSame('Section image', $imageBlock['alt']);
+        self::assertIsArray($profileBlock);
         $this->assertSame(['01965bb2-bcc9-7c6f-8b90-89f7f217f703'], $profileBlock['wikiIdentifiers']);
         $this->assertSame('talent', $profileBlock['relatedResourceType']);
+        self::assertIsArray($profileBlock['profiles']);
+        self::assertIsArray($profileBlock['profiles'][0]);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f703', $profileBlock['profiles'][0]['wikiIdentifier']);
         $this->assertSame('tl-momo', $profileBlock['profiles'][0]['slug']);
         $this->assertSame('Momo', $profileBlock['profiles'][0]['name']);
@@ -85,8 +90,10 @@ class WikiSectionReadModelBuilderTest extends TestCase
             ],
         ]);
 
+        self::assertIsArray($sections[0]['contents']);
         $profileBlock = $sections[0]['contents'][0];
 
+        self::assertIsArray($profileBlock);
         $this->assertSame([], $profileBlock['wikiIdentifiers']);
         $this->assertSame([], $profileBlock['profiles']);
         $this->assertNull($profileBlock['relatedResourceType']);

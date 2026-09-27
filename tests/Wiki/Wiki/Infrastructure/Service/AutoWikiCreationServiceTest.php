@@ -49,7 +49,7 @@ class AutoWikiCreationServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
 
         $this->assertInstanceOf(AutoWikiCreationService::class, $service);
     }
@@ -118,9 +118,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateAgencyRequest $r) => $r->agencyName() === 'JYP엔터테인먼트')
             ->andReturn(new GenerateAgencyResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::AGENCY,
@@ -185,9 +185,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('Gemini API rate limit exceeded'));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::KOREAN,
             resourceType: ResourceType::AGENCY,
@@ -223,9 +223,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn(new GenerateAgencyResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::AGENCY,
@@ -269,7 +269,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->with($agencyId)
             ->andReturn($agencyWiki);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'TWICE',
@@ -301,9 +301,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 && $r->agencyName() === 'JYP Entertainment')
             ->andReturn(new GenerateGroupResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::KOREAN,
             resourceType: ResourceType::GROUP,
@@ -374,9 +374,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('API error'));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::GROUP,
@@ -406,7 +406,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldNotReceive('findById');
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'BTS',
@@ -419,9 +419,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateGroupRequest $r) => $r->agencyName() === null)
             ->andReturn(new GenerateGroupResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::GROUP,
@@ -453,7 +453,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->with($agencyId)
             ->andReturn(null);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'TWICE',
@@ -465,9 +465,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateGroupRequest $r) => $r->agencyName() === null)
             ->andReturn(new GenerateGroupResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::KOREAN,
             resourceType: ResourceType::GROUP,
@@ -515,7 +515,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn($groupWiki);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Jimin',
@@ -546,9 +546,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 && $r->groupNames() === ['BTS'])
             ->andReturn(new GenerateTalentResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::TALENT,
@@ -619,9 +619,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('API error'));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::KOREAN,
             resourceType: ResourceType::TALENT,
@@ -660,9 +660,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn(new GenerateTalentResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::TALENT,
@@ -702,7 +702,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn($this->createWikiMock('TXT'));
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test',
@@ -715,9 +715,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateTalentRequest $r) => $r->groupNames() === ['BTS', 'TXT'])
             ->andReturn(new GenerateTalentResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::TALENT,
@@ -754,7 +754,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test',
@@ -766,9 +766,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateTalentRequest $r) => $r->groupNames() === ['BTS'])
             ->andReturn(new GenerateTalentResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::TALENT,
@@ -816,7 +816,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn($this->createWikiMock('Jimin'));
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Dynamite',
@@ -842,9 +842,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 && $r->talentName() === 'Jimin')
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::SONG,
@@ -908,9 +908,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('API error'));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::SONG,
@@ -940,7 +940,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldNotReceive('findById');
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test Song',
@@ -955,9 +955,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 && $r->talentName() === null)
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::ENGLISH,
             resourceType: ResourceType::SONG,
@@ -994,7 +994,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn($this->createWikiMock('TXT'));
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test',
@@ -1006,9 +1006,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateSongRequest $r) => $r->groupName() === 'BTS')
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::SONG,
@@ -1040,7 +1040,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test',
@@ -1052,9 +1052,9 @@ class AutoWikiCreationServiceTest extends TestCase
             ->withArgs(fn (GenerateSongRequest $r) => $r->talentName() === null)
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
-        $this->app->instance(GeminiClient::class, $geminiClient);
+        $this->app()->instance(GeminiClient::class, $geminiClient);
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::SONG,
@@ -1084,7 +1084,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported resource type: image');
 
-        $service = $this->app->make(AutoWikiCreationServiceInterface::class);
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
         $payload = new AutoWikiCreationPayload(
             language: Language::JAPANESE,
             resourceType: ResourceType::IMAGE,
@@ -1102,13 +1102,14 @@ class AutoWikiCreationServiceTest extends TestCase
     // Helpers
     // ========================================================================
 
-    private function createWikiMock(string $name): Wiki|Mockery\MockInterface
+    private function createWikiMock(string $name): Wiki&Mockery\MockInterface
     {
         $basic = Mockery::mock(BasicInterface::class);
         $basic->shouldReceive('name')
             ->andReturn(new Name($name));
 
         $wiki = Mockery::mock(Wiki::class);
+        self::assertInstanceOf(Wiki::class, $wiki);
         $wiki->shouldReceive('basic')
             ->andReturn($basic);
 
@@ -1146,7 +1147,7 @@ class AutoWikiCreationServiceTest extends TestCase
         ], JSON_THROW_ON_ERROR);
     }
 
-    private function createPsrResponse(string $body): ResponseInterface|Mockery\MockInterface
+    private function createPsrResponse(string $body): ResponseInterface&Mockery\MockInterface
     {
         $stream = Mockery::mock(StreamInterface::class);
         $stream->shouldReceive('getContents')
@@ -1154,6 +1155,7 @@ class AutoWikiCreationServiceTest extends TestCase
             ->andReturn($body);
 
         $response = Mockery::mock(ResponseInterface::class);
+        self::assertInstanceOf(ResponseInterface::class, $response);
         $response->shouldReceive('getBody')
             ->once()
             ->andReturn($stream);

@@ -31,7 +31,7 @@ class IdentityRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $this->assertInstanceOf(IdentityRepository::class, $repository);
     }
 
@@ -49,7 +49,7 @@ class IdentityRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => $email]);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'google-user-123');
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findByEmail(new Email($email));
 
         $this->assertNotNull($result);
@@ -70,7 +70,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByEmailReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findByEmail(new Email('nonexistent@example.com'));
 
         $this->assertNull($result);
@@ -90,7 +90,7 @@ class IdentityRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => 'social@example.com']);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, $providerUserId);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findBySocialConnection(SocialProvider::LINE, $providerUserId);
 
         $this->assertNotNull($result);
@@ -107,7 +107,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySocialConnectionReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findBySocialConnection(SocialProvider::KAKAO, 'nonexistent-id');
 
         $this->assertNull($result);
@@ -136,7 +136,7 @@ class IdentityRepositoryTest extends TestCase
             [new SocialConnection(SocialProvider::GOOGLE, 'google-new-identity')]
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $this->assertDatabaseHas('identities', [
@@ -188,7 +188,7 @@ class IdentityRepositoryTest extends TestCase
             []
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($updatedIdentity);
 
         $this->assertDatabaseHas('identities', [
@@ -222,7 +222,7 @@ class IdentityRepositoryTest extends TestCase
             []
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $result = $repository->findByEmail($email);
@@ -257,7 +257,7 @@ class IdentityRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $result = $repository->findByEmail($email);
@@ -281,7 +281,7 @@ class IdentityRepositoryTest extends TestCase
             'identity_name' => 'find-by-id-user',
         ]);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findById($identityIdentifier);
 
         $this->assertNotNull($result);
@@ -300,7 +300,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findById(new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -333,7 +333,7 @@ class IdentityRepositoryTest extends TestCase
         ]);
         CreateIdentity::createSocialConnection($identityIdentifier1, SocialProvider::GOOGLE, 'google-findbyids-1');
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([$identityIdentifier1, $identityIdentifier2, $identityIdentifier3]);
 
         $this->assertCount(3, $results);
@@ -357,7 +357,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([]);
 
         $this->assertIsArray($results);
@@ -381,7 +381,7 @@ class IdentityRepositoryTest extends TestCase
             'identity_name' => 'existing-user',
         ]);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([$existingIdentityId, $nonExistingIdentityId]);
 
         $this->assertCount(1, $results);

@@ -30,7 +30,7 @@ class SettlementServiceTest extends TestCase
      */
     public function testSettleCreatesBatchAndTransfer(): void
     {
-        $service = $this->app->make(SettlementServiceInterface::class);
+        $service = $this->app()->make(SettlementServiceInterface::class);
         $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
@@ -77,7 +77,7 @@ class SettlementServiceTest extends TestCase
      */
     public function testSettleWhenNoAmount(): void
     {
-        $service = $this->app->make(SettlementServiceInterface::class);
+        $service = $this->app()->make(SettlementServiceInterface::class);
         $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
@@ -109,7 +109,7 @@ class SettlementServiceTest extends TestCase
      */
     public function testSettleWhenDifferentCurrency(): void
     {
-        $service = $this->app->make(SettlementServiceInterface::class);
+        $service = $this->app()->make(SettlementServiceInterface::class);
         $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
@@ -144,7 +144,7 @@ class SettlementServiceTest extends TestCase
      */
     public function testSettleBeforeDueThrows(): void
     {
-        $service = $this->app->make(SettlementServiceInterface::class);
+        $service = $this->app()->make(SettlementServiceInterface::class);
         $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),

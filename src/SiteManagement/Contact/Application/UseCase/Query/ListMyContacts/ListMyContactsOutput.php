@@ -18,7 +18,7 @@ class ListMyContactsOutput implements ListMyContactsOutputPort
     }
 
     /**
-     * @return array<int, array{
+     * @return array<array{
      *     contactIdentifier: string,
      *     identityIdentifier: ?string,
      *     category: int,

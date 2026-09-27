@@ -33,10 +33,10 @@ class RejectAccountCategoryChangeRequestTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(RejectAccountCategoryChangeRequest::class, $this->app->make(\Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(RejectAccountCategoryChangeRequest::class, $this->app()->make(\Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface::class));
     }
 
     public function testRejectUpdatesRequestOnlyWhenOperationsPolicyAllows(): void

@@ -47,6 +47,7 @@ class UpdateIdentityOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('identityIdentifier', $result));
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertSame((string) $identityName, $result['identityName']);
         $this->assertSame((string) $email, $result['email']);
@@ -68,6 +69,7 @@ class UpdateIdentityOutputTest extends TestCase
         $output = new UpdateIdentityOutput();
         $output->setIdentity($identity);
 
+        self::assertTrue(array_key_exists('profileImage', $output->toArray()));
         $this->assertNull($output->toArray()['profileImage']);
     }
 }

@@ -39,7 +39,7 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
     {
         $this->bindDependencies([]);
 
-        $this->assertInstanceOf(CreateStepUpPasskeyOptions::class, $this->app->make(CreateStepUpPasskeyOptionsInterface::class));
+        $this->assertInstanceOf(CreateStepUpPasskeyOptions::class, $this->app()->make(CreateStepUpPasskeyOptionsInterface::class));
     }
 
     public function testItLimitsOptionsToTheAuthenticatedIdentitysCredentialsAndStoresIdentityBoundChallenge(): void
@@ -66,11 +66,13 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
         $this->bindDependencies([$first, $second], $webAuthn, $storage);
 
         $output = new CreateStepUpPasskeyOptionsOutput();
-        $this->app->make(CreateStepUpPasskeyOptionsInterface::class)->process(
+        $this->app()->make(CreateStepUpPasskeyOptionsInterface::class)->process(
             new CreateStepUpPasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID)),
             $output,
         );
 
+        $this->assertArrayHasKey('challengeKey', $output->toArray());
+        self::assertTrue(array_key_exists('challengeKey', $output->toArray()));
         $this->assertSame(self::CHALLENGE_KEY, $output->toArray()['challengeKey']);
     }
 
@@ -82,7 +84,7 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
         $this->bindDependencies([], storage: $storage);
 
         $this->expectException(PasskeyRecoveryRequiredException::class);
-        $this->app->make(CreateStepUpPasskeyOptionsInterface::class)->process(
+        $this->app()->make(CreateStepUpPasskeyOptionsInterface::class)->process(
             new CreateStepUpPasskeyOptionsInput(new IdentityIdentifier(self::IDENTITY_ID)),
             new CreateStepUpPasskeyOptionsOutput(),
         );
@@ -91,8 +93,8 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
     /** @param PasskeyCredential[] $credentials */
     private function bindDependencies(
         array $credentials,
-        ?WebAuthnServiceInterface $webAuthn = null,
-        ?ChallengeSessionStorageServiceInterface $storage = null,
+        (WebAuthnServiceInterface&\Mockery\MockInterface)|null $webAuthn = null,
+        (ChallengeSessionStorageServiceInterface&\Mockery\MockInterface)|null $storage = null,
     ): void {
         $repository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $repository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->with(Mockery::on(
@@ -107,11 +109,11 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $uuidGenerator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn(self::CHALLENGE_KEY);
 
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $repository);
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $repository);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
     }
 
     private function credential(string $identifier, string $credentialId): PasskeyCredential

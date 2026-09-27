@@ -21,7 +21,7 @@ class AccountCategoryChangeRequestFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(AccountCategoryChangeRequestFactoryInterface::class);
+        $factory = $this->app()->make(AccountCategoryChangeRequestFactoryInterface::class);
 
         $this->assertInstanceOf(AccountCategoryChangeRequestFactory::class, $factory);
     }
@@ -35,7 +35,7 @@ class AccountCategoryChangeRequestFactoryTest extends TestCase
         $currentAccountCategory = AccountCategory::GENERAL;
         $requestedAccountCategory = AccountCategory::AGENCY;
 
-        $factory = $this->app->make(AccountCategoryChangeRequestFactoryInterface::class);
+        $factory = $this->app()->make(AccountCategoryChangeRequestFactoryInterface::class);
         $request = $factory->create($accountIdentifier, $currentAccountCategory, $requestedAccountCategory);
 
         $this->assertTrue(UuidValidator::isValid((string) $request->requestIdentifier()));

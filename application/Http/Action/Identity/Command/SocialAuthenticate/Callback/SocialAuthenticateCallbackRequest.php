@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\SocialAuthenticate\Callback;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SocialAuthenticateCallbackRequest extends FormRequest
@@ -29,11 +30,11 @@ class SocialAuthenticateCallbackRequest extends FormRequest
 
     public function code(): string
     {
-        return (string) $this->input('code');
+        return RequestValue::string($this->input('code'));
     }
 
     public function state(): string
     {
-        return (string) $this->input('state');
+        return RequestValue::string($this->input('state'));
     }
 }

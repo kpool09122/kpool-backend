@@ -51,7 +51,7 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Redis::setex('passkey_recovery_email:' . $hash, self::TTL_SECONDS, json_encode([
             'identity_id' => $identityIdentifier === null ? null : (string) $identityIdentifier,
-            'code_hash' => hash_hmac('sha256', $code, (string) config('app.key')),
+            'code_hash' => hash_hmac('sha256', $code, config()->string('app.key')),
         ], JSON_THROW_ON_ERROR));
         if ($identityIdentifier !== null) {
             try {
@@ -81,10 +81,10 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
             throw new PasskeyRecoveryVerificationFailedException('Recovery code is invalid or expired.');
         }
         $data = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-        if (! is_array($data) || ! array_key_exists('identity_id', $data) || ! isset($data['code_hash'])) {
+        if (! is_array($data) || ! array_key_exists('identity_id', $data) || ! is_string($data['code_hash'] ?? null) || (! is_string($data['identity_id']) && $data['identity_id'] !== null)) {
             throw new PasskeyRecoveryVerificationFailedException();
         }
-        $valid = hash_equals((string) $data['code_hash'], hash_hmac('sha256', (string) $code, (string) config('app.key')));
+        $valid = hash_equals($data['code_hash'], hash_hmac('sha256', (string) $code, config()->string('app.key')));
         if (! $valid || $data['identity_id'] === null) {
             throw new PasskeyRecoveryVerificationFailedException('Recovery code is invalid or expired.');
         }
@@ -93,7 +93,7 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         }
         Redis::del($attemptsKey);
 
-        return new IdentityIdentifier((string) $data['identity_id']);
+        return new IdentityIdentifier($data['identity_id']);
     }
 
     private function hash(Email $email): string

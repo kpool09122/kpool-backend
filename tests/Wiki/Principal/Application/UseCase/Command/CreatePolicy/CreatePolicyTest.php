@@ -32,9 +32,9 @@ class CreatePolicyTest extends TestCase
     {
         $repository = Mockery::mock(PolicyRepositoryInterface::class);
         $factory = Mockery::mock(PolicyFactoryInterface::class);
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
-        $this->app->instance(PolicyFactoryInterface::class, $factory);
-        $useCase = $this->app->make(CreatePolicyInterface::class);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
+        $this->app()->instance(PolicyFactoryInterface::class, $factory);
+        $useCase = $this->app()->make(CreatePolicyInterface::class);
         $this->assertInstanceOf(CreatePolicy::class, $useCase);
     }
 
@@ -61,10 +61,10 @@ class CreatePolicyTest extends TestCase
             )
             ->andReturn($testData->policy);
 
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
-        $this->app->instance(PolicyFactoryInterface::class, $factory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
+        $this->app()->instance(PolicyFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(CreatePolicyInterface::class);
+        $useCase = $this->app()->make(CreatePolicyInterface::class);
         $output = new CreatePolicyOutput();
 
         $useCase->process($testData->input, $output);

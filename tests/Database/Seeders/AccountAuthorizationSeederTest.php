@@ -40,7 +40,7 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMIN));
     }
 
-    /** @return array<int, string> */
+    /** @return array<array-key, string> */
     private function policyNames(string $roleName): array
     {
         return DB::table('account_policies')
@@ -48,6 +48,11 @@ class AccountAuthorizationSeederTest extends TestCase
             ->join('account_roles', 'account_roles.id', '=', 'account_role_policy_attachments.role_id')
             ->where('account_roles.name', $roleName)
             ->pluck('account_policies.name')
+            ->map(static function (mixed $name): string {
+                self::assertIsString($name);
+
+                return $name;
+            })
             ->all();
     }
 }

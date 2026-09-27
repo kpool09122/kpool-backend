@@ -28,7 +28,7 @@ class AuthCodeServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $authCodeService = $this->app->make(AuthCodeServiceInterface::class);
+        $authCodeService = $this->app()->make(AuthCodeServiceInterface::class);
         $this->assertInstanceOf(AuthCodeService::class, $authCodeService);
     }
 

@@ -25,7 +25,7 @@ readonly class AgencyWikiBasicReadModel implements WikiBasicReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{name: string, normalizedName: string, ceo: string, normalizedCeo: string, foundedIn: string|null, parentAgencyIdentifier: string|null, status: string|null, officialWebsite: string|null, socialLinks: list<string>}
      */
     public function toArray(): array
     {

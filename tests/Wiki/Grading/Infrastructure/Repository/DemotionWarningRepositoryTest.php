@@ -30,7 +30,7 @@ class DemotionWarningRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $this->assertInstanceOf(DemotionWarningRepository::class, $repository);
     }
 
@@ -62,7 +62,7 @@ class DemotionWarningRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $repository->save($warning);
 
         $this->assertDatabaseHas('demotion_warnings', [
@@ -107,7 +107,7 @@ class DemotionWarningRepositoryTest extends TestCase
         ]);
 
         // 同じPrincipalで更新（warning_countをインクリメント）
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $warning = new DemotionWarning(
             new DemotionWarningIdentifier($warningId),
             new PrincipalIdentifier($principalId),
@@ -156,7 +156,7 @@ class DemotionWarningRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $result = $repository->findByPrincipal(new PrincipalIdentifier($principalId));
 
         $this->assertNotNull($result);
@@ -174,7 +174,7 @@ class DemotionWarningRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPrincipalWhenNotFound(): void
     {
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
 
         $result = $repository->findByPrincipal(
             new PrincipalIdentifier(StrTestHelper::generateUuid())
@@ -208,7 +208,7 @@ class DemotionWarningRepositoryTest extends TestCase
         // 削除前の確認
         $this->assertDatabaseHas('demotion_warnings', ['id' => $warningId]);
 
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $warning = new DemotionWarning(
             new DemotionWarningIdentifier($warningId),
             new PrincipalIdentifier($principalId),
@@ -265,7 +265,7 @@ class DemotionWarningRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
         $results = $repository->findAll();
 
         $this->assertCount(2, $results);
@@ -285,7 +285,7 @@ class DemotionWarningRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindAllWhenEmpty(): void
     {
-        $repository = $this->app->make(DemotionWarningRepositoryInterface::class);
+        $repository = $this->app()->make(DemotionWarningRepositoryInterface::class);
 
         $results = $repository->findAll();
 

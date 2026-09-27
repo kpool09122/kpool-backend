@@ -21,7 +21,7 @@ class PrincipalRepositoryTest extends TestCase
 {
     public function test__construct(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
 
         $this->assertInstanceOf(PrincipalRepository::class, $repository);
     }
@@ -40,7 +40,7 @@ class PrincipalRepositoryTest extends TestCase
         $this->createPrincipal($principalIdentifierA, $identityIdentifierA, $accountIdentifier);
         $this->createPrincipal($principalIdentifierB, $identityIdentifierB, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $principals = $repository->findByIds([$principalIdentifierA, $principalIdentifierB]);
 
         $this->assertCount(2, $principals);
@@ -54,7 +54,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
 
         $this->assertSame([], $repository->findByIds([]));
     }
@@ -70,7 +70,7 @@ class PrincipalRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => 'principal-existing@example.com']);
         $this->createPrincipal($existingPrincipalIdentifier, $identityIdentifier, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $principals = $repository->findByIds([$existingPrincipalIdentifier, $missingPrincipalIdentifier]);
 
         $this->assertCount(1, $principals);

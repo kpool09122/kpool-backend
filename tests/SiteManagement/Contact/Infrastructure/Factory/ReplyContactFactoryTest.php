@@ -38,8 +38,8 @@ class ReplyContactFactoryTest extends TestCase
             ->once()
             ->andReturn($replyIdentifier);
 
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $factory = $this->app->make(ReplyContactFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $factory = $this->app()->make(ReplyContactFactoryInterface::class);
 
         $before = new DateTimeImmutable('now');
         $reply = $factory->create(
@@ -79,8 +79,8 @@ class ReplyContactFactoryTest extends TestCase
             ->once()
             ->andReturn($replyIdentifier);
 
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $factory = $this->app->make(ReplyContactFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $factory = $this->app()->make(ReplyContactFactoryInterface::class);
 
         $reply = $factory->create(
             new ContactIdentifier(StrTestHelper::generateUuid()),

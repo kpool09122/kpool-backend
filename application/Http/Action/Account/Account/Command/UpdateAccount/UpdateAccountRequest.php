@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\UpdateAccount;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -46,14 +47,14 @@ class UpdateAccountRequest extends FormRequest
 
     public function accountName(): string
     {
-        return (string) $this->input('accountName');
+        return RequestValue::string($this->input('accountName'));
     }
 
     public function phone(): ?string
     {
         $value = $this->input('phone');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /** @return array<string, mixed>|null */
@@ -61,7 +62,7 @@ class UpdateAccountRequest extends FormRequest
     {
         $value = $this->input('address');
 
-        return is_array($value) ? $value : null;
+        return is_array($value) ? RequestValue::object($value) : null;
     }
 
     /** @return list<string> */

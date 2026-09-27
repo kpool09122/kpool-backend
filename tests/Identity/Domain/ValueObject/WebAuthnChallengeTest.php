@@ -14,6 +14,7 @@ class WebAuthnChallengeTest extends TestCase
     #[DataProvider('validByteLengthProvider')]
     public function testItAcceptsAChallengeWithinTheAllowedByteLength(int $byteLength): void
     {
+        self::assertTrue($byteLength > 0);
         $binary = random_bytes($byteLength);
         $challenge = new WebAuthnChallenge(self::base64urlEncode($binary));
 

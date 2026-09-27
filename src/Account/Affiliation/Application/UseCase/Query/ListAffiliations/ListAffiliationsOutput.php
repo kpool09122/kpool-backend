@@ -29,7 +29,7 @@ class ListAffiliationsOutput implements ListAffiliationsOutputPort
         $this->perPage = $perPage;
     }
 
-    /** @return array{affiliations: array<int, array<string, mixed>>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null} */
+    /** @return array{affiliations: array<array{ affiliationIdentifier: string, agencyAccountIdentifier: string, talentAccountIdentifier: string, agencyAccount: array{accountIdentifier: string, name: string, email: string}, talentAccount: array{accountIdentifier: string, name: string, email: string}, requestedBy: string, status: string, terms: array{revenueSharePercentage: int|null, contractNotes: string|null}|null, requestedAt: string, activatedAt: string|null, terminatedAt: string|null }>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null} */
     public function toArray(): array
     {
         return [

@@ -16,7 +16,7 @@ final readonly class ImageUrl
 
         $url = str_starts_with($path, '/')
             ? url($path)
-            : Storage::disk((string) config('filesystems.image_disk', 'public'))->url($path);
+            : Storage::disk(config()->string('filesystems.image_disk', 'public'))->url($path);
 
         return self::normalizeLocalhost($url);
     }

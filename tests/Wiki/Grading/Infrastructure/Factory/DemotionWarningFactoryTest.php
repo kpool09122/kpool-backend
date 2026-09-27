@@ -24,7 +24,7 @@ class DemotionWarningFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(DemotionWarningFactoryInterface::class);
+        $factory = $this->app()->make(DemotionWarningFactoryInterface::class);
         $this->assertInstanceOf(DemotionWarningFactory::class, $factory);
     }
 
@@ -38,7 +38,7 @@ class DemotionWarningFactoryTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $lastWarningMonth = YearMonth::fromDateTime(new DateTimeImmutable());
 
-        $factory = $this->app->make(DemotionWarningFactoryInterface::class);
+        $factory = $this->app()->make(DemotionWarningFactoryInterface::class);
         $demotionWarning = $factory->create(
             $principalIdentifier,
             $lastWarningMonth,

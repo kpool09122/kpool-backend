@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Delegation\Command\RequestDelegation;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RequestDelegationRequest extends FormRequest
@@ -19,6 +20,6 @@ class RequestDelegationRequest extends FormRequest
 
     public function targetAccountIdentifier(): string
     {
-        return (string) $this->input('targetAccountIdentifier');
+        return RequestValue::string($this->input('targetAccountIdentifier'));
     }
 }

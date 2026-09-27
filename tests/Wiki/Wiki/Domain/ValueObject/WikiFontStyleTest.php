@@ -53,15 +53,12 @@ class WikiFontStyleTest extends TestCase
      */
     public static function validFontStyleProvider(): array
     {
-        return array_reduce(
-            WikiFontStyle::values(),
-            static function (array $cases, string $fontStyle): array {
-                $cases[$fontStyle] = [$fontStyle];
+        $cases = [];
+        foreach (WikiFontStyle::values() as $fontStyle) {
+            $cases[$fontStyle] = [$fontStyle];
+        }
 
-                return $cases;
-            },
-            [],
-        );
+        return $cases;
     }
 
     /**

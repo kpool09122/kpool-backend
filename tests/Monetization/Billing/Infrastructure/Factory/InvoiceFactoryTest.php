@@ -46,8 +46,8 @@ class InvoiceFactoryTest extends TestCase
             ->once()
             ->andReturn((string)$invoiceIdentifier);
 
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $factory = $this->app->make(InvoiceFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $factory = $this->app()->make(InvoiceFactoryInterface::class);
 
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
         $currency = Currency::JPY;
@@ -96,8 +96,8 @@ class InvoiceFactoryTest extends TestCase
         $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $factory = $this->app->make(InvoiceFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $factory = $this->app()->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
         $factory->create(
@@ -126,8 +126,8 @@ class InvoiceFactoryTest extends TestCase
         $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $factory = $this->app->make(InvoiceFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $factory = $this->app()->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
         $factory->create(

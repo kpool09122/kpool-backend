@@ -34,9 +34,9 @@ class AttachPolicyToRoleTest extends TestCase
     {
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $useCase = $this->app->make(AttachPolicyToRoleInterface::class);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $useCase = $this->app()->make(AttachPolicyToRoleInterface::class);
         $this->assertInstanceOf(AttachPolicyToRole::class, $useCase);
     }
 
@@ -74,7 +74,7 @@ class AttachPolicyToRoleTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
@@ -84,13 +84,13 @@ class AttachPolicyToRoleTest extends TestCase
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturn($policy);
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
 
-        $useCase = $this->app->make(AttachPolicyToRoleInterface::class);
+        $useCase = $this->app()->make(AttachPolicyToRoleInterface::class);
         $input = new AttachPolicyToRoleInput($roleIdentifier, $policyIdentifier);
 
         $useCase->process($input);
@@ -107,17 +107,17 @@ class AttachPolicyToRoleTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturnNull();
         $roleRepository->shouldNotReceive('save');
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldNotReceive('findById');
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
 
-        $useCase = $this->app->make(AttachPolicyToRoleInterface::class);
+        $useCase = $this->app()->make(AttachPolicyToRoleInterface::class);
         $input = new AttachPolicyToRoleInput($roleIdentifier, $policyIdentifier);
 
         $this->expectException(RoleNotFoundException::class);
@@ -144,20 +144,20 @@ class AttachPolicyToRoleTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $roleRepository->shouldNotReceive('save');
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturnNull();
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
 
-        $useCase = $this->app->make(AttachPolicyToRoleInterface::class);
+        $useCase = $this->app()->make(AttachPolicyToRoleInterface::class);
         $input = new AttachPolicyToRoleInput($roleIdentifier, $policyIdentifier);
 
         $this->expectException(PolicyNotFoundException::class);
@@ -195,7 +195,7 @@ class AttachPolicyToRoleTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
@@ -208,13 +208,13 @@ class AttachPolicyToRoleTest extends TestCase
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturn($policy);
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
 
-        $useCase = $this->app->make(AttachPolicyToRoleInterface::class);
+        $useCase = $this->app()->make(AttachPolicyToRoleInterface::class);
         $input = new AttachPolicyToRoleInput($roleIdentifier, $policyIdentifier);
 
         $useCase->process($input);

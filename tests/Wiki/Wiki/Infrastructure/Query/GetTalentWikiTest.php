@@ -47,7 +47,7 @@ class GetTalentWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
@@ -68,7 +68,7 @@ class GetTalentWikiTest extends TestCase
                         'title' => 'Overview',
                         'content' => 'Published sample for checking the talent wiki state.',
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => '채영',
@@ -84,11 +84,11 @@ class GetTalentWikiTest extends TestCase
                 'blood_type' => 'B',
                 'fandom_name' => 'ONCE',
                 'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f001',
-                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002']),
+                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002'], JSON_THROW_ON_ERROR),
             ],
         );
 
-        $useCase = $this->app->make(GetTalentWikiInterface::class);
+        $useCase = $this->app()->make(GetTalentWikiInterface::class);
         $readModel = $useCase->process(new GetTalentWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
@@ -112,6 +112,8 @@ class GetTalentWikiTest extends TestCase
             'name' => 'JYP Entertainment',
             'normalizedName' => 'jyp entertainment',
         ], $readModel->basic()['agency']);
+        self::assertIsArray($readModel->basic()['groups']);
+        self::assertIsArray($readModel->basic()['groups'][0]);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->basic()['groups'][0]['wikiIdentifier']);
         $this->assertSame('TWICE', $readModel->basic()['groups'][0]['name']);
         $this->assertSame('girl_group', $readModel->basic()['groups'][0]['groupType']);
@@ -121,7 +123,7 @@ class GetTalentWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenTalentWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetTalentWikiInterface::class);
+        $useCase = $this->app()->make(GetTalentWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

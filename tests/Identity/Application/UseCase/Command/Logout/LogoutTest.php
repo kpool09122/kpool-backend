@@ -23,8 +23,8 @@ class LogoutTest extends TestCase
     public function test__construct(): void
     {
         $authService = Mockery::mock(AuthServiceInterface::class);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $useCase = $this->app->make(LogoutInterface::class);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $useCase = $this->app()->make(LogoutInterface::class);
         $this->assertInstanceOf(Logout::class, $useCase);
     }
 
@@ -45,8 +45,8 @@ class LogoutTest extends TestCase
         $authService->shouldReceive('logout')
             ->once();
 
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $useCase = $this->app->make(LogoutInterface::class);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $useCase = $this->app()->make(LogoutInterface::class);
 
         $useCase->process($input);
     }
@@ -67,8 +67,8 @@ class LogoutTest extends TestCase
             ->andReturn(false);
         $authService->shouldNotReceive('logout');
 
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $useCase = $this->app->make(LogoutInterface::class);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $useCase = $this->app()->make(LogoutInterface::class);
 
         $useCase->process($input);
     }

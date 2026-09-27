@@ -36,8 +36,8 @@ class DeleteAccountTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(AccountRepositoryInterface::class);
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeleteAccountInterface::class);
         $this->assertInstanceOf(DeleteAccount::class, $useCase);
     }
 
@@ -62,12 +62,13 @@ class DeleteAccountTest extends TestCase
             ->once()
             ->andReturnNull();
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeleteAccountInterface::class);
         $output = new DeleteAccountOutput();
         $useCase->process($input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $dummyData->identifier, $result['accountIdentifier']);
         $this->assertSame((string) $dummyData->email, $result['email']);
         $this->assertSame($dummyData->accountType->value, $result['type']);
@@ -91,8 +92,8 @@ class DeleteAccountTest extends TestCase
             ->andReturnNull();
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeleteAccountInterface::class);
 
         $this->expectException(AccountNotFoundException::class);
         $output = new DeleteAccountOutput();
@@ -121,8 +122,8 @@ class DeleteAccountTest extends TestCase
             ->andReturn($dummyData->account);
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeleteAccountInterface::class);
 
         $this->expectException(AccountDeletionBlockedException::class);
 

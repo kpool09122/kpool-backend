@@ -28,7 +28,7 @@ class PrincipalFactoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $factory = $this->app->make(PrincipalFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalFactoryInterface::class);
         $principal = $factory->create(
             $identityIdentifier,
             $accountIdentifier,
@@ -58,7 +58,7 @@ class PrincipalFactoryTest extends TestCase
 
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
         $delegatedIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $factory = $this->app->make(PrincipalFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalFactoryInterface::class);
         $delegatedPrincipal = $factory->createDelegatedPrincipal(
             $originalPrincipal,
             $delegationIdentifier,

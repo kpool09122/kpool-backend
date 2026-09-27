@@ -6,7 +6,6 @@ namespace Tests\Shared\Infrastructure\Trait;
 
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Mockery;
-use Source\Shared\Infrastructure\Trait\WhereLike;
 use Tests\TestCase;
 
 class WhereLikeTest extends TestCase
@@ -20,6 +19,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', '%test%')
@@ -37,6 +37,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', '%100\%%')
@@ -54,6 +55,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', '%test\_value%')
@@ -71,6 +73,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', '%test\\\\value%')
@@ -83,6 +86,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', 'test%')
@@ -95,6 +99,7 @@ class WhereLikeTest extends TestCase
     {
         $subject = $this->createSubject();
         $query = Mockery::mock(QueryBuilder::class);
+        self::assertInstanceOf(QueryBuilder::class, $query);
         $query->shouldReceive('where')
             ->once()
             ->with('name', 'LIKE', '100\%\_test%')
@@ -103,13 +108,8 @@ class WhereLikeTest extends TestCase
         $subject->whereStartsWith($query, 'name', '100%_test');
     }
 
-    /**
-     * @return object traitを使用するオブジェクト
-     */
-    private function createSubject(): object
+    private function createSubject(): WhereLikeSubject
     {
-        return new class () {
-            use WhereLike;
-        };
+        return new WhereLikeSubject();
     }
 }

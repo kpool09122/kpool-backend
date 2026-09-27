@@ -11,6 +11,7 @@ use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAt
 use Application\Models\Wiki\Role as RoleEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
@@ -134,6 +135,7 @@ class RoleRepository implements RoleRepositoryInterface
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         if (empty($principalIds)) {
@@ -143,10 +145,11 @@ class RoleRepository implements RoleRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -182,7 +185,7 @@ class RoleRepository implements RoleRepositoryInterface
             $eloquent->name,
             $policies,
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 }

@@ -66,7 +66,7 @@ class ImageService implements ImageServiceInterface
 
     public function delete(ImagePath $path): bool
     {
-        return Storage::disk((string) config('filesystems.image_disk', 'public'))->delete((string) $path);
+        return Storage::disk(config()->string('filesystems.image_disk', 'public'))->delete((string) $path);
     }
 
     private function storeImage(GdImage $gdImage): ImagePath
@@ -88,7 +88,7 @@ class ImageService implements ImageServiceInterface
         imagewebp($image);
         $webpData = ob_get_clean();
 
-        Storage::disk((string) config('filesystems.image_disk', 'public'))->put($fileName, $webpData);
+        Storage::disk(config()->string('filesystems.image_disk', 'public'))->put($fileName, $webpData);
 
         return $fileName;
     }
@@ -114,6 +114,10 @@ class ImageService implements ImageServiceInterface
         } else {
             $newHeight = self::MAX_RESIZED_DIMENSION;
             $newWidth = (int)floor($width * (self::MAX_RESIZED_DIMENSION / $height));
+        }
+
+        if ($newWidth < 1 || $newHeight < 1) {
+            throw new \UnexpectedValueException('Resized image dimensions must be positive.');
         }
 
         $resized = imagecreatetruecolor($newWidth, $newHeight);

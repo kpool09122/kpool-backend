@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Billing\Command\CreateInvoice;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -50,9 +51,9 @@ readonly class CreateInvoiceAction
                     buyerMonetizationAccountIdentifier: new MonetizationAccountIdentifier($request->buyerMonetizationAccountIdentifier()),
                     lines: array_map(
                         static fn (array $line) => new InvoiceLine(
-                            (string) $line['description'],
-                            new Money((int) $line['unitPriceAmount'], $currency),
-                            (int) $line['quantity'],
+                            RequestValue::string($line['description']),
+                            new Money(RequestValue::integer($line['unitPriceAmount']), $currency),
+                            RequestValue::integer($line['quantity']),
                         ),
                         $request->lines()
                     ),
@@ -64,8 +65,8 @@ readonly class CreateInvoiceAction
                     taxLines: $request->taxLines() !== null
                         ? array_map(
                             static fn (array $line) => new TaxLine(
-                                (string) $line['label'],
-                                new Percentage((int) $line['rate']),
+                                RequestValue::string($line['label']),
+                                new Percentage(RequestValue::integer($line['rate'])),
                                 (bool) $line['inclusive'],
                             ),
                             $request->taxLines()

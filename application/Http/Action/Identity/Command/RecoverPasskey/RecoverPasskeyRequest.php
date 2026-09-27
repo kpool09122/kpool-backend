@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\RecoverPasskey;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecoverPasskeyRequest extends FormRequest
@@ -34,17 +35,17 @@ class RecoverPasskeyRequest extends FormRequest
 
     public function recoveryKey(): string
     {
-        return (string) $this->input('recoveryKey');
+        return RequestValue::string($this->input('recoveryKey'));
     }
 
     public function challengeKey(): string
     {
-        return (string) $this->input('challengeKey');
+        return RequestValue::string($this->input('challengeKey'));
     }
 
     public function displayName(): string
     {
-        return (string) $this->input('displayName');
+        return RequestValue::string($this->input('displayName'));
     }
 
     /** @return array<string, mixed> */

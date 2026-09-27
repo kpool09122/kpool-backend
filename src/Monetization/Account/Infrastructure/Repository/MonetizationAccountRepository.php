@@ -22,6 +22,7 @@ use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
 use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
@@ -116,7 +117,7 @@ class MonetizationAccountRepository implements MonetizationAccountRepositoryInte
     {
         $capabilities = array_map(
             Capability::from(...),
-            json_decode($eloquent->capabilities, true, 512, JSON_THROW_ON_ERROR) ?? []
+            TypedValue::stringArray(json_decode($eloquent->capabilities, true, 512, JSON_THROW_ON_ERROR) ?? [])
         );
 
         $billingAddressData = $eloquent->billing_address;

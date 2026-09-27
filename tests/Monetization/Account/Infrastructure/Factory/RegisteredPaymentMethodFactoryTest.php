@@ -24,7 +24,7 @@ class RegisteredPaymentMethodFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(RegisteredPaymentMethodFactoryInterface::class);
+        $factory = $this->app()->make(RegisteredPaymentMethodFactoryInterface::class);
         $this->assertInstanceOf(RegisteredPaymentMethodFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class RegisteredPaymentMethodFactoryTest extends TestCase
         $paymentMethodId = new PaymentMethodId('pm_' . StrTestHelper::generateStr(10));
         $type = PaymentMethodType::CARD;
 
-        $factory = $this->app->make(RegisteredPaymentMethodFactoryInterface::class);
+        $factory = $this->app()->make(RegisteredPaymentMethodFactoryInterface::class);
         $registeredPaymentMethod = $factory->create(
             $monetizationAccountIdentifier,
             $paymentMethodId,

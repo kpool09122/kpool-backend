@@ -62,14 +62,14 @@ class RollbackWikiTest extends TestCase
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $this->assertInstanceOf(RollbackWiki::class, $rollbackWiki);
     }
 
@@ -103,11 +103,11 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn($currentWiki);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier))
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier))
             ->once()
             ->andReturn([$currentWiki]);
         $wikiRepository->shouldReceive('save')
@@ -117,8 +117,8 @@ class RollbackWikiTest extends TestCase
         $snapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier),
-                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier),
+                Mockery::on(static fn (Version $arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([$snapshot]);
@@ -134,7 +134,7 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -148,14 +148,14 @@ class RollbackWikiTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $output = new RollbackWikiOutput();
         $rollbackWiki->process($input, $output);
         $result = $output->toArray();
@@ -199,11 +199,11 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifierKo))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifierKo))
             ->once()
             ->andReturn($currentWikiKo);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier))
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier))
             ->once()
             ->andReturn([$currentWikiKo, $currentWikiJa]);
         $wikiRepository->shouldReceive('save')
@@ -213,8 +213,8 @@ class RollbackWikiTest extends TestCase
         $snapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier),
-                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier),
+                Mockery::on(static fn (Version $arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([$snapshotKo, $snapshotJa]);
@@ -227,7 +227,7 @@ class RollbackWikiTest extends TestCase
         $snapshotFactory = Mockery::mock(WikiSnapshotFactoryInterface::class);
         $snapshotFactory->shouldReceive('create')
             ->twice()
-            ->andReturnUsing(function ($wiki) use ($newSnapshotKo, $newSnapshotJa, $wikiIdentifierKo) {
+            ->andReturnUsing(function (Wiki $wiki) use ($newSnapshotKo, $newSnapshotJa, $wikiIdentifierKo) {
                 if ((string) $wiki->wikiIdentifier() === (string) $wikiIdentifierKo) {
                     return $newSnapshotKo;
                 }
@@ -237,7 +237,7 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -251,14 +251,14 @@ class RollbackWikiTest extends TestCase
             ->twice()
             ->andReturn(null);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $output = new RollbackWikiOutput();
         $rollbackWiki->process($input, $output);
         $result = $output->toArray();
@@ -294,7 +294,7 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn($currentWiki);
 
@@ -303,23 +303,23 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(DisallowedException::class);
         $this->setPolicyEvaluatorResult(false);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
@@ -341,7 +341,7 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn(null);
 
@@ -351,15 +351,15 @@ class RollbackWikiTest extends TestCase
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
@@ -385,7 +385,7 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn($currentWiki);
 
@@ -394,22 +394,22 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn(null);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
@@ -441,19 +441,19 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn($currentWiki);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier))
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier))
             ->once()
             ->andReturn([$currentWiki]);
 
         $snapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier),
-                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier),
+                Mockery::on(static fn (Version $arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([]);
@@ -462,22 +462,22 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(SnapshotNotFoundException::class);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
@@ -510,11 +510,11 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifierKo))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifierKo))
             ->once()
             ->andReturn($currentWikiKo);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $translationSetIdentifier))
+            ->with(Mockery::on(static fn (TranslationSetIdentifier $arg) => (string) $arg === (string) $translationSetIdentifier))
             ->once()
             ->andReturn([$currentWikiKo, $currentWikiJa]);
 
@@ -523,22 +523,22 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(VersionMismatchException::class);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
@@ -570,7 +570,7 @@ class RollbackWikiTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $wikiIdentifier))
+            ->with(Mockery::on(static fn (WikiIdentifier $arg) => (string) $arg === (string) $wikiIdentifier))
             ->once()
             ->andReturn($currentWiki);
 
@@ -579,22 +579,22 @@ class RollbackWikiTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(static fn ($arg) => (string) $arg === (string) $principalIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $arg) => (string) $arg === (string) $principalIdentifier))
             ->once()
             ->andReturn($principal);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $snapshotFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $this->expectException(InvalidRollbackTargetVersionException::class);
-        $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
+        $rollbackWiki = $this->app()->make(RollbackWikiInterface::class);
         $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 

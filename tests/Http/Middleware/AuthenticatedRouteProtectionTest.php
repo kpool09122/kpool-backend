@@ -21,7 +21,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         parent::setUp();
 
-        $router = $this->app['router'];
+        $router = $this->app()['router'];
         $router->aliasMiddleware('auth.api', \Application\Http\Middleware\EnsureAuthenticated::class);
         $router->aliasMiddleware('resolve.actor', \Application\Http\Middleware\ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', \Application\Http\Middleware\ResolveAccountContext::class);

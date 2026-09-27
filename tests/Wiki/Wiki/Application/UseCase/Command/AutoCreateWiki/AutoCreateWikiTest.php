@@ -21,6 +21,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiIn
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\GeneratedWikiData;
+use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
@@ -75,17 +76,17 @@ class AutoCreateWikiTest extends TestCase
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()
+            ->with(Mockery::on(static fn (DraftWiki $draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()
                 && (string) $draftWiki->editorIdentifier() === (string) $principalIdentifier))
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
-        $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $service);
+        $this->app()->instance(NormalizationServiceInterface::class, $normalizationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
-        $useCase = $this->app->make(AutoCreateWikiInterface::class);
+        $useCase = $this->app()->make(AutoCreateWikiInterface::class);
 
         $output = new AutoCreateWikiOutput();
         $useCase->process($input, $output);
@@ -131,16 +132,16 @@ class AutoCreateWikiTest extends TestCase
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
+            ->with(Mockery::on(static fn (DraftWiki $draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
-        $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $service);
+        $this->app()->instance(NormalizationServiceInterface::class, $normalizationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
-        $useCase = $this->app->make(AutoCreateWikiInterface::class);
+        $useCase = $this->app()->make(AutoCreateWikiInterface::class);
 
         $output = new AutoCreateWikiOutput();
         $useCase->process($input, $output);
@@ -173,14 +174,14 @@ class AutoCreateWikiTest extends TestCase
         $normalizationService = Mockery::mock(NormalizationServiceInterface::class);
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
-        $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $service);
+        $this->app()->instance(NormalizationServiceInterface::class, $normalizationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
         $this->setPolicyEvaluatorResult(false);
-        $useCase = $this->app->make(AutoCreateWikiInterface::class);
+        $useCase = $this->app()->make(AutoCreateWikiInterface::class);
 
         $this->expectException(DisallowedException::class);
         $useCase->process($input, new AutoCreateWikiOutput());
@@ -208,13 +209,13 @@ class AutoCreateWikiTest extends TestCase
         $normalizationService = Mockery::mock(NormalizationServiceInterface::class);
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
-        $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $service);
+        $this->app()->instance(NormalizationServiceInterface::class, $normalizationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
-        $useCase = $this->app->make(AutoCreateWikiInterface::class);
+        $useCase = $this->app()->make(AutoCreateWikiInterface::class);
 
         $this->expectException(PrincipalNotFoundException::class);
         $useCase->process($input, new AutoCreateWikiOutput());
@@ -261,16 +262,16 @@ class AutoCreateWikiTest extends TestCase
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
+            ->with(Mockery::on(static fn (DraftWiki $draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
-        $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $service);
+        $this->app()->instance(NormalizationServiceInterface::class, $normalizationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
-        $useCase = $this->app->make(AutoCreateWikiInterface::class);
+        $useCase = $this->app()->make(AutoCreateWikiInterface::class);
 
         $output = new AutoCreateWikiOutput();
         $useCase->process($input, $output);

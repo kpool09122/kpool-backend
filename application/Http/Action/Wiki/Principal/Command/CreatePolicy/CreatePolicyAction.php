@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Principal\Command\CreatePolicy;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,9 @@ use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyI
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyOutput;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionClause;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionKey;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionOperator;
+use Source\Wiki\Principal\Domain\ValueObject\ConditionValue;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -40,13 +44,21 @@ readonly class CreatePolicyAction
             try {
                 $statements = array_map(
                     static fn (array $s) => new Statement(
-                        Effect::from($s['effect']),
-                        array_map(static fn (string $a) => Action::from($a), $s['actions']),
-                        array_map(static fn (string $r) => ResourceType::from($r), $s['resourceTypes']),
+                        Effect::from(RequestValue::string($s['effect'])),
+                        array_map(static fn (string $a) => Action::from($a), RequestValue::strings($s['actions'])),
+                        array_map(static fn (string $r) => ResourceType::from($r), RequestValue::strings($s['resourceTypes'])),
                         isset($s['condition']) ? new Condition(
                             array_map(
-                                static fn (array $c) => new ConditionClause($c['field'], $c['operator'], $c['value']),
-                                $s['condition']['clauses'] ?? [],
+                                static function (array $c): ConditionClause {
+                                    if (! ($c['field'] instanceof ConditionKey)
+                                        || ! ($c['operator'] instanceof ConditionOperator)
+                                        || (! is_string($c['value']) && ! is_bool($c['value']) && ! ($c['value'] instanceof ConditionValue))) {
+                                        throw new InvalidArgumentException('Invalid condition clause.');
+                                    }
+
+                                    return new ConditionClause($c['field'], $c['operator'], $c['value']);
+                                },
+                                RequestValue::objects(RequestValue::object($s['condition'])['clauses'] ?? []),
                             ),
                         ) : null,
                     ),

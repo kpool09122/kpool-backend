@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 // Add conditional-db related imports
 use Illuminate\Support\Facades\DB;
+use LogicException;
 use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -123,10 +125,19 @@ abstract class TestCase extends OrchestraTestCase
         // Intentionally left blank; migrations are run conditionally in setUp()
     }
 
+    protected function app(): Application
+    {
+        if (! $this->app instanceof Application) {
+            throw new LogicException('The application has not been initialized.');
+        }
+
+        return $this->app;
+    }
+
     protected function setPolicyEvaluatorResult(bool $allowed): void
     {
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn($allowed);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

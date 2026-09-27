@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 
 use Application\Models\Wiki\Wiki as WikiModel;
 use Illuminate\Database\Eloquent\Builder;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Trait\WhereLike;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\SearchMasterWikis\SearchMasterWikisInputPort;
@@ -28,7 +29,7 @@ readonly class SearchMasterWikis implements SearchMasterWikisInterface
     public function process(SearchMasterWikisInputPort $input, SearchMasterWikisOutputPort $output): void
     {
         $resourceType = $input->resourceType()->value;
-        $basicTable = self::BASIC_TABLES[$resourceType];
+        $basicTable = self::BASIC_TABLES[$resourceType] ?? throw new \InvalidArgumentException('Resource type has no Wiki basic table.');
         $keyword = $input->keyword();
 
         /** @var list<WikiModel> $wikis */
@@ -52,7 +53,7 @@ readonly class SearchMasterWikis implements SearchMasterWikisInterface
         $output->output(array_map(
             static fn (WikiModel $wiki): WikiMasterSearchItemReadModel => new WikiMasterSearchItemReadModel(
                 id: $wiki->id,
-                name: (string) $wiki->getAttribute('name'),
+                name: (TypedValue::nullableString($wiki->getAttribute('name')) ?? ''),
                 slug: $wiki->slug,
                 resourceType: $wiki->resource_type,
             ),

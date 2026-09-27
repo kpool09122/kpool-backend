@@ -42,7 +42,7 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
             $affiliation->affiliationIdentifier(),
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
-            $affiliation->terminatedAt(),
+            $affiliation->terminatedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
         ));
         $output->setAffiliation($affiliation);
     }

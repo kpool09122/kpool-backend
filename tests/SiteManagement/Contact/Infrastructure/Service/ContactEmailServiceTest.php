@@ -31,7 +31,7 @@ class ContactEmailServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->app['view']->addLocation(dirname(__DIR__, 5) . '/resources/views');
+        $this->app()['view']->addLocation(dirname(__DIR__, 5) . '/resources/views');
     }
 
     /**
@@ -74,7 +74,7 @@ class ContactEmailServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(ContactEmailServiceInterface::class);
+        $service = $this->app()->make(ContactEmailServiceInterface::class);
 
         $this->assertInstanceOf(ContactEmailService::class, $service);
     }
@@ -98,7 +98,7 @@ class ContactEmailServiceTest extends TestCase
         $rendered = view($view, ['contact' => $contact])->render();
         $this->assertStringContainsString($expectedBody, $rendered);
 
-        $service = $this->app->make(ContactEmailServiceInterface::class);
+        $service = $this->app()->make(ContactEmailServiceInterface::class);
         $service->sendContactToUser($contact);
 
         Mail::assertSent(ContactAcceptedMail::class, static fn (ContactAcceptedMail $mail): bool => $mail->hasTo((string) $contact->email())
@@ -158,7 +158,7 @@ class ContactEmailServiceTest extends TestCase
         $rendered = view($view, ['content' => $content])->render();
         $this->assertStringContainsString((string) $content, $rendered);
 
-        $service = $this->app->make(ContactEmailServiceInterface::class);
+        $service = $this->app()->make(ContactEmailServiceInterface::class);
         $service->sendReplyToUser($contact, $content);
 
         Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $mail): bool => $mail->hasTo((string) $contact->email())

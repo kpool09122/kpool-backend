@@ -195,7 +195,7 @@ class ListRelatedProfilesTest extends TestCase
     private function process(ListRelatedProfilesInput $input): ListRelatedProfilesOutput
     {
         $output = new ListRelatedProfilesOutput();
-        $this->app->make(ListRelatedProfilesInterface::class)->process($input, $output);
+        $this->app()->make(ListRelatedProfilesInterface::class)->process($input, $output);
 
         return $output;
     }

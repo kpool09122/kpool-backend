@@ -50,7 +50,7 @@ class AuthenticateWithPasskeyTest extends TestCase
 
         $this->assertInstanceOf(
             AuthenticateWithPasskey::class,
-            $this->app->make(AuthenticateWithPasskeyInterface::class),
+            $this->app()->make(AuthenticateWithPasskeyInterface::class),
         );
     }
 
@@ -93,7 +93,7 @@ class AuthenticateWithPasskeyTest extends TestCase
         $this->bindDependencies($credentialRepository, $passkeyUserRepository, $identityRepository, $storage, $webAuthn, $auth);
 
         $output = new AuthenticateWithPasskeyOutput();
-        $this->app->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), $output);
+        $this->app()->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), $output);
 
         $this->assertSame(8, $credential->signCount());
         $this->assertTrue($credential->backupState());
@@ -109,7 +109,7 @@ class AuthenticateWithPasskeyTest extends TestCase
         $this->bindDependencies(credentialRepository: $credentialRepository);
 
         $this->expectException(PasskeyAuthenticationFailedException::class);
-        $this->app->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
+        $this->app()->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
     }
 
     public function testItRejectsPasskeyUserWithoutLinkedIdentity(): void
@@ -126,7 +126,7 @@ class AuthenticateWithPasskeyTest extends TestCase
         $this->bindDependencies($credentialRepository, $passkeyUserRepository);
 
         $this->expectException(PasskeyAuthenticationFailedException::class);
-        $this->app->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
+        $this->app()->make(AuthenticateWithPasskeyInterface::class)->process($this->input(), new AuthenticateWithPasskeyOutput());
     }
 
     private function input(): AuthenticateWithPasskeyInput
@@ -200,11 +200,11 @@ class AuthenticateWithPasskeyTest extends TestCase
             }
         }
 
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $credentialRepository);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(AuthServiceInterface::class, $auth);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $credentialRepository);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(AuthServiceInterface::class, $auth);
     }
 }

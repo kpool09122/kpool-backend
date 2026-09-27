@@ -145,7 +145,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Persisted creation timestamp is missing.'))->toDateTimeString()),
         );
     }
 
@@ -178,14 +178,14 @@ class PolicyRepository implements PolicyRepositoryInterface
      */
     private function deserializeCondition(array $conditionData): Condition
     {
-        return new Condition(array_map(
+        return new Condition(array_values(array_map(
             static fn (array $clauseData): ConditionClause => new ConditionClause(
                 ConditionKey::from($clauseData['key']),
                 ConditionOperator::from($clauseData['operator']),
                 $clauseData['value'],
             ),
             $conditionData
-        ));
+        )));
     }
 
     /** @return array<int, string> */
@@ -193,7 +193,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return RolePolicyAttachmentEloquent::query()
             ->where('policy_id', $policyIdentifier)
-            ->pluck('role_id')
+            ->get(['role_id'])->map(static fn (RolePolicyAttachmentEloquent $attachment): string => $attachment->role_id)
             ->unique()
             ->values()
             ->all();
@@ -217,14 +217,14 @@ class PolicyRepository implements PolicyRepositoryInterface
 
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
-            ->pluck('principal_id')
+            ->get(['principal_id'])->map(static fn (PrincipalGroupMembershipEloquent $membership): string => $membership->principal_id)
             ->unique()
             ->values()
             ->all();
 
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
-            ->pluck('identity_id')
+            ->get(['identity_id'])->map(static fn (PrincipalEloquent $principal): string => $principal->identity_id)
             ->all();
 
         foreach ($identityIds as $identityId) {

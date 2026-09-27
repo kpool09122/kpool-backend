@@ -39,7 +39,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->orderBy('display_order')
             ->get();
 
-        return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->toArray();
+        return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->all();
     }
 
     public function save(VideoLink $videoLink): void
@@ -118,7 +118,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->whereIn('url', $urls)
             ->get();
 
-        return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->toArray();
+        return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->all();
     }
 
     private function toEntity(VideoLinkModel $model): VideoLink
@@ -133,7 +133,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             $model->thumbnail_url,
             $model->published_at?->toDateTimeImmutable(),
             $model->display_order,
-            $model->created_at->toDateTimeImmutable(),
+            ($model->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
         );
     }
 }

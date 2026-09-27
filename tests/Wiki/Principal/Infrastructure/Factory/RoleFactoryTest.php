@@ -22,7 +22,7 @@ class RoleFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(RoleFactoryInterface::class);
+        $factory = $this->app()->make(RoleFactoryInterface::class);
         $this->assertInstanceOf(RoleFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class RoleFactoryTest extends TestCase
         ];
         $isSystemRole = true;
 
-        $factory = $this->app->make(RoleFactoryInterface::class);
+        $factory = $this->app()->make(RoleFactoryInterface::class);
         $role = $factory->create(
             $name,
             $policies,
@@ -66,7 +66,7 @@ class RoleFactoryTest extends TestCase
         ];
         $isSystemRole = false;
 
-        $factory = $this->app->make(RoleFactoryInterface::class);
+        $factory = $this->app()->make(RoleFactoryInterface::class);
         $role = $factory->create(
             $name,
             $policies,
@@ -91,7 +91,7 @@ class RoleFactoryTest extends TestCase
         $policies = [];
         $isSystemRole = false;
 
-        $factory = $this->app->make(RoleFactoryInterface::class);
+        $factory = $this->app()->make(RoleFactoryInterface::class);
         $role = $factory->create(
             $name,
             $policies,
@@ -118,7 +118,7 @@ class RoleFactoryTest extends TestCase
         ];
         $isSystemRole = true;
 
-        $factory = $this->app->make(RoleFactoryInterface::class);
+        $factory = $this->app()->make(RoleFactoryInterface::class);
         $role = $factory->create(
             $name,
             $policies,

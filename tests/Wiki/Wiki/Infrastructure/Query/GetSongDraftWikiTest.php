@@ -35,7 +35,7 @@ class GetSongDraftWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
@@ -74,9 +74,9 @@ class GetSongDraftWikiTest extends TestCase
                 'name' => 'TT',
                 'normalized_name' => 'tt',
                 'song_type' => 'title_track',
-                'genres' => json_encode(['dance_pop']),
-                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002']),
-                'talent_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f101']),
+                'genres' => json_encode(['dance_pop'], JSON_THROW_ON_ERROR),
+                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002'], JSON_THROW_ON_ERROR),
+                'talent_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f101'], JSON_THROW_ON_ERROR),
                 'release_date' => '2016-10-24',
                 'album_name' => 'TWICEcoaster: Lane 1',
                 'lyricist' => 'Black Eyed Pilseung',
@@ -104,15 +104,15 @@ class GetSongDraftWikiTest extends TestCase
                         'title' => 'Overview',
                         'content' => 'Draft sample for checking the song wiki editor state.',
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'TT',
                 'normalized_name' => 'tt',
                 'song_type' => 'title_track',
-                'genres' => json_encode(['dance_pop']),
-                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002']),
-                'talent_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f101']),
+                'genres' => json_encode(['dance_pop'], JSON_THROW_ON_ERROR),
+                'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002'], JSON_THROW_ON_ERROR),
+                'talent_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f101'], JSON_THROW_ON_ERROR),
                 'release_date' => '2016-10-24',
                 'album_name' => 'TWICEcoaster: Lane 1',
                 'lyricist' => 'Black Eyed Pilseung',
@@ -124,7 +124,7 @@ class GetSongDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetSongDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetSongDraftWikiInterface::class);
         $readModel = $useCase->process(new GetSongDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f301')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f301', $readModel->wikiIdentifier());
@@ -139,8 +139,12 @@ class GetSongDraftWikiTest extends TestCase
         $this->assertSame('TT', $readModel->basic()['name']);
         $this->assertSame('title_track', $readModel->basic()['songType']);
         $this->assertSame(['dance_pop'], $readModel->basic()['genres']);
+        self::assertIsArray($readModel->basic()['groups']);
+        self::assertIsArray($readModel->basic()['groups'][0]);
         $this->assertSame('TWICE', $readModel->basic()['groups'][0]['name']);
         $this->assertSame('girl_group', $readModel->basic()['groups'][0]['groupType']);
+        self::assertIsArray($readModel->basic()['talents']);
+        self::assertIsArray($readModel->basic()['talents'][0]);
         $this->assertSame('채영', $readModel->basic()['talents'][0]['name']);
         $this->assertSame('rapper', $readModel->basic()['talents'][0]['position']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
@@ -165,7 +169,7 @@ class GetSongDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetSongDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetSongDraftWikiInterface::class);
         $readModel = $useCase->process(new GetSongDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f302')));
 
         $this->assertNull($readModel->basic()['songType']);
@@ -175,7 +179,7 @@ class GetSongDraftWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenDraftSongWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetSongDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetSongDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

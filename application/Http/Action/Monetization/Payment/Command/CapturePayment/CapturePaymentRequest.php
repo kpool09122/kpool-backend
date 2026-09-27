@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Payment\Command\CapturePayment;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CapturePaymentRequest extends FormRequest
@@ -23,6 +24,6 @@ class CapturePaymentRequest extends FormRequest
 
     public function paymentId(): string
     {
-        return (string) $this->input('paymentId');
+        return RequestValue::string($this->input('paymentId'));
     }
 }

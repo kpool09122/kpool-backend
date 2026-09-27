@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Account\Command\RegisterPaymentMethod;
 
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterPaymentMethodRequest extends FormRequest
@@ -22,16 +23,16 @@ class RegisterPaymentMethodRequest extends FormRequest
 
     public function monetizationAccountId(): string
     {
-        return (string) $this->input('monetizationAccountId');
+        return RequestValue::string($this->input('monetizationAccountId'));
     }
 
     public function paymentMethodId(): string
     {
-        return (string) $this->input('paymentMethodId');
+        return RequestValue::string($this->input('paymentMethodId'));
     }
 
     public function type(): string
     {
-        return (string) $this->input('type');
+        return RequestValue::string($this->input('type'));
     }
 }

@@ -59,15 +59,15 @@ class PolicyEvaluatorTest extends TestCase
     {
         parent::setUp();
         /** @var PolicyRepositoryInterface $policyRepository */
-        $policyRepository = $this->app->make(PolicyRepositoryInterface::class);
+        $policyRepository = $this->app()->make(PolicyRepositoryInterface::class);
         $this->policyRepository = $policyRepository;
 
         /** @var RoleRepositoryInterface $roleRepository */
-        $roleRepository = $this->app->make(RoleRepositoryInterface::class);
+        $roleRepository = $this->app()->make(RoleRepositoryInterface::class);
         $this->roleRepository = $roleRepository;
 
         /** @var PrincipalGroupRepositoryInterface $principalGroupRepository */
-        $principalGroupRepository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $this->principalGroupRepository = $principalGroupRepository;
     }
 

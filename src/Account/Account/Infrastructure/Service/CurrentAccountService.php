@@ -67,7 +67,10 @@ class CurrentAccountService implements CurrentAccountServiceInterface
         return self::KEY_PREFIX . $identityIdentifier . ':' . $sessionId;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<array-key, mixed> $payload
+     * @phpstan-assert-if-true array{originalIdentityIdentifier: string, originalAccountIdentifier: string, originalPrincipalIdentifier: string, effectiveAccountIdentifier: string, effectivePrincipalIdentifier: string, delegationIdentifier: string|null} $payload
+     */
     private function isValidPayload(array $payload): bool
     {
         return is_string($payload['originalIdentityIdentifier'] ?? null)

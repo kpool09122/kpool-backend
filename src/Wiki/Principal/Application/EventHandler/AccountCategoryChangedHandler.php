@@ -80,7 +80,7 @@ readonly class AccountCategoryChangedHandler
             }
         }
 
-        if ($defaultPrincipalGroupChanged) {
+        if ($defaultPrincipalGroupChanged && $defaultPrincipalGroup !== null) {
             $this->principalGroupRepository->save($defaultPrincipalGroup);
         }
 

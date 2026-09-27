@@ -49,7 +49,7 @@ class GetAgencyDraftWikiTest extends TestCase
                 'theme_color' => '#1A1A1A',
                 'title' => 'JYP Draft Wiki',
                 'meta_description' => 'Draft profile for JYP.',
-                'keywords' => json_encode(['JYP', 'draft']),
+                'keywords' => json_encode(['JYP', 'draft'], JSON_THROW_ON_ERROR),
                 'sections' => json_encode([
                     [
                         'type' => 'section',
@@ -71,7 +71,7 @@ class GetAgencyDraftWikiTest extends TestCase
                             ],
                         ],
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'JYP Entertainment',
@@ -85,11 +85,11 @@ class GetAgencyDraftWikiTest extends TestCase
                 'social_links' => json_encode([
                     'https://twitter.com/jypnation',
                     'https://www.instagram.com/jypentertainment/',
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
         );
 
-        $useCase = $this->app->make(GetAgencyDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyDraftWikiInterface::class);
         $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f402')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f402', $readModel->wikiIdentifier());
@@ -112,9 +112,15 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame('JYP Entertainment', $readModel->basic()['name']);
         $this->assertSame('J.Y. Park', $readModel->basic()['ceo']);
         $this->assertSame('1997-04-25', $readModel->basic()['foundedIn']);
+        self::assertIsArray($readModel->basic()['socialLinks']);
         $this->assertSame('https://twitter.com/jypnation', $readModel->basic()['socialLinks'][0]);
+        self::assertIsArray($readModel->sections()[0]['contents']);
+        self::assertIsArray($readModel->sections()[0]['contents'][0]);
         $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][0]['src']);
         $this->assertSame('JYP Entertainment hero image', $readModel->sections()[0]['contents'][0]['alt']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images'][0]);
         $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][1]['images'][0]['src']);
     }
 
@@ -136,7 +142,7 @@ class GetAgencyDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetAgencyDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyDraftWikiInterface::class);
         $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f502')));
 
         $this->assertNull($readModel->basic()['officialWebsite']);
@@ -145,7 +151,7 @@ class GetAgencyDraftWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenDraftAgencyWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetAgencyDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

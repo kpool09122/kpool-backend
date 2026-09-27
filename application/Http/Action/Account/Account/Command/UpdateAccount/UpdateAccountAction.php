@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\UpdateAccount;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -105,6 +106,6 @@ readonly class UpdateAccountAction
             return null;
         }
 
-        return (string) $values[$key];
+        return RequestValue::string($values[$key]);
     }
 }

@@ -132,9 +132,11 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     private function storeVerification(Email $email, AuthCode $code, int $attempts): void
     {
         $key = $this->verificationKey($email);
+        $appKey = config('app.key');
+        $this->assertIsString($appKey);
         Redis::setex($key, 900, json_encode([
             'identity_id' => '123e4567-e89b-72d3-a456-426614174000',
-            'code_hash' => hash_hmac('sha256', (string) $code, (string) config('app.key')),
+            'code_hash' => hash_hmac('sha256', (string) $code, $appKey),
         ], JSON_THROW_ON_ERROR));
         if ($attempts > 0) {
             Redis::setex($key . ':attempts', 900, (string) $attempts);

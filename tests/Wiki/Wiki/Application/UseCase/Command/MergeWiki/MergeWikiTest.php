@@ -53,8 +53,8 @@ class MergeWikiTest extends TestCase
     public function test__construct(): void
     {
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $this->assertInstanceOf(MergeWiki::class, $mergeWiki);
     }
 
@@ -130,11 +130,11 @@ class MergeWikiTest extends TestCase
             ->with($testData->draftWiki)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $output = new MergeWikiOutput();
         $mergeWiki->process($input, $output);
         $result = $output->toArray();
@@ -185,11 +185,11 @@ class MergeWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $mergeWiki->process($input, new MergeWikiOutput());
     }
 
@@ -233,11 +233,11 @@ class MergeWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn($testData->draftWiki);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $mergeWiki->process($input, new MergeWikiOutput());
     }
 
@@ -290,11 +290,11 @@ class MergeWikiTest extends TestCase
             ->with($testData->draftWiki)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $mergeWiki->process($input, new MergeWikiOutput());
     }
 
@@ -342,12 +342,12 @@ class MergeWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn($testData->draftWiki);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(UnauthorizedException::class);
-        $mergeWiki = $this->app->make(MergeWikiInterface::class);
+        $mergeWiki = $this->app()->make(MergeWikiInterface::class);
         $mergeWiki->process($input, new MergeWikiOutput());
     }
 

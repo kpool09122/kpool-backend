@@ -32,7 +32,7 @@ class GetIdentityProfileTest extends TestCase
         ]);
         CreateIdentity::createSocialConnection($requestedIdentityIdentifier, SocialProvider::GOOGLE, 'google-user-id');
 
-        $useCase = $this->app->make(GetIdentityProfileInterface::class);
+        $useCase = $this->app()->make(GetIdentityProfileInterface::class);
         $readModel = $useCase->process(new GetIdentityProfileInput($requestedIdentityIdentifier));
         $payload = $readModel->toArray();
 
@@ -48,7 +48,7 @@ class GetIdentityProfileTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenIdentityDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetIdentityProfileInterface::class);
+        $useCase = $this->app()->make(GetIdentityProfileInterface::class);
 
         $this->expectException(IdentityNotFoundException::class);
 

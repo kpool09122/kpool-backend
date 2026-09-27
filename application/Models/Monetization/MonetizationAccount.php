@@ -14,10 +14,10 @@ use Illuminate\Support\Carbon;
  * @property string $capabilities
  * @property ?string $stripe_customer_id
  * @property ?string $stripe_connected_account_id
- * @property ?array $billing_address
- * @property ?array $billing_contact
+ * @property array{country_code: string, postal_code: string, state_or_province: string, city: string, address_line1: string, address_line2?: string|null, address_line3?: string|null}|null $billing_address
+ * @property array{name: string, email: string, phone?: string|null}|null $billing_contact
  * @property ?string $billing_method
- * @property ?array $tax_info
+ * @property array{region: string, category: string, tax_code?: string|null}|null $tax_info
  * @property ?array $card_meta
  * @property ?array $payout_bank_meta
  * @property Carbon $created_at

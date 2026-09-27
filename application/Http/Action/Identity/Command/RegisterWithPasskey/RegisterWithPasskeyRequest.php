@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\RegisterWithPasskey;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterWithPasskeyRequest extends FormRequest
@@ -35,24 +36,24 @@ class RegisterWithPasskeyRequest extends FormRequest
 
     public function challengeKey(): string
     {
-        return (string) $this->input('challengeKey');
+        return RequestValue::string($this->input('challengeKey'));
     }
 
     public function identityName(): string
     {
-        return (string) $this->input('identityName');
+        return RequestValue::string($this->input('identityName'));
     }
 
     public function displayName(): string
     {
-        return (string) $this->input('displayName');
+        return RequestValue::string($this->input('displayName'));
     }
 
     public function base64EncodedImage(): ?string
     {
         $value = $this->input('base64EncodedImage');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /** @return array<string, mixed> */

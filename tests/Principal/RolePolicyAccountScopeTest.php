@@ -37,8 +37,8 @@ class RolePolicyAccountScopeTest extends TestCase
     {
         $accountA = $this->accountIdentifier();
         $accountB = $this->accountIdentifier();
-        $policyRepository = $this->app->make(AccountPolicyRepositoryInterface::class);
-        $roleRepository = $this->app->make(AccountRoleRepositoryInterface::class);
+        $policyRepository = $this->app()->make(AccountPolicyRepositoryInterface::class);
+        $roleRepository = $this->app()->make(AccountRoleRepositoryInterface::class);
 
         $systemPolicy = new AccountPolicy($this->accountPolicyIdentifier(), 'Shared Policy', [], null, new DateTimeImmutable());
         $accountPolicyA = new AccountPolicy($this->accountPolicyIdentifier(), 'Shared Policy', [], $accountA, new DateTimeImmutable());
@@ -67,8 +67,8 @@ class RolePolicyAccountScopeTest extends TestCase
     {
         $accountA = $this->accountIdentifier();
         $accountB = $this->accountIdentifier();
-        $policyRepository = $this->app->make(WikiPolicyRepositoryInterface::class);
-        $roleRepository = $this->app->make(WikiRoleRepositoryInterface::class);
+        $policyRepository = $this->app()->make(WikiPolicyRepositoryInterface::class);
+        $roleRepository = $this->app()->make(WikiRoleRepositoryInterface::class);
 
         $systemPolicy = new WikiPolicy($this->wikiPolicyIdentifier(), 'Shared Policy', [], null, new DateTimeImmutable());
         $accountPolicyA = new WikiPolicy($this->wikiPolicyIdentifier(), 'Shared Policy', [], $accountA, new DateTimeImmutable());

@@ -36,7 +36,7 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
     public function testItReusesAnIdentityScopeAndSessionBoundAuthorizationUntilItExpires(): void
     {
         $this->setSessionId('session-a');
-        $storage = $this->app->make(StepUpAuthenticationStorageServiceInterface::class);
+        $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
         $this->assertInstanceOf(StepUpAuthenticationStorageService::class, $storage);
         $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $authentication = new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes'));
@@ -48,7 +48,7 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
     public function testItRejectsAuthorizationCreatedInAnotherLoginSession(): void
     {
         $this->setSessionId('session-a');
-        $storage = $this->app->make(StepUpAuthenticationStorageServiceInterface::class);
+        $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
         $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $storage->store(new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes')));
 
@@ -61,7 +61,7 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
     public function testItRejectsAnotherIdentity(): void
     {
         $this->setSessionId('session-a');
-        $storage = $this->app->make(StepUpAuthenticationStorageServiceInterface::class);
+        $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
         $storage->store(new StepUpAuthentication(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'), StepUpAuthenticationMethod::SSO, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes')));
         $this->expectException(StepUpAuthenticationRequiredException::class);
         $storage->requireValid(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174002'), StepUpAuthenticationScope::PASSKEY_MANAGE);
@@ -73,12 +73,12 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
         $this->setSessionId('session-a');
         Redis::set('step_up_authentication:'.$identity.':passkey.manage:session-a', json_encode(['identity_id' => $identity,'method' => 'passkey','verified_at' => (new DateTimeImmutable('-20 minutes'))->format(DATE_ATOM),'scope' => 'passkey.manage','expires_at' => (new DateTimeImmutable('-10 minutes'))->format(DATE_ATOM)], JSON_THROW_ON_ERROR));
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(new IdentityIdentifier($identity), StepUpAuthenticationScope::PASSKEY_MANAGE);
+        $this->app()->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(new IdentityIdentifier($identity), StepUpAuthenticationScope::PASSKEY_MANAGE);
     }
 
     private function setSessionId(string $sessionId): void
     {
         $session = new Store('test', new ArraySessionHandler(120), $sessionId);
-        $this->app->make('request')->setLaravelSession($session);
+        $this->app()->make('request')->setLaravelSession($session);
     }
 }

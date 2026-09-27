@@ -38,7 +38,7 @@ class StartStepUpWithSocialTest extends TestCase
     {
         $this->bindDependencies($this->identity(), []);
 
-        $this->assertInstanceOf(StartStepUpWithSocial::class, $this->app->make(StartStepUpWithSocialInterface::class));
+        $this->assertInstanceOf(StartStepUpWithSocial::class, $this->app()->make(StartStepUpWithSocialInterface::class));
     }
 
     public function testItStartsReauthenticationForALinkedProviderWhenNoPasskeyExists(): void
@@ -67,8 +67,10 @@ class StartStepUpWithSocialTest extends TestCase
         $this->bindDependencies($this->identity(), [], $oauthStateRepository, $sessions, $oauth, $generatedState);
 
         $output = new StartStepUpWithSocialOutput();
-        $this->app->make(StartStepUpWithSocialInterface::class)->process($this->input(), $output);
+        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), $output);
 
+        $this->assertArrayHasKey('redirectUrl', $output->toArray());
+        self::assertTrue(array_key_exists('redirectUrl', $output->toArray()));
         $this->assertSame('https://accounts.example.test/authorize', $output->toArray()['redirectUrl']);
     }
 
@@ -77,7 +79,7 @@ class StartStepUpWithSocialTest extends TestCase
         $this->bindDependencies($this->identity([new SocialConnection(SocialProvider::LINE, 'line-user')]), []);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
+        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
     }
 
     public function testItRejectsSocialStepUpWhenAPasskeyAlreadyExists(): void
@@ -87,7 +89,7 @@ class StartStepUpWithSocialTest extends TestCase
         $this->bindDependencies($this->identity(), [$credential]);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
+        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
     }
 
     /** @param PasskeyCredential[] $credentials */
@@ -114,12 +116,12 @@ class StartStepUpWithSocialTest extends TestCase
         $generator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $generator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn($generatedState ?? new OAuthState('state', new DateTimeImmutable('+10 minutes')));
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
-        $this->app->instance(SocialOAuthServiceInterface::class, $oauth);
-        $this->app->instance(OAuthStateGeneratorInterface::class, $generator);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $oauth);
+        $this->app()->instance(OAuthStateGeneratorInterface::class, $generator);
     }
 
     private function input(): StartStepUpWithSocialInput

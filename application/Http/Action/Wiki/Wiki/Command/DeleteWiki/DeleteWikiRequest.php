@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Wiki\Command\DeleteWiki;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DeleteWikiRequest extends FormRequest
@@ -12,7 +13,7 @@ class DeleteWikiRequest extends FormRequest
     use ResolvesLanguage;
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     public function validationData(): array
     {
@@ -46,7 +47,7 @@ class DeleteWikiRequest extends FormRequest
     {
         $value = $this->input('agencyIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /**
@@ -54,7 +55,7 @@ class DeleteWikiRequest extends FormRequest
      */
     public function groupIdentifiers(): array
     {
-        return (array) ($this->input('groupIdentifiers') ?? []);
+        return RequestValue::strings($this->input('groupIdentifiers') ?? []);
     }
 
     /**
@@ -62,6 +63,6 @@ class DeleteWikiRequest extends FormRequest
      */
     public function talentIdentifiers(): array
     {
-        return (array) ($this->input('talentIdentifiers') ?? []);
+        return RequestValue::strings($this->input('talentIdentifiers') ?? []);
     }
 }

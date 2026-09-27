@@ -12,6 +12,7 @@ use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\StepUpAuthentication;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class StepUpAuthenticationStorageService implements StepUpAuthenticationStorageServiceInterface
@@ -54,11 +55,11 @@ class StepUpAuthenticationStorageService implements StepUpAuthenticationStorageS
         }
 
         $authentication = new StepUpAuthentication(
-            new IdentityIdentifier((string) $data['identity_id']),
-            StepUpAuthenticationMethod::from((string) $data['method']),
-            new DateTimeImmutable((string) $data['verified_at']),
-            StepUpAuthenticationScope::from((string) $data['scope']),
-            new DateTimeImmutable((string) $data['expires_at']),
+            new IdentityIdentifier(TypedValue::string($data['identity_id'])),
+            StepUpAuthenticationMethod::from(TypedValue::string($data['method'])),
+            new DateTimeImmutable(TypedValue::string($data['verified_at'])),
+            StepUpAuthenticationScope::from(TypedValue::string($data['scope'])),
+            new DateTimeImmutable(TypedValue::string($data['expires_at'])),
         );
         if ((string) $authentication->identityIdentifier !== (string) $expectedIdentityIdentifier
             || $authentication->scope->value !== $expectedScope->value

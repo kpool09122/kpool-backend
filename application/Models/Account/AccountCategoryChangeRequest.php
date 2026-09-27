@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $requested_at
  * @property ?string $reviewed_by
  * @property ?Carbon $reviewed_at
- * @property ?array $rejection_reason
+ * @property array{code: string, detail: string|null}|null $rejection_reason
  */
 #[Fillable(['id', 'account_id', 'current_account_category', 'requested_account_category', 'status', 'requested_at', 'reviewed_by', 'reviewed_at', 'rejection_reason'])]
 #[Table(name: 'account_category_change_requests', keyType: 'string')]

@@ -186,7 +186,7 @@ class ListDraftImagesTest extends TestCase
 
     private function listDraftImages(): ListDraftImagesInterface
     {
-        return $this->app->make(ListDraftImagesInterface::class);
+        return $this->app()->make(ListDraftImagesInterface::class);
     }
 
     private function process(ListDraftImagesInput $input): ListDraftImagesOutput

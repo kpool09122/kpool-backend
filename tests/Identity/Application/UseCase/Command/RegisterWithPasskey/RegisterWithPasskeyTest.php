@@ -164,11 +164,11 @@ class RegisterWithPasskeyTest extends TestCase
             AuthServiceInterface::class => $auth,
             ImageServiceInterface::class => $imageService,
         ] as $interface => $implementation) {
-            $this->app->instance($interface, $implementation);
+            $this->app()->instance($interface, $implementation);
         }
 
         $output = new RegisterWithPasskeyOutput();
-        $this->app->make(RegisterWithPasskeyInterface::class)->process(new RegisterWithPasskeyInput(
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process(new RegisterWithPasskeyInput(
             $challengeKey,
             new IdentityName('Passkey User'),
             Language::ENGLISH,
@@ -177,6 +177,7 @@ class RegisterWithPasskeyTest extends TestCase
             null,
         ), $output);
 
+        self::assertTrue(array_key_exists('identityIdentifier', $output->toArray()));
         $this->assertSame('123e4567-e89b-72d3-a456-426614174002', $output->toArray()['identityIdentifier']);
         $this->assertSame('/dashboard', $output->toArray()['returnTo']);
         $this->assertSame($identity->identityIdentifier(), $passkeyUser->identityIdentifier());
@@ -199,7 +200,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(storage: $storage);
 
         $this->expectException(ChallengeSessionNotFoundException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRejectsMissingPasskeyUser(): void
@@ -210,7 +211,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserNotFoundException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRejectsAlreadyLinkedPasskeyUser(): void
@@ -224,7 +225,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserAlreadyLinkedException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRejectsDuplicateEmail(): void
@@ -235,7 +236,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(identityRepository: $identityRepository);
 
         $this->expectException(AlreadyUserExistsException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRejectsInvalidAttestation(): void
@@ -246,7 +247,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(webAuthn: $webAuthn);
 
         $this->expectException(WebAuthnVerificationException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRejectsDuplicateCredential(): void
@@ -268,7 +269,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn);
 
         $this->expectException(PasskeyCredentialAlreadyExistsException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     public function testItRevalidatesInvitationBeforeCompletingRegistration(): void
@@ -297,7 +298,7 @@ class RegisterWithPasskeyTest extends TestCase
         $this->bindFailureDependencies(storage: $storage, invitationValidator: $validator);
 
         $this->expectException(InvalidSignupInvitationException::class);
-        $this->app->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
+        $this->app()->make(RegisterWithPasskeyInterface::class)->process($this->input(), new RegisterWithPasskeyOutput());
     }
 
     private function input(): RegisterWithPasskeyInput
@@ -365,7 +366,7 @@ class RegisterWithPasskeyTest extends TestCase
             AuthServiceInterface::class => Mockery::mock(AuthServiceInterface::class),
             ImageServiceInterface::class => Mockery::mock(ImageServiceInterface::class),
         ] as $interface => $implementation) {
-            $this->app->instance($interface, $implementation);
+            $this->app()->instance($interface, $implementation);
         }
     }
 }

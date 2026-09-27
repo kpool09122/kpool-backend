@@ -16,7 +16,7 @@ class DeleteAccountOutput implements DeleteAccountOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{accountIdentifier: string, email: string, type: string, name: string, status: string}
      */
     public function toArray(): array
     {

@@ -14,6 +14,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -89,12 +90,12 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
         /** @var LengthAwarePaginator<int, DraftWiki> $paginator */
         $paginator = $query->paginate($input->perPage());
 
-        $this->authorize($principal, $paginator->items());
+        $this->authorize($principal, array_values($paginator->items()));
 
         $output->output(
             array_map(
                 fn (DraftWiki $wiki): DraftWikiListItemReadModel => $this->toReadModel($wiki),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -346,6 +347,6 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 }

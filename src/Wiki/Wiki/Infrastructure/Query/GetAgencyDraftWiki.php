@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\DraftWiki as DraftWikiModel;
 use Application\Models\Wiki\DraftWikiAgencyBasic as DraftWikiAgencyBasicModel;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -68,7 +69,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
             keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
-                'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),
+                'src' => ImageUrl::fromPath(TypedValue::nullableString($model->getAttribute('hero_image_path'))),
                 'alt' => $model->getAttribute('hero_image_alt_text'),
                 'isHidden' => $model->getAttribute('hero_image_is_hidden') === null
                     ? null
@@ -83,9 +84,9 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
                 parentAgencyIdentifier: $basic->parent_agency_identifier,
                 status: $basic->status,
                 officialWebsite: $basic->official_website,
-                socialLinks: $basic->social_links,
+                socialLinks: array_values($basic->social_links),
             ),
-            sections: $this->sectionsWithImages($model->sections),
+            sections: $this->sectionsWithImages(array_values($model->sections)),
             status: $model->status,
             rejectionReason: $model->rejection_reason,
         );
@@ -102,7 +103,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
 
     /**
      * @param list<array<string, mixed>> $sections
-     * @return list<array<string, mixed>>
+     * @return list<array<array-key, mixed>>
      */
     private function sectionsWithImages(array $sections): array
     {

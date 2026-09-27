@@ -19,14 +19,14 @@ class PasskeyUserRepositoryTest extends TestCase
     {
         $this->assertInstanceOf(
             PasskeyUserRepository::class,
-            $this->app->make(PasskeyUserRepositoryInterface::class),
+            $this->app()->make(PasskeyUserRepositoryInterface::class),
         );
     }
 
     #[Group('useDb')]
     public function testItPersistsAnUnlinkedUserAndLaterLinksItToAnIdentity(): void
     {
-        $repository = $this->app->make(PasskeyUserRepositoryInterface::class);
+        $repository = $this->app()->make(PasskeyUserRepositoryInterface::class);
         $identifier = new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $repository->save(new PasskeyUser($identifier, null));
 

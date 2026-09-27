@@ -19,7 +19,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeJapaneseKanji(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('漢字', Language::JAPANESE);
         $this->assertSame('かんじ', $result);
     }
@@ -32,7 +32,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeJapaneseKatakana(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('カタカナ', Language::JAPANESE);
         $this->assertSame('かたかな', $result);
     }
@@ -45,7 +45,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeJapaneseHiragana(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('ひらがな', Language::JAPANESE);
         $this->assertSame('ひらがな', $result);
     }
@@ -58,7 +58,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeJapaneseAlphabet(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('ALPHABET', Language::JAPANESE);
         $this->assertSame('alphabet', $result);
     }
@@ -71,7 +71,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeJapaneseMixed(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('漢字とカタカナとHiragana', Language::JAPANESE);
         $this->assertSame('かんじとかたかなとhiragana', $result);
     }
@@ -84,7 +84,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeKoreanHangul(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('한국어', Language::KOREAN);
         $this->assertSame('ㅎㄱㅇ', $result);
     }
@@ -97,7 +97,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeKoreanWord(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('사랑', Language::KOREAN);
         $this->assertSame('ㅅㄹ', $result);
     }
@@ -110,7 +110,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeKoreanSentence(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('안녕하세요', Language::KOREAN);
         $this->assertSame('ㅇㄴㅎㅅㅇ', $result);
     }
@@ -123,7 +123,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeKoreanNumber(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('123', Language::KOREAN);
         $this->assertSame('123', $result);
     }
@@ -136,7 +136,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeKoreanAlphabet(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('ABC', Language::KOREAN);
         $this->assertSame('abc', $result);
     }
@@ -149,7 +149,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeEnglishUppercase(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('HELLO', Language::ENGLISH);
         $this->assertSame('hello', $result);
     }
@@ -162,7 +162,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeEnglishLowercase(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('hello', Language::ENGLISH);
         $this->assertSame('hello', $result);
     }
@@ -175,7 +175,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeEnglishMixed(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $result = $service->normalize('HeLLo WoRLd', Language::ENGLISH);
         $this->assertSame('hello world', $result);
     }
@@ -188,7 +188,7 @@ class NormalizationServiceTest extends TestCase
      */
     public function testNormalizeEmptyString(): void
     {
-        $service = $this->app->make(NormalizationServiceInterface::class);
+        $service = $this->app()->make(NormalizationServiceInterface::class);
         $this->assertSame('', $service->normalize('', Language::JAPANESE));
         $this->assertSame('', $service->normalize('', Language::KOREAN));
         $this->assertSame('', $service->normalize('', Language::ENGLISH));

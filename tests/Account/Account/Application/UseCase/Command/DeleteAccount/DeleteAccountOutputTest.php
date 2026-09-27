@@ -46,6 +46,7 @@ class DeleteAccountOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $identifier, $result['accountIdentifier']);
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($accountType->value, $result['type']);

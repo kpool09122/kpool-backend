@@ -18,7 +18,7 @@ class RoleRepositoryTest extends TestCase
 {
     public function test__construct(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $this->assertInstanceOf(RoleRepository::class, $repository);
     }
@@ -28,7 +28,7 @@ class RoleRepositoryTest extends TestCase
     {
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $this->createPolicy($policyIdentifier);
 
         $repository->save(new Role($roleIdentifier, Role::ADMIN, [$policyIdentifier], null));
@@ -57,7 +57,7 @@ class RoleRepositoryTest extends TestCase
         $oldPolicyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $newPolicyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $this->createPolicy($oldPolicyIdentifier);
         $this->createPolicy($newPolicyIdentifier);
 
@@ -79,7 +79,7 @@ class RoleRepositoryTest extends TestCase
     {
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $roleName = 'Role ' . (string) $roleIdentifier;
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $repository->save(new Role($roleIdentifier, $roleName, [], null));
 

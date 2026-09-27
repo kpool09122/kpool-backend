@@ -63,7 +63,8 @@ readonly class ReplyContact implements ReplyContactInterface
                 $content,
             );
         } catch (Throwable $e) {
-            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
+                ?? throw new \UnexpectedValueException('Saved contact reply is missing.');
             $failed = new ReplyCotact(
                 $persisted->replyIdentifier(),
                 $persisted->contactIdentifier(),
@@ -80,7 +81,8 @@ readonly class ReplyContact implements ReplyContactInterface
         }
 
         // findById で取得してから送信完了日時を更新
-        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
+                ?? throw new \UnexpectedValueException('Saved contact reply is missing.');
         $sentAt = new DateTimeImmutable('now');
         $sent = new ReplyCotact(
             $persisted->replyIdentifier(),

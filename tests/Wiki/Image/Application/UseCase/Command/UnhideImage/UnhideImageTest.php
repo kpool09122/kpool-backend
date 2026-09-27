@@ -46,11 +46,11 @@ class UnhideImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $unhideImage = $this->app->make(UnhideImageInterface::class);
+        $unhideImage = $this->app()->make(UnhideImageInterface::class);
         $this->assertInstanceOf(UnhideImage::class, $unhideImage);
     }
 
@@ -96,12 +96,12 @@ class UnhideImageTest extends TestCase
             ->with($testData->image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $unhideImage = $this->app->make(UnhideImageInterface::class);
+        $unhideImage = $this->app()->make(UnhideImageInterface::class);
         $output = new UnhideImageOutput();
         $unhideImage->process($input, $output);
 
@@ -136,12 +136,12 @@ class UnhideImageTest extends TestCase
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
         $imageAuthorizationResourceBuilder->shouldNotReceive('buildFromImage');
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
-        $unhideImage = $this->app->make(UnhideImageInterface::class);
+        $unhideImage = $this->app()->make(UnhideImageInterface::class);
         $output = new UnhideImageOutput();
         $unhideImage->process($input, $output);
     }
@@ -176,12 +176,12 @@ class UnhideImageTest extends TestCase
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
         $imageAuthorizationResourceBuilder->shouldNotReceive('buildFromImage');
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $unhideImage = $this->app->make(UnhideImageInterface::class);
+        $unhideImage = $this->app()->make(UnhideImageInterface::class);
         $output = new UnhideImageOutput();
         $unhideImage->process($input, $output);
     }
@@ -225,13 +225,13 @@ class UnhideImageTest extends TestCase
             ->with($testData->image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(DisallowedException::class);
-        $unhideImage = $this->app->make(UnhideImageInterface::class);
+        $unhideImage = $this->app()->make(UnhideImageInterface::class);
         $output = new UnhideImageOutput();
         $unhideImage->process($input, $output);
     }

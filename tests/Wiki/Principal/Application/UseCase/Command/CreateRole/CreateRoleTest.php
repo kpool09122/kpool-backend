@@ -29,9 +29,9 @@ class CreateRoleTest extends TestCase
     {
         $repository = Mockery::mock(RoleRepositoryInterface::class);
         $factory = Mockery::mock(RoleFactoryInterface::class);
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
-        $this->app->instance(RoleFactoryInterface::class, $factory);
-        $useCase = $this->app->make(CreateRoleInterface::class);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleFactoryInterface::class, $factory);
+        $useCase = $this->app()->make(CreateRoleInterface::class);
         $this->assertInstanceOf(CreateRole::class, $useCase);
     }
 
@@ -58,10 +58,10 @@ class CreateRoleTest extends TestCase
             )
             ->andReturn($testData->role);
 
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
-        $this->app->instance(RoleFactoryInterface::class, $factory);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(CreateRoleInterface::class);
+        $useCase = $this->app()->make(CreateRoleInterface::class);
         $output = new CreateRoleOutput();
 
         $useCase->process($testData->input, $output);

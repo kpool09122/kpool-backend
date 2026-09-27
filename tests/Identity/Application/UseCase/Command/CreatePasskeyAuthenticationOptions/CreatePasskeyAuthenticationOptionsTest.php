@@ -31,7 +31,7 @@ class CreatePasskeyAuthenticationOptionsTest extends TestCase
 
         $this->assertInstanceOf(
             CreatePasskeyAuthenticationOptions::class,
-            $this->app->make(CreatePasskeyAuthenticationOptionsInterface::class),
+            $this->app()->make(CreatePasskeyAuthenticationOptionsInterface::class),
         );
     }
 
@@ -58,12 +58,16 @@ class CreatePasskeyAuthenticationOptionsTest extends TestCase
         $this->bindDependencies($webAuthn, $storage);
 
         $output = new CreatePasskeyAuthenticationOptionsOutput();
-        $this->app->make(CreatePasskeyAuthenticationOptionsInterface::class)->process(
+        $this->app()->make(CreatePasskeyAuthenticationOptionsInterface::class)->process(
             new CreatePasskeyAuthenticationOptionsInput(),
             $output,
         );
 
+        $this->assertArrayHasKey('challengeKey', $output->toArray());
+        self::assertTrue(array_key_exists('challengeKey', $output->toArray()));
         $this->assertSame(self::CHALLENGE_KEY, $output->toArray()['challengeKey']);
+        $this->assertArrayHasKey('options', $output->toArray());
+        self::assertTrue(array_key_exists('options', $output->toArray()));
         $this->assertSame([], $output->toArray()['options']['allowCredentials']);
         $this->assertSame('required', $output->toArray()['options']['userVerification']);
     }
@@ -85,9 +89,9 @@ class CreatePasskeyAuthenticationOptionsTest extends TestCase
         $challengeGenerator = Mockery::mock(WebAuthnChallengeGeneratorInterface::class);
         $challengeGenerator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn(new WebAuthnChallenge(self::CHALLENGE));
 
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
     }
 }

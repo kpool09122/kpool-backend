@@ -144,13 +144,19 @@ class TalentBasicTest extends TestCase
         $this->assertSame($testData->emoji->value(), $array['emoji']);
         $this->assertSame($testData->representativeSymbol->value(), $array['representative_symbol']);
         $this->assertSame($testData->position->value(), $array['position']);
+        self::assertNotNull($testData->mbti);
         $this->assertSame($testData->mbti->value, $array['mbti']);
+        self::assertNotNull($testData->zodiacSign);
         $this->assertSame($testData->zodiacSign->value, $array['zodiac_sign']);
+        self::assertNotNull($testData->englishLevel);
         $this->assertSame($testData->englishLevel->value, $array['english_level']);
+        $this->assertNotNull($testData->height);
         $this->assertSame($testData->height->centimeters(), $array['height']);
+        self::assertNotNull($testData->bloodType);
         $this->assertSame($testData->bloodType->value, $array['blood_type']);
         $this->assertSame($testData->fandomName->value(), $array['fandom_name']);
         $this->assertSame((string) $testData->agencyIdentifier, $array['agency_identifier']);
+        self::assertIsArray($array['group_identifiers']);
         $this->assertCount(count($testData->groupIdentifiers), $array['group_identifiers']);
     }
 
@@ -199,7 +205,7 @@ class TalentBasicTest extends TestCase
             'mbti' => 'INFP',
             'zodiac_sign' => 'taurus',
             'english_level' => 'conversational',
-            'height' => 159,
+            'height' => '159',
             'blood_type' => 'B',
             'fandom_name' => 'ONCE',
         ];
@@ -217,6 +223,7 @@ class TalentBasicTest extends TestCase
         $this->assertSame(MBTI::INFP, $talentBasic->mbti());
         $this->assertSame(ZodiacSign::TAURUS, $talentBasic->zodiacSign());
         $this->assertSame(EnglishLevel::CONVERSATIONAL, $talentBasic->englishLevel());
+        $this->assertNotNull($talentBasic->height());
         $this->assertSame(159, $talentBasic->height()->centimeters());
         $this->assertSame(BloodType::B, $talentBasic->bloodType());
         $this->assertSame('ONCE', $talentBasic->fandomName()->value());

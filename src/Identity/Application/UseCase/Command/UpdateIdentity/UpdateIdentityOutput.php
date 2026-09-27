@@ -15,7 +15,7 @@ class UpdateIdentityOutput implements UpdateIdentityOutputPort
         $this->identity = $identity;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{}|array{identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null} */
     public function toArray(): array
     {
         if ($this->identity === null) {

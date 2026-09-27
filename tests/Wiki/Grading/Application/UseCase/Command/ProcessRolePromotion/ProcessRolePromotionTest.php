@@ -103,10 +103,10 @@ class ProcessRolePromotionTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $collaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([$principalGroup]);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([]);
         $principalGroupRepository->shouldReceive('findByPrincipalId')
             ->andReturn([$principalGroup]);
@@ -140,16 +140,16 @@ class ProcessRolePromotionTest extends TestCase
         $dispatcher->shouldReceive('dispatch')
             ->once();
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -195,15 +195,15 @@ class ProcessRolePromotionTest extends TestCase
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -293,7 +293,7 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$warning]);
         // 警告がリセットされて保存されることを確認
         $demotionWarningRepository->shouldReceive('save')
-            ->with(Mockery::on(static fn ($w) => (string) $w->principalIdentifier() === $principalId
+            ->with(Mockery::on(static fn (DemotionWarning $w) => (string) $w->principalIdentifier() === $principalId
                 && $w->warningCount()->value() === 0))
             ->once();
 
@@ -301,10 +301,10 @@ class ProcessRolePromotionTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $collaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([]);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([$seniorGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -318,15 +318,15 @@ class ProcessRolePromotionTest extends TestCase
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -399,7 +399,7 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([]);
         // 新規警告が作成されて保存されることを確認
         $demotionWarningRepository->shouldReceive('save')
-            ->with(Mockery::on(static fn ($w) => (string) $w->principalIdentifier() === $principalId
+            ->with(Mockery::on(static fn (DemotionWarning $w) => (string) $w->principalIdentifier() === $principalId
                 && $w->warningCount()->value() === 1))
             ->once();
 
@@ -407,10 +407,10 @@ class ProcessRolePromotionTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $collaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([]);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([$principalGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -426,15 +426,15 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn(StrTestHelper::generateUuid());
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -491,7 +491,7 @@ class ProcessRolePromotionTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         // processWarningsでgetSeniorCollaboratorsが呼ばれるため、findByRoleが必要
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -506,15 +506,15 @@ class ProcessRolePromotionTest extends TestCase
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -613,15 +613,15 @@ class ProcessRolePromotionTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $collaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([$defaultGroup]);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([$seniorGroup]);
         $principalGroupRepository->shouldReceive('findByPrincipalId')
             ->andReturn([$seniorGroup]);
         $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with(Mockery::on(static fn ($accountIdentifier) => (string) $accountIdentifier === $accountId))
+            ->with(Mockery::on(static fn (AccountIdentifier $accountIdentifier) => (string) $accountIdentifier === $accountId))
             ->once()
             ->andReturn($defaultGroup);
         $principalGroupRepository->shouldReceive('save')
@@ -654,16 +654,16 @@ class ProcessRolePromotionTest extends TestCase
         $dispatcher->shouldReceive('dispatch')
             ->once();
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 
@@ -755,10 +755,10 @@ class ProcessRolePromotionTest extends TestCase
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $collaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([]);
         $principalGroupRepository->shouldReceive('findByRole')
-            ->with(Mockery::on(static fn ($r) => (string) $r === $seniorCollaboratorRoleId))
+            ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([$principalGroup]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -790,16 +790,16 @@ class ProcessRolePromotionTest extends TestCase
             ->with(Mockery::on(static fn ($event) => $event instanceof DemotionWarningsBatchIssued))
             ->once();
 
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
-        $this->app->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $this->app->instance(EventDispatcherInterface::class, $dispatcher);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(DemotionWarningRepositoryInterface::class, $demotionWarningRepository);
+        $this->app()->instance(PromotionHistoryRepositoryInterface::class, $promotionHistoryRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(EventDispatcherInterface::class, $dispatcher);
 
-        $useCase = $this->app->make(ProcessRolePromotionInterface::class);
+        $useCase = $this->app()->make(ProcessRolePromotionInterface::class);
         $input = new ProcessRolePromotionInput($yearMonth);
         $output = new ProcessRolePromotionOutput();
 

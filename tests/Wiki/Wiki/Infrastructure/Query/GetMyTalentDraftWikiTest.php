@@ -24,7 +24,7 @@ class GetMyTalentDraftWikiTest extends TestCase
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a201', $editorIdentifier, 'My Talent', '人物情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a202', $otherEditorIdentifier, 'Other Talent');
 
-        $useCase = $this->app->make(GetMyTalentDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyTalentDraftWikiInterface::class);
         $readModel = $useCase->process(new GetMyTalentDraftWikiInput(
             new Slug('tl-my-talent'),
             Language::KOREAN,
@@ -45,7 +45,7 @@ class GetMyTalentDraftWikiTest extends TestCase
             'Other Talent',
         );
 
-        $useCase = $this->app->make(GetMyTalentDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyTalentDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

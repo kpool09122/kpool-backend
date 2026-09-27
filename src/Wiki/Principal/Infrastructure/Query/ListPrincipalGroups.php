@@ -30,8 +30,8 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             roleIdentifiers: $group->roleAttachments->map(static fn ($attachment): string => $attachment->role_id)->values()->all(),
             isDefault: $group->is_default,
             members: $group->memberships->map(static function ($membership): PrincipalGroupMemberReadModel {
-                $principal = $membership->principal;
-                $identity = $principal->identity;
+                $principal = $membership->principal ?? throw new \UnexpectedValueException('Missing membership principal.');
+                $identity = $principal->identity ?? throw new \UnexpectedValueException('Missing principal identity.');
 
                 return new PrincipalGroupMemberReadModel(
                     principalIdentifier: $principal->id,

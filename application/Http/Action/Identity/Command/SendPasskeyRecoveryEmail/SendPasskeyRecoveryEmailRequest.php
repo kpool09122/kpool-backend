@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\SendPasskeyRecoveryEmail;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SendPasskeyRecoveryEmailRequest extends FormRequest
@@ -21,6 +22,6 @@ class SendPasskeyRecoveryEmailRequest extends FormRequest
 
     public function email(): string
     {
-        return (string) $this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 }

@@ -50,6 +50,7 @@ class RequestAffiliationTest extends TestCase
         $output = new RequestAffiliationOutput();
         $useCase->process($data->input, $output);
 
+        self::assertTrue(array_key_exists('affiliationIdentifier', $output->toArray()));
         $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
         $this->assertSame((string) $data->agencyAccountIdentifier, $output->toArray()['agencyAccountIdentifier']);
         $this->assertSame((string) $data->talentAccountIdentifier, $output->toArray()['talentAccountIdentifier']);
@@ -63,6 +64,7 @@ class RequestAffiliationTest extends TestCase
         $output = new RequestAffiliationOutput();
         $useCase->process($data->input, $output);
 
+        self::assertTrue(array_key_exists('affiliationIdentifier', $output->toArray()));
         $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
     }
 
@@ -127,6 +129,7 @@ class RequestAffiliationTest extends TestCase
         $output = new RequestAffiliationOutput();
         $useCase->process($data->input, $output);
 
+        self::assertTrue(array_key_exists('affiliationIdentifier', $output->toArray()));
         $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
     }
 
@@ -138,6 +141,7 @@ class RequestAffiliationTest extends TestCase
         $output = new RequestAffiliationOutput();
         $useCase->process($data->input, $output);
 
+        self::assertTrue(array_key_exists('affiliationIdentifier', $output->toArray()));
         $this->assertSame((string) $data->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
     }
 

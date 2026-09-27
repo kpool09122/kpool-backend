@@ -27,9 +27,9 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(ListAccountCategoryChangeRequests::class, $this->app->make(ListAccountCategoryChangeRequestsInterface::class));
+        $this->assertInstanceOf(ListAccountCategoryChangeRequests::class, $this->app()->make(ListAccountCategoryChangeRequestsInterface::class));
     }
 
     #[Group('useDb')]

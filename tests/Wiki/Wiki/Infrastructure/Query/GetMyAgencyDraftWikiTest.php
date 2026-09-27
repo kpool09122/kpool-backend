@@ -24,7 +24,7 @@ class GetMyAgencyDraftWikiTest extends TestCase
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a401', $editorIdentifier, 'My Agency', '事務所情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a402', $otherEditorIdentifier, 'Other Agency');
 
-        $useCase = $this->app->make(GetMyAgencyDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyAgencyDraftWikiInterface::class);
         $readModel = $useCase->process(new GetMyAgencyDraftWikiInput(
             new Slug('ag-my-agency'),
             Language::KOREAN,
@@ -45,7 +45,7 @@ class GetMyAgencyDraftWikiTest extends TestCase
             'Other Agency',
         );
 
-        $useCase = $this->app->make(GetMyAgencyDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyAgencyDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

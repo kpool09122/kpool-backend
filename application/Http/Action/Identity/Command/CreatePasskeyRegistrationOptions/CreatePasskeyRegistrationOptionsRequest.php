@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
@@ -26,27 +27,27 @@ class CreatePasskeyRegistrationOptionsRequest extends FormRequest
 
     public function email(): string
     {
-        return (string) $this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 
     public function accountType(): ?string
     {
         $value = $this->input('accountType');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function oneTimeToken(): ?string
     {
         $value = $this->input('oneTimeToken');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function returnTo(): ?string
     {
         $value = $this->input('return_to');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 }

@@ -28,8 +28,8 @@ class ListMembersTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->assertInstanceOf(ListMembers::class, $this->app->make(ListMembersInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->assertInstanceOf(ListMembers::class, $this->app()->make(ListMembersInterface::class));
     }
 
     #[Group('useDb')]

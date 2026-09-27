@@ -48,11 +48,11 @@ class RejectImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $this->assertInstanceOf(RejectImage::class, $rejectImage);
     }
 
@@ -99,12 +99,12 @@ class RejectImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $output = new RejectImageOutput();
         $rejectImage->process($input, $output);
 
@@ -144,12 +144,12 @@ class RejectImageTest extends TestCase
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
         $imageAuthorizationResourceBuilder->shouldNotReceive('buildFromDraftImage');
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $output = new RejectImageOutput();
         $rejectImage->process($input, $output);
     }
@@ -192,13 +192,13 @@ class RejectImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(InvalidStatusException::class);
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $output = new RejectImageOutput();
         $rejectImage->process($input, $output);
     }
@@ -242,13 +242,13 @@ class RejectImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(DisallowedException::class);
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $output = new RejectImageOutput();
         $rejectImage->process($input, $output);
     }
@@ -280,12 +280,12 @@ class RejectImageTest extends TestCase
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
         $imageAuthorizationResourceBuilder->shouldNotReceive('buildFromDraftImage');
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $rejectImage = $this->app->make(RejectImageInterface::class);
+        $rejectImage = $this->app()->make(RejectImageInterface::class);
         $output = new RejectImageOutput();
         $rejectImage->process($input, $output);
     }

@@ -21,7 +21,7 @@ readonly class UploadedImageReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, isHidden: bool, uploadedAt: string|null}
      */
     public function toArray(): array
     {

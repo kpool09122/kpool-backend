@@ -39,10 +39,10 @@ class ApproveCertificationTest extends TestCase
     {
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $resourceUpdater = Mockery::mock(OfficialResourceUpdaterInterface::class);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
 
-        $useCase = $this->app->make(ApproveCertificationInterface::class);
+        $useCase = $this->app()->make(ApproveCertificationInterface::class);
 
         $this->assertInstanceOf(ApproveCertification::class, $useCase);
     }
@@ -81,11 +81,11 @@ class ApproveCertificationTest extends TestCase
             ->with(ResourceType::SONG, $wikiId, $ownerAccountIdentifier)
             ->andReturnNull();
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
         $this->registerOperatorAuthorization($principalIdentifier, true);
 
-        $useCase = $this->app->make(ApproveCertificationInterface::class);
+        $useCase = $this->app()->make(ApproveCertificationInterface::class);
 
         $input = new ApproveCertificationInput($certificationId, $principalIdentifier);
         $output = new ApproveCertificationOutput();
@@ -108,10 +108,10 @@ class ApproveCertificationTest extends TestCase
 
         $resourceUpdater = Mockery::mock(OfficialResourceUpdaterInterface::class);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
 
-        $useCase = $this->app->make(ApproveCertificationInterface::class);
+        $useCase = $this->app()->make(ApproveCertificationInterface::class);
 
         $input = new ApproveCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
@@ -144,10 +144,10 @@ class ApproveCertificationTest extends TestCase
 
         $resourceUpdater = Mockery::mock(OfficialResourceUpdaterInterface::class);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $resourceUpdater);
 
-        $useCase = $this->app->make(ApproveCertificationInterface::class);
+        $useCase = $this->app()->make(ApproveCertificationInterface::class);
 
         $input = new ApproveCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
@@ -175,11 +175,11 @@ class ApproveCertificationTest extends TestCase
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $repository->shouldReceive('findById')->with($certificationId)->andReturn($certification);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, Mockery::mock(OfficialResourceUpdaterInterface::class));
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, Mockery::mock(OfficialResourceUpdaterInterface::class));
         $this->registerOperatorAuthorization($principalIdentifier, false);
 
-        $useCase = $this->app->make(ApproveCertificationInterface::class);
+        $useCase = $this->app()->make(ApproveCertificationInterface::class);
         $input = new ApproveCertificationInput($certificationId, $principalIdentifier);
         $output = new ApproveCertificationOutput();
 
@@ -197,7 +197,7 @@ class ApproveCertificationTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn($policyAllowed);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

@@ -43,12 +43,12 @@ class ApproveAffiliationTest extends TestCase
     /** @throws BindingResolutionException */
     public function test__construct(): void
     {
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
-        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $this->assertInstanceOf(ApproveAffiliation::class, $this->app->make(ApproveAffiliationInterface::class));
+        $this->assertInstanceOf(ApproveAffiliation::class, $this->app()->make(ApproveAffiliationInterface::class));
     }
 
     public function testProcessWhenPolicyAllowsDesignatedApprover(): void
@@ -59,6 +59,7 @@ class ApproveAffiliationTest extends TestCase
 
         $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), $output);
 
+        self::assertTrue(array_key_exists('status', $output->toArray()));
         $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['activatedAt']);
     }

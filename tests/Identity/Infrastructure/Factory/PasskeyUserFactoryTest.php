@@ -17,7 +17,7 @@ class PasskeyUserFactoryTest extends TestCase
     {
         $this->assertInstanceOf(
             PasskeyUserFactory::class,
-            $this->app->make(PasskeyUserFactoryInterface::class),
+            $this->app()->make(PasskeyUserFactoryInterface::class),
         );
     }
 
@@ -27,9 +27,9 @@ class PasskeyUserFactoryTest extends TestCase
         $uuidGenerator->shouldReceive('generate')
             ->once()
             ->andReturn('123e4567-e89b-72d3-a456-426614174001');
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
 
-        $user = $this->app->make(PasskeyUserFactoryInterface::class)->create();
+        $user = $this->app()->make(PasskeyUserFactoryInterface::class)->create();
 
         $this->assertSame('123e4567-e89b-72d3-a456-426614174001', (string) $user->identifier());
         $this->assertNull($user->identityIdentifier());
@@ -41,10 +41,10 @@ class PasskeyUserFactoryTest extends TestCase
         $uuidGenerator->shouldReceive('generate')
             ->once()
             ->andReturn('123e4567-e89b-72d3-a456-426614174001');
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
 
-        $user = $this->app->make(PasskeyUserFactoryInterface::class)->create($identityIdentifier);
+        $user = $this->app()->make(PasskeyUserFactoryInterface::class)->create($identityIdentifier);
 
         $this->assertSame($identityIdentifier, $user->identityIdentifier());
     }

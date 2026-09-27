@@ -48,7 +48,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     {
         $this->mockAllRepositories();
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $this->assertInstanceOf(ImageAuthorizationResourceBuilder::class, $builder);
     }
 
@@ -69,10 +69,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -96,10 +96,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -130,10 +130,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -165,10 +165,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -191,10 +191,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -229,10 +229,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -265,10 +265,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -292,10 +292,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -330,10 +330,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -367,10 +367,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -394,10 +394,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -422,10 +422,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -447,10 +447,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftResource(ResourceType::IMAGE, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -484,10 +484,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$draftWiki]);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromDraftImage($draftImage);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -512,10 +512,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$wiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -546,10 +546,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$wiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -583,10 +583,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$wiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -623,10 +623,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([$wiki]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -651,10 +651,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -677,10 +677,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -704,10 +704,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -732,10 +732,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -760,10 +760,10 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ->once()
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
 
-        $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
+        $builder = $this->app()->make(ImageAuthorizationResourceBuilderInterface::class);
         $resource = $builder->buildFromImage($image);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
@@ -774,8 +774,8 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
 
     private function mockAllRepositories(): void
     {
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
     }
 
     private function createDraftWiki(string $id, ResourceType $resourceType, ?string $publishedWikiId): DraftWiki

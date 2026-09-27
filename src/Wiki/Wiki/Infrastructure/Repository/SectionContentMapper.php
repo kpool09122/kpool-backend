@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Infrastructure\Repository;
 
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
@@ -116,7 +117,7 @@ final class SectionContentMapper
     }
 
     /**
-     * @param array<array<string, mixed>> $data
+     * @param array<array<array-key, mixed>> $data
      */
     public static function collectionFromArray(array $data, int $currentDepth = 1): SectionContentCollection
     {
@@ -124,66 +125,66 @@ final class SectionContentMapper
             static function (array $contentData) use ($currentDepth): SectionContentInterface {
                 if (($contentData['type'] ?? '') === 'section') {
                     return new Section(
-                        title: $contentData['title'] ?? '',
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        contents: self::collectionFromArray($contentData['contents'] ?? [], $currentDepth + 1),
+                        title: TypedValue::string($contentData['title'] ?? ''),
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        contents: self::collectionFromArray(self::arrayRows($contentData['contents'] ?? []), $currentDepth + 1),
                         depth: $currentDepth,
                     );
                 }
 
-                $blockType = BlockType::from($contentData['block_type'] ?? '');
+                $blockType = BlockType::from(TypedValue::string($contentData['block_type'] ?? ''));
 
                 return match ($blockType) {
                     BlockType::TEXT => new TextBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        content: $contentData['content'] ?? '',
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        content: TypedValue::string($contentData['content'] ?? ''),
                     ),
                     BlockType::IMAGE => new ImageBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        imageIdentifier: new ImageIdentifier((string) ($contentData['image_identifier'] ?? '')),
-                        caption: $contentData['caption'] ?? null,
-                        alt: $contentData['alt'] ?? null,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        imageIdentifier: new ImageIdentifier(TypedValue::string($contentData['image_identifier'] ?? '')),
+                        caption: TypedValue::nullableString($contentData['caption'] ?? null),
+                        alt: TypedValue::nullableString($contentData['alt'] ?? null),
                     ),
                     BlockType::IMAGE_GALLERY => new ImageGalleryBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         imageIdentifiers: array_map(
                             static fn (string $id): ImageIdentifier => new ImageIdentifier($id),
-                            $contentData['image_identifiers'] ?? [],
+                            TypedValue::stringArray($contentData['image_identifiers'] ?? []),
                         ),
-                        caption: $contentData['caption'] ?? null,
+                        caption: TypedValue::nullableString($contentData['caption'] ?? null),
                     ),
                     BlockType::EMBED => new EmbedBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        provider: EmbedProvider::from($contentData['provider'] ?? ''),
-                        embedId: $contentData['embed_id'] ?? '',
-                        caption: $contentData['caption'] ?? null,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        provider: EmbedProvider::from(TypedValue::string($contentData['provider'] ?? '')),
+                        embedId: TypedValue::string($contentData['embed_id'] ?? ''),
+                        caption: TypedValue::nullableString($contentData['caption'] ?? null),
                     ),
                     BlockType::QUOTE => new QuoteBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        content: $contentData['content'] ?? '',
-                        source: $contentData['source'] ?? null,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        content: TypedValue::string($contentData['content'] ?? ''),
+                        source: TypedValue::nullableString($contentData['source'] ?? null),
                     ),
                     BlockType::LIST => new ListBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
-                        listType: ListType::from($contentData['list_type'] ?? 'bullet'),
-                        items: $contentData['items'] ?? [],
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        listType: ListType::from(TypedValue::string($contentData['list_type'] ?? 'bullet')),
+                        items: TypedValue::stringArray($contentData['items'] ?? []),
                     ),
                     BlockType::TABLE => new TableBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         rowCells: array_map(
-                            static fn (array $rowCells): array => self::tableCellsFromArray($rowCells) ?? [],
-                            $contentData['row_cells'] ?? [],
+                            static fn (mixed $rowCells): array => self::tableCellsFromArray($rowCells) ?? [],
+                            TypedValue::array($contentData['row_cells'] ?? []),
                         ),
                         headerCells: self::tableCellsFromArray($contentData['header_cells'] ?? null),
-                        tableWidth: $contentData['table_width'] ?? null,
+                        tableWidth: TypedValue::nullableString($contentData['table_width'] ?? null),
                     ),
                     BlockType::PROFILE_CARD_LIST => new ProfileCardListBlock(
-                        displayOrder: $contentData['display_order'] ?? 0,
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         wikiIdentifiers: array_map(
                             static fn (string $id) => new WikiIdentifier($id),
-                            $contentData['wiki_identifiers'] ?? [],
+                            TypedValue::stringArray($contentData['wiki_identifiers'] ?? []),
                         ),
-                        title: $contentData['title'] ?? null,
+                        title: TypedValue::nullableString($contentData['title'] ?? null),
                     ),
                 };
             },
@@ -209,19 +210,29 @@ final class SectionContentMapper
         );
     }
 
-    /**
-     * @param array<array{content?: string, colspan?: int}>|null $cells
-     * @return array<TableCell>|null
-     */
-    private static function tableCellsFromArray(?array $cells): ?array
+    /** @return array<TableCell>|null */
+    private static function tableCellsFromArray(mixed $cells): ?array
     {
         if ($cells === null) {
             return null;
         }
 
         return array_map(
-            static fn (array $cell): TableCell => TableCell::fromArray($cell),
-            $cells,
+            static function (mixed $cell): TableCell {
+                $cell = TypedValue::array($cell);
+
+                return new TableCell(
+                    content: TypedValue::string($cell['content'] ?? ''),
+                    colspan: TypedValue::nullableInt($cell['colspan'] ?? null),
+                );
+            },
+            TypedValue::array($cells),
         );
+    }
+
+    /** @return array<array<array-key, mixed>> */
+    private static function arrayRows(mixed $value): array
+    {
+        return array_map(TypedValue::array(...), TypedValue::array($value));
     }
 }

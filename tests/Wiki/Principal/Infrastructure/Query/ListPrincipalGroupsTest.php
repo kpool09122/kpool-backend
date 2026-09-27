@@ -28,7 +28,7 @@ class ListPrincipalGroupsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app->make(ListPrincipalGroupsInterface::class));
+        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app()->make(ListPrincipalGroupsInterface::class));
     }
 
     #[Group('useDb')]

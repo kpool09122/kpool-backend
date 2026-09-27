@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -171,22 +172,22 @@ final readonly class TalentBasic implements BasicInterface
     public static function fromArray(array $data): self
     {
         return new self(
-            name: new Name($data['name']),
-            normalizedName: $data['normalized_name'] ?? '',
-            realName: new RealName($data['real_name'] ?? ''),
-            normalizedRealName: $data['normalized_real_name'] ?? '',
+            name: new Name(TypedValue::string($data['name'])),
+            normalizedName: TypedValue::string($data['normalized_name'] ?? ''),
+            realName: new RealName(TypedValue::string($data['real_name'] ?? '')),
+            normalizedRealName: TypedValue::string($data['normalized_real_name'] ?? ''),
             birthday: self::toBirthday($data['birthday'] ?? null),
-            agencyIdentifier: $data['agency_identifier'] ? new WikiIdentifier($data['agency_identifier']) : null,
-            groupIdentifiers: $data['group_identifiers'] ? array_map(static fn ($groupIdentifier) => new WikiIdentifier($groupIdentifier), $data['group_identifiers']) : [],
-            emoji: new Emoji($data['emoji'] ?? ''),
-            representativeSymbol: new RepresentativeSymbol($data['representative_symbol'] ?? ''),
-            position: new Position($data['position'] ?? ''),
-            mbti: isset($data['mbti']) ? MBTI::from($data['mbti']) : null,
-            zodiacSign: isset($data['zodiac_sign']) ? ZodiacSign::from($data['zodiac_sign']) : null,
-            englishLevel: isset($data['english_level']) ? EnglishLevel::from($data['english_level']) : null,
-            height: isset($data['height']) ? new Height((int) $data['height']) : null,
-            bloodType: isset($data['blood_type']) ? BloodType::from($data['blood_type']) : null,
-            fandomName: new FandomName($data['fandom_name'] ?? ''),
+            agencyIdentifier: $data['agency_identifier'] ? new WikiIdentifier(TypedValue::string($data['agency_identifier'])) : null,
+            groupIdentifiers: $data['group_identifiers'] ? array_map(static fn ($groupIdentifier) => new WikiIdentifier($groupIdentifier), TypedValue::stringArray($data['group_identifiers'])) : [],
+            emoji: new Emoji(TypedValue::string($data['emoji'] ?? '')),
+            representativeSymbol: new RepresentativeSymbol(TypedValue::string($data['representative_symbol'] ?? '')),
+            position: new Position(TypedValue::string($data['position'] ?? '')),
+            mbti: isset($data['mbti']) ? MBTI::from(TypedValue::string($data['mbti'])) : null,
+            zodiacSign: isset($data['zodiac_sign']) ? ZodiacSign::from(TypedValue::string($data['zodiac_sign'])) : null,
+            englishLevel: isset($data['english_level']) ? EnglishLevel::from(TypedValue::string($data['english_level'])) : null,
+            height: isset($data['height']) ? new Height(TypedValue::numericInt($data['height'])) : null,
+            bloodType: isset($data['blood_type']) ? BloodType::from(TypedValue::string($data['blood_type'])) : null,
+            fandomName: new FandomName(TypedValue::string($data['fandom_name'] ?? '')),
         );
     }
 
@@ -204,6 +205,6 @@ final readonly class TalentBasic implements BasicInterface
             return new Birthday($birthday);
         }
 
-        return new Birthday(new DateTimeImmutable((string) $birthday));
+        return new Birthday(new DateTimeImmutable(TypedValue::string($birthday)));
     }
 }

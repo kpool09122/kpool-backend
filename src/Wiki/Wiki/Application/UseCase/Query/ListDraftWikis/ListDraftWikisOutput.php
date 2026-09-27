@@ -32,7 +32,7 @@ class ListDraftWikisOutput implements ListDraftWikisOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikis: list<array{wikiIdentifier: string, publishedWikiIdentifier: string|null, translationSetIdentifier: string, slug: string, language: string, resourceType: string, themeColor: string|null, fontStyle: string|null, title: string|null, metaDescription: string|null, keywords: list<string>|null, imageIdentifier: string|null, imageUrl: string|null, imageAltText: string|null, isHidden: bool|null, status: string, rejectionReason: string|null, name: string, normalizedName: string, editedAt: string|null, approvedAt: string|null, translatedAt: string|null, mergedAt: string|null}>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null}
      */
     public function toArray(): array
     {

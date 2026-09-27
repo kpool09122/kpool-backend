@@ -32,7 +32,7 @@ class DraftWikiFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(DraftWikiFactoryInterface::class);
         $this->assertInstanceOf(DraftWikiFactory::class, $wikiFactory);
     }
 
@@ -61,7 +61,7 @@ class DraftWikiFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $slug = new Slug('gr-twice');
-        $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(DraftWikiFactoryInterface::class);
         $wiki = $wikiFactory->create($editorIdentifier, $language, $basic, $slug);
         $this->assertTrue(UuidValidator::isValid((string)$wiki->wikiIdentifier()));
         $this->assertNull($wiki->publishedWikiIdentifier());
@@ -110,7 +110,7 @@ class DraftWikiFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $slug = new Slug('gr-newjeans');
-        $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(DraftWikiFactoryInterface::class);
         $wiki = $wikiFactory->create(null, $language, $basic, $slug);
         $this->assertTrue(UuidValidator::isValid((string)$wiki->wikiIdentifier()));
         $this->assertNull($wiki->publishedWikiIdentifier());

@@ -75,7 +75,7 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->affiliationIdentifier(),
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
-            $affiliation->activatedAt(),
+            $affiliation->activatedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
             (string) $agencyAccount->name(),
             (string) $talentAccount->name(),
             $agencyAccount->type(),

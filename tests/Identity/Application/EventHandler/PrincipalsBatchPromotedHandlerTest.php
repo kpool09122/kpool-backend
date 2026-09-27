@@ -32,10 +32,10 @@ class PrincipalsBatchPromotedHandlerTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchPromotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchPromotedHandler::class);
 
         $this->assertInstanceOf(PrincipalsBatchPromotedHandler::class, $handler);
     }
@@ -72,10 +72,10 @@ class PrincipalsBatchPromotedHandlerTest extends TestCase
             ->with($identity2->email(), Language::ENGLISH)
             ->once();
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchPromotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchPromotedHandler::class);
 
         $handler->handle($event);
     }
@@ -101,10 +101,10 @@ class PrincipalsBatchPromotedHandlerTest extends TestCase
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
         $notificationService->shouldNotReceive('sendPromotionNotification');
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchPromotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchPromotedHandler::class);
 
         $handler->handle($event);
     }

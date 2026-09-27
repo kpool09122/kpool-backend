@@ -119,7 +119,7 @@ class CreateDraftWiki
     private static function createTalentBasic(string $wikiId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode((string) $overrides['group_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['group_identifiers'])
             : [];
 
         DB::table('draft_wiki_talent_basics')->insert([
@@ -174,10 +174,10 @@ class CreateDraftWiki
     private static function createSongBasic(string $wikiId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode((string) $overrides['group_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['group_identifiers'])
             : [];
         $talentIdentifiers = isset($overrides['talent_identifiers'])
-            ? json_decode((string) $overrides['talent_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['talent_identifiers'])
             : [];
 
         DB::table('draft_wiki_song_basics')->insert([

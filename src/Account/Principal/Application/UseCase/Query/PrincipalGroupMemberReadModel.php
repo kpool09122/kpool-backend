@@ -34,7 +34,7 @@ readonly class PrincipalGroupMemberReadModel
         return $this->email;
     }
 
-    /** @return array<string, string> */
+    /** @return array{principalIdentifier: string, identityIdentifier: string, identityName: string, email: string} */
     public function toArray(): array
     {
         return [

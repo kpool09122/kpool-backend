@@ -31,7 +31,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $principalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14d5cc';
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateAccount::create((string) $accountIdentifier, ['type' => 'corporation']);
-        $this->app->make(AccountAuthorizationSeeder::class)->run();
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         CreateIdentity::create($identityIdentifier, [
             'identity_name' => 'test-user',
             'email' => 'test@example.com',
@@ -62,7 +62,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         Redis::shouldReceive('get')->once()->andReturn(null);
         Redis::shouldReceive('set')->once();
 
-        $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
+        $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
@@ -74,8 +74,17 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5cc', $readModel->accountPrincipalIdentifier());
         $this->assertSame('corporation', $readModel->accountType());
         $this->assertGreaterThanOrEqual(4, count($readModel->accountPolicies()));
-        $statements = array_merge(...array_column($readModel->accountPolicies(), 'statements'));
-        $actions = array_merge(...array_column($statements, 'actions'));
+        $statements = [];
+        $actions = [];
+        foreach ($readModel->accountPolicies() as $policy) {
+            self::assertIsArray($policy['statements']);
+            foreach ($policy['statements'] as $statement) {
+                self::assertIsArray($statement);
+                self::assertIsArray($statement['actions']);
+                $statements[] = $statement;
+                $actions = [...$actions, ...$statement['actions']];
+            }
+        }
         $this->assertContains('account:read', $actions);
         $this->assertContains('account:update', $actions);
         $updateStatement = $this->statementForAction($statements, 'account:update');
@@ -136,7 +145,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $readModel = $this->app->make(GetAuthenticatedIdentityInterface::class)
+        $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
             ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
         $authenticationMethodQueries = array_values(array_filter(
             DB::getQueryLog(),
@@ -169,7 +178,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         Redis::shouldReceive('get')->once()->andReturn(null);
         Redis::shouldReceive('set')->never();
 
-        $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
+        $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
@@ -192,7 +201,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e001');
         $originalAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e002');
         $originalPrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e003';
-        $this->app->make(AccountAuthorizationSeeder::class)->run();
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         CreateIdentity::create($identityIdentifier);
         CreateAccount::create((string) $originalAccountIdentifier, ['name' => 'Original Account']);
         DB::table('account_principals')->insert([
@@ -225,7 +234,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         Redis::shouldReceive('get')->twice()->andReturn(null);
         Redis::shouldReceive('set')->twice();
 
-        $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
+        $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
         $this->assertSame([], $readModel->switchableAccounts());
 
@@ -262,7 +271,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $originalPrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e104';
         $effectivePrincipalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e105';
         $delegationIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14e106';
-        $this->app->make(AccountAuthorizationSeeder::class)->run();
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         CreateIdentity::create($identityIdentifier);
         CreateAccount::create((string) $originalAccountIdentifier, ['name' => 'Original Account']);
         CreateAccount::create((string) $effectiveAccountIdentifier, ['name' => 'Effective Account']);
@@ -313,7 +322,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         ], JSON_THROW_ON_ERROR));
         Redis::shouldReceive('set')->never();
 
-        $readModel = $this->app->make(GetAuthenticatedIdentityInterface::class)
+        $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
             ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
         $this->assertSame((string) $effectiveAccountIdentifier, $readModel->accountIdentifier());
@@ -328,7 +337,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenIdentityDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
+        $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
 
         $this->expectException(IdentityNotFoundException::class);
 
@@ -387,12 +396,13 @@ class GetAuthenticatedIdentityTest extends TestCase
     }
 
     /**
-     * @param array<int, array<string, mixed>> $statements
-     * @return array<string, mixed>
+     * @param list<array<array-key, mixed>> $statements
+     * @return array<array-key, mixed>
      */
     private function statementForAction(array $statements, string $action): array
     {
         foreach ($statements as $statement) {
+            self::assertIsArray($statement['actions']);
             if (in_array($action, $statement['actions'], true)) {
                 return $statement;
             }

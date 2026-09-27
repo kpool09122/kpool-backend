@@ -57,11 +57,11 @@ class RegisterPaymentMethodTest extends TestCase
         $metaResolver = Mockery::mock(PaymentMethodMetaResolverInterface::class);
         $metaResolver->shouldNotReceive('resolve');
 
-        $this->app->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
-        $this->app->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
-        $this->app->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
+        $this->app()->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
+        $this->app()->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
+        $this->app()->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
 
-        $useCase = $this->app->make(RegisterPaymentMethodInterface::class);
+        $useCase = $this->app()->make(RegisterPaymentMethodInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();
@@ -113,11 +113,11 @@ class RegisterPaymentMethodTest extends TestCase
             ->with($paymentMethodId)
             ->andReturnNull();
 
-        $this->app->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
-        $this->app->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
-        $this->app->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
+        $this->app()->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
+        $this->app()->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
+        $this->app()->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
 
-        $useCase = $this->app->make(RegisterPaymentMethodInterface::class);
+        $useCase = $this->app()->make(RegisterPaymentMethodInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();
@@ -177,11 +177,11 @@ class RegisterPaymentMethodTest extends TestCase
             ->once()
             ->andReturnNull();
 
-        $this->app->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
-        $this->app->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
-        $this->app->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
+        $this->app()->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
+        $this->app()->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
+        $this->app()->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
 
-        $useCase = $this->app->make(RegisterPaymentMethodInterface::class);
+        $useCase = $this->app()->make(RegisterPaymentMethodInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();
@@ -227,11 +227,11 @@ class RegisterPaymentMethodTest extends TestCase
             ->with($paymentMethodId)
             ->andReturn($meta);
 
-        $this->app->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
-        $this->app->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
-        $this->app->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
+        $this->app()->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
+        $this->app()->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
+        $this->app()->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
 
-        $useCase = $this->app->make(RegisterPaymentMethodInterface::class);
+        $useCase = $this->app()->make(RegisterPaymentMethodInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();
@@ -272,11 +272,11 @@ class RegisterPaymentMethodTest extends TestCase
             ->once()
             ->andReturnNull();
 
-        $this->app->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
-        $this->app->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
-        $this->app->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
+        $this->app()->instance(RegisteredPaymentMethodRepositoryInterface::class, $repository);
+        $this->app()->instance(RegisteredPaymentMethodFactoryInterface::class, $factory);
+        $this->app()->instance(PaymentMethodMetaResolverInterface::class, $metaResolver);
 
-        $useCase = $this->app->make(RegisterPaymentMethodInterface::class);
+        $useCase = $this->app()->make(RegisterPaymentMethodInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();

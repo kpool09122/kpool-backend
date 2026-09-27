@@ -36,12 +36,12 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         $updater = Mockery::mock(OfficialResourceUpdaterInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
 
         $this->assertInstanceOf(SyncOwnedWikiCertifications::class, $useCase);
     }
@@ -78,10 +78,10 @@ class SyncOwnedWikiCertificationsTest extends TestCase
             ->once()
             ->with(ResourceType::GROUP, $rejectId, $accountIdentifier);
 
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
         $output = new SyncOwnedWikiCertificationsOutput();
 
         $useCase->process(
@@ -106,12 +106,12 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         $resourceQueryService = Mockery::mock(SyncableOwnedWikiResourceQueryServiceInterface::class);
         $resourceQueryService->shouldReceive('findSyncableResources')->never();
         $updater = Mockery::mock(OfficialResourceUpdaterInterface::class);
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
 
         $this->expectException(DisallowedException::class);
 
@@ -147,10 +147,10 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         $updater->shouldReceive('markOfficial')->never();
         $updater->shouldReceive('unmarkOfficial')->never();
 
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
 
         $this->expectException(DisallowedException::class);
 
@@ -180,10 +180,10 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         $updater->shouldReceive('markOfficial')->never();
         $updater->shouldReceive('unmarkOfficial')->never();
 
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
 
         $this->expectException(DisallowedException::class);
 
@@ -220,12 +220,12 @@ class SyncOwnedWikiCertificationsTest extends TestCase
         $updater->shouldReceive('markOfficial')->never();
         $updater->shouldReceive('unmarkOfficial')->never();
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
-        $this->app->instance(OfficialResourceUpdaterInterface::class, $updater);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(SyncableOwnedWikiResourceQueryServiceInterface::class, $resourceQueryService);
+        $this->app()->instance(OfficialResourceUpdaterInterface::class, $updater);
 
-        $useCase = $this->app->make(SyncOwnedWikiCertificationsInterface::class);
+        $useCase = $this->app()->make(SyncOwnedWikiCertificationsInterface::class);
 
         $this->expectException(PrincipalNotFoundException::class);
 
@@ -263,7 +263,7 @@ class SyncOwnedWikiCertificationsTest extends TestCase
             )
             ->andReturn($policyAllowed);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

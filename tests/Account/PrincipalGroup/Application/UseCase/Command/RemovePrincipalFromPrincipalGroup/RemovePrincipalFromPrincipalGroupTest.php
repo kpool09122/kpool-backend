@@ -36,9 +36,9 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $this->assertInstanceOf(RemovePrincipalFromPrincipalGroup::class, $useCase);
     }
 
@@ -64,7 +64,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('save')
             ->once()
@@ -76,16 +76,17 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $output = new RemovePrincipalFromPrincipalGroupOutput();
         $useCase->process($input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('members', $result));
         $this->assertNotContains((string) $principalIdentifier, $result['members']);
     }
 
@@ -101,14 +102,14 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -138,7 +139,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -147,10 +148,10 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Role::OWNER)
             ->andReturn($this->createOwnerRole());
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalNotMemberException::class);
@@ -183,11 +184,11 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('findByAccountId')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $accountIdentifier))
+            ->with(Mockery::on(fn (AccountIdentifier $arg) => (string) $arg === (string) $accountIdentifier))
             ->andReturn([$principalGroup]); // Only one OWNER group with one member
         $repository->shouldNotReceive('save');
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -196,10 +197,10 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(CannotRemoveLastOwnerException::class);
@@ -234,11 +235,11 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('findByAccountId')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $accountIdentifier))
+            ->with(Mockery::on(fn (AccountIdentifier $arg) => (string) $arg === (string) $accountIdentifier))
             ->andReturn([$principalGroup]);
         $repository->shouldReceive('save')
             ->once()
@@ -249,16 +250,17 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Role::OWNER)
             ->andReturn($ownerRole);
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $output = new RemovePrincipalFromPrincipalGroupOutput();
         $useCase->process($input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('members', $result));
         $this->assertNotContains((string) $principalIdentifier, $result['members']);
         $this->assertContains((string) $anotherPrincipalIdentifier, $result['members']);
     }
@@ -281,7 +283,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
 
@@ -291,13 +293,13 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             ->with(Role::OWNER)
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
         $this->expectException(SystemRoleNotFoundException::class);
         $this->expectExceptionMessage('Owner account role is not found.');
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
         $output = new RemovePrincipalFromPrincipalGroupOutput();
         $useCase->process($input, $output);

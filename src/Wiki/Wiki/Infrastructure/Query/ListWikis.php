@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Shared\Infrastructure\Trait\WhereLike;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -63,7 +64,7 @@ readonly class ListWikis implements ListWikisInterface
         $output->output(
             array_map(
                 fn (WikiModel $wiki): WikiListItemReadModel => $this->toReadModel($wiki),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -102,6 +103,9 @@ readonly class ListWikis implements ListWikisInterface
      */
     private function applySort(Builder $query, string $sort, string $order): void
     {
+        if ($order !== 'asc' && $order !== 'desc') {
+            throw new \InvalidArgumentException('Invalid sort order.');
+        }
         if ($sort === 'name') {
             $query->orderBy(DB::raw($this->nameSortExpression()), $order)
                 ->orderBy('wikis.updated_at', 'desc')
@@ -120,6 +124,7 @@ readonly class ListWikis implements ListWikisInterface
             ->orderBy('wikis.id');
     }
 
+    /** @return literal-string */
     private function nameSortExpression(): string
     {
         return 'COALESCE(wiki_talent_basics.name, wiki_group_basics.name, wiki_agency_basics.name, wiki_song_basics.name)';
@@ -154,11 +159,11 @@ readonly class ListWikis implements ListWikisInterface
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
             isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
-            name: (string) $basic->getAttribute('name'),
-            normalizedName: (string) $basic->getAttribute('normalized_name'),
+            name: (TypedValue::nullableString($basic->getAttribute('name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($basic->getAttribute('normalized_name')) ?? ''),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
             isOfficial: $wiki->owner_account_id !== null,
@@ -195,7 +200,7 @@ readonly class ListWikis implements ListWikisInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 
     private function nullableBool(mixed $value): ?bool

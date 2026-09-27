@@ -136,7 +136,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 SocialProvider::fromString($connection->provider),
                 $connection->provider_user_id
             ))
-            ->toArray();
+            ->all();
 
         return new Identity(
             new IdentityIdentifier($eloquent->id),

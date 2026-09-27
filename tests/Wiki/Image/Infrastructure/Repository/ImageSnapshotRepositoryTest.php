@@ -62,7 +62,7 @@ class ImageSnapshotRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
 
         $this->assertDatabaseHas('wiki_image_snapshots', [
@@ -99,7 +99,7 @@ class ImageSnapshotRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
         $snapshot = $repository->findById(new ImageSnapshotIdentifier($snapshotId));
 
         $this->assertInstanceOf(ImageSnapshot::class, $snapshot);
@@ -118,7 +118,7 @@ class ImageSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
         $snapshot = $repository->findById(new ImageSnapshotIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($snapshot);
@@ -156,7 +156,7 @@ class ImageSnapshotRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByResourceSnapshot(new TranslationSetIdentifier($wikiId));
 
         $this->assertCount(2, $snapshots);
@@ -181,7 +181,7 @@ class ImageSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceSnapshotWhenNotExist(): void
     {
-        $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByResourceSnapshot(
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );

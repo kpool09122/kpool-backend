@@ -27,8 +27,8 @@ class DeleteRoleTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeleteRoleInterface::class);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeleteRoleInterface::class);
         $this->assertInstanceOf(DeleteRole::class, $useCase);
     }
 
@@ -50,16 +50,16 @@ class DeleteRoleTest extends TestCase
         $repository = Mockery::mock(RoleRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $repository->shouldReceive('delete')
             ->once()
             ->with($role)
             ->andReturnNull();
 
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeleteRoleInterface::class);
+        $useCase = $this->app()->make(DeleteRoleInterface::class);
         $input = new DeleteRoleInput($roleIdentifier);
 
         $useCase->process($input);
@@ -75,13 +75,13 @@ class DeleteRoleTest extends TestCase
         $repository = Mockery::mock(RoleRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeleteRoleInterface::class);
+        $useCase = $this->app()->make(DeleteRoleInterface::class);
         $input = new DeleteRoleInput($roleIdentifier);
 
         $this->expectException(RoleNotFoundException::class);
@@ -107,13 +107,13 @@ class DeleteRoleTest extends TestCase
         $repository = Mockery::mock(RoleRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(RoleRepositoryInterface::class, $repository);
+        $this->app()->instance(RoleRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeleteRoleInterface::class);
+        $useCase = $this->app()->make(DeleteRoleInterface::class);
         $input = new DeleteRoleInput($roleIdentifier);
 
         $this->expectException(CannotDeleteSystemRoleException::class);

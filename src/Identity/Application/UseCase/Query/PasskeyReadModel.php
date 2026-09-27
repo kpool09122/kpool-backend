@@ -54,7 +54,7 @@ readonly class PasskeyReadModel
         return $this->createdAt;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{passkeyIdentifier: string, displayName: string, transports: array<string>, backupEligible: bool, backupState: bool, lastUsedAt: string|null, createdAt: string} */
     public function toArray(): array
     {
         return [

@@ -10,6 +10,7 @@ use Application\Models\Wiki\WikiSnapshotGroupBasic;
 use Application\Models\Wiki\WikiSnapshotSongBasic;
 use Application\Models\Wiki\WikiSnapshotTalentBasic;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -80,7 +81,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->orderBy('version', 'desc')
             ->get();
 
-        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
     }
 
     public function findByWikiAndVersion(
@@ -113,7 +114,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->where('version', $version->value())
             ->get();
 
-        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -126,7 +127,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->where('image_identifier', (string) $imageIdentifier)
             ->get();
 
-        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
     }
 
     private function saveBasic(string $snapshotId, ResourceType $resourceType, BasicInterface $basic): void
@@ -141,9 +142,8 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
 
         match ($resourceType) {
             ResourceType::TALENT => (function () use ($snapshotId, $basicArray, $groupIdentifiers) {
-                WikiSnapshotTalentBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
-                $talentBasic = WikiSnapshotTalentBasic::query()->where('snapshot_id', $snapshotId)->first();
-                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+                $talentBasic = WikiSnapshotTalentBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
+                $talentBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
             })(),
             ResourceType::GROUP => WikiSnapshotGroupBasic::query()->updateOrCreate(
                 ['snapshot_id' => $snapshotId],
@@ -154,10 +154,9 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 $basicArray
             ),
             ResourceType::SONG => (function () use ($snapshotId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
-                WikiSnapshotSongBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
-                $songBasic = WikiSnapshotSongBasic::query()->where('snapshot_id', $snapshotId)->first();
-                $songBasic->groups()->sync($groupIdentifiers ?? []);
-                $songBasic->talents()->sync($talentIdentifiers ?? []);
+                $songBasic = WikiSnapshotSongBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
+                $songBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
+                $songBasic->talents()->sync(TypedValue::stringArray($talentIdentifiers ?? []));
             })(),
             ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };
@@ -186,7 +185,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             $model->merged_at?->toDateTimeImmutable(),
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
-            $model->created_at->toDateTimeImmutable(),
+            ($model->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,

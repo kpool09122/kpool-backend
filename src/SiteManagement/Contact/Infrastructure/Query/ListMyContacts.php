@@ -44,8 +44,8 @@ readonly class ListMyContacts implements ListMyContactsInterface
                 identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
                 category: (int) $contact->category,
                 name: (string) $contact->name,
-                replyIdentifiers: $contact->replies->pluck('id')->map(static fn (mixed $identifier): string => (string) $identifier)->all(),
-                createdAt: $contact->created_at->format(DateTimeInterface::ATOM),
+                replyIdentifiers: $contact->replies->map(static fn (\Application\Models\SiteManagement\ContactReply $reply): string => $reply->id)->values()->all(),
+                createdAt: ($contact->created_at ?? throw new \UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
             ))
             ->all();
 

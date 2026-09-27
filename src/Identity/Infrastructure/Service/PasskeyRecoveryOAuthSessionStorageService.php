@@ -11,6 +11,7 @@ use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSess
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Shared\Domain\Support\TypedValue;
 
 class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthSessionStorageServiceInterface
 {
@@ -41,13 +42,13 @@ class PasskeyRecoveryOAuthSessionStorageService implements PasskeyRecoveryOAuthS
             return null;
         }
 
-        $expiresAt = new DateTimeImmutable((string) $data['expires_at']);
+        $expiresAt = new DateTimeImmutable(TypedValue::string($data['expires_at']));
         if ($expiresAt <= new DateTimeImmutable()) {
             return null;
         }
 
         return new PasskeyRecoveryOAuthSession(
-            SocialProvider::from((string) $data['provider']),
+            SocialProvider::from(TypedValue::string($data['provider'])),
             $expiresAt,
         );
     }

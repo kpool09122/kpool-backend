@@ -11,11 +11,15 @@ class ErrorMessagesTest extends TestCase
     public function testAllLanguagesHaveTheSameErrorMessageKeys(): void
     {
         $languageDirectory = dirname(__DIR__, 3) . '/resources/lang';
-        $expectedKeys = array_keys(require $languageDirectory . '/en/errors.php');
+        $expected = require $languageDirectory . '/en/errors.php';
+        self::assertIsArray($expected);
+        $expectedKeys = array_keys($expected);
         sort($expectedKeys);
 
         foreach (glob($languageDirectory . '/*/errors.php') ?: [] as $file) {
-            $actualKeys = array_keys(require $file);
+            $actual = require $file;
+            self::assertIsArray($actual);
+            $actualKeys = array_keys($actual);
             sort($actualKeys);
 
             $this->assertSame(

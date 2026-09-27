@@ -29,12 +29,12 @@ class AccountCategoryChangedHandlerTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PrincipalGroupFactoryInterface::class, Mockery::mock(PrincipalGroupFactoryInterface::class));
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, Mockery::mock(PrincipalGroupFactoryInterface::class));
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
 
-        $this->assertInstanceOf(AccountCategoryChangedHandler::class, $this->app->make(AccountCategoryChangedHandler::class));
+        $this->assertInstanceOf(AccountCategoryChangedHandler::class, $this->app()->make(AccountCategoryChangedHandler::class));
     }
 
     public function testHandleCreatesAgencyActorGroupAndAttachesRole(): void

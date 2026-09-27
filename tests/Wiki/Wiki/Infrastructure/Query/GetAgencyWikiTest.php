@@ -40,7 +40,7 @@ class GetAgencyWikiTest extends TestCase
                 'theme_color' => '#1A1A1A',
                 'title' => 'JYP Agency Wiki',
                 'meta_description' => 'JYP Entertainment profile.',
-                'keywords' => json_encode(['JYP', 'agency']),
+                'keywords' => json_encode(['JYP', 'agency'], JSON_THROW_ON_ERROR),
                 'sections' => json_encode([
                     [
                         'type' => 'section',
@@ -62,7 +62,7 @@ class GetAgencyWikiTest extends TestCase
                             ],
                         ],
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'JYP Entertainment',
@@ -76,11 +76,11 @@ class GetAgencyWikiTest extends TestCase
                 'social_links' => json_encode([
                     'https://twitter.com/jypnation',
                     'https://www.instagram.com/jypentertainment/',
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
         );
 
-        $useCase = $this->app->make(GetAgencyWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyWikiInterface::class);
         $readModel = $useCase->process(new GetAgencyWikiInput(new Slug('ag-jyp-entertainment'), Language::KOREAN));
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
@@ -105,9 +105,15 @@ class GetAgencyWikiTest extends TestCase
         $this->assertSame('JYP Entertainment', $readModel->basic()['name']);
         $this->assertSame('J.Y. Park', $readModel->basic()['ceo']);
         $this->assertSame('1997-04-25', $readModel->basic()['foundedIn']);
+        self::assertIsArray($readModel->basic()['socialLinks']);
         $this->assertSame('https://twitter.com/jypnation', $readModel->basic()['socialLinks'][0]);
+        self::assertIsArray($readModel->sections()[0]['contents']);
+        self::assertIsArray($readModel->sections()[0]['contents'][0]);
         $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][0]['src']);
         $this->assertSame('JYP Entertainment hero image', $readModel->sections()[0]['contents'][0]['alt']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images'][0]);
         $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][1]['images'][0]['src']);
     }
 
@@ -129,7 +135,7 @@ class GetAgencyWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetAgencyWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyWikiInterface::class);
         $readModel = $useCase->process(new GetAgencyWikiInput(new Slug('ag-nullable-basic'), Language::ENGLISH));
 
         $this->assertFalse($readModel->isOfficial());
@@ -139,7 +145,7 @@ class GetAgencyWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenAgencyWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetAgencyWikiInterface::class);
+        $useCase = $this->app()->make(GetAgencyWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

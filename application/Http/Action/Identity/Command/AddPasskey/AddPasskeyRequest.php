@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\AddPasskey;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AddPasskeyRequest extends FormRequest
@@ -33,12 +34,12 @@ class AddPasskeyRequest extends FormRequest
 
     public function challengeKey(): string
     {
-        return (string) $this->input('challengeKey');
+        return RequestValue::string($this->input('challengeKey'));
     }
 
     public function displayName(): string
     {
-        return (string) $this->input('displayName');
+        return RequestValue::string($this->input('displayName'));
     }
 
     /** @return array<string, mixed> */

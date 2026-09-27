@@ -21,6 +21,9 @@ class PasskeyRecoveryQueueConfigTest extends TestCase
 
         try {
             $config = require __DIR__ . '/../../config/queue.php';
+            self::assertIsArray($config);
+            self::assertIsArray($config['connections']);
+            self::assertIsArray($config['connections']['passkey_recovery']);
             $this->assertSame($driver, $config['connections']['passkey_recovery']['driver']);
             $this->assertFalse($config['connections']['passkey_recovery']['after_commit']);
         } finally {

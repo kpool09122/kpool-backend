@@ -12,6 +12,7 @@ use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Domain\ValueObject\StepUpOAuthSession;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class StepUpOAuthSessionStorageService implements StepUpOAuthSessionStorageServiceInterface
@@ -44,17 +45,17 @@ class StepUpOAuthSessionStorageService implements StepUpOAuthSessionStorageServi
             || ! isset($data['identity_id'], $data['provider'], $data['scope'], $data['expires_at'], $data['return_to'])) {
             return null;
         }
-        $expiresAt = new DateTimeImmutable((string) $data['expires_at']);
+        $expiresAt = new DateTimeImmutable(TypedValue::string($data['expires_at']));
         if ($expiresAt <= new DateTimeImmutable()) {
             return null;
         }
 
         return new StepUpOAuthSession(
-            new IdentityIdentifier((string) $data['identity_id']),
-            SocialProvider::from((string) $data['provider']),
-            StepUpAuthenticationScope::from((string) $data['scope']),
+            new IdentityIdentifier(TypedValue::string($data['identity_id'])),
+            SocialProvider::from(TypedValue::string($data['provider'])),
+            StepUpAuthenticationScope::from(TypedValue::string($data['scope'])),
             $expiresAt,
-            (string) $data['return_to'],
+            TypedValue::string($data['return_to']),
         );
     }
 

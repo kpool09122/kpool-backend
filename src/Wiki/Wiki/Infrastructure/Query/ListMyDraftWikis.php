@@ -12,6 +12,7 @@ use Application\Models\Wiki\DraftWikiTalentBasic;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -65,7 +66,7 @@ readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
         $output->output(
             array_map(
                 fn (DraftWiki $wiki): DraftWikiListItemReadModel => $this->toReadModel($wiki),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -135,6 +136,6 @@ readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 }

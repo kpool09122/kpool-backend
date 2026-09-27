@@ -33,7 +33,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $this->assertInstanceOf(ContributionPointHistoryRepository::class, $repository);
     }
 
@@ -70,7 +70,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             $createdAt,
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $repository->save($history);
 
         $this->assertDatabaseHas('contribution_point_histories', [
@@ -117,7 +117,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $results = $repository->findByPrincipalAndYearMonth(
             new PrincipalIdentifier($principalId),
             new YearMonth($yearMonth),
@@ -174,7 +174,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $results = $repository->findByPrincipalAndYearMonth(
             new PrincipalIdentifier($principalId),
             new YearMonth($yearMonth),
@@ -191,7 +191,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPrincipalAndYearMonthWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
 
         $results = $repository->findByPrincipalAndYearMonth(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
@@ -246,7 +246,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $results = $repository->findByYearMonth(new YearMonth($yearMonth));
 
         $this->assertCount(2, $results);
@@ -266,7 +266,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByYearMonthWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
 
         $results = $repository->findByYearMonth(new YearMonth('2020-01'));
 
@@ -321,7 +321,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
         $result = $repository->findLastPublishDate(
             new PrincipalIdentifier($principalId),
             ResourceType::TALENT,
@@ -341,7 +341,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindLastPublishDateWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
 
         $result = $repository->findLastPublishDate(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
@@ -399,7 +399,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointHistoryRepositoryInterface::class);
 
         // EDITORの最終公開日を取得
         $editorResult = $repository->findLastPublishDate(

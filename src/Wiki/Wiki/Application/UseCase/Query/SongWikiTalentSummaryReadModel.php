@@ -29,7 +29,7 @@ readonly class SongWikiTalentSummaryReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string, realName: string, normalizedRealName: string, birthday: string|null, agencyIdentifier: string|null, emoji: string, representativeSymbol: string, position: string, mbti: string|null, zodiacSign: string|null, englishLevel: string|null, height: int|string|null, bloodType: string|null, fandomName: string}
      */
     public function toArray(): array
     {
