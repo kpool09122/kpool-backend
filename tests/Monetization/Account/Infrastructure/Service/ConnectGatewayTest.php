@@ -35,9 +35,9 @@ class ConnectGatewayTest extends TestCase
             ->once()
             ->andReturn(new CreateConnectedAccountResponse('acct_test123456'));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $email = new Email('test-connect@example.com');
         $country = CountryCode::JAPAN;
@@ -60,9 +60,9 @@ class ConnectGatewayTest extends TestCase
             ->once()
             ->andThrow(InvalidRequestException::factory('Invalid country', 400));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $this->expectException(StripeConnectException::class);
         $this->expectExceptionMessage('Failed to create connected account:');
@@ -83,9 +83,9 @@ class ConnectGatewayTest extends TestCase
             ->once()
             ->andReturn(new CreateAccountLinkResponse('https://connect.stripe.com/setup/test123'));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $accountId = new ConnectedAccountId('acct_test123456');
         $refreshUrl = 'https://example.com/refresh';
@@ -110,9 +110,9 @@ class ConnectGatewayTest extends TestCase
             ->once()
             ->andThrow(InvalidRequestException::factory('Invalid account', 400));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $this->expectException(StripeConnectException::class);
         $this->expectExceptionMessage('Failed to create account link:');
@@ -140,9 +140,9 @@ class ConnectGatewayTest extends TestCase
                 payoutsEnabled: false,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
@@ -169,9 +169,9 @@ class ConnectGatewayTest extends TestCase
                 payoutsEnabled: false,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
@@ -198,9 +198,9 @@ class ConnectGatewayTest extends TestCase
                 payoutsEnabled: true,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
@@ -227,9 +227,9 @@ class ConnectGatewayTest extends TestCase
                 payoutsEnabled: false,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
@@ -250,9 +250,9 @@ class ConnectGatewayTest extends TestCase
             ->once()
             ->andThrow(InvalidRequestException::factory('Account not found', 404));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(ConnectGatewayInterface::class);
+        $gateway = $this->app()->make(ConnectGatewayInterface::class);
 
         $this->expectException(StripeConnectException::class);
         $this->expectExceptionMessage('Failed to get account status:');

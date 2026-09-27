@@ -39,8 +39,8 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             isDefault: $group->is_default,
             members: $group->members
                 ->map(static function ($member): PrincipalGroupMemberReadModel {
-                    $principal = $member->principal;
-                    $identity = $principal->identity;
+                    $principal = $member->principal ?? throw new \UnexpectedValueException('Required account relationship is missing.');
+                    $identity = $principal->identity ?? throw new \UnexpectedValueException('Required account relationship is missing.');
 
                     return new PrincipalGroupMemberReadModel(
                         principalIdentifier: $principal->id,

@@ -91,7 +91,7 @@ class UploadDocumentsTest extends TestCase
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
 
-        $useCase = $this->app->make(UploadDocumentsInterface::class);
+        $useCase = $this->app()->make(UploadDocumentsInterface::class);
         $output = new UploadDocumentsOutput();
         $useCase->process($input, $output);
 
@@ -141,7 +141,7 @@ class UploadDocumentsTest extends TestCase
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
 
-        $useCase = $this->app->make(UploadDocumentsInterface::class);
+        $useCase = $this->app()->make(UploadDocumentsInterface::class);
         $useCase->process($input, new UploadDocumentsOutput());
     }
 
@@ -180,7 +180,7 @@ class UploadDocumentsTest extends TestCase
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
 
-        $useCase = $this->app->make(UploadDocumentsInterface::class);
+        $useCase = $this->app()->make(UploadDocumentsInterface::class);
         $output = new UploadDocumentsOutput();
         $useCase->process($input, $output);
 
@@ -210,7 +210,7 @@ class UploadDocumentsTest extends TestCase
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
 
-        $useCase = $this->app->make(UploadDocumentsInterface::class);
+        $useCase = $this->app()->make(UploadDocumentsInterface::class);
         $useCase->process($input, new UploadDocumentsOutput());
     }
 
@@ -244,7 +244,7 @@ class UploadDocumentsTest extends TestCase
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
 
-        $useCase = $this->app->make(UploadDocumentsInterface::class);
+        $useCase = $this->app()->make(UploadDocumentsInterface::class);
         $useCase->process($input, new UploadDocumentsOutput());
     }
 
@@ -253,10 +253,10 @@ class UploadDocumentsTest extends TestCase
         DocumentStorageServiceInterface $storage,
         AccountDocumentFileTypeDetectorInterface $fileTypeDetector,
     ): void {
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(DocumentStorageServiceInterface::class, $storage);
-        $this->app->instance(AccountDocumentFileTypeDetectorInterface::class, $fileTypeDetector);
-        $this->app->instance(
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(DocumentStorageServiceInterface::class, $storage);
+        $this->app()->instance(AccountDocumentFileTypeDetectorInterface::class, $fileTypeDetector);
+        $this->app()->instance(
             AccountDocumentRequirementValidatorInterface::class,
             new AccountDocumentRequirementValidator(),
         );

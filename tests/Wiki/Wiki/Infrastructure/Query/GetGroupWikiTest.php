@@ -38,7 +38,7 @@ class GetGroupWikiTest extends TestCase
                         'title' => 'Overview',
                         'content' => 'Published sample for checking the TWICE group wiki state.',
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'TWICE',
@@ -48,12 +48,12 @@ class GetGroupWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
 
-        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupWikiInterface::class);
         $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-twice'), Language::KOREAN));
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
@@ -92,7 +92,7 @@ class GetGroupWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupWikiInterface::class);
         $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-nullable-basic'), Language::ENGLISH));
 
         $this->assertFalse($readModel->isOfficial());
@@ -136,7 +136,7 @@ class GetGroupWikiTest extends TestCase
                             ],
                         ],
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'TWICE',
@@ -146,19 +146,24 @@ class GetGroupWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
 
-        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupWikiInterface::class);
         $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-twice-camel-image'), Language::KOREAN));
 
+        self::assertIsArray($readModel->sections()[0]['contents']);
+        self::assertIsArray($readModel->sections()[0]['contents'][0]);
         $this->assertSame(
             'http://127.0.0.1:8080/images/wiki/group-section.jpg',
             $readModel->sections()[0]['contents'][0]['src'],
         );
         $this->assertSame('TWICE section image', $readModel->sections()[0]['contents'][0]['alt']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images']);
+        self::assertIsArray($readModel->sections()[0]['contents'][1]['images'][0]);
         $this->assertSame(
             'http://127.0.0.1:8080/images/wiki/group-section.jpg',
             $readModel->sections()[0]['contents'][1]['images'][0]['src'],
@@ -207,7 +212,7 @@ class GetGroupWikiTest extends TestCase
                             ],
                         ],
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'name' => 'TWICE',
@@ -217,12 +222,16 @@ class GetGroupWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupWikiInterface::class);
         $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-twice-profiles'), Language::KOREAN));
+        self::assertIsArray($readModel->sections()[0]['contents']);
         $block = $readModel->sections()[0]['contents'][0];
 
+        self::assertIsArray($block);
         $this->assertSame(['01965bb2-bcc9-7c6f-8b90-89f7f217f503'], $block['wikiIdentifiers']);
         $this->assertSame('talent', $block['relatedResourceType']);
+        self::assertIsArray($block['profiles']);
+        self::assertIsArray($block['profiles'][0]);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f503', $block['profiles'][0]['wikiIdentifier']);
         $this->assertSame('tl-momo', $block['profiles'][0]['slug']);
         $this->assertSame('talent', $block['profiles'][0]['resourceType']);
@@ -234,7 +243,7 @@ class GetGroupWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenGroupWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $useCase = $this->app()->make(GetGroupWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

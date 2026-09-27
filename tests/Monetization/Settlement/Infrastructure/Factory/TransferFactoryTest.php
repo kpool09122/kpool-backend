@@ -27,7 +27,7 @@ class TransferFactoryTest extends TestCase
         $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(0, Currency::KRW);
-        $transferFactory = $this->app->make(TransferFactoryInterface::class);
+        $transferFactory = $this->app()->make(TransferFactoryInterface::class);
         $transfer = $transferFactory->create(
             $settlementBatchIdentifier,
             $monetizationAccountId,

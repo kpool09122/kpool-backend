@@ -9,6 +9,7 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class SignupSessionRepository implements SignupSessionRepositoryInterface
@@ -37,7 +38,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
         $key = $this->buildKey($state);
         $value = Redis::get($key);
 
-        if ($value === null || $value === false) {
+        if (! is_string($value)) {
             return null;
         }
 
@@ -48,14 +49,14 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
         }
 
         $accountType = isset($data['account_type'])
-            ? AccountType::tryFrom($data['account_type'])
+            ? AccountType::tryFrom(TypedValue::string($data['account_type']))
             : null;
 
         $oneTimeToken = isset($data['one_time_token'])
-            ? new OneTimeToken($data['one_time_token'])
+            ? new OneTimeToken(TypedValue::string($data['one_time_token']))
             : null;
 
-        $returnTo = isset($data['return_to']) ? (string) $data['return_to'] : null;
+        $returnTo = isset($data['return_to']) ? TypedValue::string($data['return_to']) : null;
 
         return new SignupSession($accountType, $oneTimeToken, $returnTo);
     }

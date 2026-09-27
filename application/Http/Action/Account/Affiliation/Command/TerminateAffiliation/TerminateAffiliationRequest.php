@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Affiliation\Command\TerminateAffiliation;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TerminateAffiliationRequest extends FormRequest
@@ -28,6 +29,6 @@ class TerminateAffiliationRequest extends FormRequest
 
     public function terminatorAccountIdentifier(): string
     {
-        return (string) $this->input('terminatorAccountIdentifier');
+        return RequestValue::string($this->input('terminatorAccountIdentifier'));
     }
 }

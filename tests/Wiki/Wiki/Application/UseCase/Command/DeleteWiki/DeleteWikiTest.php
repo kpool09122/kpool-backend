@@ -46,10 +46,10 @@ class DeleteWikiTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
 
-        $deleteWiki = $this->app->make(DeleteWikiInterface::class);
+        $deleteWiki = $this->app()->make(DeleteWikiInterface::class);
 
         $this->assertInstanceOf(DeleteWiki::class, $deleteWiki);
     }
@@ -96,11 +96,11 @@ class DeleteWikiTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     /**
@@ -121,11 +121,11 @@ class DeleteWikiTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn(null);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     /**
@@ -143,7 +143,7 @@ class DeleteWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, false);
 
         $this->expectException(DisallowedException::class);
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     /**
@@ -162,7 +162,7 @@ class DeleteWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, false);
 
         $this->expectException(DisallowedException::class);
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     /**
@@ -202,7 +202,7 @@ class DeleteWikiTest extends TestCase
 
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true, true);
 
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     /**
@@ -220,7 +220,7 @@ class DeleteWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true);
 
         $this->expectException(InvalidStatusException::class);
-        $this->app->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
+        $this->app()->make(DeleteWikiInterface::class)->process($input, new DeleteWikiOutput());
     }
 
     private function bindRepositoriesForPolicyResult(
@@ -253,9 +253,9 @@ class DeleteWikiTest extends TestCase
             )
             ->andReturn($isAllowed);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function createInput(DraftWikiIdentifier $wikiIdentifier, PrincipalIdentifier $principalIdentifier): DeleteWikiInput

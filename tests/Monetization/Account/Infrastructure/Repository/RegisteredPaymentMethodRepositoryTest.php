@@ -65,7 +65,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'status' => 'active',
         ]);
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
 
         $this->assertNotNull($result);
@@ -96,7 +96,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
 
         $this->assertNotNull($result);
@@ -113,7 +113,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findById(new RegisteredPaymentMethodIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -135,7 +135,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'stripe_payment_method_id' => $stripePaymentMethodId,
         ]);
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findByPaymentMethodId(new PaymentMethodId($stripePaymentMethodId));
 
         $this->assertNotNull($result);
@@ -151,7 +151,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPaymentMethodIdWhenNotFound(): void
     {
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findByPaymentMethodId(new PaymentMethodId('pm_' . StrTestHelper::generateStr(20)));
 
         $this->assertNull($result);
@@ -177,7 +177,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'is_default' => false,
         ]);
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -195,7 +195,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindDefaultByMonetizationAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -221,7 +221,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -244,7 +244,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByMonetizationAccountIdWhenEmpty(): void
     {
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -274,7 +274,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         $this->assertDatabaseHas('monetization_registered_payment_methods', [
@@ -318,7 +318,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             true,
         );
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         $this->assertDatabaseHas('monetization_registered_payment_methods', [
@@ -352,7 +352,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         // メタ情報を追加して更新
@@ -377,6 +377,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         // 再取得して検証
         $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
         $this->assertNotNull($result);
+        $this->assertNotNull($result->meta());
         $this->assertSame('visa', $result->meta()->brand());
         $this->assertTrue($result->isDefault());
     }
@@ -399,7 +400,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         // ステータスを無効化
@@ -413,6 +414,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
 
         // 再取得して検証
         $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
+        $this->assertNotNull($result);
         $this->assertSame(PaymentMethodStatus::INACTIVE, $result->status());
     }
 }

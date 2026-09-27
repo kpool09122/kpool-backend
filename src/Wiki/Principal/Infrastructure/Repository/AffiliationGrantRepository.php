@@ -87,7 +87,7 @@ class AffiliationGrantRepository implements AffiliationGrantRepositoryInterface
             new RoleIdentifier($eloquent->role_id),
             new PrincipalGroupIdentifier($eloquent->principal_group_id),
             AffiliationGrantType::from($eloquent->type),
-            $eloquent->created_at->toDateTimeImmutable(),
+            ($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
         );
     }
 }

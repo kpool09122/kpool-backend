@@ -27,7 +27,7 @@ class ContactFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $contactFactory = $this->app->make(ContactFactoryInterface::class);
+        $contactFactory = $this->app()->make(ContactFactoryInterface::class);
         $this->assertInstanceOf(ContactFactory::class, $contactFactory);
     }
 
@@ -52,7 +52,7 @@ class ContactFactoryTest extends TestCase
 
 ぜひ、ご検討いただけますと幸いです。
 これからも応援しています。');
-        $contactFactory = $this->app->make(ContactFactoryInterface::class);
+        $contactFactory = $this->app()->make(ContactFactoryInterface::class);
         $contact = $contactFactory->create(
             $category,
             $name,

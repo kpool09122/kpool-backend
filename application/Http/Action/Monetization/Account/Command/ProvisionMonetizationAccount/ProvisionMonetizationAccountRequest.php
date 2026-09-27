@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Account\Command\ProvisionMonetizationAccount;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProvisionMonetizationAccountRequest extends FormRequest
@@ -23,6 +24,6 @@ class ProvisionMonetizationAccountRequest extends FormRequest
 
     public function accountId(): string
     {
-        return (string) $this->input('accountId');
+        return RequestValue::string($this->input('accountId'));
     }
 }

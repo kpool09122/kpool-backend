@@ -35,10 +35,10 @@ class SaveVideoLinksTest extends TestCase
         $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
 
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
 
-        $saveVideoLinks = $this->app->make(SaveVideoLinksInterface::class);
+        $saveVideoLinks = $this->app()->make(SaveVideoLinksInterface::class);
         $this->assertInstanceOf(SaveVideoLinks::class, $saveVideoLinks);
     }
 
@@ -137,10 +137,10 @@ class SaveVideoLinksTest extends TestCase
             ->once()
             ->with($videoLink2);
 
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
 
-        $saveVideoLinks = $this->app->make(SaveVideoLinksInterface::class);
+        $saveVideoLinks = $this->app()->make(SaveVideoLinksInterface::class);
         $saveVideoLinks->process($input);
     }
 
@@ -172,10 +172,10 @@ class SaveVideoLinksTest extends TestCase
 
         $videoLinkRepository->shouldNotReceive('save');
 
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
 
-        $saveVideoLinks = $this->app->make(SaveVideoLinksInterface::class);
+        $saveVideoLinks = $this->app()->make(SaveVideoLinksInterface::class);
         $saveVideoLinks->process($input);
     }
 }

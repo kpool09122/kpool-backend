@@ -13,7 +13,7 @@ readonly class MemberPrincipalGroupReadModel
     ) {
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{principalGroupIdentifier: string, name: string, isDefault: bool} */
     public function toArray(): array
     {
         return [

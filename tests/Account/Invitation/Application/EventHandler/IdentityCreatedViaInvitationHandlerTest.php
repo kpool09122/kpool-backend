@@ -54,15 +54,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
 
         $this->assertInstanceOf(IdentityCreatedViaInvitationHandler::class, $handler);
     }
@@ -124,15 +124,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->with($data->identityIdentifier)
             ->andReturn($data->identity);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
 
         $this->assertTrue($data->defaultGroup->hasMember($data->principalIdentifier));
@@ -195,15 +195,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             ->with($data->identityIdentifier)
             ->andReturn($data->identity);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
 
         $this->assertTrue($data->defaultGroup->hasMember($data->principalIdentifier));
@@ -235,15 +235,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
     }
 
@@ -277,15 +277,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
     }
 
@@ -320,15 +320,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
     }
 
@@ -374,15 +374,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
     }
 
@@ -423,15 +423,15 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalRepository->shouldNotReceive('save');
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $handler = $this->app->make(IdentityCreatedViaInvitationHandler::class);
+        $handler = $this->app()->make(IdentityCreatedViaInvitationHandler::class);
         $handler->handle($data->event);
     }
 

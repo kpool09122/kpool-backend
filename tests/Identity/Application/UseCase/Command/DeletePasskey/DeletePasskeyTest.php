@@ -50,7 +50,7 @@ class DeletePasskeyTest extends TestCase
     {
         $this->bindDependencies();
 
-        $this->assertInstanceOf(DeletePasskey::class, $this->app->make(DeletePasskeyInterface::class));
+        $this->assertInstanceOf(DeletePasskey::class, $this->app()->make(DeletePasskeyInterface::class));
     }
 
     public function testItDeletesAnOwnedPasskeyWhenAnotherPasskeyRemains(): void
@@ -76,7 +76,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
 
         $output = new DeletePasskeyOutput();
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), $output);
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), $output);
 
         $this->assertSame([], $output->toArray());
     }
@@ -91,7 +91,7 @@ class DeletePasskeyTest extends TestCase
         ]);
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($identity));
 
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
 
         $this->addToAssertionCount(1);
     }
@@ -104,7 +104,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()));
 
         $this->expectException(CannotDeleteLastAuthenticationMethodException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     public function testItDoesNotRevealAMissingCredential(): void
@@ -122,7 +122,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     public function testItDoesNotRevealACredentialWithAMissingPasskeyUser(): void
@@ -141,7 +141,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     public function testItDoesNotRevealAnotherIdentitysCredential(): void
@@ -163,7 +163,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $identityRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     public function testItRejectsDeletionWhenTheAuthenticatedIdentityCannotBeResolved(): void
@@ -177,7 +177,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $identityRepository);
 
         $this->expectException(IdentityNotFoundException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     public function testItRejectsDeletionWithoutStepUpAuthorization(): void
@@ -191,7 +191,7 @@ class DeletePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
+        $this->app()->make(DeletePasskeyInterface::class)->process($this->input(), new DeletePasskeyOutput());
     }
 
     /** @param PasskeyCredential[] $identityCredentials */
@@ -295,9 +295,9 @@ class DeletePasskeyTest extends TestCase
             ));
         }
 
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 }

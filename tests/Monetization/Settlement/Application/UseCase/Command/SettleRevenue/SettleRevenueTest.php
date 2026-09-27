@@ -100,11 +100,11 @@ class SettleRevenueTest extends TestCase
             ->once()
             ->with($expectedTransfer);
 
-        $this->app->instance(SettlementServiceInterface::class, $settlementService);
-        $this->app->instance(SettlementBatchRepositoryInterface::class, $settlementBatchRepository);
-        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(SettlementServiceInterface::class, $settlementService);
+        $this->app()->instance(SettlementBatchRepositoryInterface::class, $settlementBatchRepository);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
 
-        $useCase = $this->app->make(SettleRevenueInterface::class);
+        $useCase = $this->app()->make(SettleRevenueInterface::class);
 
         $output = new SettleRevenueOutput();
         $useCase->process($input, $output);

@@ -22,7 +22,7 @@ class MonetizationAccountFactoryTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $factory = $this->app->make(MonetizationAccountFactoryInterface::class);
+        $factory = $this->app()->make(MonetizationAccountFactoryInterface::class);
         $account = $factory->create($accountIdentifier);
 
         $this->assertTrue(UuidValidator::isValid((string) $account->monetizationAccountIdentifier()));

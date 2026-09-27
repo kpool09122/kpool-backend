@@ -65,7 +65,7 @@ class PayoutAccountRepositoryTest extends TestCase
             'status' => 'active',
         ]);
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findById(new PayoutAccountIdentifier($payoutAccountId));
 
         $this->assertNotNull($result);
@@ -96,7 +96,7 @@ class PayoutAccountRepositoryTest extends TestCase
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findById(new PayoutAccountIdentifier($payoutAccountId));
 
         $this->assertNotNull($result);
@@ -113,7 +113,7 @@ class PayoutAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findById(new PayoutAccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -135,7 +135,7 @@ class PayoutAccountRepositoryTest extends TestCase
             'stripe_external_account_id' => $externalAccountId,
         ]);
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findByExternalAccountId(new ExternalAccountId($externalAccountId));
 
         $this->assertNotNull($result);
@@ -151,7 +151,7 @@ class PayoutAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByExternalAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findByExternalAccountId(new ExternalAccountId('ba_' . StrTestHelper::generateStr(20)));
 
         $this->assertNull($result);
@@ -177,7 +177,7 @@ class PayoutAccountRepositoryTest extends TestCase
             'is_default' => false,
         ]);
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -195,7 +195,7 @@ class PayoutAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindDefaultByMonetizationAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -221,7 +221,7 @@ class PayoutAccountRepositoryTest extends TestCase
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -244,7 +244,7 @@ class PayoutAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByMonetizationAccountIdWhenEmpty(): void
     {
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -273,7 +273,7 @@ class PayoutAccountRepositoryTest extends TestCase
             new ExternalAccountId($externalAccountId),
         );
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $repository->save($payoutAccount);
 
         $this->assertDatabaseHas('monetization_payout_accounts', [
@@ -314,7 +314,7 @@ class PayoutAccountRepositoryTest extends TestCase
             true,
         );
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $repository->save($payoutAccount);
 
         $this->assertDatabaseHas('monetization_payout_accounts', [
@@ -347,7 +347,7 @@ class PayoutAccountRepositoryTest extends TestCase
             new ExternalAccountId($externalAccountId),
         );
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $repository->save($payoutAccount);
 
         // メタ情報を追加して更新
@@ -374,6 +374,7 @@ class PayoutAccountRepositoryTest extends TestCase
         // 再取得して検証
         $result = $repository->findById(new PayoutAccountIdentifier($payoutAccountId));
         $this->assertNotNull($result);
+        $this->assertNotNull($result->meta());
         $this->assertSame('Updated Bank', $result->meta()->bankName());
         $this->assertTrue($result->isDefault());
     }
@@ -395,7 +396,7 @@ class PayoutAccountRepositoryTest extends TestCase
             new ExternalAccountId($externalAccountId),
         );
 
-        $repository = $this->app->make(PayoutAccountRepositoryInterface::class);
+        $repository = $this->app()->make(PayoutAccountRepositoryInterface::class);
         $repository->save($payoutAccount);
 
         // ステータスを無効化
@@ -409,6 +410,7 @@ class PayoutAccountRepositoryTest extends TestCase
 
         // 再取得して検証
         $result = $repository->findById(new PayoutAccountIdentifier($payoutAccountId));
+        $this->assertNotNull($result);
         $this->assertSame(PayoutAccountStatus::INACTIVE, $result->status());
     }
 }

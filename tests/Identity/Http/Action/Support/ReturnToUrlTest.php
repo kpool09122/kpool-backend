@@ -13,7 +13,7 @@ class ReturnToUrlTest extends TestCase
     {
         parent::setUp();
 
-        $this->app['config']->set('app.frontend_url', 'http://localhost:3000');
+        $this->app()['config']->set('app.frontend_url', 'http://localhost:3000');
     }
 
     public function testNormalizeAcceptsRelativePath(): void

@@ -109,7 +109,7 @@ class ListRelatedWikisTest extends TestCase
     private function process(ResourceType $resourceType, string $translationSetIdentifier, AccountCategory $accountCategory): ListRelatedWikisOutput
     {
         $output = new ListRelatedWikisOutput();
-        $this->app->make(ListRelatedWikisInterface::class)->process(
+        $this->app()->make(ListRelatedWikisInterface::class)->process(
             new ListRelatedWikisInput(
                 $resourceType,
                 new TranslationSetIdentifier($translationSetIdentifier),
@@ -132,11 +132,11 @@ class ListRelatedWikisTest extends TestCase
         );
         $repository = Mockery::mock(PrincipalRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($principal);
-        $this->app->instance(PrincipalRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $repository);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn($allowed);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function createAgency(string $wikiId, string $translationSetIdentifier, string $slug, string $name, string $normalizedName): void

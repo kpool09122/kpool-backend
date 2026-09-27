@@ -31,7 +31,7 @@ class WikiFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $wikiFactory = $this->app->make(WikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(WikiFactoryInterface::class);
         $this->assertInstanceOf(WikiFactory::class, $wikiFactory);
     }
 
@@ -61,7 +61,7 @@ class WikiFactoryTest extends TestCase
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
         );
-        $wikiFactory = $this->app->make(WikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(WikiFactoryInterface::class);
         $wiki = $wikiFactory->create($translationSetIdentifier, $slug, $language, $resourceType, $basic);
         $this->assertTrue(UuidValidator::isValid((string)$wiki->wikiIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$wiki->translationSetIdentifier());
@@ -110,7 +110,7 @@ class WikiFactoryTest extends TestCase
         );
         $version = new Version(2);
 
-        $wikiFactory = $this->app->make(WikiFactoryInterface::class);
+        $wikiFactory = $this->app()->make(WikiFactoryInterface::class);
         $wiki = $wikiFactory->create($translationSetIdentifier, $slug, $language, $resourceType, $basic, $version);
 
         $this->assertSame($version, $wiki->version());

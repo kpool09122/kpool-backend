@@ -235,8 +235,8 @@ class ListDraftWikisTest extends TestCase
                         && $resource->editorId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f713'
                     );
             });
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $payload = $this->process(new ListDraftWikisInput(
             statuses: [ApprovalStatus::UnderReview],
@@ -291,9 +291,9 @@ class ListDraftWikisTest extends TestCase
                     && $resource->agencyId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f743';
             });
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $payload = $this->process(new ListDraftWikisInput(
             statuses: [ApprovalStatus::UnderReview],
@@ -333,9 +333,9 @@ class ListDraftWikisTest extends TestCase
         $principalWikiScopeResolver->shouldReceive('talentGroupWikiIdentifiers')->once()->with($principal)->andReturn([]);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->twice()->andReturn(false);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalWikiScopeResolverInterface::class, $principalWikiScopeResolver);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $this->expectException(DisallowedException::class);
 
@@ -355,7 +355,7 @@ class ListDraftWikisTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn(null);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
 
@@ -382,7 +382,7 @@ class ListDraftWikisTest extends TestCase
             'theme_color' => '#ff3366',
             'title' => 'TWICE Draft Wiki',
             'meta_description' => 'Draft profile for TWICE.',
-            'keywords' => json_encode(['TWICE', 'draft']),
+            'keywords' => json_encode(['TWICE', 'draft'], JSON_THROW_ON_ERROR),
             'status' => ApprovalStatus::Approved->value,
             'edited_at' => '2026-05-01 00:00:00',
             'approved_at' => '2026-05-02 00:00:00',
@@ -457,7 +457,7 @@ class ListDraftWikisTest extends TestCase
 
     private function listDraftWikis(): ListDraftWikisInterface
     {
-        return $this->app->make(ListDraftWikisInterface::class);
+        return $this->app()->make(ListDraftWikisInterface::class);
     }
 
     private function process(ListDraftWikisInput $input): ListDraftWikisOutput
@@ -493,7 +493,7 @@ class ListDraftWikisTest extends TestCase
             ->andReturn($principal);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn(true);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

@@ -24,7 +24,7 @@ class VideoLinkFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(VideoLinkFactoryInterface::class);
+        $factory = $this->app()->make(VideoLinkFactoryInterface::class);
         $this->assertInstanceOf(VideoLinkFactory::class, $factory);
     }
 
@@ -42,7 +42,7 @@ class VideoLinkFactoryTest extends TestCase
         $title = 'Test Music Video';
         $displayOrder = 1;
 
-        $factory = $this->app->make(VideoLinkFactoryInterface::class);
+        $factory = $this->app()->make(VideoLinkFactoryInterface::class);
         $videoLink = $factory->create(
             $resourceType,
             $resourceIdentifier,

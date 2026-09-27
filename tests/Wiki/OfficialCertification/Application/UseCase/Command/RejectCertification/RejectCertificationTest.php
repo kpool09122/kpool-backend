@@ -37,9 +37,9 @@ class RejectCertificationTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $useCase = $this->app()->make(RejectCertificationInterface::class);
 
         $this->assertInstanceOf(RejectCertification::class, $useCase);
     }
@@ -69,10 +69,10 @@ class RejectCertificationTest extends TestCase
             ->with($certification)
             ->andReturnNull();
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->registerOperatorAuthorization($principalIdentifier, true);
 
-        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $useCase = $this->app()->make(RejectCertificationInterface::class);
 
         $input = new RejectCertificationInput($certificationId, $principalIdentifier);
         $output = new RejectCertificationOutput();
@@ -93,9 +93,9 @@ class RejectCertificationTest extends TestCase
             ->with($certificationId)
             ->andReturnNull();
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $useCase = $this->app()->make(RejectCertificationInterface::class);
 
         $input = new RejectCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
@@ -126,9 +126,9 @@ class RejectCertificationTest extends TestCase
             ->with($certificationId)
             ->andReturn($certification);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $useCase = $this->app()->make(RejectCertificationInterface::class);
 
         $input = new RejectCertificationInput($certificationId, new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
@@ -156,10 +156,10 @@ class RejectCertificationTest extends TestCase
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $repository->shouldReceive('findById')->with($certificationId)->andReturn($certification);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
         $this->registerOperatorAuthorization($principalIdentifier, false);
 
-        $useCase = $this->app->make(RejectCertificationInterface::class);
+        $useCase = $this->app()->make(RejectCertificationInterface::class);
         $input = new RejectCertificationInput($certificationId, $principalIdentifier);
         $output = new RejectCertificationOutput();
 
@@ -177,7 +177,7 @@ class RejectCertificationTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn($policyAllowed);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

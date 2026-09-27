@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -122,8 +123,8 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ]
         );
 
-        foreach (array_unique(array_filter([$previousIdentityId, (string) $principal->identityIdentifier()])) as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+        foreach (array_unique(array_filter([TypedValue::nullableString($previousIdentityId), (string) $principal->identityIdentifier()])) as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -132,6 +133,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->where('delegation_identifier', (string) $delegationIdentifier)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         PrincipalEloquent::query()
@@ -139,7 +141,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ->delete();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 

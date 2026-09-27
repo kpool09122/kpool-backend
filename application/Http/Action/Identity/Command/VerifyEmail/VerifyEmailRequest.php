@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\VerifyEmail;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VerifyEmailRequest extends FormRequest
@@ -24,11 +25,11 @@ class VerifyEmailRequest extends FormRequest
 
     public function email(): string
     {
-        return (string) $this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 
     public function authCode(): string
     {
-        return (string) $this->input('authCode');
+        return RequestValue::string($this->input('authCode'));
     }
 }

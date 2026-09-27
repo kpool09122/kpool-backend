@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\CreateAccount;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -96,6 +97,6 @@ readonly class CreateAccountAction
             return null;
         }
 
-        return (string) $values[$key];
+        return RequestValue::string($values[$key]);
     }
 }

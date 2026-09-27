@@ -57,7 +57,7 @@ class PrincipalGroupRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $this->assertInstanceOf(PrincipalGroupRepository::class, $repository);
     }
 
@@ -81,7 +81,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             isDefault: true,
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         $this->assertDatabaseHas('account_principal_groups', [
@@ -129,7 +129,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $principalGroup->addMember(new PrincipalIdentifier($principalId1));
         $principalGroup->addMember(new PrincipalIdentifier($principalId2));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         $this->assertDatabaseHas('account_principal_groups', [
@@ -167,7 +167,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             isDefault: false,
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         $result = $repository->findById(new PrincipalGroupIdentifier($principalGroupId));
@@ -205,7 +205,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->createPrincipal($principalId, $identityId, $accountId);
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         $result = $repository->findById(new PrincipalGroupIdentifier($principalGroupId));
@@ -223,7 +223,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findById(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -257,7 +257,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [],
             new DelegationIdentifier($delegationId),
         );
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($group);
 
         $result = $repository->findByDelegationId(new DelegationIdentifier($delegationId));
@@ -298,7 +298,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [$basicRoleIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup1);
         $repository->save($principalGroup2);
 
@@ -318,7 +318,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findByAccountId(new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([], $result);
@@ -349,7 +349,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         // このグループにはメンバーを追加しない
         $principalGroup3 = $this->createTestPrincipalGroup(name: 'Group 3');
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup1);
         $repository->save($principalGroup2);
         $repository->save($principalGroup3);
@@ -371,7 +371,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdentityIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findByPrincipalId(new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([], $result);
@@ -418,7 +418,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
         $principalGroup2->addMember(new PrincipalIdentifier($principalId));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup1);
         $repository->save($principalGroup2);
 
@@ -441,7 +441,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdAndIdentityIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findByAccountIdAndPrincipal(
             new AccountIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid())
@@ -483,7 +483,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         // accountId2で検索すると見つからない
@@ -526,7 +526,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [$basicRoleIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($defaultGroup);
         $repository->save($nonDefaultGroup);
 
@@ -545,7 +545,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindDefaultByAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findDefaultByAccountId(new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -572,7 +572,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->createPrincipal($principalId, $identityId, (string) $principalGroup->accountIdentifier());
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         // 削除前に存在確認
@@ -618,7 +618,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [$basicRoleIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($ownerGroup);
         $repository->save($memberGroup);
 
@@ -640,7 +640,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdAndRoleWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $result = $repository->findByAccountIdAndRole(
             new AccountIdentifier(StrTestHelper::generateUuid()),
@@ -672,7 +672,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [$ownerRoleIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($ownerGroup);
 
         // MEMBERで検索するとOWNERグループは見つからない
@@ -707,7 +707,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             [$basicRoleIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($memberGroup);
 
         // 別のAccountIdで検索すると見つからない
@@ -751,7 +751,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->createPrincipal($principalId2, $identityId2, $accountId);
         $principalGroup->addMember(new PrincipalIdentifier($principalId1));
 
-        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
 
         // 取得してメンバーを変更

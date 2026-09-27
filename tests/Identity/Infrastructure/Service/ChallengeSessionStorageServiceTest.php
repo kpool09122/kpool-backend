@@ -52,7 +52,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
     /** @throws BindingResolutionException */
     public function testItIsBoundAndConsumesARegistrationChallengeExactlyOnce(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $this->assertInstanceOf(ChallengeSessionStorageService::class, $service);
 
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174010');
@@ -84,7 +84,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testItStoresAndConsumesAnAuthenticationChallenge(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174011');
         $challenge = new AuthenticationChallenge(
             $key,
@@ -102,7 +102,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testItStoresAndConsumesAnAdditionChallengeForTheExpectedIdentity(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174012');
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         $challenge = new AdditionChallenge(
@@ -121,7 +121,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testPurposeMismatchConsumesTheChallenge(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174013');
         $service->storeAuthentication(new AuthenticationChallenge(
             $key,
@@ -141,7 +141,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testIdentityMismatchIsRejectedAndConsumed(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174014');
         $service->storeAddition(new AdditionChallenge(
             $key,
@@ -160,7 +160,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testItConsumesAnIdentityBoundStepUpChallengeExactlyOnce(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174020');
         $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174021');
         $service->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
@@ -180,7 +180,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testItRejectsStepUpChallengeForAnotherIdentity(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
         $key = new ChallengeSessionKey('123e4567-e89b-72d3-a456-426614174022');
         $service->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
             $key,
@@ -199,7 +199,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
 
     public function testExpiredChallengeCannotBeStored(): void
     {
-        $service = $this->app->make(ChallengeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(ChallengeSessionStorageServiceInterface::class);
 
         $this->expectException(ChallengeSessionNotFoundException::class);
         $service->storeAuthentication(new AuthenticationChallenge(

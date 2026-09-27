@@ -19,7 +19,7 @@ readonly class AuthenticatedAccountSummaryReadModel
     ) {
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{accountIdentifier: string, email: string, type: string, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null} */
     public function toArray(): array
     {
         return [

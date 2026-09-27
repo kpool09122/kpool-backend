@@ -24,7 +24,7 @@ class AccountFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(AccountFactoryInterface::class);
+        $factory = $this->app()->make(AccountFactoryInterface::class);
         $this->assertInstanceOf(AccountFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class AccountFactoryTest extends TestCase
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
 
-        $factory = $this->app->make(AccountFactoryInterface::class);
+        $factory = $this->app()->make(AccountFactoryInterface::class);
         $account = $factory->create(
             $email,
             $accountType,

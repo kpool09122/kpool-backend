@@ -33,7 +33,7 @@ class ReplyContactRepositoryTest extends TestCase
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
         // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
@@ -66,7 +66,7 @@ class ReplyContactRepositoryTest extends TestCase
             new DateTimeImmutable('2026-01-01 12:34:57'),
         );
 
-        $repository = $this->app->make(ReplyContactRepositoryInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $repository->save($reply);
 
         $record = DB::table('contact_replies')
@@ -74,18 +74,19 @@ class ReplyContactRepositoryTest extends TestCase
             ->first();
 
         $this->assertNotNull($record);
-        $this->assertSame((string)$reply->contactIdentifier(), (string)$record->contact_id);
-        $this->assertSame((string)$identityIdentifier, (string)$record->identity_identifier);
+        $this->assertSame((string)$reply->contactIdentifier(), $record->contact_id);
+        $this->assertSame((string)$identityIdentifier, $record->identity_identifier);
 
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$reply->toEmail(), $record->to_email);
         $this->assertNotEmpty($record->to_email);
+        $this->assertIsString($record->to_email);
         // 復号すると登録したメールアドレスと一致すること
         $this->assertSame((string)$reply->toEmail(), $encryptionService->decrypt($record->to_email));
 
-        $this->assertSame((string)$reply->content(), (string)$record->content);
-        $this->assertNotNull($record->sent_at);
-        $this->assertSame($sentAt->format('Y-m-d H:i:s'), (new DateTimeImmutable((string)$record->sent_at))->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$reply->content(), $record->content);
+        $this->assertIsString($record->sent_at);
+        $this->assertSame($sentAt->format('Y-m-d H:i:s'), (new DateTimeImmutable($record->sent_at))->format('Y-m-d H:i:s'));
         $this->assertNull($record->failed_at);
     }
 
@@ -99,7 +100,7 @@ class ReplyContactRepositoryTest extends TestCase
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
         // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
@@ -131,7 +132,7 @@ class ReplyContactRepositoryTest extends TestCase
             new DateTimeImmutable('2026-01-01 12:34:57'),
         );
 
-        $repository = $this->app->make(ReplyContactRepositoryInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $repository->save($reply);
 
         $record = DB::table('contact_replies')
@@ -140,8 +141,8 @@ class ReplyContactRepositoryTest extends TestCase
 
         $this->assertNotNull($record);
         $this->assertNull($record->sent_at);
-        $this->assertNotNull($record->failed_at);
-        $this->assertSame($failedAt->format('Y-m-d H:i:s'), (new DateTimeImmutable((string)$record->failed_at))->format('Y-m-d H:i:s'));
+        $this->assertIsString($record->failed_at);
+        $this->assertSame($failedAt->format('Y-m-d H:i:s'), (new DateTimeImmutable($record->failed_at))->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -154,7 +155,7 @@ class ReplyContactRepositoryTest extends TestCase
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
         // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
@@ -179,7 +180,7 @@ class ReplyContactRepositoryTest extends TestCase
             $encryptionService,
         );
 
-        $repository = $this->app->make(ReplyContactRepositoryInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $savedReply = $repository->findById($reply->replyIdentifier());
 
         $this->assertNotNull($savedReply);
@@ -205,7 +206,7 @@ class ReplyContactRepositoryTest extends TestCase
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
         // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
@@ -230,12 +231,14 @@ class ReplyContactRepositoryTest extends TestCase
             $encryptionService,
         );
 
-        $repository = $this->app->make(ReplyContactRepositoryInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $savedReply = $repository->findById($reply->replyIdentifier());
 
         $this->assertNotNull($savedReply);
         $this->assertNull($savedReply->identityIdentifier());
         $this->assertNull($savedReply->sentAt());
+        $this->assertNotNull($savedReply->failedAt());
+        $this->assertNotNull($reply->failedAt());
         $this->assertNotNull($savedReply->failedAt());
         $this->assertSame($reply->failedAt()->format('Y-m-d H:i:s'), $savedReply->failedAt()->format('Y-m-d H:i:s'));
         $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
@@ -250,7 +253,7 @@ class ReplyContactRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(ReplyContactRepositoryInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $reply = $repository->findById(new ContactReplyIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($reply);

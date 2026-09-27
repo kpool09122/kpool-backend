@@ -24,7 +24,7 @@ class GetMySongDraftWikiTest extends TestCase
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a301', $editorIdentifier, 'My Song', '楽曲情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a302', $otherEditorIdentifier, 'Other Song');
 
-        $useCase = $this->app->make(GetMySongDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMySongDraftWikiInterface::class);
         $readModel = $useCase->process(new GetMySongDraftWikiInput(
             new Slug('sg-my-song'),
             Language::KOREAN,
@@ -45,7 +45,7 @@ class GetMySongDraftWikiTest extends TestCase
             'Other Song',
         );
 
-        $useCase = $this->app->make(GetMySongDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMySongDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

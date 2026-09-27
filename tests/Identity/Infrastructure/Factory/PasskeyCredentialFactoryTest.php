@@ -20,7 +20,7 @@ class PasskeyCredentialFactoryTest extends TestCase
     {
         $this->assertInstanceOf(
             PasskeyCredentialFactory::class,
-            $this->app->make(PasskeyCredentialFactoryInterface::class),
+            $this->app()->make(PasskeyCredentialFactoryInterface::class),
         );
     }
 
@@ -30,8 +30,8 @@ class PasskeyCredentialFactoryTest extends TestCase
         $uuidGenerator->shouldReceive('generate')
             ->once()
             ->andReturn('123e4567-e89b-72d3-a456-426614174001');
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $factory = $this->app->make(PasskeyCredentialFactoryInterface::class);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $factory = $this->app()->make(PasskeyCredentialFactoryInterface::class);
 
         $passkeyUserIdentifier = new PasskeyUserIdentifier('123e4567-e89b-72d3-a456-426614174000');
         $credentialId = new WebAuthnCredentialId('Y3JlZGVudGlhbC1pZA');

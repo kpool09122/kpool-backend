@@ -26,7 +26,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     {
         $previousMemberIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
-            ->pluck('principal_id')
+            ->get(['principal_id'])->map(static fn (PrincipalGroupMembershipEloquent $membership): string => $membership->principal_id)
             ->all();
 
         PrincipalGroupEloquent::query()->updateOrCreate(
@@ -159,7 +159,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     {
         $memberIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
-            ->pluck('principal_id')
+            ->get(['principal_id'])->map(static fn (PrincipalGroupMembershipEloquent $membership): string => $membership->principal_id)
             ->all();
 
         PrincipalGroupEloquent::query()
@@ -169,7 +169,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $this->forgetAccountContexts($memberIds);
     }
 
-    /** @param array<int, string> $principalIds */
+    /** @param array<array-key, string> $principalIds */
     private function forgetAccountContexts(array $principalIds): void
     {
         if (empty($principalIds)) {
@@ -178,7 +178,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
-            ->pluck('identity_id')
+            ->get(['identity_id'])->map(static fn (PrincipalEloquent $principal): string => $principal->identity_id)
             ->all();
 
         foreach ($identityIds as $identityId) {

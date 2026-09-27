@@ -30,9 +30,9 @@ class GetAccountCategoryChangeRequestTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(GetAccountCategoryChangeRequest::class, $this->app->make(GetAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(GetAccountCategoryChangeRequest::class, $this->app()->make(GetAccountCategoryChangeRequestInterface::class));
     }
 
     #[Group('useDb')]
@@ -69,6 +69,7 @@ class GetAccountCategoryChangeRequestTest extends TestCase
             ->process(new GetAccountCategoryChangeRequestInput(new AccountCategoryChangeRequestIdentifier($requestId), $operator), $output);
 
         $payload = $output->toArray();
+        self::assertTrue(array_key_exists('requestIdentifier', $payload['request']));
         $this->assertSame($requestId, $payload['request']['requestIdentifier']);
         $this->assertSame((string) $accountIdentifier, $payload['request']['accountIdentifier']);
         $this->assertSame('agency', $payload['request']['requestedAccountCategory']);

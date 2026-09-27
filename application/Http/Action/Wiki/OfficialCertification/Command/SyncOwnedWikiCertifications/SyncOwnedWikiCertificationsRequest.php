@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\OfficialCertification\Command\SyncOwnedWikiCertifications;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SyncOwnedWikiCertificationsRequest extends FormRequest
@@ -23,6 +24,6 @@ class SyncOwnedWikiCertificationsRequest extends FormRequest
     /** @return string[] */
     public function translationSetIdentifiers(): array
     {
-        return array_values(array_map('strval', $this->input('translationSetIdentifiers', [])));
+        return RequestValue::strings($this->input('translationSetIdentifiers', []));
     }
 }

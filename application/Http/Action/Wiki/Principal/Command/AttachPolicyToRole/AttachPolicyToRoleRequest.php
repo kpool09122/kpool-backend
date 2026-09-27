@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttachPolicyToRoleRequest extends FormRequest
@@ -28,6 +29,6 @@ class AttachPolicyToRoleRequest extends FormRequest
 
     public function policyIdentifier(): string
     {
-        return (string) $this->input('policyIdentifier');
+        return RequestValue::string($this->input('policyIdentifier'));
     }
 }

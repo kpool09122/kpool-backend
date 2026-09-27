@@ -69,15 +69,15 @@ class SocialLoginCallbackTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $this->assertInstanceOf(SocialLoginCallback::class, $useCase);
     }
@@ -139,15 +139,15 @@ class SocialLoginCallbackTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
@@ -217,15 +217,15 @@ class SocialLoginCallbackTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
@@ -311,15 +311,15 @@ class SocialLoginCallbackTest extends TestCase
                     && $event->name === $profile->name()
             ));
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
@@ -404,15 +404,15 @@ class SocialLoginCallbackTest extends TestCase
                     && (string) $event->oneTimeToken === (string) $oneTimeToken
             ));
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
@@ -492,15 +492,15 @@ class SocialLoginCallbackTest extends TestCase
                     && $event->name === $profile->name()
             ));
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
@@ -537,15 +537,15 @@ class SocialLoginCallbackTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
-        $this->app->instance(AuthServiceInterface::class, $authService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app()->instance(AuthServiceInterface::class, $authService);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+        $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $this->expectException(RuntimeException::class);
 
@@ -565,7 +565,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->bindStepUpDependencies($identity, [], $stepUp);
         $output = new SocialLoginCallbackOutput();
 
-        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), $output);
+        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), $output);
 
         $this->assertSame('/settings/passkeys?stepUp=complete', $output->redirectUrl());
     }
@@ -578,7 +578,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->bindStepUpDependencies($this->stepUpIdentity(self::OTHER_STEP_UP_IDENTITY_ID), [], $stepUp);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
     }
 
     public function testStepUpRejectsSsoCompletionIfAPasskeyWasRegisteredAfterTheFlowStarted(): void
@@ -591,7 +591,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [$credential], $stepUp);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
     }
 
     public function testStepUpRejectsAMissingOrExpiredSessionBeforeFetchingProfile(): void
@@ -608,7 +608,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [], sessions: $sessions, oauthState: $oauthState, social: $social);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
     }
 
     public function testStepUpRejectsAProviderMismatchBeforeFetchingProfile(): void
@@ -619,7 +619,7 @@ class SocialLoginCallbackTest extends TestCase
         $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [], social: $social);
 
         $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app->make(SocialLoginCallbackInterface::class)->process(
+        $this->app()->make(SocialLoginCallbackInterface::class)->process(
             $this->stepUpInput(SocialProvider::LINE),
             new SocialLoginCallbackOutput(),
         );
@@ -630,9 +630,9 @@ class SocialLoginCallbackTest extends TestCase
         Identity $resolvedIdentity,
         array $passkeys,
         ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
-        ?StepUpOAuthSessionStorageServiceInterface $sessions = null,
-        ?OAuthStateRepositoryInterface $oauthState = null,
-        ?SocialOAuthServiceInterface $social = null,
+        (StepUpOAuthSessionStorageServiceInterface&\Mockery\MockInterface)|null $sessions = null,
+        (OAuthStateRepositoryInterface&\Mockery\MockInterface)|null $oauthState = null,
+        (SocialOAuthServiceInterface&\Mockery\MockInterface)|null $social = null,
     ): void {
         $oauthState ??= Mockery::mock(OAuthStateRepositoryInterface::class);
         $oauthState->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(
@@ -668,16 +668,16 @@ class SocialLoginCallbackTest extends TestCase
         $events = Mockery::mock(EventDispatcherInterface::class);
         $events->shouldNotReceive('dispatch');
 
-        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthState);
-        $this->app->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
-        $this->app->instance(SocialOAuthServiceInterface::class, $social);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyRepository);
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
-        $this->app->instance(AuthServiceInterface::class, $auth);
-        $this->app->instance(SignupSessionRepositoryInterface::class, $signup);
-        $this->app->instance(IdentityFactoryInterface::class, $factory);
-        $this->app->instance(EventDispatcherInterface::class, $events);
+        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthState);
+        $this->app()->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
+        $this->app()->instance(SocialOAuthServiceInterface::class, $social);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyRepository);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(AuthServiceInterface::class, $auth);
+        $this->app()->instance(SignupSessionRepositoryInterface::class, $signup);
+        $this->app()->instance(IdentityFactoryInterface::class, $factory);
+        $this->app()->instance(EventDispatcherInterface::class, $events);
     }
 
     private function stepUpInput(SocialProvider $provider = SocialProvider::GOOGLE): SocialLoginCallbackInput

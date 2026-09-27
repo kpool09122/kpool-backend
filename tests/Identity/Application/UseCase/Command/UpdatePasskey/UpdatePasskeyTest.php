@@ -40,7 +40,7 @@ class UpdatePasskeyTest extends TestCase
     {
         $this->bindDependencies();
 
-        $this->assertInstanceOf(UpdatePasskey::class, $this->app->make(UpdatePasskeyInterface::class));
+        $this->assertInstanceOf(UpdatePasskey::class, $this->app()->make(UpdatePasskeyInterface::class));
     }
 
     public function testItRenamesAnOwnedPasskey(): void
@@ -68,7 +68,7 @@ class UpdatePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $stepUp);
 
         $output = new UpdatePasskeyOutput();
-        $this->app->make(UpdatePasskeyInterface::class)->process($this->input(), $output);
+        $this->app()->make(UpdatePasskeyInterface::class)->process($this->input(), $output);
 
         $this->assertSame('Renamed passkey', (string) $credential->displayName());
         $this->assertSame([], $output->toArray());
@@ -86,7 +86,7 @@ class UpdatePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
+        $this->app()->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
     }
 
     public function testItRejectsUpdateWithoutStepUpAuthorizationBeforeLoadingTheCredential(): void
@@ -103,7 +103,7 @@ class UpdatePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
+        $this->app()->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
     }
 
     public function testItDoesNotRevealACredentialWithAMissingPasskeyUser(): void
@@ -119,7 +119,7 @@ class UpdatePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
+        $this->app()->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
     }
 
     public function testItDoesNotRevealAnotherIdentitysCredential(): void
@@ -139,7 +139,7 @@ class UpdatePasskeyTest extends TestCase
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository);
 
         $this->expectException(PasskeyCredentialNotFoundException::class);
-        $this->app->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
+        $this->app()->make(UpdatePasskeyInterface::class)->process($this->input(), new UpdatePasskeyOutput());
     }
 
     private function input(): UpdatePasskeyInput
@@ -184,9 +184,9 @@ class UpdatePasskeyTest extends TestCase
             $stepUp->shouldReceive('requireValid')->zeroOrMoreTimes()->andReturn($this->stepUpAuthentication());
         }
 
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 
     private function stepUpAuthentication(): StepUpAuthentication

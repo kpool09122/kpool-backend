@@ -51,8 +51,8 @@ class IdentityCreatedHandlerTest extends TestCase
             )
             ->andReturnNull();
 
-        $this->app->instance(CreateAccountInterface::class, $createAccount);
-        $handler = $this->app->make(IdentityCreatedHandler::class);
+        $this->app()->instance(CreateAccountInterface::class, $createAccount);
+        $handler = $this->app()->make(IdentityCreatedHandler::class);
         $handler->handle($event);
     }
 
@@ -87,8 +87,8 @@ class IdentityCreatedHandlerTest extends TestCase
             )
             ->andReturnNull();
 
-        $this->app->instance(CreateAccountInterface::class, $createAccount);
-        $handler = $this->app->make(IdentityCreatedHandler::class);
+        $this->app()->instance(CreateAccountInterface::class, $createAccount);
+        $handler = $this->app()->make(IdentityCreatedHandler::class);
         $handler->handle($event);
     }
 }

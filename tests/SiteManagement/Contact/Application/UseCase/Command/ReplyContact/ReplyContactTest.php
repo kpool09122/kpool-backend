@@ -44,9 +44,9 @@ class ReplyContactTest extends TestCase
     public function test__construct(): void
     {
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
-        $replyContact = $this->app->make(ReplyContactInterface::class);
+        $replyContact = $this->app()->make(ReplyContactInterface::class);
         $this->assertInstanceOf(ReplyContact::class, $replyContact);
     }
 
@@ -150,12 +150,12 @@ class ReplyContactTest extends TestCase
             })
             ->andReturnNull();
 
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
-        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
-        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
-        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactInterface::class);
         $useCase->process($input);
     }
 
@@ -192,14 +192,14 @@ class ReplyContactTest extends TestCase
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
         $replyContactRepository->shouldNotReceive('save');
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
-        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
-        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(UnauthorizedException::class);
-        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactInterface::class);
         $useCase->process($input);
     }
 
@@ -238,13 +238,13 @@ class ReplyContactTest extends TestCase
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
         $replyContactRepository->shouldNotReceive('save');
 
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
-        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
-        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(ContactNotFoundException::class);
-        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactInterface::class);
         $useCase->process($input);
     }
 
@@ -342,13 +342,13 @@ class ReplyContactTest extends TestCase
             })
             ->andReturnNull();
 
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
-        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
-        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(FailedToSendEmailException::class);
-        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactInterface::class);
         $useCase->process($input);
     }
 
@@ -365,6 +365,6 @@ class ReplyContactTest extends TestCase
             ->with($identityIdentifier)
             ->andReturn($user);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
     }
 }

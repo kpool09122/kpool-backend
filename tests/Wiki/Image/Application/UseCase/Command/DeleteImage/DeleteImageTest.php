@@ -46,11 +46,11 @@ class DeleteImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage = $this->app()->make(DeleteImageInterface::class);
         $this->assertInstanceOf(DeleteImage::class, $deleteImage);
     }
 
@@ -97,12 +97,12 @@ class DeleteImageTest extends TestCase
             ->with($testData->image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage = $this->app()->make(DeleteImageInterface::class);
         $deleteImage->process($input);
     }
 
@@ -135,12 +135,12 @@ class DeleteImageTest extends TestCase
 
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage = $this->app()->make(DeleteImageInterface::class);
         $deleteImage->process($input);
     }
 
@@ -182,13 +182,13 @@ class DeleteImageTest extends TestCase
             ->with($testData->image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(DisallowedException::class);
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage = $this->app()->make(DeleteImageInterface::class);
         $deleteImage->process($input);
     }
 
@@ -216,12 +216,12 @@ class DeleteImageTest extends TestCase
 
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage = $this->app()->make(DeleteImageInterface::class);
         $deleteImage->process($input);
     }
 

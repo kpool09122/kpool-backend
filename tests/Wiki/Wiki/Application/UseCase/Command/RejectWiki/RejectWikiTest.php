@@ -57,12 +57,12 @@ class RejectWikiTest extends TestCase
     public function test__construct(): void
     {
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $this->assertInstanceOf(RejectWiki::class, $rejectWiki);
     }
 
@@ -97,7 +97,7 @@ class RejectWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -125,11 +125,11 @@ class RejectWikiTest extends TestCase
             ->with($dummyRejectWiki->history)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $output = new RejectWikiOutput();
         $rejectWiki->process($input, $output);
         $result = $output->toArray();
@@ -175,13 +175,13 @@ class RejectWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(WikiNotFoundException::class);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $rejectWiki->process($input, new RejectWikiOutput());
     }
 
@@ -225,13 +225,13 @@ class RejectWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $rejectWiki->process($input, new RejectWikiOutput());
     }
 
@@ -272,13 +272,13 @@ class RejectWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $rejectWiki->process($input, new RejectWikiOutput());
     }
 
@@ -310,7 +310,7 @@ class RejectWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -327,13 +327,13 @@ class RejectWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(DisallowedException::class);
-        $rejectWiki = $this->app->make(RejectWikiInterface::class);
+        $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $rejectWiki->process($input, new RejectWikiOutput());
     }
 

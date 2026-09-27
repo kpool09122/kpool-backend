@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\SocialLogin\Redirect;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SocialLoginRedirectRequest extends FormRequest
@@ -32,20 +33,20 @@ class SocialLoginRedirectRequest extends FormRequest
     {
         $value = $this->input('accountType');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function oneTimeToken(): ?string
     {
         $value = $this->input('oneTimeToken');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function returnTo(): ?string
     {
         $value = $this->input('return_to');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 }

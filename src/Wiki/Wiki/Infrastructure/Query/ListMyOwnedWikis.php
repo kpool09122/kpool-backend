@@ -14,6 +14,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -55,10 +56,10 @@ readonly class ListMyOwnedWikis implements ListMyOwnedWikisInterface
 
         $output->output(
             $input->accountCategory(),
-            $primaryOwnedWikis,
+            array_values($primaryOwnedWikis),
             array_map(
                 fn (WikiModel $wiki): WikiListItemReadModel => $this->toReadModel($wiki),
-                $otherOwnedWikisPaginator->items(),
+                array_values($otherOwnedWikisPaginator->items()),
             ),
             $otherOwnedWikisPaginator->currentPage(),
             $otherOwnedWikisPaginator->lastPage(),
@@ -106,11 +107,11 @@ readonly class ListMyOwnedWikis implements ListMyOwnedWikisInterface
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
             isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
-            name: (string) $basic->getAttribute('name'),
-            normalizedName: (string) $basic->getAttribute('normalized_name'),
+            name: (TypedValue::nullableString($basic->getAttribute('name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($basic->getAttribute('normalized_name')) ?? ''),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
             isOfficial: $wiki->owner_account_id !== null,
@@ -147,7 +148,7 @@ readonly class ListMyOwnedWikis implements ListMyOwnedWikisInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 
     private function nullableBool(mixed $value): ?bool

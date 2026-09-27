@@ -28,8 +28,8 @@ class DeletePrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeletePrincipalGroupInterface::class);
         $this->assertInstanceOf(DeletePrincipalGroup::class, $useCase);
     }
 
@@ -53,16 +53,16 @@ class DeletePrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('delete')
             ->once()
             ->with($principalGroup)
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
 
         $useCase->process($input);
@@ -79,13 +79,13 @@ class DeletePrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -113,13 +113,13 @@ class DeletePrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DeletePrincipalGroupInterface::class);
         $input = new DeletePrincipalGroupInput($principalGroupIdentifier);
 
         $this->expectException(CannotDeleteDefaultPrincipalGroupException::class);

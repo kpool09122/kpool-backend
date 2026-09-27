@@ -26,12 +26,12 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->app['view']->addLocation(dirname(__DIR__, 4) . '/resources/views');
+        $this->app()['view']->addLocation(dirname(__DIR__, 4) . '/resources/views');
     }
 
     public function test__construct(): void
     {
-        $service = $this->app->make(AffiliationRequestNotificationServiceInterface::class);
+        $service = $this->app()->make(AffiliationRequestNotificationServiceInterface::class);
 
         $this->assertInstanceOf(AffiliationRequestNotificationService::class, $service);
     }

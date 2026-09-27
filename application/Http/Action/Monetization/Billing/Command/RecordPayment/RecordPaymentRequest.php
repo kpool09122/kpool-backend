@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Billing\Command\RecordPayment;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecordPaymentRequest extends FormRequest
@@ -24,11 +25,11 @@ class RecordPaymentRequest extends FormRequest
 
     public function invoiceId(): string
     {
-        return (string) $this->input('invoiceId');
+        return RequestValue::string($this->input('invoiceId'));
     }
 
     public function paymentIdentifier(): string
     {
-        return (string) $this->input('paymentIdentifier');
+        return RequestValue::string($this->input('paymentIdentifier'));
     }
 }

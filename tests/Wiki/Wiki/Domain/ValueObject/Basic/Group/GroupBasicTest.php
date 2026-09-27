@@ -135,10 +135,15 @@ class GroupBasicTest extends TestCase
         $this->assertSame((string) $testData->name, $array['name']);
         $this->assertSame($testData->normalizedName, $array['normalized_name']);
         $this->assertSame((string) $testData->agencyIdentifier, $array['agency_identifier']);
+        self::assertNotNull($testData->groupType);
         $this->assertSame($testData->groupType->value, $array['group_type']);
+        self::assertNotNull($testData->status);
         $this->assertSame($testData->status->value, $array['status']);
+        self::assertNotNull($testData->generation);
         $this->assertSame($testData->generation->value, $array['generation']);
+        $this->assertNotNull($testData->debutDate);
         $this->assertSame($testData->debutDate->format('Y-m-d'), $array['debut_date']);
+        $this->assertNotNull($testData->disbandDate);
         $this->assertSame($testData->disbandDate->format('Y-m-d'), $array['disband_date']);
         $this->assertSame($testData->fandomName->value(), $array['fandom_name']);
         $this->assertSame([
@@ -204,7 +209,9 @@ class GroupBasicTest extends TestCase
         $this->assertSame(GroupType::GIRL_GROUP, $groupBasic->groupType());
         $this->assertSame(GroupStatus::ACTIVE, $groupBasic->status());
         $this->assertSame(Generation::THIRD, $groupBasic->generation());
+        $this->assertNotNull($groupBasic->debutDate());
         $this->assertSame('2015-10-20', $groupBasic->debutDate()->format('Y-m-d'));
+        $this->assertNotNull($groupBasic->disbandDate());
         $this->assertSame('2030-12-31', $groupBasic->disbandDate()->format('Y-m-d'));
         $this->assertSame('ONCE', $groupBasic->fandomName()->value());
         $this->assertCount(2, $groupBasic->officialColors());

@@ -23,7 +23,7 @@ class PrincipalGroupFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $this->assertInstanceOf(PrincipalGroupFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class PrincipalGroupFactoryTest extends TestCase
         $name = 'Test Group';
         $isDefault = true;
 
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
@@ -67,7 +67,7 @@ class PrincipalGroupFactoryTest extends TestCase
         $name = 'Non Default Group';
         $isDefault = false;
 
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
@@ -91,7 +91,7 @@ class PrincipalGroupFactoryTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
 
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             'Delegation Group',

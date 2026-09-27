@@ -72,7 +72,7 @@ readonly class IdentityCreatedViaInvitationHandler
             invitationIdentifier: $invitation->invitationIdentifier(),
             accountIdentifier: $invitation->accountIdentifier(),
             acceptedByIdentityIdentifier: $event->identityIdentifier,
-            acceptedAt: $invitation->acceptedAt(),
+            acceptedAt: $invitation->acceptedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
         ));
     }
 }

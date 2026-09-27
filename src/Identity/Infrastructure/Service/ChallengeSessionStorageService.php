@@ -22,6 +22,7 @@ use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
@@ -233,7 +234,7 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
         );
     }
 
-    /** @return array<string, string|null> */
+    /** @return array{challenge: string, purpose: string, options: string, expires_at: string, passkey_user_id?: string|null, email?: string|null, identity_id?: string|null, recovery_key?: string|null, account_type?: string|null, one_time_token?: string|null, return_to?: string|null} */
     private function consume(ChallengeSessionKey $key, string $expectedPurpose): array
     {
         $raw = Redis::command('GETDEL', [$this->redisKey($key)]);
@@ -241,20 +242,18 @@ class ChallengeSessionStorageService implements ChallengeSessionStorageServiceIn
             throw new ChallengeSessionNotFoundException();
         }
 
-        $data = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-        if (! is_array($data)
-            || ! isset($data['purpose'], $data['challenge'], $data['options'], $data['expires_at'])) {
+        $data = TypedValue::stringMap(json_decode($raw, true, flags: JSON_THROW_ON_ERROR));
+        if (! isset($data['purpose'], $data['challenge'], $data['options'], $data['expires_at'])) {
             throw new ChallengeSessionNotFoundException();
         }
         if ($data['purpose'] !== $expectedPurpose) {
             throw new ChallengeSessionPurposeMismatchException();
         }
-        $expiresAt = new DateTimeImmutable((string) $data['expires_at']);
+        $expiresAt = new DateTimeImmutable(TypedValue::string($data['expires_at']));
         if ($expiresAt <= new DateTimeImmutable()) {
             throw new ChallengeSessionNotFoundException();
         }
 
-        /** @var array<string, string|null> $data */
         return $data;
     }
 

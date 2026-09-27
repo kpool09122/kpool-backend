@@ -51,12 +51,12 @@ class WithdrawWikiTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
-        $this->app->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
-        $this->app->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
+        $this->app()->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
 
-        $withdrawWiki = $this->app->make(WithdrawWikiInterface::class);
+        $withdrawWiki = $this->app()->make(WithdrawWikiInterface::class);
 
         $this->assertInstanceOf(WithdrawWiki::class, $withdrawWiki);
     }
@@ -78,7 +78,7 @@ class WithdrawWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true, true, $history);
 
         $output = new WithdrawWikiOutput();
-        $this->app->make(WithdrawWikiInterface::class)->process($input, $output);
+        $this->app()->make(WithdrawWikiInterface::class)->process($input, $output);
 
         $this->assertSame(ApprovalStatus::Pending->value, $output->toArray()['status']);
     }
@@ -101,13 +101,13 @@ class WithdrawWikiTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
-        $this->app->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
+        $this->app()->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
 
         $this->expectException(WikiNotFoundException::class);
-        $this->app->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
+        $this->app()->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
     }
 
     /**
@@ -128,13 +128,13 @@ class WithdrawWikiTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn(null);
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
-        $this->app->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, Mockery::mock(WikiHistoryRepositoryInterface::class));
+        $this->app()->instance(WikiHistoryFactoryInterface::class, Mockery::mock(WikiHistoryFactoryInterface::class));
 
         $this->expectException(PrincipalNotFoundException::class);
-        $this->app->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
+        $this->app()->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
     }
 
     /**
@@ -152,7 +152,7 @@ class WithdrawWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, false);
 
         $this->expectException(DisallowedException::class);
-        $this->app->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
+        $this->app()->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
     }
 
     /**
@@ -203,7 +203,7 @@ class WithdrawWikiTest extends TestCase
         $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true);
 
         $this->expectException(InvalidStatusException::class);
-        $this->app->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
+        $this->app()->make(WithdrawWikiInterface::class)->process($input, new WithdrawWikiOutput());
     }
 
     private function bindRepositoriesForPolicyResult(
@@ -261,11 +261,11 @@ class WithdrawWikiTest extends TestCase
             $wikiHistoryRepository->shouldNotReceive('save');
         }
 
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
     }
 
     private function createInput(DraftWikiIdentifier $wikiIdentifier, PrincipalIdentifier $principalIdentifier): WithdrawWikiInput

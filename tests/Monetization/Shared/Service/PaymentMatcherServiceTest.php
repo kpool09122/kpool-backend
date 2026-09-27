@@ -40,7 +40,7 @@ class PaymentMatcherServiceTest extends TestCase
         $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total());
         $paidAt = new DateTimeImmutable('+1 minute');
 
-        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+        $matcher = $this->app()->make(PaymentMatcherServiceInterface::class);
         $matcher->match($invoice, $payment, $paidAt);
 
         $this->assertSame(InvoiceStatus::PAID, $invoice->status());
@@ -60,7 +60,7 @@ class PaymentMatcherServiceTest extends TestCase
         $invoice = $this->createInvoice($invoiceOrderIdentifier);
         $payment = $this->createCapturedPayment($paymentOrderIdentifier, $invoice->total());
 
-        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+        $matcher = $this->app()->make(PaymentMatcherServiceInterface::class);
 
         $this->expectException(DomainException::class);
         $matcher->match($invoice, $payment, new DateTimeImmutable('+1 minute'));
@@ -78,7 +78,7 @@ class PaymentMatcherServiceTest extends TestCase
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total(), PaymentStatus::AUTHORIZED);
 
-        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+        $matcher = $this->app()->make(PaymentMatcherServiceInterface::class);
 
         $this->expectException(DomainException::class);
         $matcher->match($invoice, $payment, new DateTimeImmutable('+1 minute'));
@@ -96,7 +96,7 @@ class PaymentMatcherServiceTest extends TestCase
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount() - 10, Currency::JPY));
 
-        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+        $matcher = $this->app()->make(PaymentMatcherServiceInterface::class);
 
         $this->expectException(DomainException::class);
         $matcher->match($invoice, $payment, new DateTimeImmutable());
@@ -114,7 +114,7 @@ class PaymentMatcherServiceTest extends TestCase
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount(), Currency::KRW));
 
-        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+        $matcher = $this->app()->make(PaymentMatcherServiceInterface::class);
 
         $this->expectException(DomainException::class);
         $matcher->match($invoice, $payment, new DateTimeImmutable());

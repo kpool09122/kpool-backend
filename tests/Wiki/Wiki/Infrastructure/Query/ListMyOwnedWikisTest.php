@@ -92,7 +92,7 @@ class ListMyOwnedWikisTest extends TestCase
 
     private function listMyOwnedWikis(): ListMyOwnedWikisInterface
     {
-        return $this->app->make(ListMyOwnedWikisInterface::class);
+        return $this->app()->make(ListMyOwnedWikisInterface::class);
     }
 
     private function process(string $accountId, AccountCategory $accountCategory, ?int $perPage = null): ListMyOwnedWikisOutput

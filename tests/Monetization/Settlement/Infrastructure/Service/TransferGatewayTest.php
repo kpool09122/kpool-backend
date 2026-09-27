@@ -71,9 +71,9 @@ class TransferGatewayTest extends TestCase
                 ])
             ->andReturn(new CreateTransferResponse(id: 'tr_test123456'));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(TransferGatewayInterface::class);
+        $gateway = $this->app()->make(TransferGatewayInterface::class);
 
         $result = $gateway->execute($transfer, $account);
 
@@ -122,9 +122,9 @@ class TransferGatewayTest extends TestCase
                 ])
             ->andReturn(new CreateTransferResponse(id: 'tr_test_usd_123456'));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(TransferGatewayInterface::class);
+        $gateway = $this->app()->make(TransferGatewayInterface::class);
 
         $result = $gateway->execute($transfer, $account);
 
@@ -173,9 +173,9 @@ class TransferGatewayTest extends TestCase
                 ])
             ->andReturn(new CreateTransferResponse(id: 'tr_test_krw_123456'));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(TransferGatewayInterface::class);
+        $gateway = $this->app()->make(TransferGatewayInterface::class);
 
         $result = $gateway->execute($transfer, $account);
 
@@ -224,9 +224,9 @@ class TransferGatewayTest extends TestCase
                 'account_invalid'
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(TransferGatewayInterface::class);
+        $gateway = $this->app()->make(TransferGatewayInterface::class);
 
         $this->expectException(StripeTransferException::class);
         $this->expectExceptionMessage('Transfer failed:');
@@ -276,9 +276,9 @@ class TransferGatewayTest extends TestCase
                 'balance_insufficient'
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(TransferGatewayInterface::class);
+        $gateway = $this->app()->make(TransferGatewayInterface::class);
 
         $this->expectException(StripeTransferException::class);
         $this->expectExceptionMessage('Transfer failed:');

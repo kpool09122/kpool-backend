@@ -164,7 +164,11 @@ class WikiHistoryTest extends TestCase
         $wikiHistory = $testData->wikiHistory;
 
         $this->assertSame(HistoryActionType::Publish, $wikiHistory->actionType());
+
+        $this->assertNotNull($wikiHistory->fromVersion());
         $this->assertSame($fromVersion->value(), $wikiHistory->fromVersion()->value());
+
+        $this->assertNotNull($wikiHistory->toVersion());
         $this->assertSame($toVersion->value(), $wikiHistory->toVersion()->value());
         $this->assertSame(
             (string) $wikiIdentifier,
@@ -195,7 +199,11 @@ class WikiHistoryTest extends TestCase
         $wikiHistory = $testData->wikiHistory;
 
         $this->assertSame(HistoryActionType::Rollback, $wikiHistory->actionType());
+
+        $this->assertNotNull($wikiHistory->fromVersion());
         $this->assertSame($fromVersion->value(), $wikiHistory->fromVersion()->value());
+
+        $this->assertNotNull($wikiHistory->toVersion());
         $this->assertSame($toVersion->value(), $wikiHistory->toVersion()->value());
     }
 

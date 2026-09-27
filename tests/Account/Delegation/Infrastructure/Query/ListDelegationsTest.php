@@ -27,8 +27,8 @@ class ListDelegationsTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->assertInstanceOf(ListDelegations::class, $this->app->make(ListDelegationsInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->assertInstanceOf(ListDelegations::class, $this->app()->make(ListDelegationsInterface::class));
     }
 
     #[Group('useDb')]

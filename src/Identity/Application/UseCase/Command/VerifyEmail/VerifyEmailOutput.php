@@ -17,7 +17,7 @@ class VerifyEmailOutput implements VerifyEmailOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{email: string, verifiedAt: string|null}
      */
     public function toArray(): array
     {

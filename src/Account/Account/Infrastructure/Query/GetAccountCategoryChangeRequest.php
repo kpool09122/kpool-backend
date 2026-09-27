@@ -93,8 +93,8 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
             ->orderBy('identities.identity_name')
             ->get()
             ->map(static fn (PrincipalModel $principal): AccountCategoryChangeRequestIdentityReadModel => new AccountCategoryChangeRequestIdentityReadModel(
-                name: $principal->identity->identity_name,
-                email: $principal->identity->email,
+                name: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->identity_name,
+                email: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->email,
             ))
             ->values()
             ->all();

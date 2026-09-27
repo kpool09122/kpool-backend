@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\CreatePasskeyRecoveryOptions;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreatePasskeyRecoveryOptionsRequest extends FormRequest
@@ -21,6 +22,6 @@ class CreatePasskeyRecoveryOptionsRequest extends FormRequest
 
     public function recoveryKey(): string
     {
-        return (string) $this->input('recoveryKey');
+        return RequestValue::string($this->input('recoveryKey'));
     }
 }

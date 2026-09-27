@@ -52,10 +52,13 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('setex')
             ->once()
             ->withArgs(
-                fn (string $key, int $ttl, string $payload) =>
-                $key === 'auth-context:actor:' . $identityIdentifier
-                && $ttl === 3600
-                && json_decode($payload, true)['identityIdentifier'] === (string) $identityIdentifier
+                function (string $key, int $ttl, string $payload) use ($identityIdentifier): bool {
+                    $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+                    self::assertIsArray($decoded);
+
+                    return $key === 'auth-context:actor:' . $identityIdentifier
+                && $ttl === 3600 && $decoded['identityIdentifier'] === (string) $identityIdentifier;
+                }
             );
 
         $context = (new AuthContextCache())->resolveActor(
@@ -151,6 +154,10 @@ class AuthContextCacheTest extends TestCase
             ) use ($identityIdentifier, $principalIdentifier, $accountIdentifier): bool {
                 $decoded = json_decode($payload, true);
 
+                self::assertIsArray($decoded);
+                self::assertIsArray($decoded['accountPolicies']);
+                self::assertIsArray($decoded['accountPolicies'][0]);
+
                 return $key === 'auth-context:account:' . $identityIdentifier
                     && $ttl === 3600
                     && $decoded['principalIdentifier'] === (string) $principalIdentifier
@@ -218,10 +225,13 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('setex')
             ->once()
             ->withArgs(
-                fn (string $key, int $ttl, string $payload) =>
-                $key === 'auth-context:wiki:' . $identityIdentifier . ':' . $accountIdentifier
-                && $ttl === 3600
-                && json_decode($payload, true)['principalIdentifier'] === (string) $principalIdentifier
+                function (string $key, int $ttl, string $payload) use ($identityIdentifier, $accountIdentifier, $principalIdentifier): bool {
+                    $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+                    self::assertIsArray($decoded);
+
+                    return $key === 'auth-context:wiki:' . $identityIdentifier . ':' . $accountIdentifier
+                && $ttl === 3600 && $decoded['principalIdentifier'] === (string) $principalIdentifier;
+                }
             );
 
         $context = (new AuthContextCache())->resolveWiki(

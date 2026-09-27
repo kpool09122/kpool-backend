@@ -16,7 +16,7 @@ class UploadDocumentsOutput implements UploadDocumentsOutputPort
         $this->documents = $documents;
     }
 
-    /** @return array{documents: array<int, array<string, mixed>>} */
+    /** @return array{documents: array<array<string, mixed>>} */
     public function toArray(): array
     {
         return [

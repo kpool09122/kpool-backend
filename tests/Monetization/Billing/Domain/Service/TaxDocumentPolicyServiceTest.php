@@ -21,7 +21,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testJapanRegisteredIssuesQualifiedInvoice(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $deadline = new DateTimeImmutable('+1 day');
 
         $document = $policy->decide(
@@ -48,7 +48,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaRegisteredIssuesElectronicTaxInvoice(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -72,7 +72,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaUnregisteredBusinessTriggersReverseCharge(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -98,7 +98,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaUnregisteredIndividualCardIssuesCardReceipt(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -122,7 +122,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaUnregisteredIndividualCashIssuesCashReceipt(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -146,7 +146,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testDefaultReturnsSimpleReceipt(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::UNITED_STATES,
@@ -170,7 +170,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testJapanUnregisteredReturnsSimpleReceipt(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::JAPAN,
@@ -194,7 +194,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testQualifiedInvoiceOptionalFlagFallsBackToSimpleReceipt(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::JAPAN,
@@ -218,7 +218,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testJapanRequiresRegistrationNumberWhenQualified(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->decide(
@@ -241,7 +241,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaRegisteredDomesticRequiresRegistrationNumber(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->decide(
@@ -264,7 +264,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testSimpleReceiptAllowsNullDeadline(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
 
         $document = $policy->decide(
             CountryCode::UNITED_STATES,
@@ -289,7 +289,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testJapanQualifiedInvoiceRequiresDeadline(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->decide(
@@ -312,7 +312,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testKoreaRegisteredDomesticRequiresDeadline(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->decide(
@@ -335,7 +335,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
      */
     public function testReverseChargeRequiresDeadline(): void
     {
-        $policy = $this->app->make(TaxDocumentPolicyServiceInterface::class);
+        $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->decide(

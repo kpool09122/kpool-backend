@@ -17,7 +17,7 @@ class RequestDelegationOutput implements RequestDelegationOutputPort
         $this->delegation = $delegation;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{delegationIdentifier: string, affiliationIdentifier: string, delegateAccountIdentifier: string, delegatorAccountIdentifier: string, requestedByAccountIdentifier: string, status: string, direction: string, requestedAt: string, approvedAt: string|null, rejectedAt: string|null} */
     public function toArray(): array
     {
         $delegation = $this->delegation ?? throw new LogicException('Account delegation has not been set.');

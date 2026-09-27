@@ -21,7 +21,7 @@ class GetTalentDraftWikiTest extends TestCase
     {
         $this->seed(WikiEditorSampleSeeder::class);
 
-        $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetTalentDraftWikiInterface::class);
         $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f172', $readModel->wikiIdentifier());
@@ -34,6 +34,8 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('Chaeyoung', $readModel->basic()['name']);
         $this->assertSame('Son Chaeyoung', $readModel->basic()['realName']);
+        self::assertIsArray($readModel->basic()['groups']);
+        self::assertIsArray($readModel->basic()['groups'][0]);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f001', $readModel->basic()['groups'][0]['wikiIdentifier']);
         $this->assertSame('TWICE', $readModel->basic()['groups'][0]['name']);
         $this->assertSame('girl_group', $readModel->basic()['groups'][0]['groupType']);
@@ -62,7 +64,7 @@ class GetTalentDraftWikiTest extends TestCase
             ],
         );
 
-        $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetTalentDraftWikiInterface::class);
         $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f201')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
@@ -76,7 +78,7 @@ class GetTalentDraftWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessThrowsWhenDraftTalentWikiDoesNotExist(): void
     {
-        $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetTalentDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

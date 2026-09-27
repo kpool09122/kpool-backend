@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Wiki\Command\MergeWiki;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
@@ -14,7 +15,7 @@ class MergeWikiRequest extends FormRequest
     use ResolvesLanguage;
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     public function validationData(): array
     {
@@ -56,7 +57,7 @@ class MergeWikiRequest extends FormRequest
 
     public function resourceType(): string
     {
-        return (string) $this->input('resourceType');
+        return RequestValue::string($this->input('resourceType'));
     }
 
     /**
@@ -64,7 +65,7 @@ class MergeWikiRequest extends FormRequest
      */
     public function basic(): array
     {
-        return (array) ($this->input('basic') ?? []);
+        return RequestValue::object($this->input('basic') ?? []);
     }
 
     /**
@@ -72,42 +73,42 @@ class MergeWikiRequest extends FormRequest
      */
     public function sections(): array
     {
-        return (array) ($this->input('sections') ?? []);
+        return RequestValue::values($this->input('sections') ?? []);
     }
 
     public function themeColor(): ?string
     {
         $value = $this->input('themeColor');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function fontStyle(): ?string
     {
         $value = $this->input('fontStyle');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function imageIdentifier(): ?string
     {
         $value = $this->input('imageIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function title(): ?string
     {
         $value = $this->input('title');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function metaDescription(): ?string
     {
         $value = $this->input('metaDescription');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /**
@@ -117,14 +118,14 @@ class MergeWikiRequest extends FormRequest
     {
         $value = $this->input('keywords');
 
-        return is_array($value) ? array_values(array_map('strval', $value)) : null;
+        return is_array($value) ? RequestValue::strings($value) : null;
     }
 
     public function agencyIdentifier(): ?string
     {
         $value = $this->input('agencyIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /**
@@ -132,7 +133,7 @@ class MergeWikiRequest extends FormRequest
      */
     public function groupIdentifiers(): array
     {
-        return (array) ($this->input('groupIdentifiers') ?? []);
+        return RequestValue::strings($this->input('groupIdentifiers') ?? []);
     }
 
     /**
@@ -140,6 +141,6 @@ class MergeWikiRequest extends FormRequest
      */
     public function talentIdentifiers(): array
     {
-        return (array) ($this->input('talentIdentifiers') ?? []);
+        return RequestValue::strings($this->input('talentIdentifiers') ?? []);
     }
 }

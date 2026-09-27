@@ -40,7 +40,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(AuthCodeSessionStorageServiceInterface::class);
         $this->assertInstanceOf(AuthCodeSessionStorageService::class, $service);
     }
 
@@ -49,7 +49,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
         $email = new Email('test@example.com');
         $authCode = new AuthCode('123456');
         $generatedAt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
-        $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(AuthCodeSessionStorageServiceInterface::class);
 
         $service->store(new AuthCodeSession($email, $authCode, $generatedAt));
 
@@ -78,7 +78,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
             'verifiedAt' => '2024-01-01T12:05:00+00:00',
         ]));
 
-        $found = $this->app->make(AuthCodeSessionStorageServiceInterface::class)->findByEmail($email);
+        $found = $this->app()->make(AuthCodeSessionStorageServiceInterface::class)->findByEmail($email);
 
         $this->assertNotNull($found);
         $this->assertEquals(new DateTimeImmutable('2024-01-01T12:05:00+00:00'), $found->verifiedAt());
@@ -86,7 +86,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
 
     public function testFindByEmailReturnsNullWhenNotFound(): void
     {
-        $found = $this->app->make(AuthCodeSessionStorageServiceInterface::class)
+        $found = $this->app()->make(AuthCodeSessionStorageServiceInterface::class)
             ->findByEmail(new Email('notfound@example.com'));
 
         $this->assertNull($found);
@@ -95,7 +95,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
     public function testDelete(): void
     {
         $email = new Email('delete@example.com');
-        $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(AuthCodeSessionStorageServiceInterface::class);
         $service->store(new AuthCodeSession($email, new AuthCode('111111'), new DateTimeImmutable()));
 
         $service->delete($email);
@@ -106,7 +106,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
     public function testStoreOverwritesExistingSession(): void
     {
         $email = new Email('overwrite@example.com');
-        $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
+        $service = $this->app()->make(AuthCodeSessionStorageServiceInterface::class);
         $generatedAt = new DateTimeImmutable();
         $service->store(new AuthCodeSession($email, new AuthCode('111111'), $generatedAt));
         $service->store(new AuthCodeSession($email, new AuthCode('222222'), $generatedAt));

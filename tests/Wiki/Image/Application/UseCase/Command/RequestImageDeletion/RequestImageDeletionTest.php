@@ -35,9 +35,9 @@ class RequestImageDeletionTest extends TestCase
     public function test__construct(): void
     {
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
 
-        $requestImageDeletion = $this->app->make(RequestImageDeletionInterface::class);
+        $requestImageDeletion = $this->app()->make(RequestImageDeletionInterface::class);
         $this->assertInstanceOf(RequestImageDeletion::class, $requestImageDeletion);
     }
 
@@ -67,9 +67,9 @@ class RequestImageDeletionTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
 
-        $requestImageDeletion = $this->app->make(RequestImageDeletionInterface::class);
+        $requestImageDeletion = $this->app()->make(RequestImageDeletionInterface::class);
         $output = new RequestImageDeletionOutput();
         $requestImageDeletion->process($input, $output);
 
@@ -100,10 +100,10 @@ class RequestImageDeletionTest extends TestCase
             ->andReturn(null);
         $imageRepository->shouldNotReceive('save');
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
 
         $this->expectException(ImageNotFoundException::class);
-        $requestImageDeletion = $this->app->make(RequestImageDeletionInterface::class);
+        $requestImageDeletion = $this->app()->make(RequestImageDeletionInterface::class);
         $output = new RequestImageDeletionOutput();
         $requestImageDeletion->process($input, $output);
     }
@@ -132,10 +132,10 @@ class RequestImageDeletionTest extends TestCase
             ->andReturn($image);
         $imageRepository->shouldNotReceive('save');
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
 
         $this->expectException(ImageDeletionRequestAlreadyPendingException::class);
-        $requestImageDeletion = $this->app->make(RequestImageDeletionInterface::class);
+        $requestImageDeletion = $this->app()->make(RequestImageDeletionInterface::class);
         $output = new RequestImageDeletionOutput();
         $requestImageDeletion->process($input, $output);
     }

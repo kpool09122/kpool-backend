@@ -46,17 +46,17 @@ class TranslateWikiTest extends TestCase
     public function test__construct(): void
     {
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
         $draftWikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
-        $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
-        $translateWiki = $this->app->make(TranslateWikiInterface::class);
+        $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $this->assertInstanceOf(TranslateWiki::class, $translateWiki);
     }
 
@@ -187,13 +187,13 @@ class TranslateWikiTest extends TestCase
             ->once()
             ->andReturn($enDraftWiki);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
 
-        $translateWiki = $this->app->make(TranslateWikiInterface::class);
+        $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $output = new TranslateWikiOutput();
         $translateWiki->process($input, $output);
         $result = $output->toArray();
@@ -232,14 +232,14 @@ class TranslateWikiTest extends TestCase
         $draftWikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $translateWiki = $this->app->make(TranslateWikiInterface::class);
+        $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $translateWiki->process($input, new TranslateWikiOutput());
     }
 
@@ -272,14 +272,14 @@ class TranslateWikiTest extends TestCase
         $draftWikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $translateWiki = $this->app->make(TranslateWikiInterface::class);
+        $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $translateWiki->process($input, new TranslateWikiOutput());
     }
 
@@ -318,16 +318,16 @@ class TranslateWikiTest extends TestCase
         $draftWikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(DisallowedException::class);
-        $translateWiki = $this->app->make(TranslateWikiInterface::class);
+        $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $translateWiki->process($input, new TranslateWikiOutput());
     }
 

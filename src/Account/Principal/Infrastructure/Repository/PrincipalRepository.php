@@ -121,7 +121,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     {
         $previousIdentityId = PrincipalEloquent::query()
             ->where('id', (string) $principal->principalIdentifier())
-            ->value('identity_id');
+            ->first(['identity_id'])?->identity_id;
 
         PrincipalEloquent::query()->updateOrCreate(
             ['id' => (string) $principal->principalIdentifier()],

@@ -39,7 +39,7 @@ class PrincipalRepositoryTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $result = $repository->findById($principalIdentifier);
 
         $this->assertNotNull($result);
@@ -57,7 +57,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $result = $repository->findById(new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -81,7 +81,7 @@ class PrincipalRepositoryTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $result = $repository->findByIdentityIdentifierAndAccountIdentifier($identityIdentifier, $accountIdentifier);
 
         $this->assertNotNull($result);
@@ -99,7 +99,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdentityIdentifierAndAccountIdentifierWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $result = $repository->findByIdentityIdentifierAndAccountIdentifier(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
@@ -130,7 +130,7 @@ class PrincipalRepositoryTest extends TestCase
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
         CreatePrincipal::create($otherPrincipalIdentifier, $identityIdentifier, $otherAccountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIdentityIdentifier($identityIdentifier);
 
         $this->assertCount(2, $results);
@@ -172,7 +172,7 @@ class PrincipalRepositoryTest extends TestCase
             $delegationIdentifier,
         );
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $repository->save($principal);
 
         $this->assertDatabaseHas('wiki_principals', [
@@ -213,7 +213,7 @@ class PrincipalRepositoryTest extends TestCase
             $accountIdentifier,
         );
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $repository->save($principal);
 
         $this->assertDatabaseHas('wiki_principals', [
@@ -242,7 +242,7 @@ class PrincipalRepositoryTest extends TestCase
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByDelegation($delegationIdentifier);
 
         $this->assertCount(1, $results);
@@ -284,7 +284,7 @@ class PrincipalRepositoryTest extends TestCase
             ['delegation_identifier' => (string) $delegationIdentifier],
         );
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByDelegation($delegationIdentifier);
 
         $expectedAccountIdentifiers = [
@@ -310,7 +310,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByDelegationWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $result = $repository->findByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([], $result);
@@ -337,7 +337,7 @@ class PrincipalRepositoryTest extends TestCase
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $repository->deleteByDelegation($delegationIdentifier);
 
         $this->assertDatabaseMissing('wiki_principals', [
@@ -356,7 +356,7 @@ class PrincipalRepositoryTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $repository->deleteByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
     }
 
@@ -391,7 +391,7 @@ class PrincipalRepositoryTest extends TestCase
         $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByAccountId($accountIdentifier);
 
         $this->assertCount(2, $results);
@@ -409,7 +409,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByAccountId(new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertIsArray($results);
@@ -454,7 +454,7 @@ class PrincipalRepositoryTest extends TestCase
         CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, $accountIdentifier);
         CreatePrincipal::create($principalIdentifier3, $identityIdentifier3, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIds([$principalIdentifier1, $principalIdentifier2, $principalIdentifier3]);
 
         $this->assertCount(3, $results);
@@ -476,7 +476,7 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
     {
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIds([]);
 
         $this->assertIsArray($results);
@@ -506,7 +506,7 @@ class PrincipalRepositoryTest extends TestCase
 
         CreatePrincipal::create($existingPrincipalId, $identityIdentifier, $accountIdentifier);
 
-        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository = $this->app()->make(PrincipalRepositoryInterface::class);
         $results = $repository->findByIds([$existingPrincipalId, $nonExistingPrincipalId]);
 
         $this->assertCount(1, $results);

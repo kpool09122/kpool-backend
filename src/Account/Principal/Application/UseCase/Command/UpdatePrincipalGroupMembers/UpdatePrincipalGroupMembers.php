@@ -100,7 +100,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @param array<string, Principal> $principalsById
      */
     private function hasPrincipalGroupManager(array $principalGroups, array $principalsById): bool
@@ -122,7 +122,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @return array<string, PrincipalIdentifier>
      */
     private function collectPrincipalIdentifiers(array $principalGroups): array
@@ -138,7 +138,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @param array<string, Principal> $principalsById
      * @return array<string, array<string, \Source\Account\Principal\Domain\ValueObject\RoleIdentifier>>
      */

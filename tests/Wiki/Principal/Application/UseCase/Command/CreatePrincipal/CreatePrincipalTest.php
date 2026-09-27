@@ -105,19 +105,19 @@ class CreatePrincipalTest extends TestCase
             ->once()
             ->andReturn($collaboratorRole);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturnNull();
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
-        $this->app->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
 
         $output = new CreatePrincipalOutput();
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             $output,
         );
@@ -209,17 +209,17 @@ class CreatePrincipalTest extends TestCase
             ->with($accountIdentifier, $ownerRoleIdentifier)
             ->andReturn($ownerGroup);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
-        $this->app->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
+        $this->app()->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
 
         $output = new CreatePrincipalOutput();
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             $output,
         );
@@ -283,19 +283,19 @@ class CreatePrincipalTest extends TestCase
         $accountPrincipalGroupRepository = Mockery::mock(AccountPrincipalGroupRepositoryInterface::class);
         $accountPrincipalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()->andReturn($ownerGroup);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
-        $this->app->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
+        $this->app()->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
 
         $this->expectException(SystemRoleNotFoundException::class);
         $this->expectExceptionMessage('WIKI_ADMINISTRATOR system role is not found.');
 
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             new CreatePrincipalOutput(),
         );
@@ -363,19 +363,19 @@ class CreatePrincipalTest extends TestCase
         $accountPrincipalGroupRepository = Mockery::mock(AccountPrincipalGroupRepositoryInterface::class);
         $accountPrincipalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()->andReturn($ownerGroup);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
-        $this->app->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, $accountPrincipalGroupRepository);
+        $this->app()->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
 
         $this->expectException(SystemRoleNotFoundException::class);
         $this->expectExceptionMessage('COLLABORATOR system role is not found.');
 
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             new CreatePrincipalOutput(),
         );
@@ -432,19 +432,19 @@ class CreatePrincipalTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldNotReceive('findSystemByName');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturnNull();
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
-        $this->app->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, $accountPrincipalRepository);
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
 
         $output = new CreatePrincipalOutput();
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             $output,
         );
@@ -482,18 +482,18 @@ class CreatePrincipalTest extends TestCase
         $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
         $principalGroupRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, Mockery::mock(PrincipalGroupFactoryInterface::class));
-        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
-        $this->app->instance(AccountPrincipalRepositoryInterface::class, Mockery::mock(AccountPrincipalRepositoryInterface::class));
-        $this->app->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
-        $this->app->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, Mockery::mock(PrincipalGroupFactoryInterface::class));
+        $this->app()->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
+        $this->app()->instance(AccountPrincipalRepositoryInterface::class, Mockery::mock(AccountPrincipalRepositoryInterface::class));
+        $this->app()->instance(AccountPrincipalGroupRepositoryInterface::class, Mockery::mock(AccountPrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(AccountRoleRepositoryInterface::class, Mockery::mock(AccountRoleRepositoryInterface::class));
 
         $this->expectException(PrincipalAlreadyExistsException::class);
 
-        $this->app->make(CreatePrincipalInterface::class)->process(
+        $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
             new CreatePrincipalOutput(),
         );

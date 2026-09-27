@@ -35,7 +35,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
             'last_collected_at' => '2024-01-15 10:30:00',
         ]);
 
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -56,7 +56,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceWhenNotExist(): void
     {
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
             new WikiIdentifier(StrTestHelper::generateUuid()),
@@ -86,7 +86,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
             'last_collected_at' => null,
         ]);
 
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findNextTargetResource();
 
         $this->assertInstanceOf(VideoLinkCollectionStatus::class, $status);
@@ -115,7 +115,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
             'last_collected_at' => '2024-01-15 15:00:00',
         ]);
 
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findNextTargetResource();
 
         $this->assertInstanceOf(VideoLinkCollectionStatus::class, $status);
@@ -130,7 +130,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindNextTargetResourceReturnsNullWhenEmpty(): void
     {
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findNextTargetResource();
 
         $this->assertNull($status);
@@ -155,7 +155,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $repository->save($status);
 
         $this->assertDatabaseHas('video_link_collection_statuses', [
@@ -183,13 +183,14 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
             'last_collected_at' => null,
         ]);
 
-        $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
         );
 
         $collectedAt = new DateTimeImmutable('2024-01-20 15:00:00');
+        $this->assertNotNull($status);
         $status->markCollected($collectedAt);
 
         $repository->save($status);

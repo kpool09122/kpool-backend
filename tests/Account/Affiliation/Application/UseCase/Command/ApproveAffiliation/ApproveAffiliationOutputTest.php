@@ -39,7 +39,9 @@ class ApproveAffiliationOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('status', $result));
         $this->assertSame(AffiliationStatus::ACTIVE->value, $result['status']);
+        self::assertNotNull($result['terms']);
         $this->assertSame(35, $result['terms']['revenueSharePercentage']);
         $this->assertSame('Approved notes', $result['terms']['contractNotes']);
         $this->assertSame($requestedAt->format(DateTimeInterface::ATOM), $result['requestedAt']);

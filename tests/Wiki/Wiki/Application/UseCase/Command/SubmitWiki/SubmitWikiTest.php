@@ -55,14 +55,14 @@ class SubmitWikiTest extends TestCase
     public function test__construct(): void
     {
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $this->assertInstanceOf(SubmitWiki::class, $submitWiki);
     }
 
@@ -120,11 +120,11 @@ class SubmitWikiTest extends TestCase
             ->with($dummySubmitWiki->history)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $output = new SubmitWikiOutput();
         $submitWiki->process($input, $output);
         $result = $output->toArray();
@@ -167,13 +167,13 @@ class SubmitWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(WikiNotFoundException::class);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $submitWiki->process($input, new SubmitWikiOutput());
     }
 
@@ -216,13 +216,13 @@ class SubmitWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $submitWiki->process($input, new SubmitWikiOutput());
     }
 
@@ -266,13 +266,13 @@ class SubmitWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $submitWiki->process($input, new SubmitWikiOutput());
     }
 
@@ -316,15 +316,15 @@ class SubmitWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(DisallowedException::class);
-        $submitWiki = $this->app->make(SubmitWikiInterface::class);
+        $submitWiki = $this->app()->make(SubmitWikiInterface::class);
         $submitWiki->process($input, new SubmitWikiOutput());
     }
 

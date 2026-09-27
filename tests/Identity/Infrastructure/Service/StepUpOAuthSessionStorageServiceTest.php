@@ -33,7 +33,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
 
     public function testItConsumesASessionExactlyOnce(): void
     {
-        $storage = $this->app->make(StepUpOAuthSessionStorageServiceInterface::class);
+        $storage = $this->app()->make(StepUpOAuthSessionStorageServiceInterface::class);
         $this->assertInstanceOf(StepUpOAuthSessionStorageService::class, $storage);
         $state = new OAuthState('step-up-state', new DateTimeImmutable('+10 minutes'));
         $storage->store($state, new StepUpOAuthSession(
@@ -61,7 +61,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
             'expires_at' => (new DateTimeImmutable('-1 second'))->format(DATE_ATOM),
             'return_to' => '/settings/passkeys',
         ], JSON_THROW_ON_ERROR));
-        $storage = $this->app->make(StepUpOAuthSessionStorageServiceInterface::class);
+        $storage = $this->app()->make(StepUpOAuthSessionStorageServiceInterface::class);
 
         $this->assertNull($storage->consume($state));
         $this->assertNull($storage->consume($state));

@@ -26,6 +26,9 @@ class CloudTaskCertificateCacheTest extends TestCase
         self::assertNotFalse($key);
         $details = openssl_pkey_get_details($key);
         self::assertNotFalse($details);
+        self::assertIsArray($details['rsa']);
+        self::assertIsString($details['rsa']['n']);
+        self::assertIsString($details['rsa']['e']);
         $certificates = json_encode(['keys' => [[
             'kty' => 'RSA',
             'alg' => 'RS256',
@@ -48,13 +51,13 @@ class CloudTaskCertificateCacheTest extends TestCase
 
         try {
             $this->configureCache($directory);
-            $firstTokens = $this->app->make(AccessToken::class);
-            self::assertSame($firstTokens, $this->app->make(AccessToken::class));
+            $firstTokens = $this->app()->make(AccessToken::class);
+            self::assertSame($firstTokens, $this->app()->make(AccessToken::class));
             $this->assertTaskAccepted($token);
 
             $this->refreshApplication();
             $this->configureCache($directory);
-            self::assertNotSame($firstTokens, $this->app->make(AccessToken::class));
+            self::assertNotSame($firstTokens, $this->app()->make(AccessToken::class));
             $this->assertTaskAccepted($token);
 
             self::assertSame($remainingResponses, $handler->count());
@@ -88,7 +91,7 @@ class CloudTaskCertificateCacheTest extends TestCase
     {
         $request = Request::create('/');
         $request->headers->set('Authorization', 'Bearer ' . $token);
-        $response = $this->app->make(EnsureCloudTaskAuthenticated::class)->handle(
+        $response = $this->app()->make(EnsureCloudTaskAuthenticated::class)->handle(
             $request,
             fn () => response()->noContent(),
         );

@@ -25,7 +25,7 @@ class VideoLinkCollectionStatusFactoryTest extends TestCase
     {
         $resourceId = StrTestHelper::generateUuid();
 
-        $factory = $this->app->make(VideoLinkCollectionStatusFactoryInterface::class);
+        $factory = $this->app()->make(VideoLinkCollectionStatusFactoryInterface::class);
 
         $status = $factory->create(
             ResourceType::TALENT,
@@ -47,7 +47,7 @@ class VideoLinkCollectionStatusFactoryTest extends TestCase
      */
     public function testCreateWithDifferentResourceTypes(): void
     {
-        $factory = $this->app->make(VideoLinkCollectionStatusFactoryInterface::class);
+        $factory = $this->app()->make(VideoLinkCollectionStatusFactoryInterface::class);
 
         $talentStatus = $factory->create(
             ResourceType::TALENT,

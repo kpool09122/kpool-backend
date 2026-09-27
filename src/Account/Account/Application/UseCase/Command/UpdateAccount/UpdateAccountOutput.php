@@ -16,7 +16,7 @@ class UpdateAccountOutput implements UpdateAccountOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{accountIdentifier: string, email: string, type: string, name: string, status: string, accountCategory: string, phone: string|null, address: array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null}
      */
     public function toArray(): array
     {

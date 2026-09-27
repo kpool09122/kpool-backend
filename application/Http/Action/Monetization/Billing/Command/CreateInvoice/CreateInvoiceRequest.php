@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Billing\Command\CreateInvoice;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateInvoiceRequest extends FormRequest
@@ -43,12 +44,12 @@ class CreateInvoiceRequest extends FormRequest
 
     public function orderIdentifier(): string
     {
-        return (string) $this->input('orderIdentifier');
+        return RequestValue::string($this->input('orderIdentifier'));
     }
 
     public function buyerMonetizationAccountIdentifier(): string
     {
-        return (string) $this->input('buyerMonetizationAccountIdentifier');
+        return RequestValue::string($this->input('buyerMonetizationAccountIdentifier'));
     }
 
     /**
@@ -56,31 +57,31 @@ class CreateInvoiceRequest extends FormRequest
      */
     public function lines(): array
     {
-        return (array) $this->input('lines', []);
+        return RequestValue::objects($this->input('lines', []));
     }
 
     public function shippingCostAmount(): int
     {
-        return (int) $this->input('shippingCostAmount');
+        return RequestValue::integer($this->input('shippingCostAmount'));
     }
 
     public function currency(): string
     {
-        return (string) $this->input('currency');
+        return RequestValue::string($this->input('currency'));
     }
 
     public function discountPercentage(): ?int
     {
         $value = $this->input('discountPercentage');
 
-        return $value !== null ? (int) $value : null;
+        return $value !== null ? RequestValue::integer($value) : null;
     }
 
     public function discountCode(): ?string
     {
         $value = $this->input('discountCode');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /**
@@ -90,12 +91,12 @@ class CreateInvoiceRequest extends FormRequest
     {
         $value = $this->input('taxLines');
 
-        return $value !== null ? (array) $value : null;
+        return $value !== null ? RequestValue::objects($value) : null;
     }
 
     public function sellerCountry(): string
     {
-        return (string) $this->input('sellerCountry');
+        return RequestValue::string($this->input('sellerCountry'));
     }
 
     public function sellerRegistered(): bool
@@ -110,7 +111,7 @@ class CreateInvoiceRequest extends FormRequest
 
     public function buyerCountry(): string
     {
-        return (string) $this->input('buyerCountry');
+        return RequestValue::string($this->input('buyerCountry'));
     }
 
     public function buyerIsBusiness(): bool
@@ -127,6 +128,6 @@ class CreateInvoiceRequest extends FormRequest
     {
         $value = $this->input('registrationNumber');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 }

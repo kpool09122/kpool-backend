@@ -168,7 +168,15 @@ class SwitchAccountTest extends TestCase
      *     SwitchAccount,
      *     SwitchAccountInput,
      *     SwitchAccountOutput,
-     *     object,
+     *     object{
+     *         accountRepository: AccountRepositoryInterface&Mockery\MockInterface,
+     *         delegationRepository: DelegationRepositoryInterface&Mockery\MockInterface,
+     *         principalRepository: PrincipalRepositoryInterface&Mockery\MockInterface,
+     *         principalFactory: PrincipalFactoryInterface&Mockery\MockInterface,
+     *         principalGroupRepository: PrincipalGroupRepositoryInterface&Mockery\MockInterface,
+     *         policy: PolicyEvaluatorInterface&Mockery\MockInterface,
+     *         currentAccountService: CurrentAccountServiceInterface&Mockery\MockInterface
+     *     },
      *     Principal,
      *     AccountIdentifier,
      *     Principal

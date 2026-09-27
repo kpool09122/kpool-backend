@@ -33,6 +33,7 @@ class VerifyEmailOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('email', $result));
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($verifiedAt->format(DateTimeInterface::ATOM), $result['verifiedAt']);
     }

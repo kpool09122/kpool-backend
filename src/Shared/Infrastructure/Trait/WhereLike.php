@@ -11,7 +11,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 trait WhereLike
 {
     /**
-     * @template TModel of Model
+     * @template TModel of Model = Model
      * @param EloquentBuilder<TModel>|QueryBuilder $query
      * @param string $column
      * @param string $value
@@ -23,7 +23,7 @@ trait WhereLike
     }
 
     /**
-     * @template TModel of Model
+     * @template TModel of Model = Model
      * @param EloquentBuilder<TModel>|QueryBuilder $query
      * @param string $column
      * @param string $value

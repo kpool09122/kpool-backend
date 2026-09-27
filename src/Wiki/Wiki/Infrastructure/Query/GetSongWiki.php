@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\Wiki as WikiModel;
 use Application\Models\Wiki\WikiSongBasic as WikiSongBasicModel;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -60,7 +61,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
             keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
-                'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),
+                'src' => ImageUrl::fromPath(TypedValue::nullableString($model->getAttribute('hero_image_path'))),
                 'alt' => $model->getAttribute('hero_image_alt_text'),
                 'isHidden' => $model->getAttribute('hero_image_is_hidden') === null
                     ? null
@@ -70,7 +71,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
                 name: $basic->name,
                 normalizedName: $basic->normalized_name,
                 songType: $basic->song_type,
-                genres: $basic->genres,
+                genres: array_values($basic->genres),
                 agencyIdentifier: $basic->agency_identifier,
                 agency: WikiAgencySummaryResolver::resolve($basic->agency_identifier),
                 releaseDate: $basic->release_date,
@@ -81,10 +82,10 @@ readonly class GetSongWiki implements GetSongWikiInterface
                 normalizedComposer: $basic->normalized_composer,
                 arranger: $basic->arranger,
                 normalizedArranger: $basic->normalized_arranger,
-                groups: $basic->groups->map(fn (WikiModel $group) => $this->groupSummary($group))->values()->all(),
-                talents: $basic->talents->map(fn (WikiModel $talent) => $this->talentSummary($talent))->values()->all(),
+                groups: array_values($basic->groups->map(fn (WikiModel $group) => $this->groupSummary($group))->values()->all()),
+                talents: array_values($basic->talents->map(fn (WikiModel $talent) => $this->talentSummary($talent))->values()->all()),
             ),
-            sections: $this->sectionsWithImages($model->sections),
+            sections: $this->sectionsWithImages(array_values($model->sections)),
         );
     }
 
@@ -118,10 +119,10 @@ readonly class GetSongWiki implements GetSongWikiInterface
             generation: $basic->generation,
             debutDate: $basic->debut_date,
             disbandDate: $basic->disband_date,
-            fandomName: $basic->fandom_name,
-            officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
-            emoji: $basic->emoji,
-            representativeSymbol: $basic->representative_symbol,
+            fandomName: TypedValue::string($basic->fandom_name),
+            officialColors: OfficialColorReadModelMapper::toArray(array_values($basic->official_colors)),
+            emoji: TypedValue::string($basic->emoji),
+            representativeSymbol: TypedValue::string($basic->representative_symbol),
         );
     }
 
@@ -144,21 +145,21 @@ readonly class GetSongWiki implements GetSongWikiInterface
             normalizedRealName: $basic->normalized_real_name,
             birthday: $basic->birthday,
             agencyIdentifier: $basic->agency_identifier,
-            emoji: $basic->emoji,
-            representativeSymbol: $basic->representative_symbol,
-            position: $basic->position,
+            emoji: TypedValue::string($basic->emoji),
+            representativeSymbol: TypedValue::string($basic->representative_symbol),
+            position: TypedValue::string($basic->position),
             mbti: $basic->mbti,
             zodiacSign: $basic->zodiac_sign,
             englishLevel: $basic->english_level,
             height: $basic->height,
             bloodType: $basic->blood_type,
-            fandomName: $basic->fandom_name,
+            fandomName: TypedValue::string($basic->fandom_name),
         );
     }
 
     /**
      * @param list<array<string, mixed>> $sections
-     * @return list<array<string, mixed>>
+     * @return list<array<array-key, mixed>>
      */
     private function sectionsWithImages(array $sections): array
     {

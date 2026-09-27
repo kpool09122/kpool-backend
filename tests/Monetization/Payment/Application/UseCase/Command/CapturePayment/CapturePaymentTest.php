@@ -56,10 +56,10 @@ class CapturePaymentTest extends TestCase
             ->once()
             ->with($authorizedPayment);
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(CapturePaymentInterface::class);
+        $useCase = $this->app()->make(CapturePaymentInterface::class);
 
         $output = new CapturePaymentOutput();
         $useCase->process($input, $output);
@@ -91,10 +91,10 @@ class CapturePaymentTest extends TestCase
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
         $paymentGateway->shouldNotReceive('capture');
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(CapturePaymentInterface::class);
+        $useCase = $this->app()->make(CapturePaymentInterface::class);
 
         $this->expectException(PaymentNotFoundException::class);
 
@@ -127,10 +127,10 @@ class CapturePaymentTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('Gateway error: Capture failed'));
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(CapturePaymentInterface::class);
+        $useCase = $this->app()->make(CapturePaymentInterface::class);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Gateway error: Capture failed');

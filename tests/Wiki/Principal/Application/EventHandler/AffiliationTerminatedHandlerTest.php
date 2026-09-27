@@ -43,12 +43,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $handler = $this->app->make(AffiliationTerminatedHandler::class);
+        $handler = $this->app()->make(AffiliationTerminatedHandler::class);
 
         $this->assertInstanceOf(AffiliationTerminatedHandler::class, $handler);
     }
@@ -150,12 +150,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
             ->shouldReceive('delete')
             ->twice();
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $handler = $this->app->make(AffiliationTerminatedHandler::class);
+        $handler = $this->app()->make(AffiliationTerminatedHandler::class);
 
         $handler->handle($event);
     }
@@ -262,12 +262,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $principalGroupRepository->shouldNotReceive('save');
         $principalGroupRepository->shouldNotReceive('delete');
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+        $this->app()->make(AffiliationTerminatedHandler::class)->handle(
             $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
         );
     }
@@ -295,12 +295,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $principalGroupRepository->shouldNotReceive('save');
         $principalGroupRepository->shouldNotReceive('delete');
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+        $this->app()->make(AffiliationTerminatedHandler::class)->handle(
             $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
         );
     }
@@ -335,12 +335,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldNotReceive('delete');
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $handler = $this->app->make(AffiliationTerminatedHandler::class);
+        $handler = $this->app()->make(AffiliationTerminatedHandler::class);
 
         $handler->handle($event);
     }
@@ -367,12 +367,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $principalGroupRepository->shouldNotReceive('save');
         $principalGroupRepository->shouldNotReceive('delete');
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+        $this->app()->make(AffiliationTerminatedHandler::class)->handle(
             $this->createEvent($affiliationIdentifier, $accountIdentifier, $accountIdentifier)
         );
     }
@@ -392,12 +392,12 @@ class AffiliationTerminatedHandlerTest extends TestCase
         $policyRepository->shouldReceive('findById')->once()->with($grant->policyIdentifier())->andReturn($policy);
         $policyRepository->shouldReceive('delete')->once()->with($policy);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $this->app->make(AffiliationTerminatedHandler::class)->handle(
+        $this->app()->make(AffiliationTerminatedHandler::class)->handle(
             $this->createEvent(
                 $affiliationIdentifier,
                 new AccountIdentifier(StrTestHelper::generateUuid()),

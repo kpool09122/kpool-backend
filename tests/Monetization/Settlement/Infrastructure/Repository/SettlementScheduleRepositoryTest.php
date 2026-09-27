@@ -41,7 +41,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             'next_closing_date' => '2024-01-31',
         ]);
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $result = $repository->findById(new SettlementScheduleIdentifier($settlementScheduleId));
 
         $this->assertNotNull($result);
@@ -75,7 +75,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             'next_closing_date' => '2024-01-31',
         ]);
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $result = $repository->findById(new SettlementScheduleIdentifier($settlementScheduleId));
 
         $this->assertNotNull($result);
@@ -94,7 +94,7 @@ class SettlementScheduleRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $result = $repository->findById(new SettlementScheduleIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -120,7 +120,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             'next_closing_date' => '2024-02-15',
         ]);
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $result = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier($monetizationAccountId)
         );
@@ -139,7 +139,7 @@ class SettlementScheduleRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByMonetizationAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $result = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -184,7 +184,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             'next_closing_date' => '2024-02-15',
         ]);
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $dueSchedules = $repository->findDueSchedules(new DateTimeImmutable('2024-01-31'));
 
         $this->assertCount(2, $dueSchedules);
@@ -213,7 +213,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             'next_closing_date' => '2024-12-31',
         ]);
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $dueSchedules = $repository->findDueSchedules(new DateTimeImmutable('2024-01-31'));
 
         $this->assertCount(0, $dueSchedules);
@@ -240,7 +240,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             5,
         );
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $repository->save($settlementSchedule);
 
         $this->assertDatabaseHas('settlement_schedules', [
@@ -276,7 +276,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             new Money(50000, Currency::JPY),
         );
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $repository->save($settlementSchedule);
 
         $this->assertDatabaseHas('settlement_schedules', [
@@ -310,7 +310,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             5,
         );
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $repository->save($settlementSchedule);
 
         // advanceを呼び出して次の締め日に進める
@@ -323,6 +323,7 @@ class SettlementScheduleRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new SettlementScheduleIdentifier($settlementScheduleId));
+        $this->assertNotNull($result);
         $this->assertSame('2024-02-15', $result->nextClosingDate()->format('Y-m-d'));
     }
 
@@ -347,7 +348,7 @@ class SettlementScheduleRepositoryTest extends TestCase
             3,
         );
 
-        $repository = $this->app->make(SettlementScheduleRepositoryInterface::class);
+        $repository = $this->app()->make(SettlementScheduleRepositoryInterface::class);
         $repository->save($settlementSchedule);
 
         $result = $repository->findById(new SettlementScheduleIdentifier($settlementScheduleId));

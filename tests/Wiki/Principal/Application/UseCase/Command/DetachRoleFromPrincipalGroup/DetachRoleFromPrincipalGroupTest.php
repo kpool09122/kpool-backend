@@ -27,8 +27,8 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $useCase = $this->app->make(DetachRoleFromPrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $useCase = $this->app()->make(DetachRoleFromPrincipalGroupInterface::class);
         $this->assertInstanceOf(DetachRoleFromPrincipalGroup::class, $useCase);
     }
 
@@ -54,16 +54,16 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroup $savedGroup) => ! $savedGroup->hasRole($roleIdentifier)))
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $useCase = $this->app->make(DetachRoleFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DetachRoleFromPrincipalGroupInterface::class);
         $input = new DetachRoleFromPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $useCase->process($input);
@@ -80,13 +80,13 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $principalGroupRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $useCase = $this->app->make(DetachRoleFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DetachRoleFromPrincipalGroupInterface::class);
         $input = new DetachRoleFromPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -117,16 +117,16 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroup $savedGroup) => count($savedGroup->roles()) === 0))
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
 
-        $useCase = $this->app->make(DetachRoleFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(DetachRoleFromPrincipalGroupInterface::class);
         $input = new DetachRoleFromPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $useCase->process($input);

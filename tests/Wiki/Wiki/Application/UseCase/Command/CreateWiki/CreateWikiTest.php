@@ -56,9 +56,9 @@ class CreateWikiTest extends TestCase
     {
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $createWiki = $this->app->make(CreateWikiInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $createWiki = $this->app()->make(CreateWikiInterface::class);
         $this->assertInstanceOf(CreateWiki::class, $createWiki);
     }
 
@@ -99,12 +99,12 @@ class CreateWikiTest extends TestCase
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $useCase = $this->app->make(CreateWikiInterface::class);
+        $useCase = $this->app()->make(CreateWikiInterface::class);
         $useCase->process($input, new CreateWikiOutput());
     }
 
@@ -157,13 +157,13 @@ class CreateWikiTest extends TestCase
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(DisallowedException::class);
-        $useCase = $this->app->make(CreateWikiInterface::class);
+        $useCase = $this->app()->make(CreateWikiInterface::class);
         $useCase->process($input, new CreateWikiOutput());
     }
 
@@ -237,13 +237,13 @@ class CreateWikiTest extends TestCase
             ->with($testData->draftWiki)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiFactoryInterface::class, $wikiFactory);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $useCase = $this->app->make(CreateWikiInterface::class);
+        $useCase = $this->app()->make(CreateWikiInterface::class);
         $output = new CreateWikiOutput();
         $useCase->process($input, $output);
         $result = $output->toArray();

@@ -49,7 +49,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
 
         $this->assertInstanceOf(
             CreatePasskeyRegistrationOptions::class,
-            $this->app->make(CreatePasskeyRegistrationOptionsInterface::class),
+            $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class),
         );
     }
 
@@ -133,9 +133,11 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
 
         $this->bindHappyPathDependencies($authCodeSessionStorageService, invitationValidator: $invitationValidator);
         $output = new CreatePasskeyRegistrationOptionsOutput();
-        $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)
+        $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class)
             ->process(new CreatePasskeyRegistrationOptionsInput($email, $signupSession), $output);
 
+        $this->assertArrayHasKey('challengeKey', $output->toArray());
+        self::assertTrue(array_key_exists('challengeKey', $output->toArray()));
         $this->assertSame(self::CHALLENGE_KEY, $output->toArray()['challengeKey']);
     }
 
@@ -145,7 +147,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $this->bindHappyPathDependencies(identityExists: true, email: $email);
 
         $this->expectException(AlreadyUserExistsException::class);
-        $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
+        $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
             new CreatePasskeyRegistrationOptionsInput($email, new SignupSession()),
             new CreatePasskeyRegistrationOptionsOutput(),
         );
@@ -160,7 +162,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $this->bindHappyPathDependencies($authCodeSessionStorageService, email: $email);
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
-        $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
+        $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
             new CreatePasskeyRegistrationOptionsInput($email, new SignupSession()),
             new CreatePasskeyRegistrationOptionsOutput(),
         );
@@ -179,7 +181,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $this->bindHappyPathDependencies($authCodeSessionStorageService, email: $email);
 
         $this->expectException(UnauthorizedEmailException::class);
-        $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
+        $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
             new CreatePasskeyRegistrationOptionsInput($email, new SignupSession()),
             new CreatePasskeyRegistrationOptionsOutput(),
         );
@@ -200,7 +202,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $this->bindHappyPathDependencies($authCodeSessionStorageService, email: $email);
 
         $this->expectException(AuthCodeExpiredException::class);
-        $this->app->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
+        $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class)->process(
             new CreatePasskeyRegistrationOptionsInput($email, new SignupSession()),
             new CreatePasskeyRegistrationOptionsOutput(),
         );
@@ -217,7 +219,7 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         ?AuthCodeSessionStorageServiceInterface $authCodeSessionStorageService = null,
         bool $identityExists = false,
         ?Email $email = null,
-        ?SignupInvitationValidatorInterface $invitationValidator = null,
+        (SignupInvitationValidatorInterface&\Mockery\MockInterface)|null $invitationValidator = null,
     ): void {
         $email ??= new Email('passkey@example.com');
         $authCodeSessionStorageService ??= Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
@@ -247,15 +249,15 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         $invitationValidator ??= Mockery::mock(SignupInvitationValidatorInterface::class);
         $invitationValidator->shouldReceive('validate')->zeroOrMoreTimes();
 
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $authCodeSessionStorageService);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(UuidGeneratorInterface::class, $generator);
-        $this->app->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
-        $this->app->instance(SignupInvitationValidatorInterface::class, $invitationValidator);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $authCodeSessionStorageService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(UuidGeneratorInterface::class, $generator);
+        $this->app()->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
+        $this->app()->instance(SignupInvitationValidatorInterface::class, $invitationValidator);
     }
 
     private function useCase(
@@ -266,22 +268,22 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         WebAuthnServiceInterface $webAuthn,
         ChallengeSessionStorageServiceInterface $storage,
     ): CreatePasskeyRegistrationOptionsInterface {
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $authCodeSessionStorageService);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $authCodeSessionStorageService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(PasskeyUserFactoryInterface::class, $passkeyUsers);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $uuidGenerator->shouldReceive('generate')->once()->andReturn(self::CHALLENGE_KEY);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
         $challengeGenerator = Mockery::mock(WebAuthnChallengeGeneratorInterface::class);
         $challengeGenerator->shouldReceive('generate')->once()->andReturn(new WebAuthnChallenge(self::CHALLENGE));
-        $this->app->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
+        $this->app()->instance(WebAuthnChallengeGeneratorInterface::class, $challengeGenerator);
         $validator = Mockery::mock(SignupInvitationValidatorInterface::class);
         $validator->shouldNotReceive('validate');
-        $this->app->instance(SignupInvitationValidatorInterface::class, $validator);
+        $this->app()->instance(SignupInvitationValidatorInterface::class, $validator);
 
-        return $this->app->make(CreatePasskeyRegistrationOptionsInterface::class);
+        return $this->app()->make(CreatePasskeyRegistrationOptionsInterface::class);
     }
 }

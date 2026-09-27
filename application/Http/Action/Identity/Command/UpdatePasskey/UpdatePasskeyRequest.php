@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\UpdatePasskey;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePasskeyRequest extends FormRequest
@@ -20,7 +21,7 @@ class UpdatePasskeyRequest extends FormRequest
         ];
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     public function validationData(): array
     {
         return [
@@ -36,6 +37,6 @@ class UpdatePasskeyRequest extends FormRequest
 
     public function displayName(): string
     {
-        return (string) $this->input('displayName');
+        return RequestValue::string($this->input('displayName'));
     }
 }

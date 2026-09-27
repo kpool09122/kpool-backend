@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -67,7 +68,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         $basicArray = $generatedBasic->toArray();
         foreach ($generatedBasic->normalizableKeys() as $sourceKey => $normalizedKey) {
             $basicArray[$normalizedKey] = $this->normalizationService->normalize(
-                $basicArray[$sourceKey] ?? '',
+                TypedValue::string($basicArray[$sourceKey] ?? ''),
                 $payload->language(),
             );
         }

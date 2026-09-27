@@ -17,7 +17,7 @@ class CreatePrincipalGroupOutput implements CreatePrincipalGroupOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{principalGroupIdentifier: string, accountIdentifier: string, name: string, roleIdentifiers: array<string>, isDefault: bool, createdAt: string}
      */
     public function toArray(): array
     {

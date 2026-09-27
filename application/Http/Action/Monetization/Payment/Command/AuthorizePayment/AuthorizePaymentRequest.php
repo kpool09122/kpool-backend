@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Payment\Command\AuthorizePayment;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AuthorizePaymentRequest extends FormRequest
@@ -30,37 +31,37 @@ class AuthorizePaymentRequest extends FormRequest
 
     public function orderId(): string
     {
-        return (string) $this->input('orderId');
+        return RequestValue::string($this->input('orderId'));
     }
 
     public function buyerMonetizationAccountId(): string
     {
-        return (string) $this->input('buyerMonetizationAccountId');
+        return RequestValue::string($this->input('buyerMonetizationAccountId'));
     }
 
     public function amount(): int
     {
-        return (int) $this->input('amount');
+        return RequestValue::integer($this->input('amount'));
     }
 
     public function currency(): string
     {
-        return (string) $this->input('currency');
+        return RequestValue::string($this->input('currency'));
     }
 
     public function paymentMethodId(): string
     {
-        return (string) $this->input('paymentMethodId');
+        return RequestValue::string($this->input('paymentMethodId'));
     }
 
     public function paymentMethodType(): string
     {
-        return (string) $this->input('paymentMethodType');
+        return RequestValue::string($this->input('paymentMethodType'));
     }
 
     public function paymentMethodLabel(): string
     {
-        return (string) $this->input('paymentMethodLabel');
+        return RequestValue::string($this->input('paymentMethodLabel'));
     }
 
     public function paymentMethodRecurringEnabled(): bool

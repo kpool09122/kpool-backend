@@ -23,7 +23,7 @@ class SignupInvitationValidatorTest extends TestCase
     {
         $this->assertInstanceOf(
             SignupInvitationValidator::class,
-            $this->app->make(SignupInvitationValidatorInterface::class),
+            $this->app()->make(SignupInvitationValidatorInterface::class),
         );
     }
 

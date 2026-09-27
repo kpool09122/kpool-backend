@@ -64,6 +64,7 @@ class RegisterWithPasskeyOutputTest extends TestCase
         $output = new RegisterWithPasskeyOutput();
         $output->setIdentity($identity, null);
 
+        self::assertTrue(array_key_exists('profileImage', $output->toArray()));
         $this->assertNull($output->toArray()['profileImage']);
         $this->assertNull($output->toArray()['returnTo']);
     }

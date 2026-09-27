@@ -51,7 +51,7 @@ class TransferRepositoryTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findById(new TransferIdentifier($transferId));
 
         $this->assertNotNull($result);
@@ -94,7 +94,7 @@ class TransferRepositoryTest extends TestCase
             'stripe_transfer_id' => 'tr_1234567890abcdef',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findById(new TransferIdentifier($transferId));
 
         $this->assertNotNull($result);
@@ -133,7 +133,7 @@ class TransferRepositoryTest extends TestCase
             'failure_reason' => 'Insufficient balance',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findById(new TransferIdentifier($transferId));
 
         $this->assertNotNull($result);
@@ -151,7 +151,7 @@ class TransferRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findById(new TransferIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -181,7 +181,7 @@ class TransferRepositoryTest extends TestCase
             'amount' => 12000,
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findBySettlementBatchId(new SettlementBatchIdentifier($settlementBatchId));
 
         $this->assertNotNull($result);
@@ -198,7 +198,7 @@ class TransferRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySettlementBatchIdWhenNotFound(): void
     {
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $result = $repository->findBySettlementBatchId(
             new SettlementBatchIdentifier(StrTestHelper::generateUuid())
         );
@@ -258,7 +258,7 @@ class TransferRepositoryTest extends TestCase
             'stripe_transfer_id' => 'tr_abcdefghij1234',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $pendingTransfers = $repository->findPendingTransfers();
 
         $this->assertCount(2, $pendingTransfers);
@@ -295,7 +295,7 @@ class TransferRepositoryTest extends TestCase
             'stripe_transfer_id' => 'tr_1234567890',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $pendingTransfers = $repository->findPendingTransfers();
 
         $this->assertCount(0, $pendingTransfers);
@@ -326,7 +326,7 @@ class TransferRepositoryTest extends TestCase
             new Money(25000, Currency::JPY),
         );
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $repository->save($transfer);
 
         $this->assertDatabaseHas('transfers', [
@@ -368,7 +368,7 @@ class TransferRepositoryTest extends TestCase
             new Money(30000, Currency::JPY),
         );
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $repository->save($transfer);
 
         // Stripe Transfer IDを記録
@@ -386,6 +386,7 @@ class TransferRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new TransferIdentifier($transferId));
+        $this->assertNotNull($result);
         $this->assertSame(TransferStatus::SENT, $result->status());
         $this->assertNotNull($result->sentAt());
         $this->assertNotNull($result->stripeTransferId());
@@ -416,7 +417,7 @@ class TransferRepositoryTest extends TestCase
             new Money(35000, Currency::JPY),
         );
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $repository->save($transfer);
 
         // PENDING → FAILED
@@ -431,6 +432,7 @@ class TransferRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new TransferIdentifier($transferId));
+        $this->assertNotNull($result);
         $this->assertSame(TransferStatus::FAILED, $result->status());
         $this->assertNotNull($result->failedAt());
         $this->assertSame('Bank account not verified', $result->failureReason());
@@ -463,7 +465,7 @@ class TransferRepositoryTest extends TestCase
             new Money(100, Currency::USD),
         );
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $repository->save($transfer);
 
         $result = $repository->findById(new TransferIdentifier($transferId));
@@ -506,7 +508,7 @@ class TransferRepositoryTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
 
         // 現在日 = 2024-02-10: 送金日(2024-02-05)を過ぎているので取得される
         $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
@@ -548,7 +550,7 @@ class TransferRepositoryTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
 
         // 現在日 = 2024-02-10: 送金日(2024-02-15)が未到来なので取得されない
         $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
@@ -588,7 +590,7 @@ class TransferRepositoryTest extends TestCase
             'stripe_transfer_id' => 'tr_test123',
         ]);
 
-        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $repository = $this->app()->make(TransferRepositoryInterface::class);
         $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
 
         $this->assertCount(0, $dueTransfers);

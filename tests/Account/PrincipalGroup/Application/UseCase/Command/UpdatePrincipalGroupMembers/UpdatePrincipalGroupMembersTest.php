@@ -42,13 +42,13 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
-        $this->app->instance(PolicyRepositoryInterface::class, Mockery::mock(PolicyRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
+        $this->app()->instance(PolicyRepositoryInterface::class, Mockery::mock(PolicyRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(UpdatePrincipalGroupMembers::class, $this->app->make(UpdatePrincipalGroupMembersInterface::class));
+        $this->assertInstanceOf(UpdatePrincipalGroupMembers::class, $this->app()->make(UpdatePrincipalGroupMembersInterface::class));
     }
 
     public function testProcessUpdatesMultipleGroupMembersAndKeepsUntargetedGroup(): void

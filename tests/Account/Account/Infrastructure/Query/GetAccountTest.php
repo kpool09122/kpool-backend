@@ -30,9 +30,9 @@ class GetAccountTest extends TestCase
     {
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
-        $useCase = $this->app->make(GetAccountInterface::class);
+        $useCase = $this->app()->make(GetAccountInterface::class);
 
         $this->assertInstanceOf(GetAccount::class, $useCase);
     }

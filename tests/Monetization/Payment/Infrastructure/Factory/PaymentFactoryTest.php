@@ -30,7 +30,7 @@ class PaymentFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PaymentFactoryInterface::class);
+        $factory = $this->app()->make(PaymentFactoryInterface::class);
         $this->assertInstanceOf(PaymentFactory::class, $factory);
     }
 
@@ -52,7 +52,7 @@ class PaymentFactoryTest extends TestCase
             true,
         );
         $createdAt = new DateTimeImmutable();
-        $factory = $this->app->make(PaymentFactoryInterface::class);
+        $factory = $this->app()->make(PaymentFactoryInterface::class);
         $payment = $factory->create(
             $orderIdentifier,
             $buyerMonetizationAccountIdentifier,

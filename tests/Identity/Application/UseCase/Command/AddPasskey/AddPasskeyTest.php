@@ -51,7 +51,7 @@ class AddPasskeyTest extends TestCase
     {
         $this->bindDependencies();
 
-        $this->assertInstanceOf(AddPasskey::class, $this->app->make(AddPasskeyInterface::class));
+        $this->assertInstanceOf(AddPasskey::class, $this->app()->make(AddPasskeyInterface::class));
     }
 
     /** @param string[] $transports */
@@ -135,7 +135,7 @@ class AddPasskeyTest extends TestCase
         $this->bindDependencies($storage, $passkeyUserRepository, $passkeyCredentialRepository, $factory, $webAuthn, $stepUp);
 
         $output = new AddPasskeyOutput();
-        $this->app->make(AddPasskeyInterface::class)->process($input, $output);
+        $this->app()->make(AddPasskeyInterface::class)->process($input, $output);
 
         $this->assertSame([], $output->toArray());
     }
@@ -175,7 +175,7 @@ class AddPasskeyTest extends TestCase
         $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository, passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn);
 
         $this->expectException(PasskeyCredentialAlreadyExistsException::class);
-        $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
+        $this->app()->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
     }
 
     public function testItRejectsIdentityWithoutPasskeyUser(): void
@@ -186,7 +186,7 @@ class AddPasskeyTest extends TestCase
         $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository);
 
         $this->expectException(PasskeyUserNotFoundException::class);
-        $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
+        $this->app()->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
     }
 
     public function testItRejectsAValidRegistrationWithoutStepUpAuthorization(): void
@@ -219,7 +219,7 @@ class AddPasskeyTest extends TestCase
         $this->bindDependencies(passkeyUserRepository: $passkeyUserRepository, passkeyCredentialRepository: $passkeyCredentialRepository, webAuthn: $webAuthn, stepUp: $stepUp);
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
+        $this->app()->make(AddPasskeyInterface::class)->process($this->input(), new AddPasskeyOutput());
     }
 
     private function input(): AddPasskeyInput
@@ -275,11 +275,11 @@ class AddPasskeyTest extends TestCase
             ));
         }
 
-        $this->app->instance(ChallengeSessionStorageServiceInterface::class, $storage);
-        $this->app->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
-        $this->app->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
-        $this->app->instance(PasskeyCredentialFactoryInterface::class, $factory);
-        $this->app->instance(WebAuthnServiceInterface::class, $webAuthn);
-        $this->app->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
+        $this->app()->instance(ChallengeSessionStorageServiceInterface::class, $storage);
+        $this->app()->instance(PasskeyUserRepositoryInterface::class, $passkeyUserRepository);
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
+        $this->app()->instance(PasskeyCredentialFactoryInterface::class, $factory);
+        $this->app()->instance(WebAuthnServiceInterface::class, $webAuthn);
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUp);
     }
 }

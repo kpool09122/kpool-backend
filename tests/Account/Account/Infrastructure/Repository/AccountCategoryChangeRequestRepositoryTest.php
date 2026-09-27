@@ -21,7 +21,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
 {
     public function test__construct(): void
     {
-        $repository = $this->app->make(AccountCategoryChangeRequestRepositoryInterface::class);
+        $repository = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class);
 
         $this->assertInstanceOf(AccountCategoryChangeRequestRepository::class, $repository);
     }
@@ -45,7 +45,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(AccountCategoryChangeRequestRepositoryInterface::class);
+        $repository = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class);
         $repository->save($request);
         $found = $repository->findById(new AccountCategoryChangeRequestIdentifier($requestId));
 
@@ -70,7 +70,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
         $requestId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId, ['type' => 'individual']);
 
-        $repository = $this->app->make(AccountCategoryChangeRequestRepositoryInterface::class);
+        $repository = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class);
         $repository->save(new AccountCategoryChangeRequest(
             new AccountCategoryChangeRequestIdentifier($requestId),
             new AccountIdentifier($accountId),

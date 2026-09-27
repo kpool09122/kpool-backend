@@ -41,7 +41,7 @@ class SyncOwnedWikiCertificationsOutput implements SyncOwnedWikiCertificationsOu
 
     /**
      * @param SyncableOwnedWikiResource[] $resources
-     * @return array<int, array{resourceType: string, translationSetIdentifier: string}>
+     * @return array<array-key, array{resourceType: string, translationSetIdentifier: string}>
      */
     private function resourcesToArray(array $resources): array
     {

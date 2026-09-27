@@ -20,7 +20,7 @@ class RollbackWikiOutput implements RollbackWikiOutputPort
     }
 
     /**
-     * @return array{wikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, version: int}>}
+     * @return array{wikis: array<array-key, array{wikiIdentifier: string, language: string, name: string, resourceType: string, version: int}>}
      */
     public function toArray(): array
     {

@@ -24,7 +24,7 @@ class GetMyGroupDraftWikiTest extends TestCase
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a101', $editorIdentifier, 'My Group', 'グループ情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a102', $otherEditorIdentifier, 'Other Group');
 
-        $useCase = $this->app->make(GetMyGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyGroupDraftWikiInterface::class);
         $readModel = $useCase->process(new GetMyGroupDraftWikiInput(
             new Slug('gr-my-group'),
             Language::KOREAN,
@@ -45,7 +45,7 @@ class GetMyGroupDraftWikiTest extends TestCase
             'Other Group',
         );
 
-        $useCase = $this->app->make(GetMyGroupDraftWikiInterface::class);
+        $useCase = $this->app()->make(GetMyGroupDraftWikiInterface::class);
 
         $this->expectException(WikiNotFoundException::class);
 

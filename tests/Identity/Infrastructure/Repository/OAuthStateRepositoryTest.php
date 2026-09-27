@@ -43,7 +43,7 @@ class OAuthStateRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(OAuthStateRepositoryInterface::class);
+        $repository = $this->app()->make(OAuthStateRepositoryInterface::class);
 
         $this->assertInstanceOf(OAuthStateRepository::class, $repository);
     }
@@ -59,7 +59,7 @@ class OAuthStateRepositoryTest extends TestCase
     {
         $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
 
-        $repository = $this->app->make(OAuthStateRepositoryInterface::class);
+        $repository = $this->app()->make(OAuthStateRepositoryInterface::class);
         $repository->store($state);
         $repository->consume($state);
 
@@ -78,7 +78,7 @@ class OAuthStateRepositoryTest extends TestCase
     {
         $state = new OAuthState('non-existent-state', new DateTimeImmutable('+10 minutes'));
 
-        $repository = $this->app->make(OAuthStateRepositoryInterface::class);
+        $repository = $this->app()->make(OAuthStateRepositoryInterface::class);
 
         $this->expectException(InvalidOAuthStateException::class);
         $repository->consume($state);
@@ -95,7 +95,7 @@ class OAuthStateRepositoryTest extends TestCase
     {
         $state = new OAuthState('expired-state', new DateTimeImmutable('-1 minute'));
 
-        $repository = $this->app->make(OAuthStateRepositoryInterface::class);
+        $repository = $this->app()->make(OAuthStateRepositoryInterface::class);
 
         $this->expectException(InvalidOAuthStateException::class);
         $repository->store($state);

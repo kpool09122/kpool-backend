@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\UpdateIdentity;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateIdentityRequest extends FormRequest
@@ -25,25 +26,25 @@ class UpdateIdentityRequest extends FormRequest
     {
         $value = $this->input('identityName');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function language(): ?string
     {
         $value = $this->input('language');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function base64EncodedImage(): ?string
     {
         $value = $this->input('base64EncodedImage');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function requestLanguage(): string
     {
-        return (string) ($this->input('requestLanguage') ?? 'en');
+        return RequestValue::string($this->input('requestLanguage') ?? 'en');
     }
 }

@@ -24,7 +24,7 @@ class ListAccountDocumentsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $useCase = $this->app->make(ListAccountDocumentsInterface::class);
+        $useCase = $this->app()->make(ListAccountDocumentsInterface::class);
 
         $this->assertInstanceOf(ListAccountDocuments::class, $useCase);
     }

@@ -31,11 +31,11 @@ class SendAuthCodeTest extends TestCase
      */
     public function test__construct(): void
     {
-        $this->app->instance(AuthCodeServiceInterface::class, Mockery::mock(AuthCodeServiceInterface::class));
-        $this->app->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, Mockery::mock(AuthCodeSessionStorageServiceInterface::class));
+        $this->app()->instance(AuthCodeServiceInterface::class, Mockery::mock(AuthCodeServiceInterface::class));
+        $this->app()->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, Mockery::mock(AuthCodeSessionStorageServiceInterface::class));
 
-        $this->assertInstanceOf(SendAuthCode::class, $this->app->make(SendAuthCodeInterface::class));
+        $this->assertInstanceOf(SendAuthCode::class, $this->app()->make(SendAuthCodeInterface::class));
     }
 
     /**
@@ -76,11 +76,11 @@ class SendAuthCodeTest extends TestCase
                 return $session === $savedSession;
             }));
 
-        $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
+        $this->app()->instance(AuthCodeServiceInterface::class, $authCodeService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
 
-        $this->app->make(SendAuthCodeInterface::class)->process(new SendAuthCodeInput($email, $language));
+        $this->app()->make(SendAuthCodeInterface::class)->process(new SendAuthCodeInput($email, $language));
     }
 
     /**
@@ -110,10 +110,10 @@ class SendAuthCodeTest extends TestCase
         $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
         $storageService->shouldNotReceive('store');
 
-        $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
+        $this->app()->instance(AuthCodeServiceInterface::class, $authCodeService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
 
-        $this->app->make(SendAuthCodeInterface::class)->process(new SendAuthCodeInput($email, $language));
+        $this->app()->make(SendAuthCodeInterface::class)->process(new SendAuthCodeInput($email, $language));
     }
 }

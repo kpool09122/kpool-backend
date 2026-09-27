@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Principal\Command\DetachPolicyFromRole;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DetachPolicyFromRoleRequest extends FormRequest
@@ -28,6 +29,6 @@ class DetachPolicyFromRoleRequest extends FormRequest
 
     public function policyIdentifier(): string
     {
-        return (string) $this->input('policyIdentifier');
+        return RequestValue::string($this->input('policyIdentifier'));
     }
 }

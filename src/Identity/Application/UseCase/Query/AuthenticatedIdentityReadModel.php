@@ -103,7 +103,7 @@ readonly class AuthenticatedIdentityReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
      */
     public function toArray(): array
     {

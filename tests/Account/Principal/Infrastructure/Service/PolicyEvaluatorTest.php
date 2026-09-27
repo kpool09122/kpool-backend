@@ -469,12 +469,12 @@ class PolicyEvaluatorTest extends TestCase
         RoleRepositoryInterface $roleRepository,
         PolicyRepositoryInterface $policyRepository,
     ): PolicyEvaluatorInterface {
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->forgetInstance(PolicyEvaluatorInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->forgetInstance(PolicyEvaluatorInterface::class);
 
-        return $this->app->make(PolicyEvaluatorInterface::class);
+        return $this->app()->make(PolicyEvaluatorInterface::class);
     }
 
     private function createPrincipal(AccountIdentifier $accountIdentifier): Principal

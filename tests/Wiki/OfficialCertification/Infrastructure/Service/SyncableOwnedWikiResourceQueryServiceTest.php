@@ -14,6 +14,7 @@ use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
+/** @phpstan-import-type WikiOverrides from CreateWiki */
 class SyncableOwnedWikiResourceQueryServiceTest extends TestCase
 {
     #[Group('useDb')]
@@ -137,7 +138,7 @@ class SyncableOwnedWikiResourceQueryServiceTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param WikiOverrides $overrides
      * @param array<string, mixed> $basicOverrides
      */
     private function createWiki(

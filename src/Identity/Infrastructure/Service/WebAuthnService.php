@@ -82,7 +82,7 @@ class WebAuthnService implements WebAuthnServiceInterface
             authenticatorSelection: $selection,
             attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
             excludeCredentials: $excluded,
-            timeout: $this->timeoutMs,
+            timeout: $this->timeoutMs > 0 ? $this->timeoutMs : throw new \InvalidArgumentException('Timeout must be positive.'),
         );
 
         return new WebAuthnOptions($this->serialize($options));
@@ -122,7 +122,7 @@ class WebAuthnService implements WebAuthnServiceInterface
             $this->rpId,
             $allowed,
             PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
-            $this->timeoutMs,
+            $this->timeoutMs > 0 ? $this->timeoutMs : throw new \InvalidArgumentException('Timeout must be positive.'),
         );
 
         return new WebAuthnOptions($this->serialize($options));

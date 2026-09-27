@@ -52,7 +52,7 @@ class WikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wiki = $repository->findById(new WikiIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($wiki);
@@ -81,14 +81,14 @@ class WikiRepositoryTest extends TestCase
             'merger_id' => $mergerId,
             'title' => 'TWICE Wiki',
             'meta_description' => 'Profile for TWICE.',
-            'keywords' => json_encode(['TWICE', 'K-pop']),
+            'keywords' => json_encode(['TWICE', 'K-pop'], JSON_THROW_ON_ERROR),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
             'fandom_name' => 'ONCE',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findById(new WikiIdentifier($wikiId));
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -133,7 +133,7 @@ class WikiRepositoryTest extends TestCase
             'normalized_real_name' => 'sonchaeyoung',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findById(new WikiIdentifier($wikiId));
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -165,7 +165,7 @@ class WikiRepositoryTest extends TestCase
             'normalized_ceo' => 'j.y. park',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findById(new WikiIdentifier($wikiId));
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -201,7 +201,7 @@ class WikiRepositoryTest extends TestCase
             'normalized_arranger' => 'rado',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findById(new WikiIdentifier($wikiId));
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -258,7 +258,7 @@ class WikiRepositoryTest extends TestCase
             publishedAt: $publishedAt,
         );
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->save($wiki);
 
         $this->assertDatabaseHas('wikis', [
@@ -276,9 +276,10 @@ class WikiRepositoryTest extends TestCase
             'meta_description' => 'Profile for TWICE.',
         ]);
         $storedKeywords = DB::table('wikis')->where('id', $wikiId)->value('keywords');
-        $this->assertSame(['TWICE', 'K-pop'], json_decode((string) $storedKeywords, true));
+        $this->assertIsString($storedKeywords);
+        $this->assertSame(['TWICE', 'K-pop'], json_decode($storedKeywords, true));
         $storedPublishedAt = DB::table('wikis')->where('id', $wikiId)->value('published_at');
-        $this->assertSame('2026-07-12 10:30:00', (string) $storedPublishedAt);
+        $this->assertSame('2026-07-12 10:30:00', $storedPublishedAt);
         $this->assertDatabaseHas('wiki_group_basics', [
             'wiki_id' => $wikiId,
             'name' => 'TWICE',
@@ -336,7 +337,7 @@ class WikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->save($wiki);
 
         $this->assertDatabaseHas('wikis', [
@@ -389,7 +390,7 @@ class WikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->save($wiki);
 
         $this->assertDatabaseHas('wikis', [
@@ -448,7 +449,7 @@ class WikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->save($wiki);
 
         $this->assertDatabaseHas('wikis', [
@@ -500,7 +501,7 @@ class WikiRepositoryTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->findById(new WikiIdentifier($wikiId));
     }
 
@@ -519,7 +520,7 @@ class WikiRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findBySlugAndLanguage(new Slug('gr-twice-slug'), Language::KOREAN);
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -534,7 +535,7 @@ class WikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySlugAndLanguageWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findBySlugAndLanguage(new Slug('gr-not-exist'), Language::KOREAN);
 
         $this->assertNull($found);
@@ -554,7 +555,7 @@ class WikiRepositoryTest extends TestCase
             'slug' => 'gr-exists-slug',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $exists = $repository->existsBySlug(new Slug('gr-exists-slug'));
 
         $this->assertTrue($exists);
@@ -568,7 +569,7 @@ class WikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testExistsBySlugWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $exists = $repository->existsBySlug(new Slug('gr-not-exist-slug'));
 
         $this->assertFalse($exists);
@@ -589,7 +590,7 @@ class WikiRepositoryTest extends TestCase
             'translation_set_identifier' => $translationSetId,
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
             new Slug('gr-same-translation-set-slug'),
             new TranslationSetIdentifier($translationSetId),
@@ -611,7 +612,7 @@ class WikiRepositoryTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUuid(),
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
             new Slug('gr-other-translation-set-slug'),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
@@ -647,7 +648,7 @@ class WikiRepositoryTest extends TestCase
             'slug' => 'gr-other-group',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wikis = $repository->findByTranslationSetIdentifier(new TranslationSetIdentifier($translationSetId));
 
         $this->assertCount(2, $wikis);
@@ -665,7 +666,7 @@ class WikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTranslationSetIdentifierWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wikis = $repository->findByTranslationSetIdentifier(
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
@@ -709,7 +710,7 @@ class WikiRepositoryTest extends TestCase
             'language' => Language::JAPANESE->value,
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wikis = $repository->findByTranslationSetIdentifierAndLanguages(
             new TranslationSetIdentifier($translationSetId),
             [Language::JAPANESE, Language::ENGLISH],
@@ -745,7 +746,7 @@ class WikiRepositoryTest extends TestCase
             'slug' => 'tl-talent-wiki',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wikis = $repository->findByResourceType(ResourceType::GROUP);
 
         $this->assertCount(2, $wikis);
@@ -777,7 +778,7 @@ class WikiRepositoryTest extends TestCase
             'slug' => 'gr-group-limit-3',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $wikis = $repository->findByResourceType(ResourceType::GROUP, limit: 2, offset: 0);
 
         $this->assertCount(2, $wikis);
@@ -799,7 +800,7 @@ class WikiRepositoryTest extends TestCase
             'owner_account_id' => $ownerAccountId,
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findByOwnerAccountId(
             new AccountIdentifier($ownerAccountId),
             ResourceType::TALENT,
@@ -819,7 +820,7 @@ class WikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByOwnerAccountIdWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findByOwnerAccountId(
             new AccountIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
@@ -844,7 +845,7 @@ class WikiRepositoryTest extends TestCase
             'owner_account_id' => $ownerAccountId,
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findByOwnerAccountId(
             new AccountIdentifier($ownerAccountId),
             ResourceType::TALENT,
@@ -867,7 +868,7 @@ class WikiRepositoryTest extends TestCase
             'slug' => 'gr-delete-target',
         ]);
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $found = $repository->findById(new WikiIdentifier($wikiId));
 
         $this->assertInstanceOf(Wiki::class, $found);
@@ -909,7 +910,7 @@ class WikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('IMAGE resource type does not have a Basic.');
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->save($wiki);
     }
 
@@ -937,7 +938,7 @@ class WikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('TalentBasic not found for Wiki.');
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->findById(new WikiIdentifier($wikiId));
     }
 
@@ -965,7 +966,7 @@ class WikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('GroupBasic not found for Wiki.');
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->findById(new WikiIdentifier($wikiId));
     }
 
@@ -993,7 +994,7 @@ class WikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('AgencyBasic not found for Wiki.');
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->findById(new WikiIdentifier($wikiId));
     }
 
@@ -1021,7 +1022,7 @@ class WikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('SongBasic not found for Wiki.');
 
-        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
         $repository->findById(new WikiIdentifier($wikiId));
     }
 }

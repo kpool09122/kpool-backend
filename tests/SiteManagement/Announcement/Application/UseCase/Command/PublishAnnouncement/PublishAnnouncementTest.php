@@ -42,9 +42,9 @@ class PublishAnnouncementTest extends TestCase
     {
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
         $this->assertInstanceOf(PublishAnnouncement::class, $publishAnnouncement);
     }
 
@@ -135,10 +135,10 @@ class PublishAnnouncementTest extends TestCase
             )
             ->andReturn($dummy->enAnnouncement);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
         $announcements = $publishAnnouncement->process($input);
         $this->assertSame((string) $dummy->jaAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
@@ -171,10 +171,10 @@ class PublishAnnouncementTest extends TestCase
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
         $publishAnnouncement->process($input);
     }
 
@@ -208,10 +208,10 @@ class PublishAnnouncementTest extends TestCase
 
         $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
         $publishAnnouncements = $publishAnnouncement->process($input);
         $this->assertEmpty($publishAnnouncements);
     }

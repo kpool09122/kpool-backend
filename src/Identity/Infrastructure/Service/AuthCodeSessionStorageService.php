@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redis;
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\AuthCodeSession;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Email;
 
 class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInterface
@@ -20,17 +21,16 @@ class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInte
     {
         $data = Redis::get($this->buildKey($email));
 
-        if ($data === null) {
+        if (! is_string($data)) {
             return null;
         }
 
-        /** @var array{email: string, authCode: string, generatedAt: string, verifiedAt: ?string} $decoded */
-        $decoded = json_decode($data, true);
+        $decoded = TypedValue::stringMap(json_decode($data, true));
 
         return new AuthCodeSession(
-            new Email($decoded['email']),
-            new AuthCode($decoded['authCode']),
-            new DateTimeImmutable($decoded['generatedAt']),
+            new Email(TypedValue::string($decoded['email'] ?? null)),
+            new AuthCode(TypedValue::string($decoded['authCode'] ?? null)),
+            new DateTimeImmutable(TypedValue::string($decoded['generatedAt'] ?? null)),
             $decoded['verifiedAt'] !== null ? new DateTimeImmutable($decoded['verifiedAt']) : null,
         );
     }

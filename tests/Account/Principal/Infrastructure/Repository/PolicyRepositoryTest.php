@@ -26,7 +26,7 @@ class PolicyRepositoryTest extends TestCase
 {
     public function test__construct(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
 
         $this->assertInstanceOf(PolicyRepository::class, $repository);
     }
@@ -53,7 +53,7 @@ class PolicyRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
         $this->assertDatabaseHas('account_policies', [

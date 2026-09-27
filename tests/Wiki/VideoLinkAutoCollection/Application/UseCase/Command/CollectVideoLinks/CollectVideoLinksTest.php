@@ -55,13 +55,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
-        $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
-        $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
-        $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
+        $this->app()->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
+        $this->app()->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -170,13 +170,13 @@ class CollectVideoLinksTest extends TestCase
             )
             ->andReturn($this->createDummyVideoLink($resourceId, 7));
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -215,13 +215,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
-        $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
-        $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
+        $this->app()->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
+        $this->app()->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -308,13 +308,13 @@ class CollectVideoLinksTest extends TestCase
             )
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -399,13 +399,13 @@ class CollectVideoLinksTest extends TestCase
             )
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -444,13 +444,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
-        $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
-        $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
+        $this->app()->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
+        $this->app()->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -484,13 +484,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($status);
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
-        $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
-        $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
-        $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
+        $this->app()->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
+        $this->app()->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
+        $this->app()->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -566,13 +566,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 
@@ -685,13 +685,13 @@ class CollectVideoLinksTest extends TestCase
             )
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
-        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
-        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
-        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app()->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app()->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
 
-        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
         $useCase->process($output);
 

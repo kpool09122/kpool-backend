@@ -125,10 +125,13 @@ class AgencyBasicTest extends TestCase
         $this->assertSame($testData->normalizedName, $array['normalized_name']);
         $this->assertSame((string) $testData->ceo, $array['ceo']);
         $this->assertSame($testData->normalizedCeo, $array['normalized_ceo']);
+        $this->assertNotNull($testData->foundedIn);
         $this->assertSame($testData->foundedIn->format('Y-m-d'), $array['founded_in']);
         $this->assertSame((string) $testData->parentAgencyIdentifier, $array['parent_agency_identifier']);
+        self::assertNotNull($testData->status);
         $this->assertSame($testData->status->value, $array['status']);
         $this->assertSame((string) $testData->officialWebsite, $array['official_website']);
+        self::assertIsArray($array['social_links']);
         $this->assertCount(count($testData->socialLinks), $array['social_links']);
     }
 
@@ -181,6 +184,7 @@ class AgencyBasicTest extends TestCase
         $this->assertSame('bighitmusic', $agencyBasic->normalizedName());
         $this->assertSame('신영재', (string) $agencyBasic->ceo());
         $this->assertSame('shinyoungjae', $agencyBasic->normalizedCeo());
+        $this->assertNotNull($agencyBasic->foundedIn());
         $this->assertSame('2005-02-01', $agencyBasic->foundedIn()->format('Y-m-d'));
         $this->assertSame($parentAgencyUuid, (string) $agencyBasic->parentAgencyIdentifier());
         $this->assertSame(AgencyStatus::ACTIVE, $agencyBasic->status());

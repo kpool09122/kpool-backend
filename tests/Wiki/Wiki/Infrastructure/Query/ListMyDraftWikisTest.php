@@ -143,7 +143,7 @@ class ListMyDraftWikisTest extends TestCase
 
     private function listMyDraftWikis(): ListMyDraftWikisInterface
     {
-        return $this->app->make(ListMyDraftWikisInterface::class);
+        return $this->app()->make(ListMyDraftWikisInterface::class);
     }
 
     private function process(ListMyDraftWikisInput $input): ListMyDraftWikisOutput

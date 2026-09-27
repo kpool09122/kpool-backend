@@ -43,9 +43,9 @@ class TranslateAnnouncementTest extends TestCase
     {
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $deleteAnnouncement = $this->app->make(DeleteAnnouncementInterface::class);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
         $this->assertInstanceOf(DeleteAnnouncement::class, $deleteAnnouncement);
     }
 
@@ -96,10 +96,10 @@ class TranslateAnnouncementTest extends TestCase
             ->with($dummy->jaAnnouncement, Language::ENGLISH)
             ->andReturn($dummy->enAnnouncement);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $translateAnnouncement = $this->app->make(TranslateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
         $announcements = $translateAnnouncement->process($input);
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->enAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
@@ -131,10 +131,10 @@ class TranslateAnnouncementTest extends TestCase
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
-        $translateAnnouncement = $this->app->make(TranslateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
         $translateAnnouncement->process($input);
     }
 
@@ -168,12 +168,12 @@ class TranslateAnnouncementTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
 
         $this->expectException(AnnouncementNotFoundException::class);
-        $translateAnnouncement = $this->app->make(TranslateAnnouncementInterface::class);
+        $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
         $translateAnnouncement->process($input);
     }
 

@@ -71,6 +71,7 @@ class UpdateIdentityTest extends TestCase
         $useCase = new UpdateIdentity($repository, $imageService, $authService);
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('identityName', $output->toArray()));
         $this->assertSame('updated-identity', $output->toArray()['identityName']);
         $this->assertSame('ko', $output->toArray()['language']);
         $this->assertSame('images/profile.webp', $output->toArray()['profileImage']);
@@ -115,6 +116,7 @@ class UpdateIdentityTest extends TestCase
         $useCase = new UpdateIdentity($repository, $imageService, $authService);
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('profileImage', $output->toArray()));
         $this->assertNull($output->toArray()['profileImage']);
     }
 
@@ -152,6 +154,7 @@ class UpdateIdentityTest extends TestCase
         $useCase = new UpdateIdentity($repository, $imageService, $authService);
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('profileImage', $output->toArray()));
         $this->assertNull($output->toArray()['profileImage']);
     }
 

@@ -59,15 +59,15 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
         $this->assertInstanceOf(CreateAccount::class, $useCase);
     }
 
@@ -144,21 +144,22 @@ class CreateAccountTest extends TestCase
                     && $event->language === $testData->language
             ));
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
 
         $output = new CreateAccountOutput();
         $useCase->process($testData->input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
         $this->assertSame((string) $testData->email, $result['email']);
         $this->assertSame($testData->accountType->value, $result['type']);
@@ -236,21 +237,22 @@ class CreateAccountTest extends TestCase
                     && $event->language === $testData->language
             ));
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
 
         $output = new CreateAccountOutput();
         $useCase->process($testData->input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
         $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
         $this->assertSame(0, $testData->ownerPrincipalGroup->memberCount());
@@ -331,19 +333,20 @@ class CreateAccountTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')->once();
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
         $output = new CreateAccountOutput();
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('phone', $output->toArray()));
         $this->assertSame('+819012345678', $output->toArray()['phone']);
     }
 
@@ -390,16 +393,16 @@ class CreateAccountTest extends TestCase
                     && $event->language === $testData->language
             ));
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
 
         $output = new CreateAccountOutput();
         $useCase->process($input, $output);
@@ -454,19 +457,19 @@ class CreateAccountTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $this->app()->instance(AccountFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $this->expectException(SystemRoleNotFoundException::class);
         $this->expectExceptionMessage('Owner account role is not found.');
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
+        $useCase = $this->app()->make(CreateAccountInterface::class);
         $output = new CreateAccountOutput();
         $useCase->process($testData->input, $output);
     }

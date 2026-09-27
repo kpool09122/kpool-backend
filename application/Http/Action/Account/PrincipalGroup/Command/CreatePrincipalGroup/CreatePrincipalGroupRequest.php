@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreatePrincipalGroupRequest extends FormRequest
@@ -24,11 +25,11 @@ class CreatePrincipalGroupRequest extends FormRequest
 
     public function accountIdentifier(): string
     {
-        return (string) $this->input('accountIdentifier');
+        return RequestValue::string($this->input('accountIdentifier'));
     }
 
     public function name(): string
     {
-        return (string) $this->input('name');
+        return RequestValue::string($this->input('name'));
     }
 }

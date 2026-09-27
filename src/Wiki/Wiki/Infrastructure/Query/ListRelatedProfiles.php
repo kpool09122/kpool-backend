@@ -8,6 +8,7 @@ use Application\Models\Wiki\Wiki as WikiModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -78,7 +79,7 @@ readonly class ListRelatedProfiles implements ListRelatedProfilesInterface
             ->values()
             ->all();
 
-        $output->output($profiles);
+        $output->output(array_values($profiles));
     }
 
     /**
@@ -195,7 +196,7 @@ readonly class ListRelatedProfiles implements ListRelatedProfilesInterface
 
         $agencyIdentifier = $basic->getAttribute('agency_identifier');
 
-        return $agencyIdentifier === null ? null : (string) $agencyIdentifier;
+        return TypedValue::nullableString($agencyIdentifier);
     }
 
     private function sourceBasicModel(WikiModel $wiki): Model
@@ -220,11 +221,11 @@ readonly class ListRelatedProfiles implements ListRelatedProfilesInterface
             slug: $wiki->slug,
             language: $wiki->language,
             resourceType: $wiki->resource_type,
-            name: (string) $wiki->getAttribute('profile_name'),
-            normalizedName: (string) $wiki->getAttribute('profile_normalized_name'),
+            name: (TypedValue::nullableString($wiki->getAttribute('profile_name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($wiki->getAttribute('profile_normalized_name')) ?? ''),
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
         );
     }
 }

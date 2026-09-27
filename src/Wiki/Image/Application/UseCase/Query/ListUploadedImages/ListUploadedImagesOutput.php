@@ -32,7 +32,7 @@ class ListUploadedImagesOutput implements ListUploadedImagesOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{images: list<array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, isHidden: bool, uploadedAt: string|null}>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null}
      */
     public function toArray(): array
     {

@@ -69,13 +69,23 @@ readonly class AuthService implements AuthServiceInterface
 
     public function isCurrentSessionValid(IdentityIdentifier $identityIdentifier): bool
     {
-        return (int) $this->request->session()->get('identity_session_generation', 0)
+        $generation = $this->request->session()->get('identity_session_generation', 0);
+
+        return is_int($generation) && $generation
             === $this->generation($identityIdentifier);
     }
 
     private function generation(IdentityIdentifier $identityIdentifier): int
     {
-        return (int) (Redis::get($this->generationKey($identityIdentifier)) ?? 0);
+        $generation = Redis::get($this->generationKey($identityIdentifier));
+        if ($generation === null || $generation === false) {
+            return 0;
+        }
+        if (! is_int($generation) && (! is_string($generation) || ! ctype_digit($generation))) {
+            throw new \UnexpectedValueException('Invalid stored session generation.');
+        }
+
+        return (int) $generation;
     }
 
     private function generationKey(IdentityIdentifier $identityIdentifier): string

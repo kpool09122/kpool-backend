@@ -26,7 +26,7 @@ class IdentityFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $identityFactory = $this->app->make(IdentityFactoryInterface::class);
+        $identityFactory = $this->app()->make(IdentityFactoryInterface::class);
         $this->assertInstanceOf(IdentityFactory::class, $identityFactory);
     }
 
@@ -41,7 +41,7 @@ class IdentityFactoryTest extends TestCase
         $name = new IdentityName('user-name');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
-        $identityFactory = $this->app->make(IdentityFactoryInterface::class);
+        $identityFactory = $this->app()->make(IdentityFactoryInterface::class);
         $identity = $identityFactory->create($name, $email, $language);
         $this->assertTrue(UuidValidator::isValid((string)$identity->identityIdentifier()));
         $this->assertSame((string)$email, (string)$identity->email());
@@ -64,7 +64,7 @@ class IdentityFactoryTest extends TestCase
         $avatarUrl = 'https://lh3.googleusercontent.com/avatar.jpg';
         $profile = new SocialProfile($provider, $providerUserId, $email, $name, $avatarUrl);
 
-        $identityFactory = $this->app->make(IdentityFactoryInterface::class);
+        $identityFactory = $this->app()->make(IdentityFactoryInterface::class);
 
         $identity = $identityFactory->createFromSocialProfile($profile);
 
@@ -92,7 +92,7 @@ class IdentityFactoryTest extends TestCase
         $avatarUrl = null;
         $profile = new SocialProfile($provider, $providerUserId, $email, $name, $avatarUrl);
 
-        $identityFactory = $this->app->make(IdentityFactoryInterface::class);
+        $identityFactory = $this->app()->make(IdentityFactoryInterface::class);
 
         $identity = $identityFactory->createFromSocialProfile($profile);
 

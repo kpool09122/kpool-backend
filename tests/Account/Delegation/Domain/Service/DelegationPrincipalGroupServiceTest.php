@@ -33,6 +33,7 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -79,6 +80,7 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         /** @var PolicyFactoryInterface&Mockery\MockInterface $policyFactory */
         $policyFactory = Mockery::mock(PolicyFactoryInterface::class);
         $policyFactory->shouldReceive('create')->once()->withArgs(function (string $name, array $statements, AccountIdentifier $account) use ($delegation, $source, $target): bool {
+            self::assertInstanceOf(Statement::class, $statements[0]);
             $clauses = $statements[0]->condition()?->clauses() ?? [];
 
             return str_contains($name, (string) $delegation->delegationIdentifier())

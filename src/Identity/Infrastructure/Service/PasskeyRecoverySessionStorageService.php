@@ -11,6 +11,7 @@ use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionSt
 use Source\Identity\Domain\Exception\PasskeyRecoverySessionInvalidException;
 use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class PasskeyRecoverySessionStorageService implements PasskeyRecoverySessionStorageServiceInterface
@@ -48,14 +49,14 @@ readonly class PasskeyRecoverySessionStorageService implements PasskeyRecoverySe
             || ! isset($data['identity_id'], $data['method'], $data['expires_at'])) {
             throw new PasskeyRecoverySessionInvalidException();
         }
-        $expiresAt = new DateTimeImmutable((string) $data['expires_at']);
+        $expiresAt = new DateTimeImmutable(TypedValue::string($data['expires_at']));
         if ($expiresAt <= new DateTimeImmutable()) {
             throw new PasskeyRecoverySessionInvalidException('Passkey recovery session has expired.');
         }
 
         return new PasskeyRecoverySession(
-            new IdentityIdentifier((string) $data['identity_id']),
-            (string) $data['method'],
+            new IdentityIdentifier(TypedValue::string($data['identity_id'])),
+            TypedValue::string($data['method']),
             $expiresAt,
         );
     }

@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Query;
 use Application\Models\Wiki\WikiImage;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInputPort;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
@@ -27,7 +28,7 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
         $output->output(
             array_map(
                 fn (WikiImage $image): UploadedImageReadModel => $this->toReadModel($image),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -62,6 +63,6 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 }

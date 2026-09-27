@@ -139,7 +139,7 @@ class RoleRepository implements RoleRepositoryInterface
 
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
-            ->pluck('principal_id')
+            ->get(['principal_id'])->map(static fn (PrincipalGroupMembershipEloquent $membership): string => $membership->principal_id)
             ->unique()
             ->values()
             ->all();
@@ -150,7 +150,7 @@ class RoleRepository implements RoleRepositoryInterface
 
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
-            ->pluck('identity_id')
+            ->get(['identity_id'])->map(static fn (PrincipalEloquent $principal): string => $principal->identity_id)
             ->all();
 
         foreach ($identityIds as $identityId) {

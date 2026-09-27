@@ -35,7 +35,7 @@ readonly class IdentityProfileReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{identityIdentifier: string, identityName: string, language: string, profileImage: string|null}
      */
     public function toArray(): array
     {

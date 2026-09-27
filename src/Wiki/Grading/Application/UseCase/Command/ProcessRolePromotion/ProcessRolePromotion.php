@@ -430,7 +430,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
      */
     private function toIdentityIdentifiers(array $principalIdentifiers): array
     {
-        $principals = $this->principalRepository->findByIds($principalIdentifiers);
+        $principals = $this->principalRepository->findByIds(array_values($principalIdentifiers));
 
         return array_map(
             static fn ($principal) => $principal->identityIdentifier(),

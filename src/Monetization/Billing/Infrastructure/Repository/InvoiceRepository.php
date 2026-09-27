@@ -89,9 +89,9 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         if ($eloquent->tax_document_type !== null) {
             $taxDocument = new TaxDocument(
                 TaxDocumentType::from($eloquent->tax_document_type),
-                CountryCode::from($eloquent->tax_document_country),
+                CountryCode::from($eloquent->tax_document_country ?? throw new \UnexpectedValueException('Tax document country is missing.')),
                 $eloquent->tax_document_registration_number,
-                DateTimeImmutable::createFromMutable($eloquent->tax_document_issue_deadline),
+                DateTimeImmutable::createFromMutable($eloquent->tax_document_issue_deadline ?? throw new \UnexpectedValueException('Tax document deadline is missing.')),
                 $eloquent->tax_document_reason,
             );
         }

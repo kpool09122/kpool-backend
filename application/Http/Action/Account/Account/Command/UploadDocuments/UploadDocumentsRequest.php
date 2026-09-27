@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\UploadDocuments;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UploadDocumentsRequest extends FormRequest
@@ -29,6 +30,6 @@ class UploadDocumentsRequest extends FormRequest
     /** @return array<int, array<string, mixed>> */
     public function documents(): array
     {
-        return (array) $this->input('documents');
+        return RequestValue::objects($this->input('documents'));
     }
 }

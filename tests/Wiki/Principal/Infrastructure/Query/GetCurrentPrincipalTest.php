@@ -45,7 +45,7 @@ class GetCurrentPrincipalTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
@@ -103,7 +103,7 @@ class GetCurrentPrincipalTest extends TestCase
         $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier, $accountIdentifier);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
@@ -165,7 +165,7 @@ class GetCurrentPrincipalTest extends TestCase
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier1);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier2);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
@@ -194,7 +194,7 @@ class GetCurrentPrincipalTest extends TestCase
         $principalGroupIdentifier = $this->createPrincipalGroupWithMember($principalIdentifier, $accountIdentifier);
         $this->attachRoleToPrincipalGroup($principalGroupIdentifier, $roleIdentifier);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
 
         $result = $readModel->toArray();
@@ -212,7 +212,7 @@ class GetCurrentPrincipalTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier));
     }
 
@@ -231,7 +231,7 @@ class GetCurrentPrincipalTest extends TestCase
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
         CreatePrincipal::create($otherPrincipalIdentifier, $identityIdentifier, $otherAccountIdentifier);
 
-        $useCase = $this->app->make(GetCurrentPrincipalInterface::class);
+        $useCase = $this->app()->make(GetCurrentPrincipalInterface::class);
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $otherAccountIdentifier));
 
         $this->assertSame((string) $otherPrincipalIdentifier, $readModel->toArray()['principalIdentifier']);

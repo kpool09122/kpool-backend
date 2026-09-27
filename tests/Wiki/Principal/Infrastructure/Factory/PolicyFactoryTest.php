@@ -25,7 +25,7 @@ class PolicyFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PolicyFactoryInterface::class);
+        $factory = $this->app()->make(PolicyFactoryInterface::class);
         $this->assertInstanceOf(PolicyFactory::class, $factory);
     }
 
@@ -47,7 +47,7 @@ class PolicyFactoryTest extends TestCase
         ];
         $isSystemPolicy = true;
 
-        $factory = $this->app->make(PolicyFactoryInterface::class);
+        $factory = $this->app()->make(PolicyFactoryInterface::class);
         $policy = $factory->create(
             $name,
             $statements,
@@ -79,7 +79,7 @@ class PolicyFactoryTest extends TestCase
         ];
         $isSystemPolicy = false;
 
-        $factory = $this->app->make(PolicyFactoryInterface::class);
+        $factory = $this->app()->make(PolicyFactoryInterface::class);
         $policy = $factory->create(
             $name,
             $statements,
@@ -104,7 +104,7 @@ class PolicyFactoryTest extends TestCase
         $statements = [];
         $isSystemPolicy = false;
 
-        $factory = $this->app->make(PolicyFactoryInterface::class);
+        $factory = $this->app()->make(PolicyFactoryInterface::class);
         $policy = $factory->create(
             $name,
             $statements,
@@ -141,7 +141,7 @@ class PolicyFactoryTest extends TestCase
         ];
         $isSystemPolicy = true;
 
-        $factory = $this->app->make(PolicyFactoryInterface::class);
+        $factory = $this->app()->make(PolicyFactoryInterface::class);
         $policy = $factory->create(
             $name,
             $statements,

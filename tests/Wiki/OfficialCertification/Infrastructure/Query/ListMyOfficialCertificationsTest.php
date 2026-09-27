@@ -32,10 +32,10 @@ class ListMyOfficialCertificationsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
 
         $this->assertInstanceOf(ListMyOfficialCertifications::class, $useCase);
     }
@@ -50,7 +50,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $ownCertificationId = $this->insertCertification(CertificationStatus::PENDING, '2024-01-03 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
         $this->insertCertification(CertificationStatus::APPROVED, '2024-01-04 00:00:00', ownerAccountIdentifier: $otherAccountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, $accountIdentifier, AccountCategory::TALENT, perPage: 10), $output);
@@ -69,7 +69,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $pendingCertificationId = $this->insertCertification(CertificationStatus::PENDING, '2024-01-01 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
         $this->insertCertification(CertificationStatus::APPROVED, '2024-01-02 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, $accountIdentifier, AccountCategory::TALENT, CertificationStatus::PENDING, 10), $output);
@@ -111,13 +111,14 @@ class ListMyOfficialCertificationsTest extends TestCase
             $accountIdentifier,
         );
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, new AccountIdentifier($accountIdentifier), AccountCategory::TALENT, perPage: 10), $output);
 
         $item = $output->toArray()['officialCertifications'][0];
         $this->assertSame($certificationId, $item['certificationIdentifier']);
+        self::assertNotNull($item['ownerAccount']);
         $this->assertSame($accountIdentifier, $item['ownerAccount']['accountIdentifier']);
         $this->assertSame($wikiIdentifier, $item['wikis'][0]['wikiIdentifier']);
     }
@@ -130,7 +131,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $this->registerAuthorizedPrincipal($principalIdentifier, false);
         $this->insertCertification(CertificationStatus::PENDING, '2024-01-01 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $this->expectException(DisallowedException::class);
@@ -152,8 +153,8 @@ class ListMyOfficialCertificationsTest extends TestCase
             ))
             ->andReturn($allowed);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function insertCertification(

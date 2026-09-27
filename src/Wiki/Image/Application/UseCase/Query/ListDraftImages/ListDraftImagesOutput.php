@@ -32,7 +32,7 @@ class ListDraftImagesOutput implements ListDraftImagesOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{images: list<array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null}
      */
     public function toArray(): array
     {

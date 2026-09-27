@@ -42,7 +42,7 @@ readonly class MemberReadModel
         return $this->principalGroups;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{principalIdentifier: string, identityIdentifier: string, identityName: string, email: string, principalGroups: array<int, array{principalGroupIdentifier: string, name: string, isDefault: bool}>} */
     public function toArray(): array
     {
         return [

@@ -42,13 +42,13 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
-        $this->app->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
+        $this->app()->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
 
-        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app()->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
     }
 
     public function testApproveUpdatesRequestAndAccountCategoryWhenOperationsPolicyAllows(): void

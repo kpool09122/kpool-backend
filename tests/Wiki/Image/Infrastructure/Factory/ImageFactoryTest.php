@@ -26,7 +26,7 @@ class ImageFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(ImageFactoryInterface::class);
+        $factory = $this->app()->make(ImageFactoryInterface::class);
         $this->assertInstanceOf(ImageFactory::class, $factory);
     }
 
@@ -49,7 +49,7 @@ class ImageFactoryTest extends TestCase
         $approvedAt = new DateTimeImmutable();
         $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
-        $factory = $this->app->make(ImageFactoryInterface::class);
+        $factory = $this->app()->make(ImageFactoryInterface::class);
         $image = $factory->create(
             $resourceType,
             $resourceIdentifier,

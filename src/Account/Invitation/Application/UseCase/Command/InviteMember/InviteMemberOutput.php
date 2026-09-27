@@ -24,7 +24,7 @@ class InviteMemberOutput implements InviteMemberOutputPort
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<array<string, mixed>>
      */
     public function toArray(): array
     {

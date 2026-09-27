@@ -26,7 +26,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
     {
         $this->assertInstanceOf(
             PasskeyCredentialRepository::class,
-            $this->app->make(PasskeyCredentialRepositoryInterface::class),
+            $this->app()->make(PasskeyCredentialRepositoryInterface::class),
         );
     }
 
@@ -36,7 +36,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'passkey-repo@example.com']);
         $this->createPasskeyUser($identityIdentifier);
-        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $repository = $this->app()->make(PasskeyCredentialRepositoryInterface::class);
 
         $credentials = [
             $this->credential('123e4567-e89b-72d3-a456-426614174001', 'c3luY2Vk', true, true, ['internal', 'hybrid']),
@@ -73,7 +73,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'passkey-unique@example.com']);
         $this->createPasskeyUser($identityIdentifier);
-        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $repository = $this->app()->make(PasskeyCredentialRepositoryInterface::class);
         $repository->save($this->credential('123e4567-e89b-72d3-a456-426614174001', 'ZHVwbGljYXRl', false, false, ['usb']));
 
         $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
@@ -86,7 +86,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         CreateIdentity::create($identityIdentifier, ['email' => 'passkey-delete@example.com']);
         $this->createPasskeyUser($identityIdentifier);
-        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $repository = $this->app()->make(PasskeyCredentialRepositoryInterface::class);
         $identifier = new PasskeyCredentialIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $repository->save($this->credential((string) $identifier, 'ZGVsZXRlLW1l', false, false, ['internal']));
 
@@ -104,7 +104,7 @@ class PasskeyCredentialRepositoryTest extends TestCase
         CreateIdentity::create($otherIdentityIdentifier, ['email' => 'other-passkey@example.com']);
         $this->createPasskeyUser($identityIdentifier);
         $this->createPasskeyUser($otherIdentityIdentifier, '123e4567-e89b-72d3-a456-426614174030');
-        $repository = $this->app->make(PasskeyCredentialRepositoryInterface::class);
+        $repository = $this->app()->make(PasskeyCredentialRepositoryInterface::class);
         $preserved = $this->credential('123e4567-e89b-72d3-a456-426614174001', 'cHJlc2VydmVk', false, false, ['internal']);
         $deleted = $this->credential('123e4567-e89b-72d3-a456-426614174002', 'ZGVsZXRlZA', false, false, ['usb']);
         $other = $this->credential(
@@ -158,6 +158,6 @@ class PasskeyCredentialRepositoryTest extends TestCase
             null,
         );
         $user->linkToIdentity($identityIdentifier);
-        $this->app->make(PasskeyUserRepositoryInterface::class)->save($user);
+        $this->app()->make(PasskeyUserRepositoryInterface::class)->save($user);
     }
 }

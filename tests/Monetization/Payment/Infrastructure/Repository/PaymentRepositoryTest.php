@@ -55,7 +55,7 @@ class PaymentRepositoryTest extends TestCase
             new AccountDocuments(),
         );
 
-        $this->app->make(AccountRepositoryInterface::class)->save($account);
+        $this->app()->make(AccountRepositoryInterface::class)->save($account);
 
         $monetizationAccount = new MonetizationAccount(
             new MonetizationAccountIdentifier($monetizationAccountId),
@@ -65,7 +65,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $this->app->make(MonetizationAccountRepositoryInterface::class)->save($monetizationAccount);
+        $this->app()->make(MonetizationAccountRepositoryInterface::class)->save($monetizationAccount);
     }
 
     private function createPaymentMethod(): PaymentMethod
@@ -111,7 +111,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
@@ -144,7 +144,7 @@ class PaymentRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $result = $repository->findById(new PaymentIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -183,7 +183,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         $this->assertDatabaseHas('payments', [
@@ -230,7 +230,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         // オーソリ
@@ -254,6 +254,7 @@ class PaymentRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
+        $this->assertNotNull($result);
         $this->assertSame(PaymentStatus::CAPTURED, $result->status());
         $this->assertNotNull($result->authorizedAt());
         $this->assertNotNull($result->capturedAt());
@@ -292,7 +293,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         // 失敗
@@ -302,6 +303,7 @@ class PaymentRepositoryTest extends TestCase
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
 
+        $this->assertNotNull($result);
         $this->assertSame(PaymentStatus::FAILED, $result->status());
         $this->assertNotNull($result->failedAt());
         $this->assertSame('Insufficient funds', $result->failureReason());
@@ -340,7 +342,7 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         // オーソリ→キャプチャ
@@ -355,6 +357,7 @@ class PaymentRepositoryTest extends TestCase
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
 
+        $this->assertNotNull($result);
         $this->assertSame(PaymentStatus::PARTIALLY_REFUNDED, $result->status());
         $this->assertSame(3000, $result->refundedMoney()->amount());
         $this->assertNotNull($result->lastRefundedAt());
@@ -367,6 +370,7 @@ class PaymentRepositoryTest extends TestCase
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
 
+        $this->assertNotNull($result);
         $this->assertSame(PaymentStatus::REFUNDED, $result->status());
         $this->assertSame(10000, $result->refundedMoney()->amount());
         $this->assertSame('Full refund completed', $result->lastRefundReason());
@@ -411,11 +415,12 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(PaymentRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentRepositoryInterface::class);
         $repository->save($payment);
 
         $result = $repository->findById(new PaymentIdentifier($paymentId));
 
+        $this->assertNotNull($result);
         $this->assertSame(PaymentMethodType::BANK_TRANSFER, $result->paymentMethod()->type());
         $this->assertSame('Bank Account ****5678', $result->paymentMethod()->label());
         $this->assertFalse($result->paymentMethod()->isRecurringEnabled());
