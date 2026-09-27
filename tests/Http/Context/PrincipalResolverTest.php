@@ -7,6 +7,7 @@ namespace Tests\Http\Context;
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\PrincipalResolver;
 use Mockery;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
@@ -30,6 +31,7 @@ class PrincipalResolverTest extends TestCase
         $context = new AccountContext(
             new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identityId, $accountId),
             AccountType::CORPORATION,
+            AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
         );
         $principal = Mockery::mock(Principal::class);
@@ -49,6 +51,7 @@ class PrincipalResolverTest extends TestCase
         $context = new AccountContext(
             new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identityId, $accountId),
             AccountType::CORPORATION,
+            AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
         );
         /** @var PrincipalRepositoryInterface&Mockery\MockInterface $repository */

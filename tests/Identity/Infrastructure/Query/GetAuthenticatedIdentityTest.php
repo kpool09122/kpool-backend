@@ -112,6 +112,39 @@ class GetAuthenticatedIdentityTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessDistinguishesPendingAccountFromNoAccount(): void
+    {
+        $accountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d601');
+        $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d602');
+        $principalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14d603';
+        CreateAccount::create((string) $accountIdentifier, [
+            'type' => null,
+            'status' => 'pending',
+        ]);
+        CreateIdentity::create($identityIdentifier);
+        DB::table('account_principals')->insert([
+            'id' => $principalIdentifier,
+            'identity_id' => (string) $identityIdentifier,
+            'account_id' => (string) $accountIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('set')->once();
+
+        $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
+            ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+
+        $this->assertSame((string) $accountIdentifier, $readModel->accountIdentifier());
+        $this->assertNull($readModel->accountType());
+        $account = $readModel->account();
+        $this->assertNotNull($account);
+        $this->assertSame('pending', $account->toArray()['status']);
+        $this->assertNull($account->toArray()['type']);
+    }
+
+    #[Group('useDb')]
     public function testProcessReturnsOnlyAuthenticationMethodSummary(): void
     {
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');

@@ -81,8 +81,8 @@ model AuthenticatedAccountSummary {
   accountIdentifier: Uuid;
   @doc("Account email address.")
   email: string;
-  @doc("Account type.")
-  type: string;
+  @doc("Account type. Null while initial setup is pending.")
+  type: string | null;
   @doc("Account display name.")
   name: string;
   @doc("Account status.")
@@ -217,8 +217,6 @@ model CreatePasskeyRecoveryOptionsRequestBody {
 model CreatePasskeyRegistrationOptionsRequestBody {
   @doc("Verified or invited email address.")
   email: string;
-  @doc("Account type retained for signup completion.")
-  accountType?: string | null;
   @doc("Invitation token retained for signup completion.")
   oneTimeToken?: string | null;
   @doc("Application return path retained for signup completion.")
@@ -620,7 +618,6 @@ interface IdentityAuthOperations {
   @doc("Create an OAuth redirect URL for the selected social provider.")
   socialLoginRedirect(
     @path provider: string,
-    @query accountType?: string,
     @query oneTimeToken?: string,
     @query return_to?: string | null,
   ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;

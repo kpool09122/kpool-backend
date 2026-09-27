@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Http\Middleware;
 
 use Application\Http\Exceptions\UnauthorizedHttpException;
+use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
@@ -26,7 +27,10 @@ class AuthenticatedRouteProtectionTest extends TestCase
         parent::setUp();
 
         $router = $this->app()['router'];
-        $router->aliasMiddleware('auth.api', EnsureAuthenticated::class);
+        $router->middlewareGroup('auth.api', [
+            EnsureAuthenticated::class,
+            EnsureAccountActive::class,
+        ]);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
@@ -54,6 +58,16 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->group($routePath('siteManagiment_public_api.php'));
         RouteFacade::prefix('webhook')
             ->group($routePath('webhook.php'));
+    }
+
+    public function testAuthApiMiddlewareGroupIncludesAccountStatusGate(): void
+    {
+        $groups = $this->app()['router']->getMiddlewareGroups();
+
+        $this->assertSame([
+            EnsureAuthenticated::class,
+            EnsureAccountActive::class,
+        ], $groups['auth.api']);
     }
 
     #[DataProvider('authenticatedRouteProvider')]
@@ -187,6 +201,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: add passkey' => ['POST', '/api/identity/auth/passkeys/addition'],
             'identity: update passkey' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
             'identity: delete passkey' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
+            'account: complete initial setup' => ['POST', '/api/account/accounts/setup'],
             'account: switch account' => ['POST', '/api/account/accounts/switch'],
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
@@ -244,6 +259,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity update passkey resolves actor' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
             'identity delete passkey resolves actor' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
             'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
+            'account initial setup resolves actor' => ['POST', '/api/account/accounts/setup', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
             'account principal groups resolve actor and account' => ['GET', '/api/account/principal-groups', ['resolve.actor', 'resolve.account']],

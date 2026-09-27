@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\Entity;
 
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
+use Source\Account\Account\Domain\Exception\AccountSetupAlreadyCompletedException;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
@@ -23,15 +25,18 @@ class Account
     public function __construct(
         private readonly AccountIdentifier $accountIdentifier,
         private readonly Email $email,
-        private readonly AccountType $type,
+        private ?AccountType $type,
         private AccountName $name,
-        private readonly AccountStatus $status,
+        private AccountStatus $status,
         private AccountCategory $accountCategory,
         private readonly DeletionReadinessChecklist $deletionReadiness,
         private AccountDocuments $documents,
         private ?Phone $phone = null,
         private ?ContactAddress $address = null,
     ) {
+        if ($this->status === AccountStatus::ACTIVE && $this->type === null) {
+            throw new AccountSetupUnavailableException('Active account must have an account type.');
+        }
     }
 
     public function accountIdentifier(): AccountIdentifier
@@ -45,6 +50,11 @@ class Account
     }
 
     public function type(): AccountType
+    {
+        return $this->type ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+    }
+
+    public function nullableType(): ?AccountType
     {
         return $this->type;
     }
@@ -112,6 +122,24 @@ class Account
     public function status(): AccountStatus
     {
         return $this->status;
+    }
+
+    /**
+     * @throws AccountSetupAlreadyCompletedException
+     * @throws AccountSetupUnavailableException
+     */
+    public function completeInitialSetup(AccountType $type): void
+    {
+        if ($this->status === AccountStatus::ACTIVE) {
+            throw new AccountSetupAlreadyCompletedException();
+        }
+
+        if ($this->status !== AccountStatus::PENDING) {
+            throw new AccountSetupUnavailableException();
+        }
+
+        $this->type = $type;
+        $this->status = AccountStatus::ACTIVE;
     }
 
     public function accountCategory(): AccountCategory

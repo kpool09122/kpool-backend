@@ -133,7 +133,6 @@ class RegisterWithPasskeyTest extends TestCase
                 && $event instanceof IdentityCreated
                 && $event->identityIdentifier === $identity->identityIdentifier()
                 && $event->email === $email
-                && $event->accountType === AccountType::INDIVIDUAL
             ) || (
                 $expectedEventClass === IdentityCreatedViaInvitation::class
                 && $event instanceof IdentityCreatedViaInvitation

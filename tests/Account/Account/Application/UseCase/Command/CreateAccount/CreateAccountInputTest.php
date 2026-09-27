@@ -7,7 +7,6 @@ namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -23,13 +22,11 @@ class CreateAccountInputTest extends TestCase
     public function test__construct(): void
     {
         $email = new Email('test@test.com');
-        $accountType = AccountType::INDIVIDUAL;
         $accountName = new AccountName('test-account');
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateAccountInput(
             $email,
-            $accountType,
             $accountName,
             $identityIdentifier,
             addressCountryCode: 'JP',
@@ -41,7 +38,6 @@ class CreateAccountInputTest extends TestCase
         );
 
         $this->assertSame($email, $input->email());
-        $this->assertSame($accountType, $input->accountType());
         $this->assertSame($accountName, $input->accountName());
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
         $this->assertSame(Language::ENGLISH, $input->language());
@@ -61,20 +57,17 @@ class CreateAccountInputTest extends TestCase
     public function test__constructWithoutIdentityIdentifier(): void
     {
         $email = new Email('test@test.com');
-        $accountType = AccountType::INDIVIDUAL;
         $accountName = new AccountName('test-account');
         $language = Language::KOREAN;
 
         $input = new CreateAccountInput(
             $email,
-            $accountType,
             $accountName,
             null,
             $language,
         );
 
         $this->assertSame($email, $input->email());
-        $this->assertSame($accountType, $input->accountType());
         $this->assertSame($accountName, $input->accountName());
         $this->assertNull($input->identityIdentifier());
         $this->assertSame($language, $input->language());

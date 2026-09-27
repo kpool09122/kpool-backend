@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Command\CompleteInitialSetup\CompleteInitialSetupAction;
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeAction;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Route;
 
 // Account
 Route::post('/accounts', CreateAccountAction::class);
+Route::post('/accounts/setup', CompleteInitialSetupAction::class)->middleware(['auth.api', 'resolve.actor']);
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
     // Account

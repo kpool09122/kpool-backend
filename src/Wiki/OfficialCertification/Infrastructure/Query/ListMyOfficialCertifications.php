@@ -15,6 +15,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
+use LogicException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -124,7 +125,7 @@ readonly class ListMyOfficialCertifications implements ListMyOfficialCertificati
             ownerAccount: $ownerAccount === null ? null : new OfficialCertificationOwnerAccountReadModel(
                 accountIdentifier: $ownerAccount->id,
                 email: $ownerAccount->email,
-                type: $ownerAccount->type,
+                type: $ownerAccount->type ?? throw new LogicException('Active certification owner account must have a type.'),
                 name: $ownerAccount->name,
                 status: $ownerAccount->status,
                 category: $ownerAccount->category,

@@ -155,7 +155,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             profileImage: ImageUrl::fromPath($model->profile_image),
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
-            accountType: $accountContext?->accountType()->value,
+            accountType: $accountContext?->nullableAccountType()?->value,
             authenticationMethods: new AuthenticationMethodsReadModel(
                 passkeyCount: $model->passkey_credentials_count,
                 linkedSocialProviders: $model->linked_social_providers,

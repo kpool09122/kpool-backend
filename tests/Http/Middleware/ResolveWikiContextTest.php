@@ -12,6 +12,7 @@ use Application\Http\Context\WikiContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Illuminate\Http\Request;
 use Mockery;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
@@ -35,6 +36,7 @@ class ResolveWikiContextTest extends TestCase
         $accountContext = new AccountContext(
             new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identityId, $accountId),
             AccountType::CORPORATION,
+            AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
         );
         app()->instance(ActorContext::class, new ActorContext($identityId, Language::ENGLISH));

@@ -17,8 +17,6 @@ model UpdateAccountRequestBody {
 model CreateAccountRequestBody {
   @doc("Account email address.")
   email: string;
-  @doc("Account type.")
-  accountType: string;
   @doc("Account display name.")
   accountName: string;
   @doc("Identity identifier to attach to the account.")
@@ -27,6 +25,12 @@ model CreateAccountRequestBody {
   phone?: string | null;
   @doc("Contact address.")
   address?: ContactAddressSummary | null;
+}
+
+@doc("Request body for completing initial account setup.")
+model CompleteInitialSetupRequestBody {
+  @doc("Selected account type.")
+  accountType: "corporation" | "individual";
 }
 
 @doc("Request body for switching the current effective account context. Null switches back to the original account.")
@@ -94,6 +98,13 @@ interface AccountOperations {
   createAccount(
     @body body: CreateAccountRequestBody,
   ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/setup")
+  @doc("Select the account type and activate a pending account.")
+  completeInitialSetup(
+    @body body: CompleteInitialSetupRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{accountId}")

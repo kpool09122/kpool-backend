@@ -61,6 +61,15 @@ readonly class AccountResolver
             throw new AccountNotFoundException('Selected account was not found.');
         }
 
+        $originalAccountStatus = $account->status();
+        if ((string) $currentAccount->originalAccountIdentifier !== (string) $currentAccount->effectiveAccountIdentifier) {
+            $originalAccount = $this->accountRepository->findById($currentAccount->originalAccountIdentifier);
+            if ($originalAccount === null) {
+                throw new AccountNotFoundException('Original account was not found.');
+            }
+            $originalAccountStatus = $originalAccount->status();
+        }
+
         $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
             $principal->accountIdentifier(),
             $principal->principalIdentifier(),
@@ -74,13 +83,15 @@ readonly class AccountResolver
 
         return new AccountContext(
             principal: $principal,
-            accountType: $account->type(),
+            accountType: $account->nullableType(),
+            accountStatus: $account->status(),
             accountCategory: $account->accountCategory(),
             accountPolicies: $this->effectivePolicies(array_values($roleIdentifiers)),
             originalIdentityIdentifier: $currentAccount->originalIdentityIdentifier,
             originalAccountIdentifier: $currentAccount->originalAccountIdentifier,
             originalPrincipalIdentifier: $currentAccount->originalPrincipalIdentifier,
             delegationIdentifier: $currentAccount->delegationIdentifier,
+            originalAccountStatus: $originalAccountStatus,
         );
     }
 

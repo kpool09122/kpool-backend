@@ -6,6 +6,7 @@ namespace Source\Account\Account\Infrastructure\Repository;
 
 use Application\Models\Account\Account as AccountEloquent;
 use Application\Models\Account\AccountDocument as AccountDocumentEloquent;
+use Source\Account\Account\Application\Repository\AccountSetupRepositoryInterface;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -22,7 +23,7 @@ use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Phone;
 
-class AccountRepository implements AccountRepositoryInterface
+class AccountRepository implements AccountRepositoryInterface, AccountSetupRepositoryInterface
 {
     public function save(Account $account): void
     {
@@ -32,7 +33,7 @@ class AccountRepository implements AccountRepositoryInterface
             ['id' => (string) $account->accountIdentifier()],
             [
                 'email' => (string) $account->email(),
-                'type' => $account->type()->value,
+                'type' => $account->nullableType()?->value,
                 'name' => (string) $account->name(),
                 'status' => $account->status()->value,
                 'category' => $account->accountCategory()->value,
@@ -74,6 +75,17 @@ class AccountRepository implements AccountRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    public function findByIdForUpdate(AccountIdentifier $identifier): ?Account
+    {
+        $eloquent = AccountEloquent::query()
+            ->with('documents')
+            ->where('id', (string) $identifier)
+            ->lockForUpdate()
+            ->first();
+
+        return $eloquent === null ? null : $this->toDomainEntity($eloquent);
+    }
+
     public function findByEmail(Email $email): ?Account
     {
         $eloquent = AccountEloquent::query()
@@ -111,7 +123,7 @@ class AccountRepository implements AccountRepositoryInterface
         return new Account(
             new AccountIdentifier($eloquent->id),
             new Email($eloquent->email),
-            AccountType::from($eloquent->type),
+            $eloquent->type !== null ? AccountType::from($eloquent->type) : null,
             new AccountName($eloquent->name),
             AccountStatus::from($eloquent->status),
             AccountCategory::from($eloquent->category),
