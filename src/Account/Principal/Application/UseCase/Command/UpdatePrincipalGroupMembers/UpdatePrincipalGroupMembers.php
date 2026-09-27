@@ -8,8 +8,10 @@ use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
+use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -17,8 +19,10 @@ use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Effect;
+use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -140,7 +144,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     /**
      * @param array<PrincipalGroup> $principalGroups
      * @param array<string, Principal> $principalsById
-     * @return array<string, array<string, \Source\Account\Principal\Domain\ValueObject\RoleIdentifier>>
+     * @return array<string, array<string, RoleIdentifier>>
      */
     private function collectRoleIdentifiersByPrincipalId(array $principalGroups, array $principalsById): array
     {
@@ -161,9 +165,9 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<string, array<string, \Source\Account\Principal\Domain\ValueObject\RoleIdentifier>> $roleIdentifiersByPrincipalId
-     * @param array<string, \Source\Account\Principal\Domain\Entity\Role> $roles
-     * @return array<string, array<string, \Source\Account\Principal\Domain\ValueObject\PolicyIdentifier>>
+     * @param array<string, array<string, RoleIdentifier>> $roleIdentifiersByPrincipalId
+     * @param array<string, Role> $roles
+     * @return array<string, array<string, PolicyIdentifier>>
      */
     private function collectPolicyIdentifiersByPrincipalId(array $roleIdentifiersByPrincipalId, array $roles): array
     {
@@ -184,8 +188,8 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<string, \Source\Account\Principal\Domain\ValueObject\PolicyIdentifier> $policyIdentifiers
-     * @param array<string, \Source\Account\Principal\Domain\Entity\Policy> $policies
+     * @param array<string, PolicyIdentifier> $policyIdentifiers
+     * @param array<string, Policy> $policies
      */
     private function canManagePrincipalGroups(array $policyIdentifiers, array $policies): bool
     {

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -22,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'monetization_account_id',
     'stripe_external_account_id',
@@ -34,13 +37,13 @@ use Illuminate\Support\Carbon;
     'is_default',
     'status',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'monetization_payout_accounts', keyType: 'string')]
+#[Table(name: 'monetization_payout_accounts', keyType: 'string')]
 class MonetizationPayoutAccount extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

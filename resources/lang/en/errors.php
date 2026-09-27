@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => 'The authentication code session was not found.',
     'invalid_oauth_state' => 'The OAuth state is invalid or has expired.',
     'social_oauth_error' => 'An error occurred during social login.',
+    'invalid_social_linking' => 'The SSO linking request is invalid, expired, or cannot be completed.',
     'invalid_base64_image' => 'The image format is invalid.',
 
     // Account

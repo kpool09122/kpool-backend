@@ -484,8 +484,62 @@ model RedirectUrlResponse {
   @body body: RedirectUrlResult;
 }
 
+@doc("Pending SSO addition, available only in the Laravel session that completed OAuth. No login or linking has occurred yet.")
+model SocialLinkingResult {
+  @doc("Authenticated SSO provider being added. The provider account ID remains server-side.")
+  provider: string;
+  @doc("Registered email address receiving the dedicated linking code; cannot be changed by the client.")
+  email: string;
+  @doc("Absolute expiry of the pending linking operation. Restart OAuth after expiry.")
+  expiresAt: Timestamp;
+}
+
+model SocialLinkingResponse {
+  @statusCode statusCode: 200;
+  @body body: SocialLinkingResult;
+}
+
+model SendSocialLinkingEmailResult {
+  @doc("The request was processed. Cooldown or rate-limited requests also return true without sending another email.")
+  accepted: boolean;
+}
+
+model SendSocialLinkingEmailResponse {
+  @statusCode statusCode: 200;
+  @body body: SendSocialLinkingEmailResult;
+}
+
+model VerifySocialLinkingEmailRequestBody {
+  @doc("Dedicated six-digit SSO linking code. Registration and passkey recovery codes cannot authorize linking.")
+  @pattern("^[0-9]{6}$")
+  authCode: string;
+}
+
+@doc("Actual browser redirect returned by the OAuth callback.")
+model SocialCallbackRedirectResponse {
+  @statusCode statusCode: 302;
+  @header location: string;
+}
+
 @route("/auth")
 interface IdentityAuthOperations {
+  @get
+  @route("/social/link")
+  @doc("Read pending SSO linking confirmation using the originating Laravel session cookie. Returns 422 when absent, expired, consumed, or accessed from another session. No provider, identity, email, return path or pending key is accepted from the client.")
+  getSocialLinking(): SocialLinkingResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/social/link/email")
+  @doc("Request a dedicated code for the pending target's registered email using the same session cookie. No request body is required. Codes expire with the ten-minute pending operation; a successful resend invalidates the old code without resetting failed attempts. A 60-second cooldown and a maximum of five sends per pending operation and per target identity per hour apply; throttled requests return accepted=true without a new code. Invalid or expired pending operations return 422.")
+  sendSocialLinkingEmail(): SendSocialLinkingEmailResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/social/link/email/verification")
+  @doc("Verify the dedicated code and consume pending authorization in the originating Laravel session. Re-fetch and check the target and SSO ownership, save the addition and log in with a regenerated session ID within an Action-managed database transaction. Returns an allowed frontend return path. Invalid codes, expiry, five failed attempts, reuse and linking conflicts return 422. A save failure never logs in; the authorization remains consumed and OAuth must be restarted before retrying.")
+  verifySocialLinkingEmail(
+    @body body: VerifySocialLinkingEmailRequestBody,
+  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/send-auth-code")
   @doc("Send an auth code to the specified email address.")
@@ -573,12 +627,12 @@ interface IdentityAuthOperations {
 
   @get
   @route("/social/{provider}/callback")
-  @doc("Handle the social login callback and return the client redirect URL.")
+  @doc("Handle OAuth and redirect the browser. An unlinked provider whose email matches an existing identity redirects to the frontend /auth/social/link confirmation screen, retaining server-side pending data for ten minutes in the originating Laravel session. No linking or login occurs before dedicated email verification. Linked login, new identity, invitation, step-up and passkey recovery flows retain their existing redirects.")
   socialLoginCallback(
     @path provider: string,
     @query code: string,
     @query state: string,
-  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): SocialCallbackRedirectResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/logout")

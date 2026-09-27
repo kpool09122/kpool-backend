@@ -15,13 +15,13 @@ readonly class UpdatePasskey implements UpdatePasskeyInterface
     public function __construct(
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
     ) {
     }
 
     public function process(UpdatePasskeyInputPort $input, UpdatePasskeyOutputPort $output): void
     {
-        $this->stepUpAuthenticationStorage->requireValid(
+        $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
             StepUpAuthenticationScope::PASSKEY_MANAGE,
         );

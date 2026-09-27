@@ -6,8 +6,12 @@ namespace Tests\Http\Middleware;
 
 use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Middleware\EnsureAuthenticated;
+use Application\Http\Middleware\ResolveAccountContext;
+use Application\Http\Middleware\ResolveActorContext;
+use Application\Http\Middleware\ResolveWikiContext;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route as RouteFacade;
 use Mockery;
@@ -22,11 +26,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
         parent::setUp();
 
         $router = $this->app()['router'];
-        $router->aliasMiddleware('auth.api', \Application\Http\Middleware\EnsureAuthenticated::class);
-        $router->aliasMiddleware('resolve.actor', \Application\Http\Middleware\ResolveActorContext::class);
-        $router->aliasMiddleware('resolve.account', \Application\Http\Middleware\ResolveAccountContext::class);
-        $router->aliasMiddleware('resolve.wiki', \Application\Http\Middleware\ResolveWikiContext::class);
-        $router->aliasMiddleware('session', \Illuminate\Session\Middleware\StartSession::class);
+        $router->aliasMiddleware('auth.api', EnsureAuthenticated::class);
+        $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
+        $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
+        $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
+        $router->aliasMiddleware('session', StartSession::class);
 
         $routePath = static fn (string $file): string => __DIR__ . '/../../../routes/' . $file;
 
@@ -134,6 +138,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'api/identity/auth/passkeys/recovery/options',
             'api/identity/auth/passkeys/recovery/social/{provider}/redirect',
             'api/identity/auth/send-auth-code',
+            'api/identity/auth/social/link',
+            'api/identity/auth/social/link/email',
+            'api/identity/auth/social/link/email/verification',
             'api/identity/auth/social/{provider}/callback',
             'api/identity/auth/social/{provider}/redirect',
             'api/identity/auth/verify-email',

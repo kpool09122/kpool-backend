@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
@@ -512,7 +513,7 @@ class CreateAccountTest extends TestCase
             $identifier,
             'Default',
             true,
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
 
         $ownerPrincipalGroup = new PrincipalGroup(
@@ -520,7 +521,7 @@ class CreateAccountTest extends TestCase
             $identifier,
             'Owners',
             false,
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
 
         $input = new CreateAccountInput(

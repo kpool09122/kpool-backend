@@ -18,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class SyncOwnedWikiCertifications implements SyncOwnedWikiCertificationsInterface
 {
     public function __construct(
-        private SyncableOwnedWikiResourceQueryServiceInterface $resourceQueryService,
+        private SyncableOwnedWikiResourceQueryServiceInterface $syncableOwnedWikiResourceQueryService,
         private OfficialResourceUpdaterInterface $officialResourceUpdater,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
@@ -47,7 +47,7 @@ readonly class SyncOwnedWikiCertifications implements SyncOwnedWikiCertification
             throw new DisallowedException();
         }
 
-        $syncableResources = $this->resourceQueryService->findSyncableResources($input->accountIdentifier());
+        $syncableResources = $this->syncableOwnedWikiResourceQueryService->findSyncableResources($input->accountIdentifier());
         $syncableByTranslationSet = [];
         foreach ($syncableResources as $resource) {
             $syncableByTranslationSet[(string) $resource->translationSetIdentifier()] = $resource;
@@ -62,7 +62,7 @@ readonly class SyncOwnedWikiCertifications implements SyncOwnedWikiCertification
             $requestedByTranslationSet[$key] = $syncableByTranslationSet[$key];
         }
 
-        $currentlyOfficial = $this->resourceQueryService->findOfficialResources($input->accountIdentifier(), $syncableResources);
+        $currentlyOfficial = $this->syncableOwnedWikiResourceQueryService->findOfficialResources($input->accountIdentifier(), $syncableResources);
         $currentlyOfficialByKey = [];
         foreach ($currentlyOfficial as $resource) {
             $currentlyOfficialByKey[$resource->key()] = $resource;

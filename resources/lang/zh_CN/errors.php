@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => '找不到验证码会话。',
     'invalid_oauth_state' => 'OAuth状态无效或已过期。',
     'social_oauth_error' => '社交登录发生错误。',
+    'invalid_social_linking' => 'SSO 关联请求无效、已过期或无法完成。',
     'invalid_base64_image' => '图片格式无效。',
 
     // Account

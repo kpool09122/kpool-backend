@@ -3,18 +3,14 @@
 declare(strict_types=1);
 
 return [
+    'default' => env('QUEUE_CONNECTION', in_array(env('APP_ENV', 'production'), ['local', 'testing'], true) ? 'redis' : 'cloudtasks'),
+
     'connections' => [
-        'passkey_recovery' => [
-            'driver' => in_array(env('APP_ENV', 'production'), ['local', 'testing'], true) ? 'redis' : 'cloudtasks',
-            'queue' => env('PASSKEY_RECOVERY_QUEUE', 'passkey-recovery'),
+        'cloudtasks' => [
+            'driver' => 'cloudtasks',
+            'queue' => env('CLOUD_TASKS_QUEUE', 'default'),
             'after_commit' => false,
 
-            // Redis (local / testing)
-            'connection' => 'default',
-            'retry_after' => 90,
-            'block_for' => null,
-
-            // Google Cloud Tasks
             'project' => env('CLOUD_TASKS_PROJECT', ''),
             'location' => env('CLOUD_TASKS_LOCATION', ''),
             'handler' => env('CLOUD_TASKS_HANDLER', ''),

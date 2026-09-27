@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Models\SiteManagement;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Override;
 
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'category',
     'identity_identifier',
@@ -16,10 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'content',
     'language',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'contacts', keyType: 'string')]
+#[Table(name: 'contacts', keyType: 'string')]
 class Contact extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     /**

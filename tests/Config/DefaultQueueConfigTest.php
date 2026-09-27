@@ -9,13 +9,15 @@ use Dotenv\Repository\RepositoryBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-class PasskeyRecoveryQueueConfigTest extends TestCase
+class DefaultQueueConfigTest extends TestCase
 {
     #[DataProvider('environments')]
-    public function testRecoveryQueueDriverDependsOnEnvironment(string $environment, string $driver): void
+    public function testDefaultConnectionDependsOnEnvironment(string $environment, string $driver): void
     {
         $repository = RepositoryBuilder::createWithDefaultAdapters()->addAdapter(PutenvAdapter::class)->make();
         $original = $repository->get('APP_ENV');
+        $originalConnection = $repository->get('QUEUE_CONNECTION');
+        $repository->clear('QUEUE_CONNECTION');
         $repository->clear('APP_ENV');
         $repository->set('APP_ENV', $environment);
 
@@ -23,10 +25,15 @@ class PasskeyRecoveryQueueConfigTest extends TestCase
             $config = require __DIR__ . '/../../config/queue.php';
             self::assertIsArray($config);
             self::assertIsArray($config['connections']);
-            self::assertIsArray($config['connections']['passkey_recovery']);
-            $this->assertSame($driver, $config['connections']['passkey_recovery']['driver']);
-            $this->assertFalse($config['connections']['passkey_recovery']['after_commit']);
+            self::assertIsArray($config['connections']['cloudtasks']);
+            $this->assertSame($driver, $config['default']);
+            $this->assertSame('cloudtasks', $config['connections']['cloudtasks']['driver']);
+            $this->assertFalse($config['connections']['cloudtasks']['after_commit']);
         } finally {
+            $repository->clear('QUEUE_CONNECTION');
+            if ($originalConnection !== null) {
+                $repository->set('QUEUE_CONNECTION', $originalConnection);
+            }
             $repository->clear('APP_ENV');
             if ($original !== null) {
                 $repository->set('APP_ENV', $original);

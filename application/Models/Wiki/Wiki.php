@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -36,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property-read ?WikiAgencyBasic $agencyBasic
  * @property-read ?WikiSongBasic $songBasic
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'translation_set_identifier',
     'slug',
@@ -60,13 +63,13 @@ use Illuminate\Support\Carbon;
     'approved_at',
     'published_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wikis', keyType: 'string')]
+#[Table(name: 'wikis', keyType: 'string')]
 class Wiki extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'sections' => 'array',
         'keywords' => 'array',

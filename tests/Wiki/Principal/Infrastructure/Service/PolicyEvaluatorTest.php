@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Service;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -158,7 +159,7 @@ class PolicyEvaluatorTest extends TestCase
 
         // Roleを追加
         foreach ($roleIdentifiers as $roleIdentifier) {
-            \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+            DB::table('wiki_principal_group_role_attachments')->insert([
                 'principal_group_id' => $groupId,
                 'role_id' => (string) $roleIdentifier,
             ]);
@@ -451,7 +452,7 @@ class PolicyEvaluatorTest extends TestCase
             ['name' => 'Test Group 2', 'is_default' => false]
         );
         CreatePrincipalGroupMembership::create($groupId2, (string) $principal->principalIdentifier());
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             'principal_group_id' => $groupId2,
             'role_id' => (string) $approveRole->roleIdentifier(),
         ]);

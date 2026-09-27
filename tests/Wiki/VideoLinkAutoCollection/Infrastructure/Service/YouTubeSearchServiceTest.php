@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Service;
 
 use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsResponse;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -304,15 +306,15 @@ class YouTubeSearchServiceTest extends TestCase
             ->andReturn(true);
 
         $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn (\Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
+            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
             ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($viewCountVideoIds)));
 
         $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn (\Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
+            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
             ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($relevanceVideoIds)));
 
         $client->shouldReceive('searchRecentVideoIds')
-            ->withArgs(fn (\Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest $request) => $request->keyword() === 'test keyword')
+            ->withArgs(fn (SearchRecentVideoIdsRequest $request) => $request->keyword() === 'test keyword')
             ->andReturn(new SearchRecentVideoIdsResponse($this->createSearchResponse($recentVideoIds)));
 
         $client->shouldReceive('getVideoDetails')

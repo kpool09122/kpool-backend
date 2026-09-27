@@ -18,6 +18,7 @@ use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateAccount;
@@ -111,7 +112,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
             )
             ->andReturn([$affiliation]);
 
-        $wiki = Mockery::mock(\Source\Wiki\Wiki\Domain\Entity\Wiki::class);
+        $wiki = Mockery::mock(Wiki::class);
         $wiki->shouldReceive('wikiIdentifier')->andReturn($talentWikiIdentifier);
         /** @var WikiRepositoryInterface&Mockery\MockInterface $wikiRepository */
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);

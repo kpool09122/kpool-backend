@@ -18,12 +18,12 @@ readonly class SettlementService implements SettlementServiceInterface
     /**
      * @param SettlementBatchFactoryInterface $batchFactory
      * @param TransferFactoryInterface $transferFactory
-     * @param FeeCalculatorServiceInterface $feeCalculator
+     * @param FeeCalculatorServiceInterface $feeCalculatorService
      */
     public function __construct(
         private SettlementBatchFactoryInterface $batchFactory,
         private TransferFactoryInterface        $transferFactory,
-        private FeeCalculatorServiceInterface   $feeCalculator,
+        private FeeCalculatorServiceInterface   $feeCalculatorService,
     ) {
     }
 
@@ -58,7 +58,7 @@ readonly class SettlementService implements SettlementServiceInterface
             $batch->recordRevenue($amount);
         }
 
-        $fee = $this->feeCalculator->calculate($batch->grossAmount(), $gatewayFeeRate, $platformFeeRate, $fixedFee);
+        $fee = $this->feeCalculatorService->calculate($batch->grossAmount(), $gatewayFeeRate, $platformFeeRate, $fixedFee);
         $batch->applyFee($fee);
         $batch->markProcessing($currentDate);
 

@@ -21,18 +21,18 @@ readonly class CompleteStepUpWithPasskey implements CompleteStepUpWithPasskeyInt
     private const int AUTHORIZATION_TTL_SECONDS = 600;
 
     public function __construct(
-        private ChallengeSessionStorageServiceInterface $challengeStorage,
-        private PasskeyCredentialRepositoryInterface $credentialRepository,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
+        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private WebAuthnServiceInterface $webAuthnService,
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
     ) {
     }
 
     public function process(CompleteStepUpWithPasskeyInputPort $input, CompleteStepUpWithPasskeyOutputPort $output): void
     {
-        $challenge = $this->challengeStorage->consumeStepUpAuthentication($input->challengeKey(), $input->identityIdentifier());
-        $credential = $this->credentialRepository->findByCredentialId($input->credentialId());
+        $challenge = $this->challengeSessionStorageService->consumeStepUpAuthentication($input->challengeKey(), $input->identityIdentifier());
+        $credential = $this->passkeyCredentialRepository->findByCredentialId($input->credentialId());
         if ($credential === null) {
             throw new PasskeyAuthenticationFailedException();
         }
@@ -43,7 +43,7 @@ readonly class CompleteStepUpWithPasskey implements CompleteStepUpWithPasskeyInt
         $verified = $this->webAuthnService->verifyAuthentication(new AuthenticationVerificationInput($input->responseJson(), $challenge->options->json(), $credential->credentialSource(), (string)$user->identifier()));
         $now = new DateTimeImmutable();
         $credential->recordAuthentication($verified->credentialSource, $verified->signCount, $verified->backupEligible, $verified->backupState, $now);
-        $this->credentialRepository->save($credential);
-        $this->stepUpAuthenticationStorage->store(new StepUpAuthentication($input->identityIdentifier(), StepUpAuthenticationMethod::PASSKEY, $now, StepUpAuthenticationScope::PASSKEY_MANAGE, $now->modify('+'.self::AUTHORIZATION_TTL_SECONDS.' seconds')));
+        $this->passkeyCredentialRepository->save($credential);
+        $this->stepUpAuthenticationStorageService->store(new StepUpAuthentication($input->identityIdentifier(), StepUpAuthenticationMethod::PASSKEY, $now, StepUpAuthenticationScope::PASSKEY_MANAGE, $now->modify('+'.self::AUTHORIZATION_TTL_SECONDS.' seconds')));
     }
 }

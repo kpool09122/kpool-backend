@@ -212,8 +212,8 @@ class CreatePasskeyOptionsTest extends TestCase
         ?PasskeyUserRepositoryInterface $passkeyUserRepository = null,
         ?PasskeyUserFactoryInterface $factory = null,
         ?PasskeyCredentialRepositoryInterface $passkeyCredentialRepository = null,
-        (WebAuthnServiceInterface&\Mockery\MockInterface)|null $webAuthn = null,
-        (ChallengeSessionStorageServiceInterface&\Mockery\MockInterface)|null $storage = null,
+        (WebAuthnServiceInterface&MockInterface)|null $webAuthn = null,
+        (ChallengeSessionStorageServiceInterface&MockInterface)|null $storage = null,
     ): void {
         $identityRepository ??= Mockery::mock(IdentityRepositoryInterface::class);
         $passkeyUserRepository ??= Mockery::mock(PasskeyUserRepositoryInterface::class);

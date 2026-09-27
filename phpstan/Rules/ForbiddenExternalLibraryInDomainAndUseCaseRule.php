@@ -8,6 +8,7 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -39,17 +40,17 @@ final class ForbiddenExternalLibraryInDomainAndUseCaseRule implements Rule
     /**
      * @param Name $node
      * @param Scope $scope
-     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     * @return list<IdentifierRuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->isTargetFile($scope->getFile())) {
+        if (! $this->isTargetFile($scope->getFile())) {
             return [];
         }
 
         $className = RuleSupport::resolveName($node, $scope);
 
-        if (!$this->reflectionProvider->hasClass($className)) {
+        if (! $this->reflectionProvider->hasClass($className)) {
             return [];
         }
 

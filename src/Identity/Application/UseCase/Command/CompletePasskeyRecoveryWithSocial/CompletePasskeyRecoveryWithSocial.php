@@ -18,12 +18,12 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
     private const string RETURN_TO = '/settings/passkeys/recovery?recoveryKey=';
 
     public function __construct(
-        private OAuthStateRepositoryInterface $stateRepository,
-        private PasskeyRecoveryOAuthSessionStorageServiceInterface $oauthSessions,
+        private OAuthStateRepositoryInterface $oAuthStateRepository,
+        private PasskeyRecoveryOAuthSessionStorageServiceInterface $passkeyRecoveryOAuthSessionStorageService,
         private SocialOAuthServiceInterface $socialOAuthService,
         private IdentityRepositoryInterface $identityRepository,
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
-        private PasskeyRecoverySessionStorageServiceInterface $recoverySessions,
+        private PasskeyRecoverySessionStorageServiceInterface $passkeyRecoverySessionStorageService,
     ) {
     }
 
@@ -31,8 +31,8 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
         CompletePasskeyRecoveryWithSocialInputPort $input,
         CompletePasskeyRecoveryWithSocialOutputPort $output,
     ): void {
-        $this->stateRepository->consume($input->state());
-        $oauthSession = $this->oauthSessions->consume($input->state());
+        $this->oAuthStateRepository->consume($input->state());
+        $oauthSession = $this->passkeyRecoveryOAuthSessionStorageService->consume($input->state());
         if ($oauthSession === null || $oauthSession->provider !== $input->provider()) {
             throw new PasskeyRecoveryVerificationFailedException('Passkey recovery OAuth session is invalid.');
         }
@@ -48,7 +48,7 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
             throw new PasskeyRecoveryVerificationFailedException('The social account is not linked or has no passkey to recover.');
         }
 
-        $recoveryKey = $this->recoverySessions->issue($identity->identityIdentifier(), 'sso');
+        $recoveryKey = $this->passkeyRecoverySessionStorageService->issue($identity->identityIdentifier(), 'sso');
         $output->setRedirectUrl(self::RETURN_TO . rawurlencode((string) $recoveryKey));
     }
 }

@@ -42,7 +42,7 @@ class CloudTaskCertificateCacheTest extends TestCase
         ]);
         HttpClientCache::setHttpClient(new Client(['handler' => $handler]));
         $token = JWT::encode([
-            'aud' => 'https://tasks.example.com/internal/queue/passkey-recovery',
+            'aud' => 'https://tasks.example.com/internal/queue/default',
             'iss' => 'https://accounts.google.com',
             'email' => 'tasks@example.iam.gserviceaccount.com',
             'email_verified' => true,
@@ -81,9 +81,9 @@ class CloudTaskCertificateCacheTest extends TestCase
         config([
             'cache.default' => 'file',
             'cache.stores.file' => ['driver' => 'file', 'path' => $directory],
-            'queue.connections.passkey_recovery.handler' => 'https://tasks.example.com',
-            'queue.connections.passkey_recovery.service_account_email' => 'tasks@example.iam.gserviceaccount.com',
-            'cloud-tasks.uri' => 'internal/queue/passkey-recovery',
+            'queue.connections.cloudtasks.handler' => 'https://tasks.example.com',
+            'queue.connections.cloudtasks.service_account_email' => 'tasks@example.iam.gserviceaccount.com',
+            'cloud-tasks.uri' => 'internal/queue/default',
         ]);
     }
 

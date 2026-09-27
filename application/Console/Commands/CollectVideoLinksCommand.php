@@ -6,13 +6,14 @@ namespace Application\Console\Commands;
 
 use Application\Jobs\Wiki\CollectVideoLinksJob;
 use Illuminate\Console\Command;
+use Override;
 
 class CollectVideoLinksCommand extends Command
 {
-    #[\Override]
+    #[Override]
     protected $signature = 'video-links:collect';
 
-    #[\Override]
+    #[Override]
     protected $description = 'YouTube APIを使用して動画リンクを自動収集するJobをディスパッチする';
 
     public function handle(): int

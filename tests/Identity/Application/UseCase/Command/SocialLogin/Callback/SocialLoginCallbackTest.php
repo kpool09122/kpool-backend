@@ -8,8 +8,10 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
@@ -155,12 +157,13 @@ class SocialLoginCallbackTest extends TestCase
     }
 
     /**
-     * 正常系: メール一致のユーザーがいれば連携追加してログインすること（イベント発行なし）.
+     * 正常系: メール一致のユーザーがいればメール検証まで連携とログインを保留すること（イベント発行なし）.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcessWhenUserWithSameEmailExists(): void
+    #[DataProvider('linkingSignupSessions')]
+    public function testProcessWhenUserWithSameEmailExists(?SignupSession $signupSession, string $returnTo): void
     {
         $provider = SocialProvider::LINE;
         $code = new OAuthCode('code');
@@ -193,10 +196,7 @@ class SocialLoginCallbackTest extends TestCase
             ->once()
             ->with($email)
             ->andReturn($existingUser);
-        $identityRepository->shouldReceive('save')
-            ->once()
-            ->with(Mockery::on(static fn (Identity $identity): bool => $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()))))
-            ->andReturnNull();
+        $identityRepository->shouldNotReceive('save');
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldNotReceive('createFromSocialProfile');
@@ -205,14 +205,15 @@ class SocialLoginCallbackTest extends TestCase
         $signupSessionRepository->shouldReceive('find')
             ->once()
             ->with($state)
-            ->andReturnNull();
-        $signupSessionRepository->shouldNotReceive('delete');
+            ->andReturn($signupSession);
+        if ($signupSession !== null) {
+            $signupSessionRepository->shouldReceive('delete')->once()->with($state);
+        } else {
+            $signupSessionRepository->shouldNotReceive('delete');
+        }
 
         $authService = Mockery::mock(AuthServiceInterface::class);
-        $authService->shouldReceive('login')
-            ->once()
-            ->with($existingUser)
-            ->andReturn($existingUser);
+        $authService->shouldNotReceive('login');
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
@@ -225,11 +226,28 @@ class SocialLoginCallbackTest extends TestCase
         $this->app()->instance(AuthServiceInterface::class, $authService);
         $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
+        $sessions = Mockery::mock(SocialLinkingSessionStorageServiceInterface::class);
+        $sessions->shouldReceive('issue')->once()->with($existingUser->identityIdentifier(), $email, Mockery::on(static fn (SocialConnection $connection): bool => $connection->provider() === $provider && $connection->providerUserId() === $profile->providerUserId()), $returnTo);
+        $this->app()->instance(SocialLinkingSessionStorageServiceInterface::class, $sessions);
+        $passkeys = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
+        $passkeys->shouldNotReceive('findByIdentityIdentifier');
+        $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeys);
+
         $useCase = $this->app()->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
-        $this->assertSame('/auth/callback', $output->redirectUrl());
+        $this->assertSame('/auth/social/link', $output->redirectUrl());
+        $this->assertSame([], $existingUser->socialConnections());
+    }
+
+    /** @return array<string, array{?SignupSession, string}> */
+    public static function linkingSignupSessions(): array
+    {
+        return [
+            'without signup' => [null, '/auth/callback'],
+            'with signup' => [new SignupSession(AccountType::INDIVIDUAL, returnTo: '/mypage/wiki'), '/mypage/wiki'],
+        ];
     }
 
     /**
@@ -630,9 +648,9 @@ class SocialLoginCallbackTest extends TestCase
         Identity $resolvedIdentity,
         array $passkeys,
         ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
-        (StepUpOAuthSessionStorageServiceInterface&\Mockery\MockInterface)|null $sessions = null,
-        (OAuthStateRepositoryInterface&\Mockery\MockInterface)|null $oauthState = null,
-        (SocialOAuthServiceInterface&\Mockery\MockInterface)|null $social = null,
+        (StepUpOAuthSessionStorageServiceInterface&MockInterface)|null $sessions = null,
+        (OAuthStateRepositoryInterface&MockInterface)|null $oauthState = null,
+        (SocialOAuthServiceInterface&MockInterface)|null $social = null,
     ): void {
         $oauthState ??= Mockery::mock(OAuthStateRepositoryInterface::class);
         $oauthState->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(

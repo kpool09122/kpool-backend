@@ -1,4 +1,4 @@
-@include('emails.passkey_recovery.layout', [
+@include('emails.auth.layout', [
     'locale' => 'ko',
     'heading' => '패스키 복구 코드 안내',
     'message' => '패스키 복구를 계속하려면 아래 인증 코드를 입력해 주세요.',

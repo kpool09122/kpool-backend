@@ -19,6 +19,7 @@ use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 use Tests\TestCase;
+use Throwable;
 
 class VerifyEmailTest extends TestCase
 {
@@ -99,7 +100,7 @@ class VerifyEmailTest extends TestCase
     }
 
     /**
-     * @param class-string<\Throwable> $expectedException
+     * @param class-string<Throwable> $expectedException
      */
     private function assertFailureDoesNotPersist(
         ?AuthCodeSession $session,

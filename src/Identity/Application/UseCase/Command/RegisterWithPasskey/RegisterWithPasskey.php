@@ -28,12 +28,12 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
 {
     public function __construct(
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private SignupInvitationValidatorInterface $signupInvitationValidator,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private IdentityRepositoryInterface $identityRepository,
         private IdentityFactoryInterface $identityFactory,
-        private PasskeyCredentialRepositoryInterface $credentialRepository,
+        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyCredentialFactoryInterface $credentialFactory,
         private WebAuthnServiceInterface $webAuthnService,
         private ImageServiceInterface $imageService,
@@ -44,7 +44,7 @@ readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
 
     public function process(RegisterWithPasskeyInputPort $input, RegisterWithPasskeyOutputPort $output): void
     {
-        $challenge = $this->challengeSessionStorage->consumeRegistration($input->challengeKey());
+        $challenge = $this->challengeSessionStorageService->consumeRegistration($input->challengeKey());
         $oneTimeToken = $challenge->signupSession->oneTimeToken();
         if ($oneTimeToken !== null) {
             $this->signupInvitationValidator->validate($oneTimeToken, $challenge->email);
@@ -65,7 +65,7 @@ readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
             $input->responseJson(),
             $challenge->options->json(),
         ));
-        if ($this->credentialRepository->findByCredentialId($verified->credentialId) !== null) {
+        if ($this->passkeyCredentialRepository->findByCredentialId($verified->credentialId) !== null) {
             throw new PasskeyCredentialAlreadyExistsException();
         }
 
@@ -82,7 +82,7 @@ readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
         $this->identityRepository->save($identity);
         $passkeyUser->linkToIdentity($identity->identityIdentifier());
         $this->passkeyUserRepository->save($passkeyUser);
-        $this->credentialRepository->save($this->credentialFactory->create(
+        $this->passkeyCredentialRepository->save($this->credentialFactory->create(
             $passkeyUser->identifier(),
             $verified->credentialId,
             $verified->credentialSource,

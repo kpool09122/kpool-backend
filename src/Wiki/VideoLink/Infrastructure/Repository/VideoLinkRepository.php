@@ -12,6 +12,7 @@ use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use UnexpectedValueException;
 
 final class VideoLinkRepository implements VideoLinkRepositoryInterface
 {
@@ -133,7 +134,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             $model->thumbnail_url,
             $model->published_at?->toDateTimeImmutable(),
             $model->display_order,
-            ($model->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
+            ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
         );
     }
 }

@@ -18,6 +18,7 @@ use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInput;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsOutput;
+use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Entity\PasskeyUser;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeExpiredException;
@@ -219,16 +220,16 @@ class CreatePasskeyRegistrationOptionsTest extends TestCase
         ?AuthCodeSessionStorageServiceInterface $authCodeSessionStorageService = null,
         bool $identityExists = false,
         ?Email $email = null,
-        (SignupInvitationValidatorInterface&\Mockery\MockInterface)|null $invitationValidator = null,
+        (SignupInvitationValidatorInterface&MockInterface)|null $invitationValidator = null,
     ): void {
         $email ??= new Email('passkey@example.com');
         $authCodeSessionStorageService ??= Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
-        if ($authCodeSessionStorageService instanceof \Mockery\MockInterface) {
+        if ($authCodeSessionStorageService instanceof MockInterface) {
             $authCodeSessionStorageService->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($this->verifiedSession($email));
         }
         /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $identityRepository->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($identityExists ? Mockery::mock(\Source\Identity\Domain\Entity\Identity::class) : null);
+        $identityRepository->shouldReceive('findByEmail')->zeroOrMoreTimes()->andReturn($identityExists ? Mockery::mock(Identity::class) : null);
         $passkeyUser = new PasskeyUser(new PasskeyUserIdentifier(self::PASSKEY_USER_ID), null);
         /** @var MockInterface&PasskeyUserFactoryInterface $passkeyUsers */
         $passkeyUsers = Mockery::mock(PasskeyUserFactoryInterface::class);

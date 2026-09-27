@@ -6,6 +6,7 @@ namespace Tests\Jobs;
 
 use Application\Jobs\SendAccountConflictNotificationJob;
 use Mockery;
+use Mockery\MockInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
@@ -19,7 +20,7 @@ class SendAccountConflictNotificationJobTest extends TestCase
         $language = Language::KOREAN;
         $job = new SendAccountConflictNotificationJob($email, $language);
 
-        /** @var AuthCodeServiceInterface&\Mockery\MockInterface $authCodeService */
+        /** @var AuthCodeServiceInterface&MockInterface $authCodeService */
         $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
         $authCodeService->shouldReceive('notifyConflict')
             ->once()

@@ -24,6 +24,7 @@ use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use UnexpectedValueException;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
@@ -145,7 +146,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Persisted creation timestamp is missing.'))->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->toDateTimeString()),
         );
     }
 

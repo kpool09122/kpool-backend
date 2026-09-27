@@ -10,6 +10,7 @@ use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrin
 use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Application\UseCase\Query\PrincipalGroupMemberReadModel;
 use Source\Wiki\Principal\Application\UseCase\Query\PrincipalGroupReadModel;
+use UnexpectedValueException;
 
 readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
 {
@@ -30,8 +31,8 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             roleIdentifiers: $group->roleAttachments->map(static fn ($attachment): string => $attachment->role_id)->values()->all(),
             isDefault: $group->is_default,
             members: $group->memberships->map(static function ($membership): PrincipalGroupMemberReadModel {
-                $principal = $membership->principal ?? throw new \UnexpectedValueException('Missing membership principal.');
-                $identity = $principal->identity ?? throw new \UnexpectedValueException('Missing principal identity.');
+                $principal = $membership->principal ?? throw new UnexpectedValueException('Missing membership principal.');
+                $identity = $principal->identity ?? throw new UnexpectedValueException('Missing principal identity.');
 
                 return new PrincipalGroupMemberReadModel(
                     principalIdentifier: $principal->id,

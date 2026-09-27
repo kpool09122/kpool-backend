@@ -6,6 +6,7 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
@@ -23,7 +24,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

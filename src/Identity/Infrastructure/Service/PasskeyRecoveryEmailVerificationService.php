@@ -55,7 +55,7 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         ], JSON_THROW_ON_ERROR));
         if ($identityIdentifier !== null) {
             try {
-                Mail::to((string) $email)->queue(new PasskeyRecoveryCodeMail($language, $code)->onConnection('passkey_recovery'));
+                Mail::to((string) $email)->queue(new PasskeyRecoveryCodeMail($language, $code));
             } catch (Throwable $exception) {
                 $this->logger->error('Failed to queue passkey recovery code email.', ['exception' => $exception]);
             }

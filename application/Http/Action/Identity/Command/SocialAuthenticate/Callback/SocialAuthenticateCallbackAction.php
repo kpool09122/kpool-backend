@@ -21,6 +21,7 @@ use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLogin
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackOutput;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
+use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
 use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\ValueObject\OAuthCode;
@@ -94,6 +95,10 @@ readonly class SocialAuthenticateCallbackAction
             DB::rollBack();
 
             throw new UnprocessableEntityHttpException(detail: error_message('social_oauth_error', $language), previous: $e);
+        } catch (SocialLinkingSessionInvalidException $e) {
+            DB::rollBack();
+
+            throw new UnprocessableEntityHttpException(detail: error_message('invalid_social_linking', $language), previous: $e);
         } catch (StepUpSocialAuthenticationFailedException $e) {
             DB::rollBack();
 

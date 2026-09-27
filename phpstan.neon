@@ -6,6 +6,7 @@ parameters:
         - src
         - application/Http/Action
         - tests
+        - phpstan/Rules
     excludePaths:
         - vendor/*
     exceptions:
@@ -125,5 +126,13 @@ services:
             allowedFunctionNames:
                 - whereLike
                 - whereStartsWith
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\DependencyNameRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\RequireImportedNameRule
         tags:
             - phpstan.rules.rule

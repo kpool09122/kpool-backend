@@ -18,8 +18,8 @@ readonly class EnsureCloudTaskAuthenticated
     /** @param Closure(Request): Response $next */
     public function handle(Request $request, Closure $next): Response
     {
-        $handler = config('queue.connections.passkey_recovery.handler');
-        $email = config('queue.connections.passkey_recovery.service_account_email');
+        $handler = config('queue.connections.cloudtasks.handler');
+        $email = config('queue.connections.cloudtasks.service_account_email');
         if (! is_string($handler) || ! str_starts_with($handler, 'https://') || ! is_string($email) || $email === '') {
             return response()->json(['message' => 'Task handler is not configured.'], 503);
         }

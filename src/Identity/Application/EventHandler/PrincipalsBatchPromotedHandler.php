@@ -12,7 +12,7 @@ readonly class PrincipalsBatchPromotedHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
-        private CollaboratorNotificationServiceInterface $notificationService,
+        private CollaboratorNotificationServiceInterface $collaboratorNotificationService,
     ) {
     }
 
@@ -21,7 +21,7 @@ readonly class PrincipalsBatchPromotedHandler
         $identities = $this->identityRepository->findByIds($event->promotedIdentities());
 
         foreach ($identities as $identity) {
-            $this->notificationService->sendPromotionNotification(
+            $this->collaboratorNotificationService->sendPromotionNotification(
                 $identity->email(),
                 $identity->language(),
             );

@@ -18,6 +18,7 @@ use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
+use UnexpectedValueException;
 
 class RoleRepository implements RoleRepositoryInterface
 {
@@ -185,7 +186,7 @@ class RoleRepository implements RoleRepositoryInterface
             $eloquent->name,
             $policies,
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 }

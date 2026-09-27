@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Override;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
@@ -14,7 +15,7 @@ use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 
 class SharedServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->app->useLangPath(dirname(__DIR__, 2) . '/resources/lang');

@@ -13,6 +13,7 @@ use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent
 use DateTimeImmutable;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -25,6 +26,7 @@ use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use UnexpectedValueException;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
@@ -150,7 +152,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier(TypedValue::string($identityId)));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -205,7 +207,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
             $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
-            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 

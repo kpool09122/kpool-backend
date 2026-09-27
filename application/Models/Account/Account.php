@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -21,10 +25,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $address_locality
  * @property ?string $address_line1
  * @property ?string $address_line2
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'email',
     'type',
@@ -39,12 +43,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'address_line1',
     'address_line2',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'accounts', keyType: 'string')]
+#[Table(name: 'accounts', keyType: 'string')]
 class Account extends Model
 {
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

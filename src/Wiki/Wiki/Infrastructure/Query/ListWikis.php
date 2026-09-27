@@ -104,7 +104,7 @@ readonly class ListWikis implements ListWikisInterface
     private function applySort(Builder $query, string $sort, string $order): void
     {
         if ($order !== 'asc' && $order !== 'desc') {
-            throw new \InvalidArgumentException('Invalid sort order.');
+            throw new InvalidArgumentException('Invalid sort order.');
         }
         if ($sort === 'name') {
             $query->orderBy(DB::raw($this->nameSortExpression()), $order)

@@ -12,7 +12,7 @@ readonly class DemotionWarningsBatchIssuedHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
-        private CollaboratorNotificationServiceInterface $notificationService,
+        private CollaboratorNotificationServiceInterface $collaboratorNotificationService,
     ) {
     }
 
@@ -21,7 +21,7 @@ readonly class DemotionWarningsBatchIssuedHandler
         $identities = $this->identityRepository->findByIds($event->warnedIdentities());
 
         foreach ($identities as $identity) {
-            $this->notificationService->sendDemotionWarning(
+            $this->collaboratorNotificationService->sendDemotionWarning(
                 $identity->email(),
                 $identity->language(),
             );

@@ -12,11 +12,13 @@ use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAt
 use DateTimeImmutable;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use UnexpectedValueException;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
@@ -161,7 +163,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier(TypedValue::string($identityId)));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -236,7 +238,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
             $eloquent->is_default,
-            new DateTimeImmutable(($eloquent->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
             $roles,
         );
 

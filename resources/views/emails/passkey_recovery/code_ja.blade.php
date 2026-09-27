@@ -1,4 +1,4 @@
-@include('emails.passkey_recovery.layout', [
+@include('emails.auth.layout', [
     'locale' => 'ja',
     'heading' => 'パスキー復旧コードのお知らせ',
     'message' => 'パスキーの復旧を続けるには、以下の認証コードを入力してください。',

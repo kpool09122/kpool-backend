@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 use Application\Http\Action\Identity\Command\AddPasskey\AddPasskeyAction;
 use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
+use Application\Http\Action\Identity\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskeyAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRecoveryOptions\CreatePasskeyRecoveryOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
 use Application\Http\Action\Identity\Command\CreateStepUpPasskeyOptions\CreateStepUpPasskeyOptionsAction;
-use Application\Http\Action\Identity\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskeyAction;
 use Application\Http\Action\Identity\Command\DeletePasskey\DeletePasskeyAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
-use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
 use Application\Http\Action\Identity\Command\RecoverPasskey\RecoverPasskeyAction;
+use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
 use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailAction;
+use Application\Http\Action\Identity\Command\SendSocialLinkingEmail\SendSocialLinkingEmailAction;
 use Application\Http\Action\Identity\Command\SocialAuthenticate\Callback\SocialAuthenticateCallbackAction;
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
+use Application\Http\Action\Identity\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialAction;
+use Application\Http\Action\Identity\Command\StartStepUpWithSocial\StartStepUpWithSocialAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
-use Application\Http\Action\Identity\Command\StartStepUpWithSocial\StartStepUpWithSocialAction;
-use Application\Http\Action\Identity\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmailAction;
+use Application\Http\Action\Identity\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
+use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +43,11 @@ Route::post('/auth/passkeys/recovery/email/verification', VerifyPasskeyRecoveryE
 Route::get('/auth/passkeys/recovery/social/{provider}/redirect', StartPasskeyRecoveryWithSocialAction::class);
 Route::post('/auth/passkeys/recovery/options', CreatePasskeyRecoveryOptionsAction::class);
 Route::post('/auth/passkeys/recovery', RecoverPasskeyAction::class);
+
+// SSO linking is authorized by the originating session and its dedicated email code.
+Route::get('/auth/social/link', GetSocialLinkingAction::class);
+Route::post('/auth/social/link/email', SendSocialLinkingEmailAction::class);
+Route::post('/auth/social/link/email/verification', VerifySocialLinkingEmailAction::class);
 
 // Social authentication (public)
 Route::get('/auth/social/{provider}/redirect', SocialLoginRedirectAction::class);

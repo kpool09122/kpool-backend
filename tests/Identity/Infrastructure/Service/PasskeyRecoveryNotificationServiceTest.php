@@ -10,6 +10,7 @@ use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -22,7 +23,7 @@ use Tests\TestCase;
 class PasskeyRecoveryNotificationServiceTest extends TestCase
 {
     #[DataProvider('activeTransactionLevels')]
-    public function testNotificationUsesRecoveryConnectionOnlyAfterCommit(int $transactionLevel): void
+    public function testNotificationUsesDefaultConnectionOnlyAfterCommit(int $transactionLevel): void
     {
         config(['queue.default' => 'sync']);
         Mail::fake();
@@ -38,7 +39,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
         $afterCommit();
 
         Mail::assertQueued(PasskeyRecoveryCompletedMail::class, static function (PasskeyRecoveryCompletedMail $mail): bool {
-            return $mail->hasTo('user@example.com') && $mail->connection === 'passkey_recovery' && $mail->language === Language::JAPANESE;
+            return $mail->hasTo('user@example.com') && $mail->connection === null && $mail->queue === null && $mail->language === Language::JAPANESE;
         });
         Mail::assertNothingSent();
     }
@@ -53,7 +54,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
         (new PasskeyRecoveryNotificationService(new NullLogger()))->notifyCompleted(new Email('user@example.com'), Language::JAPANESE);
 
         Mail::assertQueued(PasskeyRecoveryCompletedMail::class, static function (PasskeyRecoveryCompletedMail $mail): bool {
-            return $mail->hasTo('user@example.com') && $mail->connection === 'passkey_recovery' && $mail->language === Language::JAPANESE;
+            return $mail->hasTo('user@example.com') && $mail->connection === null && $mail->queue === null && $mail->language === Language::JAPANESE;
         });
         Mail::assertNothingSent();
     }
@@ -62,7 +63,7 @@ class PasskeyRecoveryNotificationServiceTest extends TestCase
     public function testQueueFailureIsLoggedWithoutEscaping(int $transactionLevel): void
     {
         $failure = new RuntimeException('Queue unavailable');
-        /** @var LoggerInterface&\Mockery\MockInterface $logger */
+        /** @var LoggerInterface&MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once()->with('Failed to queue passkey recovery completion email.', ['exception' => $failure]);
         $pending = Mockery::mock(PendingMail::class);

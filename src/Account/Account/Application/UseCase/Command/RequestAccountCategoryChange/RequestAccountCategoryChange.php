@@ -18,7 +18,7 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
-        private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
+        private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountCategoryChangeRequestFactoryInterface $requestFactory,
         private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
     ) {
@@ -40,11 +40,11 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
             throw new IncompleteAccountContactForCategoryChangeException();
         }
         $this->documentRequirementValidator->validate($account->type(), $account->documents()->documentTypes());
-        if ($this->requestRepository->findPendingByAccountId($input->accountIdentifier()) !== null) {
+        if ($this->accountCategoryChangeRequestRepository->findPendingByAccountId($input->accountIdentifier()) !== null) {
             throw new AccountCategoryChangeRequestAlreadyPendingException();
         }
         $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory());
-        $this->requestRepository->save($request);
+        $this->accountCategoryChangeRequestRepository->save($request);
         $output->setRequest($request);
     }
 }

@@ -14,14 +14,14 @@ use Source\Account\Principal\Domain\ValueObject\Resource;
 readonly class RejectAccountCategoryChangeRequest implements RejectAccountCategoryChangeRequestInterface
 {
     public function __construct(
-        private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
+        private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
     public function process(RejectAccountCategoryChangeRequestInputPort $input, RejectAccountCategoryChangeRequestOutputPort $output): void
     {
-        $request = $this->requestRepository->findById($input->requestIdentifier());
+        $request = $this->accountCategoryChangeRequestRepository->findById($input->requestIdentifier());
         if ($request === null) {
             throw new AccountCategoryChangeRequestNotFoundException();
         }
@@ -36,7 +36,7 @@ readonly class RejectAccountCategoryChangeRequest implements RejectAccountCatego
         }
 
         $request->reject($reviewerAccountIdentifier, $input->rejectionReason());
-        $this->requestRepository->save($request);
+        $this->accountCategoryChangeRequestRepository->save($request);
 
         $output->setRequest($request);
     }

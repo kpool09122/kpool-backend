@@ -94,33 +94,33 @@ The backend is published on `http://localhost:8080`, and containers joined to th
 
 If the frontend runs on another origin, set `FRONTEND_URL` in `.env` so CORS permits requests from that origin.
 
-### Passkey Recovery Mail Queue
+### Default Mail Queue
 
-Passkey recovery emails use the `passkey_recovery` connection. `APP_ENV=local`
-and `APP_ENV=testing` use Redis; all other environments use Google Cloud Tasks.
-The connection is independent of `QUEUE_CONNECTION`.
+Passkey recovery and SSO linking emails use the default connection and queue.
+`APP_ENV=local` and `APP_ENV=testing` default to Redis; all other environments
+default to Google Cloud Tasks. `QUEUE_CONNECTION` can override the connection.
 
 For local development, start the worker with:
 
 ```bash
-task queue-work connection=passkey_recovery queue=passkey-recovery
+task queue-work
 ```
 
-Google Cloud infrastructure can be provisioned later. Before enabling recovery
+Google Cloud infrastructure can be provisioned later. Before enabling queued
 emails in a hosted environment, create a Cloud Tasks queue and configure:
 
 ```bash
 APP_ENV=production
 CLOUD_TASKS_PROJECT=your-project-id
 CLOUD_TASKS_LOCATION=asia-northeast1
-PASSKEY_RECOVERY_QUEUE=passkey-recovery
+CLOUD_TASKS_QUEUE=default
 CLOUD_TASKS_HANDLER=https://your-task-handler.example.com
 CLOUD_TASKS_SERVICE_EMAIL=tasks@your-project-id.iam.gserviceaccount.com
 CLOUD_TASKS_HANDLER_ENABLED=true
 ```
 
 `CLOUD_TASKS_HANDLER` is the HTTPS base URL of the Laravel app that processes
-mail. Tasks are delivered to `/internal/queue/passkey-recovery`. The app verifies
+mail. Tasks are delivered to `/internal/queue/default`. The app verifies
 the Google ID token's signature, expiry, issuer, audience and service account
 email before processing the job. The handler is disabled by default and remains
 disabled in local and testing environments. Cloud Tasks uses HTTP delivery, so

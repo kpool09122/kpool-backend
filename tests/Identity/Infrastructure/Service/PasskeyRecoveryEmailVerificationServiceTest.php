@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Mockery;
+use Mockery\MockInterface;
+use Override;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
@@ -34,7 +36,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
@@ -88,7 +90,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function testCodeUsesRecoveryConnectionEvenWhenDefaultConnectionIsSync(): void
+    public function testCodeUsesDefaultConnection(): void
     {
         config(['queue.default' => 'sync']);
         Mail::fake();
@@ -100,7 +102,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         Mail::assertQueued(PasskeyRecoveryCodeMail::class, function (PasskeyRecoveryCodeMail $mail) use ($service, $email, $identityId): bool {
             $this->assertEquals($identityId, $service->verify($email, new AuthCode($mail->code)));
 
-            return $mail->hasTo(self::EMAIL) && $mail->connection === 'passkey_recovery' && $mail->language === Language::JAPANESE;
+            return $mail->hasTo(self::EMAIL) && $mail->connection === null && $mail->queue === null && $mail->language === Language::JAPANESE;
         });
         Mail::assertNothingSent();
     }
@@ -115,7 +117,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     public function testQueueFailureIsLoggedWithoutFailingTheRequest(): void
     {
         $failure = new RuntimeException('Queue unavailable');
-        /** @var LoggerInterface&\Mockery\MockInterface $logger */
+        /** @var LoggerInterface&MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once()->with('Failed to queue passkey recovery code email.', ['exception' => $failure]);
         $pending = Mockery::mock(PendingMail::class);

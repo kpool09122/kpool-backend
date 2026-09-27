@@ -34,7 +34,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
     private const string SENIOR_COLLABORATOR_GROUP_NAME = 'Senior Collaborator';
 
     public function __construct(
-        private ContributionPointSummaryRepositoryInterface $summaryRepository,
+        private ContributionPointSummaryRepositoryInterface $contributionPointSummaryRepository,
         private DemotionWarningRepositoryInterface $demotionWarningRepository,
         private DemotionWarningFactoryInterface $demotionWarningFactory,
         private PromotionHistoryRepositoryInterface $promotionHistoryRepository,
@@ -147,7 +147,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
      */
     private function calculateCumulativePoints(array $yearMonths): array
     {
-        $summaries = $this->summaryRepository->findByYearMonths($yearMonths);
+        $summaries = $this->contributionPointSummaryRepository->findByYearMonths($yearMonths);
 
         $cumulativePoints = [];
         foreach ($summaries as $summary) {

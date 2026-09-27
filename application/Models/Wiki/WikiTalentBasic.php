@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Override;
 
 /**
  * @property string $wiki_id
@@ -28,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $fandom_name
  * @property-read Collection<int, Wiki> $groups
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'wiki_id',
     'name',
     'normalized_name',
@@ -46,10 +49,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'blood_type',
     'fandom_name',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_talent_basics', key: 'wiki_id', keyType: 'string')]
+#[Table(name: 'wiki_talent_basics', key: 'wiki_id', keyType: 'string')]
 class WikiTalentBasic extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     /**

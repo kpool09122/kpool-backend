@@ -30,7 +30,7 @@ readonly class CreatePasskeyOptions implements CreatePasskeyOptionsInterface
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private WebAuthnChallengeGeneratorInterface $challengeGenerator,
         private WebAuthnServiceInterface $webAuthnService,
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
@@ -66,7 +66,7 @@ readonly class CreatePasskeyOptions implements CreatePasskeyOptionsInterface
             $this->passkeyUserRepository->save($passkeyUser);
         }
 
-        $this->challengeSessionStorage->storeAddition(new AdditionChallenge(
+        $this->challengeSessionStorageService->storeAddition(new AdditionChallenge(
             $challengeKey,
             $challenge,
             $options,

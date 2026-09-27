@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Query;
 
+use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 
 final class WikiBasicReadModelFactory
@@ -182,7 +183,7 @@ final class WikiBasicReadModelFactory
     private static function groupSummaryModel(mixed $value): TalentWikiGroupSummaryReadModel
     {
         if (! $value instanceof TalentWikiGroupSummaryReadModel) {
-            throw new \InvalidArgumentException('Expected a group summary.');
+            throw new InvalidArgumentException('Expected a group summary.');
         }
 
         return $value;
@@ -191,7 +192,7 @@ final class WikiBasicReadModelFactory
     private static function talentSummaryModel(mixed $value): SongWikiTalentSummaryReadModel
     {
         if (! $value instanceof SongWikiTalentSummaryReadModel) {
-            throw new \InvalidArgumentException('Expected a talent summary.');
+            throw new InvalidArgumentException('Expected a talent summary.');
         }
 
         return $value;

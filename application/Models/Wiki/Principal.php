@@ -6,11 +6,14 @@ namespace Application\Models\Wiki;
 
 use Application\Models\Account\Account;
 use Application\Models\Identity\Identity;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -24,19 +27,19 @@ use Illuminate\Support\Carbon;
  * @property-read Identity|null $identity
  * @property-read Account|null $account
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'identity_id',
     'account_id',
     'delegation_identifier',
     'enabled',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principals', keyType: 'string')]
+#[Table(name: 'wiki_principals', keyType: 'string')]
 class Principal extends Model
 {
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

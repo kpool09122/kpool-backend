@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\CreateStepUpPasskeyOptions;
 
+use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
@@ -61,7 +62,7 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
             static fn (StepUpAuthenticationChallenge $stored): bool => (string) $stored->key === self::CHALLENGE_KEY
                 && (string) $stored->identityIdentifier === self::IDENTITY_ID
                 && $stored->options === $options
-                && $stored->expiresAt > new \DateTimeImmutable(),
+                && $stored->expiresAt > new DateTimeImmutable(),
         ));
         $this->bindDependencies([$first, $second], $webAuthn, $storage);
 
@@ -93,8 +94,8 @@ class CreateStepUpPasskeyOptionsTest extends TestCase
     /** @param PasskeyCredential[] $credentials */
     private function bindDependencies(
         array $credentials,
-        (WebAuthnServiceInterface&\Mockery\MockInterface)|null $webAuthn = null,
-        (ChallengeSessionStorageServiceInterface&\Mockery\MockInterface)|null $storage = null,
+        (WebAuthnServiceInterface&MockInterface)|null $webAuthn = null,
+        (ChallengeSessionStorageServiceInterface&MockInterface)|null $storage = null,
     ): void {
         $repository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $repository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->with(Mockery::on(

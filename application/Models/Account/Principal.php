@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Models\Account;
 
 use Application\Models\Identity\Identity;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,12 +22,12 @@ use Illuminate\Support\Carbon;
  * @property-read Identity|null $identity
  * @property-read Collection<int, PrincipalGroupMembership> $principalGroupMemberships
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'identity_id',
     'account_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_principals', keyType: 'string')]
+#[Table(name: 'account_principals', keyType: 'string')]
 class Principal extends Model
 {
     public $incrementing = false;

@@ -1,4 +1,4 @@
-@include('emails.passkey_recovery.layout', [
+@include('emails.auth.layout', [
     'locale' => 'en',
     'heading' => 'Your Passkey Recovery Code',
     'message' => 'Please enter the following verification code to continue recovering your passkeys.',

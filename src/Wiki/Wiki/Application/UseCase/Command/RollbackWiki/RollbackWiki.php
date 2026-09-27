@@ -26,7 +26,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
 {
     public function __construct(
         private WikiRepositoryInterface $wikiRepository,
-        private WikiSnapshotRepositoryInterface $snapshotRepository,
+        private WikiSnapshotRepositoryInterface $wikiSnapshotRepository,
         private WikiSnapshotFactoryInterface $snapshotFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
@@ -97,7 +97,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
         }
 
         // 6. 翻訳セット内の全Snapshotを一括取得（N+1解消）
-        $snapshots = $this->snapshotRepository->findByTranslationSetIdentifierAndVersion(
+        $snapshots = $this->wikiSnapshotRepository->findByTranslationSetIdentifierAndVersion(
             $wiki->translationSetIdentifier(),
             $targetVersion
         );
@@ -139,7 +139,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
 
             // スナップショット保存（ロールバック後の状態を保存）
             $newSnapshot = $this->snapshotFactory->create($w);
-            $this->snapshotRepository->save($newSnapshot);
+            $this->wikiSnapshotRepository->save($newSnapshot);
 
             // 履歴記録
             $history = $this->wikiHistoryFactory->create(

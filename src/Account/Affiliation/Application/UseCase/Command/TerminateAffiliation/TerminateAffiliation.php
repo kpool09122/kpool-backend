@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation;
 
+use LogicException;
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
@@ -42,7 +43,7 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
             $affiliation->affiliationIdentifier(),
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
-            $affiliation->terminatedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
+            $affiliation->terminatedAt() ?? throw new LogicException('Lifecycle transition did not set its timestamp.'),
         ));
         $output->setAffiliation($affiliation);
     }

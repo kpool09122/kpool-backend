@@ -21,26 +21,26 @@ use Source\Identity\Domain\Service\AuthServiceInterface;
 
 readonly class RecoverPasskey implements RecoverPasskeyInterface
 {
-    public function __construct(private PasskeyRecoverySessionStorageServiceInterface $sessions, private ChallengeSessionStorageServiceInterface $challenges, private IdentityRepositoryInterface $identityRepository, private PasskeyUserRepositoryInterface $passkeyUserRepository, private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository, private PasskeyCredentialFactoryInterface $factory, private WebAuthnServiceInterface $webAuthn, private AuthServiceInterface $auth, private PasskeyRecoveryNotificationServiceInterface $notification, private SecurityEventRecorderInterface $securityEvents)
+    public function __construct(private PasskeyRecoverySessionStorageServiceInterface $passkeyRecoverySessionStorageService, private ChallengeSessionStorageServiceInterface $challengeSessionStorageService, private IdentityRepositoryInterface $identityRepository, private PasskeyUserRepositoryInterface $passkeyUserRepository, private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository, private PasskeyCredentialFactoryInterface $factory, private WebAuthnServiceInterface $webAuthnService, private AuthServiceInterface $authService, private PasskeyRecoveryNotificationServiceInterface $passkeyRecoveryNotificationService, private SecurityEventRecorderInterface $securityEvents)
     {
     }
 
     public function process(RecoverPasskeyInputPort $input): void
     {
-        $session = $this->sessions->requireValid($input->recoveryKey());
-        $challenge = $this->challenges->consumeRecoveryRegistration($input->challengeKey(), $session->identityIdentifier, $input->recoveryKey());
+        $session = $this->passkeyRecoverySessionStorageService->requireValid($input->recoveryKey());
+        $challenge = $this->challengeSessionStorageService->consumeRecoveryRegistration($input->challengeKey(), $session->identityIdentifier, $input->recoveryKey());
         $identity = $this->identityRepository->findById($session->identityIdentifier) ?? throw new IdentityNotFoundException();
         $user = $this->passkeyUserRepository->findByIdentityIdentifier($session->identityIdentifier) ?? throw new PasskeyUserNotFoundException();
-        $verified = $this->webAuthn->verifyRegistration(new RegistrationVerificationInput($input->responseJson(), $challenge->options->json()));
+        $verified = $this->webAuthnService->verifyRegistration(new RegistrationVerificationInput($input->responseJson(), $challenge->options->json()));
         if ($this->passkeyCredentialRepository->findByCredentialId($verified->credentialId) !== null) {
             throw new PasskeyCredentialAlreadyExistsException();
         }
         $credential = $this->factory->create($user->identifier(), $verified->credentialId, $verified->credentialSource, $verified->signCount, $verified->backupEligible, $verified->backupState, $verified->transports, $input->displayName());
         $this->passkeyCredentialRepository->save($credential);
         $this->passkeyCredentialRepository->deleteAllExcept($session->identityIdentifier, $credential->identifier());
-        $this->sessions->consume($input->recoveryKey(), $session->identityIdentifier);
-        $this->auth->invalidateAllSessions($session->identityIdentifier);
+        $this->passkeyRecoverySessionStorageService->consume($input->recoveryKey(), $session->identityIdentifier);
+        $this->authService->invalidateAllSessions($session->identityIdentifier);
         $this->securityEvents->record('passkey.recovery.completed', $session->identityIdentifier, ['method' => $session->method]);
-        $this->notification->notifyCompleted($identity->email(), $identity->language());
+        $this->passkeyRecoveryNotificationService->notifyCompleted($identity->email(), $identity->language());
     }
 }

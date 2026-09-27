@@ -629,10 +629,88 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SendAuthCodeRequestBody'
+  /auth/social/link:
+    get:
+      operationId: IdentityAuthOperations_getSocialLinking
+      description: Read pending SSO linking confirmation using the originating Laravel session cookie. Returns 422 when absent, expired, consumed, or accessed from another session. No provider, identity, email, return path or pending key is accepted from the client.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLinkingResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/social/link/email:
+    post:
+      operationId: IdentityAuthOperations_sendSocialLinkingEmail
+      description: Request a dedicated code for the pending target's registered email using the same session cookie. No request body is required. Codes expire with the ten-minute pending operation; a successful resend invalidates the old code without resetting failed attempts. A 60-second cooldown and a maximum of five sends per pending operation and per target identity per hour apply; throttled requests return accepted=true without a new code. Invalid or expired pending operations return 422.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSocialLinkingEmailResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/social/link/email/verification:
+    post:
+      operationId: IdentityAuthOperations_verifySocialLinkingEmail
+      description: Verify the dedicated code and consume pending authorization in the originating Laravel session. Re-fetch and check the target and SSO ownership, save the addition and log in with a regenerated session ID within an Action-managed database transaction. Returns an allowed frontend return path. Invalid codes, expiry, five failed attempts, reuse and linking conflicts return 422. A save failure never logs in; the authorization remains consumed and OAuth must be restarted before retrying.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifySocialLinkingEmailRequestBody'
   /auth/social/{provider}/callback:
     get:
       operationId: IdentityAuthOperations_socialLoginCallback
-      description: Handle the social login callback and return the client redirect URL.
+      description: Handle OAuth and redirect the browser. An unlinked provider whose email matches an existing identity redirects to the frontend /auth/social/link confirmation screen, retaining server-side pending data for ten minutes in the originating Laravel session. No linking or login occurs before dedicated email verification. Linked login, new identity, invitation, step-up and passkey recovery flows retain their existing redirects.
       parameters:
         - name: provider
           in: path
@@ -652,12 +730,13 @@ paths:
             type: string
           explode: false
       responses:
-        '200':
-          description: Response returned by social login endpoints.
-          content:
-            application/json:
+        '302':
+          description: Actual browser redirect returned by the OAuth callback.
+          headers:
+            location:
+              required: true
               schema:
-                $ref: '#/components/schemas/RedirectUrlResult'
+                type: string
         '422':
           description: Client error
           content:
@@ -1674,6 +1753,32 @@ components:
           type: string
           description: Registered email address that will receive the recovery code when it exists.
       description: Request body for sending a passkey recovery verification code.
+    SendSocialLinkingEmailResult:
+      type: object
+      required:
+        - accepted
+      properties:
+        accepted:
+          type: boolean
+          description: The request was processed. Cooldown or rate-limited requests also return true without sending another email.
+    SocialLinkingResult:
+      type: object
+      required:
+        - provider
+        - email
+        - expiresAt
+      properties:
+        provider:
+          type: string
+          description: Authenticated SSO provider being added. The provider account ID remains server-side.
+        email:
+          type: string
+          description: Registered email address receiving the dedicated linking code; cannot be changed by the client.
+        expiresAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Absolute expiry of the pending linking operation. Restart OAuth after expiry.
+      description: Pending SSO addition, available only in the Laravel session that completed OAuth. No login or linking has occurred yet.
     SwitchableAccountSummary:
       type: object
       required:
@@ -1768,6 +1873,15 @@ components:
           maxLength: 6
           description: Six-digit recovery code delivered to the email address.
       description: Request body for verifying a passkey recovery email code.
+    VerifySocialLinkingEmailRequestBody:
+      type: object
+      required:
+        - authCode
+      properties:
+        authCode:
+          type: string
+          pattern: ^[0-9]{6}$
+          description: Dedicated six-digit SSO linking code. Registration and passkey recovery codes cannot authorize linking.
 servers:
   - url: /api/identity
     description: Laravel route prefix from bootstrap/app.php.

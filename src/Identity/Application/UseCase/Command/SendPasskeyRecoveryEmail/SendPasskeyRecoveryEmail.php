@@ -9,13 +9,13 @@ use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 
 readonly class SendPasskeyRecoveryEmail implements SendPasskeyRecoveryEmailInterface
 {
-    public function __construct(private IdentityRepositoryInterface $identityRepository, private PasskeyRecoveryEmailVerificationServiceInterface $verification)
+    public function __construct(private IdentityRepositoryInterface $identityRepository, private PasskeyRecoveryEmailVerificationServiceInterface $passkeyRecoveryEmailVerificationService)
     {
     }
 
     public function process(SendPasskeyRecoveryEmailInputPort $input): void
     {
         $identity = $this->identityRepository->findByEmail($input->email());
-        $this->verification->send($input->email(), $identity?->identityIdentifier(), $input->language());
+        $this->passkeyRecoveryEmailVerificationService->send($input->email(), $identity?->identityIdentifier(), $input->language());
     }
 }

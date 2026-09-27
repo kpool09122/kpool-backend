@@ -13,6 +13,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
@@ -49,7 +50,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
 
         $query = WikiModel::query()
             ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
-            ->joinSub($inconsistentSets, 'version_inconsistent_sets', function (\Illuminate\Database\Query\JoinClause $join): void {
+            ->joinSub($inconsistentSets, 'version_inconsistent_sets', function (JoinClause $join): void {
                 $join->on('version_inconsistent_sets.translation_set_identifier', '=', 'wikis.translation_set_identifier')
                     ->on('version_inconsistent_sets.latest_version', '=', 'wikis.version');
             })
@@ -103,7 +104,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
     private function applySort(Builder $query, string $sort, string $order): void
     {
         if ($order !== 'asc' && $order !== 'desc') {
-            throw new \InvalidArgumentException('Invalid sort order.');
+            throw new InvalidArgumentException('Invalid sort order.');
         }
         if ($sort === 'name') {
             $query->orderBy(DB::raw($this->nameSortExpression()), $order)

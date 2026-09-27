@@ -4,13 +4,30 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Application\Models\Identity\Identity;
+use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
+use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
+use Application\Providers\Account\UseCaseServiceProvider as AccountUseCaseServiceProvider;
+use Application\Providers\ClientServiceProvider;
+use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
+use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
+use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
+use Application\Providers\Monetization\DomainServiceProvider as MonetizationDomainServiceProvider;
+use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
+use Application\Providers\SharedServiceProvider;
+use Application\Providers\SiteManagement\DomainServiceProvider as SiteManagementDomainServiceProvider;
+// Add conditional-db related imports
+use Application\Providers\SiteManagement\UseCaseServiceProvider as SiteManagementUseCaseServiceProvider;
+use Application\Providers\Wiki\DomainServiceProvider;
+use Application\Providers\Wiki\EventServiceProvider;
+use Application\Providers\Wiki\UseCaseServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
-// Add conditional-db related imports
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
+use Override;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 
 abstract class TestCase extends OrchestraTestCase
@@ -20,7 +37,7 @@ abstract class TestCase extends OrchestraTestCase
      *
      * @var bool
      */
-    #[\Override]
+    #[Override]
     protected $enablesPackageDiscoveries = true;
 
     // Enable DB usage only for tests belonging to the 'useDb' group (now defined via #[Group('useDb')]).
@@ -29,27 +46,27 @@ abstract class TestCase extends OrchestraTestCase
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array<int, class-string>
      */
     protected function getPackageProviders($app): array
     {
         return [
-            \Application\Providers\Wiki\DomainServiceProvider::class,
-            \Application\Providers\Wiki\UseCaseServiceProvider::class,
-            \Application\Providers\Wiki\EventServiceProvider::class,
-            \Application\Providers\SharedServiceProvider::class,
-            \Application\Providers\SiteManagement\DomainServiceProvider::class,
-            \Application\Providers\SiteManagement\UseCaseServiceProvider::class,
-            \Application\Providers\Identity\UseCaseServiceProvider::class,
-            \Application\Providers\Identity\DomainServiceProvider::class,
-            \Application\Providers\Identity\EventServiceProvider::class,
-            \Application\Providers\Account\UseCaseServiceProvider::class,
-            \Application\Providers\Account\DomainServiceProvider::class,
-            \Application\Providers\Account\EventServiceProvider::class,
-            \Application\Providers\Monetization\UseCaseServiceProvider::class,
-            \Application\Providers\Monetization\DomainServiceProvider::class,
-            \Application\Providers\ClientServiceProvider::class,
+            DomainServiceProvider::class,
+            UseCaseServiceProvider::class,
+            EventServiceProvider::class,
+            SharedServiceProvider::class,
+            SiteManagementDomainServiceProvider::class,
+            SiteManagementUseCaseServiceProvider::class,
+            IdentityUseCaseServiceProvider::class,
+            IdentityDomainServiceProvider::class,
+            IdentityEventServiceProvider::class,
+            AccountUseCaseServiceProvider::class,
+            AccountDomainServiceProvider::class,
+            AccountEventServiceProvider::class,
+            MonetizationUseCaseServiceProvider::class,
+            MonetizationDomainServiceProvider::class,
+            ClientServiceProvider::class,
         ];
     }
 
@@ -97,7 +114,7 @@ abstract class TestCase extends OrchestraTestCase
     /**
      * Define environment setup (no-op for non-DB tests).
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return void
      */
     protected function defineEnvironment($app): void
@@ -112,7 +129,7 @@ abstract class TestCase extends OrchestraTestCase
         }
 
         // Auth設定: 正しいIdentityモデルを使用
-        $app['config']->set('auth.providers.users.model', \Application\Models\Identity\Identity::class);
+        $app['config']->set('auth.providers.users.model', Identity::class);
     }
 
     /**

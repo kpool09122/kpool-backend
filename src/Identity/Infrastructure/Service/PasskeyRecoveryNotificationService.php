@@ -23,7 +23,7 @@ readonly class PasskeyRecoveryNotificationService implements PasskeyRecoveryNoti
     {
         $enqueue = function () use ($email, $language): void {
             try {
-                Mail::to((string) $email)->queue(new PasskeyRecoveryCompletedMail($language)->onConnection('passkey_recovery'));
+                Mail::to((string) $email)->queue(new PasskeyRecoveryCompletedMail($language));
             } catch (Throwable $exception) {
                 $this->logger->error('Failed to queue passkey recovery completion email.', ['exception' => $exception]);
             }

@@ -18,18 +18,18 @@ use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 readonly class AddPasskey implements AddPasskeyInterface
 {
     public function __construct(
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyCredentialFactoryInterface $passkeyCredentialFactory,
         private WebAuthnServiceInterface $webAuthnService,
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
     ) {
     }
 
     public function process(AddPasskeyInputPort $input, AddPasskeyOutputPort $output): void
     {
-        $challenge = $this->challengeSessionStorage->consumeAddition(
+        $challenge = $this->challengeSessionStorageService->consumeAddition(
             $input->challengeKey(),
             $input->identityIdentifier(),
         );
@@ -46,7 +46,7 @@ readonly class AddPasskey implements AddPasskeyInterface
             throw new PasskeyCredentialAlreadyExistsException();
         }
 
-        $this->stepUpAuthenticationStorage->requireValid(
+        $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
             StepUpAuthenticationScope::PASSKEY_MANAGE,
         );
