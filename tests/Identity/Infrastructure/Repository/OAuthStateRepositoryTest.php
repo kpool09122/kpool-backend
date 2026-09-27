@@ -7,6 +7,7 @@ namespace Tests\Identity\Infrastructure\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
@@ -21,7 +22,7 @@ class OAuthStateRepositoryTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

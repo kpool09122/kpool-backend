@@ -10,12 +10,12 @@ use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInt
 readonly class AffiliationRequestedHandler
 {
     public function __construct(
-        private AffiliationRequestNotificationServiceInterface $notificationService,
+        private AffiliationRequestNotificationServiceInterface $affiliationRequestNotificationService,
     ) {
     }
 
     public function handle(AffiliationRequested $event): void
     {
-        $this->notificationService->sendAffiliationRequestNotification($event->targetEmail);
+        $this->affiliationRequestNotificationService->sendAffiliationRequestNotification($event->targetEmail);
     }
 }

@@ -7,6 +7,7 @@ namespace Tests\Identity\Infrastructure\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
@@ -23,7 +24,7 @@ class SignupSessionRepositoryTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

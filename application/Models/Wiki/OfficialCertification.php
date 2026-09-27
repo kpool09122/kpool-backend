@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Application\Models\Account\Account;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -22,9 +26,9 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Account|null $ownerAccount
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Wiki> $wikis
+ * @property-read Collection<int, Wiki> $wikis
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'resource_type',
     'translation_set_identifier',
@@ -34,13 +38,13 @@ use Illuminate\Support\Carbon;
     'approved_at',
     'rejected_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'official_certifications', keyType: 'string')]
+#[Table(name: 'official_certifications', keyType: 'string')]
 class OfficialCertification extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

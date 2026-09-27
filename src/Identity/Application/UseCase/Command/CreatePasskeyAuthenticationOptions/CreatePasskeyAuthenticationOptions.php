@@ -20,7 +20,7 @@ readonly class CreatePasskeyAuthenticationOptions implements CreatePasskeyAuthen
     public function __construct(
         private WebAuthnChallengeGeneratorInterface $challengeGenerator,
         private WebAuthnServiceInterface $webAuthnService,
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
@@ -33,7 +33,7 @@ readonly class CreatePasskeyAuthenticationOptions implements CreatePasskeyAuthen
         $challenge = $this->challengeGenerator->generate();
         $options = $this->webAuthnService->createAuthenticationOptions(new AuthenticationOptionsInput($challenge));
 
-        $this->challengeSessionStorage->storeAuthentication(new AuthenticationChallenge(
+        $this->challengeSessionStorageService->storeAuthentication(new AuthenticationChallenge(
             $challengeKey,
             $challenge,
             $options,

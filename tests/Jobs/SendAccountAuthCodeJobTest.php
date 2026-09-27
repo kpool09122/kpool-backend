@@ -6,6 +6,7 @@ namespace Tests\Jobs;
 
 use Application\Jobs\SendAccountAuthCodeJob;
 use Mockery;
+use Mockery\MockInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInput;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Shared\Domain\ValueObject\Email;
@@ -20,7 +21,7 @@ class SendAccountAuthCodeJobTest extends TestCase
         $language = Language::KOREAN;
         $job = new SendAccountAuthCodeJob($email, $language);
 
-        /** @var SendAuthCodeInterface&\Mockery\MockInterface $sendAuthCode */
+        /** @var SendAuthCodeInterface&MockInterface $sendAuthCode */
         $sendAuthCode = Mockery::mock(SendAuthCodeInterface::class);
         $sendAuthCode->shouldReceive('process')
             ->once()

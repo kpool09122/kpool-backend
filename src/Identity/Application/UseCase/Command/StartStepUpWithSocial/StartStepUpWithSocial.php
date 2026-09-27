@@ -24,8 +24,8 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private SocialOAuthServiceInterface $socialOAuthService,
         private OAuthStateGeneratorInterface $stateGenerator,
-        private OAuthStateRepositoryInterface $stateRepository,
-        private StepUpOAuthSessionStorageServiceInterface $sessionStorage,
+        private OAuthStateRepositoryInterface $oAuthStateRepository,
+        private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
     ) {
     }
 
@@ -40,8 +40,8 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         }
         $generatedState = $this->stateGenerator->generate();
         $state = new OAuthState('step-up-' . $generatedState, $generatedState->expiresAt());
-        $this->stateRepository->store($state);
-        $this->sessionStorage->store($state, new StepUpOAuthSession($input->identityIdentifier(), $input->provider(), StepUpAuthenticationScope::PASSKEY_MANAGE, $state->expiresAt(), self::RETURN_TO));
+        $this->oAuthStateRepository->store($state);
+        $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession($input->identityIdentifier(), $input->provider(), StepUpAuthenticationScope::PASSKEY_MANAGE, $state->expiresAt(), self::RETURN_TO));
         $output->setRedirectUrl($this->socialOAuthService->buildRedirectUrl($input->provider(), $state));
     }
 }

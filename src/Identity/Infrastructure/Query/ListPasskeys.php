@@ -14,13 +14,13 @@ use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 readonly class ListPasskeys implements ListPasskeysInterface
 {
     public function __construct(
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
     ) {
     }
 
     public function process(ListPasskeysInputPort $input): array
     {
-        $this->stepUpAuthenticationStorage->requireValid(
+        $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
             StepUpAuthenticationScope::PASSKEY_MANAGE,
         );

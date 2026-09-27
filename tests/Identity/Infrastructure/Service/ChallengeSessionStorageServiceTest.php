@@ -7,6 +7,7 @@ namespace Tests\Identity\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthn\AdditionChallenge;
@@ -36,7 +37,7 @@ class ChallengeSessionStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

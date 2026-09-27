@@ -11,6 +11,7 @@ use Source\Account\Principal\Application\UseCase\Query\ListPrincipalGroups\ListP
 use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupMemberReadModel;
 use Source\Account\Principal\Application\UseCase\Query\PrincipalGroupReadModel;
 use Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization;
+use UnexpectedValueException;
 
 readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
 {
@@ -39,8 +40,8 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             isDefault: $group->is_default,
             members: $group->members
                 ->map(static function ($member): PrincipalGroupMemberReadModel {
-                    $principal = $member->principal ?? throw new \UnexpectedValueException('Required account relationship is missing.');
-                    $identity = $principal->identity ?? throw new \UnexpectedValueException('Required account relationship is missing.');
+                    $principal = $member->principal ?? throw new UnexpectedValueException('Required account relationship is missing.');
+                    $identity = $principal->identity ?? throw new UnexpectedValueException('Required account relationship is missing.');
 
                     return new PrincipalGroupMemberReadModel(
                         principalIdentifier: $principal->id,

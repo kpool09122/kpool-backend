@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Session\ArraySessionHandler;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\StepUpAuthentication;
@@ -25,7 +26,7 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

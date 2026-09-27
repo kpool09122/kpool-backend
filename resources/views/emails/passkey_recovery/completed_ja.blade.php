@@ -1,4 +1,4 @@
-@include('emails.passkey_recovery.layout', [
+@include('emails.auth.layout', [
     'locale' => 'ja',
     'heading' => 'パスキーの復旧が完了しました',
     'message' => '新しいパスキーの登録が完了し、以前のパスキーはすべて削除されました。',

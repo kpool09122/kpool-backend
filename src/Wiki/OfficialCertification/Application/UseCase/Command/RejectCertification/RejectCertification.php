@@ -17,7 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 readonly class RejectCertification implements RejectCertificationInterface
 {
     public function __construct(
-        private OfficialCertificationRepositoryInterface $repository,
+        private OfficialCertificationRepositoryInterface $officialCertificationRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
@@ -31,7 +31,7 @@ readonly class RejectCertification implements RejectCertificationInterface
      */
     public function process(RejectCertificationInputPort $input, RejectCertificationOutputPort $output): void
     {
-        $certification = $this->repository->findById($input->certificationIdentifier());
+        $certification = $this->officialCertificationRepository->findById($input->certificationIdentifier());
 
         if ($certification === null) {
             throw new OfficialCertificationNotFoundException();
@@ -56,7 +56,7 @@ readonly class RejectCertification implements RejectCertificationInterface
 
         $certification->reject();
 
-        $this->repository->save($certification);
+        $this->officialCertificationRepository->save($certification);
 
         $output->setOfficialCertification($certification);
     }

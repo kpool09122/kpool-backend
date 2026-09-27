@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers\Identity;
 
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
@@ -17,6 +18,7 @@ use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSess
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\SecurityEventRecorderInterface;
 use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
+use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
@@ -54,6 +56,7 @@ use Source\Identity\Infrastructure\Service\PasskeyRecoveryNotificationService;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryOAuthSessionStorageService;
 use Source\Identity\Infrastructure\Service\PasskeyRecoverySessionStorageService;
 use Source\Identity\Infrastructure\Service\SignupInvitationValidator;
+use Source\Identity\Infrastructure\Service\SocialLinkingSessionStorageService;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
 use Source\Identity\Infrastructure\Service\StepUpAuthenticationStorageService;
 use Source\Identity\Infrastructure\Service\StepUpOAuthSessionStorageService;
@@ -76,6 +79,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PasskeyRecoveryNotificationServiceInterface::class, PasskeyRecoveryNotificationService::class);
         $this->app->singleton(PasskeyRecoveryOAuthSessionStorageServiceInterface::class, PasskeyRecoveryOAuthSessionStorageService::class);
         $this->app->singleton(PasskeyRecoverySessionStorageServiceInterface::class, PasskeyRecoverySessionStorageService::class);
+        $this->app->bind(SocialLinkingSessionStorageServiceInterface::class, SocialLinkingSessionStorageService::class);
         $this->app->singleton(SecurityEventRecorderInterface::class, LogSecurityEventRecorder::class);
         $this->app->singleton(SignupInvitationValidatorInterface::class, SignupInvitationValidator::class);
         $this->app->singleton(WebAuthnChallengeGeneratorInterface::class, WebAuthnChallengeGenerator::class);
@@ -99,7 +103,7 @@ class DomainServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(SocialOAuthServiceInterface::class, function ($app) {
-            /** @var \Illuminate\Contracts\Foundation\Application $app */
+            /** @var Application $app */
             /** @var array<string, array<string, mixed>> $oauthConfig */
             $oauthConfig = config('oauth', []);
 

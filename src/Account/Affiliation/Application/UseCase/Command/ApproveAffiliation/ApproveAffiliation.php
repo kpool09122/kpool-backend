@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation;
 
+use LogicException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
@@ -75,7 +76,7 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->affiliationIdentifier(),
             $affiliation->agencyAccountIdentifier(),
             $affiliation->talentAccountIdentifier(),
-            $affiliation->activatedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
+            $affiliation->activatedAt() ?? throw new LogicException('Lifecycle transition did not set its timestamp.'),
             (string) $agencyAccount->name(),
             (string) $talentAccount->name(),
             $agencyAccount->type(),

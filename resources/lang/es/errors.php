@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => 'No se encontró la sesión del código de autenticación.',
     'invalid_oauth_state' => 'El estado de OAuth no es válido o ha expirado.',
     'social_oauth_error' => 'Se produjo un error durante el inicio de sesión social.',
+    'invalid_social_linking' => 'La solicitud de vinculación SSO no es válida, ha expirado o no se puede completar.',
     'invalid_base64_image' => 'El formato de imagen no es válido.',
 
     // Account

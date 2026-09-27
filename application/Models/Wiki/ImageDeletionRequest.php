@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -22,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property-read ?WikiImage $image
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'image_id',
     'requester_name',
@@ -33,13 +36,13 @@ use Illuminate\Support\Carbon;
     'reviewed_at',
     'reject_reason',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'image_deletion_requests', keyType: 'string')]
+#[Table(name: 'image_deletion_requests', keyType: 'string')]
 class ImageDeletionRequest extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

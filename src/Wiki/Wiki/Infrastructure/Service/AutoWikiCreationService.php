@@ -13,6 +13,7 @@ use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongParams;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongRequest;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentParams;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use BackedEnum;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -506,7 +507,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
     }
 
     /**
-     * @param array<\BackedEnum> $cases
+     * @param array<BackedEnum> $cases
      */
     private function allowedValue(?string $value, array $cases): ?string
     {
@@ -525,7 +526,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
 
     /**
      * @param string[] $values
-     * @param array<\BackedEnum> $cases
+     * @param array<BackedEnum> $cases
      * @return string[]
      */
     private function allowedValues(array $values, array $cases): array

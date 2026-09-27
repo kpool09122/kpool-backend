@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\SiteManagement;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -14,14 +17,14 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'identity_id',
     'role',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'site_management_users', keyType: 'string')]
+#[Table(name: 'site_management_users', keyType: 'string')]
 class User extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 }

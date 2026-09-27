@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -41,7 +44,7 @@ use Illuminate\Support\Carbon;
  * @property-read ?WikiImage $image
  * @property-read ?Wiki $publishedWiki
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'published_wiki_id',
     'translation_set_identifier',
@@ -66,13 +69,13 @@ use Illuminate\Support\Carbon;
     'translated_at',
     'approved_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wikis', keyType: 'string')]
+#[Table(name: 'draft_wikis', keyType: 'string')]
 class DraftWiki extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'sections' => 'array',
         'keywords' => 'array',

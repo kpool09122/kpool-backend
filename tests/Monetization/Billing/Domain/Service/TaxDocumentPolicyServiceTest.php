@@ -6,6 +6,7 @@ namespace Tests\Monetization\Billing\Domain\Service;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use InvalidArgumentException;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Shared\Domain\ValueObject\CountryCode;
@@ -219,7 +220,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
     public function testJapanRequiresRegistrationNumberWhenQualified(): void
     {
         $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $policy->decide(
             CountryCode::JAPAN,
@@ -242,7 +243,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
     public function testKoreaRegisteredDomesticRequiresRegistrationNumber(): void
     {
         $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -290,7 +291,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
     public function testJapanQualifiedInvoiceRequiresDeadline(): void
     {
         $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $policy->decide(
             CountryCode::JAPAN,
@@ -313,7 +314,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
     public function testKoreaRegisteredDomesticRequiresDeadline(): void
     {
         $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $policy->decide(
             CountryCode::KOREA_REPUBLIC,
@@ -336,7 +337,7 @@ class TaxDocumentPolicyServiceTest extends TestCase
     public function testReverseChargeRequiresDeadline(): void
     {
         $policy = $this->app()->make(TaxDocumentPolicyServiceInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $policy->decide(
             CountryCode::KOREA_REPUBLIC,

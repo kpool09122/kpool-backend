@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $principal_group_id
@@ -16,26 +19,26 @@ use Illuminate\Support\Carbon;
  * @property-read PrincipalGroup|null $principalGroup
  * @property-read Principal|null $principal
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'principal_group_id',
     'principal_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principal_group_memberships', keyType: 'string')]
+#[Table(name: 'wiki_principal_group_memberships', keyType: 'string')]
 class PrincipalGroupMembership extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     /** @var string[] */
     protected $primaryKey = ['principal_group_id', 'principal_id'];
 
-    #[\Override]
+    #[Override]
     public function getKey(): string
     {
         return $this->principal_group_id . '_' . $this->principal_id;
     }
 
-    #[\Override]
+    #[Override]
     protected function setKeysForSaveQuery($query): mixed
     {
         return $query->where('principal_group_id', $this->principal_group_id)

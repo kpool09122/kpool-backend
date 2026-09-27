@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\Wiki as WikiModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -180,7 +181,7 @@ readonly class ListRelatedProfiles implements ListRelatedProfilesInterface
         string $sourceColumn,
         string $sourceIdentifier,
     ): bool {
-        $query->whereExists(function (\Illuminate\Database\Query\Builder $subQuery) use ($table, $targetColumn, $sourceColumn, $sourceIdentifier): void {
+        $query->whereExists(function (QueryBuilder $subQuery) use ($table, $targetColumn, $sourceColumn, $sourceIdentifier): void {
             $subQuery->selectRaw('1')
                 ->from($table)
                 ->whereColumn("{$table}.{$targetColumn}", 'wikis.id')

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
+use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
@@ -44,7 +45,7 @@ class AuthContextCache
 
     /**
      * @param callable(): AccountContext $dbResolver
-     * @throws \Source\Account\Account\Application\Exception\AccountNotFoundException
+     * @throws AccountNotFoundException
      */
     public function resolveAccount(IdentityIdentifier $identityIdentifier, callable $dbResolver): AccountContext
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
@@ -111,7 +112,7 @@ class RoleTest extends TestCase
     {
         $role = $this->createRole(policies: []);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $role->addPolicy($this->createPolicy(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 

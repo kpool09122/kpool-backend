@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestFor
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInput;
+use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestOutput;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestRejectionException;
@@ -36,7 +37,7 @@ class RejectAccountCategoryChangeRequestTest extends TestCase
         $this->app()->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
         $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(RejectAccountCategoryChangeRequest::class, $this->app()->make(\Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(RejectAccountCategoryChangeRequest::class, $this->app()->make(RejectAccountCategoryChangeRequestInterface::class));
     }
 
     public function testRejectUpdatesRequestOnlyWhenOperationsPolicyAllows(): void

@@ -11,7 +11,7 @@ use Source\Monetization\Account\Domain\Service\PaymentMethodMetaResolverInterfac
 readonly class RegisterPaymentMethod implements RegisterPaymentMethodInterface
 {
     public function __construct(
-        private RegisteredPaymentMethodRepositoryInterface $repository,
+        private RegisteredPaymentMethodRepositoryInterface $registeredPaymentMethodRepository,
         private RegisteredPaymentMethodFactoryInterface $factory,
         private PaymentMethodMetaResolverInterface $metaResolver,
     ) {
@@ -19,7 +19,7 @@ readonly class RegisterPaymentMethod implements RegisterPaymentMethodInterface
 
     public function process(RegisterPaymentMethodInputPort $input, RegisterPaymentMethodOutputPort $output): void
     {
-        $existing = $this->repository->findByPaymentMethodId($input->paymentMethodId());
+        $existing = $this->registeredPaymentMethodRepository->findByPaymentMethodId($input->paymentMethodId());
 
         if ($existing !== null) {
             $output->setRegisteredPaymentMethod($existing);
@@ -34,7 +34,7 @@ readonly class RegisterPaymentMethod implements RegisterPaymentMethodInterface
             $input->type(),
         );
 
-        $default = $this->repository->findDefaultByMonetizationAccountId($input->monetizationAccountIdentifier());
+        $default = $this->registeredPaymentMethodRepository->findDefaultByMonetizationAccountId($input->monetizationAccountIdentifier());
 
         if ($default === null) {
             $paymentMethod->markAsDefault();
@@ -46,7 +46,7 @@ readonly class RegisterPaymentMethod implements RegisterPaymentMethodInterface
             $paymentMethod->updateMeta($meta);
         }
 
-        $this->repository->save($paymentMethod);
+        $this->registeredPaymentMethodRepository->save($paymentMethod);
 
         $output->setRegisteredPaymentMethod($paymentMethod);
         $output->setSkipped(false);

@@ -93,6 +93,11 @@ tasks:
     cmds:
       - '{{.PHP_RUN}} composer install'
 
+  key-generate:
+    desc: "Generate APP_KEY in .env (requires an APP_KEY= entry). Usage: task key-generate"
+    cmds:
+      - '{{.PHP_RUN}} php artisan key:generate'
+
   composer:
     desc: "Run Composer in the PHP container. Usage: task composer -- require vendor/package"
     cmds:

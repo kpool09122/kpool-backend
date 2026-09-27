@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -17,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'affiliation_id',
     'policy_id',
@@ -25,9 +28,9 @@ use Illuminate\Support\Carbon;
     'principal_group_id',
     'type',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'affiliation_grants', keyType: 'string')]
+#[Table(name: 'affiliation_grants', keyType: 'string')]
 class AffiliationGrant extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 }

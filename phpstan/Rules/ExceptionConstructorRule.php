@@ -18,6 +18,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use Throwable;
@@ -42,14 +43,14 @@ final class ExceptionConstructorRule implements Rule
     /**
      * @param Class_ $node
      * @param Scope $scope
-     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     * @return list<IdentifierRuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
         $className = $node->namespacedName?->toString();
         if ($className === null
-            || !RuleSupport::isTypeOf($className, Throwable::class, $this->reflectionProvider)
-            || !$this->isTargetClass($className)
+            || ! RuleSupport::isTypeOf($className, Throwable::class, $this->reflectionProvider)
+            || ! $this->isTargetClass($className)
         ) {
             return [];
         }
@@ -66,25 +67,25 @@ final class ExceptionConstructorRule implements Rule
         $errors = [];
         $parentConstructorCall = $this->findParentConstructorCall($constructor);
 
-        if (!$this->hasDefaultMessage($constructor, $parentConstructorCall)) {
+        if (! $this->hasDefaultMessage($constructor, $parentConstructorCall)) {
             $errors[] = RuleErrorBuilder::message('Domain and application exceptions must provide a non-empty default message.')
                 ->identifier('kpool.exceptionConstructor.defaultMessage')
                 ->build();
         }
 
-        if (!$this->hasPreviousParameter($constructor, $scope)) {
+        if (! $this->hasPreviousParameter($constructor, $scope)) {
             $errors[] = RuleErrorBuilder::message('Domain and application exceptions must declare a ?Throwable $previous = null parameter.')
                 ->identifier('kpool.exceptionConstructor.previousParameter')
                 ->build();
         }
 
-        if (!$this->hasZeroCode($parentConstructorCall)) {
+        if (! $this->hasZeroCode($parentConstructorCall)) {
             $errors[] = RuleErrorBuilder::message('Domain and application exceptions must pass the literal code 0 to the parent constructor.')
                 ->identifier('kpool.exceptionConstructor.zeroCode')
                 ->build();
         }
 
-        if (!$this->forwardsPrevious($parentConstructorCall)) {
+        if (! $this->forwardsPrevious($parentConstructorCall)) {
             $errors[] = RuleErrorBuilder::message('Domain and application exceptions must pass $previous to the parent constructor.')
                 ->identifier('kpool.exceptionConstructor.previousForwarding')
                 ->build();
@@ -125,8 +126,8 @@ final class ExceptionConstructorRule implements Rule
             return false;
         }
 
-        if (!$messageArgument->value instanceof Variable || $messageArgument->value->name !== 'message') {
-            return !$messageArgument->value instanceof String_ || $messageArgument->value->value !== '';
+        if (! $messageArgument->value instanceof Variable || $messageArgument->value->name !== 'message') {
+            return ! $messageArgument->value instanceof String_ || $messageArgument->value->value !== '';
         }
 
         foreach ($constructor->params as $parameter) {
@@ -145,12 +146,12 @@ final class ExceptionConstructorRule implements Rule
     private function hasPreviousParameter(ClassMethod $constructor, Scope $scope): bool
     {
         foreach ($constructor->params as $parameter) {
-            if (!$parameter->var instanceof Variable
+            if (! $parameter->var instanceof Variable
                 || $parameter->var->name !== 'previous'
-                || !$parameter->default instanceof ConstFetch
+                || ! $parameter->default instanceof ConstFetch
                 || mb_strtolower($parameter->default->name->toString()) !== 'null'
-                || !$parameter->type instanceof NullableType
-                || !$parameter->type->type instanceof Name
+                || ! $parameter->type instanceof NullableType
+                || ! $parameter->type->type instanceof Name
             ) {
                 continue;
             }

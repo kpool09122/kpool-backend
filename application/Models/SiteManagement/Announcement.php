@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\SiteManagement;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string      $id
@@ -17,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string      $content
  * @property Carbon|null $published_date
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'translation_set_identifier',
     'language',
@@ -26,15 +29,15 @@ use Illuminate\Support\Carbon;
     'content',
     'published_date',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'announcements', keyType: 'string')]
+#[Table(name: 'announcements', keyType: 'string')]
 class Announcement extends Model
 {
     use SoftDeletes;
 
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'category' => 'integer',
         'published_date' => 'datetime',

@@ -20,7 +20,7 @@ use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCategoryChangeRequestInterface
 {
     public function __construct(
-        private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
+        private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountRepositoryInterface $accountRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private EventDispatcherInterface $eventDispatcher,
@@ -30,7 +30,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
 
     public function process(ApproveAccountCategoryChangeRequestInputPort $input, ApproveAccountCategoryChangeRequestOutputPort $output): void
     {
-        $request = $this->requestRepository->findById($input->requestIdentifier());
+        $request = $this->accountCategoryChangeRequestRepository->findById($input->requestIdentifier());
         if ($request === null) {
             throw new AccountCategoryChangeRequestNotFoundException();
         }
@@ -56,7 +56,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
         $account->setAccountCategory($newAccountCategory);
 
         $this->accountRepository->save($account);
-        $this->requestRepository->save($request);
+        $this->accountCategoryChangeRequestRepository->save($request);
         $this->accountContextInvalidationService->forgetByAccountIdentifier($account->accountIdentifier());
 
         $this->eventDispatcher->dispatch(new AccountCategoryChanged(

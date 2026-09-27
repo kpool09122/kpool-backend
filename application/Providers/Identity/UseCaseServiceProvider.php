@@ -35,6 +35,8 @@ use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCode;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmail;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailInterface;
+use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmail;
+use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmailInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirect;
@@ -51,6 +53,8 @@ use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
 use Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmail;
 use Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmailInterface;
+use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmail;
+use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
@@ -62,6 +66,8 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(SendSocialLinkingEmailInterface::class, SendSocialLinkingEmail::class);
+        $this->app->singleton(VerifySocialLinkingEmailInterface::class, VerifySocialLinkingEmail::class);
         $this->app->singleton(AddPasskeyInterface::class, AddPasskey::class);
         $this->app->singleton(DeletePasskeyInterface::class, DeletePasskey::class);
         $this->app->singleton(CreatePasskeyOptionsInterface::class, CreatePasskeyOptions::class);

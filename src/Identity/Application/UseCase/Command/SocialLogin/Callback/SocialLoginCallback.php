@@ -7,11 +7,13 @@ namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
+use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -32,18 +34,19 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     private const string DEFAULT_REDIRECT_URL = '/auth/callback';
 
     public function __construct(
-        private OAuthStateRepositoryInterface      $oauthStateRepository,
-        private SocialOAuthServiceInterface        $socialOAuthClient,
+        private OAuthStateRepositoryInterface      $oAuthStateRepository,
+        private SocialOAuthServiceInterface        $socialOAuthService,
         private IdentityRepositoryInterface        $identityRepository,
         private IdentityFactoryInterface           $identityFactory,
         private SignupSessionRepositoryInterface   $signupSessionRepository,
         private AuthServiceInterface               $authService,
         private EventDispatcherInterface           $eventDispatcher,
-        private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorage,
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private ImageServiceInterface              $imageService,
         private LoggerInterface                    $logger,
+        private SocialLinkingSessionStorageServiceInterface $socialLinkingSessionStorageService,
     ) {
     }
 
@@ -51,14 +54,15 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
      * @param SocialLoginCallbackInputPort $input
      * @param SocialLoginCallbackOutputPort $output
      * @return void
+     * @throws SocialLinkingSessionInvalidException
      * @throws InvalidOAuthStateException
      */
     public function process(SocialLoginCallbackInputPort $input, SocialLoginCallbackOutputPort $output): void
     {
-        $this->oauthStateRepository->consume($input->state());
+        $this->oAuthStateRepository->consume($input->state());
         $isStepUp = str_starts_with((string) $input->state(), 'step-up-');
         $stepUpSession = $isStepUp
-            ? $this->stepUpOAuthSessionStorage->consume($input->state())
+            ? $this->stepUpOAuthSessionStorageService->consume($input->state())
             : null;
         if ($isStepUp && $stepUpSession === null) {
             throw new StepUpSocialAuthenticationFailedException('Step-up OAuth session is missing or expired.');
@@ -68,7 +72,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
                 throw new StepUpSocialAuthenticationFailedException();
             }
 
-            $profile = $this->socialOAuthClient->fetchProfile($input->provider(), $input->code());
+            $profile = $this->socialOAuthService->fetchProfile($input->provider(), $input->code());
             $connection = new SocialConnection($input->provider(), $profile->providerUserId());
             $identity = $this->identityRepository->findBySocialConnection($connection->provider(), $connection->providerUserId());
             if ($identity === null
@@ -78,7 +82,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             }
 
             $now = new DateTimeImmutable();
-            $this->stepUpAuthenticationStorage->store(new StepUpAuthentication(
+            $this->stepUpAuthenticationStorageService->store(new StepUpAuthentication(
                 $stepUpSession->identityIdentifier,
                 StepUpAuthenticationMethod::SSO,
                 $now,
@@ -92,7 +96,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         $signupSession = $this->signupSessionRepository->find($input->state());
         $redirectUrl = $signupSession?->returnTo() ?? self::DEFAULT_REDIRECT_URL;
 
-        $profile = $this->socialOAuthClient->fetchProfile($input->provider(), $input->code());
+        $profile = $this->socialOAuthService->fetchProfile($input->provider(), $input->code());
         $connection = new SocialConnection($input->provider(), $profile->providerUserId());
         $identity = $this->identityRepository->findBySocialConnection($connection->provider(), $connection->providerUserId());
 
@@ -108,16 +112,11 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
 
         $existingIdentity = $this->identityRepository->findByEmail($profile->email());
         if ($existingIdentity !== null) {
-            if (! $existingIdentity->hasSocialConnection($connection)) {
-                $existingIdentity->addSocialConnection($connection);
-                $this->identityRepository->save($existingIdentity);
-            }
-
-            $this->authService->login($existingIdentity);
+            $this->socialLinkingSessionStorageService->issue($existingIdentity->identityIdentifier(), $existingIdentity->email(), $connection, $redirectUrl);
             if ($signupSession !== null) {
                 $this->signupSessionRepository->delete($input->state());
             }
-            $output->setRedirectUrl($redirectUrl);
+            $output->setRedirectUrl('/auth/social/link');
 
             return;
         }

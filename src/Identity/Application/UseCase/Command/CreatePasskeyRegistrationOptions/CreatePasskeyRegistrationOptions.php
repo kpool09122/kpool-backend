@@ -33,7 +33,7 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
         private SignupInvitationValidatorInterface $signupInvitationValidator,
         private WebAuthnChallengeGeneratorInterface $challengeGenerator,
         private WebAuthnServiceInterface $webAuthnService,
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
@@ -72,7 +72,7 @@ readonly class CreatePasskeyRegistrationOptions implements CreatePasskeyRegistra
             (string) $input->email(),
             [],
         ));
-        $this->challengeSessionStorage->storeRegistration(new RegistrationChallenge(
+        $this->challengeSessionStorageService->storeRegistration(new RegistrationChallenge(
             $challengeKey,
             $challenge,
             $options,

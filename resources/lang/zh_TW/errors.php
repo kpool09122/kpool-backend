@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => '找不到驗證碼工作階段。',
     'invalid_oauth_state' => 'OAuth狀態無效或已過期。',
     'social_oauth_error' => '社交登入發生錯誤。',
+    'invalid_social_linking' => 'SSO 連結請求無效、已過期或無法完成。',
     'invalid_base64_image' => '圖片格式無效。',
 
     // Account

@@ -20,7 +20,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 readonly class AutoCreateWiki implements AutoCreateWikiInterface
 {
     public function __construct(
-        private AutoWikiCreationServiceInterface $automaticDraftWikiCreationService,
+        private AutoWikiCreationServiceInterface $autoWikiCreationService,
         private DraftWikiFactoryInterface        $draftWikiFactory,
         private DraftWikiRepositoryInterface     $draftWikiRepository,
         private NormalizationServiceInterface    $normalizationService,
@@ -62,7 +62,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
             throw new DisallowedException();
         }
 
-        $generatedData = $this->automaticDraftWikiCreationService->generate($payload);
+        $generatedData = $this->autoWikiCreationService->generate($payload);
 
         $generatedBasic = $generatedData->basic();
         $basicArray = $generatedBasic->toArray();

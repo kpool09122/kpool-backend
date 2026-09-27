@@ -32,6 +32,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
+use UnexpectedValueException;
 
 readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
 {
@@ -185,7 +186,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             $model->merged_at?->toDateTimeImmutable(),
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
-            ($model->created_at ?? throw new \UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
+            ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,

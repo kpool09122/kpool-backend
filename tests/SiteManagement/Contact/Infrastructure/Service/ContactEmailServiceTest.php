@@ -9,6 +9,7 @@ use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Mail;
+use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -26,7 +27,7 @@ use Tests\TestCase;
 
 class ContactEmailServiceTest extends TestCase
 {
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

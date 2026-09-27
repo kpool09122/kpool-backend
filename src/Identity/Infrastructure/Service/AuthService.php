@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Redis;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use UnexpectedValueException;
 
 readonly class AuthService implements AuthServiceInterface
 {
@@ -82,7 +83,7 @@ readonly class AuthService implements AuthServiceInterface
             return 0;
         }
         if (! is_int($generation) && (! is_string($generation) || ! ctype_digit($generation))) {
-            throw new \UnexpectedValueException('Invalid stored session generation.');
+            throw new UnexpectedValueException('Invalid stored session generation.');
         }
 
         return (int) $generation;

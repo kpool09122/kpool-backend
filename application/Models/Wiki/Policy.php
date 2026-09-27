@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -15,19 +18,19 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'name',
     'account_id',
     'statements',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_policies', keyType: 'string')]
+#[Table(name: 'wiki_policies', keyType: 'string')]
 class Policy extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

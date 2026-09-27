@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\EventHandler;
 
+use LogicException;
 use Source\Account\Invitation\Application\Exception\InvitationEmailMismatchException;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
@@ -72,7 +73,7 @@ readonly class IdentityCreatedViaInvitationHandler
             invitationIdentifier: $invitation->invitationIdentifier(),
             accountIdentifier: $invitation->accountIdentifier(),
             acceptedByIdentityIdentifier: $event->identityIdentifier,
-            acceptedAt: $invitation->acceptedAt() ?? throw new \LogicException('Lifecycle transition did not set its timestamp.'),
+            acceptedAt: $invitation->acceptedAt() ?? throw new LogicException('Lifecycle transition did not set its timestamp.'),
         ));
     }
 }

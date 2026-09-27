@@ -21,17 +21,17 @@ readonly class CreateStepUpPasskeyOptions implements CreateStepUpPasskeyOptionsI
     private const int CHALLENGE_TTL_SECONDS = 300;
 
     public function __construct(
-        private PasskeyCredentialRepositoryInterface $credentialRepository,
+        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private WebAuthnChallengeGeneratorInterface $challengeGenerator,
         private WebAuthnServiceInterface $webAuthnService,
-        private ChallengeSessionStorageServiceInterface $challengeStorage,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
         private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
 
     public function process(CreateStepUpPasskeyOptionsInputPort $input, CreateStepUpPasskeyOptionsOutputPort $output): void
     {
-        $credentials = $this->credentialRepository->findByIdentityIdentifier($input->identityIdentifier());
+        $credentials = $this->passkeyCredentialRepository->findByIdentityIdentifier($input->identityIdentifier());
         if ($credentials === []) {
             throw new PasskeyRecoveryRequiredException('No passkey is available for step-up authentication.');
         }
@@ -41,7 +41,7 @@ readonly class CreateStepUpPasskeyOptions implements CreateStepUpPasskeyOptionsI
             $challenge,
             array_map(static fn (PasskeyCredential $credential) => $credential->credentialId(), $credentials),
         ));
-        $this->challengeStorage->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
+        $this->challengeSessionStorageService->storeStepUpAuthentication(new StepUpAuthenticationChallenge(
             $key,
             $challenge,
             $options,

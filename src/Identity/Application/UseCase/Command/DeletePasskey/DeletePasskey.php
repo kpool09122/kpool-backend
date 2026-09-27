@@ -20,7 +20,7 @@ readonly class DeletePasskey implements DeletePasskeyInterface
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private IdentityRepositoryInterface $identityRepository,
-        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorage,
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
     ) {
     }
 
@@ -54,7 +54,7 @@ readonly class DeletePasskey implements DeletePasskeyInterface
             throw new CannotDeleteLastAuthenticationMethodException();
         }
 
-        $this->stepUpAuthenticationStorage->requireValid(
+        $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
             StepUpAuthenticationScope::PASSKEY_MANAGE,
         );

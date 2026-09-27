@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\Redis;
 use Mockery;
 use Mockery\MockInterface;
+use Override;
 use Source\Identity\Domain\Exception\PasskeyRecoverySessionInvalidException;
 use Source\Identity\Domain\ValueObject\PasskeyRecoveryKey;
 use Source\Identity\Infrastructure\Service\PasskeyRecoverySessionStorageService;
@@ -25,7 +26,7 @@ class PasskeyRecoverySessionStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

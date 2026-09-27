@@ -8,6 +8,8 @@ use Application\Mail\AffiliationRequestMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
+use Mockery\MockInterface;
+use Override;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -21,7 +23,7 @@ use Tests\TestCase;
 
 class AffiliationRequestNotificationServiceTest extends TestCase
 {
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -40,7 +42,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::JAPANESE));
 
@@ -56,7 +58,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn(null);
 
@@ -70,7 +72,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::ENGLISH));
 
@@ -84,7 +86,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::ENGLISH));
 

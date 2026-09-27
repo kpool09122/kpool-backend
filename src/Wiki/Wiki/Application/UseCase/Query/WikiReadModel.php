@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Query;
 
+use InvalidArgumentException;
+
 readonly class WikiReadModel
 {
     private string $wikiIdentifier;
@@ -66,7 +68,7 @@ readonly class WikiReadModel
             'talent' => WikiBasicReadModelFactory::talent($basic),
             'song' => WikiBasicReadModelFactory::song($basic),
             'agency' => WikiBasicReadModelFactory::agency($basic),
-            default => throw new \InvalidArgumentException("Unsupported resource type: {$resourceType}"),
+            default => throw new InvalidArgumentException("Unsupported resource type: {$resourceType}"),
         } : $basic;
         $this->sections = $sections;
     }

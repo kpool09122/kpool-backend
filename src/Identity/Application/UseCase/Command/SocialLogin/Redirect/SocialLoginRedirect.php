@@ -14,9 +14,9 @@ use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 readonly class SocialLoginRedirect implements SocialLoginRedirectInterface
 {
     public function __construct(
-        private SocialOAuthServiceInterface      $socialOAuthClient,
+        private SocialOAuthServiceInterface      $socialOAuthService,
         private OAuthStateGeneratorInterface     $oauthStateGenerator,
-        private OAuthStateRepositoryInterface    $oauthStateRepository,
+        private OAuthStateRepositoryInterface    $oAuthStateRepository,
         private SignupSessionRepositoryInterface $signupSessionRepository,
     ) {
     }
@@ -31,13 +31,13 @@ readonly class SocialLoginRedirect implements SocialLoginRedirectInterface
     public function process(SocialLoginRedirectInputPort $input, SocialLoginRedirectOutputPort $output): void
     {
         $state = $this->oauthStateGenerator->generate();
-        $this->oauthStateRepository->store($state);
+        $this->oAuthStateRepository->store($state);
 
         if ($input->signupSession() !== null) {
             $this->signupSessionRepository->store($state, $input->signupSession());
         }
 
-        $redirectUrl = $this->socialOAuthClient->buildRedirectUrl($input->provider(), $state);
+        $redirectUrl = $this->socialOAuthService->buildRedirectUrl($input->provider(), $state);
 
         $output->setRedirectUrl($redirectUrl);
     }

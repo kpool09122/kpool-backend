@@ -13,6 +13,7 @@ use Application\Models\Wiki\WikiTalentBasic;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -65,7 +66,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
         $query = OfficialCertification::query()
             ->with([
                 'ownerAccount',
-                'wikis' => fn (\Illuminate\Database\Eloquent\Relations\Relation $query) => $query
+                'wikis' => fn (Relation $query) => $query
                     ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
                     ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
                     ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])

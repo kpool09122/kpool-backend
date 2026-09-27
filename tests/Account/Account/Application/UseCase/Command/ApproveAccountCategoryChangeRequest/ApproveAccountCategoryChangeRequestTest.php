@@ -11,6 +11,7 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNot
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInput;
+use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
@@ -48,7 +49,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
         $this->app()->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
 
-        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app()->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app()->make(ApproveAccountCategoryChangeRequestInterface::class));
     }
 
     public function testApproveUpdatesRequestAndAccountCategoryWhenOperationsPolicyAllows(): void

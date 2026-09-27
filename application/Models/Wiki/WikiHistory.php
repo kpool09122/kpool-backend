@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -21,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $subject_name
  * @property ?Carbon $recorded_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'action_type',
     'actor_id',
@@ -35,16 +38,16 @@ use Illuminate\Support\Carbon;
     'subject_name',
     'recorded_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_histories', keyType: 'string')]
+#[Table(name: 'wiki_histories', keyType: 'string')]
 class WikiHistory extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

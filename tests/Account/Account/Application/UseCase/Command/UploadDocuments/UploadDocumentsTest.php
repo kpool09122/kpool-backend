@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\UploadDocuments;
 
 use DateTimeImmutable;
 use Mockery;
+use Mockery\MockInterface;
 use RuntimeException;
 use Source\Account\Account\Application\Exception\AccountDocumentUploadForbiddenException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
@@ -64,12 +65,12 @@ class UploadDocumentsTest extends TestCase
             new DocumentData(DocumentType::REPRESENTATIVE_ID, 'representative'),
         ]);
 
-        /** @var AccountRepositoryInterface&\Mockery\MockInterface $repository */
+        /** @var AccountRepositoryInterface&MockInterface $repository */
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
         $repository->shouldReceive('save')->once()->with(Mockery::on(static fn (Account $saved): bool => count($saved->documents()->all()) === 2));
 
-        /** @var DocumentStorageServiceInterface&\Mockery\MockInterface $storage */
+        /** @var DocumentStorageServiceInterface&MockInterface $storage */
         $storage = Mockery::mock(DocumentStorageServiceInterface::class);
         $storage
             ->shouldReceive('storeForAccount')
@@ -84,7 +85,7 @@ class UploadDocumentsTest extends TestCase
         $storage->shouldReceive('deleteAfterCommit')->once()->with($oldBusinessRegistrationPath);
         $storage->shouldReceive('deleteAfterCommit')->once()->with($oldRepresentativeIdPath);
 
-        /** @var AccountDocumentFileTypeDetectorInterface&\Mockery\MockInterface $fileTypeDetector */
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
         $fileTypeDetector->shouldReceive('detect')->once()->with('business')->andReturn(AccountDocumentFileType::PDF);
         $fileTypeDetector->shouldReceive('detect')->once()->with('representative')->andReturn(AccountDocumentFileType::JPEG);
@@ -112,12 +113,12 @@ class UploadDocumentsTest extends TestCase
         $businessRegistrationPath = new DocumentPath('accounts/documents/business_registration.pdf');
         $representativeIdPath = new DocumentPath('accounts/documents/representative_id.jpg');
 
-        /** @var AccountRepositoryInterface&\Mockery\MockInterface $repository */
+        /** @var AccountRepositoryInterface&MockInterface $repository */
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
         $repository->shouldReceive('save')->once()->andThrow(new RuntimeException('database error'));
 
-        /** @var DocumentStorageServiceInterface&\Mockery\MockInterface $storage */
+        /** @var DocumentStorageServiceInterface&MockInterface $storage */
         $storage = Mockery::mock(DocumentStorageServiceInterface::class);
         $storage
             ->shouldReceive('storeForAccount')
@@ -132,7 +133,7 @@ class UploadDocumentsTest extends TestCase
         $storage->shouldReceive('delete')->once()->with($businessRegistrationPath)->andReturnTrue();
         $storage->shouldReceive('delete')->once()->with($representativeIdPath)->andReturnTrue();
 
-        /** @var AccountDocumentFileTypeDetectorInterface&\Mockery\MockInterface $fileTypeDetector */
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
         $fileTypeDetector->shouldReceive('detect')->once()->with('business')->andReturn(AccountDocumentFileType::PDF);
         $fileTypeDetector->shouldReceive('detect')->once()->with('representative')->andReturn(AccountDocumentFileType::JPEG);
@@ -155,12 +156,12 @@ class UploadDocumentsTest extends TestCase
             new DocumentData(DocumentType::SELFIE, 'selfie'),
         ]);
 
-        /** @var AccountRepositoryInterface&\Mockery\MockInterface $repository */
+        /** @var AccountRepositoryInterface&MockInterface $repository */
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
         $repository->shouldReceive('save')->once()->with(Mockery::on(static fn (Account $saved): bool => count($saved->documents()->all()) === 2));
 
-        /** @var DocumentStorageServiceInterface&\Mockery\MockInterface $storage */
+        /** @var DocumentStorageServiceInterface&MockInterface $storage */
         $storage = Mockery::mock(DocumentStorageServiceInterface::class);
         $storage
             ->shouldReceive('storeForAccount')
@@ -173,7 +174,7 @@ class UploadDocumentsTest extends TestCase
             ->with($accountId, DocumentType::SELFIE, AccountDocumentFileType::JPEG, 'selfie')
             ->andReturn(new DocumentPath('accounts/documents/selfie.jpg'));
 
-        /** @var AccountDocumentFileTypeDetectorInterface&\Mockery\MockInterface $fileTypeDetector */
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
         $fileTypeDetector->shouldReceive('detect')->once()->with('passport')->andReturn(AccountDocumentFileType::PDF);
         $fileTypeDetector->shouldReceive('detect')->once()->with('selfie')->andReturn(AccountDocumentFileType::JPEG);
@@ -197,15 +198,15 @@ class UploadDocumentsTest extends TestCase
             new DocumentData(DocumentType::REPRESENTATIVE_ID, 'representative'),
         ]);
 
-        /** @var AccountRepositoryInterface&\Mockery\MockInterface $repository */
+        /** @var AccountRepositoryInterface&MockInterface $repository */
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
 
         $this->expectException(AccountDocumentUploadForbiddenException::class);
 
-        /** @var DocumentStorageServiceInterface&\Mockery\MockInterface $storage */
+        /** @var DocumentStorageServiceInterface&MockInterface $storage */
         $storage = Mockery::mock(DocumentStorageServiceInterface::class);
-        /** @var AccountDocumentFileTypeDetectorInterface&\Mockery\MockInterface $fileTypeDetector */
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
 
         $this->bindUseCaseDependencies($repository, $storage, $fileTypeDetector);
@@ -224,15 +225,15 @@ class UploadDocumentsTest extends TestCase
             new DocumentData(DocumentType::REPRESENTATIVE_ID, 'representative'),
         ]);
 
-        /** @var AccountRepositoryInterface&\Mockery\MockInterface $repository */
+        /** @var AccountRepositoryInterface&MockInterface $repository */
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
 
-        /** @var DocumentStorageServiceInterface&\Mockery\MockInterface $storage */
+        /** @var DocumentStorageServiceInterface&MockInterface $storage */
         $storage = Mockery::mock(DocumentStorageServiceInterface::class);
         $storage->shouldNotReceive('storeForAccount');
 
-        /** @var AccountDocumentFileTypeDetectorInterface&\Mockery\MockInterface $fileTypeDetector */
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
         $fileTypeDetector
             ->shouldReceive('detect')

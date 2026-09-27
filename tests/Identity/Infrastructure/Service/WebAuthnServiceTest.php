@@ -8,6 +8,8 @@ use CBOR\ByteStringObject;
 use CBOR\MapObject;
 use CBOR\NegativeIntegerObject;
 use CBOR\UnsignedIntegerObject;
+use Override;
+use ReflectionClass;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationOptionsInput;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationVerificationInput;
 use Source\Identity\Application\Service\WebAuthn\RegistrationOptionsInput;
@@ -21,7 +23,7 @@ use Tests\TestCase;
 
 class WebAuthnServiceTest extends TestCase
 {
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
@@ -36,7 +38,7 @@ class WebAuthnServiceTest extends TestCase
         $service = $this->app()->make(WebAuthnServiceInterface::class);
 
         $this->assertInstanceOf(WebAuthnService::class, $service);
-        $interface = new \ReflectionClass(WebAuthnServiceInterface::class);
+        $interface = new ReflectionClass(WebAuthnServiceInterface::class);
         foreach ($interface->getMethods() as $method) {
             $types = [(string) $method->getReturnType()];
             foreach ($method->getParameters() as $parameter) {

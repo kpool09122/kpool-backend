@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Account\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -51,11 +53,11 @@ class RoleTest extends TestCase
     {
         $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::OWNER, [], null);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $role->addPolicy($this->createPolicy(new \Source\Shared\Domain\ValueObject\AccountIdentifier(StrTestHelper::generateUuid())));
+        $this->expectException(InvalidArgumentException::class);
+        $role->addPolicy($this->createPolicy(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 
-    private function createPolicy(?\Source\Shared\Domain\ValueObject\AccountIdentifier $accountIdentifier): Policy
+    private function createPolicy(?AccountIdentifier $accountIdentifier): Policy
     {
         return new Policy(
             new PolicyIdentifier(StrTestHelper::generateUuid()),

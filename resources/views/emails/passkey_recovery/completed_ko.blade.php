@@ -1,4 +1,4 @@
-@include('emails.passkey_recovery.layout', [
+@include('emails.auth.layout', [
     'locale' => 'ko',
     'heading' => '패스키 복구가 완료되었습니다',
     'message' => '새 패스키가 등록되었으며 이전 패스키는 모두 삭제되었습니다.',

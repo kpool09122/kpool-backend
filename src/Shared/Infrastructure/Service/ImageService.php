@@ -13,6 +13,7 @@ use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Throwable;
+use UnexpectedValueException;
 
 class ImageService implements ImageServiceInterface
 {
@@ -117,7 +118,7 @@ class ImageService implements ImageServiceInterface
         }
 
         if ($newWidth < 1 || $newHeight < 1) {
-            throw new \UnexpectedValueException('Resized image dimensions must be positive.');
+            throw new UnexpectedValueException('Resized image dimensions must be positive.');
         }
 
         $resized = imagecreatetruecolor($newWidth, $newHeight);

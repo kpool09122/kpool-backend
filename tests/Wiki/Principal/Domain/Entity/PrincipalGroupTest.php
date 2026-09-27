@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
@@ -273,7 +274,7 @@ class PrincipalGroupTest extends TestCase
     {
         $principalGroup = $this->createPrincipalGroup();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $principalGroup->addRole($this->createRole(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 

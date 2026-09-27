@@ -23,6 +23,7 @@ use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeReq
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use UnexpectedValueException;
 
 readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChangeRequestInterface
 {
@@ -93,8 +94,8 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
             ->orderBy('identities.identity_name')
             ->get()
             ->map(static fn (PrincipalModel $principal): AccountCategoryChangeRequestIdentityReadModel => new AccountCategoryChangeRequestIdentityReadModel(
-                name: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->identity_name,
-                email: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->email,
+                name: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->identity_name,
+                email: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->email,
             ))
             ->values()
             ->all();

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -35,7 +36,7 @@ use Illuminate\Support\Carbon;
 #[Table(name: 'passkey_credentials', keyType: 'string')]
 class PasskeyCredential extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     /** @return BelongsTo<PasskeyUser, $this> */
@@ -44,7 +45,7 @@ class PasskeyCredential extends Model
         return $this->belongsTo(PasskeyUser::class, 'passkey_user_id', 'id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

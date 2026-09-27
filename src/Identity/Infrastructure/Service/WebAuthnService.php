@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Service;
 
+use InvalidArgumentException;
 use JsonException;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationOptionsInput;
 use Source\Identity\Application\Service\WebAuthn\AuthenticationVerificationInput;
@@ -82,7 +83,7 @@ class WebAuthnService implements WebAuthnServiceInterface
             authenticatorSelection: $selection,
             attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
             excludeCredentials: $excluded,
-            timeout: $this->timeoutMs > 0 ? $this->timeoutMs : throw new \InvalidArgumentException('Timeout must be positive.'),
+            timeout: $this->timeoutMs > 0 ? $this->timeoutMs : throw new InvalidArgumentException('Timeout must be positive.'),
         );
 
         return new WebAuthnOptions($this->serialize($options));
@@ -122,7 +123,7 @@ class WebAuthnService implements WebAuthnServiceInterface
             $this->rpId,
             $allowed,
             PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
-            $this->timeoutMs > 0 ? $this->timeoutMs : throw new \InvalidArgumentException('Timeout must be positive.'),
+            $this->timeoutMs > 0 ? $this->timeoutMs : throw new InvalidArgumentException('Timeout must be positive.'),
         );
 
         return new WebAuthnOptions($this->serialize($options));

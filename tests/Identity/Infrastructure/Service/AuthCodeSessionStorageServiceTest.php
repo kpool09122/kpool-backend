@@ -7,6 +7,7 @@ namespace Tests\Identity\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
+use Override;
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\AuthCodeSession;
@@ -22,7 +23,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

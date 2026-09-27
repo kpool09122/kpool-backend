@@ -9,13 +9,13 @@ use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionSt
 
 readonly class VerifyPasskeyRecoveryEmail implements VerifyPasskeyRecoveryEmailInterface
 {
-    public function __construct(private PasskeyRecoveryEmailVerificationServiceInterface $verification, private PasskeyRecoverySessionStorageServiceInterface $sessions)
+    public function __construct(private PasskeyRecoveryEmailVerificationServiceInterface $passkeyRecoveryEmailVerificationService, private PasskeyRecoverySessionStorageServiceInterface $passkeyRecoverySessionStorageService)
     {
     }
 
     public function process(VerifyPasskeyRecoveryEmailInputPort $input, VerifyPasskeyRecoveryEmailOutputPort $output): void
     {
-        $identityIdentifier = $this->verification->verify($input->email(), $input->code());
-        $output->setRecoveryKey($this->sessions->issue($identityIdentifier, 'email'));
+        $identityIdentifier = $this->passkeyRecoveryEmailVerificationService->verify($input->email(), $input->code());
+        $output->setRecoveryKey($this->passkeyRecoverySessionStorageService->issue($identityIdentifier, 'email'));
     }
 }

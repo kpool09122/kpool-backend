@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -218,7 +219,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             ]
         );
         CreatePrincipalGroupMembership::create($principalGroupId, $principalId);
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             'principal_group_id' => $principalGroupId,
             'role_id' => $roleId,
         ]);
@@ -677,7 +678,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // 既存のRoleアタッチメントを作成
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
         ]);
@@ -737,7 +738,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         // Roleアタッチメントを作成
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
             ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
         ]);
@@ -787,7 +788,7 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         // Group 1とGroup 2にはTarget Roleをアタッチ
         // Group 3にはOther Roleをアタッチ（検索対象外）
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             ['principal_group_id' => $principalGroupId1, 'role_id' => $roleId],
             ['principal_group_id' => $principalGroupId2, 'role_id' => $roleId],
             ['principal_group_id' => $principalGroupId3, 'role_id' => $otherRoleId],

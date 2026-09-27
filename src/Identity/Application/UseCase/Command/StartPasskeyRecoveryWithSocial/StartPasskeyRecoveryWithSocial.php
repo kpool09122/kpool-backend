@@ -16,8 +16,8 @@ readonly class StartPasskeyRecoveryWithSocial implements StartPasskeyRecoveryWit
     public function __construct(
         private SocialOAuthServiceInterface $socialOAuthService,
         private OAuthStateGeneratorInterface $stateGenerator,
-        private OAuthStateRepositoryInterface $stateRepository,
-        private PasskeyRecoveryOAuthSessionStorageServiceInterface $sessionStorage,
+        private OAuthStateRepositoryInterface $oAuthStateRepository,
+        private PasskeyRecoveryOAuthSessionStorageServiceInterface $passkeyRecoveryOAuthSessionStorageService,
     ) {
     }
 
@@ -27,8 +27,8 @@ readonly class StartPasskeyRecoveryWithSocial implements StartPasskeyRecoveryWit
     ): void {
         $generatedState = $this->stateGenerator->generate();
         $state = new OAuthState('passkey-recovery-' . $generatedState, $generatedState->expiresAt());
-        $this->stateRepository->store($state);
-        $this->sessionStorage->store($state, new PasskeyRecoveryOAuthSession(
+        $this->oAuthStateRepository->store($state);
+        $this->passkeyRecoveryOAuthSessionStorageService->store($state, new PasskeyRecoveryOAuthSession(
             $input->provider(),
             $state->expiresAt(),
         ));

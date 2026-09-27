@@ -19,7 +19,7 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
         private AccountRepositoryInterface $accountRepository,
         private DelegationRepositoryInterface $delegationRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
-        private DelegationPrincipalGroupServiceInterface $principalGroupService,
+        private DelegationPrincipalGroupServiceInterface $delegationPrincipalGroupService,
     ) {
     }
 
@@ -44,7 +44,7 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
             throw new DisallowedDelegationOperationException('Delegation approval is not allowed.');
         }
         $delegation->approve();
-        $this->principalGroupService->createFor($delegation);
+        $this->delegationPrincipalGroupService->createFor($delegation);
         $this->delegationRepository->save($delegation);
         $output->setDelegation($delegation);
     }

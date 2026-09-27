@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\EventHandler;
 
 use Mockery;
+use Mockery\MockInterface;
 use Source\Account\Affiliation\Domain\Event\AffiliationRequested;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Identity\Application\EventHandler\AffiliationRequestedHandler;
@@ -19,7 +20,7 @@ class AffiliationRequestedHandlerTest extends TestCase
     public function testHandleSendsAffiliationRequestNotification(): void
     {
         $targetEmail = new Email('target@example.com');
-        /** @var AffiliationRequestNotificationServiceInterface&\Mockery\MockInterface $service */
+        /** @var AffiliationRequestNotificationServiceInterface&MockInterface $service */
         $service = Mockery::mock(AffiliationRequestNotificationServiceInterface::class);
         $service->shouldReceive('sendAffiliationRequestNotification')->once()->with($targetEmail);
 

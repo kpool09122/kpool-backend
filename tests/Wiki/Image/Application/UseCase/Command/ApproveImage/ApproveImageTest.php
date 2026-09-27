@@ -119,7 +119,7 @@ class ApproveImageTest extends TestCase
                 $testData->altText,
                 Mockery::type(PrincipalIdentifier::class),
                 Mockery::type(PrincipalIdentifier::class),
-                Mockery::type(\DateTimeImmutable::class),
+                Mockery::type(DateTimeImmutable::class),
                 $testData->draftImage->rightsConfirmationAgreed(),
             )
             ->andReturn($testData->image);

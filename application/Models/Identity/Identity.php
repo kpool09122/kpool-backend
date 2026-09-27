@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Application\Models\Identity;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -26,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property-read int $passkey_credentials_count
  * @property-read string[] $linked_social_providers
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'identity_name',
     'email',
@@ -34,13 +37,13 @@ use Illuminate\Support\Carbon;
     'profile_image',
     'email_verified_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identities', keyType: 'string')]
+#[Table(name: 'identities', keyType: 'string')]
 class Identity extends Authenticatable
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

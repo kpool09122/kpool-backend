@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => '인증 코드 세션을 찾을 수 없습니다.',
     'invalid_oauth_state' => 'OAuth 상태가 유효하지 않거나 만료되었습니다.',
     'social_oauth_error' => '소셜 로그인 중 오류가 발생했습니다.',
+    'invalid_social_linking' => 'SSO 연결 요청이 유효하지 않거나 만료되었거나 완료할 수 없습니다.',
     'invalid_base64_image' => '이미지 형식이 유효하지 않습니다.',
 
     // Account

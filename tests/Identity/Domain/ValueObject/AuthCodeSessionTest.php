@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Domain\ValueObject;
 
+use DateMalformedStringException;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Domain\Exception\AuthCodeExpiredException;
@@ -18,7 +19,7 @@ class AuthCodeSessionTest extends TestCase
      * 正常系: 正しくインスタンスを作成できること.
      *
      * @return void
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      */
     public function test__construct(): void
     {
@@ -64,7 +65,7 @@ class AuthCodeSessionTest extends TestCase
      *
      * @return void
      * @throws AuthCodeExpiredException
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      */
     public function testCheckNotExpiredPassesWhenNotExpired(): void
     {
@@ -85,7 +86,7 @@ class AuthCodeSessionTest extends TestCase
      * 異常系: 有効期限切れの場合、AuthCodeExpiredExceptionがスローされること.
      *
      * @return void
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      */
     public function testCheckNotExpiredThrowsWhenExpired(): void
     {
@@ -108,7 +109,7 @@ class AuthCodeSessionTest extends TestCase
      * 異常系: ちょうど有効期限の場合、AuthCodeExpiredExceptionがスローされること.
      *
      * @return void
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      */
     public function testCheckNotExpiredThrowsWhenExactlyExpired(): void
     {

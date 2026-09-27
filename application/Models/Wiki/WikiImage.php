@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Override;
 
 /**
  * @property string $id
@@ -30,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?Carbon $updated_at
  * @property-read Collection<int, ImageDeletionRequest> $deletionRequests
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'resource_type',
     'translation_set_identifier',
@@ -52,13 +54,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Table(name: 'wiki_images', keyType: 'string')]
 class WikiImage extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'display_order' => 'integer',
         'is_hidden' => 'boolean',

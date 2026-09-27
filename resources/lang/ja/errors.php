@@ -49,6 +49,7 @@ return [
     'auth_code_session_not_found' => '認証コードセッションが見つかりません。',
     'invalid_oauth_state' => 'OAuth状態が無効または期限切れです。',
     'social_oauth_error' => 'ソーシャルログインでエラーが発生しました。',
+    'invalid_social_linking' => 'SSO連携リクエストが無効、期限切れ、または完了できません。',
     'invalid_base64_image' => '画像のフォーマットが無効です。',
 
     // Account

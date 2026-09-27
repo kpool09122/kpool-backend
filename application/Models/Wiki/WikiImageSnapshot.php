@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * @property string $id
@@ -24,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $updater_id
  * @property ?Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'image_id',
     'translation_set_identifier',
@@ -41,16 +44,16 @@ use Illuminate\Database\Eloquent\Model;
     'updater_id',
     'updated_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_image_snapshots', keyType: 'string')]
+#[Table(name: 'wiki_image_snapshots', keyType: 'string')]
 class WikiImageSnapshot extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'display_order' => 'integer',
         'uploaded_at' => 'datetime',

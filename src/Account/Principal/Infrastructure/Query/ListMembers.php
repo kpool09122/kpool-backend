@@ -11,6 +11,7 @@ use Source\Account\Principal\Application\UseCase\Query\ListMembers\ListMembersIn
 use Source\Account\Principal\Application\UseCase\Query\MemberPrincipalGroupReadModel;
 use Source\Account\Principal\Application\UseCase\Query\MemberReadModel;
 use Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization;
+use UnexpectedValueException;
 
 readonly class ListMembers implements ListMembersInterface
 {
@@ -36,8 +37,8 @@ readonly class ListMembers implements ListMembersInterface
         return $principals->map(static fn (PrincipalModel $principal): MemberReadModel => new MemberReadModel(
             principalIdentifier: $principal->id,
             identityIdentifier: $principal->identity_id,
-            identityName: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->identity_name,
-            email: ($principal->identity ?? throw new \UnexpectedValueException('Principal identity is missing.'))->email,
+            identityName: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->identity_name,
+            email: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->email,
             principalGroups: $principal->principalGroupMemberships
                 ->map(static function ($membership): ?MemberPrincipalGroupReadModel {
                     $principalGroup = $membership->principalGroup;

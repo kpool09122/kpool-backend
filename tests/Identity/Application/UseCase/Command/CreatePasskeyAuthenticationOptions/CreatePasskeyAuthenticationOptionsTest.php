@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions;
 
+use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
@@ -54,7 +55,7 @@ class CreatePasskeyAuthenticationOptionsTest extends TestCase
                 (string) $stored->key === self::CHALLENGE_KEY
                 && (string) $stored->challenge === self::CHALLENGE
                 && $stored->options === $options
-                && $stored->expiresAt > new \DateTimeImmutable()));
+                && $stored->expiresAt > new DateTimeImmutable()));
         $this->bindDependencies($webAuthn, $storage);
 
         $output = new CreatePasskeyAuthenticationOptionsOutput();

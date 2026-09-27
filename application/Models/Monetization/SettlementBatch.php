@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -15,17 +19,17 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $gross_amount
  * @property int $fee_amount
  * @property int $net_amount
- * @property \Illuminate\Support\Carbon $period_start
- * @property \Illuminate\Support\Carbon $period_end
+ * @property Carbon $period_start
+ * @property Carbon $period_end
  * @property string $status
- * @property ?\Illuminate\Support\Carbon $processed_at
- * @property ?\Illuminate\Support\Carbon $paid_at
- * @property ?\Illuminate\Support\Carbon $failed_at
+ * @property ?Carbon $processed_at
+ * @property ?Carbon $paid_at
+ * @property ?Carbon $failed_at
  * @property ?string $failure_reason
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'monetization_account_id',
     'currency',
@@ -40,13 +44,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'failed_at',
     'failure_reason',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'settlement_batches', keyType: 'string')]
+#[Table(name: 'settlement_batches', keyType: 'string')]
 class SettlementBatch extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

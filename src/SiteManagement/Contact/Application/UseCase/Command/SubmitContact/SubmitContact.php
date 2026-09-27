@@ -13,7 +13,7 @@ use Throwable;
 readonly class SubmitContact implements SubmitContactInterface
 {
     public function __construct(
-        private ContactEmailServiceInterface $emailService,
+        private ContactEmailServiceInterface $contactEmailService,
         private ContactFactoryInterface $contactFactory,
         private ContactRepositoryInterface $contactRepository,
     ) {
@@ -39,13 +39,13 @@ readonly class SubmitContact implements SubmitContactInterface
         $this->contactRepository->save($contact);
 
         try {
-            $this->emailService->sendContactToAdministrator($contact);
+            $this->contactEmailService->sendContactToAdministrator($contact);
         } catch (Throwable $e) {
             throw new FailedToSendEmailException($e->getMessage());
         }
 
         try {
-            $this->emailService->sendContactToUser($contact);
+            $this->contactEmailService->sendContactToUser($contact);
         } catch (Throwable $e) {
             throw new FailedToSendEmailException($e->getMessage());
         }

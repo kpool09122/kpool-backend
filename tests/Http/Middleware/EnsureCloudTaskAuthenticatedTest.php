@@ -8,6 +8,7 @@ use Application\Http\Middleware\EnsureCloudTaskAuthenticated;
 use Google\Auth\AccessToken;
 use Illuminate\Http\Request;
 use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -17,16 +18,16 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
     {
         parent::setUp();
         config([
-            'queue.connections.passkey_recovery.handler' => 'https://tasks.example.com',
-            'queue.connections.passkey_recovery.service_account_email' => 'tasks@example.iam.gserviceaccount.com',
-            'cloud-tasks.uri' => 'internal/queue/passkey-recovery',
+            'queue.connections.cloudtasks.handler' => 'https://tasks.example.com',
+            'queue.connections.cloudtasks.service_account_email' => 'tasks@example.iam.gserviceaccount.com',
+            'cloud-tasks.uri' => 'internal/queue/default',
         ]);
     }
 
     public function testMissingConfigurationRejectsRequestBeforeTokenVerification(): void
     {
-        config(['queue.connections.passkey_recovery.handler' => '']);
-        /** @var AccessToken&\Mockery\MockInterface $tokens */
+        config(['queue.connections.cloudtasks.handler' => '']);
+        /** @var AccessToken&MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldNotReceive('verify');
 
@@ -37,7 +38,7 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
 
     public function testMissingTokenRejectsRequestBeforeTaskExecution(): void
     {
-        /** @var AccessToken&\Mockery\MockInterface $tokens */
+        /** @var AccessToken&MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldNotReceive('verify');
 
@@ -50,10 +51,10 @@ class EnsureCloudTaskAuthenticatedTest extends TestCase
     #[DataProvider('tokenClaims')]
     public function testOnlyVerifiedTokensFromTheConfiguredServiceAccountAreAccepted(array|false $claims, int $status): void
     {
-        /** @var AccessToken&\Mockery\MockInterface $tokens */
+        /** @var AccessToken&MockInterface $tokens */
         $tokens = Mockery::mock(AccessToken::class);
         $tokens->shouldReceive('verify')->once()->with('signed-token', [
-            'audience' => 'https://tasks.example.com/internal/queue/passkey-recovery',
+            'audience' => 'https://tasks.example.com/internal/queue/default',
             'issuer' => 'https://accounts.google.com',
         ])->andReturn($claims);
         $request = Request::create('/');

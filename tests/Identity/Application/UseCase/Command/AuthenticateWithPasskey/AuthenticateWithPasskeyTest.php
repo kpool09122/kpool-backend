@@ -31,6 +31,7 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
+use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -142,7 +143,7 @@ class AuthenticateWithPasskeyTest extends TestCase
     {
         return new AuthenticationChallenge(
             new ChallengeSessionKey(self::CHALLENGE_KEY),
-            new \Source\Identity\Domain\ValueObject\WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
+            new WebAuthnChallenge('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY'),
             new WebAuthnOptions('{"challenge":"challenge","rpId":"example.com","userVerification":"required"}'),
             new DateTimeImmutable('+5 minutes'),
         );

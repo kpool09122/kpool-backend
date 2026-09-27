@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -134,7 +135,7 @@ class ListMyOwnedWikisTest extends TestCase
             'group' => 'gr',
             'song' => 'sg',
             'talent' => 'tl',
-            default => throw new \InvalidArgumentException("Unknown resource type: {$resourceType}"),
+            default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
         };
 
         return $prefix . '-' . strtolower(str_replace(' ', '-', $name));

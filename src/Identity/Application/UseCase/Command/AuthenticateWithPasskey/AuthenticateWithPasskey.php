@@ -17,8 +17,8 @@ use Source\Identity\Domain\Service\AuthServiceInterface;
 readonly class AuthenticateWithPasskey implements AuthenticateWithPasskeyInterface
 {
     public function __construct(
-        private ChallengeSessionStorageServiceInterface $challengeSessionStorage,
-        private PasskeyCredentialRepositoryInterface $credentialRepository,
+        private ChallengeSessionStorageServiceInterface $challengeSessionStorageService,
+        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private PasskeyUserRepositoryInterface $passkeyUserRepository,
         private IdentityRepositoryInterface $identityRepository,
         private WebAuthnServiceInterface $webAuthnService,
@@ -30,8 +30,8 @@ readonly class AuthenticateWithPasskey implements AuthenticateWithPasskeyInterfa
         AuthenticateWithPasskeyInputPort $input,
         AuthenticateWithPasskeyOutputPort $output,
     ): void {
-        $challenge = $this->challengeSessionStorage->consumeAuthentication($input->challengeKey());
-        $credential = $this->credentialRepository->findByCredentialId($input->credentialId());
+        $challenge = $this->challengeSessionStorageService->consumeAuthentication($input->challengeKey());
+        $credential = $this->passkeyCredentialRepository->findByCredentialId($input->credentialId());
         if ($credential === null) {
             throw new PasskeyAuthenticationFailedException();
         }
@@ -60,7 +60,7 @@ readonly class AuthenticateWithPasskey implements AuthenticateWithPasskeyInterfa
             $verified->backupState,
             new DateTimeImmutable(),
         );
-        $this->credentialRepository->save($credential);
+        $this->passkeyCredentialRepository->save($credential);
         $this->authService->login($identity);
         $output->setIdentity($identity);
     }
