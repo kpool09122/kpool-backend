@@ -14,18 +14,11 @@ class StartPasskeyRecoveryWithSocialRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [
-            'identityIdentifier' => ['required', 'uuid'],
-        ];
+        return [];
     }
 
     public function provider(): string
     {
         return (string) $this->route('provider');
-    }
-
-    public function identityIdentifier(): string
-    {
-        return (string) $this->input('identityIdentifier');
     }
 }

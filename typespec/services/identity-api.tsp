@@ -542,10 +542,9 @@ interface IdentityAuthOperations {
 
   @get
   @route("/passkeys/recovery/social/{provider}/redirect")
-  @doc("Create a reauthentication URL for a social account already linked to the recovery target identity.")
+  @doc("Create a social reauthentication URL. Identify the recovery target from the linked social account on callback.")
   startPasskeyRecoveryWithSocial(
     @path provider: string,
-    @query identityIdentifier: Uuid,
   ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post

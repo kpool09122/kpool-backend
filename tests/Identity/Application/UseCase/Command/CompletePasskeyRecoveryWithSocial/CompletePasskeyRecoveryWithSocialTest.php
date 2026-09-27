@@ -32,17 +32,38 @@ use Tests\TestCase;
 
 class CompletePasskeyRecoveryWithSocialTest extends TestCase
 {
-    public function testItIssuesRecoveryForTheSameSocialSubject(): void
+    public function testItIssuesRecoveryForTheIdentityFoundBySocialSubject(): void
     {
-        [$useCase, $input, $recoveryKey] = $this->scenario(false);
+        [$useCase, $input, $recoveryKey] = $this->scenario();
         $output = new CompletePasskeyRecoveryWithSocialOutput();
         $useCase->process($input, $output);
         $this->assertSame('/settings/passkeys/recovery?recoveryKey=' . rawurlencode((string) $recoveryKey), $output->redirectUrl());
     }
 
-    public function testItRejectsADifferentSocialSubject(): void
+    public function testItRejectsAnUnlinkedSocialAccount(): void
     {
-        [$useCase, $input] = $this->scenario(true);
+        [$useCase, $input] = $this->scenario('unlinked');
+        $this->expectException(PasskeyRecoveryVerificationFailedException::class);
+        $useCase->process($input, new CompletePasskeyRecoveryWithSocialOutput());
+    }
+
+    public function testItRejectsAnIdentityWithoutPasskeys(): void
+    {
+        [$useCase, $input] = $this->scenario('passkey');
+        $this->expectException(PasskeyRecoveryVerificationFailedException::class);
+        $useCase->process($input, new CompletePasskeyRecoveryWithSocialOutput());
+    }
+
+    public function testItRejectsADifferentProvider(): void
+    {
+        [$useCase, $input] = $this->scenario('provider');
+        $this->expectException(PasskeyRecoveryVerificationFailedException::class);
+        $useCase->process($input, new CompletePasskeyRecoveryWithSocialOutput());
+    }
+
+    public function testItRejectsAMissingOAuthSession(): void
+    {
+        [$useCase, $input] = $this->scenario('session');
         $this->expectException(PasskeyRecoveryVerificationFailedException::class);
         $useCase->process($input, new CompletePasskeyRecoveryWithSocialOutput());
     }
@@ -50,10 +71,9 @@ class CompletePasskeyRecoveryWithSocialTest extends TestCase
     /**
      * @return array{CompletePasskeyRecoveryWithSocial, CompletePasskeyRecoveryWithSocialInput, PasskeyRecoveryKey}
      */
-    private function scenario(bool $differentIdentity): array
+    private function scenario(string $failure = ''): array
     {
         $identityId = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
-        $foundId = new IdentityIdentifier($differentIdentity ? '123e4567-e89b-72d3-a456-426614174099' : (string) $identityId);
         $state = new OAuthState('passkey-recovery-state', new DateTimeImmutable('+10 minutes'));
         $code = new OAuthCode('code');
         /** @var MockInterface&OAuthStateRepositoryInterface $oauthStateRepository */
@@ -61,21 +81,35 @@ class CompletePasskeyRecoveryWithSocialTest extends TestCase
         $oauthStateRepository->shouldReceive('consume')->once()->with($state);
         /** @var MockInterface&PasskeyRecoveryOAuthSessionStorageServiceInterface $oauthSessions */
         $oauthSessions = Mockery::mock(PasskeyRecoveryOAuthSessionStorageServiceInterface::class);
-        $oauthSessions->shouldReceive('consume')->once()->with($state)->andReturn(new PasskeyRecoveryOAuthSession($identityId, SocialProvider::GOOGLE, new DateTimeImmutable('+10 minutes')));
+        $oauthSessions->shouldReceive('consume')->once()->with($state)->andReturn($failure === 'session' ? null : new PasskeyRecoveryOAuthSession($failure === 'provider' ? SocialProvider::LINE : SocialProvider::GOOGLE, new DateTimeImmutable('+10 minutes')));
         /** @var MockInterface&SocialOAuthServiceInterface $oauth */
         $oauth = Mockery::mock(SocialOAuthServiceInterface::class);
-        $oauth->shouldReceive('fetchProfile')->once()->with(SocialProvider::GOOGLE, $code)->andReturn(new SocialProfile(SocialProvider::GOOGLE, 'subject', new Email('user@example.com')));
-        $identity = new Identity($foundId, new IdentityName('user'), new Email('user@example.com'), Language::JAPANESE, null, new DateTimeImmutable());
+        $validSession = ! in_array($failure, ['provider', 'session'], true);
+        if ($validSession) {
+            $oauth->shouldReceive('fetchProfile')->once()->with(SocialProvider::GOOGLE, $code)->andReturn(new SocialProfile(SocialProvider::GOOGLE, 'subject', new Email('user@example.com')));
+        } else {
+            $oauth->shouldNotReceive('fetchProfile');
+        }
+        $identity = new Identity($identityId, new IdentityName('user'), new Email('user@example.com'), Language::JAPANESE, null, new DateTimeImmutable());
         /** @var MockInterface&IdentityRepositoryInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $identityRepository->shouldReceive('findBySocialConnection')->once()->andReturn($identity);
+        if ($validSession) {
+            $identityRepository->shouldReceive('findBySocialConnection')->once()->with(SocialProvider::GOOGLE, 'subject')->andReturn($failure === 'unlinked' ? null : $identity);
+        } else {
+            $identityRepository->shouldNotReceive('findBySocialConnection');
+        }
+        $identityRepository->shouldNotReceive('save');
         /** @var MockInterface&PasskeyCredentialRepositoryInterface $passkeyCredentialRepository */
         $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
-        $passkeyCredentialRepository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->andReturn([Mockery::mock()]);
+        if ($validSession && $failure !== 'unlinked') {
+            $passkeyCredentialRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityId)->andReturn($failure === 'passkey' ? [] : [Mockery::mock()]);
+        } else {
+            $passkeyCredentialRepository->shouldNotReceive('findByIdentityIdentifier');
+        }
         $recoveryKey = new PasskeyRecoveryKey('123e4567-e89b-72d3-a456-426614174001');
         /** @var MockInterface&PasskeyRecoverySessionStorageServiceInterface $sessions */
         $sessions = Mockery::mock(PasskeyRecoverySessionStorageServiceInterface::class);
-        if ($differentIdentity) {
+        if ($failure !== '') {
             $sessions->shouldNotReceive('issue');
         } else {
             $sessions->shouldReceive('issue')->once()->with($identityId, 'sso')->andReturn($recoveryKey);
