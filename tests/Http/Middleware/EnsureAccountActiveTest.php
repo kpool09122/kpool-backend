@@ -25,6 +25,80 @@ use Tests\TestCase;
 
 class EnsureAccountActiveTest extends TestCase
 {
+    #[DataProvider('accountStatusProvider')]
+    public function testChecksOriginalAndEffectiveAccountStatus(
+        AccountStatus $originalStatus,
+        AccountStatus $effectiveStatus,
+        bool $returnToOriginal,
+        ?string $expectedError,
+    ): void {
+        Auth::shouldReceive('id')->once()->andReturn((string) $this->identityIdentifier());
+        /** @var AuthContextCache&Mockery\MockInterface $cache */
+        $cache = Mockery::mock(AuthContextCache::class);
+        $cache->shouldReceive('resolveAccount')->once()->andReturn($this->context($effectiveStatus, $originalStatus));
+        $middleware = new EnsureAccountActive($cache, $this->accountResolver());
+        $request = $returnToOriginal
+            ? Request::create('/api/account/accounts/switch', 'POST', ['delegationIdentifier' => null])
+            : Request::create('/api/wiki/images', 'GET');
+        $nextCalled = false;
+        $shouldProceed = $expectedError === null;
+
+        try {
+            $response = $middleware->handle($request, function () use (&$nextCalled) {
+                $nextCalled = true;
+
+                return response('ok');
+            });
+            $this->assertNull($expectedError);
+            $this->assertSame('ok', $response->getContent());
+        } catch (ForbiddenHttpException $exception) {
+            $this->assertNotNull($expectedError);
+            $this->assertSame(403, $exception->getHttpStatus());
+            $this->assertSame($expectedError, $exception->toProblemDetails()['code']);
+        }
+
+        $this->assertSame($shouldProceed, $nextCalled);
+    }
+
+    /** @return array<string, array{AccountStatus, AccountStatus, bool, string|null}> */
+    public static function accountStatusProvider(): array
+    {
+        $cases = [];
+        foreach (AccountStatus::cases() as $originalStatus) {
+            foreach (AccountStatus::cases() as $effectiveStatus) {
+                foreach ([false, true] as $returnToOriginal) {
+                    $expectedError = match ($originalStatus) {
+                        AccountStatus::PENDING => 'account_setup_required',
+                        AccountStatus::SUSPENDED => 'account_suspended',
+                        AccountStatus::ACTIVE => $returnToOriginal || $effectiveStatus === AccountStatus::ACTIVE ? null : 'account_suspended',
+                    };
+                    $cases[$originalStatus->value . '/' . $effectiveStatus->value . '/' . ($returnToOriginal ? 'return' : 'operation')] = [
+                        $originalStatus, $effectiveStatus, $returnToOriginal, $expectedError,
+                    ];
+                }
+            }
+        }
+
+        return $cases;
+    }
+
+    public function testRejectsSwitchToDelegationWhileEffectiveAccountIsInactive(): void
+    {
+        Auth::shouldReceive('id')->once()->andReturn((string) $this->identityIdentifier());
+        /** @var AuthContextCache&Mockery\MockInterface $cache */
+        $cache = Mockery::mock(AuthContextCache::class);
+        $cache->shouldReceive('resolveAccount')->once()->andReturn($this->context(AccountStatus::SUSPENDED, AccountStatus::ACTIVE));
+        $middleware = new EnsureAccountActive($cache, $this->accountResolver());
+
+        $this->expectException(ForbiddenHttpException::class);
+        $middleware->handle(
+            Request::create('/api/account/accounts/switch', 'POST', ['delegationIdentifier' => StrTestHelper::generateUuid()]),
+            function () {
+                $this->fail('The request must not reach the action.');
+            },
+        );
+    }
+
     public function testAllowsActiveOriginalAccount(): void
     {
         Auth::shouldReceive('id')->once()->andReturn((string) $this->identityIdentifier());

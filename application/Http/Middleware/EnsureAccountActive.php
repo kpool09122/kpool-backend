@@ -63,7 +63,8 @@ readonly class EnsureAccountActive
             );
         }
 
-        if ($context->originalAccountStatus() !== AccountStatus::ACTIVE) {
+        if ($context->originalAccountStatus() !== AccountStatus::ACTIVE
+            || ($context->accountStatus() !== AccountStatus::ACTIVE && ! $this->isReturningToOriginalAccount($request))) {
             throw new ForbiddenHttpException(
                 detail: 'The account is suspended.',
                 extensions: ['code' => 'account_suspended'],
@@ -71,5 +72,12 @@ readonly class EnsureAccountActive
         }
 
         return $next($request);
+    }
+
+    private function isReturningToOriginalAccount(Request $request): bool
+    {
+        return $request->isMethod('POST')
+            && $request->path() === 'api/account/accounts/switch'
+            && $request->input('delegationIdentifier') === null;
     }
 }

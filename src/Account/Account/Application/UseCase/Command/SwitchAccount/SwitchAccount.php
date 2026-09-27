@@ -7,6 +7,7 @@ namespace Source\Account\Account\Application\UseCase\Command\SwitchAccount;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
@@ -68,7 +69,7 @@ readonly class SwitchAccount implements SwitchAccountInterface
         }
 
         $delegateAccount = $this->accountRepository->findById($delegation->delegateAccountIdentifier());
-        if ($delegateAccount === null || ! $this->policyEvaluator->evaluate(
+        if ($delegateAccount === null || $delegateAccount->status() !== AccountStatus::ACTIVE || ! $this->policyEvaluator->evaluate(
             $originalPrincipal,
             Action::DELEGATION_ACCOUNT_SWITCH,
             Resource::delegationAccount(
@@ -78,6 +79,11 @@ readonly class SwitchAccount implements SwitchAccountInterface
             ),
         )) {
             throw new DisallowedDelegationOperationException('Delegated account switch is not allowed.');
+        }
+
+        $delegatorAccount = $this->accountRepository->findById($delegation->delegatorAccountIdentifier());
+        if ($delegatorAccount === null || $delegatorAccount->status() !== AccountStatus::ACTIVE) {
+            throw new DisallowedDelegationOperationException('The target account is not active.');
         }
 
         $effectivePrincipal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier(
