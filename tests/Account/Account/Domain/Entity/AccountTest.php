@@ -7,7 +7,6 @@ namespace Tests\Account\Account\Domain\Entity;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
-use Source\Account\Account\Domain\Exception\AccountSetupAlreadyCompletedException;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
@@ -34,7 +33,7 @@ class AccountTest extends TestCase
     public function testCompleteInitialSetupRejectsActiveAccountWithoutOverwritingType(): void
     {
         $account = $this->accountWithStatus(AccountStatus::ACTIVE, AccountType::CORPORATION);
-        $this->expectException(AccountSetupAlreadyCompletedException::class);
+        $this->expectException(AccountSetupUnavailableException::class);
 
         try {
             $account->completeInitialSetup(AccountType::INDIVIDUAL);

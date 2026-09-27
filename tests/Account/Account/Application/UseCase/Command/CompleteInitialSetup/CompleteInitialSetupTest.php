@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Application\UseCase\Command\CompleteInitialSetup;
 
 use Mockery;
-use Source\Account\Account\Application\Repository\AccountSetupRepositoryInterface;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetup;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInput;
 use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\Exception\AccountSetupAlreadyCompletedException;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 class CompleteInitialSetupTest extends TestCase
 {
-    public function testProcessLocksCompletesAndSavesAccount(): void
+    public function testProcessCompletesAndSavesAccount(): void
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $account = new Account(
@@ -36,12 +36,12 @@ class CompleteInitialSetupTest extends TestCase
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
         );
-        /** @var AccountSetupRepositoryInterface&Mockery\MockInterface $repository */
-        $repository = Mockery::mock(AccountSetupRepositoryInterface::class);
-        $repository->shouldReceive('findByIdForUpdate')->once()->with($identifier)->andReturn($account);
-        $repository->shouldReceive('save')->once()->with($account);
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($identifier)->andReturn($account);
+        $accountRepository->shouldReceive('save')->once()->with($account);
 
-        (new CompleteInitialSetup($repository))->process(
+        (new CompleteInitialSetup($accountRepository))->process(
             new CompleteInitialSetupInput($identifier, AccountType::CORPORATION),
         );
 
@@ -62,15 +62,15 @@ class CompleteInitialSetupTest extends TestCase
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
         );
-        /** @var AccountSetupRepositoryInterface&Mockery\MockInterface $repository */
-        $repository = Mockery::mock(AccountSetupRepositoryInterface::class);
-        $repository->shouldReceive('findByIdForUpdate')->once()->with($identifier)->andReturn($account);
-        $repository->shouldNotReceive('save');
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($identifier)->andReturn($account);
+        $accountRepository->shouldNotReceive('save');
 
-        $this->expectException(AccountSetupAlreadyCompletedException::class);
+        $this->expectException(AccountSetupUnavailableException::class);
 
         try {
-            (new CompleteInitialSetup($repository))->process(
+            (new CompleteInitialSetup($accountRepository))->process(
                 new CompleteInitialSetupInput($identifier, AccountType::INDIVIDUAL),
             );
         } finally {

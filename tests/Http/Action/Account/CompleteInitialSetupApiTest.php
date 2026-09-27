@@ -67,8 +67,8 @@ class CompleteInitialSetupApiTest extends TestCase
         ]);
 
         $this->postJson('/api/account/accounts/setup', ['accountType' => 'individual'])
-            ->assertConflict()
-            ->assertJsonPath('code', 'account_setup_already_completed');
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'account_setup_unavailable');
         $this->assertDatabaseHas('accounts', [
             'id' => (string) $accountIdentifier,
             'type' => 'corporation',
@@ -81,7 +81,7 @@ class CompleteInitialSetupApiTest extends TestCase
         [$accountIdentifier] = $this->authenticatePendingAccount(status: 'suspended', type: 'individual');
 
         $this->postJson('/api/account/accounts/setup', ['accountType' => 'corporation'])
-            ->assertForbidden()
+            ->assertUnprocessable()
             ->assertJsonPath('code', 'account_setup_unavailable');
         $this->assertDatabaseHas('accounts', [
             'id' => (string) $accountIdentifier,

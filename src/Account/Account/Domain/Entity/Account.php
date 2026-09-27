@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\Entity;
 
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
-use Source\Account\Account\Domain\Exception\AccountSetupAlreadyCompletedException;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
@@ -49,12 +48,7 @@ class Account
         return $this->email;
     }
 
-    public function type(): AccountType
-    {
-        return $this->type ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
-    }
-
-    public function nullableType(): ?AccountType
+    public function type(): ?AccountType
     {
         return $this->type;
     }
@@ -125,15 +119,10 @@ class Account
     }
 
     /**
-     * @throws AccountSetupAlreadyCompletedException
      * @throws AccountSetupUnavailableException
      */
     public function completeInitialSetup(AccountType $type): void
     {
-        if ($this->status === AccountStatus::ACTIVE) {
-            throw new AccountSetupAlreadyCompletedException();
-        }
-
         if ($this->status !== AccountStatus::PENDING) {
             throw new AccountSetupUnavailableException();
         }

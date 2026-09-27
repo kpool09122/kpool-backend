@@ -83,7 +83,7 @@ readonly class AccountResolver
 
         return new AccountContext(
             principal: $principal,
-            accountType: $account->nullableType(),
+            accountType: $account->type(),
             accountStatus: $account->status(),
             accountCategory: $account->accountCategory(),
             accountPolicies: $this->effectivePolicies(array_values($roleIdentifiers)),

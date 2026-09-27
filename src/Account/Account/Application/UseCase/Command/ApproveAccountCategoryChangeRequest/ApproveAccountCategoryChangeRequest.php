@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNot
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -49,6 +50,8 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             throw new AccountNotFoundException();
         }
 
+        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+
         $previousAccountCategory = $account->accountCategory();
         $newAccountCategory = $request->requestedAccountCategory();
 
@@ -65,7 +68,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             newAccountCategory: $newAccountCategory,
             reviewerAccountIdentifier: $reviewerAccountIdentifier,
             changedAt: new DateTimeImmutable(),
-            accountType: $account->type(),
+            accountType: $accountType,
         ));
 
         $output->setRequest($request);

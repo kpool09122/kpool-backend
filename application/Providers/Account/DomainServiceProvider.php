@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Account\Account\Application\Repository\AccountSetupRepositoryInterface;
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
@@ -66,7 +65,6 @@ class DomainServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AccountFactoryInterface::class, AccountFactory::class);
         $this->app->singleton(AccountRepositoryInterface::class, AccountRepository::class);
-        $this->app->singleton(AccountSetupRepositoryInterface::class, AccountRepository::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);

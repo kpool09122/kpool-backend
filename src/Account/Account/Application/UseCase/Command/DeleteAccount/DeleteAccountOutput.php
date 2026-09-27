@@ -16,7 +16,7 @@ class DeleteAccountOutput implements DeleteAccountOutputPort
     }
 
     /**
-     * @return array{}|array{accountIdentifier: string, email: string, type: string, name: string, status: string}
+     * @return array{}|array{accountIdentifier: string, email: string, type: string|null, name: string, status: string}
      */
     public function toArray(): array
     {
@@ -29,7 +29,7 @@ class DeleteAccountOutput implements DeleteAccountOutputPort
         return [
             'accountIdentifier' => (string) $account->accountIdentifier(),
             'email' => (string) $account->email(),
-            'type' => $account->type()->value,
+            'type' => $account->type()?->value,
             'name' => (string) $account->name(),
             'status' => $account->status()->value,
         ];

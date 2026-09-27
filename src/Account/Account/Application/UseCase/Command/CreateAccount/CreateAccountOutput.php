@@ -29,7 +29,7 @@ class CreateAccountOutput implements CreateAccountOutputPort
         return [
             'accountIdentifier' => (string) $account->accountIdentifier(),
             'email' => (string) $account->email(),
-            'type' => $this->account->nullableType()?->value,
+            'type' => $this->account->type()?->value,
             'name' => (string) $account->name(),
             'status' => $account->status()->value,
             'accountCategory' => $account->accountCategory()->value,

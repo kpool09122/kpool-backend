@@ -17,6 +17,7 @@ use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDoc
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsOutput;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
@@ -40,6 +41,31 @@ use Tests\TestCase;
 
 class UploadDocumentsTest extends TestCase
 {
+    public function testRejectsMissingAccountTypeBeforeStoringDocuments(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $account = $this->createAccount($accountId, null);
+        /** @var AccountRepositoryInterface&MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
+        $accountRepository->shouldNotReceive('save');
+        /** @var DocumentStorageServiceInterface&MockInterface $documentStorageService */
+        $documentStorageService = Mockery::mock(DocumentStorageServiceInterface::class);
+        $documentStorageService->shouldNotReceive('storeForAccount');
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
+        $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
+        $fileTypeDetector->shouldNotReceive('detect');
+        $this->bindUseCaseDependencies($accountRepository, $documentStorageService, $fileTypeDetector);
+
+        $this->expectException(AccountSetupUnavailableException::class);
+        $this->app()->make(UploadDocumentsInterface::class)->process(
+            new UploadDocumentsInput($accountId, $this->createPrincipal($accountId), [
+                new DocumentData(DocumentType::PASSPORT, 'passport'),
+            ]),
+            new UploadDocumentsOutput(),
+        );
+    }
+
     public function testProcess(): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -275,14 +301,14 @@ class UploadDocumentsTest extends TestCase
     /**
      * @param AccountDocument[] $documents
      */
-    private function createAccount(AccountIdentifier $accountId, AccountType $type, array $documents = []): Account
+    private function createAccount(AccountIdentifier $accountId, ?AccountType $type, array $documents = []): Account
     {
         return new Account(
             $accountId,
             new Email('account@example.com'),
             $type,
             new AccountName('Account'),
-            AccountStatus::ACTIVE,
+            $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments($documents),

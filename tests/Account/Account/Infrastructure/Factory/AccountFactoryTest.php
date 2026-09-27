@@ -46,7 +46,7 @@ class AccountFactoryTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string) $account->accountIdentifier()));
         $this->assertSame($email, $account->email());
-        $this->assertNull($account->nullableType());
+        $this->assertNull($account->type());
         $this->assertSame(AccountStatus::PENDING, $account->status());
         $this->assertSame($accountName, $account->name());
         $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());

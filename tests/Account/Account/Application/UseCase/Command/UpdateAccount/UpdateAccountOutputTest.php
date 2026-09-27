@@ -19,6 +19,26 @@ use Tests\Helper\StrTestHelper;
 
 class UpdateAccountOutputTest extends TestCase
 {
+    public function testToArrayPreservesUnselectedAccountType(): void
+    {
+        $account = new Account(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new Email('pending@example.com'),
+            null,
+            new AccountName('Pending Account'),
+            AccountStatus::PENDING,
+            AccountCategory::GENERAL,
+            DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
+        );
+        $output = new UpdateAccountOutput();
+        $output->setAccount($account);
+        $result = $output->toArray();
+
+        self::assertTrue(array_key_exists('type', $result));
+        $this->assertNull($result['type']);
+    }
+
     public function testToArrayReturnsAccountSummary(): void
     {
         $account = new Account(

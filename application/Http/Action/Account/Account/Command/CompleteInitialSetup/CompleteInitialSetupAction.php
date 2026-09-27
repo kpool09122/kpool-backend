@@ -6,7 +6,6 @@ namespace Application\Http\Action\Account\Account\Command\CompleteInitialSetup;
 
 use Application\Http\Context\AccountResolver;
 use Application\Http\Context\ActorContext;
-use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -18,7 +17,6 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInput;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInterface;
-use Source\Account\Account\Domain\Exception\AccountSetupAlreadyCompletedException;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
@@ -59,18 +57,10 @@ readonly class CompleteInitialSetupAction
             try {
                 $this->completeInitialSetup->process($input);
                 DB::commit();
-            } catch (AccountSetupAlreadyCompletedException $e) {
-                DB::rollBack();
-
-                throw new ConflictHttpException(
-                    detail: 'Account setup has already been completed.',
-                    extensions: ['code' => 'account_setup_already_completed'],
-                    previous: $e,
-                );
             } catch (AccountSetupUnavailableException $e) {
                 DB::rollBack();
 
-                throw new ForbiddenHttpException(
+                throw new UnprocessableEntityHttpException(
                     detail: 'This account cannot complete initial setup.',
                     extensions: ['code' => 'account_setup_unavailable'],
                     previous: $e,
@@ -86,7 +76,7 @@ readonly class CompleteInitialSetupAction
             }
 
             $this->accountContextInvalidationService->forgetByAccountIdentifier($input->accountIdentifier());
-        } catch (ConflictHttpException|ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

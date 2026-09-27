@@ -9,6 +9,7 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestFor
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -39,7 +40,9 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         if (! $account->hasRequiredContactForCategoryChange()) {
             throw new IncompleteAccountContactForCategoryChangeException();
         }
-        $this->documentRequirementValidator->validate($account->type(), $account->documents()->documentTypes());
+        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+
+        $this->documentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
         if ($this->accountCategoryChangeRequestRepository->findPendingByAccountId($input->accountIdentifier()) !== null) {
             throw new AccountCategoryChangeRequestAlreadyPendingException();
         }
