@@ -53,7 +53,7 @@ class SendAuthCodeTest extends TestCase
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
 
         $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
-        $storageService->shouldReceive('save')
+        $storageService->shouldReceive('store')
             ->once()
             ->with(Mockery::on(function (AuthCodeSession $session) use ($email, $authCode, $before, &$savedSession): bool {
                 $this->assertSame($email, $session->email());
@@ -108,7 +108,7 @@ class SendAuthCodeTest extends TestCase
         $authCodeService->shouldNotReceive('send');
 
         $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
-        $storageService->shouldNotReceive('save');
+        $storageService->shouldNotReceive('store');
 
         $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);

@@ -44,14 +44,14 @@ class AuthCodeSessionStorageServiceTest extends TestCase
         $this->assertInstanceOf(AuthCodeSessionStorageService::class, $service);
     }
 
-    public function testSaveAndFindByEmailPreservesFormatAndTtl(): void
+    public function testStoreAndFindByEmailPreservesFormatAndTtl(): void
     {
         $email = new Email('test@example.com');
         $authCode = new AuthCode('123456');
         $generatedAt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
 
-        $service->save(new AuthCodeSession($email, $authCode, $generatedAt));
+        $service->store(new AuthCodeSession($email, $authCode, $generatedAt));
 
         $key = 'auth_code_session:' . $email;
         $this->assertSame(
@@ -96,20 +96,20 @@ class AuthCodeSessionStorageServiceTest extends TestCase
     {
         $email = new Email('delete@example.com');
         $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
-        $service->save(new AuthCodeSession($email, new AuthCode('111111'), new DateTimeImmutable()));
+        $service->store(new AuthCodeSession($email, new AuthCode('111111'), new DateTimeImmutable()));
 
         $service->delete($email);
 
         $this->assertNull($service->findByEmail($email));
     }
 
-    public function testSaveOverwritesExistingSession(): void
+    public function testStoreOverwritesExistingSession(): void
     {
         $email = new Email('overwrite@example.com');
         $service = $this->app->make(AuthCodeSessionStorageServiceInterface::class);
         $generatedAt = new DateTimeImmutable();
-        $service->save(new AuthCodeSession($email, new AuthCode('111111'), $generatedAt));
-        $service->save(new AuthCodeSession($email, new AuthCode('222222'), $generatedAt));
+        $service->store(new AuthCodeSession($email, new AuthCode('111111'), $generatedAt));
+        $service->store(new AuthCodeSession($email, new AuthCode('222222'), $generatedAt));
 
         $found = $service->findByEmail($email);
         $this->assertNotNull($found);

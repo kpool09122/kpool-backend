@@ -40,7 +40,7 @@ readonly class VerifyEmail implements VerifyEmailInterface
         );
 
         $this->authCodeSessionStorageService->delete($input->email());
-        $this->authCodeSessionStorageService->save($verifiedSession);
+        $this->authCodeSessionStorageService->store($verifiedSession);
 
         $output->setSession($verifiedSession);
     }

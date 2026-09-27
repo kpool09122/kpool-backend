@@ -11,7 +11,7 @@ interface AuthCodeSessionStorageServiceInterface
 {
     public function findByEmail(Email $email): ?AuthCodeSession;
 
-    public function save(AuthCodeSession $authCodeSession): void;
+    public function store(AuthCodeSession $authCodeSession): void;
 
     public function delete(Email $email): void;
 }

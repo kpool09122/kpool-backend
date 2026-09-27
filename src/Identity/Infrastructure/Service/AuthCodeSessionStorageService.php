@@ -35,7 +35,7 @@ class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInte
         );
     }
 
-    public function save(AuthCodeSession $authCodeSession): void
+    public function store(AuthCodeSession $authCodeSession): void
     {
         $data = json_encode([
             'email' => (string) $authCodeSession->email(),

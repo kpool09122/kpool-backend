@@ -32,7 +32,7 @@ readonly class SendAuthCode implements SendAuthCodeInterface
 
         $code = $this->authCodeService->generateCode($email);
         $session = new AuthCodeSession($email, $code, new DateTimeImmutable('now'));
-        $this->authCodeSessionStorageService->save($session);
+        $this->authCodeSessionStorageService->store($session);
         $this->authCodeService->send($email, $input->language(), $session);
     }
 }

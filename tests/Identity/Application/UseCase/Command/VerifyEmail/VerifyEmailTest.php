@@ -46,7 +46,7 @@ class VerifyEmailTest extends TestCase
         $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
         $storageService->shouldReceive('findByEmail')->once()->with($email)->andReturn($existingSession);
         $storageService->shouldReceive('delete')->once()->with($email);
-        $storageService->shouldReceive('save')
+        $storageService->shouldReceive('store')
             ->once()
             ->with(Mockery::on(function (AuthCodeSession $session) use ($email, $authCode, $before): bool {
                 $this->assertSame($email, $session->email());
@@ -109,7 +109,7 @@ class VerifyEmailTest extends TestCase
         $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
         $storageService->shouldReceive('findByEmail')->once()->with($email)->andReturn($session);
         $storageService->shouldNotReceive('delete');
-        $storageService->shouldNotReceive('save');
+        $storageService->shouldNotReceive('store');
         $this->app->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
 
         $this->expectException($expectedException);
