@@ -97,10 +97,13 @@ class ListContactsTest extends TestCase
         $failedContact = StrTestHelper::generateUuid();
         $unrepliedContact = StrTestHelper::generateUuid();
         $sentReply = StrTestHelper::generateUuid();
+        $laterReply = StrTestHelper::generateUuid();
         $this->insertContact($sentContact, null, 'sent@example.com', '2026-08-17 10:00:00');
         $this->insertContact($failedContact, null, 'failed@example.com', '2026-08-16 10:00:00');
         $this->insertContact($unrepliedContact, null, 'unreplied@example.com', '2026-08-15 10:00:00');
         $this->insertReply($sentReply, $sentContact, '2026-08-17 11:00:00', null);
+        $this->insertReply($laterReply, $sentContact, '2026-08-17 12:00:00', null, '2026-08-17 12:00:00');
+        $this->insertReply(StrTestHelper::generateUuid(), $sentContact, null, null);
         $this->insertReply(StrTestHelper::generateUuid(), $failedContact, '2026-08-16 11:00:00', '2026-08-16 11:01:00');
 
         $hasReplyOutput = new ListContactsOutput();
@@ -108,9 +111,9 @@ class ListContactsTest extends TestCase
         DB::enableQueryLog();
         $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
 
-        $this->assertCount(2, DB::getQueryLog());
+        $this->assertCount(3, DB::getQueryLog());
         $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray(), 'contactIdentifier'));
-        $this->assertSame([[$sentReply]], array_column($hasReplyOutput->toArray(), 'replyIdentifiers'));
+        $this->assertSame([[$sentReply, $laterReply]], array_column($hasReplyOutput->toArray(), 'replyIdentifiers'));
 
         $hasNoReplyOutput = new ListContactsOutput();
         $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, false), $hasNoReplyOutput);
@@ -122,7 +125,7 @@ class ListContactsTest extends TestCase
         $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
 
         $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray(), 'contactIdentifier'));
-        $this->assertSame([[$sentReply], [], []], array_column($allContactsOutput->toArray(), 'replyIdentifiers'));
+        $this->assertSame([[$sentReply, $laterReply], [], []], array_column($allContactsOutput->toArray(), 'replyIdentifiers'));
     }
 
     private function insertContact(string $id, ?string $identityIdentifier, string $email, string $createdAt): void
@@ -140,7 +143,7 @@ class ListContactsTest extends TestCase
         ]);
     }
 
-    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt): void
+    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00'): void
     {
         DB::table('contact_replies')->insert([
             'id' => $id,
@@ -150,8 +153,8 @@ class ListContactsTest extends TestCase
             'content' => '返信内容',
             'sent_at' => $sentAt,
             'failed_at' => $failedAt,
-            'created_at' => '2026-08-17 10:00:00',
-            'updated_at' => '2026-08-17 10:00:00',
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ]);
     }
 }
