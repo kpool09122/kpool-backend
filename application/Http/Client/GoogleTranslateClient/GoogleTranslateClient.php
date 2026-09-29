@@ -9,6 +9,7 @@ use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsR
 use Google\Cloud\Translate\V3\Client\TranslationServiceClient;
 use Google\Cloud\Translate\V3\TranslateTextRequest;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class GoogleTranslateClient
 {
@@ -50,7 +51,7 @@ class GoogleTranslateClient
             }
 
             return new TranslateTextsResponse(translatedTexts: $translations);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Google Translate API failed', [
                 'message' => $e->getMessage(),
             ]);

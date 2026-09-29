@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -16,19 +20,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $payment_method_type
  * @property string $payment_method_label
  * @property bool $payment_method_recurring_enabled
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $created_at
  * @property string $status
- * @property ?\Illuminate\Support\Carbon $authorized_at
- * @property ?\Illuminate\Support\Carbon $captured_at
- * @property ?\Illuminate\Support\Carbon $failed_at
+ * @property ?Carbon $authorized_at
+ * @property ?Carbon $captured_at
+ * @property ?Carbon $failed_at
  * @property ?string $failure_reason
  * @property int $refunded_amount
- * @property ?\Illuminate\Support\Carbon $last_refunded_at
+ * @property ?Carbon $last_refunded_at
  * @property ?string $last_refund_reason
  * @property ?string $stripe_payment_intent_id
  * @property ?string $stripe_payment_method_id
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'order_id',
     'buyer_monetization_account_id',
@@ -50,16 +54,16 @@ use Illuminate\Database\Eloquent\Model;
     'stripe_payment_intent_id',
     'stripe_payment_method_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'payments', keyType: 'string')]
+#[Table(name: 'payments', keyType: 'string')]
 class Payment extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

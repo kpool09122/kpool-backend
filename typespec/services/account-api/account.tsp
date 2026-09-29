@@ -17,8 +17,6 @@ model UpdateAccountRequestBody {
 model CreateAccountRequestBody {
   @doc("Account email address.")
   email: string;
-  @doc("Account type.")
-  accountType: string;
   @doc("Account display name.")
   accountName: string;
   @doc("Identity identifier to attach to the account.")
@@ -29,10 +27,35 @@ model CreateAccountRequestBody {
   address?: ContactAddressSummary | null;
 }
 
+@doc("Request body for completing initial account setup.")
+model CompleteInitialSetupRequestBody {
+  @doc("Selected account type.")
+  accountType: "corporation" | "individual";
+}
+
+@doc("Request body for switching the current effective account context. Null switches back to the original account.")
+model SwitchAccountRequestBody {
+  delegationIdentifier?: Uuid | null;
+}
+
 @doc("Response returned when an account is created.")
 model CreateAccountResponse {
   @statusCode statusCode: 201;
   @body body: CreateAccountResult;
+}
+
+@doc("Selected account context.")
+model SwitchAccountResponseBody {
+  originalIdentityIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  accountPrincipalIdentifier: Uuid;
+  delegationIdentifier?: Uuid | null;
+}
+
+@doc("Response returned when account switching succeeds.")
+model SwitchAccountResponse {
+  @statusCode statusCode: 200;
+  @body body: SwitchAccountResponseBody;
 }
 
 @doc("Response returned when an account operation succeeds.")
@@ -76,6 +99,13 @@ interface AccountOperations {
     @body body: CreateAccountRequestBody,
   ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
+  @post
+  @route("/setup")
+  @doc("Select the account type and activate a pending account.")
+  completeInitialSetup(
+    @body body: CompleteInitialSetupRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @get
   @route("/{accountId}")
   @doc("Get account information.")
@@ -97,6 +127,13 @@ interface AccountOperations {
   deleteAccount(
     @path accountId: Uuid,
   ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/switch")
+  @doc("Switch the current effective account context without changing the authenticated identity.")
+  switchAccount(
+    @body body: SwitchAccountRequestBody,
+  ): SwitchAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{accountId}/documents")

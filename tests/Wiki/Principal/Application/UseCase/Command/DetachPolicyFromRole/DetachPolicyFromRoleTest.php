@@ -26,8 +26,8 @@ class DetachPolicyFromRoleTest extends TestCase
     public function test__construct(): void
     {
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(DetachPolicyFromRoleInterface::class);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $useCase = $this->app()->make(DetachPolicyFromRoleInterface::class);
         $this->assertInstanceOf(DetachPolicyFromRole::class, $useCase);
     }
 
@@ -44,23 +44,23 @@ class DetachPolicyFromRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [$policyIdentifier],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (Role $savedRole) => ! $savedRole->hasPolicy($policyIdentifier)))
             ->andReturnNull();
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(DetachPolicyFromRoleInterface::class);
+        $useCase = $this->app()->make(DetachPolicyFromRoleInterface::class);
         $input = new DetachPolicyFromRoleInput($roleIdentifier, $policyIdentifier);
 
         $useCase->process($input);
@@ -77,13 +77,13 @@ class DetachPolicyFromRoleTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturnNull();
         $roleRepository->shouldNotReceive('save');
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(DetachPolicyFromRoleInterface::class);
+        $useCase = $this->app()->make(DetachPolicyFromRoleInterface::class);
         $input = new DetachPolicyFromRoleInput($roleIdentifier, $policyIdentifier);
 
         $this->expectException(RoleNotFoundException::class);
@@ -106,23 +106,23 @@ class DetachPolicyFromRoleTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (Role $savedRole) => count($savedRole->policies()) === 0))
             ->andReturnNull();
 
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(DetachPolicyFromRoleInterface::class);
+        $useCase = $this->app()->make(DetachPolicyFromRoleInterface::class);
         $input = new DetachPolicyFromRoleInput($roleIdentifier, $policyIdentifier);
 
         $useCase->process($input);

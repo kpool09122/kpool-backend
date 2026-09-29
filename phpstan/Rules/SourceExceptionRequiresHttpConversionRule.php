@@ -14,6 +14,7 @@ use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\TryCatch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -45,11 +46,11 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
     /**
      * @param TryCatch $node
      * @param Scope $scope
-     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     * @return list<IdentifierRuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!RuleSupport::isTargetScope($scope, $this->targetClassNamePattern, $this->targetMethodNames)) {
+        if (! RuleSupport::isTargetScope($scope, $this->targetClassNamePattern, $this->targetMethodNames)) {
             return [];
         }
 
@@ -109,7 +110,7 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
                 return false;
             }
 
-            if (!$this->isCoveredByCatch($exceptionType, RuleSupport::catchTypes($catch, $scope))) {
+            if (! $this->isCoveredByCatch($exceptionType, RuleSupport::catchTypes($catch, $scope))) {
                 continue;
             }
 
@@ -146,7 +147,7 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
         foreach ($this->newThrows($catch->stmts) as $throw) {
             $new = $throw->expr;
 
-            if (!$new instanceof New_ || !$new->class instanceof Name) {
+            if (! $new instanceof New_ || ! $new->class instanceof Name) {
                 continue;
             }
 
@@ -221,12 +222,12 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
                 }
             }
 
-            if (!is_array($subNode)) {
+            if (! is_array($subNode)) {
                 continue;
             }
 
             foreach ($subNode as $item) {
-                if (!$item instanceof Node) {
+                if (! $item instanceof Node) {
                     continue;
                 }
 
@@ -251,7 +252,7 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
             $catchTypes = RuleSupport::catchTypes($catch, $scope);
             $escapingTryTypes = array_values(array_filter(
                 $escapingTryTypes,
-                fn (string $exceptionType): bool => !$this->isCoveredByCatch($exceptionType, $catchTypes)
+                fn (string $exceptionType): bool => ! $this->isCoveredByCatch($exceptionType, $catchTypes)
             ));
 
             foreach ($this->sourceExceptionTypesThrownByNodes($catch->stmts, $scope) as $exceptionType) {
@@ -275,14 +276,14 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
      */
     private function methodCallThrowTypes(MethodCall $methodCall, Scope $scope): array
     {
-        if (!$methodCall->name instanceof Identifier) {
+        if (! $methodCall->name instanceof Identifier) {
             return [];
         }
 
         $calledOnType = $scope->getType($methodCall->var);
         $methodName = $methodCall->name->toString();
 
-        if (!$calledOnType->hasMethod($methodName)->yes()) {
+        if (! $calledOnType->hasMethod($methodName)->yes()) {
             return [];
         }
 
@@ -300,11 +301,11 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
      */
     private function directThrowTypes(Throw_ $throw, Scope $scope): array
     {
-        if (!$throw->expr instanceof New_) {
+        if (! $throw->expr instanceof New_) {
             return [];
         }
 
-        if (!$throw->expr->class instanceof Name) {
+        if (! $throw->expr->class instanceof Name) {
             return [];
         }
 
@@ -326,6 +327,7 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
 
             if ($node instanceof Throw_ && $node->expr instanceof New_) {
                 $throws[] = $node;
+
                 continue;
             }
 
@@ -338,12 +340,12 @@ final class SourceExceptionRequiresHttpConversionRule implements Rule
                     }
                 }
 
-                if (!is_array($subNode)) {
+                if (! is_array($subNode)) {
                     continue;
                 }
 
                 foreach ($subNode as $item) {
-                    if (!$item instanceof Node) {
+                    if (! $item instanceof Node) {
                         continue;
                     }
 

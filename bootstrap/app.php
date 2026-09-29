@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Application\Http\Middleware\EnsureCloudTaskAuthenticated;
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -11,10 +12,17 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Sentry\Laravel\Integration as SentryIntegration;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
+use Stackkit\LaravelGoogleCloudTasksQueue\TaskHandler;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         then: function () {
+            if (config('cloud-tasks.handler_enabled') && ! app()->environment('local', 'testing')) {
+                Route::post(config('cloud-tasks.uri'), [TaskHandler::class, 'handle'])
+                    ->middleware(EnsureCloudTaskAuthenticated::class)
+                    ->name('cloud-tasks.handle-task');
+            }
+
             Route::middleware(['api', 'session'])
                 ->prefix('api/identity')
                 ->group(base_path('routes/identity_api.php'));
@@ -73,8 +81,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->group('auth.api', [
+            \Application\Http\Middleware\EnsureAuthenticated::class,
+            \Application\Http\Middleware\EnsureAccountActive::class,
+        ]);
         $middleware->alias([
-            'auth.api' => \Application\Http\Middleware\EnsureAuthenticated::class,
             'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
             'resolve.account' => \Application\Http\Middleware\ResolveAccountContext::class,
             'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,

@@ -208,6 +208,7 @@ class ImageTest extends TestCase
         $image->approveDeletionRequest($reviewerIdentifier);
 
         $this->assertNull($image->pendingDeletionRequest());
+        $this->assertNotNull($image->latestDeletionRequest());
         $this->assertSame((string) $reviewerIdentifier, (string) $image->latestDeletionRequest()->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $image->latestDeletionRequest()->reviewedAt());
         $this->assertNull($image->latestDeletionRequest()->rejectReason());
@@ -226,6 +227,7 @@ class ImageTest extends TestCase
         $image->rejectDeletionRequest($reviewerIdentifier, 'Not applicable');
 
         $this->assertNull($image->pendingDeletionRequest());
+        $this->assertNotNull($image->latestDeletionRequest());
         $this->assertSame((string) $reviewerIdentifier, (string) $image->latestDeletionRequest()->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $image->latestDeletionRequest()->reviewedAt());
         $this->assertSame('Not applicable', $image->latestDeletionRequest()->rejectReason());
@@ -259,6 +261,7 @@ class ImageTest extends TestCase
 
         $this->assertCount(2, $image->deletionRequests());
         $this->assertInstanceOf(DateTimeImmutable::class, $image->deletionRequests()[0]->reviewedAt());
+        $this->assertNotNull($image->pendingDeletionRequest());
         $this->assertSame('Second Requester', $image->pendingDeletionRequest()->requesterName());
         $this->assertNull($image->pendingDeletionRequest()->reviewedAt());
     }

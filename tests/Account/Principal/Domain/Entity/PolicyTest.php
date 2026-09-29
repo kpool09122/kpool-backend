@@ -30,7 +30,7 @@ class PolicyTest extends TestCase
             $identifier,
             'ACCOUNT_INVITE_MEMBER',
             [$statement],
-            true,
+            null,
             $createdAt,
         );
 

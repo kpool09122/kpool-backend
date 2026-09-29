@@ -28,7 +28,7 @@ class SettlementBatchFactoryTest extends TestCase
         $start = new DateTimeImmutable('now');
         $end = new DateTimeImmutable('now');
 
-        $factory = $this->app->make(SettlementBatchFactoryInterface::class);
+        $factory = $this->app()->make(SettlementBatchFactoryInterface::class);
         $batch = $factory->create($monetizationAccountId, $currency, $start, $end);
         $this->assertTrue(UuidValidator::isValid((string)$batch->settlementBatchIdentifier()));
         $this->assertSame((string)$monetizationAccountId, (string)$batch->monetizationAccountIdentifier());

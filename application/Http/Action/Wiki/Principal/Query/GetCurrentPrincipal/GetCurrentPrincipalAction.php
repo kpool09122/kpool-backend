@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -20,6 +21,7 @@ readonly class GetCurrentPrincipalAction
     public function __construct(
         private GetCurrentPrincipalInterface $getCurrentPrincipal,
         private ActorContext $actorContext,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -31,7 +33,10 @@ readonly class GetCurrentPrincipalAction
     {
         try {
             try {
-                $input = new GetCurrentPrincipalInput($this->actorContext->identityIdentifier);
+                $input = new GetCurrentPrincipalInput(
+                    $this->actorContext->identityIdentifier,
+                    $this->accountContext->principal()->accountIdentifier(),
+                );
                 $readModel = $this->getCurrentPrincipal->process($input);
             } catch (PrincipalNotFoundException $e) {
                 throw new NotFoundHttpException(detail: error_message('principal_not_found', $this->actorContext->language->value), previous: $e);

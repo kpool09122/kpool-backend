@@ -41,7 +41,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             ->orderBy('display_order')
             ->get();
 
-        return $models->map(fn (DraftWikiImage $model) => $this->toEntity($model))->toArray();
+        return $models->map(fn (DraftWikiImage $model) => $this->toEntity($model))->all();
     }
 
     public function save(DraftImage $draftImage): void

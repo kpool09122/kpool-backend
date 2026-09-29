@@ -16,7 +16,7 @@ class AccountCreationConflictedHandlerTest extends TestCase
 {
     public function test__construct(): void
     {
-        $handler = $this->app->make(AccountCreationConflictedHandler::class);
+        $handler = $this->app()->make(AccountCreationConflictedHandler::class);
 
         $this->assertInstanceOf(AccountCreationConflictedHandler::class, $handler);
     }
@@ -32,7 +32,7 @@ class AccountCreationConflictedHandlerTest extends TestCase
             language: $language,
         );
 
-        $handler = $this->app->make(AccountCreationConflictedHandler::class);
+        $handler = $this->app()->make(AccountCreationConflictedHandler::class);
         $handler->handle($event);
 
         Bus::assertDispatched(SendAccountConflictNotificationJob::class);

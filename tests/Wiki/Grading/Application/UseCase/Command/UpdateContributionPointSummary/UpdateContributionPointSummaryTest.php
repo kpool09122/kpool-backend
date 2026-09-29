@@ -65,7 +65,7 @@ class UpdateContributionPointSummaryTest extends TestCase
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findByYearMonth')
-            ->with(Mockery::on(static fn ($ym) => (string) $ym === '2026-01'))
+            ->with(Mockery::on(static fn (YearMonth $ym) => (string) $ym === '2026-01'))
             ->once()
             ->andReturn([$history1, $history2]);
 
@@ -79,11 +79,11 @@ class UpdateContributionPointSummaryTest extends TestCase
         $uuidGenerator->shouldReceive('generate')
             ->andReturn(StrTestHelper::generateUuid());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
 
-        $useCase = $this->app->make(UpdateContributionPointSummaryInterface::class);
+        $useCase = $this->app()->make(UpdateContributionPointSummaryInterface::class);
         $input = new UpdateContributionPointSummaryInput($yearMonth);
         $output = new UpdateContributionPointSummaryOutput();
 
@@ -128,30 +128,30 @@ class UpdateContributionPointSummaryTest extends TestCase
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findByYearMonth')
-            ->with(Mockery::on(static fn ($ym) => (string) $ym === '2026-01'))
+            ->with(Mockery::on(static fn (YearMonth $ym) => (string) $ym === '2026-01'))
             ->once()
             ->andReturn([$history]);
 
         $summaryRepository = Mockery::mock(ContributionPointSummaryRepositoryInterface::class);
         $summaryRepository->shouldReceive('findByYearMonth')
-            ->with(Mockery::on(static fn ($ym) => (string) $ym === '2026-01'))
+            ->with(Mockery::on(static fn (YearMonth $ym) => (string) $ym === '2026-01'))
             ->once()
             ->andReturn([$existingSummary]);
         $summaryRepository->shouldReceive('save')
             ->with(Mockery::on(
                 // 既存サマリーが更新されていることを確認（履歴のポイント100が設定される）
-                static fn ($summary) => (string) $summary->principalIdentifier() === $principalId
+                static fn (ContributionPointSummary $summary) => (string) $summary->principalIdentifier() === $principalId
                 && $summary->points()->value() === 100
             ))
             ->once();
 
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(UuidGeneratorInterface::class, $uuidGenerator);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
 
-        $useCase = $this->app->make(UpdateContributionPointSummaryInterface::class);
+        $useCase = $this->app()->make(UpdateContributionPointSummaryInterface::class);
         $input = new UpdateContributionPointSummaryInput($yearMonth);
         $output = new UpdateContributionPointSummaryOutput();
 

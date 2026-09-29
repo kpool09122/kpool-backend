@@ -16,7 +16,7 @@ class ResolveAccountContext
 {
     public function __construct(
         private readonly AccountResolver $accountResolver,
-        private readonly AuthContextCache $cache,
+        private readonly AuthContextCache $authContextCache,
     ) {
     }
 
@@ -24,13 +24,10 @@ class ResolveAccountContext
     {
         /** @var ActorContext $actorContext */
         $actorContext = app(ActorContext::class);
-
-        $accountContext = $this->cache->resolveAccount(
+        app()->instance(AccountContext::class, $this->authContextCache->resolveAccount(
             $actorContext->identityIdentifier,
             fn () => $this->accountResolver->resolve($actorContext->identityIdentifier),
-        );
-
-        app()->instance(AccountContext::class, $accountContext);
+        ));
 
         return $next($request);
     }

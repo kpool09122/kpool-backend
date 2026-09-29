@@ -18,6 +18,7 @@ use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateAccount;
@@ -69,7 +70,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
         /** @var WikiRepositoryInterface&Mockery\MockInterface $wikiRepository */
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $resolver = new PrincipalWikiScopeResolver($affiliationRepository, $wikiRepository);
-        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier);
+        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier, new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([$agencyWikiIdentifier], $resolver->agencyWikiIdentifiers($principal));
         $this->assertSame([$groupWikiIdentifier], $resolver->groupWikiIdentifiers($principal));
@@ -84,7 +85,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
         $agencyAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $talentWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier);
+        $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier, new AccountIdentifier(StrTestHelper::generateUuid()));
 
         CreateIdentity::create($identityIdentifier);
         CreateAccount::create((string) $agencyAccountIdentifier);
@@ -111,7 +112,7 @@ class PrincipalWikiScopeResolverTest extends TestCase
             )
             ->andReturn([$affiliation]);
 
-        $wiki = Mockery::mock(\Source\Wiki\Wiki\Domain\Entity\Wiki::class);
+        $wiki = Mockery::mock(Wiki::class);
         $wiki->shouldReceive('wikiIdentifier')->andReturn($talentWikiIdentifier);
         /** @var WikiRepositoryInterface&Mockery\MockInterface $wikiRepository */
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);

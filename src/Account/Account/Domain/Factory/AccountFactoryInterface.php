@@ -6,14 +6,12 @@ namespace Source\Account\Account\Domain\Factory;
 
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 
 interface AccountFactoryInterface
 {
     public function create(
         Email $email,
-        AccountType $type,
         AccountName $name,
     ): Account;
 }

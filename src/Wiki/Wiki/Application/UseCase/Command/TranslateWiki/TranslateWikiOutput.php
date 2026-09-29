@@ -20,7 +20,7 @@ class TranslateWikiOutput implements TranslateWikiOutputPort
     }
 
     /**
-     * @return array{draftWikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, status: string}>}
+     * @return array{draftWikis: array<array-key, array{wikiIdentifier: string, language: string, name: string, resourceType: string, status: string}>}
      */
     public function toArray(): array
     {

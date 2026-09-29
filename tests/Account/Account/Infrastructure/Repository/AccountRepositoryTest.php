@@ -63,7 +63,7 @@ class AccountRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $account = $this->createTestAccount(accountId: $accountId);
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         $result = $repository->findById(new AccountIdentifier($accountId));
@@ -84,7 +84,7 @@ class AccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $result = $repository->findById(new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -101,7 +101,7 @@ class AccountRepositoryTest extends TestCase
         $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
         $account = $this->createTestAccount(email: $email);
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         $result = $repository->findByEmail(new Email($email));
@@ -119,7 +119,7 @@ class AccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByEmailWhenNotFound(): void
     {
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $result = $repository->findByEmail(new Email('notfound@example.com'));
 
         $this->assertNull($result);
@@ -137,7 +137,7 @@ class AccountRepositoryTest extends TestCase
         $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
         $account = $this->createTestAccount(accountId: $accountId, email: $email);
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         $this->assertDatabaseHas('accounts', [
@@ -160,7 +160,7 @@ class AccountRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $account = $this->createTestAccount(accountId: $accountId);
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         $account->changeName(new AccountName('Updated Account'));
@@ -196,7 +196,7 @@ class AccountRepositoryTest extends TestCase
             addressLine2: null,
         ));
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         $result = $repository->findById(new AccountIdentifier($accountId));
@@ -225,7 +225,7 @@ class AccountRepositoryTest extends TestCase
     public function testSaveRecreatesAccountDocuments(): void
     {
         $accountId = StrTestHelper::generateUuid();
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $account = $this->createTestAccount(
             accountId: $accountId,
             documents: new AccountDocuments([
@@ -288,7 +288,7 @@ class AccountRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $account = $this->createTestAccount(accountId: $accountId);
 
-        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
         $repository->save($account);
 
         // 削除前に存在確認

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * @property string $id
@@ -19,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $display_order
  * @property Carbon $created_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'resource_type',
     'wiki_id',
@@ -31,16 +34,16 @@ use Illuminate\Database\Eloquent\Model;
     'display_order',
     'created_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'video_links', keyType: 'string')]
+#[Table(name: 'video_links', keyType: 'string')]
 class VideoLink extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'display_order' => 'integer',
         'published_at' => 'datetime',

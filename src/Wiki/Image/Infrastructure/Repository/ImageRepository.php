@@ -45,7 +45,7 @@ final class ImageRepository implements ImageRepositoryInterface
             ->orderBy('display_order')
             ->get();
 
-        return $models->map(fn (WikiImage $model) => $this->toEntity($model))->toArray();
+        return $models->map(fn (WikiImage $model) => $this->toEntity($model))->all();
     }
 
     public function save(Image $image): void

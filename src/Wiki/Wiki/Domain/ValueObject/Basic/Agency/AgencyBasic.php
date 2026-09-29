@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
@@ -123,16 +124,16 @@ final readonly class AgencyBasic implements BasicInterface
     public static function fromArray(array $data): self
     {
         return new self(
-            name: new Name($data['name']),
-            normalizedName: $data['normalized_name'] ?? '',
-            ceo: new CEO($data['ceo'] ?? ''),
-            normalizedCeo: $data['normalized_ceo'] ?? '',
-            foundedIn: isset($data['founded_in']) ? new FoundedIn(new DateTimeImmutable($data['founded_in'])) : null,
-            parentAgencyIdentifier: isset($data['parent_agency_identifier']) ? new WikiIdentifier($data['parent_agency_identifier']) : null,
-            status: isset($data['status']) ? AgencyStatus::from($data['status']) : null,
-            officialWebsite: isset($data['official_website']) ? new ExternalContentLink($data['official_website']) : null,
+            name: new Name(TypedValue::string($data['name'])),
+            normalizedName: TypedValue::string($data['normalized_name'] ?? ''),
+            ceo: new CEO(TypedValue::string($data['ceo'] ?? '')),
+            normalizedCeo: TypedValue::string($data['normalized_ceo'] ?? ''),
+            foundedIn: isset($data['founded_in']) ? new FoundedIn(new DateTimeImmutable(TypedValue::string($data['founded_in']))) : null,
+            parentAgencyIdentifier: isset($data['parent_agency_identifier']) ? new WikiIdentifier(TypedValue::string($data['parent_agency_identifier'])) : null,
+            status: isset($data['status']) ? AgencyStatus::from(TypedValue::string($data['status'])) : null,
+            officialWebsite: isset($data['official_website']) ? new ExternalContentLink(TypedValue::string($data['official_website'])) : null,
             socialLinks: isset($data['social_links'])
-                ? array_map(static fn (string $link) => new ExternalContentLink($link), $data['social_links'])
+                ? array_map(static fn (string $link) => new ExternalContentLink($link), TypedValue::stringArray($data['social_links']))
                 : [],
         );
     }

@@ -54,7 +54,7 @@ class DraftWikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $wiki = $repository->findById(new DraftWikiIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($wiki);
@@ -86,14 +86,14 @@ class DraftWikiRepositoryTest extends TestCase
             'edited_at' => '2026-05-06 12:34:56',
             'title' => 'TWICE Draft Wiki',
             'meta_description' => 'Draft profile for TWICE.',
-            'keywords' => json_encode(['TWICE', 'draft']),
+            'keywords' => json_encode(['TWICE', 'draft'], JSON_THROW_ON_ERROR),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
             'fandom_name' => 'ONCE',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findById(new DraftWikiIdentifier($wikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -143,7 +143,7 @@ class DraftWikiRepositoryTest extends TestCase
             'normalized_real_name' => 'sonchaeyoung',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findById(new DraftWikiIdentifier($wikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -175,7 +175,7 @@ class DraftWikiRepositoryTest extends TestCase
             'normalized_ceo' => 'j.y. park',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findById(new DraftWikiIdentifier($wikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -211,7 +211,7 @@ class DraftWikiRepositoryTest extends TestCase
             'normalized_arranger' => 'rado',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findById(new DraftWikiIdentifier($wikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -269,7 +269,7 @@ class DraftWikiRepositoryTest extends TestCase
             rejectionReason: new DraftWikiRejectionReason('内容が不十分です'),
         );
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
 
         $this->assertDatabaseHas('draft_wikis', [
@@ -290,7 +290,8 @@ class DraftWikiRepositoryTest extends TestCase
             'meta_description' => 'Draft profile for TWICE.',
         ]);
         $storedKeywords = DB::table('draft_wikis')->where('id', $wikiId)->value('keywords');
-        $this->assertSame(['TWICE', 'draft'], json_decode((string) $storedKeywords, true));
+        $this->assertIsString($storedKeywords);
+        $this->assertSame(['TWICE', 'draft'], json_decode($storedKeywords, true));
         $this->assertDatabaseHas('draft_wiki_group_basics', [
             'wiki_id' => $wikiId,
             'name' => 'TWICE',
@@ -342,7 +343,7 @@ class DraftWikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
 
         $this->assertDatabaseHas('draft_wikis', [
@@ -395,7 +396,7 @@ class DraftWikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
 
         $this->assertDatabaseHas('draft_wikis', [
@@ -454,7 +455,7 @@ class DraftWikiRepositoryTest extends TestCase
             new PrincipalIdentifier($editorId),
         );
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
 
         $this->assertDatabaseHas('draft_wikis', [
@@ -506,7 +507,7 @@ class DraftWikiRepositoryTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->findById(new DraftWikiIdentifier($wikiId));
     }
 
@@ -525,7 +526,7 @@ class DraftWikiRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findBySlugAndLanguage(new Slug('gr-twice-slug'), Language::KOREAN);
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -540,7 +541,7 @@ class DraftWikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySlugAndLanguageWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findBySlugAndLanguage(new Slug('gr-not-exist'), Language::KOREAN);
 
         $this->assertNull($found);
@@ -563,7 +564,7 @@ class DraftWikiRepositoryTest extends TestCase
             'published_wiki_id' => $publishedWikiId,
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findByPublishedWikiIdentifier(new WikiIdentifier($publishedWikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -579,7 +580,7 @@ class DraftWikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPublishedWikiIdentifierWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findByPublishedWikiIdentifier(new WikiIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($found);
@@ -612,7 +613,7 @@ class DraftWikiRepositoryTest extends TestCase
             'slug' => 'gr-other-group',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $drafts = $repository->findByTranslationSetIdentifier(new TranslationSetIdentifier($translationSetId));
 
         $this->assertCount(2, $drafts);
@@ -630,7 +631,7 @@ class DraftWikiRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTranslationSetIdentifierWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $drafts = $repository->findByTranslationSetIdentifier(
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
@@ -664,7 +665,7 @@ class DraftWikiRepositoryTest extends TestCase
             'slug' => 'gr-other-editor-wiki',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $drafts = $repository->findByEditorIdentifier(new PrincipalIdentifier($editorId));
 
         $this->assertCount(2, $drafts);
@@ -700,7 +701,7 @@ class DraftWikiRepositoryTest extends TestCase
             'approver_id' => StrTestHelper::generateUuid(),
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $drafts = $repository->findByStatus(ApprovalStatus::Pending);
 
         $this->assertCount(2, $drafts);
@@ -732,7 +733,7 @@ class DraftWikiRepositoryTest extends TestCase
             'slug' => 'tl-talent-wiki',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $drafts = $repository->findByResourceType(ResourceType::GROUP);
 
         $this->assertCount(2, $drafts);
@@ -756,7 +757,7 @@ class DraftWikiRepositoryTest extends TestCase
             'slug' => 'gr-delete-target',
         ]);
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $found = $repository->findById(new DraftWikiIdentifier($wikiId));
 
         $this->assertInstanceOf(DraftWiki::class, $found);
@@ -812,7 +813,7 @@ class DraftWikiRepositoryTest extends TestCase
             new PrincipalIdentifier($sourceEditorId),
         );
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
 
         $this->assertDatabaseHas('draft_wikis', [
@@ -855,7 +856,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('IMAGE resource type does not have a Basic.');
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->save($draftWiki);
     }
 
@@ -884,7 +885,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('TalentBasic not found for DraftWiki.');
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->findById(new DraftWikiIdentifier($wikiId));
     }
 
@@ -913,7 +914,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('GroupBasic not found for DraftWiki.');
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->findById(new DraftWikiIdentifier($wikiId));
     }
 
@@ -942,7 +943,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('AgencyBasic not found for DraftWiki.');
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->findById(new DraftWikiIdentifier($wikiId));
     }
 
@@ -971,7 +972,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('SongBasic not found for DraftWiki.');
 
-        $repository = $this->app->make(DraftWikiRepositoryInterface::class);
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
         $repository->findById(new DraftWikiIdentifier($wikiId));
     }
 }

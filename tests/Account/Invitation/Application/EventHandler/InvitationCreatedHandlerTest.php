@@ -33,10 +33,10 @@ class InvitationCreatedHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationMailService = Mockery::mock(InvitationMailServiceInterface::class);
 
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
 
-        $handler = $this->app->make(InvitationCreatedHandler::class);
+        $handler = $this->app()->make(InvitationCreatedHandler::class);
 
         $this->assertInstanceOf(InvitationCreatedHandler::class, $handler);
     }
@@ -61,10 +61,10 @@ class InvitationCreatedHandlerTest extends TestCase
             ->once()
             ->with($data->invitation);
 
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
 
-        $handler = $this->app->make(InvitationCreatedHandler::class);
+        $handler = $this->app()->make(InvitationCreatedHandler::class);
         $handler->handle($data->event);
     }
 
@@ -86,10 +86,10 @@ class InvitationCreatedHandlerTest extends TestCase
         $invitationMailService = Mockery::mock(InvitationMailServiceInterface::class);
         $invitationMailService->shouldNotReceive('sendInvitationEmail');
 
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
 
-        $handler = $this->app->make(InvitationCreatedHandler::class);
+        $handler = $this->app()->make(InvitationCreatedHandler::class);
         $handler->handle($data->event);
     }
 

@@ -57,10 +57,10 @@ class RefundPaymentTest extends TestCase
             ->once()
             ->with($capturedPayment, $refundAmount, $reason);
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(RefundPaymentInterface::class);
+        $useCase = $this->app()->make(RefundPaymentInterface::class);
 
         $output = new RefundPaymentOutput();
         $useCase->process($input, $output);
@@ -101,10 +101,10 @@ class RefundPaymentTest extends TestCase
             ->once()
             ->with($capturedPayment, $refundAmount, $reason);
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(RefundPaymentInterface::class);
+        $useCase = $this->app()->make(RefundPaymentInterface::class);
 
         $output = new RefundPaymentOutput();
         $useCase->process($input, $output);
@@ -139,10 +139,10 @@ class RefundPaymentTest extends TestCase
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
         $paymentGateway->shouldNotReceive('refund');
 
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
 
-        $useCase = $this->app->make(RefundPaymentInterface::class);
+        $useCase = $this->app()->make(RefundPaymentInterface::class);
 
         $this->expectException(PaymentNotFoundException::class);
 

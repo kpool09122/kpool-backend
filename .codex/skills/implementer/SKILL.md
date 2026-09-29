@@ -44,6 +44,7 @@ description: GitHub Issueの実装計画に基づいてTDDで実装し、task ch
 - コンテキスト間連携はイベント経由
 - 値オブジェクトにバリデーションを内包する
 - エンティティ生成はFactory経由
+- `Identifier` / `ID` はEntityの識別子に限定し、一時状態や保存データの参照値には `Key` など役割を表す名前を使う
 
 ### Step 3: `task check` で品質チェック
 

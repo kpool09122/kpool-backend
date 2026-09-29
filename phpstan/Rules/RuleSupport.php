@@ -27,7 +27,7 @@ final class RuleSupport
      */
     public static function isTargetScope(Scope $scope, string $targetClassNamePattern, array $targetMethodNames): bool
     {
-        if ($targetMethodNames !== [] && !in_array($scope->getFunctionName(), $targetMethodNames, true)) {
+        if ($targetMethodNames !== [] && ! in_array($scope->getFunctionName(), $targetMethodNames, true)) {
             return false;
         }
 
@@ -99,11 +99,11 @@ final class RuleSupport
 
     public static function isTypeOf(string $className, string $parentClassName, ReflectionProvider $reflectionProvider): bool
     {
-        if (!$reflectionProvider->hasClass($className)) {
+        if (! $reflectionProvider->hasClass($className)) {
             return false;
         }
 
-        if (!$reflectionProvider->hasClass($parentClassName)) {
+        if (! $reflectionProvider->hasClass($parentClassName)) {
             return false;
         }
 

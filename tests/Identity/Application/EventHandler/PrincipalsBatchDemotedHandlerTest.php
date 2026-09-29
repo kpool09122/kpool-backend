@@ -11,9 +11,7 @@ use Source\Identity\Application\EventHandler\PrincipalsBatchDemotedHandler;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -34,10 +32,10 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchDemotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchDemotedHandler::class);
 
         $this->assertInstanceOf(PrincipalsBatchDemotedHandler::class, $handler);
     }
@@ -74,10 +72,10 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
             ->with($identity2->email(), Language::ENGLISH)
             ->once();
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchDemotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchDemotedHandler::class);
 
         $handler->handle($event);
     }
@@ -103,10 +101,10 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
         $notificationService = Mockery::mock(CollaboratorNotificationServiceInterface::class);
         $notificationService->shouldNotReceive('sendDemotionNotification');
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(CollaboratorNotificationServiceInterface::class, $notificationService);
 
-        $handler = $this->app->make(PrincipalsBatchDemotedHandler::class);
+        $handler = $this->app()->make(PrincipalsBatchDemotedHandler::class);
 
         $handler->handle($event);
     }
@@ -122,7 +120,6 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
             new Email($email),
             $language,
             null,
-            HashedPassword::fromPlain(new PlainPassword('Password1!')),
             new DateTimeImmutable(),
         );
     }

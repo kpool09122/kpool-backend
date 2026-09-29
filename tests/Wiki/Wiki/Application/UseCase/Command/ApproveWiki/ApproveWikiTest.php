@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\ApproveWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -60,16 +61,16 @@ class ApproveWikiTest extends TestCase
     public function test__construct(): void
     {
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $this->assertInstanceOf(ApproveWiki::class, $approveWiki);
     }
 
@@ -86,7 +87,7 @@ class ApproveWikiTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -103,7 +104,7 @@ class ApproveWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -147,13 +148,13 @@ class ApproveWikiTest extends TestCase
             ->with($dummyApproveWiki->history)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $output = new ApproveWikiOutput();
         $approveWiki->process($input, $output);
         $result = $output->toArray();
@@ -198,15 +199,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(WikiNotFoundException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -251,15 +252,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -301,15 +302,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -327,7 +328,7 @@ class ApproveWikiTest extends TestCase
         $dummyApproveWiki = $this->createDummyApproveWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new ApproveWikiInput(
             $dummyApproveWiki->wikiIdentifier,
@@ -340,7 +341,7 @@ class ApproveWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -359,15 +360,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(DisallowedException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -384,7 +385,7 @@ class ApproveWikiTest extends TestCase
     public function testDuplicateSlug(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -401,7 +402,7 @@ class ApproveWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -426,15 +427,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(DuplicateSlugException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -451,7 +452,7 @@ class ApproveWikiTest extends TestCase
     public function testExistsApprovedDraftWiki(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -468,7 +469,7 @@ class ApproveWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -497,15 +498,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(ExistsApprovedDraftWikiException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 
@@ -522,7 +523,7 @@ class ApproveWikiTest extends TestCase
     public function testInconsistentVersions(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyApproveWiki = $this->createDummyApproveWiki(
             operatorIdentifier: $principalIdentifier,
@@ -539,7 +540,7 @@ class ApproveWikiTest extends TestCase
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -573,15 +574,15 @@ class ApproveWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(InconsistentVersionException::class);
-        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }
 

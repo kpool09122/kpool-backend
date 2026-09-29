@@ -40,7 +40,7 @@ class WikiSnapshotFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(WikiSnapshotFactoryInterface::class);
+        $factory = $this->app()->make(WikiSnapshotFactoryInterface::class);
         $this->assertInstanceOf(WikiSnapshotFactory::class, $factory);
     }
 
@@ -108,7 +108,7 @@ class WikiSnapshotFactoryTest extends TestCase
             keywords: $keywords,
         );
 
-        $factory = $this->app->make(WikiSnapshotFactoryInterface::class);
+        $factory = $this->app()->make(WikiSnapshotFactoryInterface::class);
         $snapshot = $factory->create($wiki);
 
         $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));
@@ -125,8 +125,14 @@ class WikiSnapshotFactoryTest extends TestCase
         $this->assertSame((string)$approverIdentifier, (string)$snapshot->approverIdentifier());
         $this->assertSame((string)$mergerIdentifier, (string)$snapshot->mergerIdentifier());
         $this->assertSame((string)$sourceEditorIdentifier, (string)$snapshot->sourceEditorIdentifier());
+
+        $this->assertNotNull($snapshot->mergedAt());
         $this->assertSame($mergedAt->format('Y-m-d H:i:s'), $snapshot->mergedAt()->format('Y-m-d H:i:s'));
+
+        $this->assertNotNull($snapshot->translatedAt());
         $this->assertSame($translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
+
+        $this->assertNotNull($snapshot->approvedAt());
         $this->assertSame($approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
         $this->assertSame($title, $snapshot->title());
@@ -167,7 +173,7 @@ class WikiSnapshotFactoryTest extends TestCase
             new Version(1),
         );
 
-        $factory = $this->app->make(WikiSnapshotFactoryInterface::class);
+        $factory = $this->app()->make(WikiSnapshotFactoryInterface::class);
         $snapshot = $factory->create($wiki);
 
         $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));

@@ -75,7 +75,7 @@ class SearchMasterWikisTest extends TestCase
 
     private function searchMasterWikis(): SearchMasterWikisInterface
     {
-        return $this->app->make(SearchMasterWikisInterface::class);
+        return $this->app()->make(SearchMasterWikisInterface::class);
     }
 
     private function process(ResourceType $resourceType, string $keyword, ?int $limit = null): SearchMasterWikisOutput

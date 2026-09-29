@@ -32,15 +32,16 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
         $principalGroup->addMember($principalIdentifier);
-        $principalGroup->addRole($roleIdentifier);
 
         $output = new AddPrincipalToPrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('principalGroupIdentifier', $result));
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);

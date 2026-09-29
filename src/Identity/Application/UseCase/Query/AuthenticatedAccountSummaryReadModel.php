@@ -10,7 +10,7 @@ readonly class AuthenticatedAccountSummaryReadModel
     public function __construct(
         private string $accountIdentifier,
         private string $email,
-        private string $type,
+        private ?string $type,
         private string $name,
         private string $status,
         private string $accountCategory,
@@ -19,7 +19,7 @@ readonly class AuthenticatedAccountSummaryReadModel
     ) {
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null} */
     public function toArray(): array
     {
         return [

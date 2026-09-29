@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
-use RuntimeException;
 use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -55,7 +55,6 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $account = $this->accountFactory->create(
             $input->email(),
-            $input->accountType(),
             $input->accountName(),
         );
         $account->changePhone($input->phone());
@@ -75,11 +74,11 @@ readonly class CreateAccount implements CreateAccountInterface
             false,
         );
 
-        $ownerRole = $this->roleRepository->findByName(Role::OWNER);
+        $ownerRole = $this->roleRepository->findSystemByName(Role::OWNER);
         if ($ownerRole === null) {
-            throw new RuntimeException('Owner account role is not found.');
+            throw SystemRoleNotFoundException::owner();
         }
-        $ownerPrincipalGroup->addRole($ownerRole->roleIdentifier());
+        $ownerPrincipalGroup->addRole($ownerRole);
 
         if ($input->identityIdentifier() !== null) {
             $principal = $this->principalFactory->create(

@@ -76,7 +76,7 @@ class InvitationRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $this->assertInstanceOf(InvitationRepository::class, $repository);
     }
 
@@ -102,7 +102,7 @@ class InvitationRepositoryTest extends TestCase
             token: $token,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $this->assertDatabaseHas('invitations', [
@@ -138,7 +138,7 @@ class InvitationRepositoryTest extends TestCase
             acceptedAt: $acceptedAt,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $this->assertDatabaseHas('invitations', [
@@ -169,7 +169,7 @@ class InvitationRepositoryTest extends TestCase
             status: InvitationStatus::PENDING,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $this->assertDatabaseHas('invitations', [
@@ -222,7 +222,7 @@ class InvitationRepositoryTest extends TestCase
             token: $token,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $result = $repository->findByToken(new OneTimeToken($token));
@@ -240,7 +240,7 @@ class InvitationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTokenWhenNotFound(): void
     {
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $result = $repository->findByToken(new OneTimeToken(bin2hex(random_bytes(32))));
 
         $this->assertNull($result);
@@ -265,7 +265,7 @@ class InvitationRepositoryTest extends TestCase
             status: InvitationStatus::PENDING,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $result = $repository->findPendingByAccountAndEmail(
@@ -287,7 +287,7 @@ class InvitationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindPendingByAccountAndEmailWhenNotFound(): void
     {
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $result = $repository->findPendingByAccountAndEmail(
             new AccountIdentifier(StrTestHelper::generateUuid()),
             new Email('notfound@example.com')
@@ -317,7 +317,7 @@ class InvitationRepositoryTest extends TestCase
             acceptedAt: new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($acceptedInvitation);
 
         $result = $repository->findPendingByAccountAndEmail(
@@ -346,7 +346,7 @@ class InvitationRepositoryTest extends TestCase
             status: InvitationStatus::REVOKED,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($revokedInvitation);
 
         $result = $repository->findPendingByAccountAndEmail(
@@ -382,7 +382,7 @@ class InvitationRepositoryTest extends TestCase
             expiresAt: $expiresAt,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $result = $repository->findByToken(new OneTimeToken($token));
@@ -425,7 +425,7 @@ class InvitationRepositoryTest extends TestCase
             acceptedAt: $acceptedAt,
         );
 
-        $repository = $this->app->make(InvitationRepositoryInterface::class);
+        $repository = $this->app()->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
         $result = $repository->findByToken(new OneTimeToken($token));

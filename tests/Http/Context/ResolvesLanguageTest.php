@@ -19,8 +19,6 @@ class ResolvesLanguageTest extends TestCase
         $actorContext = new ActorContext(
             identityIdentifier: new IdentityIdentifier(StrTestHelper::generateUuid()),
             language: Language::KOREAN,
-            delegationIdentifier: null,
-            originalIdentityIdentifier: null,
         );
         app()->instance(ActorContext::class, $actorContext);
 

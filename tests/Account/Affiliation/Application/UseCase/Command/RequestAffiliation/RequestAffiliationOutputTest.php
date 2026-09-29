@@ -38,11 +38,13 @@ class RequestAffiliationOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('affiliationIdentifier', $result));
         $this->assertSame((string) $affiliation->affiliationIdentifier(), $result['affiliationIdentifier']);
         $this->assertSame((string) $affiliation->agencyAccountIdentifier(), $result['agencyAccountIdentifier']);
         $this->assertSame((string) $affiliation->talentAccountIdentifier(), $result['talentAccountIdentifier']);
         $this->assertSame((string) $affiliation->requestedBy(), $result['requestedBy']);
         $this->assertSame(AffiliationStatus::PENDING->value, $result['status']);
+        self::assertNotNull($result['terms']);
         $this->assertSame(30, $result['terms']['revenueSharePercentage']);
         $this->assertSame('Contract notes', $result['terms']['contractNotes']);
         $this->assertSame($requestedAt->format(DateTimeInterface::ATOM), $result['requestedAt']);

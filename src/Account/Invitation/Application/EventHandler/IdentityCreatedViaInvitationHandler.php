@@ -14,6 +14,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Exception\MissingLifecycleTimestampException;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class IdentityCreatedViaInvitationHandler
@@ -72,7 +73,7 @@ readonly class IdentityCreatedViaInvitationHandler
             invitationIdentifier: $invitation->invitationIdentifier(),
             accountIdentifier: $invitation->accountIdentifier(),
             acceptedByIdentityIdentifier: $event->identityIdentifier,
-            acceptedAt: $invitation->acceptedAt(),
+            acceptedAt: $invitation->acceptedAt() ?? throw new MissingLifecycleTimestampException(),
         ));
     }
 }

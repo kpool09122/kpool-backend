@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -21,6 +22,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\ListRelatedWikis\ListRelatedWikis
 use Source\Wiki\Wiki\Application\UseCase\Query\ListRelatedWikis\ListRelatedWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListRelatedWikis\ListRelatedWikisOutput;
 use Tests\Helper\CreateWiki;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class ListRelatedWikisTest extends TestCase
@@ -107,7 +109,7 @@ class ListRelatedWikisTest extends TestCase
     private function process(ResourceType $resourceType, string $translationSetIdentifier, AccountCategory $accountCategory): ListRelatedWikisOutput
     {
         $output = new ListRelatedWikisOutput();
-        $this->app->make(ListRelatedWikisInterface::class)->process(
+        $this->app()->make(ListRelatedWikisInterface::class)->process(
             new ListRelatedWikisInput(
                 $resourceType,
                 new TranslationSetIdentifier($translationSetIdentifier),
@@ -125,15 +127,16 @@ class ListRelatedWikisTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(self::PRINCIPAL_ID),
             new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fffe'),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             new DelegationIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fffd'),
         );
         $repository = Mockery::mock(PrincipalRepositoryInterface::class);
         $repository->shouldReceive('findById')->andReturn($principal);
-        $this->app->instance(PrincipalRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $repository);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->andReturn($allowed);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function createAgency(string $wikiId, string $translationSetIdentifier, string $slug, string $name, string $normalizedName): void

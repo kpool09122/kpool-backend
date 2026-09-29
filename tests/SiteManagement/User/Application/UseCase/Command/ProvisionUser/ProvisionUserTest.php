@@ -31,10 +31,10 @@ class ProvisionUserTest extends TestCase
     {
         $userRepository = Mockery::mock(UserRepositoryInterface::class);
         $userFactory = Mockery::mock(UserFactoryInterface::class);
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(UserFactoryInterface::class, $userFactory);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(UserFactoryInterface::class, $userFactory);
 
-        $provisionUser = $this->app->make(ProvisionUserInterface::class);
+        $provisionUser = $this->app()->make(ProvisionUserInterface::class);
         $this->assertInstanceOf(ProvisionUser::class, $provisionUser);
     }
 
@@ -73,10 +73,10 @@ class ProvisionUserTest extends TestCase
             ->with($identityIdentifier)
             ->andReturn($user);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(UserFactoryInterface::class, $userFactory);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(UserFactoryInterface::class, $userFactory);
 
-        $provisionUser = $this->app->make(ProvisionUserInterface::class);
+        $provisionUser = $this->app()->make(ProvisionUserInterface::class);
         $result = $provisionUser->process($input);
 
         $this->assertSame($user, $result);
@@ -108,12 +108,12 @@ class ProvisionUserTest extends TestCase
 
         $userFactory = Mockery::mock(UserFactoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(UserFactoryInterface::class, $userFactory);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(UserFactoryInterface::class, $userFactory);
 
         $this->expectException(AlreadyUserExistsException::class);
 
-        $provisionUser = $this->app->make(ProvisionUserInterface::class);
+        $provisionUser = $this->app()->make(ProvisionUserInterface::class);
         $provisionUser->process($input);
     }
 }

@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -149,28 +150,28 @@ final readonly class GroupBasic implements BasicInterface
     public static function fromArray(array $data): self
     {
         return new self(
-            name: new Name($data['name']),
-            normalizedName: $data['normalized_name'] ?? '',
-            agencyIdentifier: $data['agency_identifier'] ? new WikiIdentifier($data['agency_identifier']) : null,
-            groupType: isset($data['group_type']) ? GroupType::from($data['group_type']) : null,
-            status: isset($data['status']) ? GroupStatus::from($data['status']) : null,
-            generation: isset($data['generation']) ? Generation::from($data['generation']) : null,
-            debutDate: isset($data['debut_date']) ? new DebutDate(new DateTimeImmutable($data['debut_date'])) : null,
-            disbandDate: isset($data['disband_date']) ? new DisbandDate(new DateTimeImmutable($data['disband_date'])) : null,
-            fandomName: new FandomName($data['fandom_name'] ?? ''),
+            name: new Name(TypedValue::string($data['name'])),
+            normalizedName: TypedValue::string($data['normalized_name'] ?? ''),
+            agencyIdentifier: $data['agency_identifier'] ? new WikiIdentifier(TypedValue::string($data['agency_identifier'])) : null,
+            groupType: isset($data['group_type']) ? GroupType::from(TypedValue::string($data['group_type'])) : null,
+            status: isset($data['status']) ? GroupStatus::from(TypedValue::string($data['status'])) : null,
+            generation: isset($data['generation']) ? Generation::from(TypedValue::string($data['generation'])) : null,
+            debutDate: isset($data['debut_date']) ? new DebutDate(new DateTimeImmutable(TypedValue::string($data['debut_date']))) : null,
+            disbandDate: isset($data['disband_date']) ? new DisbandDate(new DateTimeImmutable(TypedValue::string($data['disband_date']))) : null,
+            fandomName: new FandomName(TypedValue::string($data['fandom_name'] ?? '')),
             officialColors: isset($data['official_colors'])
-                ? array_map(static fn (array $color) => self::colorFromStoredValue($color), $data['official_colors'])
+                ? array_map(static fn (mixed $color) => self::colorFromStoredValue(TypedValue::array($color)), TypedValue::array($data['official_colors']))
                 : [],
-            emoji: new Emoji($data['emoji'] ?? ''),
-            representativeSymbol: new RepresentativeSymbol($data['representative_symbol'] ?? ''),
+            emoji: new Emoji(TypedValue::string($data['emoji'] ?? '')),
+            representativeSymbol: new RepresentativeSymbol(TypedValue::string($data['representative_symbol'] ?? '')),
         );
     }
 
     /**
-     * @param array{color_code: string, label: string} $value
+     * @param array<array-key, mixed> $value
      */
     private static function colorFromStoredValue(array $value): Color
     {
-        return new Color(new HexColor($value['color_code']), $value['label']);
+        return new Color(new HexColor(TypedValue::string($value['color_code'])), TypedValue::string($value['label']));
     }
 }

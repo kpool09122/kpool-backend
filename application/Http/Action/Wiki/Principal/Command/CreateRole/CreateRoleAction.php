@@ -40,7 +40,7 @@ readonly class CreateRoleAction
                 $input = new CreateRoleInput(
                     $request->name(),
                     $policies,
-                    $request->isSystemRole(),
+                    $request->accountIdentifier(),
                 );
                 $output = new CreateRoleOutput();
             } catch (InvalidArgumentException $e) {

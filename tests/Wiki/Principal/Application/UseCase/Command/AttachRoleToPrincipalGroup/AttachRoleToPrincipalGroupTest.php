@@ -31,9 +31,9 @@ class AttachRoleToPrincipalGroupTest extends TestCase
     {
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $useCase = $this->app->make(AttachRoleToPrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $useCase = $this->app()->make(AttachRoleToPrincipalGroupInterface::class);
         $this->assertInstanceOf(AttachRoleToPrincipalGroup::class, $useCase);
     }
 
@@ -58,14 +58,14 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -75,13 +75,13 @@ class AttachRoleToPrincipalGroupTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(AttachRoleToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AttachRoleToPrincipalGroupInterface::class);
         $input = new AttachRoleToPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $useCase->process($input);
@@ -98,17 +98,17 @@ class AttachRoleToPrincipalGroupTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $principalGroupRepository->shouldNotReceive('save');
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldNotReceive('findById');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(AttachRoleToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AttachRoleToPrincipalGroupInterface::class);
         $input = new AttachRoleToPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -136,20 +136,20 @@ class AttachRoleToPrincipalGroupTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldNotReceive('save');
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(AttachRoleToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AttachRoleToPrincipalGroupInterface::class);
         $input = new AttachRoleToPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $this->expectException(RoleNotFoundException::class);
@@ -175,21 +175,21 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
-        $principalGroup->addRole($roleIdentifier);
 
         $role = new Role(
             $roleIdentifier,
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -202,13 +202,13 @@ class AttachRoleToPrincipalGroupTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $roleIdentifier))
+            ->with(Mockery::on(fn (RoleIdentifier $arg) => (string) $arg === (string) $roleIdentifier))
             ->andReturn($role);
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
 
-        $useCase = $this->app->make(AttachRoleToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AttachRoleToPrincipalGroupInterface::class);
         $input = new AttachRoleToPrincipalGroupInput($principalGroupIdentifier, $roleIdentifier);
 
         $useCase->process($input);

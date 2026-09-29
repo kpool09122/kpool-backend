@@ -21,7 +21,7 @@ class PromotionHistoryFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PromotionHistoryFactoryInterface::class);
+        $factory = $this->app()->make(PromotionHistoryFactoryInterface::class);
         $this->assertInstanceOf(PromotionHistoryFactory::class, $factory);
     }
 
@@ -37,7 +37,7 @@ class PromotionHistoryFactoryTest extends TestCase
         $toRole = 'SENIOR_COLLABORATOR';
         $reason = 'Promoted for being in top 10% with 125 points';
 
-        $factory = $this->app->make(PromotionHistoryFactoryInterface::class);
+        $factory = $this->app()->make(PromotionHistoryFactoryInterface::class);
         $history = $factory->create(
             $principalIdentifier,
             $fromRole,
@@ -65,7 +65,7 @@ class PromotionHistoryFactoryTest extends TestCase
         $toRole = 'COLLABORATOR';
         $reason = null;
 
-        $factory = $this->app->make(PromotionHistoryFactoryInterface::class);
+        $factory = $this->app()->make(PromotionHistoryFactoryInterface::class);
         $history = $factory->create(
             $principalIdentifier,
             $fromRole,

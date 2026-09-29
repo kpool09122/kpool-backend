@@ -6,12 +6,11 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -28,15 +27,15 @@ class AuthServiceTest extends TestCase
         parent::setUp();
 
         // テスト用にセッションドライバーをarrayに設定
-        $this->app['config']->set('session.driver', 'array');
+        $this->app()['config']->set('session.driver', 'array');
 
         // セッションマネージャーを再作成してドライバー設定を反映
-        $this->app->forgetInstance('session');
-        $this->app->forgetInstance('session.store');
+        $this->app()->forgetInstance('session');
+        $this->app()->forgetInstance('session.store');
 
         // セッションを開始し、Requestに設定する
-        $this->app['session']->start();
-        $this->app['request']->setLaravelSession($this->app['session.store']);
+        $this->app()['session']->start();
+        $this->app()['request']->setLaravelSession($this->app()['session.store']);
     }
 
     /**
@@ -47,7 +46,7 @@ class AuthServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $authService = $this->app->make(AuthServiceInterface::class);
+        $authService = $this->app()->make(AuthServiceInterface::class);
         $this->assertInstanceOf(AuthService::class, $authService);
     }
 
@@ -64,7 +63,7 @@ class AuthServiceTest extends TestCase
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 
-        $authService = $this->app->make(AuthServiceInterface::class);
+        $authService = $this->app()->make(AuthServiceInterface::class);
         $result = $authService->login($identity);
 
         $this->assertSame($identity, $result);
@@ -85,7 +84,7 @@ class AuthServiceTest extends TestCase
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 
-        $authService = $this->app->make(AuthServiceInterface::class);
+        $authService = $this->app()->make(AuthServiceInterface::class);
         $authService->login($identity);
 
         $this->assertTrue(Auth::check());
@@ -108,7 +107,7 @@ class AuthServiceTest extends TestCase
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 
-        $authService = $this->app->make(AuthServiceInterface::class);
+        $authService = $this->app()->make(AuthServiceInterface::class);
         $authService->login($identity);
 
         $this->assertTrue($authService->isLoggedIn());
@@ -122,9 +121,28 @@ class AuthServiceTest extends TestCase
      */
     public function testIsLoggedInWhenNotAuthenticated(): void
     {
-        $authService = $this->app->make(AuthServiceInterface::class);
+        $authService = $this->app()->make(AuthServiceInterface::class);
 
         $this->assertFalse($authService->isLoggedIn());
+    }
+
+    public function testCurrentSessionBecomesInvalidWhenGenerationAdvances(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $authService = $this->app()->make(AuthServiceInterface::class);
+        $generationKey = 'identity_session_generation:' . $identityIdentifier;
+        Redis::del($generationKey);
+
+        try {
+            $this->app()['session']->put('identity_session_generation', 0);
+            $this->assertTrue($authService->isCurrentSessionValid($identityIdentifier));
+
+            Redis::incr($generationKey);
+
+            $this->assertFalse($authService->isCurrentSessionValid($identityIdentifier));
+        } finally {
+            Redis::del($generationKey);
+        }
     }
 
     private function createIdentityEntity(IdentityIdentifier $identityIdentifier): Identity
@@ -135,7 +153,6 @@ class AuthServiceTest extends TestCase
             new Email('test@example.com'),
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
         );
     }

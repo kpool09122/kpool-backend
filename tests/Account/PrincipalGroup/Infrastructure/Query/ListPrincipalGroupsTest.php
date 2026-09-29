@@ -29,8 +29,8 @@ class ListPrincipalGroupsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app->make(ListPrincipalGroupsInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app()->make(ListPrincipalGroupsInterface::class));
     }
 
     #[Group('useDb')]
@@ -70,7 +70,7 @@ class ListPrincipalGroupsTest extends TestCase
         DB::table('account_roles')->insert([
             'id' => $roleId,
             'name' => 'Admin Role',
-            'is_system_role' => false,
+            'account_id' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

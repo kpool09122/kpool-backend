@@ -9,6 +9,7 @@ use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 interface PrincipalGroupRepositoryInterface
 {
@@ -35,6 +36,8 @@ interface PrincipalGroupRepositoryInterface
     ): array;
 
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup;
+
+    public function findByDelegationId(DelegationIdentifier $delegationIdentifier): ?PrincipalGroup;
 
     public function findByAccountIdAndRole(
         AccountIdentifier $accountIdentifier,

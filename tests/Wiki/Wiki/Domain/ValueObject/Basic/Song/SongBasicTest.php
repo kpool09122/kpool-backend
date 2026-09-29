@@ -136,13 +136,18 @@ class SongBasicTest extends TestCase
         $this->assertSame('song', $array['type']);
         $this->assertSame((string) $testData->name, $array['name']);
         $this->assertSame($testData->normalizedName, $array['normalized_name']);
+        self::assertNotNull($testData->songType);
         $this->assertSame($testData->songType->value, $array['song_type']);
+        self::assertIsArray($array['genres']);
         $this->assertCount(count($testData->genres), $array['genres']);
         // 関連エンティティ
         $this->assertSame((string) $testData->agencyIdentifier, $array['agency_identifier']);
+        self::assertIsArray($array['group_identifiers']);
         $this->assertCount(count($testData->groupIdentifiers), $array['group_identifiers']);
+        self::assertIsArray($array['talent_identifiers']);
         $this->assertCount(count($testData->talentIdentifiers), $array['talent_identifiers']);
         // リリース情報
+        $this->assertNotNull($testData->releaseDate);
         $this->assertSame($testData->releaseDate->format('Y-m-d'), $array['release_date']);
         $this->assertSame($testData->albumName, $array['album_name']);
         // クレジット情報
@@ -226,6 +231,7 @@ class SongBasicTest extends TestCase
         $this->assertCount(1, $songBasic->talentIdentifiers());
         $this->assertSame($talentUuid1, (string) $songBasic->talentIdentifiers()[0]);
         // リリース情報
+        $this->assertNotNull($songBasic->releaseDate());
         $this->assertSame('2020-08-21', $songBasic->releaseDate()->format('Y-m-d'));
         $this->assertSame('BE', $songBasic->albumName());
         // クレジット情報

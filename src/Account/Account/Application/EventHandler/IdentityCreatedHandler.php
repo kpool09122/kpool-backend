@@ -22,7 +22,6 @@ readonly class IdentityCreatedHandler
         $this->createAccount->process(
             new CreateAccountInput(
                 email: $event->email,
-                accountType: $event->accountType,
                 accountName: new AccountName($event->name ?? 'My Account'),
                 identityIdentifier: $event->identityIdentifier,
             ),

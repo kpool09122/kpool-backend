@@ -48,7 +48,7 @@ class AnnouncementRepositoryTest extends TestCase
             'published_date' => $publishedDate->format('Y-m-d H:i:s'),
         ]);
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $announcement = $repository->findById(new AnnouncementIdentifier($id));
 
         $this->assertInstanceOf(AnnouncementEntity::class, $announcement);
@@ -68,7 +68,7 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $announcement = $repository->findById(new AnnouncementIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($announcement);
@@ -115,7 +115,7 @@ class AnnouncementRepositoryTest extends TestCase
 
         DB::table('announcements')->insert($records);
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $announcements = $repository->findByTranslationSetIdentifier(new TranslationSetIdentifier($translationSetId));
 
         $this->assertCount(2, $announcements);
@@ -150,7 +150,7 @@ class AnnouncementRepositoryTest extends TestCase
             'published_date' => $publishedDate->format('Y-m-d H:i:s'),
         ]);
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $draft = $repository->findDraftById(new AnnouncementIdentifier($id));
 
         $this->assertInstanceOf(DraftAnnouncementEntity::class, $draft);
@@ -170,7 +170,7 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindDraftByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $draft = $repository->findDraftById(new AnnouncementIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);
@@ -217,7 +217,7 @@ class AnnouncementRepositoryTest extends TestCase
 
         DB::table('draft_announcements')->insert([$draft1, $draft2, $other]);
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSetIdentifier($translationSetId);
 
         $this->assertCount(2, $drafts);
@@ -234,7 +234,7 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindDraftsByTranslationSetIdentifierWhenNotExist(): void
     {
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSetIdentifier(
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
@@ -260,7 +260,7 @@ class AnnouncementRepositoryTest extends TestCase
             new PublishedDate(new DateTimeImmutable('2024-04-01 08:00:00')),
         );
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $repository->save($announcement);
 
         $this->assertDatabaseHas('announcements', [
@@ -291,7 +291,7 @@ class AnnouncementRepositoryTest extends TestCase
             new PublishedDate(new DateTimeImmutable('2024-05-01 09:30:00')),
         );
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $repository->saveDraft($draft);
 
         $this->assertDatabaseHas('draft_announcements', [
@@ -334,7 +334,7 @@ class AnnouncementRepositoryTest extends TestCase
             new PublishedDate(new DateTimeImmutable('2024-06-01 12:00:00')),
         );
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $repository->delete($announcement);
 
         $this->assertSoftDeleted('announcements', ['id' => $id]);
@@ -369,7 +369,7 @@ class AnnouncementRepositoryTest extends TestCase
             new PublishedDate(new DateTimeImmutable('2024-07-01 12:00:00')),
         );
 
-        $repository = $this->app->make(AnnouncementRepositoryInterface::class);
+        $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $repository->deleteDraft($draft);
 
         $this->assertDatabaseMissing('draft_announcements', ['id' => $id]);

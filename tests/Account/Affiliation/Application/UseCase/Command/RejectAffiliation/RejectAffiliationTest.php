@@ -40,11 +40,11 @@ class RejectAffiliationTest extends TestCase
     /** @throws BindingResolutionException */
     public function test__construct(): void
     {
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
 
-        $this->assertInstanceOf(RejectAffiliation::class, $this->app->make(RejectAffiliationInterface::class));
+        $this->assertInstanceOf(RejectAffiliation::class, $this->app()->make(RejectAffiliationInterface::class));
     }
 
     public function testProcessWhenPolicyAllowsDesignatedApprover(): void

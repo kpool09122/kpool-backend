@@ -11,7 +11,7 @@ class CreateAccount
     /**
      * @param array{
      *     email?: string,
-     *     type?: string,
+     *     type?: string|null,
      *     name?: string,
      *     status?: string,
      *     category?: string,
@@ -22,7 +22,7 @@ class CreateAccount
         DB::table('accounts')->insert([
             'id' => $accountId,
             'email' => $overrides['email'] ?? 'test-' . $accountId . '@example.com',
-            'type' => $overrides['type'] ?? 'individual',
+            'type' => array_key_exists('type', $overrides) ? $overrides['type'] : 'individual',
             'name' => $overrides['name'] ?? 'Test Account',
             'status' => $overrides['status'] ?? 'active',
             'category' => $overrides['category'] ?? 'general',

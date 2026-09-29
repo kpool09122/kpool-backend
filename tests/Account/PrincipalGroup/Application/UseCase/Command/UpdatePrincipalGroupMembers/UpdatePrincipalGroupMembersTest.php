@@ -6,9 +6,9 @@ namespace Tests\Account\PrincipalGroup\Application\UseCase\Command\UpdatePrincip
 
 use DateTimeImmutable;
 use Mockery;
+use Mockery\MockInterface;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
-use Source\Account\Principal\Application\Exception\PrincipalAlreadyAssignedToPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
@@ -43,25 +43,25 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
-        $this->app->instance(PolicyRepositoryInterface::class, Mockery::mock(PolicyRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(RoleRepositoryInterface::class, Mockery::mock(RoleRepositoryInterface::class));
+        $this->app()->instance(PolicyRepositoryInterface::class, Mockery::mock(PolicyRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(UpdatePrincipalGroupMembers::class, $this->app->make(UpdatePrincipalGroupMembersInterface::class));
+        $this->assertInstanceOf(UpdatePrincipalGroupMembers::class, $this->app()->make(UpdatePrincipalGroupMembersInterface::class));
     }
 
     public function testProcessUpdatesMultipleGroupMembersAndKeepsUntargetedGroup(): void
     {
         [$accountId, $executor, $manager, $memberA, $memberB, $groupA, $groupB, $untargetedGroup, $roleId, $policyId] = $this->fixture();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $groupB, $untargetedGroup]);
         $principalGroupRepository->shouldReceive('save')->twice()->with(Mockery::on(static fn (PrincipalGroup $group): bool => in_array((string) $group->principalGroupIdentifier(), [(string) $groupA->principalGroupIdentifier(), (string) $groupB->principalGroupIdentifier()], true)));
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([
             (string) $executor->principalIdentifier() => $executor,
@@ -93,61 +93,72 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $this->assertCount(2, $output->toArray()['principalGroups']);
     }
 
-    public function testThrowsWhenRequestedPrincipalAppearsInMultipleGroups(): void
+    public function testAllowsRequestedPrincipalToBelongToMultipleGroups(): void
     {
-        [$accountId, $executor, $manager, , , $groupA, $groupB] = $this->fixture();
+        [$accountId, $executor, $manager, , , $groupA, $groupB, , $roleId, $policyId] = $this->fixture();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $groupB]);
-        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldReceive('save')->twice()->with(Mockery::on(static fn (PrincipalGroup $group): bool => in_array((string) $group->principalGroupIdentifier(), [(string) $groupA->principalGroupIdentifier(), (string) $groupB->principalGroupIdentifier()], true)));
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
-        $principalRepository = $this->emptyPrincipalRepository();
-        $principalRepository->shouldNotReceive('findByIds');
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findByIds')->once()->andReturn([
+            (string) $manager->principalIdentifier() => $manager,
+        ]);
 
         $useCase = new UpdatePrincipalGroupMembers(
             $principalGroupRepository,
             $principalRepository,
-            $this->emptyRoleRepository(),
-            $this->emptyPolicyRepository(),
+            $this->roleRepository($roleId, $policyId),
+            $this->policyRepository($policyId),
             $this->allowedPolicyEvaluator(),
         );
 
-        $this->expectException(PrincipalAlreadyAssignedToPrincipalGroupException::class);
-
+        $output = new UpdatePrincipalGroupMembersOutput();
         $useCase->process(new UpdatePrincipalGroupMembersInput($accountId, $executor, [
             new PrincipalGroupMembers($groupA->principalGroupIdentifier(), [$manager->principalIdentifier()]),
             new PrincipalGroupMembers($groupB->principalGroupIdentifier(), [$manager->principalIdentifier()]),
-        ]), new UpdatePrincipalGroupMembersOutput());
+        ]), $output);
+
+        $this->assertTrue($groupA->hasMember($manager->principalIdentifier()));
+        $this->assertTrue($groupB->hasMember($manager->principalIdentifier()));
+        $this->assertCount(2, $output->toArray()['principalGroups']);
     }
 
-    public function testThrowsWhenRequestedPrincipalAlreadyBelongsToUntargetedGroup(): void
+    public function testAllowsRequestedPrincipalToRemainInUntargetedGroup(): void
     {
-        [$accountId, $executor, $manager, , , $groupA, , $untargetedGroup] = $this->fixture();
+        [$accountId, $executor, $manager, , , $groupA, , $untargetedGroup, $roleId, $policyId] = $this->fixture();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA, $untargetedGroup]);
-        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldReceive('save')->once()->with($groupA);
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
-        $principalRepository = $this->emptyPrincipalRepository();
-        $principalRepository->shouldNotReceive('findByIds');
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findByIds')->once()->andReturn([
+            (string) $manager->principalIdentifier() => $manager,
+            (string) $executor->principalIdentifier() => $executor,
+        ]);
 
         $useCase = new UpdatePrincipalGroupMembers(
             $principalGroupRepository,
             $principalRepository,
-            $this->emptyRoleRepository(),
-            $this->emptyPolicyRepository(),
+            $this->roleRepository($roleId, $policyId),
+            $this->policyRepository($policyId),
             $this->allowedPolicyEvaluator(),
         );
 
-        $this->expectException(PrincipalAlreadyAssignedToPrincipalGroupException::class);
-
+        $output = new UpdatePrincipalGroupMembersOutput();
         $useCase->process(new UpdatePrincipalGroupMembersInput($accountId, $executor, [
             new PrincipalGroupMembers($groupA->principalGroupIdentifier(), [$manager->principalIdentifier(), $executor->principalIdentifier()]),
-        ]), new UpdatePrincipalGroupMembersOutput());
+        ]), $output);
+
+        $this->assertTrue($groupA->hasMember($executor->principalIdentifier()));
+        $this->assertTrue($untargetedGroup->hasMember($executor->principalIdentifier()));
+        $this->assertCount(1, $output->toArray()['principalGroups']);
     }
 
     public function testThrowsWhenPrincipalGroupIsOutsideAccount(): void
@@ -155,7 +166,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         [$accountId, $executor] = $this->fixture();
         $unknownGroupId = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([]);
         $principalGroupRepository->shouldNotReceive('save');
@@ -178,12 +189,12 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         [$accountId, $executor, , $memberA, , $groupA] = $this->fixture();
         $outsidePrincipal = new Principal($memberA->principalIdentifier(), $memberA->identityIdentifier(), new AccountIdentifier(StrTestHelper::generateUuid()));
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA]);
         $principalGroupRepository->shouldNotReceive('save');
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([
             (string) $outsidePrincipal->principalIdentifier() => $outsidePrincipal,
@@ -207,12 +218,12 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     {
         [$accountId, $executor, , $memberA, , $groupA] = $this->fixture();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA]);
         $principalGroupRepository->shouldNotReceive('save');
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([]);
         $principalRepository->shouldNotReceive('findById');
@@ -233,11 +244,11 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     public function testThrowsWhenExecutorCannotManagePrincipalGroups(): void
     {
         [$accountId, $executor] = $this->fixture();
-        /** @var PolicyEvaluatorInterface&\Mockery\MockInterface $policyEvaluator */
+        /** @var PolicyEvaluatorInterface&MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnFalse();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldNotReceive('findByAccountId');
         $principalGroupRepository->shouldNotReceive('save');
@@ -259,19 +270,19 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     {
         [$accountId, $executor, $manager, $memberA, , $groupA, , , $roleId, $policyId] = $this->fixture();
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA]);
         $principalGroupRepository->shouldNotReceive('save');
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([
             (string) $memberA->principalIdentifier() => $memberA,
         ]);
         $principalRepository->shouldNotReceive('findById');
 
-        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        /** @var PolicyRepositoryInterface&MockInterface $policyRepository */
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findByIds')->andReturn([]);
 
@@ -295,39 +306,39 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         [$accountId, $executor, $manager, , , $groupA, , , $roleId, $allowPolicyId] = $this->fixture();
         $denyPolicyId = new PolicyIdentifier(StrTestHelper::generateUuid());
 
-        /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
+        /** @var PrincipalGroupRepositoryInterface&MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$groupA]);
         $principalGroupRepository->shouldNotReceive('save');
 
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIds')->once()->andReturn([
             (string) $manager->principalIdentifier() => $manager,
         ]);
         $principalRepository->shouldNotReceive('findById');
 
-        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        /** @var RoleRepositoryInterface&MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findByIds')->andReturn([
-            (string) $roleId => new Role($roleId, 'Manager', [$allowPolicyId, $denyPolicyId], false),
+            (string) $roleId => new Role($roleId, 'Manager', [$allowPolicyId, $denyPolicyId], null),
         ]);
 
-        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        /** @var PolicyRepositoryInterface&MockInterface $policyRepository */
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findByIds')->andReturn([
             (string) $allowPolicyId => new Policy(
                 $allowPolicyId,
                 'Allow manage principal groups',
                 [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-                false,
+                null,
                 new DateTimeImmutable(),
             ),
             (string) $denyPolicyId => new Policy(
                 $denyPolicyId,
                 'Deny manage principal groups',
                 [new Statement(Effect::DENY, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-                false,
+                null,
                 new DateTimeImmutable(),
             ),
         ]);
@@ -376,17 +387,21 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function principalGroup(AccountIdentifier $accountId, ?RoleIdentifier $roleId = null): PrincipalGroup
     {
-        $principalGroup = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $accountId, 'Test Group', false, new DateTimeImmutable());
-        if ($roleId !== null) {
-            $principalGroup->addRole($roleId);
-        }
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            $accountId,
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+            $roleId !== null ? [$roleId] : [],
+        );
 
         return $principalGroup;
     }
 
     private function allowedPolicyEvaluator(): PolicyEvaluatorInterface
     {
-        /** @var PolicyEvaluatorInterface&\Mockery\MockInterface $policyEvaluator */
+        /** @var PolicyEvaluatorInterface&MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->with(Mockery::type(Principal::class), Action::PRINCIPAL_GROUP_MANAGE, Mockery::type(Resource::class))->andReturnTrue();
 
@@ -395,22 +410,22 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function roleRepository(RoleIdentifier $roleId, PolicyIdentifier $policyId): RoleRepositoryInterface
     {
-        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        /** @var RoleRepositoryInterface&MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Manager', [$policyId], false)]);
+        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Manager', [$policyId], null)]);
 
         return $roleRepository;
     }
 
     private function policyRepository(PolicyIdentifier $policyId): PolicyRepositoryInterface
     {
-        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        /** @var PolicyRepositoryInterface&MockInterface $policyRepository */
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
         $policyRepository->shouldReceive('findByIds')->andReturn([(string) $policyId => new Policy(
             $policyId,
             'Manage principal groups',
             [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::ACCOUNT])],
-            false,
+            null,
             new DateTimeImmutable(),
         )]);
 
@@ -419,16 +434,16 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function roleRepositoryWithoutPolicies(RoleIdentifier $roleId): RoleRepositoryInterface
     {
-        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        /** @var RoleRepositoryInterface&MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Member', [], false)]);
+        $roleRepository->shouldReceive('findByIds')->andReturn([(string) $roleId => new Role($roleId, 'Member', [], null)]);
 
         return $roleRepository;
     }
 
     private function emptyPrincipalRepository(): PrincipalRepositoryInterface
     {
-        /** @var PrincipalRepositoryInterface&\Mockery\MockInterface $principalRepository */
+        /** @var PrincipalRepositoryInterface&MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
 
         return $principalRepository;
@@ -436,7 +451,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function emptyRoleRepository(): RoleRepositoryInterface
     {
-        /** @var RoleRepositoryInterface&\Mockery\MockInterface $roleRepository */
+        /** @var RoleRepositoryInterface&MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
 
         return $roleRepository;
@@ -444,7 +459,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function emptyPolicyRepository(): PolicyRepositoryInterface
     {
-        /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
+        /** @var PolicyRepositoryInterface&MockInterface $policyRepository */
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
 
         return $policyRepository;

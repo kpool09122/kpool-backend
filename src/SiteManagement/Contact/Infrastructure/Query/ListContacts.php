@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Infrastructure\Query;
 
 use Application\Models\SiteManagement\Contact as ContactModel;
+use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
@@ -13,6 +14,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListCon
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsOutputPort;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use UnexpectedValueException;
 
 readonly class ListContacts implements ListContactsInterface
 {
@@ -60,8 +62,8 @@ readonly class ListContacts implements ListContactsInterface
                 identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
                 category: (int) $contact->category,
                 name: (string) $contact->name,
-                replyIdentifiers: $contact->replies->pluck('id')->map(static fn (mixed $identifier): string => (string) $identifier)->all(),
-                createdAt: $contact->created_at->format(DateTimeInterface::ATOM),
+                replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
+                createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
             ))
             ->all();
 

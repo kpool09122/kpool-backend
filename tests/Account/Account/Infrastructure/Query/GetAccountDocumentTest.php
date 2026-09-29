@@ -28,9 +28,9 @@ class GetAccountDocumentTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $this->assertInstanceOf(GetAccountDocument::class, $this->app->make(GetAccountDocumentInterface::class));
+        $this->assertInstanceOf(GetAccountDocument::class, $this->app()->make(GetAccountDocumentInterface::class));
     }
 
     #[Group('useDb')]

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * @property string $id
@@ -14,23 +17,23 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon|null $last_collected_at
  * @property Carbon $created_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'resource_type',
     'wiki_id',
     'last_collected_at',
     'created_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'video_link_collection_statuses', keyType: 'string')]
+#[Table(name: 'video_link_collection_statuses', keyType: 'string')]
 class VideoLinkCollectionStatus extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'last_collected_at' => 'datetime',
         'created_at' => 'datetime',

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 
 class PrincipalGroup
 {
@@ -20,13 +22,24 @@ class PrincipalGroup
     /** @var RoleIdentifier[] */
     private array $roles = [];
 
+    /**
+     * @param RoleIdentifier[] $roles
+     */
     public function __construct(
         private readonly PrincipalGroupIdentifier $principalGroupIdentifier,
         private readonly AccountIdentifier $accountIdentifier,
         private readonly string $name,
         private readonly bool $isDefault,
         private readonly DateTimeImmutable $createdAt,
+        array $roles = [],
+        private readonly ?DelegationIdentifier $delegationIdentifier = null,
     ) {
+        $this->roles = $roles;
+    }
+
+    public function delegationIdentifier(): ?DelegationIdentifier
+    {
+        return $this->delegationIdentifier;
     }
 
     public function principalGroupIdentifier(): PrincipalGroupIdentifier
@@ -115,13 +128,17 @@ class PrincipalGroup
         return array_any($this->roles, static fn (RoleIdentifier $role) => (string) $role === (string) $roleIdentifier);
     }
 
-    public function addRole(RoleIdentifier $roleIdentifier): void
+    public function addRole(Role $role): void
     {
-        if ($this->hasRole($roleIdentifier)) {
+        if (! $this->canAttachRole($role)) {
+            throw new InvalidArgumentException('A principal group cannot attach a role from another account.');
+        }
+
+        if ($this->hasRole($role->roleIdentifier())) {
             return;
         }
 
-        $this->roles[] = $roleIdentifier;
+        $this->roles[] = $role->roleIdentifier();
     }
 
     public function removeRole(RoleIdentifier $roleIdentifier): void
@@ -130,5 +147,11 @@ class PrincipalGroup
             $this->roles,
             static fn (RoleIdentifier $role) => (string) $role !== (string) $roleIdentifier
         ));
+    }
+
+    private function canAttachRole(Role $role): bool
+    {
+        return $role->accountIdentifier() === null
+            || (string) $role->accountIdentifier() === (string) $this->accountIdentifier;
     }
 }

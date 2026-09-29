@@ -16,7 +16,7 @@ use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 readonly class CollectVideoLinks implements CollectVideoLinksInterface
 {
     public function __construct(
-        private VideoLinkCollectionStatusRepositoryInterface $collectionStatusRepository,
+        private VideoLinkCollectionStatusRepositoryInterface $videoLinkCollectionStatusRepository,
         private WikiRepositoryInterface $wikiRepository,
         private YouTubeSearchServiceInterface $youTubeSearchService,
         private VideoLinkFactoryInterface $videoLinkFactory,
@@ -27,7 +27,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
     public function process(CollectVideoLinksOutputPort $output): void
     {
-        $status = $this->collectionStatusRepository->findNextTargetResource();
+        $status = $this->videoLinkCollectionStatusRepository->findNextTargetResource();
 
         if ($status === null) {
             $this->logger->info('CollectVideoLinks: No target resource found');
@@ -118,7 +118,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         }
 
         $status->markCollected(new DateTimeImmutable());
-        $this->collectionStatusRepository->save($status);
+        $this->videoLinkCollectionStatusRepository->save($status);
 
         $this->logger->info('CollectVideoLinks: Collection completed', [
             'resource_type' => $status->resourceType()->value,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Command\SubmitContact;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitContactRequest extends FormRequest
@@ -26,21 +27,21 @@ class SubmitContactRequest extends FormRequest
 
     public function category(): int
     {
-        return (int)$this->input('category');
+        return RequestValue::integer($this->input('category'));
     }
 
     public function name(): string
     {
-        return (string)$this->input('name');
+        return RequestValue::string($this->input('name'));
     }
 
     public function email(): string
     {
-        return (string)$this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 
     public function content(): string
     {
-        return (string)$this->input('content');
+        return RequestValue::string($this->input('content'));
     }
 }

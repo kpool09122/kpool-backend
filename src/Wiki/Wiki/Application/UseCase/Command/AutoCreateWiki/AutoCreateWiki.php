@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -19,7 +20,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 readonly class AutoCreateWiki implements AutoCreateWikiInterface
 {
     public function __construct(
-        private AutoWikiCreationServiceInterface $automaticDraftWikiCreationService,
+        private AutoWikiCreationServiceInterface $autoWikiCreationService,
         private DraftWikiFactoryInterface        $draftWikiFactory,
         private DraftWikiRepositoryInterface     $draftWikiRepository,
         private NormalizationServiceInterface    $normalizationService,
@@ -61,13 +62,13 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
             throw new DisallowedException();
         }
 
-        $generatedData = $this->automaticDraftWikiCreationService->generate($payload);
+        $generatedData = $this->autoWikiCreationService->generate($payload);
 
         $generatedBasic = $generatedData->basic();
         $basicArray = $generatedBasic->toArray();
         foreach ($generatedBasic->normalizableKeys() as $sourceKey => $normalizedKey) {
             $basicArray[$normalizedKey] = $this->normalizationService->normalize(
-                $basicArray[$sourceKey] ?? '',
+                TypedValue::string($basicArray[$sourceKey] ?? ''),
                 $payload->language(),
             );
         }

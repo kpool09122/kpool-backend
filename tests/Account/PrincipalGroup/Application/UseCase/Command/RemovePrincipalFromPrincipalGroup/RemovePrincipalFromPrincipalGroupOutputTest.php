@@ -32,15 +32,16 @@ class RemovePrincipalFromPrincipalGroupOutputTest extends TestCase
             'Test Group',
             false,
             new DateTimeImmutable(),
+            [$roleIdentifier],
         );
         $principalGroup->addMember($remainingMember);
-        $principalGroup->addRole($roleIdentifier);
 
         $output = new RemovePrincipalFromPrincipalGroupOutput();
         $output->setPrincipalGroup($principalGroup);
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('principalGroupIdentifier', $result));
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);

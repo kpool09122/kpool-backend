@@ -10,7 +10,6 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -26,15 +25,14 @@ class CreateAccountOutputTest extends TestCase
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@example.com');
-        $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
-        $status = AccountStatus::ACTIVE;
+        $status = AccountStatus::PENDING;
         $accountCategory = AccountCategory::GENERAL;
 
         $account = new Account(
             $identifier,
             $email,
-            $accountType,
+            null,
             $accountName,
             $status,
             $accountCategory,
@@ -47,9 +45,10 @@ class CreateAccountOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $identifier, $result['accountIdentifier']);
         $this->assertSame((string) $email, $result['email']);
-        $this->assertSame($accountType->value, $result['type']);
+        $this->assertNull($result['type']);
         $this->assertSame((string) $accountName, $result['name']);
         $this->assertSame($status->value, $result['status']);
         $this->assertSame($accountCategory->value, $result['accountCategory']);

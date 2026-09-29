@@ -28,7 +28,7 @@ class ImageSnapshotFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(ImageSnapshotFactoryInterface::class);
+        $factory = $this->app()->make(ImageSnapshotFactoryInterface::class);
         $this->assertInstanceOf(ImageSnapshotFactory::class, $factory);
     }
 
@@ -76,7 +76,7 @@ class ImageSnapshotFactoryTest extends TestCase
 
         $resourceSnapshotIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
-        $factory = $this->app->make(ImageSnapshotFactoryInterface::class);
+        $factory = $this->app()->make(ImageSnapshotFactoryInterface::class);
         $snapshot = $factory->create($image, $resourceSnapshotIdentifier);
 
         $this->assertTrue(UuidValidator::isValid((string) $snapshot->snapshotIdentifier()));

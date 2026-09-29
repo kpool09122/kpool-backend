@@ -27,7 +27,7 @@ use Tests\TestCase;
 class SocialOAuthServiceTest extends TestCase
 {
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array{client_id: string, client_secret: string, redirect_uri: string, authorization_endpoint: string, scopes: list<string>}>
      */
     private function getConfig(): array
     {
@@ -95,18 +95,19 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
         $config = $this->getConfig();
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($config);
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $state = new OAuthState('test-state-value', new DateTimeImmutable('+10 minutes'));
 
         $url = $service->buildRedirectUrl($provider, $state);
 
+        self::assertTrue($expectedEndpoint !== '');
         $this->assertStringStartsWith($expectedEndpoint, $url);
         $this->assertStringContainsString('client_id=' . $config[$provider->value]['client_id'], $url);
         $this->assertStringContainsString('redirect_uri=' . urlencode((string) $config[$provider->value]['redirect_uri']), $url);
@@ -125,13 +126,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('google-auth-code');
 
@@ -169,8 +170,10 @@ class SocialOAuthServiceTest extends TestCase
 
         $profile = $service->fetchProfile(SocialProvider::GOOGLE, $code);
 
+        $this->assertNotNull($capturedExchangeRequest);
         $this->assertSame(SocialProvider::GOOGLE, $capturedExchangeRequest->provider());
         $this->assertSame('google-auth-code', $capturedExchangeRequest->code());
+        $this->assertNotNull($capturedFetchRequest);
         $this->assertSame(SocialProvider::GOOGLE, $capturedFetchRequest->provider());
         $this->assertSame('google-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::GOOGLE, $profile->provider());
@@ -178,6 +181,42 @@ class SocialOAuthServiceTest extends TestCase
         $this->assertSame('user@gmail.com', (string) $profile->email());
         $this->assertSame('Test User', $profile->name());
         $this->assertSame('https://example.com/avatar.jpg', $profile->avatarUrl());
+    }
+
+    public function testFetchProfileForGoogleThrowsExceptionWhenEmailNotAvailable(): void
+    {
+        $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
+
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
+            ->needs('$config')
+            ->give($this->getConfig());
+
+        $service = $this->app()->make(SocialOAuthService::class);
+        $code = new OAuthCode('google-auth-code');
+
+        $oAuthHttpClient
+            ->shouldReceive('exchangeCodeForToken')
+            ->once()
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                $this->createJsonResponse([
+                    'access_token' => 'google-access-token',
+                    'id_token' => null,
+                ]),
+            ));
+        $oAuthHttpClient
+            ->shouldReceive('fetchUser')
+            ->once()
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
+                'id' => '123456789',
+                'name' => 'Test User',
+            ])));
+
+        $this->expectException(SocialOAuthException::class);
+        $this->expectExceptionMessage('Email not available from Google. Please grant email permission.');
+
+        $service->fetchProfile(SocialProvider::GOOGLE, $code);
     }
 
     /**
@@ -190,13 +229,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('line-auth-code');
         $idToken = $this->createIdToken(['email' => 'user@line.me']);
@@ -234,8 +273,10 @@ class SocialOAuthServiceTest extends TestCase
 
         $profile = $service->fetchProfile(SocialProvider::LINE, $code);
 
+        $this->assertNotNull($capturedExchangeRequest);
         $this->assertSame(SocialProvider::LINE, $capturedExchangeRequest->provider());
         $this->assertSame('line-auth-code', $capturedExchangeRequest->code());
+        $this->assertNotNull($capturedFetchRequest);
         $this->assertSame(SocialProvider::LINE, $capturedFetchRequest->provider());
         $this->assertSame('line-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::LINE, $profile->provider());
@@ -255,13 +296,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('line-auth-code');
         $idToken = $this->createIdToken([]);
@@ -300,13 +341,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('line-auth-code');
 
@@ -343,13 +384,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('line-auth-code');
 
@@ -387,13 +428,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('line-auth-code');
 
@@ -436,13 +477,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('kakao-auth-code');
 
@@ -483,8 +524,10 @@ class SocialOAuthServiceTest extends TestCase
 
         $profile = $service->fetchProfile(SocialProvider::KAKAO, $code);
 
+        $this->assertNotNull($capturedExchangeRequest);
         $this->assertSame(SocialProvider::KAKAO, $capturedExchangeRequest->provider());
         $this->assertSame('kakao-auth-code', $capturedExchangeRequest->code());
+        $this->assertNotNull($capturedFetchRequest);
         $this->assertSame(SocialProvider::KAKAO, $capturedFetchRequest->provider());
         $this->assertSame('kakao-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::KAKAO, $profile->provider());
@@ -504,13 +547,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give($this->getConfig());
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $code = new OAuthCode('kakao-auth-code');
 
@@ -551,13 +594,13 @@ class SocialOAuthServiceTest extends TestCase
     {
         $oAuthHttpClient = Mockery::mock(OAuthHttpClient::class);
 
-        $this->app->instance(OAuthHttpClient::class, $oAuthHttpClient);
-        $this->app->instance(LoggerInterface::class, new NullLogger());
-        $this->app->when(SocialOAuthService::class)
+        $this->app()->instance(OAuthHttpClient::class, $oAuthHttpClient);
+        $this->app()->instance(LoggerInterface::class, new NullLogger());
+        $this->app()->when(SocialOAuthService::class)
             ->needs('$config')
             ->give([]);
 
-        $service = $this->app->make(SocialOAuthService::class);
+        $service = $this->app()->make(SocialOAuthService::class);
 
         $state = new OAuthState('test-state', new DateTimeImmutable('+10 minutes'));
 

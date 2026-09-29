@@ -2,7 +2,4 @@
 
 declare(strict_types=1);
 
-use Application\Http\Action\Webhook\Stripe\StripeWebhookAction;
-use Illuminate\Support\Facades\Route;
-
-Route::post('/stripe', StripeWebhookAction::class);
+// Disabled by #605: Route::post('/stripe', StripeWebhookAction::class);

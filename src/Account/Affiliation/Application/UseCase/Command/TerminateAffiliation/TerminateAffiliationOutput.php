@@ -17,7 +17,7 @@ class TerminateAffiliationOutput implements TerminateAffiliationOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{affiliationIdentifier: string, agencyAccountIdentifier: string, talentAccountIdentifier: string, requestedBy: string, status: string, terms: array{revenueSharePercentage: int|null, contractNotes: string|null}|null, requestedAt: string, activatedAt: string|null, terminatedAt: string|null}
      */
     public function toArray(): array
     {

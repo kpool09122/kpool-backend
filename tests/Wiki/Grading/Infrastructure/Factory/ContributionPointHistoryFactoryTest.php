@@ -27,7 +27,7 @@ class ContributionPointHistoryFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(ContributionPointHistoryFactoryInterface::class);
+        $factory = $this->app()->make(ContributionPointHistoryFactoryInterface::class);
         $this->assertInstanceOf(ContributionPointHistoryFactory::class, $factory);
     }
 
@@ -47,7 +47,7 @@ class ContributionPointHistoryFactoryTest extends TestCase
         $isNewCreation = true;
         $createdAt = new DateTimeImmutable();
 
-        $factory = $this->app->make(ContributionPointHistoryFactoryInterface::class);
+        $factory = $this->app()->make(ContributionPointHistoryFactoryInterface::class);
         $history = $factory->create(
             $principalIdentifier,
             $yearMonth,
@@ -86,7 +86,7 @@ class ContributionPointHistoryFactoryTest extends TestCase
         $isNewCreation = false;
         $createdAt = new DateTimeImmutable();
 
-        $factory = $this->app->make(ContributionPointHistoryFactoryInterface::class);
+        $factory = $this->app()->make(ContributionPointHistoryFactoryInterface::class);
         $history = $factory->create(
             $principalIdentifier,
             $yearMonth,

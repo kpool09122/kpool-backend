@@ -44,7 +44,7 @@ class DraftImageRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $draft = $repository->findById(new ImageIdentifier($draftId));
 
         $this->assertInstanceOf(DraftImage::class, $draft);
@@ -74,7 +74,7 @@ class DraftImageRepositoryTest extends TestCase
             'image_path' => '/images/groups/logo.png',
         ]);
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $draft = $repository->findById(new ImageIdentifier($draftId));
 
         $this->assertInstanceOf(DraftImage::class, $draft);
@@ -89,7 +89,7 @@ class DraftImageRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $draft = $repository->findById(new ImageIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);
@@ -130,7 +130,7 @@ class DraftImageRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $drafts = $repository->findByDraftResource(
             ResourceType::TALENT,
             new TranslationSetIdentifier($wikiId),
@@ -158,7 +158,7 @@ class DraftImageRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByDraftResourceWhenNotExist(): void
     {
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $drafts = $repository->findByDraftResource(
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
@@ -193,7 +193,7 @@ class DraftImageRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $repository->save($draft);
 
         $this->assertDatabaseHas('draft_wiki_images', [
@@ -236,7 +236,7 @@ class DraftImageRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $repository->save($draft);
 
         $this->assertDatabaseHas('draft_wiki_images', [
@@ -283,7 +283,7 @@ class DraftImageRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $repository->save($draft);
 
         $this->assertDatabaseHas('draft_wiki_images', [
@@ -312,7 +312,7 @@ class DraftImageRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('draft_wiki_images', ['id' => $draftId]);
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $repository->delete(new ImageIdentifier($draftId));
 
         $this->assertDatabaseMissing('draft_wiki_images', ['id' => $draftId]);
@@ -356,7 +356,7 @@ class DraftImageRepositoryTest extends TestCase
         $this->assertDatabaseHas('draft_wiki_images', ['id' => $draftId2]);
         $this->assertDatabaseHas('draft_wiki_images', ['id' => $otherDraftId]);
 
-        $repository = $this->app->make(DraftImageRepositoryInterface::class);
+        $repository = $this->app()->make(DraftImageRepositoryInterface::class);
         $repository->deleteByDraftResource(
             ResourceType::TALENT,
             new TranslationSetIdentifier($wikiId),

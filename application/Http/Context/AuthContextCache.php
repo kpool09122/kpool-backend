@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
+use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
@@ -38,8 +40,6 @@ class AuthContextCache
         $this->write($this->actorKey($identityIdentifier), [
             'identityIdentifier' => (string) $context->identityIdentifier,
             'language' => $context->language->value,
-            'delegationIdentifier' => $context->delegationIdentifier !== null ? (string) $context->delegationIdentifier : null,
-            'originalIdentityIdentifier' => $context->originalIdentityIdentifier !== null ? (string) $context->originalIdentityIdentifier : null,
         ]);
 
         return $context;
@@ -47,7 +47,7 @@ class AuthContextCache
 
     /**
      * @param callable(): AccountContext $dbResolver
-     * @throws \Source\Account\Account\Application\Exception\AccountNotFoundException
+     * @throws AccountNotFoundException
      */
     public function resolveAccount(IdentityIdentifier $identityIdentifier, callable $dbResolver): AccountContext
     {
@@ -65,18 +65,29 @@ class AuthContextCache
             'principalIdentifier' => (string) $principal->principalIdentifier(),
             'identityIdentifier' => (string) $principal->identityIdentifier(),
             'accountIdentifier' => (string) $principal->accountIdentifier(),
-            'accountType' => $context->accountType()->value,
+            'accountType' => $context->nullableAccountType()?->value,
+            'accountStatus' => $context->accountStatus()->value,
+            'originalAccountStatus' => $context->originalAccountStatus()->value,
             'accountCategory' => $context->accountCategory()->value,
             'accountPolicies' => $context->accountPolicies(),
+            'originalIdentityIdentifier' => (string) $context->originalIdentityIdentifier(),
+            'originalAccountIdentifier' => (string) $context->originalAccountIdentifier(),
+            'originalPrincipalIdentifier' => (string) $context->originalPrincipalIdentifier(),
+            'delegationIdentifier' => $context->delegationIdentifier() !== null
+                ? (string) $context->delegationIdentifier()
+                : null,
         ]);
 
         return $context;
     }
 
     /** @param callable(): WikiContext $dbResolver */
-    public function resolveWiki(IdentityIdentifier $identityIdentifier, callable $dbResolver): WikiContext
-    {
-        $cached = $this->read($this->wikiKey($identityIdentifier));
+    public function resolveWiki(
+        IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
+        callable $dbResolver,
+    ): WikiContext {
+        $cached = $this->read($this->wikiKey($identityIdentifier, $accountIdentifier));
         if ($cached !== null) {
             $context = $this->wikiFromPayload($cached);
             if ($context !== null) {
@@ -85,7 +96,7 @@ class AuthContextCache
         }
 
         $context = $dbResolver();
-        $this->write($this->wikiKey($identityIdentifier), [
+        $this->write($this->wikiKey($identityIdentifier, $accountIdentifier), [
             'principalIdentifier' => (string) $context->principalIdentifier,
         ]);
 
@@ -102,9 +113,18 @@ class AuthContextCache
         $this->delete($this->accountKey($identityIdentifier));
     }
 
-    public function forgetWiki(IdentityIdentifier $identityIdentifier): void
+    public function forgetWiki(IdentityIdentifier $identityIdentifier, ?AccountIdentifier $accountIdentifier = null): void
     {
-        $this->delete($this->wikiKey($identityIdentifier));
+        if ($accountIdentifier !== null) {
+            $this->delete($this->wikiKey($identityIdentifier, $accountIdentifier));
+
+            return;
+        }
+
+        $this->delete(self::WIKI_KEY_PREFIX . $identityIdentifier);
+        foreach ($this->keys(self::WIKI_KEY_PREFIX . $identityIdentifier . ':*') as $key) {
+            $this->delete($key);
+        }
     }
 
     /** @param IdentityIdentifier[] $identityIdentifiers */
@@ -133,9 +153,9 @@ class AuthContextCache
         return self::ACCOUNT_KEY_PREFIX . $identityIdentifier;
     }
 
-    private function wikiKey(IdentityIdentifier $identityIdentifier): string
+    private function wikiKey(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): string
     {
-        return self::WIKI_KEY_PREFIX . $identityIdentifier;
+        return self::WIKI_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier;
     }
 
     /** @return ?array<string, mixed> */
@@ -179,6 +199,20 @@ class AuthContextCache
         }
     }
 
+    /**
+     * @return string[]
+     */
+    private function keys(string $pattern): array
+    {
+        try {
+            $keys = Redis::keys($pattern);
+        } catch (Throwable) {
+            return [];
+        }
+
+        return is_array($keys) ? array_values(array_filter($keys, 'is_string')) : [];
+    }
+
     /** @param array<string, mixed> $payload */
     private function actorFromPayload(array $payload): ?ActorContext
     {
@@ -194,12 +228,6 @@ class AuthContextCache
         return new ActorContext(
             identityIdentifier: new IdentityIdentifier($payload['identityIdentifier']),
             language: $language,
-            delegationIdentifier: is_string($payload['delegationIdentifier'] ?? null)
-                ? new DelegationIdentifier($payload['delegationIdentifier'])
-                : null,
-            originalIdentityIdentifier: is_string($payload['originalIdentityIdentifier'] ?? null)
-                ? new IdentityIdentifier($payload['originalIdentityIdentifier'])
-                : null,
         );
     }
 
@@ -210,16 +238,24 @@ class AuthContextCache
             ! is_string($payload['principalIdentifier'] ?? null)
             || ! is_string($payload['identityIdentifier'] ?? null)
             || ! is_string($payload['accountIdentifier'] ?? null)
-            || ! is_string($payload['accountType'] ?? null)
+            || (! is_string($payload['accountType'] ?? null) && ($payload['accountType'] ?? null) !== null)
+            || ! is_string($payload['accountStatus'] ?? null)
+            || ! is_string($payload['originalAccountStatus'] ?? null)
             || ! is_string($payload['accountCategory'] ?? null)
             || ! is_array($payload['accountPolicies'] ?? null)
+            || ! is_string($payload['originalIdentityIdentifier'] ?? null)
+            || ! is_string($payload['originalAccountIdentifier'] ?? null)
+            || ! is_string($payload['originalPrincipalIdentifier'] ?? null)
+            || (! is_string($payload['delegationIdentifier'] ?? null) && ($payload['delegationIdentifier'] ?? null) !== null)
         ) {
             return null;
         }
 
-        $accountType = AccountType::tryFrom($payload['accountType']);
+        $accountType = is_string($payload['accountType']) ? AccountType::tryFrom($payload['accountType']) : null;
+        $accountStatus = AccountStatus::tryFrom($payload['accountStatus']);
+        $originalAccountStatus = AccountStatus::tryFrom($payload['originalAccountStatus']);
         $accountCategory = AccountCategory::tryFrom($payload['accountCategory']);
-        if ($accountType === null || $accountCategory === null) {
+        if ($accountStatus === null || $originalAccountStatus === null || $accountCategory === null) {
             return null;
         }
 
@@ -230,8 +266,16 @@ class AuthContextCache
                 new AccountIdentifier($payload['accountIdentifier']),
             ),
             accountType: $accountType,
+            accountStatus: $accountStatus,
             accountCategory: $accountCategory,
             accountPolicies: $payload['accountPolicies'],
+            originalIdentityIdentifier: new IdentityIdentifier($payload['originalIdentityIdentifier']),
+            originalAccountIdentifier: new AccountIdentifier($payload['originalAccountIdentifier']),
+            originalPrincipalIdentifier: new AccountPrincipalIdentifier($payload['originalPrincipalIdentifier']),
+            delegationIdentifier: is_string($payload['delegationIdentifier'])
+                ? new DelegationIdentifier($payload['delegationIdentifier'])
+                : null,
+            originalAccountStatus: $originalAccountStatus,
         );
     }
 

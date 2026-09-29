@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
@@ -40,15 +41,36 @@ use Tests\TestCase;
 
 class ApproveAffiliationTest extends TestCase
 {
+    public function testRejectsMissingAccountTypeBeforeApprovingAffiliation(): void
+    {
+        foreach ([true, false] as $agencyTypeMissing) {
+            $data = $this->data(
+                AccountCategory::AGENCY,
+                AccountCategory::TALENT,
+                agencyAccountType: $agencyTypeMissing ? null : AccountType::CORPORATION,
+                talentAccountType: $agencyTypeMissing ? AccountType::CORPORATION : null,
+            );
+            $useCase = $this->useCase($data, expectSave: false);
+
+            try {
+                $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), new ApproveAffiliationOutput());
+                $this->fail('Approval must reject an account without a type.');
+            } catch (AccountSetupUnavailableException) {
+                $this->assertSame(AffiliationStatus::PENDING, $data->affiliation->status());
+                $this->assertNull($data->affiliation->activatedAt());
+            }
+        }
+    }
+
     /** @throws BindingResolutionException */
     public function test__construct(): void
     {
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
-        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(AffiliationRepositoryInterface::class, Mockery::mock(AffiliationRepositoryInterface::class));
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $this->assertInstanceOf(ApproveAffiliation::class, $this->app->make(ApproveAffiliationInterface::class));
+        $this->assertInstanceOf(ApproveAffiliation::class, $this->app()->make(ApproveAffiliationInterface::class));
     }
 
     public function testProcessWhenPolicyAllowsDesignatedApprover(): void
@@ -59,6 +81,7 @@ class ApproveAffiliationTest extends TestCase
 
         $useCase->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), $output);
 
+        self::assertTrue(array_key_exists('status', $output->toArray()));
         $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['activatedAt']);
     }
@@ -188,7 +211,7 @@ class ApproveAffiliationTest extends TestCase
         return new ApproveAffiliation($accountRepository, $policyEvaluator, $affiliationRepository, $eventDispatcher);
     }
 
-    private function data(AccountCategory $requestingCategory, AccountCategory $approverCategory, bool $policyAllowed = true, ?AccountIdentifier $principalAccountIdentifier = null, bool $activeTalentExists = false): ApproveAffiliationTestData
+    private function data(AccountCategory $requestingCategory, AccountCategory $approverCategory, bool $policyAllowed = true, ?AccountIdentifier $principalAccountIdentifier = null, bool $activeTalentExists = false, ?AccountType $agencyAccountType = AccountType::CORPORATION, ?AccountType $talentAccountType = AccountType::CORPORATION): ApproveAffiliationTestData
     {
         $agency = new AccountIdentifier(StrTestHelper::generateUuid());
         $talent = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -202,8 +225,8 @@ class ApproveAffiliationTest extends TestCase
         $principal = $this->principal($principalAccountIdentifier ?? $approver);
         $agencyCategory = $approver === $agency ? $approverCategory : AccountCategory::AGENCY;
         $talentCategory = $approver === $talent ? $approverCategory : AccountCategory::TALENT;
-        $agencyAccount = $this->account($agency, $agencyCategory, 'Agency Alpha');
-        $talentAccount = $this->account($talent, $talentCategory, 'Talent Beta');
+        $agencyAccount = $this->account($agency, $agencyCategory, 'Agency Alpha', $agencyAccountType);
+        $talentAccount = $this->account($talent, $talentCategory, 'Talent Beta', $talentAccountType);
 
         return new ApproveAffiliationTestData(
             $affiliationIdentifier,
@@ -226,9 +249,9 @@ class ApproveAffiliationTest extends TestCase
         return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), $accountIdentifier);
     }
 
-    private function account(AccountIdentifier $identifier, AccountCategory $category, string $name): Account
+    private function account(AccountIdentifier $identifier, AccountCategory $category, string $name, ?AccountType $type): Account
     {
-        return new Account($identifier, new Email('account@example.com'), AccountType::CORPORATION, new AccountName($name), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
+        return new Account($identifier, new Email('account@example.com'), $type, new AccountName($name), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
     }
 }
 

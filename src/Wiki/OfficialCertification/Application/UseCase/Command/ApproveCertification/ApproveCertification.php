@@ -18,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 readonly class ApproveCertification implements ApproveCertificationInterface
 {
     public function __construct(
-        private OfficialCertificationRepositoryInterface $repository,
+        private OfficialCertificationRepositoryInterface $officialCertificationRepository,
         private OfficialResourceUpdaterInterface $resourceUpdater,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
@@ -33,7 +33,7 @@ readonly class ApproveCertification implements ApproveCertificationInterface
      */
     public function process(ApproveCertificationInputPort $input, ApproveCertificationOutputPort $output): void
     {
-        $certification = $this->repository->findById($input->certificationIdentifier());
+        $certification = $this->officialCertificationRepository->findById($input->certificationIdentifier());
 
         if ($certification === null) {
             throw new OfficialCertificationNotFoundException();
@@ -58,7 +58,7 @@ readonly class ApproveCertification implements ApproveCertificationInterface
 
         $certification->approve();
 
-        $this->repository->save($certification);
+        $this->officialCertificationRepository->save($certification);
 
         $this->resourceUpdater->markOfficial(
             $certification->resourceType(),

@@ -32,7 +32,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function test__construct(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
         $this->assertInstanceOf(AffiliationGrantRepository::class, $repository);
     }
 
@@ -44,7 +44,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveAndFindById(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $affiliationGrant = $this->createAffiliationGrant();
 
@@ -69,7 +69,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $found = $repository->findById(new AffiliationGrantIdentifier(StrTestHelper::generateUuid()));
 
@@ -84,7 +84,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAffiliationId(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
 
@@ -107,7 +107,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAffiliationIdAndType(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
 
@@ -134,7 +134,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAffiliationIdAndTypeReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $found = $repository->findByAffiliationIdAndType(
             new AffiliationIdentifier(StrTestHelper::generateUuid()),
@@ -152,7 +152,7 @@ class AffiliationGrantRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testDelete(): void
     {
-        $repository = $this->app->make(AffiliationGrantRepositoryInterface::class);
+        $repository = $this->app()->make(AffiliationGrantRepositoryInterface::class);
 
         $affiliationGrant = $this->createAffiliationGrant();
 

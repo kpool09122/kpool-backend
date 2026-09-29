@@ -9,13 +9,10 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -34,7 +31,7 @@ class IdentityRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $this->assertInstanceOf(IdentityRepository::class, $repository);
     }
 
@@ -52,7 +49,7 @@ class IdentityRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => $email]);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'google-user-123');
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findByEmail(new Email($email));
 
         $this->assertNotNull($result);
@@ -73,7 +70,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByEmailReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findByEmail(new Email('nonexistent@example.com'));
 
         $this->assertNull($result);
@@ -93,7 +90,7 @@ class IdentityRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier, ['email' => 'social@example.com']);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, $providerUserId);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findBySocialConnection(SocialProvider::LINE, $providerUserId);
 
         $this->assertNotNull($result);
@@ -110,7 +107,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySocialConnectionReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findBySocialConnection(SocialProvider::KAKAO, 'nonexistent-id');
 
         $this->assertNull($result);
@@ -135,12 +132,11 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::JAPANESE,
             new ImagePath('/images/profile.jpg'),
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             $emailVerifiedAt,
             [new SocialConnection(SocialProvider::GOOGLE, 'google-new-identity')]
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $this->assertDatabaseHas('identities', [
@@ -188,12 +184,11 @@ class IdentityRepositoryTest extends TestCase
             new Email('updated@example.com'),
             Language::KOREAN,
             null,
-            HashedPassword::fromPlain(new PlainPassword('newpassword')),
             new DateTimeImmutable('2024-06-01 00:00:00'),
             []
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($updatedIdentity);
 
         $this->assertDatabaseHas('identities', [
@@ -223,12 +218,11 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::ENGLISH,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
             []
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $result = $repository->findByEmail($email);
@@ -255,7 +249,6 @@ class IdentityRepositoryTest extends TestCase
             $email,
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
             null,
             [
                 new SocialConnection(SocialProvider::GOOGLE, 'google-id-1'),
@@ -264,7 +257,7 @@ class IdentityRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
         $result = $repository->findByEmail($email);
@@ -288,7 +281,7 @@ class IdentityRepositoryTest extends TestCase
             'identity_name' => 'find-by-id-user',
         ]);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findById($identityIdentifier);
 
         $this->assertNotNull($result);
@@ -307,233 +300,10 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $result = $repository->findById(new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
-    }
-
-    /**
-     * 正常系: findByIdで委譲Identityが正しく取得できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByIdReturnsDelegatedIdentity(): void
-    {
-        $originalIdentityId = StrTestHelper::generateUuid();
-        $delegatedIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId = StrTestHelper::generateUuid();
-
-        CreateIdentity::create(new IdentityIdentifier($originalIdentityId), [
-            'email' => 'original@example.com',
-        ]);
-        CreateIdentity::create($delegatedIdentityId, [
-            'email' => 'delegated@example.com',
-            'delegation_identifier' => $delegationId,
-            'original_identity_identifier' => $originalIdentityId,
-        ]);
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $result = $repository->findById($delegatedIdentityId);
-
-        $this->assertNotNull($result);
-        $this->assertTrue($result->isDelegatedIdentity());
-        $this->assertSame($delegationId, (string) $result->delegationIdentifier());
-        $this->assertSame($originalIdentityId, (string) $result->originalIdentityIdentifier());
-    }
-
-    /**
-     * 正常系: findByDelegationで委譲Identityが見つかること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByDelegationReturnsIdentity(): void
-    {
-        $originalIdentityId = StrTestHelper::generateUuid();
-        $delegatedIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
-
-        CreateIdentity::create(new IdentityIdentifier($originalIdentityId), [
-            'email' => 'original-delegation@example.com',
-        ]);
-        CreateIdentity::create($delegatedIdentityId, [
-            'email' => 'delegated-delegation@example.com',
-            'delegation_identifier' => (string) $delegationId,
-            'original_identity_identifier' => $originalIdentityId,
-        ]);
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $result = $repository->findByDelegation($delegationId);
-
-        $this->assertNotNull($result);
-        $this->assertInstanceOf(Identity::class, $result);
-        $this->assertSame((string) $delegatedIdentityId, (string) $result->identityIdentifier());
-        $this->assertSame((string) $delegationId, (string) $result->delegationIdentifier());
-        $this->assertSame($originalIdentityId, (string) $result->originalIdentityIdentifier());
-    }
-
-    /**
-     * 正常系: findByDelegationで委譲Identityが見つからない場合nullを返すこと.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByDelegationReturnsNullWhenNotFound(): void
-    {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $result = $repository->findByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
-
-        $this->assertNull($result);
-    }
-
-    /**
-     * 正常系: findDelegatedIdentitiesで複数の委譲Identityが取得できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindDelegatedIdentitiesReturnsMultipleIdentities(): void
-    {
-        $originalIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegatedIdentityId1 = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegatedIdentityId2 = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId1 = StrTestHelper::generateUuid();
-        $delegationId2 = StrTestHelper::generateUuid();
-
-        CreateIdentity::create($originalIdentityId, [
-            'email' => 'original-multi@example.com',
-        ]);
-        CreateIdentity::create($delegatedIdentityId1, [
-            'email' => 'delegated1@example.com',
-            'delegation_identifier' => $delegationId1,
-            'original_identity_identifier' => (string) $originalIdentityId,
-        ]);
-        CreateIdentity::create($delegatedIdentityId2, [
-            'email' => 'delegated2@example.com',
-            'delegation_identifier' => $delegationId2,
-            'original_identity_identifier' => (string) $originalIdentityId,
-        ]);
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $results = $repository->findDelegatedIdentities($originalIdentityId);
-
-        $this->assertCount(2, $results);
-        $this->assertContainsOnlyInstancesOf(Identity::class, $results);
-
-        $resultIds = array_map(
-            fn (Identity $identity) => (string) $identity->identityIdentifier(),
-            $results
-        );
-        $this->assertContains((string) $delegatedIdentityId1, $resultIds);
-        $this->assertContains((string) $delegatedIdentityId2, $resultIds);
-    }
-
-    /**
-     * 正常系: findDelegatedIdentitiesで委譲Identityがない場合は空配列を返すこと.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindDelegatedIdentitiesReturnsEmptyArrayWhenNoDelegations(): void
-    {
-        $originalIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        CreateIdentity::create($originalIdentityId, [
-            'email' => 'no-delegations@example.com',
-        ]);
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $results = $repository->findDelegatedIdentities($originalIdentityId);
-
-        $this->assertIsArray($results);
-        $this->assertEmpty($results);
-    }
-
-    /**
-     * 正常系: deleteByDelegationで委譲Identityが削除されること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testDeleteByDelegationDeletesIdentity(): void
-    {
-        $originalIdentityId = StrTestHelper::generateUuid();
-        $delegatedIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
-
-        CreateIdentity::create(new IdentityIdentifier($originalIdentityId), [
-            'email' => 'original-delete@example.com',
-        ]);
-        CreateIdentity::create($delegatedIdentityId, [
-            'email' => 'to-be-deleted@example.com',
-            'delegation_identifier' => (string) $delegationId,
-            'original_identity_identifier' => $originalIdentityId,
-        ]);
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-
-        // 削除前は存在することを確認
-        $this->assertNotNull($repository->findByDelegation($delegationId));
-
-        $repository->deleteByDelegation($delegationId);
-
-        // 削除後は存在しないことを確認
-        $this->assertNull($repository->findByDelegation($delegationId));
-        $this->assertDatabaseMissing('identities', [
-            'id' => (string) $delegatedIdentityId,
-        ]);
-    }
-
-    /**
-     * 正常系: saveで委譲Identityを保存できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testSaveCreatesDelegatedIdentity(): void
-    {
-        $originalIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegatedIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $delegationId = new DelegationIdentifier(StrTestHelper::generateUuid());
-
-        CreateIdentity::create($originalIdentityId, [
-            'email' => 'original-save@example.com',
-        ]);
-
-        $delegatedIdentity = new Identity(
-            $delegatedIdentityId,
-            new IdentityName('delegated-user'),
-            new Email('delegated-save@example.com'),
-            Language::JAPANESE,
-            null,
-            HashedPassword::fromPlain(new PlainPassword('password123')),
-            null,
-            [],
-            $delegationId,
-            $originalIdentityId,
-        );
-
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $repository->save($delegatedIdentity);
-
-        $this->assertDatabaseHas('identities', [
-            'id' => (string) $delegatedIdentityId,
-            'delegation_identifier' => (string) $delegationId,
-            'original_identity_identifier' => (string) $originalIdentityId,
-        ]);
-
-        $result = $repository->findByDelegation($delegationId);
-        $this->assertNotNull($result);
-        $this->assertTrue($result->isDelegatedIdentity());
-        $this->assertSame((string) $originalIdentityId, (string) $result->originalIdentityIdentifier());
     }
 
     /**
@@ -563,7 +333,7 @@ class IdentityRepositoryTest extends TestCase
         ]);
         CreateIdentity::createSocialConnection($identityIdentifier1, SocialProvider::GOOGLE, 'google-findbyids-1');
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([$identityIdentifier1, $identityIdentifier2, $identityIdentifier3]);
 
         $this->assertCount(3, $results);
@@ -587,7 +357,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
     {
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([]);
 
         $this->assertIsArray($results);
@@ -611,7 +381,7 @@ class IdentityRepositoryTest extends TestCase
             'identity_name' => 'existing-user',
         ]);
 
-        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $results = $repository->findByIds([$existingIdentityId, $nonExistingIdentityId]);
 
         $this->assertCount(1, $results);

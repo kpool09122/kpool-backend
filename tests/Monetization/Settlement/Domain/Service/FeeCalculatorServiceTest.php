@@ -22,7 +22,7 @@ class FeeCalculatorServiceTest extends TestCase
      */
     public function testCalculate(): void
     {
-        $calculator = $this->app->make(FeeCalculatorServiceInterface::class);
+        $calculator = $this->app()->make(FeeCalculatorServiceInterface::class);
         $gross = new Money(10000, Currency::JPY);
 
         $fee = $calculator->calculate(
@@ -44,7 +44,7 @@ class FeeCalculatorServiceTest extends TestCase
      */
     public function testRejectsMismatchedCurrency(): void
     {
-        $calculator = $this->app->make(FeeCalculatorServiceInterface::class);
+        $calculator = $this->app()->make(FeeCalculatorServiceInterface::class);
 
         $this->expectException(DomainException::class);
 
@@ -64,7 +64,7 @@ class FeeCalculatorServiceTest extends TestCase
      */
     public function testRejectsFeeExceedingGross(): void
     {
-        $calculator = $this->app->make(FeeCalculatorServiceInterface::class);
+        $calculator = $this->app()->make(FeeCalculatorServiceInterface::class);
 
         $this->expectException(DomainException::class);
 

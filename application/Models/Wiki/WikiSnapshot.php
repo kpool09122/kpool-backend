@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -36,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property-read ?WikiSnapshotAgencyBasic $agencyBasic
  * @property-read ?WikiSnapshotSongBasic $songBasic
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'wiki_id',
     'translation_set_identifier',
@@ -59,15 +62,15 @@ use Illuminate\Support\Carbon;
     'source_editor_id',
     'translated_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_snapshots', keyType: 'string')]
+#[Table(name: 'wiki_snapshots', keyType: 'string')]
 class WikiSnapshot extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     public const UPDATED_AT = null;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'sections' => 'array',
         'keywords' => 'array',

@@ -43,7 +43,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $member = $this->principal($accountIdentifier);
         $wikiAdministratorRole = $this->role('WIKI_ADMINISTRATOR');
         $administratorGroup = $this->principalGroup($accountIdentifier, 'Wiki Administrator');
-        $administratorGroup->addRole($wikiAdministratorRole->roleIdentifier());
+        $administratorGroup->addRole($wikiAdministratorRole);
         $administratorGroup->addMember($operator->principalIdentifier());
         $targetGroup = $this->principalGroup($accountIdentifier, 'Target');
 
@@ -65,7 +65,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -119,7 +119,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $operator = $this->principal($accountIdentifier);
         $wikiAdministratorRole = $this->role('WIKI_ADMINISTRATOR');
         $administratorGroup = $this->principalGroup($accountIdentifier, 'Wiki Administrator');
-        $administratorGroup->addRole($wikiAdministratorRole->roleIdentifier());
+        $administratorGroup->addRole($wikiAdministratorRole);
         $administratorGroup->addMember($operator->principalIdentifier());
 
         /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
@@ -134,7 +134,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findByName')->once()->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -219,7 +219,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function principal(AccountIdentifier $accountIdentifier): Principal
     {
-        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()));
+        return new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
     }
 
     private function principalGroup(AccountIdentifier $accountIdentifier, string $name): PrincipalGroup
@@ -229,6 +229,6 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
     private function role(string $name): Role
     {
-        return new Role(new RoleIdentifier(StrTestHelper::generateUuid()), $name, [], true, new DateTimeImmutable());
+        return new Role(new RoleIdentifier(StrTestHelper::generateUuid()), $name, [], null, new DateTimeImmutable());
     }
 }

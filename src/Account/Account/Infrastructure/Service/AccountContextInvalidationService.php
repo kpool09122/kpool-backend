@@ -20,7 +20,7 @@ readonly class AccountContextInvalidationService implements AccountContextInvali
     {
         $identityIds = PrincipalEloquent::query()
             ->where('account_id', (string) $accountIdentifier)
-            ->pluck('identity_id')
+            ->get(['identity_id'])->map(static fn (PrincipalEloquent $principal): string => $principal->identity_id)
             ->all();
 
         foreach ($identityIds as $identityId) {

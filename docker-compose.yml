@@ -24,7 +24,7 @@ services:
       MAIL_HOST: mail
       MAIL_PORT: 1025
       MAIL_FROM_ADDRESS: noreply@kpool.local
-      MAIL_FROM_NAME: Kpool
+      MAIL_FROM_NAME: k-pool
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
     depends_on:
       - db

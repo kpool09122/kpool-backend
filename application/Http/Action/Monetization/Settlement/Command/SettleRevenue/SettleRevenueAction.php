@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Settlement\Command\SettleRevenue;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -58,7 +59,7 @@ readonly class SettleRevenueAction
             }
 
             $paidAmounts = array_map(
-                fn (array $item) => new Money((int) $item['amount'], Currency::from($item['currency'])),
+                fn (array $item) => new Money(RequestValue::integer($item['amount']), Currency::from(RequestValue::string($item['currency']))),
                 $request->paidAmounts()
             );
 

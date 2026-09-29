@@ -17,7 +17,7 @@ class ListAccountDocumentsOutput implements ListAccountDocumentsOutputPort
         $this->documents = $documents;
     }
 
-    /** @return array{documents: array<int, array{documentType: string, documentPath: string, uploadedAt: string}>} */
+    /** @return array{documents: array<array{documentType: string, documentPath: string, uploadedAt: string}>} */
     public function toArray(): array
     {
         return [

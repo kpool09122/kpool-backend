@@ -6,6 +6,7 @@ namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegatio
 
 use DateTimeInterface;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Shared\Application\Exception\OutputNotInitializedException;
 
 class ApproveDelegationOutput implements ApproveDelegationOutputPort
 {
@@ -16,27 +17,22 @@ class ApproveDelegationOutput implements ApproveDelegationOutputPort
         $this->delegation = $delegation;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array{delegationIdentifier: string, affiliationIdentifier: string, delegateAccountIdentifier: string, delegatorAccountIdentifier: string, requestedByAccountIdentifier: string, status: string, direction: string, requestedAt: string, approvedAt: string|null, rejectedAt: string|null} */
     public function toArray(): array
     {
-        if ($this->delegation === null) {
-            return [];
-        }
-
-        $delegation = $this->delegation;
+        $delegation = $this->delegation ?? throw new OutputNotInitializedException('Account delegation has not been set.');
 
         return [
             'delegationIdentifier' => (string) $delegation->delegationIdentifier(),
             'affiliationIdentifier' => (string) $delegation->affiliationIdentifier(),
-            'delegateIdentifier' => (string) $delegation->delegateIdentifier(),
-            'delegatorIdentifier' => (string) $delegation->delegatorIdentifier(),
+            'delegateAccountIdentifier' => (string) $delegation->delegateAccountIdentifier(),
+            'delegatorAccountIdentifier' => (string) $delegation->delegatorAccountIdentifier(),
+            'requestedByAccountIdentifier' => (string) $delegation->requestedByAccountIdentifier(),
             'status' => $delegation->status()->value,
             'direction' => $delegation->direction()->value,
             'requestedAt' => $delegation->requestedAt()->format(DateTimeInterface::ATOM),
             'approvedAt' => $delegation->approvedAt()?->format(DateTimeInterface::ATOM),
-            'revokedAt' => $delegation->revokedAt()?->format(DateTimeInterface::ATOM),
+            'rejectedAt' => $delegation->rejectedAt()?->format(DateTimeInterface::ATOM),
         ];
     }
 }

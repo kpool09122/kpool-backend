@@ -20,7 +20,7 @@ readonly class CreateRole implements CreateRoleInterface
         $role = $this->roleFactory->create(
             $input->name(),
             $input->policies(),
-            $input->isSystemRole(),
+            $input->accountIdentifier(),
         );
 
         $this->roleRepository->save($role);

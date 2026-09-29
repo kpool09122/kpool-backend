@@ -26,7 +26,7 @@ class CollaboratorNotificationServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(CollaboratorNotificationServiceInterface::class);
+        $service = $this->app()->make(CollaboratorNotificationServiceInterface::class);
         $this->assertInstanceOf(CollaboratorNotificationService::class, $service);
     }
 

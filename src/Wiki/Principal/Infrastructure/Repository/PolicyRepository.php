@@ -11,6 +11,9 @@ use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembership
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -23,6 +26,7 @@ use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use UnexpectedValueException;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
@@ -31,13 +35,27 @@ class PolicyRepository implements PolicyRepositoryInterface
         PolicyEloquent::query()->updateOrCreate(
             ['id' => (string) $policy->policyIdentifier()],
             [
+                'account_id' => $policy->accountIdentifier() !== null ? (string) $policy->accountIdentifier() : null,
                 'name' => $policy->name(),
                 'statements' => $this->serializeStatements($policy->statements()),
-                'is_system_policy' => $policy->isSystemPolicy(),
             ]
         );
 
         $this->forgetWikiContextsForPolicy((string) $policy->policyIdentifier());
+    }
+
+    public function findSystemByName(string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->whereNull('account_id')->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->where('account_id', (string) $accountIdentifier)->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     public function findById(PolicyIdentifier $policyIdentifier): ?Policy
@@ -120,6 +138,7 @@ class PolicyRepository implements PolicyRepositoryInterface
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         if (empty($principalIds)) {
@@ -129,10 +148,11 @@ class PolicyRepository implements PolicyRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -186,8 +206,8 @@ class PolicyRepository implements PolicyRepositoryInterface
             new PolicyIdentifier($eloquent->id),
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
-            $eloquent->is_system_policy,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 
@@ -232,7 +252,7 @@ class PolicyRepository implements PolicyRepositoryInterface
             $conditionData
         );
 
-        return new Condition($clauses);
+        return new Condition(array_values($clauses));
     }
 
     private function deserializeConditionValue(string|bool $value): ConditionValue|string|bool

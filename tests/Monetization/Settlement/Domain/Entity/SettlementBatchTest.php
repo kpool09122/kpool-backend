@@ -365,7 +365,7 @@ class SettlementBatchTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $values
+     * @param array{identifier?: SettlementBatchIdentifier, monetizationAccountIdentifier?: MonetizationAccountIdentifier, currency?: Currency, start?: DateTimeImmutable, end?: DateTimeImmutable, status?: SettlementStatus, grossAmount?: Money|null, feeAmount?: Money|null, processedAt?: DateTimeImmutable|null, paidAt?: DateTimeImmutable|null, failedAt?: DateTimeImmutable|null, failureReason?: string|null} $values
      * @return SettlementBatch
      */
     private function createBatch(

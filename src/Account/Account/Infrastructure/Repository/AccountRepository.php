@@ -32,7 +32,7 @@ class AccountRepository implements AccountRepositoryInterface
             ['id' => (string) $account->accountIdentifier()],
             [
                 'email' => (string) $account->email(),
-                'type' => $account->type()->value,
+                'type' => $account->type()?->value,
                 'name' => (string) $account->name(),
                 'status' => $account->status()->value,
                 'category' => $account->accountCategory()->value,
@@ -111,7 +111,7 @@ class AccountRepository implements AccountRepositoryInterface
         return new Account(
             new AccountIdentifier($eloquent->id),
             new Email($eloquent->email),
-            AccountType::from($eloquent->type),
+            $eloquent->type !== null ? AccountType::from($eloquent->type) : null,
             new AccountName($eloquent->name),
             AccountStatus::from($eloquent->status),
             AccountCategory::from($eloquent->category),

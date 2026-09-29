@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\UploadDocuments;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -46,13 +47,13 @@ readonly class UploadDocumentsAction
 
                 $documents = array_map(
                     static function (array $doc): DocumentData {
-                        $decoded = base64_decode($doc['fileContents'], true);
+                        $decoded = base64_decode(RequestValue::string($doc['fileContents']), true);
                         if ($decoded === false) {
                             throw new InvalidArgumentException('Invalid base64 encoding in fileContents.');
                         }
 
                         return new DocumentData(
-                            documentType: DocumentType::from($doc['documentType']),
+                            documentType: DocumentType::from(RequestValue::string($doc['documentType'])),
                             fileContents: $decoded,
                         );
                     },

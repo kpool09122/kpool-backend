@@ -10,6 +10,7 @@ use Application\Models\Wiki\DraftWikiGroupBasic;
 use Application\Models\Wiki\DraftWikiSongBasic;
 use Application\Models\Wiki\DraftWikiTalentBasic;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -88,7 +89,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
-        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -104,7 +105,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->take($limit)
             ->get();
 
-        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -120,7 +121,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->take($limit)
             ->get();
 
-        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -136,7 +137,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->take($limit)
             ->get();
 
-        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     public function save(DraftWiki $draftWiki): void
@@ -197,7 +198,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->where('image_identifier', (string) $imageIdentifier)
             ->get();
 
-        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     private function saveBasic(string $wikiId, ResourceType $resourceType, BasicInterface $basic): void
@@ -212,9 +213,8 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
 
         match ($resourceType) {
             ResourceType::TALENT => (function () use ($wikiId, $basicArray, $groupIdentifiers) {
-                DraftWikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
-                $talentBasic = DraftWikiTalentBasic::query()->where('wiki_id', $wikiId)->first();
-                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+                $talentBasic = DraftWikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $talentBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
             })(),
             ResourceType::GROUP => DraftWikiGroupBasic::query()->updateOrCreate(
                 ['wiki_id' => $wikiId],
@@ -225,10 +225,9 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 $basicArray
             ),
             ResourceType::SONG => (function () use ($wikiId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
-                DraftWikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
-                $songBasic = DraftWikiSongBasic::query()->where('wiki_id', $wikiId)->first();
-                $songBasic->groups()->sync($groupIdentifiers ?? []);
-                $songBasic->talents()->sync($talentIdentifiers ?? []);
+                $songBasic = DraftWikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $songBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
+                $songBasic->talents()->sync(TypedValue::stringArray($talentIdentifiers ?? []));
             })(),
             ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };

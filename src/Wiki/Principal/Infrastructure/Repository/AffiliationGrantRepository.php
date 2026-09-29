@@ -13,6 +13,7 @@ use Source\Wiki\Principal\Domain\ValueObject\AffiliationGrantType;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
+use UnexpectedValueException;
 
 class AffiliationGrantRepository implements AffiliationGrantRepositoryInterface
 {
@@ -87,7 +88,7 @@ class AffiliationGrantRepository implements AffiliationGrantRepositoryInterface
             new RoleIdentifier($eloquent->role_id),
             new PrincipalGroupIdentifier($eloquent->principal_group_id),
             AffiliationGrantType::from($eloquent->type),
-            $eloquent->created_at->toDateTimeImmutable(),
+            ($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
         );
     }
 }

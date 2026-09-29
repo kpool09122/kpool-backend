@@ -29,7 +29,7 @@ class OfficialCertificationRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $this->assertInstanceOf(OfficialCertificationRepository::class, $repository);
     }
 
@@ -56,7 +56,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $repository->save($certification);
 
         $this->assertDatabaseHas('official_certifications', [
@@ -105,7 +105,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $repository->save($certification);
 
         $this->assertDatabaseHas('official_certifications', [
@@ -152,7 +152,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
 
         $this->expectException(QueryException::class);
 
@@ -185,7 +185,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             'updated_at' => $requestedAt,
         ]);
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findById(new CertificationIdentifier($certificationId));
 
         $this->assertNotNull($result);
@@ -206,7 +206,7 @@ class OfficialCertificationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findById(new CertificationIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -238,7 +238,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             'updated_at' => $requestedAt,
         ]);
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findByResource(ResourceType::SONG, new TranslationSetIdentifier($translationSetIdentifier));
 
         $this->assertNotNull($result);
@@ -255,7 +255,7 @@ class OfficialCertificationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceWhenNotFound(): void
     {
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findByResource(
             ResourceType::GROUP,
             new TranslationSetIdentifier(StrTestHelper::generateUuid())
@@ -291,7 +291,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             'updated_at' => $requestedAt,
         ]);
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findById(new CertificationIdentifier($certificationId));
 
         $this->assertNotNull($result);
@@ -325,7 +325,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             'updated_at' => $requestedAt,
         ]);
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findByResourceAndStatus(
             ResourceType::TALENT,
             new TranslationSetIdentifier($translationSetIdentifier),
@@ -361,7 +361,7 @@ class OfficialCertificationRepositoryTest extends TestCase
             'updated_at' => $requestedAt,
         ]);
 
-        $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
+        $repository = $this->app()->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findByResourceAndStatus(
             ResourceType::AGENCY,
             new TranslationSetIdentifier($translationSetIdentifier),

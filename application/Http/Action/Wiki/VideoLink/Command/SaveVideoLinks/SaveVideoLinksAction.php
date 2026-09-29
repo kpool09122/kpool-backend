@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -40,12 +41,12 @@ readonly class SaveVideoLinksAction
             try {
                 $videoLinkDataArray = array_map(
                     static fn (array $item): VideoLinkData => new VideoLinkData(
-                        new ExternalContentLink($item['url']),
-                        VideoUsage::from($item['videoUsage']),
-                        $item['title'] ?? '',
-                        $item['displayOrder'],
-                        $item['thumbnailUrl'] ?? null,
-                        isset($item['publishedAt']) ? new DateTimeImmutable($item['publishedAt']) : null,
+                        new ExternalContentLink(RequestValue::string($item['url'])),
+                        VideoUsage::from(RequestValue::string($item['videoUsage'])),
+                        RequestValue::string($item['title'] ?? ''),
+                        RequestValue::integer($item['displayOrder']),
+                        isset($item['thumbnailUrl']) ? RequestValue::string($item['thumbnailUrl']) : null,
+                        isset($item['publishedAt']) ? new DateTimeImmutable(RequestValue::string($item['publishedAt'])) : null,
                     ),
                     $request->videoLinks(),
                 );

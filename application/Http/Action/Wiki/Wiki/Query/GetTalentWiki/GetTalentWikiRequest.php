@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class GetTalentWikiRequest extends FormRequest
 {
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     public function validationData(): array
     {

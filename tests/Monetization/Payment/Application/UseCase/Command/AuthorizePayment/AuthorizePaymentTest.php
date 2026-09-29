@@ -66,11 +66,11 @@ class AuthorizePaymentTest extends TestCase
             ->once()
             ->withArgs(fn (Payment $payment) => $payment->status() === PaymentStatus::AUTHORIZED);
 
-        $this->app->instance(PaymentFactoryInterface::class, $paymentFactory);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentFactoryInterface::class, $paymentFactory);
+        $this->app()->instance(PaymentGatewayInterface::class, $paymentGateway);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
 
-        $useCase = $this->app->make(AuthorizePaymentInterface::class);
+        $useCase = $this->app()->make(AuthorizePaymentInterface::class);
 
         $output = new AuthorizePaymentOutput();
         $useCase->process($input, $output);

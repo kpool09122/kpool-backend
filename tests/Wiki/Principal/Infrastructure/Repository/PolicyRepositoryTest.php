@@ -33,7 +33,7 @@ class PolicyRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $this->assertInstanceOf(PolicyRepository::class, $repository);
     }
 
@@ -44,7 +44,7 @@ class PolicyRepositoryTest extends TestCase
      */
     public function testFindByIdsWithEmptyIdentifiers(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $this->assertSame([], $repository->findByIds([]));
     }
 
@@ -69,17 +69,17 @@ class PolicyRepositoryTest extends TestCase
                     null,
                 ),
             ],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Full Access',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -97,11 +97,11 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             [
                 'name' => 'Test Policy',
-                'is_system_policy' => true,
+                'account_id' => null,
             ]
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $result = $repository->findById(new PolicyIdentifier($policyId));
 
         $this->assertNotNull($result);
@@ -119,7 +119,7 @@ class PolicyRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $result = $repository->findById(new PolicyIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -145,7 +145,7 @@ class PolicyRepositoryTest extends TestCase
             ['name' => 'Policy 2']
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $result = $repository->findAll();
 
         $this->assertCount(2, $result);
@@ -162,7 +162,7 @@ class PolicyRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindAllWhenEmpty(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $result = $repository->findAll();
 
         $this->assertSame([], $result);
@@ -183,13 +183,13 @@ class PolicyRepositoryTest extends TestCase
         // 削除前に存在確認
         $this->assertDatabaseHas('wiki_policies', ['id' => $policyId]);
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
 
         $policy = new Policy(
             new PolicyIdentifier($policyId),
             'Test Policy',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -213,7 +213,7 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             [
                 'name' => 'Original Name',
-                'is_system_policy' => false,
+                'account_id' => null,
             ]
         );
 
@@ -221,16 +221,16 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Original Name',
-            'is_system_policy' => false,
+            'account_id' => null,
         ]);
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
 
         $updatedPolicy = new Policy(
             new PolicyIdentifier($policyId),
             'Updated Name',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -240,7 +240,7 @@ class PolicyRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_policies', [
             'id' => $policyId,
             'name' => 'Updated Name',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -275,11 +275,11 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Agency Management',
             $statements,
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
         $result = $repository->findById(new PolicyIdentifier($policyId));
@@ -331,11 +331,11 @@ class PolicyRepositoryTest extends TestCase
             new PolicyIdentifier($policyId),
             'Mixed Policy',
             $statements,
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
         $result = $repository->findById(new PolicyIdentifier($policyId));

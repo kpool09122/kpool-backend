@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNot
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -20,7 +21,7 @@ use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCategoryChangeRequestInterface
 {
     public function __construct(
-        private AccountCategoryChangeRequestRepositoryInterface $requestRepository,
+        private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountRepositoryInterface $accountRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private EventDispatcherInterface $eventDispatcher,
@@ -30,7 +31,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
 
     public function process(ApproveAccountCategoryChangeRequestInputPort $input, ApproveAccountCategoryChangeRequestOutputPort $output): void
     {
-        $request = $this->requestRepository->findById($input->requestIdentifier());
+        $request = $this->accountCategoryChangeRequestRepository->findById($input->requestIdentifier());
         if ($request === null) {
             throw new AccountCategoryChangeRequestNotFoundException();
         }
@@ -49,6 +50,8 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             throw new AccountNotFoundException();
         }
 
+        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+
         $previousAccountCategory = $account->accountCategory();
         $newAccountCategory = $request->requestedAccountCategory();
 
@@ -56,7 +59,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
         $account->setAccountCategory($newAccountCategory);
 
         $this->accountRepository->save($account);
-        $this->requestRepository->save($request);
+        $this->accountCategoryChangeRequestRepository->save($request);
         $this->accountContextInvalidationService->forgetByAccountIdentifier($account->accountIdentifier());
 
         $this->eventDispatcher->dispatch(new AccountCategoryChanged(
@@ -65,7 +68,7 @@ readonly class ApproveAccountCategoryChangeRequest implements ApproveAccountCate
             newAccountCategory: $newAccountCategory,
             reviewerAccountIdentifier: $reviewerAccountIdentifier,
             changedAt: new DateTimeImmutable(),
-            accountType: $account->type(),
+            accountType: $accountType,
         ));
 
         $output->setRequest($request);

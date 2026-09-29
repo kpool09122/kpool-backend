@@ -18,7 +18,6 @@ use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
-use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -37,10 +36,10 @@ class TerminateAffiliationTest extends TestCase
     public function test__construct(): void
     {
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
-        $delegationTerminationService = Mockery::mock(DelegationTerminationServiceInterface::class);
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
-        $useCase = $this->app->make(TerminateAffiliationInterface::class);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $useCase = $this->app()->make(TerminateAffiliationInterface::class);
         $this->assertInstanceOf(TerminateAffiliation::class, $useCase);
     }
 
@@ -67,12 +66,6 @@ class TerminateAffiliationTest extends TestCase
             ->once()
             ->with($testData->affiliation);
 
-        $delegationTerminationService = Mockery::mock(DelegationTerminationServiceInterface::class);
-        $delegationTerminationService->shouldReceive('revokeAllDelegations')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn(0);
-
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
@@ -83,16 +76,16 @@ class TerminateAffiliationTest extends TestCase
                 && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
             ));
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(TerminateAffiliationInterface::class);
+        $useCase = $this->app()->make(TerminateAffiliationInterface::class);
 
         $output = new TerminateAffiliationOutput();
 
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('status', $output->toArray()));
         $this->assertSame(AffiliationStatus::TERMINATED->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['terminatedAt']);
     }
@@ -120,12 +113,6 @@ class TerminateAffiliationTest extends TestCase
             ->once()
             ->with($testData->affiliation);
 
-        $delegationTerminationService = Mockery::mock(DelegationTerminationServiceInterface::class);
-        $delegationTerminationService->shouldReceive('revokeAllDelegations')
-            ->with($testData->affiliationIdentifier)
-            ->once()
-            ->andReturn(0);
-
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
@@ -136,16 +123,16 @@ class TerminateAffiliationTest extends TestCase
                 && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
             ));
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(TerminateAffiliationInterface::class);
+        $useCase = $this->app()->make(TerminateAffiliationInterface::class);
 
         $output = new TerminateAffiliationOutput();
 
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('status', $output->toArray()));
         $this->assertSame(AffiliationStatus::TERMINATED->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['terminatedAt']);
     }
@@ -169,12 +156,10 @@ class TerminateAffiliationTest extends TestCase
             ->once()
             ->andReturnNull();
 
-        $delegationTerminationService = Mockery::mock(DelegationTerminationServiceInterface::class);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
-
-        $useCase = $this->app->make(TerminateAffiliationInterface::class);
+        $useCase = $this->app()->make(TerminateAffiliationInterface::class);
 
         $this->expectException(AffiliationNotFoundException::class);
         $this->expectExceptionMessage('Affiliation not found.');
@@ -205,13 +190,10 @@ class TerminateAffiliationTest extends TestCase
             ->andReturn($testData->affiliation);
         $affiliationRepository->shouldNotReceive('save');
 
-        $delegationTerminationService = Mockery::mock(DelegationTerminationServiceInterface::class);
-        $delegationTerminationService->shouldNotReceive('revokeAllDelegations');
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
-        $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
-
-        $useCase = $this->app->make(TerminateAffiliationInterface::class);
+        $useCase = $this->app()->make(TerminateAffiliationInterface::class);
 
         $this->expectException(DisallowedAffiliationOperationException::class);
         $this->expectExceptionMessage('Only the agency or talent can terminate this affiliation.');

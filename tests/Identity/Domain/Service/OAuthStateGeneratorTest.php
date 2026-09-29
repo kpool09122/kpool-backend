@@ -20,7 +20,7 @@ class OAuthStateGeneratorTest extends TestCase
      */
     public function test__construct(): void
     {
-        $generator = $this->app->make(OAuthStateGeneratorInterface::class);
+        $generator = $this->app()->make(OAuthStateGeneratorInterface::class);
 
         $this->assertInstanceOf(OAuthStateGenerator::class, $generator);
     }
@@ -33,7 +33,7 @@ class OAuthStateGeneratorTest extends TestCase
      */
     public function testGenerate(): void
     {
-        $generator = $this->app->make(OAuthStateGeneratorInterface::class);
+        $generator = $this->app()->make(OAuthStateGeneratorInterface::class);
         $before = new DateTimeImmutable('+9 minutes');
         $after = new DateTimeImmutable('+11 minutes');
 
@@ -53,7 +53,7 @@ class OAuthStateGeneratorTest extends TestCase
      */
     public function testGenerateReturnsDifferentStates(): void
     {
-        $generator = $this->app->make(OAuthStateGeneratorInterface::class);
+        $generator = $this->app()->make(OAuthStateGeneratorInterface::class);
 
         $states = [];
         for ($i = 0; $i < 10; $i++) {

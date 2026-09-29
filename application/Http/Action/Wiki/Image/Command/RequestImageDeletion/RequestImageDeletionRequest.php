@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Image\Command\RequestImageDeletion;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RequestImageDeletionRequest extends FormRequest
@@ -30,16 +31,16 @@ class RequestImageDeletionRequest extends FormRequest
 
     public function requesterName(): string
     {
-        return (string) $this->input('requesterName');
+        return RequestValue::string($this->input('requesterName'));
     }
 
     public function requesterEmail(): string
     {
-        return (string) $this->input('requesterEmail');
+        return RequestValue::string($this->input('requesterEmail'));
     }
 
     public function reason(): string
     {
-        return (string) $this->input('reason');
+        return RequestValue::string($this->input('reason'));
     }
 }

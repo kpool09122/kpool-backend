@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -68,22 +69,22 @@ class PublishWikiTest extends TestCase
     public function test__construct(): void
     {
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
         $wikiFactory = Mockery::mock(WikiFactoryInterface::class);
-        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiFactoryInterface::class, $wikiFactory);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $wikiSnapshotFactory = Mockery::mock(WikiSnapshotFactoryInterface::class);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
         $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $this->assertInstanceOf(PublishWiki::class, $publishWiki);
     }
 
@@ -100,7 +101,7 @@ class PublishWikiTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: true,
@@ -175,15 +176,15 @@ class PublishWikiTest extends TestCase
             ->with($dummyPublishWiki->snapshot)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
         $result = $output->toArray();
@@ -209,7 +210,7 @@ class PublishWikiTest extends TestCase
     public function testProcessUsesDraftPublishedWikiIdentifier(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: true,
@@ -289,16 +290,16 @@ class PublishWikiTest extends TestCase
             ->with($dummyPublishWiki->snapshot)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
 
@@ -319,7 +320,7 @@ class PublishWikiTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: false,
@@ -391,16 +392,16 @@ class PublishWikiTest extends TestCase
         $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
         $wikiSnapshotRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
         $result = $output->toArray();
@@ -412,7 +413,7 @@ class PublishWikiTest extends TestCase
     public function testProcessForNewTranslatedLanguageUsesResolvedLatestVersion(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: false,
@@ -485,17 +486,17 @@ class PublishWikiTest extends TestCase
         $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
         $wikiSnapshotRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
         $result = $output->toArray();
@@ -540,15 +541,15 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -592,15 +593,15 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -640,15 +641,15 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(InvalidStatusException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -667,7 +668,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -699,15 +700,15 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(InconsistentVersionException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -725,7 +726,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki(hasPublishedWiki: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -761,15 +762,15 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -787,7 +788,7 @@ class PublishWikiTest extends TestCase
         $dummyPublishWiki = $this->createDummyPublishWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -814,17 +815,17 @@ class PublishWikiTest extends TestCase
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(DisallowedException::class);
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
     }
 
@@ -841,7 +842,7 @@ class PublishWikiTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $dummyPublishWiki = $this->createDummyPublishWiki(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -905,15 +906,15 @@ class PublishWikiTest extends TestCase
             ->with($dummyPublishWiki->history)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
 
         $this->assertSame(ApprovalStatus::Approved, $dummyPublishWiki->status);
@@ -932,7 +933,7 @@ class PublishWikiTest extends TestCase
     public function testProcessGrantsContributionPointsOnNewCreation(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
@@ -1021,18 +1022,18 @@ class PublishWikiTest extends TestCase
             )
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
         $result = $output->toArray();
@@ -1053,7 +1054,7 @@ class PublishWikiTest extends TestCase
     public function testProcessGrantsContributionPointsOnUpdate(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
@@ -1140,17 +1141,17 @@ class PublishWikiTest extends TestCase
             )
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(WikiServiceInterface::class, $wikiService);
-        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
-        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
-        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiServiceInterface::class, $wikiService);
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
-        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
         $result = $output->toArray();

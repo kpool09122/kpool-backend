@@ -27,7 +27,7 @@ class ListContactsTest extends TestCase
 {
     public function testUseCaseIsBoundToInfrastructureQuery(): void
     {
-        $this->assertSame(ListContacts::class, $this->app->make(ListContactsInterface::class)::class);
+        $this->assertSame(ListContacts::class, $this->app()->make(ListContactsInterface::class)::class);
     }
 
     #[Group('useDb')]
@@ -44,7 +44,7 @@ class ListContactsTest extends TestCase
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-17 10:00:00');
 
         $output = new ListContactsOutput();
-        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, $target, null), $output);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, $target, null), $output);
 
         $this->assertSame([$newer, $older], array_column($output->toArray(), 'contactIdentifier'));
         $this->assertSame([[], []], array_column($output->toArray(), 'replyIdentifiers'));
@@ -62,7 +62,7 @@ class ListContactsTest extends TestCase
         CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
 
         $this->expectException(UnauthorizedException::class);
-        $this->app->make(ListContactsInterface::class)->process(
+        $this->app()->make(ListContactsInterface::class)->process(
             new ListContactsInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), null),
             new ListContactsOutput(),
         );
@@ -81,7 +81,7 @@ class ListContactsTest extends TestCase
         $this->insertContact($anonymousContact, null, 'anonymous@example.com', '2026-08-16 10:00:00');
 
         $output = new ListContactsOutput();
-        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $output);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $output);
 
         $this->assertSame([$anonymousContact, $identityContact], array_column($output->toArray(), 'contactIdentifier'));
         $this->assertSame([null, $targetIdentityIdentifier], array_column($output->toArray(), 'identityIdentifier'));
@@ -109,20 +109,20 @@ class ListContactsTest extends TestCase
         $hasReplyOutput = new ListContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
 
         $this->assertCount(3, DB::getQueryLog());
         $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray(), 'contactIdentifier'));
         $this->assertSame([[$sentReply, $laterReply]], array_column($hasReplyOutput->toArray(), 'replyIdentifiers'));
 
         $hasNoReplyOutput = new ListContactsOutput();
-        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, false), $hasNoReplyOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, false), $hasNoReplyOutput);
 
         $this->assertSame([$failedContact, $unrepliedContact], array_column($hasNoReplyOutput->toArray(), 'contactIdentifier'));
         $this->assertSame([[], []], array_column($hasNoReplyOutput->toArray(), 'replyIdentifiers'));
 
         $allContactsOutput = new ListContactsOutput();
-        $this->app->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
 
         $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray(), 'contactIdentifier'));
         $this->assertSame([[$sentReply, $laterReply], [], []], array_column($allContactsOutput->toArray(), 'replyIdentifiers'));
@@ -135,7 +135,7 @@ class ListContactsTest extends TestCase
             'identity_identifier' => $identityIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => '問い合わせ者',
-            'email' => $this->app->make(EncryptionServiceInterface::class)->encrypt($email),
+            'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt($email),
             'content' => 'お問い合わせ内容',
             'language' => 'ja',
             'created_at' => $createdAt,

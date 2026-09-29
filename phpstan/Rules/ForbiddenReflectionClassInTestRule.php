@@ -7,6 +7,7 @@ namespace Kpool\PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -31,17 +32,17 @@ final class ForbiddenReflectionClassInTestRule implements Rule
     /**
      * @param Name $node
      * @param Scope $scope
-     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     * @return list<IdentifierRuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->isTargetFile($scope->getFile())) {
+        if (! $this->isTargetFile($scope->getFile())) {
             return [];
         }
 
         $className = RuleSupport::resolveName($node, $scope);
 
-        if (!preg_match('#^Reflection[A-Z]\w*$#', $className)) {
+        if (! preg_match('#^Reflection[A-Z]\w*$#', $className)) {
             return [];
         }
 

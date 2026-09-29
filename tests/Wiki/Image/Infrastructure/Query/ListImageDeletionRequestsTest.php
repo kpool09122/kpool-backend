@@ -6,6 +6,7 @@ namespace Tests\Wiki\Image\Infrastructure\Query;
 
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInterface;
@@ -143,7 +144,7 @@ class ListImageDeletionRequestsTest extends TestCase
 
     private function listImageDeletionRequests(): ListImageDeletionRequestsInterface
     {
-        return $this->app->make(ListImageDeletionRequestsInterface::class);
+        return $this->app()->make(ListImageDeletionRequestsInterface::class);
     }
 
     private function process(ListImageDeletionRequestsInput $input): ListImageDeletionRequestsOutput
@@ -157,13 +158,13 @@ class ListImageDeletionRequestsTest extends TestCase
     private function bindPrincipalRepository(): PrincipalIdentifier
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
             ->with($principalIdentifier)
             ->andReturn($principal);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
         return $principalIdentifier;
     }

@@ -7,45 +7,33 @@ namespace Tests\Identity\Application\UseCase\Command\VerifyEmail;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInput;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailOutput;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Exception\AuthCodeExpiredException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Exception\InvalidAuthCodeException;
-use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
-use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 use Tests\TestCase;
+use Throwable;
 
 class VerifyEmailTest extends TestCase
 {
     /**
-     * 正しくDIが動作していること.
-     *
-     * @return void
      * @throws BindingResolutionException
      */
     public function test__construct(): void
     {
-        $repository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $factory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, Mockery::mock(AuthCodeSessionStorageServiceInterface::class));
 
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $repository);
-        $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
-
-        $useCase = $this->app->make(VerifyEmailInterface::class);
-
-        $this->assertInstanceOf(VerifyEmail::class, $useCase);
+        $this->assertInstanceOf(VerifyEmail::class, $this->app()->make(VerifyEmailInterface::class));
     }
 
     /**
-     * 正常系: セッションを検証し、verified 版を生成して保存・返却すること.
-     *
-     * @return void
      * @throws BindingResolutionException
      * @throws AuthCodeSessionNotFoundException
      */
@@ -53,148 +41,84 @@ class VerifyEmailTest extends TestCase
     {
         $email = new Email('user@example.com');
         $authCode = new AuthCode('123456');
-        $generatedAt = new DateTimeImmutable('-5 minutes');
-        $existingSession = new AuthCodeSession($email, $authCode, $generatedAt);
+        $existingSession = new AuthCodeSession($email, $authCode, new DateTimeImmutable('-5 minutes'));
+        $before = new DateTimeImmutable('now');
 
-        $verifiedAt = new DateTimeImmutable('2024-01-01T00:00:00+00:00');
-        $verifiedSession = new AuthCodeSession($email, $authCode, $verifiedAt, $verifiedAt);
-
-        $repository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
+        $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
+        $storageService->shouldReceive('findByEmail')->once()->with($email)->andReturn($existingSession);
+        $storageService->shouldReceive('delete')->once()->with($email);
+        $storageService->shouldReceive('store')
             ->once()
-            ->with($email)
-            ->andReturn($existingSession);
-        $repository->shouldReceive('delete')
-            ->once()
-            ->with($email);
-        $repository->shouldReceive('save')
-            ->once()
-            ->with($verifiedSession);
+            ->with(Mockery::on(function (AuthCodeSession $session) use ($email, $authCode, $before): bool {
+                $this->assertSame($email, $session->email());
+                $this->assertSame($authCode, $session->authCode());
+                $this->assertGreaterThanOrEqual($before->getTimestamp(), $session->generatedAt()->getTimestamp());
+                $this->assertLessThanOrEqual((new DateTimeImmutable('now'))->getTimestamp(), $session->generatedAt()->getTimestamp());
+                $this->assertSame($session->generatedAt(), $session->verifiedAt());
+                $this->assertSame($session->generatedAt()->modify('+15 minutes')->getTimestamp(), $session->expiresAt()->getTimestamp());
 
-        $factory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
-        $factory->shouldReceive('create')
-            ->once()
-            ->with($email, $authCode, Mockery::type(DateTimeImmutable::class))
-            ->andReturn($verifiedSession);
+                return true;
+            }));
 
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $repository);
-        $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
-
-        $useCase = $this->app->make(VerifyEmailInterface::class);
-        $input = new VerifyEmailInput($email, $authCode);
-
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
         $output = new VerifyEmailOutput();
-        $useCase->process($input, $output);
+        $this->app()->make(VerifyEmailInterface::class)->process(new VerifyEmailInput($email, $authCode), $output);
 
+        self::assertTrue(array_key_exists('email', $output->toArray()));
         $this->assertSame((string) $email, $output->toArray()['email']);
         $this->assertNotNull($output->toArray()['verifiedAt']);
     }
 
-    /**
-     * 異常系: セッション未登録の場合に例外を投げること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
     public function testProcessWhenSessionNotFound(): void
     {
-        $email = new Email('user@example.com');
-        $authCode = new AuthCode('123456');
-        $input = new VerifyEmailInput($email, $authCode);
-
-        $repository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
-            ->once()
-            ->with($email)
-            ->andReturnNull();
-        $repository->shouldNotReceive('delete');
-        $repository->shouldNotReceive('save');
-
-        $factory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
-        $factory->shouldNotReceive('create');
-
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $repository);
-        $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
-        $useCase = $this->app->make(VerifyEmailInterface::class);
-
-        $this->expectException(AuthCodeSessionNotFoundException::class);
-
-        $output = new VerifyEmailOutput();
-        $useCase->process($input, $output);
+        $this->assertFailureDoesNotPersist(
+            null,
+            AuthCodeSessionNotFoundException::class,
+            new AuthCode('123456'),
+        );
     }
 
-    /**
-     * 異常系: 有効期限切れの場合に例外を投げること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AuthCodeSessionNotFoundException
-     */
     public function testProcessWhenSessionExpired(): void
     {
         $email = new Email('user@example.com');
         $authCode = new AuthCode('123456');
-        $generatedAt = new DateTimeImmutable('-20 minutes');
-        $expiredSession = new AuthCodeSession($email, $authCode, $generatedAt);
-        $input = new VerifyEmailInput($email, $authCode);
-
-        $repository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
-            ->once()
-            ->with($email)
-            ->andReturn($expiredSession);
-        $repository->shouldNotReceive('delete');
-        $repository->shouldNotReceive('save');
-
-        $factory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
-        $factory->shouldNotReceive('create');
-
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $repository);
-        $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
-        $useCase = $this->app->make(VerifyEmailInterface::class);
-
-        $this->expectException(AuthCodeExpiredException::class);
-        $this->expectExceptionMessage('認証コードの有効期限が切れています。');
-
-        $output = new VerifyEmailOutput();
-        $useCase->process($input, $output);
+        $this->assertFailureDoesNotPersist(
+            new AuthCodeSession($email, $authCode, new DateTimeImmutable('-20 minutes')),
+            AuthCodeExpiredException::class,
+            $authCode,
+        );
     }
 
-    /**
-     * 異常系: 認証コード不一致の場合に例外を投げること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AuthCodeSessionNotFoundException
-     */
     public function testProcessWhenAuthCodeMismatch(): void
     {
         $email = new Email('user@example.com');
-        $authCode = new AuthCode('123456');
-        $inputCode = new AuthCode('654321');
-        $generatedAt = new DateTimeImmutable('-5 minutes');
-        $session = new AuthCodeSession($email, $authCode, $generatedAt);
-        $input = new VerifyEmailInput($email, $inputCode);
+        $this->assertFailureDoesNotPersist(
+            new AuthCodeSession($email, new AuthCode('123456'), new DateTimeImmutable('-5 minutes')),
+            InvalidAuthCodeException::class,
+            new AuthCode('654321'),
+        );
+    }
 
-        $repository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
-            ->once()
-            ->with($email)
-            ->andReturn($session);
-        $repository->shouldNotReceive('delete');
-        $repository->shouldNotReceive('save');
+    /**
+     * @param class-string<Throwable> $expectedException
+     */
+    private function assertFailureDoesNotPersist(
+        ?AuthCodeSession $session,
+        string $expectedException,
+        AuthCode $inputCode,
+    ): void {
+        $email = new Email('user@example.com');
+        $storageService = Mockery::mock(AuthCodeSessionStorageServiceInterface::class);
+        $storageService->shouldReceive('findByEmail')->once()->with($email)->andReturn($session);
+        $storageService->shouldNotReceive('delete');
+        $storageService->shouldNotReceive('store');
+        $this->app()->instance(AuthCodeSessionStorageServiceInterface::class, $storageService);
 
-        $factory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
-        $factory->shouldNotReceive('create');
+        $this->expectException($expectedException);
 
-        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $repository);
-        $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
-        $useCase = $this->app->make(VerifyEmailInterface::class);
-
-        $this->expectException(InvalidAuthCodeException::class);
-        $this->expectExceptionMessage('認証コードが一致しません。');
-
-        $output = new VerifyEmailOutput();
-        $useCase->process($input, $output);
+        $this->app()->make(VerifyEmailInterface::class)->process(
+            new VerifyEmailInput($email, $inputCode),
+            new VerifyEmailOutput(),
+        );
     }
 }

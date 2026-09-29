@@ -62,17 +62,17 @@ class AffiliationActivatedHandlerTest extends TestCase
         $roleFactory = Mockery::mock(RoleFactoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $affiliationGrantFactory = Mockery::mock(AffiliationGrantFactoryInterface::class);
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PolicyFactoryInterface::class, $policyFactory);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(RoleFactoryInterface::class, $roleFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PolicyFactoryInterface::class, $policyFactory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleFactoryInterface::class, $roleFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
 
-        $handler = $this->app->make(AffiliationActivatedHandler::class);
+        $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $this->assertInstanceOf(AffiliationActivatedHandler::class, $handler);
     }
@@ -163,11 +163,16 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->with(
                 "Affiliation Policy - Agency {$agencyAccountName}",
                 Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
+                    $statements = array_map(static function (mixed $statement): Statement {
+                        self::assertInstanceOf(Statement::class, $statement);
+
+                        return $statement;
+                    }, $statements);
                     $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
 
                     return true;
                 }),
-                false,
+                $talentAccountIdentifier,
             )
             ->andReturn($talentSidePolicy);
         $policyFactory
@@ -176,11 +181,16 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->with(
                 "Affiliation Policy - Talent {$talentAccountName}",
                 Mockery::on(function (array $statements): bool {
+                    $statements = array_map(static function (mixed $statement): Statement {
+                        self::assertInstanceOf(Statement::class, $statement);
+
+                        return $statement;
+                    }, $statements);
                     $this->assertAgencySideStatements($statements);
 
                     return true;
                 }),
-                false,
+                $agencyAccountIdentifier,
             )
             ->andReturn($agencySidePolicy);
 
@@ -206,17 +216,17 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->twice()
             ->andReturn($talentSideGrant, $agencySideGrant);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PolicyFactoryInterface::class, $policyFactory);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(RoleFactoryInterface::class, $roleFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PolicyFactoryInterface::class, $policyFactory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleFactoryInterface::class, $roleFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
 
-        $handler = $this->app->make(AffiliationActivatedHandler::class);
+        $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
     }
@@ -309,17 +319,17 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->once()
             ->andReturn($agencySideGrant);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PolicyFactoryInterface::class, $policyFactory);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(RoleFactoryInterface::class, $roleFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PolicyFactoryInterface::class, $policyFactory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleFactoryInterface::class, $roleFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
 
-        $handler = $this->app->make(AffiliationActivatedHandler::class);
+        $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
     }
@@ -422,17 +432,17 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->once()
             ->andReturn($talentSideGrant);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PolicyFactoryInterface::class, $policyFactory);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(RoleFactoryInterface::class, $roleFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PolicyFactoryInterface::class, $policyFactory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleFactoryInterface::class, $roleFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
 
-        $handler = $this->app->make(AffiliationActivatedHandler::class);
+        $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
     }
@@ -516,11 +526,16 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->with(
                 "Affiliation Policy - Agency {$agencyAccountName}",
                 Mockery::on(function (array $statements) use ($agencyAccountIdentifier): bool {
+                    $statements = array_map(static function (mixed $statement): Statement {
+                        self::assertInstanceOf(Statement::class, $statement);
+
+                        return $statement;
+                    }, $statements);
                     $this->assertTalentSideStatements((string) $agencyAccountIdentifier, $statements);
 
                     return true;
                 }),
-                false,
+                $talentAccountIdentifier,
             )
             ->andReturn($talentSidePolicy);
         $policyFactory
@@ -529,11 +544,16 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->with(
                 "Affiliation Policy - Talent {$talentAccountName}",
                 Mockery::on(function (array $statements): bool {
+                    $statements = array_map(static function (mixed $statement): Statement {
+                        self::assertInstanceOf(Statement::class, $statement);
+
+                        return $statement;
+                    }, $statements);
                     $this->assertAgencySideStatements($statements);
 
                     return true;
                 }),
-                false,
+                $agencyAccountIdentifier,
             )
             ->andReturn($agencySidePolicy);
 
@@ -559,17 +579,17 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->twice()
             ->andReturn($talentSideGrant, $agencySideGrant);
 
-        $this->app->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app->instance(PolicyFactoryInterface::class, $policyFactory);
-        $this->app->instance(PolicyRepositoryInterface::class, $policyRepository);
-        $this->app->instance(RoleFactoryInterface::class, $roleFactory);
-        $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
+        $this->app()->instance(AffiliationGrantRepositoryInterface::class, $affiliationGrantRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
+        $this->app()->instance(PolicyFactoryInterface::class, $policyFactory);
+        $this->app()->instance(PolicyRepositoryInterface::class, $policyRepository);
+        $this->app()->instance(RoleFactoryInterface::class, $roleFactory);
+        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
+        $this->app()->instance(AffiliationGrantFactoryInterface::class, $affiliationGrantFactory);
 
-        $handler = $this->app->make(AffiliationActivatedHandler::class);
+        $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
     }
@@ -648,6 +668,7 @@ class AffiliationActivatedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 
@@ -668,7 +689,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             new PolicyIdentifier(StrTestHelper::generateUuid()),
             'Test Policy',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
     }
@@ -679,7 +700,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             new RoleIdentifier(StrTestHelper::generateUuid()),
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
     }

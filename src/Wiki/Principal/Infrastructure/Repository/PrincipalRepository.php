@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -55,30 +56,41 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return $result;
     }
 
-    public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
+    /**
+     * @return Principal[]
+     */
+    public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array
     {
-        $eloquent = PrincipalEloquent::query()
+        $eloquents = PrincipalEloquent::query()
             ->where('identity_id', (string) $identityIdentifier)
-            ->first();
+            ->orderBy('created_at')
+            ->get();
 
-        if ($eloquent === null) {
-            return null;
-        }
-
-        return $this->toDomainEntity($eloquent);
+        return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
-    public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Principal
-    {
+    public function findByIdentityIdentifierAndAccountIdentifier(
+        IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
+    ): ?Principal {
         $eloquent = PrincipalEloquent::query()
-            ->where('delegation_identifier', (string) $delegationIdentifier)
+            ->where('wiki_principals.identity_id', (string) $identityIdentifier)
+            ->where('wiki_principals.account_id', (string) $accountIdentifier)
             ->first();
 
-        if ($eloquent === null) {
-            return null;
-        }
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
+    }
 
-        return $this->toDomainEntity($eloquent);
+    /**
+     * @return Principal[]
+     */
+    public function findByDelegation(DelegationIdentifier $delegationIdentifier): array
+    {
+        $eloquents = PrincipalEloquent::query()
+            ->where('delegation_identifier', (string) $delegationIdentifier)
+            ->get();
+
+        return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     /**
@@ -87,9 +99,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquents = PrincipalEloquent::query()
-            ->select('wiki_principals.*')
-            ->join('account_principals', 'wiki_principals.identity_id', '=', 'account_principals.identity_id')
-            ->where('account_principals.account_id', (string) $accountIdentifier)
+            ->where('account_id', (string) $accountIdentifier)
             ->get();
 
         return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
@@ -105,6 +115,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ['id' => (string) $principal->principalIdentifier()],
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
+                'account_id' => (string) $principal->accountIdentifier(),
                 'delegation_identifier' => $principal->delegationIdentifier() !== null
                     ? (string) $principal->delegationIdentifier()
                     : null,
@@ -112,8 +123,8 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ]
         );
 
-        foreach (array_unique(array_filter([$previousIdentityId, (string) $principal->identityIdentifier()])) as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+        foreach (array_unique(array_filter([TypedValue::nullableString($previousIdentityId), (string) $principal->identityIdentifier()])) as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -122,6 +133,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->where('delegation_identifier', (string) $delegationIdentifier)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         PrincipalEloquent::query()
@@ -129,7 +141,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ->delete();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -138,6 +150,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return new Principal(
             new PrincipalIdentifier($eloquent->id),
             new IdentityIdentifier($eloquent->identity_id),
+            new AccountIdentifier($eloquent->account_id),
             $eloquent->delegation_identifier !== null
                 ? new DelegationIdentifier($eloquent->delegation_identifier)
                 : null,

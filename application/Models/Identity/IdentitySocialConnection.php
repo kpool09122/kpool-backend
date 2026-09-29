@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Identity;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -17,16 +20,16 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property-read Identity $identity
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'identity_id',
     'provider',
     'provider_user_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identity_social_connections', keyType: 'string')]
+#[Table(name: 'identity_social_connections', keyType: 'string')]
 class IdentitySocialConnection extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
     /**

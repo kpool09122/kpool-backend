@@ -8,8 +8,8 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailOutput;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 
 class VerifyEmailOutputTest extends TestCase
@@ -33,6 +33,7 @@ class VerifyEmailOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('email', $result));
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($verifiedAt->format(DateTimeInterface::ATOM), $result['verifiedAt']);
     }

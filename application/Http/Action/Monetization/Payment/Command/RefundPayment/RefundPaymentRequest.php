@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Payment\Command\RefundPayment;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RefundPaymentRequest extends FormRequest
@@ -26,21 +27,21 @@ class RefundPaymentRequest extends FormRequest
 
     public function paymentId(): string
     {
-        return (string) $this->input('paymentId');
+        return RequestValue::string($this->input('paymentId'));
     }
 
     public function refundAmount(): int
     {
-        return (int) $this->input('refundAmount');
+        return RequestValue::integer($this->input('refundAmount'));
     }
 
     public function refundCurrency(): string
     {
-        return (string) $this->input('refundCurrency');
+        return RequestValue::string($this->input('refundCurrency'));
     }
 
     public function reason(): string
     {
-        return (string) $this->input('reason');
+        return RequestValue::string($this->input('reason'));
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Settlement\Command\ExecuteTransfer;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ExecuteTransferRequest extends FormRequest
@@ -23,6 +24,6 @@ class ExecuteTransferRequest extends FormRequest
 
     public function transferId(): string
     {
-        return (string) $this->input('transferId');
+        return RequestValue::string($this->input('transferId'));
     }
 }

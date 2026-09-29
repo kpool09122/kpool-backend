@@ -30,8 +30,8 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(AddPrincipalToPrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(AddPrincipalToPrincipalGroupInterface::class);
         $this->assertInstanceOf(AddPrincipalToPrincipalGroup::class, $useCase);
     }
 
@@ -56,22 +56,23 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroup $arg) => $arg->hasMember($principalIdentifier)))
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(AddPrincipalToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AddPrincipalToPrincipalGroupInterface::class);
         $input = new AddPrincipalToPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $output = new AddPrincipalToPrincipalGroupOutput();
         $useCase->process($input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('members', $result));
         $this->assertContains((string) $principalIdentifier, $result['members']);
     }
 
@@ -87,13 +88,13 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(AddPrincipalToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AddPrincipalToPrincipalGroupInterface::class);
         $input = new AddPrincipalToPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -124,13 +125,13 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(AddPrincipalToPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(AddPrincipalToPrincipalGroupInterface::class);
         $input = new AddPrincipalToPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalAlreadyMemberException::class);

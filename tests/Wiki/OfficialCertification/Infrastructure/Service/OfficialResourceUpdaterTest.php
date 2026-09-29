@@ -45,9 +45,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::AGENCY, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -77,9 +77,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -109,9 +109,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::TALENT, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -141,9 +141,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::SONG, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -170,9 +170,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -202,9 +202,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -230,9 +230,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::AGENCY, new TranslationSetIdentifier($wikiId), $owner);
     }
@@ -255,9 +255,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::TALENT, new TranslationSetIdentifier($wikiId), $owner);
     }
@@ -281,9 +281,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->markOfficial(ResourceType::SONG, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -312,9 +312,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->with($wiki)
             ->andReturn([]);
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -341,9 +341,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $owner);
 
@@ -371,9 +371,9 @@ class OfficialResourceUpdaterTest extends TestCase
             ->andReturn([$wiki]);
         $wikiRepository->shouldReceive('save')->never();
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
 
-        $service = $this->app->make(OfficialResourceUpdaterInterface::class);
+        $service = $this->app()->make(OfficialResourceUpdaterInterface::class);
 
         $service->unmarkOfficial(ResourceType::GROUP, new TranslationSetIdentifier($wikiId), $otherOwner);
 

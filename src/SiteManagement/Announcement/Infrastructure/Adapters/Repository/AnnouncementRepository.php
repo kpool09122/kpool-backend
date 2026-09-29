@@ -16,6 +16,7 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use UnexpectedValueException;
 
 class AnnouncementRepository implements AnnouncementRepositoryInterface
 {
@@ -122,7 +123,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($model->published_date->toDateTimeImmutable()),
+            new PublishedDate(($model->published_date ?? throw new UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable()),
         );
     }
 
@@ -135,7 +136,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($model->published_date->toDateTimeImmutable()),
+            new PublishedDate(($model->published_date ?? throw new UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable()),
         );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\CreateAccount;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,6 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -43,7 +43,6 @@ readonly class CreateAccountAction
                 $address = $request->address();
                 $input = new CreateAccountInput(
                     email: new Email($request->email()),
-                    accountType: AccountType::from($request->accountType()),
                     accountName: new AccountName($request->accountName()),
                     identityIdentifier: $request->identityIdentifier() !== null
                         ? new IdentityIdentifier($request->identityIdentifier())
@@ -96,6 +95,6 @@ readonly class CreateAccountAction
             return null;
         }
 
-        return (string) $values[$key];
+        return RequestValue::string($values[$key]);
     }
 }

@@ -41,7 +41,7 @@ class ImageRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $this->assertInstanceOf(Image::class, $image);
@@ -61,7 +61,7 @@ class ImageRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($image);
@@ -102,7 +102,7 @@ class ImageRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $images = $repository->findByResource(
             ResourceType::TALENT,
             new TranslationSetIdentifier($wikiId),
@@ -130,7 +130,7 @@ class ImageRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceWhenNotExist(): void
     {
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $images = $repository->findByResource(
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
@@ -172,7 +172,7 @@ class ImageRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $repository->save($image);
 
         $this->assertDatabaseHas('wiki_images', [
@@ -231,7 +231,7 @@ class ImageRepositoryTest extends TestCase
             new RightsConfirmationAgreed(true),
         );
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $repository->save($image);
 
         $this->assertDatabaseHas('wiki_images', [
@@ -262,7 +262,7 @@ class ImageRepositoryTest extends TestCase
             'image_id' => $imageId,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $this->assertInstanceOf(Image::class, $image);
@@ -295,12 +295,13 @@ class ImageRepositoryTest extends TestCase
             'reject_reason' => 'Reviewed',
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $this->assertInstanceOf(Image::class, $image);
         $this->assertCount(1, $image->deletionRequests());
         $this->assertNull($image->pendingDeletionRequest());
+        $this->assertNotNull($image->latestDeletionRequest());
         $this->assertSame($reviewerId, (string) $image->latestDeletionRequest()->reviewerIdentifier());
         $this->assertSame('Reviewed', $image->latestDeletionRequest()->rejectReason());
     }
@@ -319,9 +320,10 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
+        $this->assertNotNull($image);
         $image->requestDeletion('Test Requester', 'requester@example.com', 'Privacy concern');
         $repository->save($image);
 
@@ -352,10 +354,11 @@ class ImageRepositoryTest extends TestCase
             'image_id' => $imageId,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $this->assertNotNull($image);
         $image->approveDeletionRequest($reviewerIdentifier);
         $repository->save($image);
 
@@ -386,10 +389,11 @@ class ImageRepositoryTest extends TestCase
             'image_id' => $imageId,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $this->assertNotNull($image);
         $image->rejectDeletionRequest($reviewerIdentifier, 'Not applicable');
         $repository->save($image);
 
@@ -424,7 +428,7 @@ class ImageRepositoryTest extends TestCase
             'image_id' => $imageId,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $this->assertTrue($repository->existsPendingDeletionRequest(new ImageIdentifier($imageId)));
     }
 
@@ -442,7 +446,7 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $this->assertFalse($repository->existsPendingDeletionRequest(new ImageIdentifier($imageId)));
     }
 
@@ -463,7 +467,7 @@ class ImageRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('wiki_images', ['id' => $imageId]);
 
-        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $repository = $this->app()->make(ImageRepositoryInterface::class);
         $repository->delete(new ImageIdentifier($imageId));
 
         $this->assertDatabaseMissing('wiki_images', ['id' => $imageId]);

@@ -18,7 +18,7 @@ readonly class WikiAgencySummaryReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string}
      */
     public function toArray(): array
     {

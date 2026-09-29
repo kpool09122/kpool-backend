@@ -8,6 +8,7 @@ use Application\Models\Wiki\DraftWikiImage;
 use Application\Models\Wiki\Wiki;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\DraftImageReadModel;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInputPort;
@@ -38,7 +39,7 @@ readonly class ListDraftImages implements ListDraftImagesInterface
         $output->output(
             array_map(
                 fn (DraftWikiImage $image): DraftImageReadModel => $this->toReadModel($image),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -101,7 +102,7 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             return '';
         }
 
-        return (string) $basic->name;
+        return TypedValue::string($basic->name);
     }
 
     private function formatDateTime(mixed $dateTime): ?string
@@ -114,6 +115,6 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 }

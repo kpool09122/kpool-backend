@@ -10,6 +10,7 @@ use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use UnexpectedValueException;
 
 final class VideoLinkCollectionStatusRepository implements VideoLinkCollectionStatusRepositoryInterface
 {
@@ -62,7 +63,7 @@ final class VideoLinkCollectionStatusRepository implements VideoLinkCollectionSt
             ResourceType::from($model->resource_type),
             new WikiIdentifier($model->wiki_id),
             $model->last_collected_at?->toDateTimeImmutable(),
-            $model->created_at->toDateTimeImmutable(),
+            ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
         );
     }
 }

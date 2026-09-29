@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Account\Delegation\Domain\Exception\InvalidDelegationApprovalException;
-use Source\Account\Delegation\Domain\Exception\InvalidDelegationRevocationException;
+use DomainException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class Delegation
 {
     public function __construct(
         private readonly DelegationIdentifier $delegationIdentifier,
         private readonly AffiliationIdentifier $affiliationIdentifier,
-        private readonly IdentityIdentifier $delegateIdentifier,
-        private readonly IdentityIdentifier $delegatorIdentifier,
+        private readonly AccountIdentifier $delegateAccountIdentifier,
+        private readonly AccountIdentifier $delegatorAccountIdentifier,
+        private readonly AccountIdentifier $requestedByAccountIdentifier,
         private DelegationStatus $status,
         private readonly DelegationDirection $direction,
         private readonly DateTimeImmutable $requestedAt,
         private ?DateTimeImmutable $approvedAt,
-        private ?DateTimeImmutable $revokedAt,
+        private ?DateTimeImmutable $rejectedAt,
     ) {
     }
 
@@ -38,14 +38,26 @@ class Delegation
         return $this->affiliationIdentifier;
     }
 
-    public function delegateIdentifier(): IdentityIdentifier
+    public function delegateAccountIdentifier(): AccountIdentifier
     {
-        return $this->delegateIdentifier;
+        return $this->delegateAccountIdentifier;
     }
 
-    public function delegatorIdentifier(): IdentityIdentifier
+    public function delegatorAccountIdentifier(): AccountIdentifier
     {
-        return $this->delegatorIdentifier;
+        return $this->delegatorAccountIdentifier;
+    }
+
+    public function requestedByAccountIdentifier(): AccountIdentifier
+    {
+        return $this->requestedByAccountIdentifier;
+    }
+
+    public function approverAccountIdentifier(): AccountIdentifier
+    {
+        return (string) $this->requestedByAccountIdentifier === (string) $this->delegateAccountIdentifier
+            ? $this->delegatorAccountIdentifier
+            : $this->delegateAccountIdentifier;
     }
 
     public function status(): DelegationStatus
@@ -68,29 +80,9 @@ class Delegation
         return $this->approvedAt;
     }
 
-    public function revokedAt(): ?DateTimeImmutable
+    public function rejectedAt(): ?DateTimeImmutable
     {
-        return $this->revokedAt;
-    }
-
-    public function approve(): void
-    {
-        if (! $this->status->isPending()) {
-            throw new InvalidDelegationApprovalException();
-        }
-
-        $this->status = DelegationStatus::APPROVED;
-        $this->approvedAt = new DateTimeImmutable();
-    }
-
-    public function revoke(): void
-    {
-        if (! $this->status->isApproved()) {
-            throw new InvalidDelegationRevocationException();
-        }
-
-        $this->status = DelegationStatus::REVOKED;
-        $this->revokedAt = new DateTimeImmutable();
+        return $this->rejectedAt;
     }
 
     public function isPending(): bool
@@ -103,8 +95,26 @@ class Delegation
         return $this->status->isApproved();
     }
 
-    public function isRevoked(): bool
+    public function isRejected(): bool
     {
-        return $this->status->isRevoked();
+        return $this->status->isRejected();
+    }
+
+    public function approve(): void
+    {
+        if (! $this->isPending()) {
+            throw new DomainException('Only pending delegations can be approved.');
+        }
+        $this->status = DelegationStatus::APPROVED;
+        $this->approvedAt = new DateTimeImmutable();
+    }
+
+    public function reject(): void
+    {
+        if (! $this->isPending()) {
+            throw new DomainException('Only pending delegations can be rejected.');
+        }
+        $this->status = DelegationStatus::REJECTED;
+        $this->rejectedAt = new DateTimeImmutable();
     }
 }

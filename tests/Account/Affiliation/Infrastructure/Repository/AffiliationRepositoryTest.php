@@ -115,6 +115,26 @@ class AffiliationRepositoryTest extends TestCase
         $this->assertFalse((new AffiliationRepository())->existsOpenAffiliation($agencyAccountIdentifier, $talentAccountIdentifier));
     }
 
+    #[Group('useDb')]
+    public function testFindActiveBetweenAccountsSupportsBothInputOrders(): void
+    {
+        $agency = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talent = new AccountIdentifier(StrTestHelper::generateUuid());
+        $affiliationIdentifier = StrTestHelper::generateUuid();
+        $this->insertAffiliation(
+            $affiliationIdentifier,
+            $agency,
+            $talent,
+            AffiliationStatus::ACTIVE,
+            activatedAt: new DateTimeImmutable('2026-01-02 00:00:00'),
+        );
+        $repository = new AffiliationRepository();
+
+        $this->assertSame($affiliationIdentifier, (string) $repository->findActiveBetweenAccounts($agency, $talent)?->affiliationIdentifier());
+        $this->assertSame($affiliationIdentifier, (string) $repository->findActiveBetweenAccounts($talent, $agency)?->affiliationIdentifier());
+        $this->assertNull($repository->findActiveBetweenAccounts($agency, new AccountIdentifier(StrTestHelper::generateUuid())));
+    }
+
     private function insertAffiliation(
         string $identifier,
         AccountIdentifier $agencyAccountIdentifier,

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
 
 /**
  * @property string $snapshot_id
@@ -22,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $emoji
  * @property string $representative_symbol
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'snapshot_id',
     'name',
     'normalized_name',
@@ -37,13 +40,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'emoji',
     'representative_symbol',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_snapshot_group_basics', key: 'snapshot_id', keyType: 'string')]
+#[Table(name: 'wiki_snapshot_group_basics', key: 'snapshot_id', keyType: 'string')]
 class WikiSnapshotGroupBasic extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'official_colors' => 'array',
     ];

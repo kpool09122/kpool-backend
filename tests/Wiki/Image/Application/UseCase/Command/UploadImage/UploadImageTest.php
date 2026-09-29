@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -50,13 +51,13 @@ class UploadImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftImageFactoryInterface::class, $draftImageFactory);
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageServiceInterface::class, $imageService);
+        $this->app()->instance(DraftImageFactoryInterface::class, $draftImageFactory);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $uploadImage = $this->app->make(UploadImageInterface::class);
+        $uploadImage = $this->app()->make(UploadImageInterface::class);
         $this->assertInstanceOf(UploadImage::class, $uploadImage);
     }
 
@@ -72,7 +73,7 @@ class UploadImageTest extends TestCase
     public function testProcess(): void
     {
         $testData = $this->createTestData();
-        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UploadImageInput(
@@ -134,14 +135,14 @@ class UploadImageTest extends TestCase
             ->with($testData->resourceType, $testData->draftResourceIdentifier)
             ->andReturn($resource);
 
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftImageFactoryInterface::class, $draftImageFactory);
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageServiceInterface::class, $imageService);
+        $this->app()->instance(DraftImageFactoryInterface::class, $draftImageFactory);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $uploadImage = $this->app->make(UploadImageInterface::class);
+        $uploadImage = $this->app()->make(UploadImageInterface::class);
         $output = new UploadImageOutput();
         $uploadImage->process($input, $output);
 
@@ -162,7 +163,7 @@ class UploadImageTest extends TestCase
     public function testProcessDisallowed(): void
     {
         $testData = $this->createTestData();
-        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($testData->principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new UploadImageInput(
@@ -198,15 +199,15 @@ class UploadImageTest extends TestCase
             ->with($testData->resourceType, $testData->draftResourceIdentifier)
             ->andReturn($resource);
 
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftImageFactoryInterface::class, $draftImageFactory);
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageServiceInterface::class, $imageService);
+        $this->app()->instance(DraftImageFactoryInterface::class, $draftImageFactory);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(DisallowedException::class);
-        $uploadImage = $this->app->make(UploadImageInterface::class);
+        $uploadImage = $this->app()->make(UploadImageInterface::class);
         $output = new UploadImageOutput();
         $uploadImage->process($input, $output);
     }
@@ -249,14 +250,14 @@ class UploadImageTest extends TestCase
 
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftImageFactoryInterface::class, $draftImageFactory);
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageServiceInterface::class, $imageService);
+        $this->app()->instance(DraftImageFactoryInterface::class, $draftImageFactory);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $uploadImage = $this->app->make(UploadImageInterface::class);
+        $uploadImage = $this->app()->make(UploadImageInterface::class);
         $output = new UploadImageOutput();
         $uploadImage->process($input, $output);
     }

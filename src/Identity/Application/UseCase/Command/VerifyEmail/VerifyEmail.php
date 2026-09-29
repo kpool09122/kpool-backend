@@ -5,29 +5,25 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\VerifyEmail;
 
 use DateTimeImmutable;
+use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
-use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
-use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 
 readonly class VerifyEmail implements VerifyEmailInterface
 {
     public function __construct(
-        private AuthCodeSessionRepositoryInterface $authCodeSessionRepository,
-        private AuthCodeSessionFactoryInterface $authCodeSessionFactory,
+        private AuthCodeSessionStorageServiceInterface $authCodeSessionStorageService,
     ) {
     }
 
     /**
-     * @param VerifyEmailInputPort $input
-     * @param VerifyEmailOutputPort $output
-     * @return void
      * @throws AuthCodeSessionNotFoundException
      */
     public function process(VerifyEmailInputPort $input, VerifyEmailOutputPort $output): void
     {
-        $session = $this->authCodeSessionRepository->findByEmail($input->email());
+        $session = $this->authCodeSessionStorageService->findByEmail($input->email());
 
-        if (! $session) {
+        if ($session === null) {
             throw new AuthCodeSessionNotFoundException();
         }
 
@@ -36,14 +32,15 @@ readonly class VerifyEmail implements VerifyEmailInterface
         $session->checkNotExpired($now);
         $session->matchAuthCode($input->authCode());
 
-        $verifiedSession = $this->authCodeSessionFactory->create(
+        $verifiedSession = new AuthCodeSession(
             $input->email(),
             $input->authCode(),
             $now,
+            $now,
         );
 
-        $this->authCodeSessionRepository->delete($input->email());
-        $this->authCodeSessionRepository->save($verifiedSession);
+        $this->authCodeSessionStorageService->delete($input->email());
+        $this->authCodeSessionStorageService->store($verifiedSession);
 
         $output->setSession($verifiedSession);
     }

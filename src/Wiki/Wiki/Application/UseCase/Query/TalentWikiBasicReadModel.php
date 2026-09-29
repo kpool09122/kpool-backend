@@ -33,7 +33,7 @@ readonly class TalentWikiBasicReadModel implements WikiBasicReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{name: string, normalizedName: string, realName: string, normalizedRealName: string, birthday: string|null, agencyIdentifier: string|null, agency: array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string}|null, emoji: string, representativeSymbol: string, position: string, mbti: string|null, zodiacSign: string|null, englishLevel: string|null, height: int|string|null, bloodType: string|null, fandomName: string, groups: list<array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string, agencyIdentifier: string|null, groupType: string|null, status: string|null, generation: string|null, debutDate: string|null, disbandDate: string|null, fandomName: string, officialColors: list<array{colorCode: string, label: string}>, emoji: string, representativeSymbol: string}>}
      */
     public function toArray(): array
     {

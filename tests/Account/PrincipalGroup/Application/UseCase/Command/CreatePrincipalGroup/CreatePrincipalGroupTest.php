@@ -29,9 +29,9 @@ class CreatePrincipalGroupTest extends TestCase
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $factory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $factory);
-        $useCase = $this->app->make(CreatePrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $factory);
+        $useCase = $this->app()->make(CreatePrincipalGroupInterface::class);
         $this->assertInstanceOf(CreatePrincipalGroup::class, $useCase);
     }
 
@@ -59,15 +59,16 @@ class CreatePrincipalGroupTest extends TestCase
             )
             ->andReturn($testData->principalGroup);
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $this->app->instance(PrincipalGroupFactoryInterface::class, $factory);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(CreatePrincipalGroupInterface::class);
+        $useCase = $this->app()->make(CreatePrincipalGroupInterface::class);
 
         $output = new CreatePrincipalGroupOutput();
         $useCase->process($testData->input, $output);
 
         $result = $output->toArray();
+        self::assertTrue(array_key_exists('principalGroupIdentifier', $result));
         $this->assertSame((string) $testData->principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $testData->accountIdentifier, $result['accountIdentifier']);
         $this->assertSame($testData->name, $result['name']);

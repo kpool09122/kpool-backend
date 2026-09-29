@@ -4,29 +4,33 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
  * @property string $principal_group_id
  * @property string $principal_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property-read Principal|null $principal
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'principal_group_id',
     'principal_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_principal_group_memberships', keyType: 'string')]
+#[Table(name: 'account_principal_group_memberships', keyType: 'string')]
 class PrincipalGroupMembership extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -11,10 +11,12 @@ use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNot
 use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInput;
+use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -40,15 +42,51 @@ use Tests\TestCase;
 
 class ApproveAccountCategoryChangeRequestTest extends TestCase
 {
+    public function testRejectsMissingAccountTypeBeforeApprovingRequest(): void
+    {
+        $requestId = new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid());
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $reviewerId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $request = $this->request($requestId, $accountId, AccountCategoryChangeRequestStatus::PENDING);
+        $account = $this->account($accountId, null);
+        /** @var AccountCategoryChangeRequestRepositoryInterface&Mockery\MockInterface $accountCategoryChangeRequestRepository */
+        $accountCategoryChangeRequestRepository = Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class);
+        $accountCategoryChangeRequestRepository->shouldReceive('findById')->once()->with($requestId)->andReturn($request);
+        $accountCategoryChangeRequestRepository->shouldNotReceive('save');
+        /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
+        $accountRepository->shouldNotReceive('save');
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        /** @var EventDispatcherInterface&Mockery\MockInterface $eventDispatcher */
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+        /** @var AccountContextInvalidationServiceInterface&Mockery\MockInterface $accountContextInvalidationService */
+        $accountContextInvalidationService = Mockery::mock(AccountContextInvalidationServiceInterface::class);
+        $accountContextInvalidationService->shouldNotReceive('forgetByAccountIdentifier');
+        $useCase = new ApproveAccountCategoryChangeRequest($accountCategoryChangeRequestRepository, $accountRepository, $policyEvaluator, $eventDispatcher, $accountContextInvalidationService);
+
+        $this->expectException(AccountSetupUnavailableException::class);
+
+        try {
+            $useCase->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal($reviewerId)), new ApproveAccountCategoryChangeRequestOutput());
+        } finally {
+            $this->assertSame(AccountCategoryChangeRequestStatus::PENDING, $request->status());
+            $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());
+        }
+    }
+
     public function test__construct(): void
     {
-        $this->app->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
-        $this->app->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
+        $this->app()->instance(AccountCategoryChangeRequestRepositoryInterface::class, Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(AccountContextInvalidationServiceInterface::class, Mockery::mock(AccountContextInvalidationServiceInterface::class));
 
-        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app->make(\Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface::class));
+        $this->assertInstanceOf(ApproveAccountCategoryChangeRequest::class, $this->app()->make(ApproveAccountCategoryChangeRequestInterface::class));
     }
 
     public function testApproveUpdatesRequestAndAccountCategoryWhenOperationsPolicyAllows(): void
@@ -202,9 +240,9 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         return new AccountCategoryChangeRequest($requestId, $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable(), null, null, null);
     }
 
-    private function account(AccountIdentifier $accountId, AccountType $type): Account
+    private function account(AccountIdentifier $accountId, ?AccountType $type): Account
     {
-        return new Account($accountId, new Email('account@example.com'), $type, new AccountName('Account'), AccountStatus::ACTIVE, AccountCategory::GENERAL, DeletionReadinessChecklist::ready(), new AccountDocuments([]));
+        return new Account($accountId, new Email('account@example.com'), $type, new AccountName('Account'), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, AccountCategory::GENERAL, DeletionReadinessChecklist::ready(), new AccountDocuments([]));
     }
 
     private function principal(AccountIdentifier $accountId): Principal

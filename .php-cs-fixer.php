@@ -5,6 +5,8 @@ $finder = PhpCsFixer\Finder::create()
         __DIR__ . '/src',
         __DIR__ . '/application',
         __DIR__ . '/tests',
+        __DIR__ . '/phpstan/Rules',
+        __DIR__ . '/routes',
     ])
     ->exclude('vendor');
 
@@ -16,6 +18,8 @@ return $config
         'array_syntax' => ['syntax' => 'short'],
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'no_unused_imports' => true,
+        'fully_qualified_strict_types' => ['import_symbols' => true],
+        'global_namespace_import' => ['import_classes' => true],
         'not_operator_with_successor_space' => true,
         'trailing_comma_in_multiline' => true,
         'phpdoc_scalar' => true,

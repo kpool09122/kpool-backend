@@ -13,8 +13,10 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -48,7 +50,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
 
         $query = WikiModel::query()
             ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
-            ->joinSub($inconsistentSets, 'version_inconsistent_sets', function ($join): void {
+            ->joinSub($inconsistentSets, 'version_inconsistent_sets', function (JoinClause $join): void {
                 $join->on('version_inconsistent_sets.translation_set_identifier', '=', 'wikis.translation_set_identifier')
                     ->on('version_inconsistent_sets.latest_version', '=', 'wikis.version');
             })
@@ -65,7 +67,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
         $output->output(
             array_map(
                 fn (WikiModel $wiki): WikiListItemReadModel => $this->toReadModel($wiki),
-                $paginator->items(),
+                array_values($paginator->items()),
             ),
             $paginator->currentPage(),
             $paginator->lastPage(),
@@ -101,6 +103,9 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
      */
     private function applySort(Builder $query, string $sort, string $order): void
     {
+        if ($order !== 'asc' && $order !== 'desc') {
+            throw new InvalidArgumentException('Invalid sort order.');
+        }
         if ($sort === 'name') {
             $query->orderBy(DB::raw($this->nameSortExpression()), $order)
                 ->orderBy('wikis.updated_at', 'desc');
@@ -111,6 +116,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
         $query->orderBy('wikis.updated_at', $order);
     }
 
+    /** @return literal-string */
     private function nameSortExpression(): string
     {
         return 'COALESCE(wiki_talent_basics.name, wiki_group_basics.name, wiki_agency_basics.name, wiki_song_basics.name)';
@@ -133,11 +139,11 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
             isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
-            name: (string) $basic->getAttribute('name'),
-            normalizedName: (string) $basic->getAttribute('normalized_name'),
+            name: (TypedValue::nullableString($basic->getAttribute('name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($basic->getAttribute('normalized_name')) ?? ''),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
             isOfficial: $wiki->owner_account_id !== null,
@@ -174,7 +180,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 
     private function nullableBool(mixed $value): ?bool

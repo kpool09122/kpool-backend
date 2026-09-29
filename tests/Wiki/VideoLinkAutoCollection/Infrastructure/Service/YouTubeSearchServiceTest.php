@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Service;
 
 use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsResponse;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -38,9 +40,9 @@ class YouTubeSearchServiceTest extends TestCase
             ->once()
             ->andReturn(false);
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $this->assertEmpty($result);
@@ -61,9 +63,9 @@ class YouTubeSearchServiceTest extends TestCase
             videoDetails: [],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $this->assertEmpty($result);
@@ -91,9 +93,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $this->assertNotEmpty($result);
@@ -122,9 +124,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
@@ -150,9 +152,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
@@ -180,9 +182,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoUsages = array_map(static fn ($video) => $video->videoUsage(), $result);
@@ -216,9 +218,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
@@ -245,9 +247,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
@@ -273,9 +275,9 @@ class YouTubeSearchServiceTest extends TestCase
             ],
         );
 
-        $this->app->instance(YouTubeClient::class, $client);
+        $this->app()->instance(YouTubeClient::class, $client);
 
-        $service = $this->app->make(YouTubeSearchServiceInterface::class);
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
         $result = $service->searchVideos('test keyword');
 
         $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
@@ -304,15 +306,15 @@ class YouTubeSearchServiceTest extends TestCase
             ->andReturn(true);
 
         $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
+            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
             ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($viewCountVideoIds)));
 
         $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
+            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
             ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($relevanceVideoIds)));
 
         $client->shouldReceive('searchRecentVideoIds')
-            ->withArgs(fn ($request) => $request->keyword() === 'test keyword')
+            ->withArgs(fn (SearchRecentVideoIdsRequest $request) => $request->keyword() === 'test keyword')
             ->andReturn(new SearchRecentVideoIdsResponse($this->createSearchResponse($recentVideoIds)));
 
         $client->shouldReceive('getVideoDetails')

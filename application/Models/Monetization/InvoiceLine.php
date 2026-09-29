@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int $id
@@ -14,21 +18,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $currency
  * @property int $unit_price
  * @property int $quantity
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $created_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'invoice_id',
     'description',
     'currency',
     'unit_price',
     'quantity',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invoice_lines')]
+#[Table(name: 'invoice_lines')]
 class InvoiceLine extends Model
 {
     public const UPDATED_AT = null;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

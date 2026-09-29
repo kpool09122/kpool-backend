@@ -30,8 +30,8 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $this->assertInstanceOf(RemovePrincipalFromPrincipalGroup::class, $useCase);
     }
 
@@ -57,16 +57,16 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroup $arg) => ! $arg->hasMember($principalIdentifier)))
             ->andReturnNull();
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
         $output = new RemovePrincipalFromPrincipalGroupOutput();
 
@@ -88,13 +88,13 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -124,13 +124,13 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $principalGroupIdentifier))
+            ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
             ->andReturn($principalGroup);
         $repository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
+        $useCase = $this->app()->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
         $this->expectException(PrincipalNotMemberException::class);

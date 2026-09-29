@@ -28,7 +28,7 @@ class ListPrincipalGroupsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app->make(ListPrincipalGroupsInterface::class));
+        $this->assertInstanceOf(ListPrincipalGroups::class, $this->app()->make(ListPrincipalGroupsInterface::class));
     }
 
     #[Group('useDb')]
@@ -59,7 +59,7 @@ class ListPrincipalGroupsTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, ['identityName' => 'alice', 'email' => 'alice@example.com']);
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
         CreatePrincipalGroupMembership::create((string) $firstGroupIdentifier, (string) $principalIdentifier);
 
         $groups = (new ListPrincipalGroups())->process(new ListPrincipalGroupsInput($accountIdentifier));

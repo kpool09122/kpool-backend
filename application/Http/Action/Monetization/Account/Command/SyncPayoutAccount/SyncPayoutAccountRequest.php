@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Account\Command\SyncPayoutAccount;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SyncPayoutAccountRequest extends FormRequest
@@ -31,52 +32,52 @@ class SyncPayoutAccountRequest extends FormRequest
 
     public function connectedAccountId(): string
     {
-        return (string) $this->input('connectedAccountId');
+        return RequestValue::string($this->input('connectedAccountId'));
     }
 
     public function externalAccountId(): string
     {
-        return (string) $this->input('externalAccountId');
+        return RequestValue::string($this->input('externalAccountId'));
     }
 
     public function eventType(): string
     {
-        return (string) $this->input('eventType');
+        return RequestValue::string($this->input('eventType'));
     }
 
     public function bankName(): ?string
     {
         $value = $this->input('bankName');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function last4(): ?string
     {
         $value = $this->input('last4');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function country(): ?string
     {
         $value = $this->input('country');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function currency(): ?string
     {
         $value = $this->input('currency');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function accountHolderType(): ?string
     {
         $value = $this->input('accountHolderType');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function isDefault(): bool

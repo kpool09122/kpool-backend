@@ -29,7 +29,7 @@ class ImageServiceTest extends TestCase
      */
     public function testCanResolveFromContainer(): void
     {
-        $service = $this->app->make(ImageServiceInterface::class);
+        $service = $this->app()->make(ImageServiceInterface::class);
 
         $this->assertInstanceOf(ImageService::class, $service);
     }
@@ -45,7 +45,7 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 1x1の透明なPNG画像
         $base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -66,7 +66,7 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 1x1の透明なPNG画像
         $base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -89,7 +89,7 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 1x1の透明なPNG画像
         $base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -111,7 +111,7 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         $this->expectException(InvalidBase64ImageException::class);
 
@@ -128,7 +128,7 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // "Hello World"をbase64エンコードしたもの（画像ではない）
         $base64Text = base64_encode('Hello World');
@@ -149,11 +149,12 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 2000x1500の画像を生成
         $largeImage = imagecreatetruecolor(2000, 1500);
         $red = imagecolorallocate($largeImage, 255, 0, 0);
+        self::assertNotFalse($red);
         imagefill($largeImage, 0, 0, $red);
 
         ob_start();
@@ -165,7 +166,9 @@ class ImageServiceTest extends TestCase
         $result = $imageService->upload($base64Image);
 
         $resizedData = Storage::disk('s3')->get((string)$result);
+        self::assertIsString($resizedData);
         $resizedImage = imagecreatefromstring($resizedData);
+        self::assertNotFalse($resizedImage);
 
         $resizedWidth = imagesx($resizedImage);
         $resizedHeight = imagesy($resizedImage);
@@ -188,11 +191,12 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 1500x2000の縦長画像を生成（高さ > 幅）
         $tallImage = imagecreatetruecolor(1500, 2000);
         $green = imagecolorallocate($tallImage, 0, 255, 0);
+        self::assertNotFalse($green);
         imagefill($tallImage, 0, 0, $green);
 
         ob_start();
@@ -204,7 +208,9 @@ class ImageServiceTest extends TestCase
         $result = $imageService->upload($base64Image);
 
         $resizedData = Storage::disk('s3')->get((string)$result);
+        self::assertIsString($resizedData);
         $resizedImage = imagecreatefromstring($resizedData);
+        self::assertNotFalse($resizedImage);
 
         $resizedWidth = imagesx($resizedImage);
         $resizedHeight = imagesy($resizedImage);
@@ -229,11 +235,12 @@ class ImageServiceTest extends TestCase
     {
         Storage::fake('s3');
 
-        $imageService = $this->app->make(ImageServiceInterface::class);
+        $imageService = $this->app()->make(ImageServiceInterface::class);
 
         // 500x300の画像を生成
         $smallImage = imagecreatetruecolor(500, 300);
         $blue = imagecolorallocate($smallImage, 0, 0, 255);
+        self::assertNotFalse($blue);
         imagefill($smallImage, 0, 0, $blue);
 
         ob_start();
@@ -245,7 +252,9 @@ class ImageServiceTest extends TestCase
         $result = $imageService->upload($base64Image);
 
         $resizedData = Storage::disk('s3')->get((string)$result);
+        self::assertIsString($resizedData);
         $resizedImage = imagecreatefromstring($resizedData);
+        self::assertNotFalse($resizedImage);
 
         $resizedWidth = imagesx($resizedImage);
         $resizedHeight = imagesy($resizedImage);

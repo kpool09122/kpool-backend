@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RequestCertificationRequest extends FormRequest
@@ -24,11 +25,11 @@ class RequestCertificationRequest extends FormRequest
 
     public function resourceType(): string
     {
-        return (string) $this->input('resourceType');
+        return RequestValue::string($this->input('resourceType'));
     }
 
     public function translationSetIdentifier(): string
     {
-        return (string) $this->input('translationSetIdentifier');
+        return RequestValue::string($this->input('translationSetIdentifier'));
     }
 }
