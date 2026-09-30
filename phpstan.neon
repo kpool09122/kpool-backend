@@ -2,6 +2,7 @@ includes:
     - ./vendor/larastan/larastan/extension.neon
 parameters:
     level: 10
+    checkMissingTranslations: true
     paths:
         - src
         - application/Http/Action
