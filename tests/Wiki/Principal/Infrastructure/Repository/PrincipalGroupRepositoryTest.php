@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -816,5 +818,81 @@ class PrincipalGroupRepositoryTest extends TestCase
         $result = $repository->findByRole(new RoleIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([], $result);
+    }
+
+    #[Group('useDb')]
+    public function testSaveForgetsWikiAuthorizationCacheForAffectedMembers(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId), ['email' => 'cache-save@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId),
+            new IdentityIdentifier($identityId),
+            new AccountIdentifier($accountId),
+        );
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Operations Wiki Administrators',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addMember(new PrincipalIdentifier($principalId));
+
+        $authContextCache = Mockery::mock(AuthContextCache::class);
+        $authContextCache->shouldReceive('forgetWiki')->once()->with(Mockery::on(
+            static fn (IdentityIdentifier $identifier): bool => (string) $identifier === $identityId,
+        ));
+        $this->app()->instance(AuthContextCache::class, $authContextCache);
+
+        $this->app()->make(PrincipalGroupRepositoryInterface::class)->save($principalGroup);
+    }
+
+    #[Group('useDb')]
+    public function testDeleteRemovesMembershipAndRoleAttachmentsAndForgetsWikiCache(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
+        $principalGroupId = StrTestHelper::generateUuid();
+        $roleId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId), ['email' => 'cache-delete@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId),
+            new IdentityIdentifier($identityId),
+            new AccountIdentifier($accountId),
+        );
+        CreateRole::create(new RoleIdentifier($roleId), ['name' => 'ADMINISTRATOR']);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            ['name' => 'Operations Wiki Administrators'],
+        );
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId);
+        DB::table('wiki_principal_group_role_attachments')->insert([
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId,
+        ]);
+        $principalGroup = $this->app()->make(PrincipalGroupRepositoryInterface::class)
+            ->findById(new PrincipalGroupIdentifier($principalGroupId));
+        $this->assertNotNull($principalGroup);
+
+        $authContextCache = Mockery::mock(AuthContextCache::class);
+        $authContextCache->shouldReceive('forgetWiki')->once()->with(Mockery::on(
+            static fn (IdentityIdentifier $identifier): bool => (string) $identifier === $identityId,
+        ));
+        $this->app()->instance(AuthContextCache::class, $authContextCache);
+
+        $this->app()->make(PrincipalGroupRepositoryInterface::class)->delete($principalGroup);
+
+        $this->assertDatabaseMissing('wiki_principal_groups', ['id' => $principalGroupId]);
+        $this->assertDatabaseMissing('wiki_principal_group_memberships', ['principal_group_id' => $principalGroupId]);
+        $this->assertDatabaseMissing('wiki_principal_group_role_attachments', ['principal_group_id' => $principalGroupId]);
+        $this->assertDatabaseHas('wiki_principals', ['id' => $principalId]);
+        $this->assertDatabaseHas('wiki_roles', ['id' => $roleId]);
     }
 }

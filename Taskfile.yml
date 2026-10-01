@@ -153,6 +153,28 @@ tasks:
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan operations:revoke "$OPERATIONS_EMAIL"'
 
+  wiki:administrator:grant:
+    desc: "Grant Wiki Administrator permissions. Usage: task wiki:administrator:grant email=admin@example.com"
+    requires:
+      vars: [email]
+    env:
+      WIKI_ADMINISTRATOR_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan wiki:administrator:grant "$WIKI_ADMINISTRATOR_EMAIL"'
+
+  wiki:administrator:revoke:
+    desc: "Revoke Wiki Administrator permissions. Usage: task wiki:administrator:revoke email=admin@example.com"
+    requires:
+      vars: [email]
+    env:
+      WIKI_ADMINISTRATOR_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan wiki:administrator:revoke "$WIKI_ADMINISTRATOR_EMAIL"'
+
   migrate:
     desc: "Run database migrations on db. Usage: task migrate"
     cmds:
