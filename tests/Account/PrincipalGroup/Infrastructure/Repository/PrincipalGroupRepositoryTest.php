@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Account\PrincipalGroup\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -128,6 +130,15 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->createPrincipal($principalId2, $identityId2, $accountId);
         $principalGroup->addMember(new PrincipalIdentifier($principalId1));
         $principalGroup->addMember(new PrincipalIdentifier($principalId2));
+
+        $authContextCache = Mockery::mock(AuthContextCache::class);
+        $authContextCache->shouldReceive('forgetAccount')->once()->with(Mockery::on(
+            static fn (IdentityIdentifier $identifier): bool => (string) $identifier === $identityId1,
+        ));
+        $authContextCache->shouldReceive('forgetAccount')->once()->with(Mockery::on(
+            static fn (IdentityIdentifier $identifier): bool => (string) $identifier === $identityId2,
+        ));
+        $this->app()->instance(AuthContextCache::class, $authContextCache);
 
         $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -578,6 +589,12 @@ class PrincipalGroupRepositoryTest extends TestCase
         // 削除前に存在確認
         $this->assertNotNull($repository->findById(new PrincipalGroupIdentifier($principalGroupId)));
 
+        $authContextCache = Mockery::mock(AuthContextCache::class);
+        $authContextCache->shouldReceive('forgetAccount')->once()->with(Mockery::on(
+            static fn (IdentityIdentifier $identifier): bool => (string) $identifier === $identityId,
+        ));
+        $this->app()->instance(AuthContextCache::class, $authContextCache);
+
         // 削除
         $repository->delete($principalGroup);
 
@@ -585,6 +602,10 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->assertNull($repository->findById(new PrincipalGroupIdentifier($principalGroupId)));
         $this->assertDatabaseMissing('account_principal_groups', ['id' => $principalGroupId]);
         $this->assertDatabaseMissing('account_principal_group_memberships', ['principal_group_id' => $principalGroupId]);
+        $this->assertDatabaseMissing('account_principal_group_role_attachments', ['principal_group_id' => $principalGroupId]);
+        $this->assertDatabaseHas('account_principals', ['id' => $principalId]);
+        $this->assertDatabaseHas('accounts', ['id' => (string) $principalGroup->accountIdentifier()]);
+        $this->assertDatabaseHas('account_roles', ['id' => (string) $principalGroup->roles()[0]]);
     }
 
     /**

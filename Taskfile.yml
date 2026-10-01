@@ -131,6 +131,28 @@ tasks:
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan settlement:process-due-transfers {{if .date}}--date={{.date}}{{end}} {{if (index . "dry-run")}}--dry-run{{end}}'
 
+  operations:grant:
+    desc: "Grant Operations permissions. Usage: task operations:grant email=admin@example.com"
+    requires:
+      vars: [email]
+    env:
+      OPERATIONS_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan operations:grant "$OPERATIONS_EMAIL"'
+
+  operations:revoke:
+    desc: "Revoke Operations permissions. Usage: task operations:revoke email=admin@example.com"
+    requires:
+      vars: [email]
+    env:
+      OPERATIONS_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan operations:revoke "$OPERATIONS_EMAIL"'
+
   migrate:
     desc: "Run database migrations on db. Usage: task migrate"
     cmds:

@@ -13,10 +13,14 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperations;
+use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperationsInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
+use Source\Account\Account\Application\UseCase\Command\RevokeOperations\RevokeOperations;
+use Source\Account\Account\Application\UseCase\Command\RevokeOperations\RevokeOperationsInterface;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccount;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
@@ -73,6 +77,8 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
+        $this->app->singleton(GrantOperationsInterface::class, GrantOperations::class);
+        $this->app->singleton(RevokeOperationsInterface::class, RevokeOperations::class);
         $this->app->singleton(CompleteInitialSetupInterface::class, CompleteInitialSetup::class);
         $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);

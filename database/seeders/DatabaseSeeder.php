@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
             SystemRoleSeeder::class,
             AccountAuthorizationSeeder::class,
             TestAccountSeeder::class,
-            OperationsAccountSeeder::class,
             WikiEditorSampleSeeder::class,
         ]);
     }
