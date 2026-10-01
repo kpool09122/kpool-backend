@@ -55,6 +55,8 @@ use Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail\Verif
 use Source\Identity\Application\UseCase\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmailInterface;
 use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmail;
 use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentity;
+use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
@@ -66,6 +68,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(WithdrawIdentityInterface::class, WithdrawIdentity::class);
         $this->app->singleton(SendSocialLinkingEmailInterface::class, SendSocialLinkingEmail::class);
         $this->app->singleton(VerifySocialLinkingEmailInterface::class, VerifySocialLinkingEmail::class);
         $this->app->singleton(AddPasskeyInterface::class, AddPasskey::class);

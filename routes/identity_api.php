@@ -26,10 +26,17 @@ use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Command\VerifyPasskeyRecoveryEmail\VerifyPasskeyRecoveryEmailAction;
 use Application\Http\Action\Identity\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailAction;
+use Application\Http\Action\Identity\Command\WithdrawIdentity\WithdrawIdentityAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
+use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
+use Application\Http\Middleware\EncryptXsrfTokenCookie;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/auth/csrf-token', GetCsrfTokenAction::class)
+    ->middleware([EncryptXsrfTokenCookie::class, PreventRequestForgery::class]);
 
 // Public Auth
 Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
@@ -68,4 +75,5 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::post('/auth/logout', LogoutAction::class);
 
     Route::patch('/identities/me', UpdateIdentityAction::class);
+    Route::delete('/identities/me', WithdrawIdentityAction::class)->middleware([EncryptXsrfTokenCookie::class, PreventRequestForgery::class]);
 });

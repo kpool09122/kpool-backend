@@ -13,6 +13,7 @@ use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServic
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
 use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
 use Application\Providers\Monetization\DomainServiceProvider as MonetizationDomainServiceProvider;
+use Application\Providers\Monetization\EventServiceProvider as MonetizationEventServiceProvider;
 use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
 use Application\Providers\SharedServiceProvider;
 use Application\Providers\SiteManagement\DomainServiceProvider as SiteManagementDomainServiceProvider;
@@ -66,6 +67,7 @@ abstract class TestCase extends OrchestraTestCase
             AccountEventServiceProvider::class,
             MonetizationUseCaseServiceProvider::class,
             MonetizationDomainServiceProvider::class,
+            MonetizationEventServiceProvider::class,
             ClientServiceProvider::class,
         ];
     }

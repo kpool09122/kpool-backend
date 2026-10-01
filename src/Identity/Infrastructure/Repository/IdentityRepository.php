@@ -90,6 +90,11 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    public function delete(IdentityIdentifier $identifier): void
+    {
+        IdentityEloquent::query()->whereKey((string) $identifier)->delete();
+    }
+
     /**
      * @param IdentityIdentifier[] $identifiers
      * @return Identity[]

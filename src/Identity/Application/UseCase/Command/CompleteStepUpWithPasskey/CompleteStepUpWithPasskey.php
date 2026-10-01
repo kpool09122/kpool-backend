@@ -44,6 +44,6 @@ readonly class CompleteStepUpWithPasskey implements CompleteStepUpWithPasskeyInt
         $now = new DateTimeImmutable();
         $credential->recordAuthentication($verified->credentialSource, $verified->signCount, $verified->backupEligible, $verified->backupState, $now);
         $this->passkeyCredentialRepository->save($credential);
-        $this->stepUpAuthenticationStorageService->store(new StepUpAuthentication($input->identityIdentifier(), StepUpAuthenticationMethod::PASSKEY, $now, StepUpAuthenticationScope::PASSKEY_MANAGE, $now->modify('+'.self::AUTHORIZATION_TTL_SECONDS.' seconds')));
+        $this->stepUpAuthenticationStorageService->store(new StepUpAuthentication($input->identityIdentifier(), StepUpAuthenticationMethod::PASSKEY, $now, StepUpAuthenticationScope::RECENT_AUTHENTICATION, $now->modify('+'.self::AUTHORIZATION_TTL_SECONDS.' seconds')));
     }
 }

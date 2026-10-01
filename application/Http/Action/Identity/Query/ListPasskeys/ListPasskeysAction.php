@@ -36,7 +36,8 @@ readonly class ListPasskeysAction
             );
         } catch (StepUpAuthenticationRequiredException $e) {
             $exception = new UnauthorizedHttpException(
-                detail: 'Recent passkey management authentication is required.',
+                detail: error_message('recent_authentication_required', $this->actorContext->language->value),
+                extensions: ['code' => 'recent_authentication_required'],
                 previous: $e,
             );
             $this->logger->error((string) $exception);

@@ -27,13 +27,14 @@ readonly class StartStepUpWithSocialAction
     ) {
     }
 
-    public function __invoke(string $provider): JsonResponse
+    public function __invoke(StartStepUpWithSocialRequest $request, string $provider): JsonResponse
     {
         try {
             try {
                 $input = new StartStepUpWithSocialInput(
                     $this->actorContext->identityIdentifier,
                     SocialProvider::fromString($provider),
+                    $request->returnDestination(),
                 );
             } catch (InvalidArgumentException $exception) {
                 throw new UnprocessableEntityHttpException(detail: $exception->getMessage(), previous: $exception);

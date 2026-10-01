@@ -56,7 +56,7 @@ readonly class DeletePasskey implements DeletePasskeyInterface
 
         $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         );
         $this->passkeyCredentialRepository->delete($input->passkeyIdentifier());
     }

@@ -79,7 +79,9 @@ class DocumentStorageService implements DocumentStorageServiceInterface
         $logger = $this->logger;
         $delete = function () use ($path, $logger): void {
             try {
-                $this->delete($path);
+                if (! $this->delete($path)) {
+                    $logger->warning('Failed to delete document.');
+                }
             } catch (Throwable $e) {
                 $logger->warning('Failed to delete document.', [
                     'documentPath' => (string) $path,

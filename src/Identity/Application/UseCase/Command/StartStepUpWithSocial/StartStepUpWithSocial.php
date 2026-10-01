@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\StartStepUpWithSocial;
 
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpReturnDestinationServiceInterface;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
@@ -17,8 +18,6 @@ use Source\Identity\Domain\ValueObject\StepUpOAuthSession;
 
 readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
 {
-    private const string RETURN_TO = '/settings/passkeys?stepUp=complete';
-
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
@@ -26,6 +25,7 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         private OAuthStateGeneratorInterface $stateGenerator,
         private OAuthStateRepositoryInterface $oAuthStateRepository,
         private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
+        private StepUpReturnDestinationServiceInterface $stepUpReturnDestinationService,
     ) {
     }
 
@@ -41,7 +41,7 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         $generatedState = $this->stateGenerator->generate();
         $state = new OAuthState('step-up-' . $generatedState, $generatedState->expiresAt());
         $this->oAuthStateRepository->store($state);
-        $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession($input->identityIdentifier(), $input->provider(), StepUpAuthenticationScope::PASSKEY_MANAGE, $state->expiresAt(), self::RETURN_TO));
+        $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession($input->identityIdentifier(), $input->provider(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, $state->expiresAt(), $this->stepUpReturnDestinationService->resolve($input->returnDestination())));
         $output->setRedirectUrl($this->socialOAuthService->buildRedirectUrl($input->provider(), $state));
     }
 }

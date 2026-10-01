@@ -17,7 +17,7 @@ class StepUpOAuthSessionTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $provider = SocialProvider::KAKAO;
-        $scope = StepUpAuthenticationScope::PASSKEY_MANAGE;
+        $scope = StepUpAuthenticationScope::RECENT_AUTHENTICATION;
         $expiresAt = new DateTimeImmutable('2026-09-26T00:10:00+00:00');
         $returnTo = '/settings/passkeys?stepUp=complete';
 

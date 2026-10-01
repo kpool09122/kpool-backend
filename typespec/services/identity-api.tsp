@@ -522,6 +522,11 @@ model SocialCallbackRedirectResponse {
 @route("/auth")
 interface IdentityAuthOperations {
   @get
+  @route("/csrf-token")
+  @doc("Safely initialize browser CSRF protection without requiring login. Laravel issues XSRF-TOKEN and the session cookie using Set-Cookie; the empty response is not cacheable. Keep both cookies and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN when withdrawing. This endpoint changes no identity or account data.")
+  getCsrfToken(): KPool.Common.NoContentResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
   @route("/social/link")
   @doc("Read pending SSO linking confirmation using the originating Laravel session cookie. Returns 422 when absent, expired, consumed, or accessed from another session. No provider, identity, email, return path or pending key is accepted from the client.")
   getSocialLinking(): SocialLinkingResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
@@ -643,26 +648,27 @@ interface IdentityAuthOperations {
 
   @get
   @route("/passkeys")
-  @doc("List passkeys registered by the current authenticated identity after recent passkey management authentication.")
+  @doc("List passkeys registered by the current authenticated identity after recent authentication.")
   listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/step-up/passkey/options")
-  @doc("Create identity-bound WebAuthn options for passkey management step-up authentication.")
+  @doc("Create identity-bound WebAuthn options for common recent authentication.")
   createStepUpPasskeyOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/step-up/passkey")
-  @doc("Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.")
+  @doc("Verify an existing passkey and grant common recent authentication to the same identity and login session for ten minutes from verification. Passkey operations and identity withdrawal share this result without consuming it or extending its expiry.")
   completeStepUpWithPasskey(
     @body body: CompleteStepUpWithPasskeyRequestBody,
   ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/step-up/social/{provider}/redirect")
-  @doc("Create a linked-SSO reauthentication URL for initial passkey registration.")
+  @doc("Create a linked-SSO recent authentication URL when no passkey is registered. Persist the allowlisted return destination in the originating login session on the server. The result is reusable for ten minutes by the same identity and login session without consumption or extension.")
   startStepUpWithSocial(
     @path provider: string,
+    @query returnTo: "passkeys" | "withdrawal",
   ): RedirectUrlResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
@@ -679,7 +685,7 @@ interface IdentityAuthOperations {
 
   @patch
   @route("/passkeys/{passkeyIdentifier}")
-  @doc("Update a passkey belonging to the authenticated identity after recent passkey management authentication.")
+  @doc("Update a passkey belonging to the authenticated identity after recent authentication.")
   updatePasskey(
     @path passkeyIdentifier: Uuid,
     @body body: UpdatePasskeyRequestBody,
@@ -703,6 +709,11 @@ interface IdentityAuthOperations {
 
 @route("/identities")
 interface IdentityOperations {
+  @delete
+  @route("/me")
+  @doc("Permanently withdraw the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.")
+  withdrawIdentity(): KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @patch
   @route("/me")
   @doc("Update the current identity profile.")

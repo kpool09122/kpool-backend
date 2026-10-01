@@ -6,5 +6,5 @@ namespace Source\Identity\Domain\ValueObject;
 
 enum StepUpAuthenticationScope: string
 {
-    case PASSKEY_MANAGE = 'passkey.manage';
+    case RECENT_AUTHENTICATION = 'recent_authentication';
 }

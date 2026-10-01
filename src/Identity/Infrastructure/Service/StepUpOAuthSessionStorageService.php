@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Service;
 
 use DateTimeImmutable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
@@ -18,6 +19,10 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 class StepUpOAuthSessionStorageService implements StepUpOAuthSessionStorageServiceInterface
 {
     private const string KEY_PREFIX = 'step_up_oauth_session:';
+
+    public function __construct(private readonly Request $request)
+    {
+    }
 
     public function store(OAuthState $state, StepUpOAuthSession $session): void
     {
@@ -61,6 +66,10 @@ class StepUpOAuthSessionStorageService implements StepUpOAuthSessionStorageServi
 
     private function key(OAuthState $state): string
     {
-        return self::KEY_PREFIX . $state;
+        if (! $this->request->hasSession()) {
+            throw new InvalidOAuthStateException('An authenticated session is required.');
+        }
+
+        return self::KEY_PREFIX . $state . ':' . $this->request->session()->getId();
     }
 }

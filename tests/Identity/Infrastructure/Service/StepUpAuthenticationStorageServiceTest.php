@@ -36,45 +36,78 @@ class StepUpAuthenticationStorageServiceTest extends TestCase
 
     public function testItReusesAnIdentityScopeAndSessionBoundAuthorizationUntilItExpires(): void
     {
-        $this->setSessionId('session-a');
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
         $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
         $this->assertInstanceOf(StepUpAuthenticationStorageService::class, $storage);
         $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
-        $authentication = new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes'));
+        $authentication = new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes'));
         $storage->store($authentication);
-        $this->assertSame((string) $authentication->identityIdentifier, (string) $storage->requireValid($identity, StepUpAuthenticationScope::PASSKEY_MANAGE)->identityIdentifier);
-        $this->assertSame((string) $authentication->identityIdentifier, (string) $storage->requireValid($identity, StepUpAuthenticationScope::PASSKEY_MANAGE)->identityIdentifier);
+        $key = 'step_up_authentication:' . $identity . ':recent_authentication:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+        $stored = Redis::get($key);
+        $this->assertSame((string) $authentication->identityIdentifier, (string) $storage->requireValid($identity, StepUpAuthenticationScope::RECENT_AUTHENTICATION)->identityIdentifier);
+        $this->assertSame((string) $authentication->identityIdentifier, (string) $storage->requireValid($identity, StepUpAuthenticationScope::RECENT_AUTHENTICATION)->identityIdentifier);
+        $this->assertSame($stored, Redis::get($key));
+        $this->assertSame($authentication->expiresAt->getTimestamp(), $storage->requireValid($identity, StepUpAuthenticationScope::RECENT_AUTHENTICATION)->expiresAt->getTimestamp());
     }
 
     public function testItRejectsAuthorizationCreatedInAnotherLoginSession(): void
     {
-        $this->setSessionId('session-a');
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
         $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
         $identity = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
-        $storage->store(new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes')));
+        $storage->store(new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
 
-        $this->setSessionId('session-b');
+        $this->setSessionId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $storage->requireValid($identity, StepUpAuthenticationScope::PASSKEY_MANAGE);
+        $storage->requireValid($identity, StepUpAuthenticationScope::RECENT_AUTHENTICATION);
     }
 
     public function testItRejectsAnotherIdentity(): void
     {
-        $this->setSessionId('session-a');
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
         $storage = $this->app()->make(StepUpAuthenticationStorageServiceInterface::class);
-        $storage->store(new StepUpAuthentication(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'), StepUpAuthenticationMethod::SSO, new DateTimeImmutable(), StepUpAuthenticationScope::PASSKEY_MANAGE, new DateTimeImmutable('+10 minutes')));
+        $storage->store(new StepUpAuthentication(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'), StepUpAuthenticationMethod::SSO, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $storage->requireValid(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174002'), StepUpAuthenticationScope::PASSKEY_MANAGE);
+        $storage->requireValid(new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174002'), StepUpAuthenticationScope::RECENT_AUTHENTICATION);
     }
 
     public function testItRejectsExpiredAuthorization(): void
     {
         $identity = '123e4567-e89b-72d3-a456-426614174001';
-        $this->setSessionId('session-a');
-        Redis::set('step_up_authentication:'.$identity.':passkey.manage:session-a', json_encode(['identity_id' => $identity,'method' => 'passkey','verified_at' => (new DateTimeImmutable('-20 minutes'))->format(DATE_ATOM),'scope' => 'passkey.manage','expires_at' => (new DateTimeImmutable('-10 minutes'))->format(DATE_ATOM)], JSON_THROW_ON_ERROR));
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        Redis::set('step_up_authentication:'.$identity.':recent_authentication:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', json_encode(['identity_id' => $identity,'method' => 'passkey','verified_at' => (new DateTimeImmutable('-20 minutes'))->format(DATE_ATOM),'scope' => 'recent_authentication','expires_at' => (new DateTimeImmutable('-10 minutes'))->format(DATE_ATOM)], JSON_THROW_ON_ERROR));
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        $this->app()->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(new IdentityIdentifier($identity), StepUpAuthenticationScope::PASSKEY_MANAGE);
+        $this->app()->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(new IdentityIdentifier($identity), StepUpAuthenticationScope::RECENT_AUTHENTICATION);
+    }
+
+    public function testItRejectsMissingRecentAuthentication(): void
+    {
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        $this->expectException(StepUpAuthenticationRequiredException::class);
+        $this->app()->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(
+            new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'),
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
+        );
+    }
+
+    public function testItRejectsAtTheTenMinuteBoundaryEvenIfRedisStillContainsTheRecord(): void
+    {
+        $identity = '123e4567-e89b-72d3-a456-426614174001';
+        $this->setSessionId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        $now = new DateTimeImmutable();
+        Redis::set('step_up_authentication:' . $identity . ':recent_authentication:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', json_encode([
+            'identity_id' => $identity,
+            'method' => 'passkey',
+            'verified_at' => $now->modify('-10 minutes')->format(DATE_ATOM),
+            'scope' => 'recent_authentication',
+            'expires_at' => $now->format(DATE_ATOM),
+        ], JSON_THROW_ON_ERROR));
+        $this->expectException(StepUpAuthenticationRequiredException::class);
+        $this->app()->make(StepUpAuthenticationStorageServiceInterface::class)->requireValid(
+            new IdentityIdentifier($identity),
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
+        );
     }
 
     private function setSessionId(string $sessionId): void

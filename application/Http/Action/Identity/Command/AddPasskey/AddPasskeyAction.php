@@ -78,7 +78,8 @@ readonly class AddPasskeyAction
                 DB::rollBack();
 
                 throw new UnauthorizedHttpException(
-                    detail: 'Recent passkey management authentication is required.',
+                    detail: error_message('recent_authentication_required', $this->actorContext->language->value),
+                    extensions: ['code' => 'recent_authentication_required'],
                     previous: $exception,
                 );
             } catch (

@@ -142,6 +142,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         sort($actualPublicIdentityRouteUris);
 
         $expected = [
+            'api/identity/auth/csrf-token',
             'api/identity/auth/passkeys/registration',
             'api/identity/auth/passkeys/authentication',
             'api/identity/auth/passkeys/authentication/options',

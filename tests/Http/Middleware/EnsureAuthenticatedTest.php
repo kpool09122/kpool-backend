@@ -24,9 +24,13 @@ class EnsureAuthenticatedTest extends TestCase
         $authService = Mockery::mock(AuthServiceInterface::class);
         $middleware = new EnsureAuthenticated($authService);
 
-        $this->expectException(UnauthorizedHttpException::class);
-
-        $middleware->handle($request, fn () => response('ok'));
+        try {
+            $middleware->handle($request, fn () => response('ok'));
+            $this->fail('An unauthenticated request must be rejected.');
+        } catch (UnauthorizedHttpException $exception) {
+            $this->assertSame(401, $exception->getHttpStatus());
+            $this->assertSame('authentication_required', $exception->toProblemDetails()['code']);
+        }
     }
 
     public function testPassesWhenAuthenticated(): void

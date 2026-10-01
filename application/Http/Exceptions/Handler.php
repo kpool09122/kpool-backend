@@ -8,10 +8,12 @@ use Application\Http\Context\ActorContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 final readonly class Handler
@@ -42,6 +44,16 @@ final readonly class Handler
 
     private function render(Throwable $e, Request $request): Response
     {
+        if ($e instanceof TokenMismatchException
+            || ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 419 && $e->getPrevious() instanceof TokenMismatchException)) {
+            return response()->json([
+                'status' => 419,
+                'title' => 'Page Expired',
+                'detail' => error_message('csrf_token_mismatch', $this->resolveLanguage($request)),
+                'code' => 'csrf_token_mismatch',
+            ], 419);
+        }
+
         if ($request->expectsJson()) {
             return $this->renderJson($e, $request);
         }

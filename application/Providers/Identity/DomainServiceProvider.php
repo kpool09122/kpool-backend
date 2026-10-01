@@ -12,6 +12,7 @@ use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInt
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
+use Source\Identity\Application\Service\IdentityWithdrawalServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryNotificationServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSessionStorageServiceInterface;
@@ -21,6 +22,7 @@ use Source\Identity\Application\Service\SignupInvitationValidatorInterface;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
+use Source\Identity\Application\Service\StepUpReturnDestinationServiceInterface;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
@@ -50,6 +52,7 @@ use Source\Identity\Infrastructure\Service\AuthCodeSessionStorageService;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
+use Source\Identity\Infrastructure\Service\IdentityWithdrawalService;
 use Source\Identity\Infrastructure\Service\LogSecurityEventRecorder;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryEmailVerificationService;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryNotificationService;
@@ -60,6 +63,7 @@ use Source\Identity\Infrastructure\Service\SocialLinkingSessionStorageService;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
 use Source\Identity\Infrastructure\Service\StepUpAuthenticationStorageService;
 use Source\Identity\Infrastructure\Service\StepUpOAuthSessionStorageService;
+use Source\Identity\Infrastructure\Service\StepUpReturnDestinationService;
 use Source\Identity\Infrastructure\Service\WebAuthnChallengeGenerator;
 use Source\Identity\Infrastructure\Service\WebAuthnService;
 
@@ -67,6 +71,8 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(StepUpReturnDestinationServiceInterface::class, StepUpReturnDestinationService::class);
+        $this->app->bind(IdentityWithdrawalServiceInterface::class, IdentityWithdrawalService::class);
         $this->app->singleton(AuthCodeSessionStorageServiceInterface::class, AuthCodeSessionStorageService::class);
         $this->app->singleton(IdentityFactoryInterface::class, IdentityFactory::class);
         $this->app->singleton(PasskeyCredentialFactoryInterface::class, PasskeyCredentialFactory::class);

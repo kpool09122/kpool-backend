@@ -576,14 +576,14 @@ class SocialLoginCallbackTest extends TestCase
         $stepUp->shouldReceive('store')->once()->with(Mockery::on(
             static fn (StepUpAuthentication $authentication): bool => (string) $authentication->identityIdentifier === self::STEP_UP_IDENTITY_ID
                 && $authentication->method === StepUpAuthenticationMethod::SSO
-                && $authentication->expiresAt > $authentication->verifiedAt,
+                && $authentication->expiresAt->getTimestamp() - $authentication->verifiedAt->getTimestamp() === 600,
         ));
         $this->bindStepUpDependencies($identity, [], $stepUp);
         $output = new SocialLoginCallbackOutput();
 
         $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), $output);
 
-        $this->assertSame('/settings/passkeys?stepUp=complete', $output->redirectUrl());
+        $this->assertSame('/settings/withdrawal?stepUp=complete', $output->redirectUrl());
     }
 
     public function testStepUpRejectsAProfileLinkedToAnotherIdentity(): void
@@ -660,9 +660,9 @@ class SocialLoginCallbackTest extends TestCase
         ))->andReturn(new StepUpOAuthSession(
             new IdentityIdentifier(self::STEP_UP_IDENTITY_ID),
             SocialProvider::GOOGLE,
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
             new DateTimeImmutable('+10 minutes'),
-            '/settings/passkeys?stepUp=complete',
+            '/settings/withdrawal?stepUp=complete',
         ));
         $profile = new SocialProfile(SocialProvider::GOOGLE, 'provider-user', new Email('test@example.com'), 'Test User');
         $social ??= Mockery::mock(SocialOAuthServiceInterface::class);

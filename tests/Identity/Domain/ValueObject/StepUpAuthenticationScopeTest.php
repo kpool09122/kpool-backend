@@ -9,9 +9,9 @@ use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 
 class StepUpAuthenticationScopeTest extends TestCase
 {
-    public function testItDefinesPasskeyManagementStorageValue(): void
+    public function testItDefinesRecentAuthenticationStorageValue(): void
     {
-        $this->assertSame('passkey.manage', StepUpAuthenticationScope::PASSKEY_MANAGE->value);
-        $this->assertSame(StepUpAuthenticationScope::PASSKEY_MANAGE, StepUpAuthenticationScope::from('passkey.manage'));
+        $this->assertSame('recent_authentication', StepUpAuthenticationScope::RECENT_AUTHENTICATION->value);
+        $this->assertSame(StepUpAuthenticationScope::RECENT_AUTHENTICATION, StepUpAuthenticationScope::from('recent_authentication'));
     }
 }

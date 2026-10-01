@@ -65,12 +65,12 @@ class DeletePasskeyTest extends TestCase
         $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
         $stepUp->shouldReceive('requireValid')->once()->with(
             Mockery::on(static fn (IdentityIdentifier $id): bool => (string) $id === self::IDENTITY_ID),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         )->andReturn(new StepUpAuthentication(
             new IdentityIdentifier(self::IDENTITY_ID),
             StepUpAuthenticationMethod::PASSKEY,
             new DateTimeImmutable(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
             new DateTimeImmutable('+10 minutes'),
         ));
         $this->bindDependencies($passkeyCredentialRepository, $this->ownedPasskeyUserRepository(), $this->identityRepository($this->identity()), $stepUp);
@@ -290,7 +290,7 @@ class DeletePasskeyTest extends TestCase
                 new IdentityIdentifier(self::IDENTITY_ID),
                 StepUpAuthenticationMethod::PASSKEY,
                 new DateTimeImmutable(),
-                StepUpAuthenticationScope::PASSKEY_MANAGE,
+                StepUpAuthenticationScope::RECENT_AUTHENTICATION,
                 new DateTimeImmutable('+10 minutes'),
             ));
         }

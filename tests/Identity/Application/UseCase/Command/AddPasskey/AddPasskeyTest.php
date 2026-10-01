@@ -124,12 +124,12 @@ class AddPasskeyTest extends TestCase
         $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
         $stepUp->shouldReceive('requireValid')->once()->with(
             Mockery::on(static fn (IdentityIdentifier $id): bool => (string) $id === self::IDENTITY_ID),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         )->andReturn(new StepUpAuthentication(
             new IdentityIdentifier(self::IDENTITY_ID),
             StepUpAuthenticationMethod::PASSKEY,
             new DateTimeImmutable(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
             new DateTimeImmutable('+10 minutes'),
         ));
         $this->bindDependencies($storage, $passkeyUserRepository, $passkeyCredentialRepository, $factory, $webAuthn, $stepUp);
@@ -270,7 +270,7 @@ class AddPasskeyTest extends TestCase
                 new IdentityIdentifier(self::IDENTITY_ID),
                 StepUpAuthenticationMethod::PASSKEY,
                 new DateTimeImmutable(),
-                StepUpAuthenticationScope::PASSKEY_MANAGE,
+                StepUpAuthenticationScope::RECENT_AUTHENTICATION,
                 new DateTimeImmutable('+10 minutes'),
             ));
         }

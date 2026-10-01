@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\EventHandler\AccountCreatedHandler;
 use Source\Account\Account\Application\EventHandler\AccountCreationConflictedHandler;
 use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
+use Source\Account\Account\Application\EventHandler\IdentityWithdrawingHandler;
 use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Invitation\Application\EventHandler\IdentityCreatedViaInvitationHandler;
@@ -16,6 +17,7 @@ use Source\Account\Invitation\Application\EventHandler\InvitationCreatedHandler;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
+use Source\Identity\Domain\Event\IdentityWithdrawing;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,8 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
+
+        $events->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
 
         $events->listen(
             AccountCreationConflicted::class,

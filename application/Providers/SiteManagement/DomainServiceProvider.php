@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Providers\SiteManagement;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Infrastructure\Service\Encryption\EncryptionService;
@@ -24,15 +26,20 @@ use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ReplyContac
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ReplyContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
+use Source\SiteManagement\User\Application\EventHandler\IdentityWithdrawingHandler;
+use Source\SiteManagement\User\Application\Service\IdentityWithdrawalServiceInterface;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Source\SiteManagement\User\Infrastructure\Factory\UserFactory;
 use Source\SiteManagement\User\Infrastructure\Repository\UserRepository;
+use Source\SiteManagement\User\Infrastructure\Service\IdentityWithdrawalService;
 
 class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(IdentityWithdrawalServiceInterface::class, IdentityWithdrawalService::class);
+        $this->app->make(Dispatcher::class)->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
         $this->app->singleton(AnnouncementFactoryInterface::class, AnnouncementFactory::class);
         $this->app->singleton(AnnouncementRepositoryInterface::class, AnnouncementRepository::class);
         $this->app->singleton(ContactFactoryInterface::class, ContactFactory::class);
