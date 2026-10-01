@@ -28,6 +28,12 @@ interface PrincipalGroupRepositoryInterface
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array;
 
     /**
+     * @param PrincipalIdentifier[] $principalIdentifiers
+     * @return PrincipalGroup[]
+     */
+    public function findByPrincipalIds(array $principalIdentifiers): array;
+
+    /**
      * @return array<PrincipalGroup>
      */
     public function findByAccountIdAndPrincipal(

@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncementOutput;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
@@ -139,7 +140,9 @@ class PublishAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
         $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
-        $announcements = $publishAnnouncement->process($input);
+        $output = new PublishAnnouncementOutput();
+        $publishAnnouncement->process($input, $output);
+        $announcements = $output->announcements();
         $this->assertSame((string) $dummy->jaAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
         $this->assertSame((string) $dummy->enAnnouncementIdentifier, (string) $announcements[2]->announcementIdentifier());
@@ -175,7 +178,7 @@ class PublishAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
         $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
-        $publishAnnouncement->process($input);
+        $publishAnnouncement->process($input, new PublishAnnouncementOutput());
     }
 
     /**
@@ -212,7 +215,9 @@ class PublishAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
         $publishAnnouncement = $this->app()->make(PublishAnnouncementInterface::class);
-        $publishAnnouncements = $publishAnnouncement->process($input);
+        $output = new PublishAnnouncementOutput();
+        $publishAnnouncement->process($input, $output);
+        $publishAnnouncements = $output->announcements();
         $this->assertEmpty($publishAnnouncements);
     }
 

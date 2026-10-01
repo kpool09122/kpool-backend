@@ -108,8 +108,8 @@ class UploadDocumentsTest extends TestCase
             ->once()
             ->with($accountId, DocumentType::REPRESENTATIVE_ID, AccountDocumentFileType::JPEG, 'representative')
             ->andReturn(new DocumentPath('accounts/documents/representative_id.jpg'));
-        $storage->shouldReceive('deleteAfterCommit')->once()->with($oldBusinessRegistrationPath);
-        $storage->shouldReceive('deleteAfterCommit')->once()->with($oldRepresentativeIdPath);
+        $storage->shouldReceive('delete')->once()->with($oldBusinessRegistrationPath);
+        $storage->shouldReceive('delete')->once()->with($oldRepresentativeIdPath);
 
         /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
@@ -156,8 +156,8 @@ class UploadDocumentsTest extends TestCase
             ->once()
             ->with($accountId, DocumentType::REPRESENTATIVE_ID, AccountDocumentFileType::JPEG, 'representative')
             ->andReturn($representativeIdPath);
-        $storage->shouldReceive('delete')->once()->with($businessRegistrationPath)->andReturnTrue();
-        $storage->shouldReceive('delete')->once()->with($representativeIdPath)->andReturnTrue();
+        $storage->shouldReceive('delete')->once()->with($businessRegistrationPath);
+        $storage->shouldReceive('delete')->once()->with($representativeIdPath);
 
         /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
         $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement;
 
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
@@ -20,11 +19,10 @@ readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
 
     /**
      * @param UpdateAnnouncementInputPort $input
-     * @return DraftAnnouncement
      * @throws AnnouncementNotFoundException
      * @throws UnauthorizedException
      */
-    public function process(UpdateAnnouncementInputPort $input): DraftAnnouncement
+    public function process(UpdateAnnouncementInputPort $input, UpdateAnnouncementOutputPort $output): void
     {
         $user = $this->userRepository->findById($input->userIdentifier());
         if (! $user?->isAdmin()) {
@@ -43,6 +41,6 @@ readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
         $announcement->setPublishedDate($input->publishedDate());
         $this->announcementRepository->saveDraft($announcement);
 
-        return $announcement;
+        $output->setDraftAnnouncement($announcement);
     }
 }

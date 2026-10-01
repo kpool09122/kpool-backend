@@ -805,6 +805,67 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->assertFalse($result->hasMember(new PrincipalIdentifier($principalId1)));
     }
 
+    #[Group('useDb')]
+    public function testFindByPrincipalIdsLoadsCompleteAggregatesInThreeQueries(): void
+    {
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+        $principalIdentifiers = [];
+        $expectedGroups = [];
+        foreach (range(1, 3) as $index) {
+            $principalGroup = $this->createTestPrincipalGroup(name: 'Group ' . $index);
+            foreach (range(1, 2) as $memberIndex) {
+                $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+                $memberIdentityIdentifier = $memberIndex === 1 ? $identityIdentifier : new IdentityIdentifier(StrTestHelper::generateUuid());
+                if ($memberIndex !== 1) {
+                    CreateIdentity::create($memberIdentityIdentifier, ['email' => (string) $memberIdentityIdentifier . '@example.com']);
+                }
+                $this->createPrincipal((string) $principalIdentifier, (string) $memberIdentityIdentifier, (string) $principalGroup->accountIdentifier());
+                $principalGroup->addMember($principalIdentifier);
+                if ($memberIndex === 1) {
+                    $principalIdentifiers[] = $principalIdentifier;
+                }
+            }
+            $repository->save($principalGroup);
+            $expectedGroups[(string) $principalGroup->principalGroupIdentifier()] = $principalGroup;
+        }
+        $repository->save($this->createTestPrincipalGroup(name: 'Unrelated group'));
+
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $groups = $repository->findByPrincipalIds([
+                ...$principalIdentifiers,
+                $principalIdentifiers[0],
+                new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            ]);
+
+            $this->assertCount(3, $groups);
+            foreach ($groups as $group) {
+                $expected = $expectedGroups[(string) $group->principalGroupIdentifier()];
+                $this->assertCount(2, $group->members());
+                foreach ($expected->members() as $member) {
+                    $this->assertTrue($group->hasMember($member));
+                }
+                $this->assertTrue($group->hasRole($expected->roles()[0]));
+            }
+            $this->assertCount(3, DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    }
+
+    #[Group('useDb')]
+    public function testFindByPrincipalIdsWithEmptyIdentifiers(): void
+    {
+        $repository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
+
+        $this->assertSame([], $repository->findByPrincipalIds([]));
+    }
+
     private function createPrincipal(string $principalId, string $identityId, string $accountId): void
     {
         DB::table('account_principals')->insert([

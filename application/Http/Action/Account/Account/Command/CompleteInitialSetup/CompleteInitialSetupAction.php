@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
+use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInput;
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInterface;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
@@ -30,7 +30,7 @@ readonly class CompleteInitialSetupAction
         private CompleteInitialSetupInterface $completeInitialSetup,
         private AccountResolver $accountResolver,
         private ActorContext $actorContext,
-        private AccountContextInvalidationServiceInterface $accountContextInvalidationService,
+        private AccountContextServiceInterface $accountContextService,
         private LoggerInterface $logger,
     ) {
     }
@@ -75,7 +75,7 @@ readonly class CompleteInitialSetupAction
                 throw $e;
             }
 
-            $this->accountContextInvalidationService->forgetByAccountIdentifier($input->accountIdentifier());
+            $this->accountContextService->forgetByAccountIdentifier($input->accountIdentifier());
         } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 

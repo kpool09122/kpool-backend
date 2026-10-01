@@ -23,11 +23,15 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListM
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUser;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUserInterface;
+use Source\SiteManagement\User\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
+use Source\SiteManagement\User\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
+
         $this->app->singleton(CreateAnnouncementInterface::class, CreateAnnouncement::class);
         $this->app->singleton(UpdateAnnouncementInterface::class, UpdateAnnouncement::class);
         $this->app->singleton(DeleteAnnouncementInterface::class, DeleteAnnouncement::class);

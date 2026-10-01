@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Source\Shared\Infrastructure\Service;
 
 use GdImage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
@@ -18,6 +20,10 @@ use UnexpectedValueException;
 class ImageService implements ImageServiceInterface
 {
     private const int MAX_RESIZED_DIMENSION = 1024;
+
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
 
     /**
      * @param string $base64EncodedImage
@@ -67,7 +73,29 @@ class ImageService implements ImageServiceInterface
 
     public function delete(ImagePath $path): bool
     {
-        return Storage::disk(config()->string('filesystems.image_disk', 'public'))->delete((string) $path);
+        if (DB::transactionLevel() > 0) {
+            DB::afterCommit(fn () => $this->deleteFile($path));
+
+            return true;
+        }
+
+        return $this->deleteFile($path);
+    }
+
+    private function deleteFile(ImagePath $path): bool
+    {
+        try {
+            $deleted = Storage::disk(config()->string('filesystems.image_disk', 'public'))->delete((string) $path);
+            if (! $deleted) {
+                $this->logger->warning('Failed to delete image.', ['imagePath' => (string) $path]);
+            }
+
+            return $deleted;
+        } catch (Throwable $exception) {
+            $this->logger->warning('Failed to delete image.', ['imagePath' => (string) $path, 'exception' => $exception]);
+
+            return false;
+        }
     }
 
     private function storeImage(GdImage $gdImage): ImagePath

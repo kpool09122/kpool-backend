@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyOutput;
@@ -65,10 +66,11 @@ readonly class CreatePolicyAction
                     $request->statements(),
                 );
 
+                $accountIdentifier = $request->accountIdentifier();
                 $input = new CreatePolicyInput(
                     $request->name(),
                     $statements,
-                    $request->accountIdentifier(),
+                    $accountIdentifier === null ? null : new AccountIdentifier($accountIdentifier),
                 );
                 $output = new CreatePolicyOutput();
             } catch (InvalidArgumentException|ValueError $e) {

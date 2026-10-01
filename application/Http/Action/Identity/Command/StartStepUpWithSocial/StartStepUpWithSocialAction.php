@@ -15,6 +15,7 @@ use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepU
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocialOutput;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Identity\Domain\ValueObject\StepUpReturnDestination;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -34,7 +35,7 @@ readonly class StartStepUpWithSocialAction
                 $input = new StartStepUpWithSocialInput(
                     $this->actorContext->identityIdentifier,
                     SocialProvider::fromString($provider),
-                    $request->returnDestination(),
+                    StepUpReturnDestination::from($request->returnDestination()),
                 );
             } catch (InvalidArgumentException $exception) {
                 throw new UnprocessableEntityHttpException(detail: $exception->getMessage(), previous: $exception);

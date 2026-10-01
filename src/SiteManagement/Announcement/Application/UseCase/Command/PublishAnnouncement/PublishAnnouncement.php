@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -20,10 +19,9 @@ readonly class PublishAnnouncement implements PublishAnnouncementInterface
     }
 
     /**
-     * @return Announcement[]
      * @throws UnauthorizedException
      */
-    public function process(PublishAnnouncementInputPort $input): array
+    public function process(PublishAnnouncementInputPort $input, PublishAnnouncementOutputPort $output): void
     {
         $user = $this->userRepository->findById($input->userIdentifier());
         if (! $user?->isAdmin()) {
@@ -48,6 +46,6 @@ readonly class PublishAnnouncement implements PublishAnnouncementInterface
             $this->announcementRepository->deleteDraft($announcement);
         }
 
-        return $publishedAnnouncements;
+        $output->setAnnouncements($publishedAnnouncements);
     }
 }

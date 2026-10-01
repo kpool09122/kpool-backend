@@ -7,7 +7,6 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\Transla
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
@@ -23,11 +22,10 @@ readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
 
     /**
      * @param TranslateAnnouncementInputPort $input
-     * @return DraftAnnouncement[]
      * @throws AnnouncementNotFoundException
      * @throws UnauthorizedException
      */
-    public function process(TranslateAnnouncementInputPort $input): array
+    public function process(TranslateAnnouncementInputPort $input, TranslateAnnouncementOutputPort $output): void
     {
         $user = $this->userRepository->findById($input->userIdentifier());
         if (! $user?->isAdmin()) {
@@ -42,14 +40,14 @@ readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
 
         $languages = Language::allExcept($announcement->translation());
 
-        $DraftAnnouncements = [];
+        $draftAnnouncements = [];
         foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
-            $DraftAnnouncement = $this->translationService->translateAnnouncement($announcement, $language);
-            $DraftAnnouncements[] = $DraftAnnouncement;
-            $this->announcementRepository->saveDraft($DraftAnnouncement);
+            $draftAnnouncement = $this->translationService->translateAnnouncement($announcement, $language);
+            $draftAnnouncements[] = $draftAnnouncement;
+            $this->announcementRepository->saveDraft($draftAnnouncement);
         }
 
-        return $DraftAnnouncements;
+        $output->setAnnouncements($draftAnnouncements);
     }
 }

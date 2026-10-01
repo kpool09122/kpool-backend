@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Infrastructure\Service;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -16,6 +18,10 @@ use Throwable;
 class CurrentAccountService implements CurrentAccountServiceInterface
 {
     private const string KEY_PREFIX = 'current-account:';
+
+    public function __construct(private LoggerInterface $logger)
+    {
+    }
 
     public function find(IdentityIdentifier $identityIdentifier): ?CurrentAccount
     {
@@ -56,7 +62,21 @@ class CurrentAccountService implements CurrentAccountServiceInterface
 
     public function forget(IdentityIdentifier $identityIdentifier): void
     {
-        Redis::del($this->key($identityIdentifier));
+        $key = $this->key($identityIdentifier);
+        $logger = $this->logger;
+        $forget = static function () use ($key, $logger): void {
+            try {
+                Redis::del($key);
+            } catch (Throwable $exception) {
+                $logger->warning('Failed to clear current account context.', ['exception' => $exception]);
+            }
+        };
+        if (DB::transactionLevel() > 0) {
+            DB::afterCommit($forget);
+
+            return;
+        }
+        $forget();
     }
 
     private function key(IdentityIdentifier $identityIdentifier): string

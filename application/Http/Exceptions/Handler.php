@@ -8,16 +8,18 @@ use Application\Http\Context\ActorContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
-use Illuminate\Session\TokenMismatchException;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 final readonly class Handler
 {
+    public function __construct(private LoggerInterface $logger)
+    {
+    }
+
     public function __invoke(Throwable $e, Request $request): Response
     {
         return $this->render($e, $request);
@@ -44,16 +46,6 @@ final readonly class Handler
 
     private function render(Throwable $e, Request $request): Response
     {
-        if ($e instanceof TokenMismatchException
-            || ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 419 && $e->getPrevious() instanceof TokenMismatchException)) {
-            return response()->json([
-                'status' => 419,
-                'title' => 'Page Expired',
-                'detail' => error_message('csrf_token_mismatch', $this->resolveLanguage($request)),
-                'code' => 'csrf_token_mismatch',
-            ], 419);
-        }
-
         if ($request->expectsJson()) {
             return $this->renderJson($e, $request);
         }
@@ -109,7 +101,7 @@ final readonly class Handler
         if ($statusCode >= Response::HTTP_INTERNAL_SERVER_ERROR) {
             request() instanceof Request
                 ? $this->logServerException($e, request())
-                : Log::error('Unhandled server exception.', [
+                : $this->logger->error('Unhandled server exception.', [
                     'exception' => $e,
                     'exception_class' => $e::class,
                     'message' => $e->getMessage(),
@@ -128,14 +120,14 @@ final readonly class Handler
 
     private function logServerException(Throwable $e, Request $request): void
     {
-        Log::error('Unhandled server exception.', [
+        $this->logger->error('Unhandled server exception.', [
             ...$this->logContext($e, $request),
         ]);
     }
 
     private function logHandledException(Throwable $e, Request $request): void
     {
-        Log::warning('Handled HTTP exception.', [
+        $this->logger->warning('Handled HTTP exception.', [
             ...$this->logContext($e, $request),
         ]);
     }

@@ -7,7 +7,7 @@ paths:
   /auth/csrf-token:
     get:
       operationId: IdentityAuthOperations_getCsrfToken
-      description: Safely initialize browser CSRF protection without requiring login. Laravel issues XSRF-TOKEN and the session cookie using Set-Cookie; the empty response is not cacheable. Keep both cookies and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN when withdrawing. This endpoint changes no identity or account data.
+      description: Safely initialize browser CSRF protection without requiring login. Laravel issues XSRF-TOKEN and the session cookie using Set-Cookie; the empty response is not cacheable. Keep both cookies and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN for session API mutations. This endpoint changes no identity or account data. Use these cookies and the X-XSRF-TOKEN header for all session API mutations, including login and signup.
       parameters: []
       responses:
         '204':
@@ -73,6 +73,12 @@ paths:
                 $ref: '#/components/schemas/EmptyJsonArray'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -167,6 +173,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -215,6 +227,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '500':
           description: Server error
           content:
@@ -235,6 +253,12 @@ paths:
                 $ref: '#/components/schemas/IdentitySummary'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -269,6 +293,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PasskeyAuthenticationOptionsResult'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '500':
           description: Server error
           content:
@@ -291,6 +321,12 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '409':
           description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -321,6 +357,12 @@ paths:
       responses:
         '204':
           description: Response with no content.
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -351,6 +393,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PasskeyRecoveryVerificationResult'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -383,6 +431,12 @@ paths:
                 $ref: '#/components/schemas/PasskeyRegistrationOptionsResult'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -458,6 +512,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -506,6 +566,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -549,6 +615,12 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -605,6 +677,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -625,6 +703,12 @@ paths:
       responses:
         '204':
           description: Response with no content.
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -679,6 +763,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendSocialLinkingEmailResult'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -703,6 +793,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RedirectUrlResult'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -823,6 +919,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -861,6 +963,12 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '409':
           description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:
@@ -933,6 +1041,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -953,8 +1067,8 @@ paths:
               $ref: '#/components/schemas/VerifyEmailRequestBody'
   /identities/me:
     delete:
-      operationId: IdentityOperations_withdrawIdentity
-      description: Permanently withdraw the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.
+      operationId: IdentityOperations_withdrawFromService
+      description: Permanently withdraw from the service and delete the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.
       parameters: []
       responses:
         '204':
@@ -1008,6 +1122,12 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
           content:
             application/json:
               schema:

@@ -16,8 +16,6 @@ use Source\Wiki\Principal\Application\EventHandler\AccountDeletingHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationActivatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationTerminatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\IdentityWithdrawingHandler;
-use Source\Wiki\Principal\Application\Service\IdentityWithdrawalServiceInterface;
-use Source\Wiki\Principal\Infrastructure\Service\IdentityWithdrawalService;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -25,7 +23,6 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
-        $this->app->bind(IdentityWithdrawalServiceInterface::class, IdentityWithdrawalService::class);
         $events->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
         $events->listen(AccountDeleting::class, [AccountDeletingHandler::class, 'handle']);
 

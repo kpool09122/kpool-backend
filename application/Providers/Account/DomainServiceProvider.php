@@ -5,26 +5,28 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
+use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
-use Source\Account\Account\Application\Service\IdentityWithdrawalServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Account\Domain\Factory\ArchivedAccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\ArchivedAccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountCategoryChangeRequestFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
+use Source\Account\Account\Infrastructure\Factory\ArchivedAccountFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
-use Source\Account\Account\Infrastructure\Service\AccountContextInvalidationService;
+use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
+use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
-use Source\Account\Account\Infrastructure\Service\IdentityWithdrawalService;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Infrastructure\Factory\AffiliationFactory;
@@ -65,7 +67,8 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(IdentityWithdrawalServiceInterface::class, IdentityWithdrawalService::class);
+        $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);
+        $this->app->singleton(ArchivedAccountRepositoryInterface::class, ArchivedAccountRepository::class);
         $this->app->singleton(AccountFactoryInterface::class, AccountFactory::class);
         $this->app->singleton(AccountRepositoryInterface::class, AccountRepository::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
@@ -80,7 +83,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DelegationPrincipalGroupServiceInterface::class, DelegationPrincipalGroupService::class);
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
-        $this->app->singleton(AccountContextInvalidationServiceInterface::class, AccountContextInvalidationService::class);
+        $this->app->singleton(AccountContextServiceInterface::class, AccountContextService::class);
         $this->app->bind(CurrentAccountServiceInterface::class, CurrentAccountService::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);

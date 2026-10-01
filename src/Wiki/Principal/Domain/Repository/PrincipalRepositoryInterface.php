@@ -12,6 +12,8 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface PrincipalRepositoryInterface
 {
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void;
+
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal;
 
     /**

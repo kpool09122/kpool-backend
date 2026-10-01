@@ -27,6 +27,8 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsInterface;
+use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
+use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountDocument\GetAccountDocumentInterface;
@@ -76,6 +78,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
         $this->app->singleton(GrantOperationsInterface::class, GrantOperations::class);
         $this->app->singleton(RevokeOperationsInterface::class, RevokeOperations::class);

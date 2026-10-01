@@ -10,6 +10,8 @@ use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 
 interface UserRepositoryInterface
 {
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void;
+
     public function findById(UserIdentifier $userIdentifier): ?User;
 
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?User;

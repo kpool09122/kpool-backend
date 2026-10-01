@@ -43,7 +43,12 @@ class DocumentStorageService implements DocumentStorageServiceInterface
 
         Storage::disk(self::DISK)->put($path, $contents);
 
-        return new DocumentPath($path);
+        $documentPath = new DocumentPath($path);
+        if (DB::transactionLevel() > 0) {
+            DB::afterRollBack(fn () => $this->deleteFile($documentPath));
+        }
+
+        return $documentPath;
     }
 
     public function getTemporaryUrl(DocumentPath $path, int $expirationMinutes = 30): string
@@ -69,34 +74,29 @@ class DocumentStorageService implements DocumentStorageServiceInterface
         return $contents !== false ? $contents : null;
     }
 
-    public function delete(DocumentPath $path): bool
+    public function delete(DocumentPath $path): void
     {
-        return Storage::disk(self::DISK)->delete((string) $path);
-    }
-
-    public function deleteAfterCommit(DocumentPath $path): void
-    {
-        $logger = $this->logger;
-        $delete = function () use ($path, $logger): void {
-            try {
-                if (! $this->delete($path)) {
-                    $logger->warning('Failed to delete document.');
-                }
-            } catch (Throwable $e) {
-                $logger->warning('Failed to delete document.', [
-                    'documentPath' => (string) $path,
-                    'exception' => $e,
-                ]);
-            }
-        };
-
         if (DB::transactionLevel() > 0) {
-            DB::afterCommit($delete);
+            DB::afterCommit(fn () => $this->deleteFile($path));
 
             return;
         }
 
-        $delete();
+        $this->deleteFile($path);
+    }
+
+    private function deleteFile(DocumentPath $path): void
+    {
+        try {
+            if (! Storage::disk(self::DISK)->delete((string) $path)) {
+                $this->logger->warning('Failed to delete document.', ['documentPath' => (string) $path]);
+            }
+        } catch (Throwable $exception) {
+            $this->logger->warning('Failed to delete document.', [
+                'documentPath' => (string) $path,
+                'exception' => $exception,
+            ]);
+        }
     }
 
     public function exists(DocumentPath $path): bool

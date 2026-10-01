@@ -7,18 +7,23 @@ namespace Tests\Http\Action\Identity;
 use Application\Http\Exceptions\Handler;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
+use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Application\Models\Identity\Identity;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Cookie\CookieValuePrefix;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Exceptions\Handler as LaravelHandler;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentityInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInputPort;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutputPort;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
@@ -33,7 +38,9 @@ class WithdrawalCsrfTest extends TestCase
     {
         $router->middlewareGroup('auth.api', [EnsureAuthenticated::class, EnsureAccountActive::class]);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
-        $router->middleware(StartApplicationSession::class)->prefix('api/identity')->group(dirname(__DIR__, 4) . '/routes/identity_api.php');
+        $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
+        $router->middleware('session')->prefix('api/identity')->group(dirname(__DIR__, 4) . '/routes/identity_api.php');
+        $router->middleware('session')->post('/api/csrf-probe', static fn () => response()->noContent());
     }
 
     protected function setUp(): void
@@ -43,7 +50,7 @@ class WithdrawalCsrfTest extends TestCase
         $this->app()->instance('env', 'local');
         $handler = $this->app()->make(ExceptionHandler::class);
         $this->assertInstanceOf(LaravelHandler::class, $handler);
-        $handler->renderable(new Handler());
+        $handler->renderable($this->app()->make(Handler::class));
         Request::enableHttpMethodParameterOverride();
     }
 
@@ -74,6 +81,12 @@ class WithdrawalCsrfTest extends TestCase
         $this->assertArrayHasKey(config()->string('session.cookie'), $cookies);
         $this->assertNotEmpty($cookies['XSRF-TOKEN']->getValue());
         $this->assertFalse($cookies['XSRF-TOKEN']->isHttpOnly());
+        $sessionCookie = $cookies[config()->string('session.cookie')];
+        $this->assertTrue($sessionCookie->isHttpOnly());
+        $encryptedSessionId = $sessionCookie->getValue();
+        $this->assertIsString($encryptedSessionId);
+        $this->assertNotSame(session()->getId(), $encryptedSessionId);
+        $this->assertSame(session()->getId(), CookieValuePrefix::remove(Crypt::decryptString($encryptedSessionId)));
     }
 
     #[DataProvider('requests')]
@@ -90,13 +103,13 @@ class WithdrawalCsrfTest extends TestCase
         $auth->shouldNotReceive('invalidateAllSessions');
         $auth->shouldNotReceive('logout');
         $this->app()->instance(AuthServiceInterface::class, $auth);
-        $withdraw = Mockery::mock(WithdrawIdentityInterface::class);
+        $withdraw = Mockery::mock(WithdrawFromServiceInterface::class);
         if ($allowed) {
-            $withdraw->shouldReceive('process')->once()->with(Mockery::on(static fn (IdentityIdentifier $actual): bool => (string) $actual === (string) $identityIdentifier));
+            $withdraw->shouldReceive('process')->once()->with(Mockery::on(static fn (WithdrawFromServiceInputPort $input): bool => (string) $input->identityIdentifier() === (string) $identityIdentifier), Mockery::type(WithdrawFromServiceOutputPort::class));
         } else {
             $withdraw->shouldNotReceive('process');
         }
-        $this->app()->instance(WithdrawIdentityInterface::class, $withdraw);
+        $this->app()->instance(WithdrawFromServiceInterface::class, $withdraw);
         $csrf = $this->get('/api/identity/auth/csrf-token');
         $csrf->assertNoContent();
         $cookies = [];
@@ -118,12 +131,42 @@ class WithdrawalCsrfTest extends TestCase
         }
     }
 
-    public function testProtectionIsAttachedOnlyToTheWithdrawalRoute(): void
+    public function testCommonMiddlewareRejectsForgedMutationAndAcceptsMatchingToken(): void
+    {
+        $csrf = $this->get('/api/identity/auth/csrf-token');
+        $cookies = [];
+        foreach ($csrf->headers->getCookies() as $cookie) {
+            $cookies[$cookie->getName()] = $cookie->getValue();
+        }
+        $headers = ['HTTP_ACCEPT' => 'application/json', 'HTTP_SEC_FETCH_SITE' => 'cross-site'];
+
+        $this->call('POST', '/api/csrf-probe', [], $cookies, [], $headers)
+            ->assertStatus(419)->assertJsonPath('code', 'csrf_token_mismatch');
+        $headers['HTTP_X_XSRF_TOKEN'] = $cookies['XSRF-TOKEN'];
+        $this->call('POST', '/api/csrf-probe', [], $cookies, [], $headers)->assertNoContent();
+    }
+
+    public function testMiddlewareReturnsLocalizedJsonWithoutExceptionHandlerOrJsonAcceptHeader(): void
+    {
+        $this->withoutExceptionHandling();
+
+        $this->call('POST', '/api/csrf-probe', [], [], [], [
+            'HTTP_ACCEPT_LANGUAGE' => 'ja',
+            'HTTP_SEC_FETCH_SITE' => 'cross-site',
+        ])->assertStatus(419)->assertExactJson([
+            'status' => 419,
+            'title' => 'Page Expired',
+            'detail' => error_message('csrf_token_mismatch', 'ja'),
+            'code' => 'csrf_token_mismatch',
+        ]);
+    }
+
+    public function testProtectionIsSharedWithOtherIdentityMutations(): void
     {
         $routes = $this->app()->make('router')->getRoutes();
         $withdraw = $routes->match(Request::create('/api/identity/identities/me', 'DELETE'));
         $update = $routes->match(Request::create('/api/identity/identities/me', 'PATCH'));
-        $this->assertContains(PreventRequestForgery::class, $withdraw->gatherMiddleware());
-        $this->assertNotContains(PreventRequestForgery::class, $update->gatherMiddleware());
+        $this->assertContains(PreventRequestForgery::class, $this->app()->make('router')->gatherRouteMiddleware($withdraw));
+        $this->assertContains(PreventRequestForgery::class, $this->app()->make('router')->gatherRouteMiddleware($update));
     }
 }

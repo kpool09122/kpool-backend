@@ -17,6 +17,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
+use Psr\Log\LoggerInterface;
 
 class ClientServiceProvider extends ServiceProvider
 {
@@ -67,20 +68,21 @@ class ClientServiceProvider extends ServiceProvider
 
             return new YouTubeClient(
                 uri: $httpFactory->createUri('https://www.googleapis.com'),
+                logger: $app->make(LoggerInterface::class),
                 apiKey: $apiKey,
                 client: $app->make(ClientInterface::class),
                 psrFactories: $app->make(PsrFactories::class),
             );
         });
 
-        $this->app->singleton(GoogleTranslateClient::class, function () {
+        $this->app->singleton(GoogleTranslateClient::class, function (Application $app) {
             /** @var string $projectId */
             $projectId = config('google.project_id', '');
 
             /** @var string $credentialsPath */
             $credentialsPath = config('google.credentials_path', '');
 
-            return new GoogleTranslateClient($projectId, $credentialsPath);
+            return new GoogleTranslateClient($projectId, $credentialsPath, $app->make(LoggerInterface::class));
         });
 
         $this->app->singleton(GeminiClient::class, function (Application $app) {

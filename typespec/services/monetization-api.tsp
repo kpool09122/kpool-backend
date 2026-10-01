@@ -438,7 +438,7 @@ interface MonetizationAccountOperations {
   @doc("Provision a monetization account for an existing account.")
   provisionMonetizationAccount(
     @body body: ProvisionMonetizationAccountRequestBody,
-  ): ProvisionMonetizationAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): ProvisionMonetizationAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{monetizationAccountId}/onboard-seller")
@@ -446,7 +446,7 @@ interface MonetizationAccountOperations {
   onboardSeller(
     @path monetizationAccountId: Uuid,
     @body body: OnboardSellerRequestBody,
-  ): OnboardSellerResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OnboardSellerResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{monetizationAccountId}/register-payment-method")
@@ -454,14 +454,14 @@ interface MonetizationAccountOperations {
   registerPaymentMethod(
     @path monetizationAccountId: Uuid,
     @body body: RegisterPaymentMethodRequestBody,
-  ): RegisterPaymentMethodResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): RegisterPaymentMethodResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/sync-payout-account")
   @doc("Synchronize payout account data from a gateway event payload.")
   syncPayoutAccount(
     @body body: SyncPayoutAccountRequestBody,
-  ): OkEmptyArrayResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkEmptyArrayResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }
 
 @route("/payments")
@@ -471,14 +471,14 @@ interface MonetizationPaymentOperations {
   @doc("Authorize a payment for an order.")
   authorizePayment(
     @body body: AuthorizePaymentRequestBody,
-  ): CreatedPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreatedPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{paymentId}/capture")
   @doc("Capture a previously authorized payment.")
   capturePayment(
     @path paymentId: Uuid,
-  ): OkPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{paymentId}/refund")
@@ -486,7 +486,7 @@ interface MonetizationPaymentOperations {
   refundPayment(
     @path paymentId: Uuid,
     @body body: RefundPaymentRequestBody,
-  ): OkPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPaymentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }
 
 @route("/invoices")
@@ -495,7 +495,7 @@ interface MonetizationBillingOperations {
   @doc("Create an invoice for an order.")
   createInvoice(
     @body body: CreateInvoiceRequestBody,
-  ): CreateInvoiceResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreateInvoiceResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{invoiceId}/record-payment")
@@ -503,7 +503,7 @@ interface MonetizationBillingOperations {
   recordPayment(
     @path invoiceId: Uuid,
     @body body: RecordPaymentRequestBody,
-  ): OkInvoiceResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkInvoiceResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }
 
 @route("/")
@@ -513,12 +513,12 @@ interface MonetizationSettlementOperations {
   @doc("Execute a pending transfer.")
   executeTransfer(
     @path transferId: Uuid,
-  ): OkEmptyArrayResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkEmptyArrayResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/settlements/settle-revenue")
   @doc("Create a settlement batch and transfer from paid amounts.")
   settleRevenue(
     @body body: SettleRevenueRequestBody,
-  ): SettleRevenueResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): SettleRevenueResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }

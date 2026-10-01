@@ -11,12 +11,12 @@ use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideo
 use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
-use Illuminate\Support\Facades\Log;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Log\LoggerInterface;
 
 class YouTubeClient
 {
@@ -25,6 +25,7 @@ class YouTubeClient
         private readonly string $apiKey,
         private readonly ClientInterface $client,
         private readonly PsrFactories $psrFactories,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -41,7 +42,7 @@ class YouTubeClient
         try {
             $response = $this->client->sendRequest($psrRequest);
         } catch (ClientExceptionInterface $e) {
-            Log::error('YouTube search API failed', [
+            $this->logger->error('YouTube search API failed', [
                 'message' => $e->getMessage(),
             ]);
 
@@ -49,7 +50,7 @@ class YouTubeClient
         }
 
         if ($response->getStatusCode() >= 400) {
-            Log::error('YouTube search API failed', [
+            $this->logger->error('YouTube search API failed', [
                 'status' => $response->getStatusCode(),
                 'body' => $response->getBody()->getContents(),
             ]);
@@ -68,7 +69,7 @@ class YouTubeClient
         try {
             $response = $this->client->sendRequest($psrRequest);
         } catch (ClientExceptionInterface $e) {
-            Log::error('YouTube recent search API failed', [
+            $this->logger->error('YouTube recent search API failed', [
                 'message' => $e->getMessage(),
             ]);
 
@@ -76,7 +77,7 @@ class YouTubeClient
         }
 
         if ($response->getStatusCode() >= 400) {
-            Log::error('YouTube recent search API failed', [
+            $this->logger->error('YouTube recent search API failed', [
                 'status' => $response->getStatusCode(),
                 'body' => $response->getBody()->getContents(),
             ]);
@@ -102,7 +103,7 @@ class YouTubeClient
             try {
                 $response = $this->client->sendRequest($psrRequest);
             } catch (ClientExceptionInterface $e) {
-                Log::error('YouTube videos API failed', [
+                $this->logger->error('YouTube videos API failed', [
                     'message' => $e->getMessage(),
                 ]);
 
@@ -110,7 +111,7 @@ class YouTubeClient
             }
 
             if ($response->getStatusCode() >= 400) {
-                Log::error('YouTube videos API failed', [
+                $this->logger->error('YouTube videos API failed', [
                     'status' => $response->getStatusCode(),
                     'body' => $response->getBody()->getContents(),
                 ]);

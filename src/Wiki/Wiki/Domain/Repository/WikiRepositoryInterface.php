@@ -15,6 +15,11 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface WikiRepositoryInterface
 {
+    /**
+     * @return Wiki[]
+     */
+    public function findByOwnerAccountIdentifier(AccountIdentifier $accountIdentifier): array;
+
     public function findById(WikiIdentifier $wikiIdentifier): ?Wiki;
 
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?Wiki;

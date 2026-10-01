@@ -137,3 +137,15 @@ services:
         class: Kpool\PHPStan\Rules\RequireImportedNameRule
         tags:
             - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\ForbiddenValueObjectInRequestRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\UseCaseContractRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\ForbiddenLogFacadeRule
+        tags:
+            - phpstan.rules.rule

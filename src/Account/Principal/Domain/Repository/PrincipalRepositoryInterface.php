@@ -36,4 +36,6 @@ interface PrincipalRepositoryInterface
     public function findByEmailAndAccountIdentifier(Email $email, AccountIdentifier $accountIdentifier): ?Principal;
 
     public function save(Principal $principal): void;
+
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void;
 }

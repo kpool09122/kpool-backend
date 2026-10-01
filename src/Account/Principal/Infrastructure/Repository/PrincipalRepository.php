@@ -136,6 +136,11 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         }
     }
 
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
+    {
+        PrincipalEloquent::query()->where('identity_id', (string) $identityIdentifier)->delete();
+    }
+
     private function toDomainEntity(PrincipalEloquent $eloquent): Principal
     {
         return new Principal(

@@ -25,5 +25,5 @@ interface InvitationOperations {
   @doc("Invite members for one or more email addresses.")
   inviteMember(
     @body body: InviteMemberRequestBody,
-  ): InviteMemberResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): InviteMemberResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }

@@ -78,7 +78,7 @@ interface PrincipalGroupOperations {
   @doc("Create an principal group.")
   createPrincipalGroup(
     @body body: CreatePrincipalGroupRequestBody,
-  ): CreatePrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreatePrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{principalGroupId}/add-member")
@@ -86,7 +86,7 @@ interface PrincipalGroupOperations {
   addPrincipalToPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
-  ): OkPrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/{principalGroupId}/remove-member")
@@ -94,19 +94,19 @@ interface PrincipalGroupOperations {
   removePrincipalFromPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
-  ): OkPrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPrincipalGroupResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @patch
   @route("/members")
   @doc("Update members for multiple principal groups.")
   updatePrincipalGroupMembers(
     @body body: UpdatePrincipalGroupMembersRequestBody,
-  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @delete
   @route("/{principalGroupId}")
   @doc("Delete an principal group.")
   deletePrincipalGroup(
     @path principalGroupId: Uuid,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }

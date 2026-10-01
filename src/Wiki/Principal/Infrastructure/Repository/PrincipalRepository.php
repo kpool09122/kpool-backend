@@ -16,6 +16,11 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
 {
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
+    {
+        PrincipalEloquent::query()->where('identity_id', (string) $identityIdentifier)->delete();
+    }
+
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()

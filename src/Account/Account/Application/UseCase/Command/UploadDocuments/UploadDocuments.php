@@ -92,7 +92,7 @@ readonly class UploadDocuments implements UploadDocumentsInterface
         }
 
         foreach ($oldPaths as $path) {
-            $this->documentStorageService->deleteAfterCommit($path);
+            $this->documentStorageService->delete($path);
         }
 
         $output->setDocuments($documents);

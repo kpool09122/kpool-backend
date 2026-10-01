@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Service;
 
-use Application\Http\Action\Identity\Command\WithdrawIdentity\WithdrawIdentityAction;
+use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use DateTimeImmutable;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
-use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentityInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\StepUpAuthentication;
@@ -51,17 +52,19 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $this->assertDatabaseHas('invoice_lines', ['invoice_id' => $other['invoices']]);
         $archive = DB::table('archived_identities')->where('identity_id', $subject['identities'])->first();
         $this->assertNotNull($archive);
-        $this->assertSame(['identity_id', 'language', 'identity_created_at', 'archived_at'], array_keys((array) $archive));
+        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at'], array_keys((array) $archive));
         $this->assertSame('ja', $archive->language);
         $this->assertNotNull($archive->identity_created_at);
         $accountArchive = DB::table('archived_accounts')->where('account_id', $subject['accounts'])->first();
+        $this->assertNotNull($accountArchive);
         $this->assertSame([
-            'account_id' => $subject['accounts'], 'account_category' => 'general', 'account_type' => 'individual', 'archived_at' => $archive->archived_at,
+            'id' => $accountArchive->id, 'account_id' => $subject['accounts'], 'account_category' => 'general', 'account_type' => 'individual', 'archived_at' => $archive->archived_at,
         ], (array) $accountArchive);
         foreach (['account' => 'account_principals', 'wiki' => 'wiki_principals'] as $type => $table) {
             $principalArchive = DB::table('archived_principals')->where('principal_type', $type)->where('principal_id', $subject[$table])->first();
+            $this->assertNotNull($principalArchive);
             $this->assertSame([
-                'identity_id' => $subject['identities'], 'principal_type' => $type, 'principal_id' => $subject[$table],
+                'id' => $principalArchive->id, 'identity_id' => $subject['identities'], 'principal_type' => $type, 'principal_id' => $subject[$table],
                 'account_id' => $subject['accounts'], 'archived_at' => $archive->archived_at,
             ], (array) $principalArchive);
         }
@@ -72,6 +75,10 @@ class ComposedIdentityWithdrawalTest extends TestCase
     public function testDownstreamFailureRollsBackEveryContextAndArchive(): void
     {
         $subject = $this->createSubject();
+        /** @var AuthContextCache&MockInterface $authContextCache */
+        $authContextCache = Mockery::mock(AuthContextCache::class);
+        $authContextCache->shouldNotReceive('forgetActor', 'forgetAccount', 'forgetWiki');
+        $this->app()->instance(AuthContextCache::class, $authContextCache);
         $observedDeletions = [];
         $failure = new RuntimeException('Downstream withdrawal failure');
         Event::listen(IdentityWithdrawing::class, function () use ($subject, &$observedDeletions, $failure): void {
@@ -122,7 +129,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         return $ids;
     }
 
-    private function action(string $identityId): WithdrawIdentityAction
+    private function action(string $identityId): WithdrawFromServiceAction
     {
         $identityIdentifier = new IdentityIdentifier($identityId);
         $authentication = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
@@ -134,6 +141,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $auth->shouldNotReceive('invalidateAllSessions');
         $auth->shouldNotReceive('logout');
 
-        return new WithdrawIdentityAction($this->app()->make(WithdrawIdentityInterface::class), new ActorContext($identityIdentifier, Language::JAPANESE), $auth, new NullLogger(), $this->app()->make(Request::class));
+        $this->app()->instance(AuthServiceInterface::class, $auth);
+
+        return new WithdrawFromServiceAction($this->app()->make(WithdrawFromServiceInterface::class), new ActorContext($identityIdentifier, Language::JAPANESE), new NullLogger(), $this->app()->make(Request::class));
     }
 }

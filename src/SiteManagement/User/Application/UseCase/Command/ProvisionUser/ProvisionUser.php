@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser;
 
-use Source\SiteManagement\User\Domain\Entity\User;
 use Source\SiteManagement\User\Domain\Exception\AlreadyUserExistsException;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
-readonly class ProvisionUser
+readonly class ProvisionUser implements ProvisionUserInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -19,10 +18,9 @@ readonly class ProvisionUser
 
     /**
      * @param ProvisionUserInputPort $inputPort
-     * @return User
      * @throws AlreadyUserExistsException
      */
-    public function process(ProvisionUserInputPort $inputPort): User
+    public function process(ProvisionUserInputPort $inputPort, ProvisionUserOutputPort $output): void
     {
         $existingUser = $this->userRepository->findByIdentityIdentifier($inputPort->identityIdentifier());
 
@@ -33,6 +31,6 @@ readonly class ProvisionUser
         $user = $this->userFactory->create($inputPort->identityIdentifier());
         $this->userRepository->save($user);
 
-        return $user;
+        $output->setUser($user);
     }
 }

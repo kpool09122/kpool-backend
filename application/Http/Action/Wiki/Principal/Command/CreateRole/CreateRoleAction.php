@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleOutput;
@@ -37,10 +38,11 @@ readonly class CreateRoleAction
                     $request->policies() ?? [],
                 );
 
+                $accountIdentifier = $request->accountIdentifier();
                 $input = new CreateRoleInput(
                     $request->name(),
                     $policies,
-                    $request->accountIdentifier(),
+                    $accountIdentifier === null ? null : new AccountIdentifier($accountIdentifier),
                 );
                 $output = new CreateRoleOutput();
             } catch (InvalidArgumentException $e) {

@@ -35,6 +35,16 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class WikiRepository implements WikiRepositoryInterface
 {
+    public function findByOwnerAccountIdentifier(AccountIdentifier $accountIdentifier): array
+    {
+        $models = WikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('owner_account_id', (string) $accountIdentifier)
+            ->get();
+
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
+    }
+
     public function findById(WikiIdentifier $wikiIdentifier): ?Wiki
     {
         $model = WikiModel::query()

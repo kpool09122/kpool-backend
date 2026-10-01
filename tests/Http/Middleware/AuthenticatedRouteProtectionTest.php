@@ -7,12 +7,14 @@ namespace Tests\Http\Middleware;
 use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
+use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Http\Middleware\ResolveWikiContext;
+use Application\Http\Middleware\StartApplicationSession;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route as RouteFacade;
 use Mockery;
@@ -34,7 +36,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
-        $router->aliasMiddleware('session', StartSession::class);
+        $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
 
         $routePath = static fn (string $file): string => __DIR__ . '/../../../routes/' . $file;
 
@@ -58,6 +60,18 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->group($routePath('siteManagiment_public_api.php'));
         RouteFacade::prefix('webhook')
             ->group($routePath('webhook.php'));
+    }
+
+    public function testSessionApisShareCsrfProtection(): void
+    {
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/')) {
+                continue;
+            }
+
+            $this->assertContains(PreventRequestForgery::class, $this->app()->make('router')->gatherRouteMiddleware($route), $route->uri());
+            $this->assertContains(EncryptCookies::class, $this->app()->make('router')->gatherRouteMiddleware($route), $route->uri());
+        }
     }
 
     public function testAuthApiMiddlewareGroupIncludesAccountStatusGate(): void

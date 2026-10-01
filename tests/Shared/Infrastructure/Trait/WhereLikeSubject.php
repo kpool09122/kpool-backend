@@ -8,5 +8,8 @@ use Source\Shared\Infrastructure\Trait\WhereLike;
 
 final class WhereLikeSubject
 {
-    use WhereLike;
+    use WhereLike {
+        whereLike as public;
+        whereStartsWith as public;
+    }
 }

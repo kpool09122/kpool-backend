@@ -12,17 +12,25 @@ use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Identity\Application\Service\IdentityWithdrawalServiceInterface;
+use Source\Identity\Application\Service\ActorContextServiceInterface;
+use Source\Identity\Application\Service\IdentityWithdrawalSessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
-use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentity;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutput;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInput;
 use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
+use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
+use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
+use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\StepUpAuthentication;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Infrastructure\Query\ListPasskeys;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Tests\Helper\CreateIdentity;
 use Tests\TestCase;
 
 #[Group('useDb')]
@@ -56,17 +64,20 @@ class SharedRecentAuthenticationTest extends TestCase
         $storage->store(new StepUpAuthentication($identityIdentifier, $method, $verifiedAt, StepUpAuthenticationScope::RECENT_AUTHENTICATION, $expiresAt));
         $key = 'step_up_authentication:' . $identityIdentifier . ':recent_authentication:cccccccccccccccccccccccccccccccccccccccc';
         $original = Redis::get($key);
-        /** @var IdentityWithdrawalServiceInterface&MockInterface $identityWithdrawalService */
-        $identityWithdrawalService = Mockery::mock(IdentityWithdrawalServiceInterface::class);
-        $identityWithdrawalService->shouldReceive('archive')->once()->with($identityIdentifier, Mockery::type(DateTimeImmutable::class));
-        $identityWithdrawalService->shouldReceive('delete')->once()->with($identityIdentifier);
+        /** @var ActorContextServiceInterface&MockInterface $actorContextService */
+        $actorContextService = Mockery::mock(ActorContextServiceInterface::class);
+        CreateIdentity::create($identityIdentifier);
+        $actorContextService->shouldReceive('forget')->once()->with($identityIdentifier);
         /** @var EventDispatcherInterface&MockInterface $eventDispatcher */
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')->once();
+        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
+        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
+        $identityWithdrawalSessionService->shouldReceive('terminate')->once()->with($identityIdentifier);
         $listPasskeys = new ListPasskeys($storage);
 
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
-        (new WithdrawIdentity($storage, $identityWithdrawalService, $eventDispatcher))->process($identityIdentifier);
+        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identityWithdrawalSessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
 
         $this->assertSame($original, Redis::get($key));
@@ -98,15 +109,17 @@ class SharedRecentAuthenticationTest extends TestCase
                 ], JSON_THROW_ON_ERROR));
             }
         }
-        /** @var IdentityWithdrawalServiceInterface&MockInterface $identityWithdrawalService */
-        $identityWithdrawalService = Mockery::mock(IdentityWithdrawalServiceInterface::class);
-        $identityWithdrawalService->shouldNotReceive('archive');
-        $identityWithdrawalService->shouldNotReceive('delete');
+        /** @var ActorContextServiceInterface&MockInterface $actorContextService */
+        $actorContextService = Mockery::mock(ActorContextServiceInterface::class);
+        $actorContextService->shouldNotReceive('forget');
         /** @var EventDispatcherInterface&MockInterface $eventDispatcher */
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
+        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
+        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
+        $identityWithdrawalSessionService->shouldNotReceive('terminate');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        (new WithdrawIdentity($storage, $identityWithdrawalService, $eventDispatcher))->process($identityIdentifier);
+        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identityWithdrawalSessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
     }
 }

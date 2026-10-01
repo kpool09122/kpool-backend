@@ -17,8 +17,8 @@ class StartStepUpWithSocialRequest extends FormRequest
         return ['returnTo' => ['required', 'string', Rule::enum(StepUpReturnDestination::class)]];
     }
 
-    public function returnDestination(): StepUpReturnDestination
+    public function returnDestination(): string
     {
-        return StepUpReturnDestination::from(RequestValue::string($this->input('returnTo')));
+        return RequestValue::string($this->input('returnTo'));
     }
 }
