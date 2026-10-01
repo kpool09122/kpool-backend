@@ -17,9 +17,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Principal\Application\Exception\OperationsMembershipNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role;
@@ -32,7 +30,6 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\Identity;
-use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -78,12 +75,8 @@ class RevokeOperationsTest extends TestCase
         $testData->principalGroup->addRole($testData->operationsRole);
         $testData->principalGroup->addMember($testData->principal->principalIdentifier());
 
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
         $accountRepository->shouldReceive('findByEmail')->once()
             ->with($testData->email)->andReturn($testData->account);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($testData->identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturn($testData->principal);
         $roleRepository->shouldReceive('findSystemByName')->once()
             ->with(Role::OPERATIONS)->andReturn($testData->operationsRole);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()
@@ -102,34 +95,6 @@ class RevokeOperationsTest extends TestCase
         $this->assertTrue($testData->principalGroup->hasRole($testData->operationsRole->roleIdentifier()));
     }
 
-    public function testThrowsIdentityNotFoundException(): void
-    {
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-
-        $testData = $this->createTestData();
-
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturnNull();
-        $principalGroupRepository->shouldNotReceive('save');
-        $principalGroupRepository->shouldNotReceive('delete');
-        $accountRepository->shouldNotReceive('findByEmail');
-
-        $this->expectException(IdentityNotFoundException::class);
-        $input = new RevokeOperationsInput($testData->email);
-        $output = new RevokeOperationsOutput();
-        $useCase = $this->app()->make(RevokeOperationsInterface::class);
-        $useCase->process($input, $output);
-    }
-
     public function testThrowsAccountNotFoundException(): void
     {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
@@ -145,8 +110,6 @@ class RevokeOperationsTest extends TestCase
 
         $testData = $this->createTestData();
 
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
         $accountRepository->shouldReceive('findByEmail')->once()
             ->with($testData->email)->andReturnNull();
         $principalGroupRepository->shouldNotReceive('save');
@@ -154,38 +117,6 @@ class RevokeOperationsTest extends TestCase
         $principalRepository->shouldNotReceive('findByIdentityIdentifierAndAccountIdentifier');
 
         $this->expectException(AccountNotFoundException::class);
-        $input = new RevokeOperationsInput($testData->email);
-        $output = new RevokeOperationsOutput();
-        $useCase = $this->app()->make(RevokeOperationsInterface::class);
-        $useCase->process($input, $output);
-    }
-
-    public function testThrowsPrincipalNotFoundException(): void
-    {
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
-        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-
-        $testData = $this->createTestData();
-
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
-        $accountRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->account);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($testData->identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturnNull();
-        $principalGroupRepository->shouldNotReceive('save');
-        $principalGroupRepository->shouldNotReceive('delete');
-        $roleRepository->shouldNotReceive('findSystemByName');
-
-        $this->expectException(PrincipalNotFoundException::class);
         $input = new RevokeOperationsInput($testData->email);
         $output = new RevokeOperationsOutput();
         $useCase = $this->app()->make(RevokeOperationsInterface::class);
@@ -207,12 +138,8 @@ class RevokeOperationsTest extends TestCase
 
         $testData = $this->createTestData();
 
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
         $accountRepository->shouldReceive('findByEmail')->once()
             ->with($testData->email)->andReturn($testData->account);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($testData->identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturn($testData->principal);
         $roleRepository->shouldReceive('findSystemByName')->once()
             ->with(Role::OPERATIONS)->andReturnNull();
         $principalGroupRepository->shouldNotReceive('save');
@@ -241,12 +168,8 @@ class RevokeOperationsTest extends TestCase
 
         $testData = $this->createTestData();
 
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
         $accountRepository->shouldReceive('findByEmail')->once()
             ->with($testData->email)->andReturn($testData->account);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($testData->identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturn($testData->principal);
         $roleRepository->shouldReceive('findSystemByName')->once()
             ->with(Role::OPERATIONS)->andReturn($testData->operationsRole);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()
@@ -261,7 +184,7 @@ class RevokeOperationsTest extends TestCase
         $useCase->process($input, $output);
     }
 
-    public function testThrowsOperationsMembershipNotFoundException(): void
+    public function testDeletesGroupAfterOriginalPrincipalWasRemoved(): void
     {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
@@ -276,20 +199,17 @@ class RevokeOperationsTest extends TestCase
 
         $testData = $this->createTestData();
         $testData->principalGroup->addRole($testData->operationsRole);
+        $testData->principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+        $this->assertFalse($testData->principalGroup->hasMember($testData->principal->principalIdentifier()));
 
-        $identityRepository->shouldReceive('findByEmail')->once()
-            ->with($testData->email)->andReturn($testData->identity);
         $accountRepository->shouldReceive('findByEmail')->once()
             ->with($testData->email)->andReturn($testData->account);
-        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($testData->identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturn($testData->principal);
         $roleRepository->shouldReceive('findSystemByName')->once()
             ->with(Role::OPERATIONS)->andReturn($testData->operationsRole);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()
             ->with($testData->account->accountIdentifier(), $testData->operationsRole->roleIdentifier())->andReturn($testData->principalGroup);
-        $principalGroupRepository->shouldNotReceive('delete');
+        $principalGroupRepository->shouldReceive('delete')->once()->with($testData->principalGroup);
 
-        $this->expectException(OperationsMembershipNotFoundException::class);
         $input = new RevokeOperationsInput($testData->email);
         $output = new RevokeOperationsOutput();
         $useCase = $this->app()->make(RevokeOperationsInterface::class);

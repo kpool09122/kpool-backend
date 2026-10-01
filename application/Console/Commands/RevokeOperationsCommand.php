@@ -19,7 +19,7 @@ class RevokeOperationsCommand extends Command
     protected $signature = 'operations:revoke {email : Operations権限を剥奪するAccountのメールアドレス}';
 
     #[Override]
-    protected $description = 'Accountと同じメールアドレスのIdentityからOperations権限を剥奪する';
+    protected $description = 'AccountからOperations権限を剥奪する';
 
     public function handle(
         RevokeOperationsInterface $revokeOperations,

@@ -19,7 +19,7 @@ class GrantOperationsCommand extends Command
     protected $signature = 'operations:grant {email : Operations権限を付与するAccountのメールアドレス}';
 
     #[Override]
-    protected $description = 'Accountと同じメールアドレスの認証済みIdentityへOperations権限を付与する';
+    protected $description = 'AccountにOperations権限を付与する';
 
     public function handle(
         GrantOperationsInterface $grantOperations,

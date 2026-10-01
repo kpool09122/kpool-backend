@@ -63,8 +63,12 @@ use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\Detac
 use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\DetachPolicyFromRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\GrantWikiAdministrator\GrantWikiAdministrator;
+use Source\Wiki\Principal\Application\UseCase\Command\GrantWikiAdministrator\GrantWikiAdministratorInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministrator;
+use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministratorInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
@@ -143,6 +147,8 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
+        $this->app->singleton(GrantWikiAdministratorInterface::class, GrantWikiAdministrator::class);
+        $this->app->singleton(RevokeWikiAdministratorInterface::class, RevokeWikiAdministrator::class);
         $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
         $this->app->singleton(CreatePolicyInterface::class, CreatePolicy::class);
