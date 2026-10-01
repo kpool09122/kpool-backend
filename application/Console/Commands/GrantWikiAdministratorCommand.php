@@ -19,7 +19,7 @@ class GrantWikiAdministratorCommand extends Command
     protected $signature = 'wiki:administrator:grant {email : Wiki Administrator権限を付与するAccountのメールアドレス}';
 
     #[Override]
-    protected $description = 'Operations権限を持つIdentityへWiki Administrator権限を付与する';
+    protected $description = 'Operations権限を持つAccountにWiki Administrator権限を付与する';
 
     public function handle(GrantWikiAdministratorInterface $grantWikiAdministrator): int
     {

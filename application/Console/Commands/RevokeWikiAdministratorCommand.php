@@ -19,7 +19,7 @@ class RevokeWikiAdministratorCommand extends Command
     protected $signature = 'wiki:administrator:revoke {email : Wiki Administrator権限を剥奪するAccountのメールアドレス}';
 
     #[Override]
-    protected $description = 'IdentityからWiki Administrator権限を剥奪する';
+    protected $description = 'AccountからWiki Administrator権限を剥奪する';
 
     public function handle(RevokeWikiAdministratorInterface $revokeWikiAdministrator): int
     {

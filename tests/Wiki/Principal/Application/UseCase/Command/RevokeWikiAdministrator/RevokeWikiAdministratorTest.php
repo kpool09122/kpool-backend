@@ -8,20 +8,20 @@ use Mockery;
 use Mockery\MockInterface;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Wiki\Principal\Application\Exception\AdministratorMembershipNotFoundException;
 use Source\Wiki\Principal\Application\Exception\AdministratorRoleNotAttachedException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministrator;
 use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministratorInput;
+use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministratorInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministratorOutput;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Tests\Helper\StrTestHelper;
 use Tests\Helper\WikiAdministratorTestData;
 use Tests\TestCase;
 
@@ -59,7 +59,6 @@ class RevokeWikiAdministratorTest extends TestCase
             new RevokeWikiAdministratorOutput(),
         );
 
-        $this->addToAssertionCount(1);
     }
 
     public function testScopesGroupLookupToTheTargetAccount(): void
@@ -68,10 +67,7 @@ class RevokeWikiAdministratorTest extends TestCase
         $data = WikiAdministratorTestData::create();
         $data->administratorGroup->addRole($data->administratorRole);
         $data->administratorGroup->addMember($data->wikiPrincipal->principalIdentifier());
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->andReturn($data->identity);
         $dependencies->accountRepository->shouldReceive('findByEmail')->once()->andReturn($data->account);
-        $dependencies->principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->andReturn($data->wikiPrincipal);
         $dependencies->roleRepository->shouldReceive('findSystemByName')->once()->andReturn($data->administratorRole);
         $dependencies->principalGroupRepository->shouldReceive('findByAccountIdAndName')->once()
             ->with($data->account->accountIdentifier(), 'Operations Wiki Administrators')
@@ -84,33 +80,10 @@ class RevokeWikiAdministratorTest extends TestCase
         );
     }
 
-    public function testThrowsWhenWikiPrincipalDoesNotExist(): void
-    {
-        $dependencies = RevokeDependencies::create();
-        $data = WikiAdministratorTestData::create();
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->andReturn($data->identity);
-        $dependencies->accountRepository->shouldReceive('findByEmail')->once()->andReturn($data->account);
-        $dependencies->principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturnNull();
-
-        $this->expectException(PrincipalNotFoundException::class);
-        $this->subject($dependencies)->process(new RevokeWikiAdministratorInput($data->email), new RevokeWikiAdministratorOutput());
-    }
-
-    public function testThrowsWhenIdentityDoesNotExist(): void
-    {
-        $dependencies = RevokeDependencies::create();
-        $data = WikiAdministratorTestData::create();
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->andReturnNull();
-
-        $this->expectException(IdentityNotFoundException::class);
-        $this->subject($dependencies)->process(new RevokeWikiAdministratorInput($data->email), new RevokeWikiAdministratorOutput());
-    }
-
     public function testThrowsWhenAccountDoesNotExist(): void
     {
         $dependencies = RevokeDependencies::create();
         $data = WikiAdministratorTestData::create();
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->andReturn($data->identity);
         $dependencies->accountRepository->shouldReceive('findByEmail')->once()->andReturnNull();
 
         $this->expectException(AccountNotFoundException::class);
@@ -121,10 +94,7 @@ class RevokeWikiAdministratorTest extends TestCase
     {
         $dependencies = RevokeDependencies::create();
         $data = WikiAdministratorTestData::create();
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->andReturn($data->identity);
         $dependencies->accountRepository->shouldReceive('findByEmail')->once()->andReturn($data->account);
-        $dependencies->principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->andReturn($data->wikiPrincipal);
         $dependencies->roleRepository->shouldReceive('findSystemByName')->once()->andReturnNull();
 
         $this->expectException(SystemRoleNotFoundException::class);
@@ -154,15 +124,16 @@ class RevokeWikiAdministratorTest extends TestCase
         $this->subject($dependencies)->process(new RevokeWikiAdministratorInput($data->email), new RevokeWikiAdministratorOutput());
     }
 
-    public function testThrowsWhenPrincipalIsNotAMember(): void
+    public function testDeletesGroupAfterOriginalPrincipalWasRemoved(): void
     {
         $dependencies = RevokeDependencies::create();
         $data = WikiAdministratorTestData::create();
         $data->administratorGroup->addRole($data->administratorRole);
+        $data->administratorGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+        $this->assertFalse($data->administratorGroup->hasMember($data->wikiPrincipal->principalIdentifier()));
         $this->expectTarget($dependencies, $data, $data->administratorGroup);
-        $dependencies->principalGroupRepository->shouldNotReceive('delete');
+        $dependencies->principalGroupRepository->shouldReceive('delete')->once()->with($data->administratorGroup);
 
-        $this->expectException(AdministratorMembershipNotFoundException::class);
         $this->subject($dependencies)->process(new RevokeWikiAdministratorInput($data->email), new RevokeWikiAdministratorOutput());
     }
 
@@ -171,11 +142,7 @@ class RevokeWikiAdministratorTest extends TestCase
         WikiAdministratorTestData $data,
         ?PrincipalGroup $principalGroup,
     ): void {
-        $dependencies->identityRepository->shouldReceive('findByEmail')->once()->with($data->email)->andReturn($data->identity);
         $dependencies->accountRepository->shouldReceive('findByEmail')->once()->with($data->email)->andReturn($data->account);
-        $dependencies->principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
-            ->with($data->identity->identityIdentifier(), $data->account->accountIdentifier())
-            ->andReturn($data->wikiPrincipal);
         $dependencies->roleRepository->shouldReceive('findSystemByName')->once()
             ->with('ADMINISTRATOR')->andReturn($data->administratorRole);
         $dependencies->principalGroupRepository->shouldReceive('findByAccountIdAndName')->once()
@@ -185,13 +152,14 @@ class RevokeWikiAdministratorTest extends TestCase
 
     private function subject(RevokeDependencies $dependencies): RevokeWikiAdministrator
     {
-        return new RevokeWikiAdministrator(
-            $dependencies->identityRepository,
-            $dependencies->accountRepository,
-            $dependencies->principalRepository,
-            $dependencies->principalGroupRepository,
-            $dependencies->roleRepository,
-        );
+        $this->app()->instance(IdentityRepositoryInterface::class, $dependencies->identityRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $dependencies->principalRepository);
+
+        $this->app()->instance(AccountRepositoryInterface::class, $dependencies->accountRepository);
+        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $dependencies->principalGroupRepository);
+        $this->app()->instance(RoleRepositoryInterface::class, $dependencies->roleRepository);
+
+        return $this->app()->make(RevokeWikiAdministratorInterface::class);
     }
 }
 
