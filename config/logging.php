@@ -9,8 +9,8 @@ return [
     'default' => env('LOG_CHANNEL', 'daily'),
 
     'deprecations' => [
-        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
-        'trace' => env('LOG_DEPRECATIONS_TRACE', false),
+        'channel' => 'null',
+        'trace' => false,
     ],
 
     'channels' => [
