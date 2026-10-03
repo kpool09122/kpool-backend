@@ -23,7 +23,7 @@ readonly class UpdatePasskey implements UpdatePasskeyInterface
     {
         $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         );
 
         $credential = $this->passkeyCredentialRepository->findByIdentifier($input->passkeyIdentifier());

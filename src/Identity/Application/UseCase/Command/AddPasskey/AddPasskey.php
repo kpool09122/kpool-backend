@@ -48,7 +48,7 @@ readonly class AddPasskey implements AddPasskeyInterface
 
         $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         );
         $this->passkeyCredentialRepository->save($this->passkeyCredentialFactory->create(
             $passkeyUser->identifier(),

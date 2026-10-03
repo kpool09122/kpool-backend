@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'recent_authentication_required' => '需要重新验证身份。',
+    'identity_withdrawal_not_allowed' => '此用户无法通过常规流程注销。',
+    'csrf_token_mismatch' => '请求验证令牌无效或缺失。',
     'agency_not_found' => '找不到指定事务所的草稿维基。',
     'exists_approved_but_not_translated_agency' => '存在尚未翻译的已批准事务所草稿维基。',
     'disallowed' => '不允许此操作。',

@@ -10,7 +10,7 @@ use Throwable;
 class StepUpAuthenticationRequiredException extends DomainException
 {
     public function __construct(
-        string $message = 'Step-up authentication is required.',
+        string $message = 'Recent authentication is required.',
         ?Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

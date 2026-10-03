@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'recent_authentication_required' => '최근 재인증이 필요합니다.',
+    'identity_withdrawal_not_allowed' => '이 사용자는 일반 탈퇴 절차를 이용할 수 없습니다.',
+    'csrf_token_mismatch' => '요청 검증 토큰이 유효하지 않거나 누락되었습니다.',
     'agency_not_found' => '지정된 사무소의 초안 위키를 찾을 수 없습니다.',
     'exists_approved_but_not_translated_agency' => '아직 번역되지 않은 승인된 사무소의 초안 위키가 있습니다.',
     'disallowed' => '이 작업은 허용되지 않습니다.',

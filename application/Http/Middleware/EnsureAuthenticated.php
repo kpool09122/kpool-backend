@@ -29,6 +29,7 @@ class EnsureAuthenticated
 
             throw new UnauthorizedHttpException(
                 detail: error_message('unauthorized', $request->header('Accept-Language', 'en')),
+                extensions: ['code' => 'authentication_required'],
             );
         }
 

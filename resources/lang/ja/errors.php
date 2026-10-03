@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'recent_authentication_required' => '再認証が必要です。',
+    'identity_withdrawal_not_allowed' => 'この利用者は通常の退会手続きを利用できません。',
+    'csrf_token_mismatch' => 'リクエスト検証トークンが無効、または指定されていません。',
     'agency_not_found' => '指定された事務所の下書きWikiが見つかりません。',
     'exists_approved_but_not_translated_agency' => '翻訳されていない承認済みの、事務所の下書きWikiが存在します。',
     'disallowed' => 'この操作は許可されていません。',

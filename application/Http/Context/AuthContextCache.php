@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
@@ -194,8 +195,8 @@ class AuthContextCache
     {
         try {
             Redis::del($key);
-        } catch (Throwable) {
-            // Cache invalidation is best effort; DB state remains source of truth.
+        } catch (Throwable $exception) {
+            Log::warning('Authentication context cache invalidation failed.', ['exception' => $exception]);
         }
     }
 
@@ -206,7 +207,9 @@ class AuthContextCache
     {
         try {
             $keys = Redis::keys($pattern);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            Log::warning('Authentication context cache enumeration failed.', ['exception' => $exception]);
+
             return [];
         }
 

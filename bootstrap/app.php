@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Application\Http\Middleware\EnsureCloudTaskAuthenticated;
+use Application\Http\Middleware\StartApplicationSession;
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Sentry\Laravel\Integration as SentryIntegration;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
@@ -70,6 +70,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // Monetization
         \Application\Providers\Monetization\DomainServiceProvider::class,
         \Application\Providers\Monetization\UseCaseServiceProvider::class,
+        \Application\Providers\Monetization\EventServiceProvider::class,
 
         // SiteManagement
         \Application\Providers\SiteManagement\DomainServiceProvider::class,
@@ -89,7 +90,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
             'resolve.account' => \Application\Http\Middleware\ResolveAccountContext::class,
             'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,
-            'session' => StartSession::class,
+            'session' => StartApplicationSession::class,
         ]);
         $middleware->preventRequestForgery(except: [
             'webhook/*',

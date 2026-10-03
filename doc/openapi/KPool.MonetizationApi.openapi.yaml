@@ -765,7 +765,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: Machine-readable application error code.
+          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string

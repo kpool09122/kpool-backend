@@ -4,6 +4,20 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /auth/csrf-token:
+    get:
+      operationId: IdentityAuthOperations_getCsrfToken
+      description: Safely initialize browser CSRF protection without requiring login. Laravel issues XSRF-TOKEN and the session cookie using Set-Cookie; the empty response is not cacheable. Keep both cookies and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN when withdrawing. This endpoint changes no identity or account data.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/identities/{identityIdentifier}/profile:
     get:
       operationId: IdentityAuthOperations_getIdentityProfile
@@ -102,7 +116,7 @@ paths:
   /auth/passkeys:
     get:
       operationId: IdentityAuthOperations_listPasskeys
-      description: List passkeys registered by the current authenticated identity after recent passkey management authentication.
+      description: List passkeys registered by the current authenticated identity after recent authentication.
       parameters: []
       responses:
         '200':
@@ -513,7 +527,7 @@ paths:
   /auth/passkeys/{passkeyIdentifier}:
     patch:
       operationId: IdentityAuthOperations_updatePasskey
-      description: Update a passkey belonging to the authenticated identity after recent passkey management authentication.
+      description: Update a passkey belonging to the authenticated identity after recent authentication.
       parameters:
         - name: passkeyIdentifier
           in: path
@@ -794,7 +808,7 @@ paths:
   /auth/step-up/passkey:
     post:
       operationId: IdentityAuthOperations_completeStepUpWithPasskey
-      description: Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.
+      description: Verify an existing passkey and grant common recent authentication to the same identity and login session for ten minutes from verification. Passkey operations and identity withdrawal share this result without consuming it or extending its expiry.
       parameters: []
       responses:
         '200':
@@ -830,7 +844,7 @@ paths:
   /auth/step-up/passkey/options:
     post:
       operationId: IdentityAuthOperations_createStepUpPasskeyOptions
-      description: Create identity-bound WebAuthn options for passkey management step-up authentication.
+      description: Create identity-bound WebAuthn options for common recent authentication.
       parameters: []
       responses:
         '200':
@@ -860,13 +874,22 @@ paths:
   /auth/step-up/social/{provider}/redirect:
     get:
       operationId: IdentityAuthOperations_startStepUpWithSocial
-      description: Create a linked-SSO reauthentication URL for initial passkey registration.
+      description: Create a linked-SSO recent authentication URL when no passkey is registered. Persist the allowlisted return destination in the originating login session on the server. The result is reusable for ten minutes by the same identity and login session without consumption or extension.
       parameters:
         - name: provider
           in: path
           required: true
           schema:
             type: string
+        - name: returnTo
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - passkeys
+              - withdrawal
+          explode: false
       responses:
         '200':
           description: Response returned by social login endpoints.
@@ -929,6 +952,37 @@ paths:
             schema:
               $ref: '#/components/schemas/VerifyEmailRequestBody'
   /identities/me:
+    delete:
+      operationId: IdentityOperations_withdrawIdentity
+      description: Permanently withdraw the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     patch:
       operationId: IdentityOperations_updateIdentity
       description: Update the current identity profile.
@@ -1363,7 +1417,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: Machine-readable application error code.
+          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string

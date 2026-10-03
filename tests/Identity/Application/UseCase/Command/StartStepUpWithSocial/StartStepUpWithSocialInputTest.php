@@ -7,6 +7,7 @@ namespace Tests\Identity\Application\UseCase\Command\StartStepUpWithSocial;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocialInput;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Identity\Domain\ValueObject\StepUpReturnDestination;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class StartStepUpWithSocialInputTest extends TestCase
@@ -16,9 +17,10 @@ class StartStepUpWithSocialInputTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $provider = SocialProvider::GOOGLE;
 
-        $input = new StartStepUpWithSocialInput($identityIdentifier, $provider);
+        $input = new StartStepUpWithSocialInput($identityIdentifier, $provider, StepUpReturnDestination::WITHDRAWAL);
 
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
         $this->assertSame($provider, $input->provider());
+        $this->assertSame(StepUpReturnDestination::WITHDRAWAL, $input->returnDestination());
     }
 }

@@ -19,7 +19,7 @@ model ProblemDetails {
   @doc("URI reference identifying the specific occurrence.")
   instance?: string;
 
-  @doc("Machine-readable application error code.")
+  @doc("Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.")
   code?: string;
 }
 
@@ -50,5 +50,10 @@ model UnprocessableEntityProblemResponse {
 
 model InternalServerErrorProblemResponse {
   @statusCode statusCode: 500;
+  @body body: ProblemDetails;
+}
+
+model CsrfTokenMismatchProblemResponse {
+  @statusCode statusCode: 419;
   @body body: ProblemDetails;
 }

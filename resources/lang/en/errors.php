@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'recent_authentication_required' => 'Recent authentication is required.',
+    'identity_withdrawal_not_allowed' => 'This identity is not eligible for self-service withdrawal.',
+    'csrf_token_mismatch' => 'The request verification token is invalid or missing.',
     'agency_not_found' => 'The specified agency draft wiki was not found.',
     'exists_approved_but_not_translated_agency' => 'There is an approved agency draft wiki that has not yet been translated.',
     'disallowed' => 'This operation is not allowed.',

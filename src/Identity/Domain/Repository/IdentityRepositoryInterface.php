@@ -17,6 +17,8 @@ interface IdentityRepositoryInterface
 
     public function save(Identity $identity): void;
 
+    public function delete(IdentityIdentifier $identifier): void;
+
     public function findById(IdentityIdentifier $identifier): ?Identity;
 
     /**

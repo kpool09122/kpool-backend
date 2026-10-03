@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'recent_authentication_required' => 'Se requiere una autenticación reciente.',
+    'identity_withdrawal_not_allowed' => 'Este usuario no puede darse de baja mediante el procedimiento habitual.',
+    'csrf_token_mismatch' => 'El token de verificación de la solicitud no es válido o no se ha proporcionado.',
     'agency_not_found' => 'No se encontró el borrador del wiki de la agencia especificada.',
     'exists_approved_but_not_translated_agency' => 'Existe un borrador del wiki de la agencia aprobado que aún no ha sido traducido.',
     'disallowed' => 'Esta operación no está permitida.',

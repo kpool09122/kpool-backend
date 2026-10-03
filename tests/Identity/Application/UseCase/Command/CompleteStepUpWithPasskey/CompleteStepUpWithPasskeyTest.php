@@ -51,7 +51,7 @@ class CompleteStepUpWithPasskeyTest extends TestCase
         $this->assertInstanceOf(CompleteStepUpWithPasskey::class, $this->app()->make(CompleteStepUpWithPasskeyInterface::class));
     }
 
-    public function testItVerifiesAnOwnedCredentialAndIssuesPasskeyManageAuthorization(): void
+    public function testItVerifiesAnOwnedCredentialAndIssuesCommonRecentAuthentication(): void
     {
         $credential = $this->credential();
         $challenge = $this->challenge();
@@ -75,7 +75,7 @@ class CompleteStepUpWithPasskeyTest extends TestCase
         $stepUp->shouldReceive('store')->once()->with(Mockery::on(
             static fn (StepUpAuthentication $authorization): bool => (string) $authorization->identityIdentifier === self::IDENTITY_ID
                 && $authorization->method === StepUpAuthenticationMethod::PASSKEY
-                && $authorization->expiresAt > $authorization->verifiedAt,
+                && $authorization->expiresAt->getTimestamp() - $authorization->verifiedAt->getTimestamp() === 600,
         ));
         $this->bindDependencies($passkeyCredentialRepository, $passkeyUserRepository, $webAuthn, $stepUp);
 

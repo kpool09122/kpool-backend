@@ -18,7 +18,7 @@ class StepUpAuthenticationTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001');
         $method = StepUpAuthenticationMethod::PASSKEY;
         $verifiedAt = new DateTimeImmutable('2026-09-26T00:00:00+00:00');
-        $scope = StepUpAuthenticationScope::PASSKEY_MANAGE;
+        $scope = StepUpAuthenticationScope::RECENT_AUTHENTICATION;
         $expiresAt = new DateTimeImmutable('2026-09-26T00:10:00+00:00');
 
         $authentication = new StepUpAuthentication(

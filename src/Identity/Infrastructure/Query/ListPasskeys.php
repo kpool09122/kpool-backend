@@ -22,7 +22,7 @@ readonly class ListPasskeys implements ListPasskeysInterface
     {
         $this->stepUpAuthenticationStorageService->requireValid(
             $input->identityIdentifier(),
-            StepUpAuthenticationScope::PASSKEY_MANAGE,
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
         );
 
         return PasskeyCredentialModel::query()
