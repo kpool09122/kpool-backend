@@ -30,7 +30,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
-use Tests\Helper\CreateMonetizationAccount;
 use Tests\Helper\CreatePrincipal;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -42,14 +41,14 @@ class ComposedIdentityWithdrawalTest extends TestCase
     {
         $subject = $this->createSubject();
         $other = $this->createSubject();
+        $before = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $response = $this->action($subject['identities'])();
+        $after = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $this->assertSame(204, $response->getStatusCode());
         foreach ($subject as $table => $id) {
             $this->assertDatabaseMissing($table, ['id' => $id]);
             $this->assertDatabaseHas($table, ['id' => $other[$table]]);
         }
-        $this->assertDatabaseMissing('invoice_lines', ['invoice_id' => $subject['invoices']]);
-        $this->assertDatabaseHas('invoice_lines', ['invoice_id' => $other['invoices']]);
         $archive = DB::table('archived_identities')->where('identity_id', $subject['identities'])->first();
         $this->assertNotNull($archive);
         $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at'], array_keys((array) $archive));
@@ -58,15 +57,21 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $accountArchive = DB::table('archived_accounts')->where('account_id', $subject['accounts'])->first();
         $this->assertNotNull($accountArchive);
         $this->assertSame([
-            'id' => $accountArchive->id, 'account_id' => $subject['accounts'], 'account_category' => 'general', 'account_type' => 'individual', 'archived_at' => $archive->archived_at,
+            'id' => $accountArchive->id, 'account_id' => $subject['accounts'], 'account_category' => 'general', 'account_type' => 'individual', 'archived_at' => $accountArchive->archived_at,
         ], (array) $accountArchive);
+        foreach ([$archive->archived_at, $accountArchive->archived_at] as $archivedAt) {
+            $this->assertGreaterThanOrEqual($before, $archivedAt);
+            $this->assertLessThanOrEqual($after, $archivedAt);
+        }
         foreach (['account' => 'account_principals', 'wiki' => 'wiki_principals'] as $type => $table) {
             $principalArchive = DB::table('archived_principals')->where('principal_type', $type)->where('principal_id', $subject[$table])->first();
             $this->assertNotNull($principalArchive);
             $this->assertSame([
                 'id' => $principalArchive->id, 'identity_id' => $subject['identities'], 'principal_type' => $type, 'principal_id' => $subject[$table],
-                'account_id' => $subject['accounts'], 'archived_at' => $archive->archived_at,
+                'account_id' => $subject['accounts'], 'archived_at' => $principalArchive->archived_at,
             ], (array) $principalArchive);
+            $this->assertGreaterThanOrEqual($before, $principalArchive->archived_at);
+            $this->assertLessThanOrEqual($after, $principalArchive->archived_at);
         }
         $this->assertDatabaseMissing('archived_identities', ['identity_id' => $other['identities']]);
         $this->assertDatabaseMissing('archived_accounts', ['account_id' => $other['accounts']]);
@@ -82,7 +87,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $observedDeletions = [];
         $failure = new RuntimeException('Downstream withdrawal failure');
         Event::listen(IdentityWithdrawing::class, function () use ($subject, &$observedDeletions, $failure): void {
-            foreach (['accounts', 'wiki_principals', 'site_management_users', 'invoices', 'payments'] as $table) {
+            foreach (['accounts', 'wiki_principals', 'site_management_users'] as $table) {
                 $observedDeletions[$table] = ! DB::table($table)->where('id', $subject[$table])->exists();
             }
 
@@ -94,11 +99,10 @@ class ComposedIdentityWithdrawalTest extends TestCase
             $this->fail('Expected transaction rollback');
         } catch (InternalServerErrorHttpException $exception) {
             $this->assertSame($failure, $exception->getPrevious());
-            $this->assertSame(['accounts' => true, 'wiki_principals' => true, 'site_management_users' => true, 'invoices' => true, 'payments' => true], $observedDeletions);
+            $this->assertSame(['accounts' => true, 'wiki_principals' => true, 'site_management_users' => true], $observedDeletions);
             foreach ($subject as $table => $id) {
                 $this->assertDatabaseHas($table, ['id' => $id]);
             }
-            $this->assertDatabaseHas('invoice_lines', ['invoice_id' => $subject['invoices']]);
             foreach (['archived_identities', 'archived_accounts', 'archived_principals'] as $table) {
                 $this->assertDatabaseCount($table, 0);
             }
@@ -109,7 +113,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
     private function createSubject(): array
     {
         $ids = [];
-        foreach (['identities', 'accounts', 'account_principals', 'wiki_principals', 'passkey_users', 'passkey_credentials', 'site_management_users', 'monetization_accounts', 'monetization_registered_payment_methods', 'invoices', 'payments'] as $table) {
+        foreach (['identities', 'accounts', 'account_principals', 'wiki_principals', 'passkey_users', 'passkey_credentials', 'site_management_users'] as $table) {
             $ids[$table] = StrTestHelper::generateUuid();
         }
         $identityIdentifier = new IdentityIdentifier($ids['identities']);
@@ -120,11 +124,6 @@ class ComposedIdentityWithdrawalTest extends TestCase
         DB::table('passkey_users')->insert(['id' => $ids['passkey_users'], 'identity_id' => $ids['identities']]);
         DB::table('passkey_credentials')->insert(['id' => $ids['passkey_credentials'], 'passkey_user_id' => $ids['passkey_users'], 'credential_id' => $ids['passkey_credentials'], 'credential_source' => '{"private":"credential"}', 'backup_eligible' => false, 'backup_state' => false, 'display_name' => 'Private device']);
         DB::table('site_management_users')->insert(['id' => $ids['site_management_users'], 'identity_id' => $ids['identities'], 'role' => 'admin']);
-        CreateMonetizationAccount::create($ids['monetization_accounts'], ['account_id' => $ids['accounts'], 'stripe_customer_id' => 'private-' . $ids['identities']]);
-        DB::table('monetization_registered_payment_methods')->insert(['id' => $ids['monetization_registered_payment_methods'], 'monetization_account_id' => $ids['monetization_accounts'], 'stripe_payment_method_id' => 'private-' . $ids['payments'], 'type' => 'card']);
-        DB::table('invoices')->insert(['id' => $ids['invoices'], 'order_id' => StrTestHelper::generateUuid(), 'buyer_monetization_account_id' => $ids['monetization_accounts'], 'currency' => 'JPY', 'subtotal' => 100, 'discount_amount' => 0, 'tax_amount' => 0, 'total' => 100, 'issued_at' => now(), 'due_date' => now(), 'status' => 'paid', 'tax_document_reason' => 'Private billing data']);
-        DB::table('invoice_lines')->insert(['invoice_id' => $ids['invoices'], 'description' => 'Private purchase', 'currency' => 'JPY', 'unit_price' => 100, 'quantity' => 1]);
-        DB::table('payments')->insert(['id' => $ids['payments'], 'order_id' => StrTestHelper::generateUuid(), 'buyer_monetization_account_id' => $ids['monetization_accounts'], 'currency' => 'JPY', 'amount' => 100, 'payment_method_id' => $ids['monetization_registered_payment_methods'], 'payment_method_type' => 'card', 'payment_method_label' => 'Private card label', 'payment_method_recurring_enabled' => false, 'created_at' => now(), 'status' => 'captured']);
 
         return $ids;
     }

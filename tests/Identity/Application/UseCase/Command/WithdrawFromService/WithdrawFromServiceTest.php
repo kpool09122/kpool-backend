@@ -9,7 +9,7 @@ use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\Service\ActorContextServiceInterface;
-use Source\Identity\Application\Service\IdentityWithdrawalSessionServiceInterface;
+use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
@@ -64,16 +64,16 @@ class WithdrawFromServiceTest extends TestCase
         /** @var EventDispatcherInterface&MockInterface $events */
         $events = Mockery::mock(EventDispatcherInterface::class);
         $events->shouldNotReceive('dispatch');
-        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
-        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
-        $identityWithdrawalSessionService->shouldNotReceive('terminate');
+        /** @var IdentitySessionServiceInterface&MockInterface $identitySessionService */
+        $identitySessionService = Mockery::mock(IdentitySessionServiceInterface::class);
+        $identitySessionService->shouldNotReceive('terminate');
 
         /** @var ImageServiceInterface&MockInterface $imageService */
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('delete');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        (new WithdrawFromService($authentication, $actorContextService, $events, $identityWithdrawalSessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
     }
 
     public function testArchivesBeforeDispatchAndDeletesAfterServiceCleanup(): void
@@ -110,15 +110,15 @@ class WithdrawFromServiceTest extends TestCase
         ))->globally()->ordered();
         $identityRepository->shouldReceive('delete')->once()->with($identityIdentifier)->globally()->ordered();
         $actorContextService->shouldReceive('forget')->once()->with($identityIdentifier)->globally()->ordered();
-        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
-        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
-        $identityWithdrawalSessionService->shouldReceive('terminate')->once()->with($identityIdentifier)->globally()->ordered();
+        /** @var IdentitySessionServiceInterface&MockInterface $identitySessionService */
+        $identitySessionService = Mockery::mock(IdentitySessionServiceInterface::class);
+        $identitySessionService->shouldReceive('terminate')->once()->with($identityIdentifier)->globally()->ordered();
 
         /** @var ImageServiceInterface&MockInterface $imageService */
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('delete')->once()->with($profileImage)->andReturn(true)->globally()->ordered();
 
-        (new WithdrawFromService($authentication, $actorContextService, $events, $identityWithdrawalSessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
 
         $this->addToAssertionCount(1);
     }

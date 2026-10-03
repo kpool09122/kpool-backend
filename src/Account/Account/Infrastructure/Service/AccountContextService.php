@@ -17,7 +17,7 @@ readonly class AccountContextService implements AccountContextServiceInterface
     {
     }
 
-    public function forget(IdentityIdentifier $identityIdentifier): void
+    public function forgetByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
     {
         $forget = fn () => $this->authContextCache->forgetAccount($identityIdentifier);
         if (DB::transactionLevel() > 0) {

@@ -12,13 +12,13 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Infrastructure\Service\IdentityWithdrawalSessionService;
+use Source\Identity\Infrastructure\Service\IdentitySessionService;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 #[Group('useDb')]
-class IdentityWithdrawalSessionServiceTest extends TestCase
+class IdentitySessionServiceTest extends TestCase
 {
     public function testTerminatesImmediatelyWithoutTransaction(): void
     {
@@ -30,7 +30,7 @@ class IdentityWithdrawalSessionServiceTest extends TestCase
         $authService->shouldReceive('logout')->once()->andReturnUsing(static function () use (&$terminated): void {
             $terminated = true;
         })->globally()->ordered();
-        $service = new IdentityWithdrawalSessionService($authService, new NullLogger());
+        $service = new IdentitySessionService($authService, new NullLogger());
 
         DB::commit();
 
@@ -50,7 +50,7 @@ class IdentityWithdrawalSessionServiceTest extends TestCase
         $authService = Mockery::mock(AuthServiceInterface::class);
         $authService->shouldNotReceive('invalidateAllSessions');
         $authService->shouldNotReceive('logout');
-        $service = new IdentityWithdrawalSessionService($authService, new NullLogger());
+        $service = new IdentitySessionService($authService, new NullLogger());
 
         DB::beginTransaction();
         $service->terminate($identityIdentifier);
@@ -75,9 +75,9 @@ class IdentityWithdrawalSessionServiceTest extends TestCase
         $authService->shouldReceive('logout')->once()->andThrow($logoutFailure)->globally()->ordered();
         /** @var LoggerInterface&MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('error')->once()->with('Withdrawn identity session invalidation failed.', ['exception' => $invalidationFailure]);
-        $logger->shouldReceive('error')->once()->with('Withdrawn identity logout failed.', ['exception' => $logoutFailure]);
-        $service = new IdentityWithdrawalSessionService($authService, $logger);
+        $logger->shouldReceive('error')->once()->with('Identity session invalidation failed.', ['exception' => $invalidationFailure]);
+        $logger->shouldReceive('error')->once()->with('Identity logout failed.', ['exception' => $logoutFailure]);
+        $service = new IdentitySessionService($authService, $logger);
 
         DB::commit();
 

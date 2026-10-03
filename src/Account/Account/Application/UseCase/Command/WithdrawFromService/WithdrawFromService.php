@@ -52,7 +52,8 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         }
         $accountIdentifiers = [];
         foreach ($principals as $principal) {
-            $accountIdentifiers[(string) $principal->accountIdentifier()] = $principal->accountIdentifier();
+            $accountIdentifier = $principal->accountIdentifier();
+            $accountIdentifiers[(string) $accountIdentifier] = $accountIdentifier;
         }
         $accounts = [];
         foreach ($this->accountRepository->findByIds(array_values($accountIdentifiers)) as $account) {
@@ -110,7 +111,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
             $this->accountRepository->delete($account);
         }
         $this->principalRepository->deleteByIdentityIdentifier($identityIdentifier);
-        $this->accountContextService->forget($identityIdentifier);
+        $this->accountContextService->forgetByIdentityIdentifier($identityIdentifier);
         $this->currentAccountService->forget($identityIdentifier);
     }
 }

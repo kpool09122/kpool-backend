@@ -13,7 +13,7 @@ use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInt
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
-use Source\Identity\Application\Service\IdentityWithdrawalSessionServiceInterface;
+use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryNotificationServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSessionStorageServiceInterface;
@@ -57,7 +57,7 @@ use Source\Identity\Infrastructure\Service\AuthCodeSessionStorageService;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
-use Source\Identity\Infrastructure\Service\IdentityWithdrawalSessionService;
+use Source\Identity\Infrastructure\Service\IdentitySessionService;
 use Source\Identity\Infrastructure\Service\LogSecurityEventRecorder;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryEmailVerificationService;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryNotificationService;
@@ -78,7 +78,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(ArchivedIdentityFactoryInterface::class, ArchivedIdentityFactory::class);
         $this->app->singleton(ArchivedIdentityRepositoryInterface::class, ArchivedIdentityRepository::class);
         $this->app->bind(ActorContextServiceInterface::class, ActorContextService::class);
-        $this->app->bind(IdentityWithdrawalSessionServiceInterface::class, IdentityWithdrawalSessionService::class);
+        $this->app->bind(IdentitySessionServiceInterface::class, IdentitySessionService::class);
         $this->app->singleton(AuthCodeSessionStorageServiceInterface::class, AuthCodeSessionStorageService::class);
         $this->app->singleton(IdentityFactoryInterface::class, IdentityFactory::class);
         $this->app->singleton(PasskeyCredentialFactoryInterface::class, PasskeyCredentialFactory::class);

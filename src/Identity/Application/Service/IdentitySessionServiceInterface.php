@@ -6,7 +6,7 @@ namespace Source\Identity\Application\Service;
 
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-interface IdentityWithdrawalSessionServiceInterface
+interface IdentitySessionServiceInterface
 {
     public function terminate(IdentityIdentifier $identityIdentifier): void;
 }

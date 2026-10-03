@@ -103,8 +103,8 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         Storage::shouldReceive('disk')->with(config()->string('filesystems.image_disk', 'public'))->andReturn($disk);
         /** @var LoggerInterface&MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('error')->once()->with('Withdrawn identity session invalidation failed.', Mockery::type('array'));
-        $logger->shouldReceive('error')->once()->with('Withdrawn identity logout failed.', Mockery::type('array'));
+        $logger->shouldReceive('error')->once()->with('Identity session invalidation failed.', Mockery::type('array'));
+        $logger->shouldReceive('error')->once()->with('Identity logout failed.', Mockery::type('array'));
         $logger->shouldReceive('warning')->once()->with('Failed to delete image.', Mockery::type('array'));
         $logger->shouldReceive('warning')->once()->with('Failed to clear current account context.', Mockery::type('array'));
         $this->app()->instance(LoggerInterface::class, $logger);

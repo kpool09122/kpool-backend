@@ -9,7 +9,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 interface AccountContextServiceInterface
 {
-    public function forget(IdentityIdentifier $identityIdentifier): void;
+    public function forgetByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void;
 
     public function forgetByAccountIdentifier(AccountIdentifier $accountIdentifier): void;
 }

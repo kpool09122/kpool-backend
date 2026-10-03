@@ -72,7 +72,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // Monetization
         \Application\Providers\Monetization\DomainServiceProvider::class,
         \Application\Providers\Monetization\UseCaseServiceProvider::class,
-        \Application\Providers\Monetization\EventServiceProvider::class,
 
         // SiteManagement
         \Application\Providers\SiteManagement\DomainServiceProvider::class,

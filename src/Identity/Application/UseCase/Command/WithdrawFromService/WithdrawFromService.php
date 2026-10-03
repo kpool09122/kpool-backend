@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\WithdrawFromService;
 
 use Source\Identity\Application\Service\ActorContextServiceInterface;
-use Source\Identity\Application\Service\IdentityWithdrawalSessionServiceInterface;
+use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
@@ -22,7 +22,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
         private ActorContextServiceInterface $actorContextService,
         private EventDispatcherInterface $eventDispatcher,
-        private IdentityWithdrawalSessionServiceInterface $identityWithdrawalSessionService,
+        private IdentitySessionServiceInterface $identitySessionService,
         private IdentityRepositoryInterface $identityRepository,
         private ArchivedIdentityFactoryInterface $archivedIdentityFactory,
         private ArchivedIdentityRepositoryInterface $archivedIdentityRepository,
@@ -48,7 +48,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         $profileImage = $identity->profileImage();
         $this->identityRepository->delete($identityIdentifier);
         $this->actorContextService->forget($identityIdentifier);
-        $this->identityWithdrawalSessionService->terminate($identityIdentifier);
+        $this->identitySessionService->terminate($identityIdentifier);
 
         if ($profileImage !== null) {
             $this->imageService->delete($profileImage);

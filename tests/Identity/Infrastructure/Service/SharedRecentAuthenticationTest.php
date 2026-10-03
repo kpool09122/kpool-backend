@@ -13,7 +13,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Application\Service\ActorContextServiceInterface;
-use Source\Identity\Application\Service\IdentityWithdrawalSessionServiceInterface;
+use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
@@ -71,13 +71,13 @@ class SharedRecentAuthenticationTest extends TestCase
         /** @var EventDispatcherInterface&MockInterface $eventDispatcher */
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')->once();
-        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
-        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
-        $identityWithdrawalSessionService->shouldReceive('terminate')->once()->with($identityIdentifier);
+        /** @var IdentitySessionServiceInterface&MockInterface $identitySessionService */
+        $identitySessionService = Mockery::mock(IdentitySessionServiceInterface::class);
+        $identitySessionService->shouldReceive('terminate')->once()->with($identityIdentifier);
         $listPasskeys = new ListPasskeys($storage);
 
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
-        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identityWithdrawalSessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identitySessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
 
         $this->assertSame($original, Redis::get($key));
@@ -115,11 +115,11 @@ class SharedRecentAuthenticationTest extends TestCase
         /** @var EventDispatcherInterface&MockInterface $eventDispatcher */
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
-        /** @var IdentityWithdrawalSessionServiceInterface&MockInterface $identityWithdrawalSessionService */
-        $identityWithdrawalSessionService = Mockery::mock(IdentityWithdrawalSessionServiceInterface::class);
-        $identityWithdrawalSessionService->shouldNotReceive('terminate');
+        /** @var IdentitySessionServiceInterface&MockInterface $identitySessionService */
+        $identitySessionService = Mockery::mock(IdentitySessionServiceInterface::class);
+        $identitySessionService->shouldNotReceive('terminate');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identityWithdrawalSessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identitySessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
     }
 }
