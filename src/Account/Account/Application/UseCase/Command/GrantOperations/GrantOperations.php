@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Account\Application\UseCase\Command\GrantOperations;
 
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\Exception\EmailNotVerifiedException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Domain\Entity\Role;
@@ -37,10 +36,6 @@ readonly class GrantOperations implements GrantOperationsInterface
         if ($identity === null) {
             throw new IdentityNotFoundException('Identityが見つかりません。');
         }
-        if ($identity->emailVerifiedAt() === null) {
-            throw new EmailNotVerifiedException();
-        }
-
         $account = $this->accountRepository->findByEmail($input->email());
         if ($account === null) {
             throw new AccountNotFoundException('指定されたメールアドレスのAccountが見つかりません。');
