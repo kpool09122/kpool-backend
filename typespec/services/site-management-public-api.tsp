@@ -76,6 +76,44 @@ interface MyContactOperations {
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
+@doc("Paginated contact inquiries and page metadata.")
+model ListContactsPage {
+  @doc("Contact inquiries on the requested page.")
+  contacts: MyContactSummary[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last available page number.")
+  last_page: int32;
+  @doc("Total number of matching inquiries.")
+  total: int32;
+  @doc("Number of inquiries per page.")
+  per_page: int32;
+}
+
+@doc("Response containing contact inquiries and pagination metadata.")
+model ListContactsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListContactsPage;
+}
+
+@route("/contacts")
+interface ContactListOperations {
+  @get
+  @doc("List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.")
+  listContacts(
+    @query identityIdentifier?: Uuid | null,
+    @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
+    @query hasReply?: "0" | "1" | null,
+    @doc("Maximum number of inquiries per page (1-100, default 50).")
+    @minValue(1)
+    @maxValue(100)
+    @query perPage?: int32 | null,
+    @doc("Page number, starting at 1 (default 1).")
+    @minValue(1)
+    @query page?: int32 | null,
+  ): ListContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/contact")
 interface ContactOperations {
   @post

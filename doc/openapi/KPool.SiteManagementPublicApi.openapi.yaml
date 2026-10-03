@@ -46,6 +46,77 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SubmitContactRequestBody'
+  /contacts:
+    get:
+      operationId: ContactListOperations_listContacts
+      description: List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.
+      parameters:
+        - name: identityIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: hasReply
+          in: query
+          required: false
+          description: 'Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.'
+          schema:
+            type: string
+            enum:
+              - '0'
+              - '1'
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          description: Maximum number of inquiries per page (1-100, default 50).
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
+          explode: false
+        - name: page
+          in: query
+          required: false
+          description: Page number, starting at 1 (default 1).
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
+      responses:
+        '200':
+          description: Response containing contact inquiries and pagination metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListContactsPage'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
@@ -145,6 +216,37 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListContactsPage:
+      type: object
+      required:
+        - contacts
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyContactSummary'
+          description: Contact inquiries on the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last available page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of matching inquiries.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of inquiries per page.
+      description: Paginated contact inquiries and page metadata.
     MyContactSummary:
       type: object
       required:
