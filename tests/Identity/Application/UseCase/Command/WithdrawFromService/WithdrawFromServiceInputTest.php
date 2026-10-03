@@ -14,8 +14,9 @@ class WithdrawFromServiceInputTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000001');
 
-        $subject = new WithdrawFromServiceInput($identityIdentifier);
+        $subject = new WithdrawFromServiceInput($identityIdentifier, 'test-identity');
 
         $this->assertSame($identityIdentifier, $subject->identityIdentifier());
+        $this->assertSame('test-identity', $subject->confirmationIdentityName());
     }
 }

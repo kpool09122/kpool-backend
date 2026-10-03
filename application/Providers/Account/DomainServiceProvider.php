@@ -9,6 +9,7 @@ use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Factory\ArchivedAccountFactoryInterface;
@@ -27,6 +28,7 @@ use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
+use Source\Account\Account\Infrastructure\Service\WithdrawalEligibilityService;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Infrastructure\Factory\AffiliationFactory;
@@ -67,6 +69,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(WithdrawalEligibilityServiceInterface::class, WithdrawalEligibilityService::class);
         $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);
         $this->app->singleton(ArchivedAccountRepositoryInterface::class, ArchivedAccountRepository::class);
         $this->app->singleton(AccountFactoryInterface::class, AccountFactory::class);

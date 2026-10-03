@@ -30,6 +30,7 @@ use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromSer
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
 use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
+use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
 use Illuminate\Support\Facades\Route;
 
@@ -72,5 +73,6 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::post('/auth/logout', LogoutAction::class);
 
     Route::patch('/identities/me', UpdateIdentityAction::class);
+    Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
     Route::delete('/identities/me', WithdrawFromServiceAction::class);
 });

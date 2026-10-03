@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Http\Middleware;
 
 use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
+use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceRequest;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\ServiceWithdrawalContext;
 use Application\Http\Middleware\StartApplicationSession;
@@ -52,7 +53,7 @@ class StartApplicationSessionTest extends TestCase
         try {
             DB::commit();
             $this->assertSame(0, DB::transactionLevel());
-            $response = (new Pipeline($this->app()))->send($request)->through([$middleware])->then(static fn (): Response => $action());
+            $response = (new Pipeline($this->app()))->send($request)->through([$middleware])->then(static fn (): Response => $action(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'test-identity'])));
             $this->assertInstanceOf(Response::class, $response);
             $this->assertSame(204, $response->getStatusCode());
             $this->assertTrue(ServiceWithdrawalContext::isCommitted($request));

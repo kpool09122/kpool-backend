@@ -83,6 +83,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trimStrings(except: ['confirmationIdentityName']);
         $middleware->group('session', [
             EncryptCookies::class,
             StartApplicationSession::class,

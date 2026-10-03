@@ -707,12 +707,30 @@ interface IdentityAuthOperations {
 
 }
 
+@doc("Confirmation of the current authenticated identity name for withdrawal.")
+model WithdrawFromServiceRequestBody {
+  @minLength(1)
+  @maxLength(32)
+  confirmationIdentityName: string;
+}
+
+model WithdrawalEligibility {
+  canWithdraw: boolean;
+}
+
 @route("/identities")
 interface IdentityOperations {
+  @get
+  @route("/me/withdrawal-eligibility")
+  @doc("Check self-service withdrawal eligibility against every actual membership using the same rules as withdrawal. Any corporate membership whose account email matches the identity email case-insensitively blocks self-service withdrawal regardless of role. Does not require recent authentication and does not mutate data.")
+  getWithdrawalEligibility(): WithdrawalEligibility | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @delete
   @route("/me")
-  @doc("Permanently withdraw from the service and delete the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.")
-  withdrawFromService(): KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @doc("Permanently withdraw from the service and delete the authenticated identity. Laravel CSRF protection is required for this route, including POST method override; first GET /api/identity/auth/csrf-token, retain its cookies and send the URL-decoded XSRF-TOKEN cookie in X-XSRF-TOKEN (419 csrf_token_mismatch on failure). Post-commit cleanup and outer session-save failures are logged and do not change the committed 204 result. Requires reusable recent authentication from the same identity and login session within ten minutes, shared with passkey operations without consumption or extension. GENERAL individual accounts (including Owners) and GENERAL corporate non-Owners are eligible only when no corporate account email matches the identity email case-insensitively, regardless of role. Archives contain allowlisted internal identifiers and metadata only. Corporate accounts remain; individual accounts are archived and deleted. All login sessions are invalidated after commit. Requires confirmationIdentityName to exactly match the current stored identity name, including whitespace and case, before any withdrawal side effect. Missing or invalid confirmation returns 422; mismatch returns 422 identity_name_confirmation_mismatch. No target identity identifier is accepted. 401 code is authentication_required for missing login or recent_authentication_required for missing recent authentication; 403 code is identity_withdrawal_not_allowed.")
+  withdrawFromService(
+    @body body: WithdrawFromServiceRequestBody,
+  ): KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @patch
   @route("/me")

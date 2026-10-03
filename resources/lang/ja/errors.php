@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'recent_authentication_required' => '再認証が必要です。',
+    'identity_name_confirmation_mismatch' => '入力されたユーザー名が現在のユーザー名と一致しません。',
     'identity_withdrawal_not_allowed' => 'この利用者は通常の退会手続きを利用できません。',
     'csrf_token_mismatch' => 'リクエスト検証トークンが無効、または指定されていません。',
     'agency_not_found' => '指定された事務所の下書きWikiが見つかりません。',

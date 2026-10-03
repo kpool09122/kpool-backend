@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\UseCase\Command\WithdrawFromService;
 
 use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
+use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceRequest;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -50,6 +52,35 @@ use Tests\TestCase;
 #[Group('useDb')]
 class WithdrawFromServiceIntegrationTest extends TestCase
 {
+    /** @return array<string, array{string}> */
+    public static function mismatchingNames(): array
+    {
+        return [
+            'empty' => [''],
+            'different name' => ['another user'],
+            'different case' => ['Private name'],
+            'leading whitespace' => [' private name'],
+            'trailing whitespace' => ['private name '],
+        ];
+    }
+
+    #[DataProvider('mismatchingNames')]
+    public function testNameMismatchDoesNotArchiveOrDelete(string $confirmationIdentityName): void
+    {
+        [$identityIdentifier, $accountId] = $this->createActor();
+        $this->allowRecentAuthentication($identityIdentifier);
+        $request = WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => $confirmationIdentityName]);
+
+        $response = $this->action($identityIdentifier)($request);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringContainsString('"code":"identity_name_confirmation_mismatch"', (string) $response->getContent());
+        $this->assertDatabaseHas('identities', ['id' => (string) $identityIdentifier]);
+        $this->assertDatabaseHas('accounts', ['id' => $accountId]);
+        $this->assertDatabaseMissing('archived_identities', ['identity_id' => (string) $identityIdentifier]);
+        $this->assertDatabaseMissing('archived_accounts', ['account_id' => $accountId]);
+    }
+
     public function testAllSessionInvalidationAndLogoutRunOnlyAfterPhysicalDeletionCommits(): void
     {
         [$identityIdentifier, $accountId] = $this->createActor();
@@ -75,7 +106,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $action = new WithdrawFromServiceAction($this->app()->make(WithdrawFromServiceInterface::class), new ActorContext($identityIdentifier, Language::JAPANESE), new NullLogger(), $this->app()->make(Request::class));
 
         try {
-            $this->assertSame(204, $action()->getStatusCode());
+            $this->assertSame(204, $action(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'private name']))->getStatusCode());
             DB::commit();
             $this->assertSame([0, false], $invalidationObservation);
             $this->assertDatabaseMissing('accounts', ['id' => $accountId]);
@@ -117,7 +148,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         try {
             DB::commit();
             $this->assertSame(0, DB::transactionLevel());
-            $this->assertSame(204, $action()->getStatusCode());
+            $this->assertSame(204, $action(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'private name']))->getStatusCode());
             $guard->forgetUser();
             $this->assertNull($guard->user());
             $this->assertDatabaseMissing('identities', ['id' => (string) $identityIdentifier]);
@@ -145,7 +176,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'private-provider-id');
         $this->allowRecentAuthentication($identityIdentifier);
 
-        $response = $this->action($identityIdentifier)();
+        $response = $this->action($identityIdentifier)(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'private name']));
 
         $this->assertSame(204, $response->getStatusCode());
         $this->assertSame('', $response->getContent());
@@ -176,7 +207,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $authentication->shouldReceive('requireValid')->once()->andThrow(new StepUpAuthenticationRequiredException());
         $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $authentication);
 
-        $response = $this->action($identityIdentifier)();
+        $response = $this->action($identityIdentifier)(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'private name']));
 
         $this->assertSame(401, $response->getStatusCode());
         $this->assertStringContainsString('recent_authentication_required', (string) $response->getContent());
@@ -195,7 +226,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         });
 
         try {
-            $this->action($identityIdentifier)();
+            $this->action($identityIdentifier)(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'private name']));
             $this->fail('Withdrawal must fail');
         } catch (InternalServerErrorHttpException $exception) {
             $this->assertSame($failure, $exception->getPrevious());

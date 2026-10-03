@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'recent_authentication_required' => 'Se requiere una autenticación reciente.',
+    'identity_name_confirmation_mismatch' => 'El nombre de usuario introducido no coincide con tu nombre de usuario actual.',
     'identity_withdrawal_not_allowed' => 'Este usuario no puede darse de baja mediante el procedimiento habitual.',
     'csrf_token_mismatch' => 'El token de verificación de la solicitud no es válido o no se ha proporcionado.',
     'agency_not_found' => 'No se encontró el borrador del wiki de la agencia especificada.',

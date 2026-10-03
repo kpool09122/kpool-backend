@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'recent_authentication_required' => 'Recent authentication is required.',
+    'identity_name_confirmation_mismatch' => 'The entered username does not match your current username.',
     'identity_withdrawal_not_allowed' => 'This identity is not eligible for self-service withdrawal.',
     'csrf_token_mismatch' => 'The request verification token is invalid or missing.',
     'agency_not_found' => 'The specified agency draft wiki was not found.',

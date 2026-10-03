@@ -38,7 +38,7 @@ class RecentAuthenticationContractTest extends TestCase
     public function testErrorMessagesExistInEveryLanguageCatalogue(): void
     {
         foreach (['en', 'es', 'ja', 'ko', 'zh_CN', 'zh_TW'] as $language) {
-            foreach (['recent_authentication_required', 'identity_withdrawal_not_allowed', 'csrf_token_mismatch', 'unauthorized'] as $key) {
+            foreach (['identity_name_confirmation_mismatch', 'recent_authentication_required', 'identity_withdrawal_not_allowed', 'csrf_token_mismatch', 'unauthorized'] as $key) {
                 $message = error_message($key, $language);
                 $this->assertNotSame('errors.' . $key, $message);
                 $this->assertNotSame('', $message);

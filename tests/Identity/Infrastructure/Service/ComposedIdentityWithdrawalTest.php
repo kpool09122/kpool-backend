@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
+use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceRequest;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -42,7 +43,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $subject = $this->createSubject();
         $other = $this->createSubject();
         $before = (new DateTimeImmutable())->format('Y-m-d H:i:s');
-        $response = $this->action($subject['identities'])();
+        $response = $this->action($subject['identities'])(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'Private person']));
         $after = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $this->assertSame(204, $response->getStatusCode());
         foreach ($subject as $table => $id) {
@@ -95,7 +96,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         });
 
         try {
-            $this->action($subject['identities'])();
+            $this->action($subject['identities'])(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'Private person']));
             $this->fail('Expected transaction rollback');
         } catch (InternalServerErrorHttpException $exception) {
             $this->assertSame($failure, $exception->getPrevious());
