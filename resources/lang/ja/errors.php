@@ -48,6 +48,7 @@ return [
     'invalid_auth_code' => '認証コードが一致しません。',
     'invalid_delegation' => '委任の操作が無効です。',
     'identity_not_found' => '指定されたアイデンティティが見つかりません。',
+    'contact_not_found' => '指定されたお問い合わせが見つかりません。',
     'already_user_exists' => 'ユーザーは既に存在します。',
     'unauthorized_email' => 'メールアドレスが認証されていません。',
     'auth_code_session_not_found' => '認証コードセッションが見つかりません。',
