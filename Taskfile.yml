@@ -44,7 +44,6 @@ tasks:
       - docker-compose up -d {{.API_SERVICES}}
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan migrate --force'
-      - '{{.PHP_RUN}} php artisan db:seed'
 
   down:
     desc: Stop the API stack
