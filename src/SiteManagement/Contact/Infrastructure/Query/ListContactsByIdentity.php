@@ -7,12 +7,14 @@ namespace Source\SiteManagement\Contact\Infrastructure\Query;
 use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityOutputPort;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use UnexpectedValueException;
 
 readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
 {
@@ -44,7 +46,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
             ->orderBy('id')
             ->get()
             ->groupBy('contact_id')
-            ->map(static fn ($replies): array => $replies->pluck('id')->all())
+            ->map(static fn (Collection $replies): array => $replies->map(static fn (ContactReplyModel $reply): string => $reply->id)->values()->all())
             ->all();
 
         $contacts = $contacts
@@ -54,7 +56,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
                 category: (int) $contact->category,
                 name: (string) $contact->name,
                 replyIdentifiers: $replyIdentifiersByContactIdentifier[(string) $contact->id] ?? [],
-                createdAt: $contact->created_at->format(DateTimeInterface::ATOM),
+                createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
             ))
             ->all();
 

@@ -14,6 +14,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\Get
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutputPort;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use UnexpectedValueException;
 
 readonly class GetContactDetail implements GetContactDetailInterface
 {
@@ -31,7 +32,7 @@ readonly class GetContactDetail implements GetContactDetailInterface
             throw new ContactNotFoundException();
         }
         $replies = ContactReplyModel::query()->select(['id', 'content', 'sent_at'])->where('contact_id', $contact->id)->whereNotNull('sent_at')->whereNull('failed_at')->orderBy('created_at')->orderBy('id')->get()
-            ->map(static fn (ContactReplyModel $reply): array => ['replyIdentifier' => (string) $reply->id, 'content' => (string) $reply->content, 'sentAt' => $reply->sent_at->format(DateTimeInterface::ATOM)])->all();
-        $output->output(new ContactDetailReadModel((string) $contact->id, (string) $contact->identity_identifier, (int) $contact->category, (string) $contact->name, $contact->created_at->format(DateTimeInterface::ATOM), (string) $contact->content, $replies));
+            ->map(static fn (ContactReplyModel $reply): array => ['replyIdentifier' => (string) $reply->id, 'content' => (string) $reply->content, 'sentAt' => ($reply->sent_at ?? throw new UnexpectedValueException('Sent reply timestamp is missing.'))->format(DateTimeInterface::ATOM)])->all();
+        $output->output(new ContactDetailReadModel((string) $contact->id, (string) $contact->identity_identifier, (int) $contact->category, (string) $contact->name, ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM), (string) $contact->content, $replies));
     }
 }

@@ -14,7 +14,7 @@ class GetMyContactDetailRequest extends FormRequest
         return ['contactIdentifier' => ['required', 'uuid']];
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     public function validationData(): array
     {
         return array_merge(parent::validationData(), ['contactIdentifier' => $this->route('contactIdentifier')]);

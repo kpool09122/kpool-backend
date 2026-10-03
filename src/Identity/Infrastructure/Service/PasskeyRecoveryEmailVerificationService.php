@@ -36,7 +36,9 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         $cooldownKey = 'passkey_recovery_email_cooldown:' . $hash;
         $count = TypedValue::numericInt(Redis::get($countKey) ?? '0');
         $windowTtl = (int) Redis::ttl($countKey);
-        if ($count > 0 && $windowTtl < 0) {
+        if ($windowTtl === -2) {
+            $count = 0;
+        } elseif ($count > 0 && $windowTtl === -1) {
             Redis::expire($countKey, 3600);
             $windowTtl = 3600;
         }

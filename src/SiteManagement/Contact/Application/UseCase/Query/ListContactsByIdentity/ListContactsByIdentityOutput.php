@@ -8,10 +8,10 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 
 class ListContactsByIdentityOutput implements ListContactsByIdentityOutputPort
 {
-    /** @var ContactReadModel[] */
+    /** @var array<int, ContactReadModel> */
     private array $contacts = [];
 
-    /** @param ContactReadModel[] $contacts */
+    /** @param array<int, ContactReadModel> $contacts */
     public function output(array $contacts): void
     {
         $this->contacts = $contacts;

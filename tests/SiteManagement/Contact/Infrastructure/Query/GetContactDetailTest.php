@@ -35,7 +35,7 @@ class GetContactDetailTest extends TestCase
         $this->insertContact($contactIdentifier, (string) $target);
 
         $output = new GetContactDetailOutput();
-        $this->app->make(GetContactDetailInterface::class)->process(
+        $this->app()->make(GetContactDetailInterface::class)->process(
             new GetContactDetailInput($requester, $target, new ContactIdentifier($contactIdentifier)),
             $output,
         );
@@ -51,7 +51,7 @@ class GetContactDetailTest extends TestCase
         CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
 
         $this->expectException(UnauthorizedException::class);
-        $this->app->make(GetContactDetailInterface::class)->process(
+        $this->app()->make(GetContactDetailInterface::class)->process(
             new GetContactDetailInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier(StrTestHelper::generateUuid())),
             new GetContactDetailOutput(),
         );
@@ -67,7 +67,7 @@ class GetContactDetailTest extends TestCase
         $this->insertContact($contactIdentifier, StrTestHelper::generateUuid());
 
         $this->expectException(ContactNotFoundException::class);
-        $this->app->make(GetContactDetailInterface::class)->process(
+        $this->app()->make(GetContactDetailInterface::class)->process(
             new GetContactDetailInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
             new GetContactDetailOutput(),
         );
@@ -75,6 +75,6 @@ class GetContactDetailTest extends TestCase
 
     private function insertContact(string $id, string $identityIdentifier): void
     {
-        DB::table('contacts')->insert(['id' => $id, 'identity_identifier' => $identityIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
+        DB::table('contacts')->insert(['id' => $id, 'identity_identifier' => $identityIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
     }
 }
