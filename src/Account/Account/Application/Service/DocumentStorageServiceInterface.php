@@ -35,15 +35,8 @@ interface DocumentStorageServiceInterface
      */
     public function get(DocumentPath $path): ?string;
 
-    /**
-     * Delete a document file.
-     *
-     * @param DocumentPath $path
-     * @return bool
-     */
-    public function delete(DocumentPath $path): bool;
-
-    public function deleteAfterCommit(DocumentPath $path): void;
+    /** Delete after commit when a transaction is active; otherwise delete immediately. */
+    public function delete(DocumentPath $path): void;
 
     /**
      * Check if a document exists.

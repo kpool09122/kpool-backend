@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUser;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUserInput;
 use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUserInterface;
+use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUserOutput;
 use Source\SiteManagement\User\Domain\Entity\User;
 use Source\SiteManagement\User\Domain\Exception\AlreadyUserExistsException;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
@@ -77,7 +78,10 @@ class ProvisionUserTest extends TestCase
         $this->app()->instance(UserFactoryInterface::class, $userFactory);
 
         $provisionUser = $this->app()->make(ProvisionUserInterface::class);
-        $result = $provisionUser->process($input);
+        $output = new ProvisionUserOutput();
+        $provisionUser->process($input, $output);
+        $result = $output->user();
+        $this->assertNotNull($result);
 
         $this->assertSame($user, $result);
     }
@@ -114,6 +118,6 @@ class ProvisionUserTest extends TestCase
         $this->expectException(AlreadyUserExistsException::class);
 
         $provisionUser = $this->app()->make(ProvisionUserInterface::class);
-        $provisionUser->process($input);
+        $provisionUser->process($input, new ProvisionUserOutput());
     }
 }

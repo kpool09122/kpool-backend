@@ -57,6 +57,7 @@ class Account extends Model
         ];
     }
 
+    /** @return HasMany<AccountDocument, $this> */
     public function documents(): HasMany
     {
         return $this->hasMany(AccountDocument::class, 'account_id', 'id');

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -19,7 +18,7 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
     ) {
     }
 
-    public function process(CreateAnnouncementInputPort $input): DraftAnnouncement
+    public function process(CreateAnnouncementInputPort $input, CreateAnnouncementOutputPort $output): void
     {
         $user = $this->userRepository->findById($input->userIdentifier());
         if (! $user?->isAdmin()) {
@@ -37,6 +36,6 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
 
         $this->announcementRepository->saveDraft($draftAnnouncement);
 
-        return $draftAnnouncement;
+        $output->setDraftAnnouncement($draftAnnouncement);
     }
 }

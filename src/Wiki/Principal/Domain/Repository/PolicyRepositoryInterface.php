@@ -10,6 +10,8 @@ use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 
 interface PolicyRepositoryInterface
 {
+    public function deleteByAccountIdentifier(AccountIdentifier $accountIdentifier): void;
+
     public function save(Policy $policy): void;
 
     public function findSystemByName(string $name): ?Policy;

@@ -6,6 +6,8 @@ namespace Source\Account\Account\Infrastructure\Repository;
 
 use Application\Models\Account\Account as AccountEloquent;
 use Application\Models\Account\AccountDocument as AccountDocumentEloquent;
+use Application\Models\Account\Policy as PolicyEloquent;
+use Application\Models\Account\Role as RoleEloquent;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -74,6 +76,22 @@ class AccountRepository implements AccountRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    public function findByIds(array $identifiers): array
+    {
+        if ($identifiers === []) {
+            return [];
+        }
+
+        $ids = array_map(static fn (AccountIdentifier $identifier): string => (string) $identifier, $identifiers);
+
+        return AccountEloquent::query()
+            ->with('documents')
+            ->whereIn('id', $ids)
+            ->get()
+            ->map(fn (AccountEloquent $eloquent): Account => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     public function findByEmail(Email $email): ?Account
     {
         $eloquent = AccountEloquent::query()
@@ -90,6 +108,9 @@ class AccountRepository implements AccountRepositoryInterface
 
     public function delete(Account $account): void
     {
+        // Account-owned authorization rows do not have an Account foreign key.
+        RoleEloquent::query()->where('account_id', (string) $account->accountIdentifier())->delete();
+        PolicyEloquent::query()->where('account_id', (string) $account->accountIdentifier())->delete();
         AccountEloquent::query()
             ->where('id', (string) $account->accountIdentifier())
             ->delete();

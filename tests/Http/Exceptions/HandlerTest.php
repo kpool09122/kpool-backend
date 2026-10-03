@@ -6,9 +6,11 @@ namespace Tests\Http\Exceptions;
 
 use Application\Http\Exceptions\Handler;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Mockery;
+use Mockery\MockInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,9 +20,11 @@ class HandlerTest extends TestCase
 {
     public function testRenderJsonReturnsNotFoundForPrincipalNotFound(): void
     {
-        Log::shouldReceive('warning')->once();
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('warning')->once();
 
-        $handler = new Handler();
+        $handler = new Handler($logger);
         $response = $handler(new PrincipalNotFoundException(), $this->jsonRequest());
 
         $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
@@ -34,9 +38,11 @@ class HandlerTest extends TestCase
 
     public function testRenderJsonLogsUnhandledServerException(): void
     {
-        Log::shouldReceive('error')->once();
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
 
-        $handler = new Handler();
+        $handler = new Handler($logger);
         $response = $handler(new RuntimeException('boom'), $this->jsonRequest());
 
         $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
@@ -49,13 +55,15 @@ class HandlerTest extends TestCase
 
     public function testRenderJsonReturnsUnprocessableEntityForValidationException(): void
     {
-        Log::shouldReceive('warning')->once();
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('warning')->once();
 
         $validator = Validator::make([], [
             'resourceType' => ['required', 'string'],
         ]);
 
-        $handler = new Handler();
+        $handler = new Handler($logger);
         $response = $handler(new ValidationException($validator), $this->jsonRequest());
 
         $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());

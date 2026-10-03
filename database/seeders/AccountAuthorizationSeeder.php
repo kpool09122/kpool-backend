@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Source\Account\Account\Application\Service\AccountContextInvalidationServiceInterface;
+use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -30,7 +30,7 @@ class AccountAuthorizationSeeder extends Seeder
 {
     public function __construct(
         private readonly PolicyRepositoryInterface $policyRepository,
-        private readonly AccountContextInvalidationServiceInterface $accountContextInvalidationService,
+        private readonly AccountContextServiceInterface $accountContextService,
     ) {
     }
 
@@ -140,7 +140,7 @@ class AccountAuthorizationSeeder extends Seeder
         DB::table('account_principals')
             ->distinct()
             ->pluck('account_id')
-            ->each(fn (string $accountIdentifier) => $this->accountContextInvalidationService->forgetByAccountIdentifier(
+            ->each(fn (string $accountIdentifier) => $this->accountContextService->forgetByAccountIdentifier(
                 new AccountIdentifier($accountIdentifier),
             ));
     }

@@ -11,10 +11,8 @@ use Illuminate\Support\Facades\Validator;
 use Mockery;
 use Mockery\MockInterface;
 use Psr\Log\NullLogger;
-use Source\Identity\Application\Service\StepUpReturnDestinationServiceInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
-use Source\Identity\Domain\ValueObject\StepUpReturnDestination;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\TestCase;
@@ -57,7 +55,5 @@ class RecentAuthenticationContractTest extends TestCase
         foreach ([null, '', 'https://evil.example', '//evil.example', '/settings/passkeys'] as $destination) {
             $this->assertTrue(Validator::make(['returnTo' => $destination], $rules)->fails());
         }
-        $this->assertSame('/settings/passkeys?stepUp=complete', $this->app()->make(StepUpReturnDestinationServiceInterface::class)->resolve(StepUpReturnDestination::PASSKEYS));
-        $this->assertSame('/settings/withdrawal?stepUp=complete', $this->app()->make(StepUpReturnDestinationServiceInterface::class)->resolve(StepUpReturnDestination::WITHDRAWAL));
     }
 }

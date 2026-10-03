@@ -7,7 +7,6 @@ namespace Application\Http\Action\Wiki\Principal\Command\CreateRole;
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreateRoleRequest extends FormRequest
 {
@@ -41,10 +40,10 @@ class CreateRoleRequest extends FormRequest
         return $value === null ? null : RequestValue::strings($value);
     }
 
-    public function accountIdentifier(): ?AccountIdentifier
+    public function accountIdentifier(): ?string
     {
         $accountId = $this->input('accountId');
 
-        return is_string($accountId) ? new AccountIdentifier($accountId) : null;
+        return is_string($accountId) ? $accountId : null;
     }
 }

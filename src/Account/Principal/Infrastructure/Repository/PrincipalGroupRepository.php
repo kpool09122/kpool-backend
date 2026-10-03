@@ -10,6 +10,7 @@ use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Account\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use Application\Models\Account\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
@@ -91,6 +92,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ->get();
 
         return $eloquents->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+    }
+
+    public function findByPrincipalIds(array $principalIdentifiers): array
+    {
+        if ($principalIdentifiers === []) {
+            return [];
+        }
+        $ids = array_map(static fn (PrincipalIdentifier $identifier): string => (string) $identifier, $principalIdentifiers);
+
+        return PrincipalGroupEloquent::query()
+            ->with(['members', 'roleAttachments'])
+            ->whereHas('members', static fn (Builder $query) => $query->whereIn('principal_id', $ids))
+            ->get()
+            ->map(fn (PrincipalGroupEloquent $eloquent): PrincipalGroup => $this->toDomainEntity($eloquent))
+            ->all();
     }
 
     /**

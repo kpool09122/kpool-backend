@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementOutput;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
@@ -85,7 +86,10 @@ class UpdateAnnouncementTest extends TestCase
         $this->app()->instance(UserRepositoryInterface::class, $userRepository);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
-        $announcement = $updateAnnouncement->process($input);
+        $output = new UpdateAnnouncementOutput();
+        $updateAnnouncement->process($input, $output);
+        $announcement = $output->draftAnnouncement();
+        $this->assertNotNull($announcement);
         $this->assertSame((string) $dummy->announcementIdentifier, (string) $announcement->announcementIdentifier());
         $this->assertSame($dummy->language->value, $announcement->translation()->value);
         $this->assertSame($dummy->category->value, $announcement->category()->value);
@@ -126,7 +130,7 @@ class UpdateAnnouncementTest extends TestCase
         $this->app()->instance(UserRepositoryInterface::class, $userRepository);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
-        $updateAnnouncement->process($input);
+        $updateAnnouncement->process($input, new UpdateAnnouncementOutput());
     }
 
     /**
@@ -165,7 +169,7 @@ class UpdateAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->expectException(AnnouncementNotFoundException::class);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
-        $updateAnnouncement->process($input);
+        $updateAnnouncement->process($input, new UpdateAnnouncementOutput());
     }
 
     /**

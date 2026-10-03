@@ -24,5 +24,9 @@ interface ImageServiceInterface
      */
     public function importFromUrl(string $imageUrl): ImagePath;
 
+    /**
+     * トランザクション中はコミット後の削除を予約し、true を返す。
+     * トランザクション外では実際の削除結果を返す。
+     */
     public function delete(ImagePath $path): bool;
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
@@ -25,6 +25,10 @@ class AuthContextCache
     private const string ACTOR_KEY_PREFIX = 'auth-context:actor:';
     private const string ACCOUNT_KEY_PREFIX = 'auth-context:account:';
     private const string WIKI_KEY_PREFIX = 'auth-context:wiki:';
+
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
 
     /** @param callable(): ActorContext $dbResolver */
     public function resolveActor(IdentityIdentifier $identityIdentifier, callable $dbResolver): ActorContext
@@ -196,7 +200,7 @@ class AuthContextCache
         try {
             Redis::del($key);
         } catch (Throwable $exception) {
-            Log::warning('Authentication context cache invalidation failed.', ['exception' => $exception]);
+            $this->logger->warning('Authentication context cache invalidation failed.', ['exception' => $exception]);
         }
     }
 
@@ -208,7 +212,7 @@ class AuthContextCache
         try {
             $keys = Redis::keys($pattern);
         } catch (Throwable $exception) {
-            Log::warning('Authentication context cache enumeration failed.', ['exception' => $exception]);
+            $this->logger->warning('Authentication context cache enumeration failed.', ['exception' => $exception]);
 
             return [];
         }

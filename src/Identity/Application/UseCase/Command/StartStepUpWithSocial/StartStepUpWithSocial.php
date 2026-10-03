@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\StartStepUpWithSocial;
 
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
-use Source\Identity\Application\Service\StepUpReturnDestinationServiceInterface;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
@@ -15,6 +14,7 @@ use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Domain\ValueObject\StepUpOAuthSession;
+use Source\Identity\Domain\ValueObject\StepUpReturnDestination;
 
 readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
 {
@@ -25,7 +25,6 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         private OAuthStateGeneratorInterface $stateGenerator,
         private OAuthStateRepositoryInterface $oAuthStateRepository,
         private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
-        private StepUpReturnDestinationServiceInterface $stepUpReturnDestinationService,
     ) {
     }
 
@@ -41,7 +40,17 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         $generatedState = $this->stateGenerator->generate();
         $state = new OAuthState('step-up-' . $generatedState, $generatedState->expiresAt());
         $this->oAuthStateRepository->store($state);
-        $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession($input->identityIdentifier(), $input->provider(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, $state->expiresAt(), $this->stepUpReturnDestinationService->resolve($input->returnDestination())));
+        $returnTo = match ($input->returnDestination()) {
+            StepUpReturnDestination::PASSKEYS => '/settings/passkeys?stepUp=complete',
+            StepUpReturnDestination::WITHDRAWAL => '/settings/withdrawal?stepUp=complete',
+        };
+        $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession(
+            $input->identityIdentifier(),
+            $input->provider(),
+            StepUpAuthenticationScope::RECENT_AUTHENTICATION,
+            $state->expiresAt(),
+            $returnTo,
+        ));
         $output->setRedirectUrl($this->socialOAuthService->buildRedirectUrl($input->provider(), $state));
     }
 }

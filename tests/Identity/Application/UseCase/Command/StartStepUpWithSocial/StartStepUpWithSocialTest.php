@@ -7,6 +7,7 @@ namespace Tests\Identity\Application\UseCase\Command\StartStepUpWithSocial;
 use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocial;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocialInput;
@@ -42,7 +43,17 @@ class StartStepUpWithSocialTest extends TestCase
         $this->assertInstanceOf(StartStepUpWithSocial::class, $this->app()->make(StartStepUpWithSocialInterface::class));
     }
 
-    public function testItStartsReauthenticationForALinkedProviderWhenNoPasskeyExists(): void
+    /** @return array<string, array{StepUpReturnDestination, string}> */
+    public static function returnDestinations(): array
+    {
+        return [
+            'passkeys' => [StepUpReturnDestination::PASSKEYS, '/settings/passkeys?stepUp=complete'],
+            'withdrawal' => [StepUpReturnDestination::WITHDRAWAL, '/settings/withdrawal?stepUp=complete'],
+        ];
+    }
+
+    #[DataProvider('returnDestinations')]
+    public function testItStartsReauthenticationForALinkedProviderWhenNoPasskeyExists(StepUpReturnDestination $destination, string $returnTo): void
     {
         $generatedState = new OAuthState('generated-state', new DateTimeImmutable('+10 minutes'));
         /** @var MockInterface&OAuthStateRepositoryInterface $oauthStateRepository */
@@ -57,7 +68,7 @@ class StartStepUpWithSocialTest extends TestCase
             Mockery::on(
                 static fn (StepUpOAuthSession $session): bool => (string) $session->identityIdentifier === self::IDENTITY_ID
                 && $session->provider === SocialProvider::GOOGLE
-                && $session->returnTo === '/settings/withdrawal?stepUp=complete',
+                && $session->returnTo === $returnTo,
             ),
         );
         /** @var MockInterface&SocialOAuthServiceInterface $oauth */
@@ -69,7 +80,7 @@ class StartStepUpWithSocialTest extends TestCase
         $this->bindDependencies($this->identity(), [], $oauthStateRepository, $sessions, $oauth, $generatedState);
 
         $output = new StartStepUpWithSocialOutput();
-        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), $output);
+        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input($destination), $output);
 
         $this->assertArrayHasKey('redirectUrl', $output->toArray());
         self::assertTrue(array_key_exists('redirectUrl', $output->toArray()));
@@ -126,9 +137,9 @@ class StartStepUpWithSocialTest extends TestCase
         $this->app()->instance(OAuthStateGeneratorInterface::class, $generator);
     }
 
-    private function input(): StartStepUpWithSocialInput
+    private function input(StepUpReturnDestination $destination = StepUpReturnDestination::WITHDRAWAL): StartStepUpWithSocialInput
     {
-        return new StartStepUpWithSocialInput(new IdentityIdentifier(self::IDENTITY_ID), SocialProvider::GOOGLE, StepUpReturnDestination::WITHDRAWAL);
+        return new StartStepUpWithSocialInput(new IdentityIdentifier(self::IDENTITY_ID), SocialProvider::GOOGLE, $destination);
     }
 
     /** @param SocialConnection[]|null $connections */

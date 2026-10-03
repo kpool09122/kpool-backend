@@ -10,6 +10,8 @@ use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 
 interface RoleRepositoryInterface
 {
+    public function deleteByAccountIdentifier(AccountIdentifier $accountIdentifier): void;
+
     public function save(Role $role): void;
 
     public function findById(RoleIdentifier $roleIdentifier): ?Role;

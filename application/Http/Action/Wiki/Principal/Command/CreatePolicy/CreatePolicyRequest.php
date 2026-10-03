@@ -7,7 +7,6 @@ namespace Application\Http\Action\Wiki\Principal\Command\CreatePolicy;
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreatePolicyRequest extends FormRequest
 {
@@ -38,10 +37,10 @@ class CreatePolicyRequest extends FormRequest
         return RequestValue::objects($this->input('statements'));
     }
 
-    public function accountIdentifier(): ?AccountIdentifier
+    public function accountIdentifier(): ?string
     {
         $accountId = $this->input('accountId');
 
-        return is_string($accountId) ? new AccountIdentifier($accountId) : null;
+        return is_string($accountId) ? $accountId : null;
     }
 }

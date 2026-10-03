@@ -15,6 +15,11 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class OfficialCertificationRepository implements OfficialCertificationRepositoryInterface
 {
+    public function deleteByOwnerAccountIdentifier(AccountIdentifier $accountIdentifier): void
+    {
+        OfficialCertificationModel::query()->where('owner_account_id', (string) $accountIdentifier)->delete();
+    }
+
     public function save(OfficialCertification $entity): void
     {
         OfficialCertificationModel::query()->updateOrCreate(

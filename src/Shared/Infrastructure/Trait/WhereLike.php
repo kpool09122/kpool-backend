@@ -17,7 +17,7 @@ trait WhereLike
      * @param string $value
      * @return EloquentBuilder<TModel>|QueryBuilder
      */
-    public function whereLike(EloquentBuilder|QueryBuilder $query, string $column, string $value): EloquentBuilder|QueryBuilder
+    protected function whereLike(EloquentBuilder|QueryBuilder $query, string $column, string $value): EloquentBuilder|QueryBuilder
     {
         return $query->where($column, 'LIKE', '%' . addcslashes($value, '%_\\') . '%');
     }
@@ -29,7 +29,7 @@ trait WhereLike
      * @param string $value
      * @return EloquentBuilder<TModel>|QueryBuilder
      */
-    public function whereStartsWith(EloquentBuilder|QueryBuilder $query, string $column, string $value): EloquentBuilder|QueryBuilder
+    protected function whereStartsWith(EloquentBuilder|QueryBuilder $query, string $column, string $value): EloquentBuilder|QueryBuilder
     {
         return $query->where($column, 'LIKE', addcslashes($value, '%_\\') . '%');
     }

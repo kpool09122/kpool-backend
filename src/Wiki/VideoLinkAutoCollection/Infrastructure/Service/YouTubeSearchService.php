@@ -9,7 +9,7 @@ use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideo
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\YouTubeVideoInfo;
@@ -28,6 +28,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
 
     public function __construct(
         private readonly YouTubeClient $youTubeClient,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -37,7 +38,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
     public function searchVideos(string $keyword): array
     {
         if (! $this->youTubeClient->isConfigured()) {
-            Log::warning('YouTube API key is not configured');
+            $this->logger->warning('YouTube API key is not configured');
 
             return [];
         }

@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -74,6 +75,65 @@ class AccountRepositoryTest extends TestCase
         $this->assertSame($account->type(), $result->type());
         $this->assertSame((string) $account->name(), (string) $result->name());
         $this->assertSame($account->status(), $result->status());
+    }
+
+    #[Group('useDb')]
+    public function testFindByIdsLoadsAccountAggregatesInTwoQueries(): void
+    {
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
+        $identifiers = [];
+        foreach (range(1, 3) as $index) {
+            $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
+            $identifiers[] = $identifier;
+            $repository->save($this->createTestAccount(
+                accountId: (string) $identifier,
+                documents: new AccountDocuments([
+                    new AccountDocument(
+                        $identifier,
+                        DocumentType::BUSINESS_REGISTRATION,
+                        new DocumentPath('accounts/documents/' . $index . '.pdf'),
+                        new DateTimeImmutable('2026-10-01 00:00:00'),
+                    ),
+                ]),
+            ));
+        }
+        $unrequested = $this->createTestAccount();
+        $repository->save($unrequested);
+
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $accounts = $repository->findByIds([
+                ...$identifiers,
+                $identifiers[0],
+                new AccountIdentifier(StrTestHelper::generateUuid()),
+            ]);
+
+            $this->assertCount(3, $accounts);
+            $this->assertEqualsCanonicalizing(
+                array_map(static fn (AccountIdentifier $identifier): string => (string) $identifier, $identifiers),
+                array_map(static fn (Account $account): string => (string) $account->accountIdentifier(), $accounts),
+            );
+            foreach ($accounts as $account) {
+                $documents = $account->documents()->all();
+                $this->assertCount(1, $documents);
+                $this->assertSame((string) $account->accountIdentifier(), (string) $documents[0]->accountIdentifier());
+                $this->assertSame(DocumentType::BUSINESS_REGISTRATION, $documents[0]->documentType());
+            }
+            $this->assertCount(2, DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    }
+
+    #[Group('useDb')]
+    public function testFindByIdsWithEmptyIdentifiers(): void
+    {
+        $repository = $this->app()->make(AccountRepositoryInterface::class);
+
+        $this->assertSame([], $repository->findByIds([]));
     }
 
     /**

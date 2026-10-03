@@ -53,6 +53,8 @@ use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\Creat
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRole;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DeleteAccountData\DeleteAccountData;
+use Source\Wiki\Principal\Application\UseCase\Command\DeleteAccountData\DeleteAccountDataInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicy;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
@@ -71,6 +73,8 @@ use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\Re
 use Source\Wiki\Principal\Application\UseCase\Command\RevokeWikiAdministrator\RevokeWikiAdministratorInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
+use Source\Wiki\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
@@ -146,6 +150,9 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
+        $this->app->bind(DeleteAccountDataInterface::class, DeleteAccountData::class);
+
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
         $this->app->singleton(GrantWikiAdministratorInterface::class, GrantWikiAdministrator::class);
         $this->app->singleton(RevokeWikiAdministratorInterface::class, RevokeWikiAdministrator::class);

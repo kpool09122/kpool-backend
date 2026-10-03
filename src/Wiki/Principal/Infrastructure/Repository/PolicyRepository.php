@@ -30,6 +30,11 @@ use UnexpectedValueException;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
+    public function deleteByAccountIdentifier(AccountIdentifier $accountIdentifier): void
+    {
+        PolicyEloquent::query()->where('account_id', (string) $accountIdentifier)->delete();
+    }
+
     public function save(Policy $policy): void
     {
         PolicyEloquent::query()->updateOrCreate(

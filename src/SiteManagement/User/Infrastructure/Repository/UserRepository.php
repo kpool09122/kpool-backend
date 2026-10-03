@@ -13,6 +13,11 @@ use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 
 class UserRepository implements UserRepositoryInterface
 {
+    public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
+    {
+        UserEloquent::query()->where('identity_id', (string) $identityIdentifier)->delete();
+    }
+
     public function findById(UserIdentifier $userIdentifier): ?User
     {
         $eloquent = UserEloquent::query()

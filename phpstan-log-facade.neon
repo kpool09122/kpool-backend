@@ -1,0 +1,22 @@
+# Check logging dependencies across the application, including files outside
+# the normal level-10 analysis paths. Jobs are exempt in the rule itself.
+parameters:
+    customRulesetUsed: true
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: storage/framework/cache/phpstan-log-facade
+    # Actions are already checked with this rule in phpstan.neon.
+    excludePaths:
+        analyse:
+            - application/Http/Action
+    paths:
+        - application
+        - bootstrap
+        - config
+        - database
+        - public
+        - routes
+services:
+    -
+        class: Kpool\PHPStan\Rules\ForbiddenLogFacadeRule
+        tags:
+            - phpstan.rules.rule

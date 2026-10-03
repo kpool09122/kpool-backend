@@ -153,6 +153,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 ? $eloquent->email_verified_at->toDateTimeImmutable()
                 : null,
             $socialConnections,
+            $eloquent->created_at?->toDateTimeImmutable(),
         );
     }
 }

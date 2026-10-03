@@ -53,7 +53,10 @@
     "scripts": {
         "cs-fix": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
         "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes",
-        "phpstan": "./vendor/bin/phpstan analyse --memory-limit=1G",
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --memory-limit=1G",
+            "./vendor/bin/phpstan analyse --configuration=phpstan-log-facade.neon --memory-limit=1G"
+        ],
         "test": "vendor/bin/phpunit --coverage-html coverage-html",
         "test-no-report": "vendor/bin/phpunit"
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
@@ -18,10 +17,9 @@ class DeleteAnnouncement implements DeleteAnnouncementInterface
     }
 
     /**
-     * @return Announcement[]
      * @throws UnauthorizedException
      */
-    public function process(DeleteAnnouncementInputPort $input): array
+    public function process(DeleteAnnouncementInputPort $input, DeleteAnnouncementOutputPort $output): void
     {
         $user = $this->userRepository->findById($input->userIdentifier());
         if (! $user?->isAdmin()) {
@@ -36,6 +34,6 @@ class DeleteAnnouncement implements DeleteAnnouncementInterface
             $deletedAnnouncements[] = $announcement;
         }
 
-        return $deletedAnnouncements;
+        $output->setAnnouncements($deletedAnnouncements);
     }
 }

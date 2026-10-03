@@ -36,5 +36,5 @@ interface VideoLinkOperations {
   @doc("Save video links for a wiki.")
   saveVideoLinks(
     @body body: SaveVideoLinksRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }

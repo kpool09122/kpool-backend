@@ -51,6 +51,7 @@ use Source\Wiki\OfficialCertification\Infrastructure\Service\SyncableOwnedWikiRe
 use Source\Wiki\Principal\Application\Service\AffiliationQueryServiceInterface;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
+use Source\Wiki\Principal\Application\Service\WikiContextServiceInterface;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -77,6 +78,7 @@ use Source\Wiki\Principal\Infrastructure\Service\AffiliationConditionValueResolv
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationQueryService;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
+use Source\Wiki\Principal\Infrastructure\Service\WikiContextService;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinks;
@@ -120,6 +122,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(WikiContextServiceInterface::class, WikiContextService::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);

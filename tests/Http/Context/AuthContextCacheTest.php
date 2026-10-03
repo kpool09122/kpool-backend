@@ -9,6 +9,7 @@ use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Context\WikiContext;
 use Illuminate\Support\Facades\Redis;
+use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
@@ -37,7 +38,7 @@ class AuthContextCacheTest extends TestCase
             ]));
         Redis::shouldReceive('setex')->never();
 
-        $context = (new AuthContextCache())->resolveActor(
+        $context = (new AuthContextCache(new NullLogger()))->resolveActor(
             $identityIdentifier,
             fn () => throw new RuntimeException('DB resolver must not be called'),
         );
@@ -63,7 +64,7 @@ class AuthContextCacheTest extends TestCase
                 }
             );
 
-        $context = (new AuthContextCache())->resolveActor(
+        $context = (new AuthContextCache(new NullLogger()))->resolveActor(
             $identityIdentifier,
             fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
@@ -78,7 +79,7 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('get')->once()->andThrow(new RuntimeException('redis down'));
         Redis::shouldReceive('setex')->once();
 
-        $context = (new AuthContextCache())->resolveActor(
+        $context = (new AuthContextCache(new NullLogger()))->resolveActor(
             $identityIdentifier,
             fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
@@ -93,7 +94,7 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('get')->once()->andReturn(null);
         Redis::shouldReceive('setex')->once()->andThrow(new RuntimeException('redis down'));
 
-        $context = (new AuthContextCache())->resolveActor(
+        $context = (new AuthContextCache(new NullLogger()))->resolveActor(
             $identityIdentifier,
             fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );
@@ -130,7 +131,7 @@ class AuthContextCacheTest extends TestCase
         ]));
         Redis::shouldReceive('setex')->never();
 
-        $context = (new AuthContextCache())->resolveAccount(
+        $context = (new AuthContextCache(new NullLogger()))->resolveAccount(
             $identityIdentifier,
             fn () => throw new RuntimeException('DB resolver must not be called'),
         );
@@ -179,7 +180,7 @@ class AuthContextCacheTest extends TestCase
                     && $decoded['accountPolicies'][0]['name'] === 'ACCOUNT_ADMIN_BASIC';
             });
 
-        $context = (new AuthContextCache())->resolveAccount(
+        $context = (new AuthContextCache(new NullLogger()))->resolveAccount(
             $identityIdentifier,
             fn () => new AccountContext(
                 new AccountPrincipal($principalIdentifier, $identityIdentifier, $accountIdentifier),
@@ -225,7 +226,7 @@ class AuthContextCacheTest extends TestCase
         ]));
         Redis::shouldReceive('setex')->never();
 
-        $context = (new AuthContextCache())->resolveAccount(
+        $context = (new AuthContextCache(new NullLogger()))->resolveAccount(
             $identityIdentifier,
             fn () => throw new RuntimeException('DB resolver must not be called'),
         );
@@ -254,7 +255,7 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('get')->once()->andThrow(new RuntimeException('Redis unavailable'));
         Redis::shouldReceive('setex')->once();
 
-        $context = (new AuthContextCache())->resolveAccount($identityIdentifier, fn () => $expected);
+        $context = (new AuthContextCache(new NullLogger()))->resolveAccount($identityIdentifier, fn () => $expected);
 
         $this->assertSame($expected, $context);
     }
@@ -273,7 +274,7 @@ class AuthContextCacheTest extends TestCase
             ]));
         Redis::shouldReceive('setex')->never();
 
-        $context = (new AuthContextCache())->resolveWiki(
+        $context = (new AuthContextCache(new NullLogger()))->resolveWiki(
             $identityIdentifier,
             $accountIdentifier,
             fn () => new WikiContext(new WikiPrincipalIdentifier(StrTestHelper::generateUuid())),
@@ -304,7 +305,7 @@ class AuthContextCacheTest extends TestCase
                 }
             );
 
-        $context = (new AuthContextCache())->resolveWiki(
+        $context = (new AuthContextCache(new NullLogger()))->resolveWiki(
             $identityIdentifier,
             $accountIdentifier,
             fn () => new WikiContext($principalIdentifier),
@@ -320,7 +321,7 @@ class AuthContextCacheTest extends TestCase
         Redis::shouldReceive('get')->once()->andReturn(json_encode(['language' => 'ja']));
         Redis::shouldReceive('setex')->once();
 
-        $context = (new AuthContextCache())->resolveActor(
+        $context = (new AuthContextCache(new NullLogger()))->resolveActor(
             $identityIdentifier,
             fn () => new ActorContext($identityIdentifier, Language::ENGLISH),
         );

@@ -131,7 +131,7 @@ interface PrincipalOperations {
   @doc("Create a principal.")
   createPrincipal(
     @body body: CreatePrincipalRequestBody,
-  ): CreatePrincipalResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreatePrincipalResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @get
   @route("/principal-groups")
@@ -145,7 +145,7 @@ interface PrincipalOperations {
   @doc("Create a principal group.")
   createPrincipalGroup(
     @body body: CreatePrincipalGroupRequestBody,
-  ): CreatePrincipalGroupResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreatePrincipalGroupResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/add-member")
@@ -153,7 +153,7 @@ interface PrincipalOperations {
   addPrincipalToPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
-  ): OkPrincipalGroupResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPrincipalGroupResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/remove-member")
@@ -161,21 +161,21 @@ interface PrincipalOperations {
   removePrincipalFromPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: MutatePrincipalGroupMemberRequestBody,
-  ): OkPrincipalGroupResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkPrincipalGroupResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @patch
   @route("/principal-groups/members")
   @doc("Update members for multiple Wiki principal groups.")
   updatePrincipalGroupMembers(
     @body body: UpdatePrincipalGroupMembersRequestBody,
-  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @delete
   @route("/principal-group/{principalGroupId}")
   @doc("Delete a principal group.")
   deletePrincipalGroup(
     @path principalGroupId: Uuid,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/attach-role")
@@ -183,7 +183,7 @@ interface PrincipalOperations {
   attachRoleToPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: AttachRoleToPrincipalGroupRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/detach-role")
@@ -191,21 +191,21 @@ interface PrincipalOperations {
   detachRoleFromPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: AttachRoleToPrincipalGroupRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/role/create")
   @doc("Create a role.")
   createRole(
     @body body: CreateRoleRequestBody,
-  ): CreateRoleResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreateRoleResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @delete
   @route("/role/{roleId}")
   @doc("Delete a role.")
   deleteRole(
     @path roleId: Uuid,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/role/{roleId}/attach-policy")
@@ -213,7 +213,7 @@ interface PrincipalOperations {
   attachPolicyToRole(
     @path roleId: Uuid,
     @body body: AttachPolicyToRoleRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/role/{roleId}/detach-policy")
@@ -221,19 +221,19 @@ interface PrincipalOperations {
   detachPolicyFromRole(
     @path roleId: Uuid,
     @body body: AttachPolicyToRoleRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/policy/create")
   @doc("Create a policy.")
   createPolicy(
     @body body: CreatePolicyRequestBody,
-  ): CreatePolicyResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreatePolicyResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @delete
   @route("/policy/{policyId}")
   @doc("Delete a policy.")
   deletePolicy(
     @path policyId: Uuid,
-  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 }

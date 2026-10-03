@@ -14,6 +14,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementOutput;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
@@ -96,7 +97,10 @@ class CreateAnnouncementTest extends TestCase
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
-        $announcement = $createAnnouncement->process($input);
+        $output = new CreateAnnouncementOutput();
+        $createAnnouncement->process($input, $output);
+        $announcement = $output->draftAnnouncement();
+        $this->assertNotNull($announcement);
 
         $this->assertTrue(UuidValidator::isValid((string) $announcement->announcementIdentifier()));
         $this->assertSame((string) $dummy->translationSetIdentifier, (string) $announcement->translationSetIdentifier());
@@ -142,7 +146,7 @@ class CreateAnnouncementTest extends TestCase
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
-        $createAnnouncement->process($input);
+        $createAnnouncement->process($input, new CreateAnnouncementOutput());
     }
 
     /**

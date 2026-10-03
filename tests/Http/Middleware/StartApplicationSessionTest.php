@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Http\Middleware;
 
-use Application\Http\Action\Identity\Command\WithdrawIdentity\WithdrawIdentityAction;
+use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\ServiceWithdrawalContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use SessionHandlerInterface;
-use Source\Identity\Application\UseCase\Command\WithdrawIdentity\WithdrawIdentityInterface;
-use Source\Identity\Domain\Service\AuthServiceInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInputPort;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
+use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutputPort;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,20 +37,17 @@ class StartApplicationSessionTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
         $failure = new RuntimeException('Session storage write failed');
-        $middleware = $this->middleware($failure);
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once()->with('Failed to save session after committed identity withdrawal.', ['exception' => $failure]);
+        $middleware = $this->middleware($failure, $logger);
         $request = Request::create('/api/identity/identities/me', 'DELETE');
-        /** @var WithdrawIdentityInterface&MockInterface $withdraw */
-        $withdraw = Mockery::mock(WithdrawIdentityInterface::class);
-        $withdraw->shouldReceive('process')->once()->with($identityIdentifier)->andReturnUsing(static function () use ($identityIdentifier): void {
+        /** @var WithdrawFromServiceInterface&MockInterface $withdraw */
+        $withdraw = Mockery::mock(WithdrawFromServiceInterface::class);
+        $withdraw->shouldReceive('process')->once()->with(Mockery::on(static fn (WithdrawFromServiceInputPort $input): bool => $input->identityIdentifier() === $identityIdentifier), Mockery::type(WithdrawFromServiceOutputPort::class))->andReturnUsing(static function () use ($identityIdentifier): void {
             DB::table('identities')->where('id', (string) $identityIdentifier)->delete();
         });
-        /** @var AuthServiceInterface&MockInterface $auth */
-        $auth = Mockery::mock(AuthServiceInterface::class);
-        $auth->shouldReceive('invalidateAllSessions')->once()->with($identityIdentifier);
-        $auth->shouldReceive('logout')->once();
-        $action = new WithdrawIdentityAction($withdraw, new ActorContext($identityIdentifier, Language::ENGLISH), $auth, new NullLogger(), $request);
-        /** @var MockInterface $log */
-        $log = Log::spy();
+        $action = new WithdrawFromServiceAction($withdraw, new ActorContext($identityIdentifier, Language::ENGLISH), new NullLogger(), $request);
 
         try {
             DB::commit();
@@ -56,9 +55,8 @@ class StartApplicationSessionTest extends TestCase
             $response = (new Pipeline($this->app()))->send($request)->through([$middleware])->then(static fn (): Response => $action());
             $this->assertInstanceOf(Response::class, $response);
             $this->assertSame(204, $response->getStatusCode());
-            $this->assertTrue($request->attributes->get(WithdrawIdentityAction::COMMITTED_ATTRIBUTE));
+            $this->assertTrue(ServiceWithdrawalContext::isCommitted($request));
             $this->assertDatabaseMissing('identities', ['id' => (string) $identityIdentifier]);
-            $log->shouldHaveReceived('error')->once()->with('Failed to save session after committed identity withdrawal.', ['exception' => $failure]);
         } finally {
             while (DB::transactionLevel() > 0) {
                 DB::rollBack();
@@ -74,14 +72,14 @@ class StartApplicationSessionTest extends TestCase
         $request = Request::create('/api/identity/auth/csrf-token', 'GET', server: ['HTTP_X_IDENTITY_WITHDRAWAL_COMMITTED' => 'true']);
 
         try {
-            (new Pipeline($this->app()))->send($request)->through([$this->middleware($failure)])->then(static fn (): Response => response()->noContent());
+            (new Pipeline($this->app()))->send($request)->through([$this->middleware($failure, new NullLogger())])->then(static fn (): Response => response()->noContent());
             $this->fail('An ordinary session-save failure must propagate');
         } catch (RuntimeException $exception) {
             $this->assertSame($failure, $exception);
         }
     }
 
-    private function middleware(RuntimeException $failure): StartApplicationSession
+    private function middleware(RuntimeException $failure, LoggerInterface $logger): StartApplicationSession
     {
         $this->app()['config']->set('session.driver', 'failing-write');
         $this->app()['config']->set('session.lottery', [0, 100]);
@@ -91,6 +89,6 @@ class StartApplicationSessionTest extends TestCase
         $manager = $this->app()->make(SessionManager::class);
         $manager->extend('failing-write', fn () => $handler);
 
-        return new StartApplicationSession($manager);
+        return new StartApplicationSession($manager, $logger);
     }
 }

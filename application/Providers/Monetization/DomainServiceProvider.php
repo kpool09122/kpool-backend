@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Monetization\Account\Application\Service\AccountDeletionServiceInterface;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSeller;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInterface;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
@@ -22,7 +21,6 @@ use Source\Monetization\Account\Infrastructure\Factory\RegisteredPaymentMethodFa
 use Source\Monetization\Account\Infrastructure\Repository\MonetizationAccountRepository;
 use Source\Monetization\Account\Infrastructure\Repository\PayoutAccountRepository;
 use Source\Monetization\Account\Infrastructure\Repository\RegisteredPaymentMethodRepository;
-use Source\Monetization\Account\Infrastructure\Service\AccountDeletionService;
 use Source\Monetization\Account\Infrastructure\Service\ConnectGateway;
 use Source\Monetization\Account\Infrastructure\Service\PaymentMethodMetaResolver;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
@@ -62,7 +60,6 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(AccountDeletionServiceInterface::class, AccountDeletionService::class);
         // Account
         $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
         $this->app->singleton(MonetizationAccountRepositoryInterface::class, MonetizationAccountRepository::class);

@@ -35,7 +35,13 @@ class Identity
         private ?ImagePath $profileImage,
         private ?DateTimeImmutable $emailVerifiedAt,
         private array $socialConnections = [],
+        private readonly ?DateTimeImmutable $createdAt = null,
     ) {
+    }
+
+    public function createdAt(): ?DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
     public function identityIdentifier(): IdentityIdentifier

@@ -326,6 +326,20 @@ class FakeAccountRepository implements AccountRepositoryInterface
         return $this->account;
     }
 
+    public function findByIds(array $identifiers): array
+    {
+        if ($this->account === null) {
+            return [];
+        }
+        foreach ($identifiers as $identifier) {
+            if ((string) $identifier === (string) $this->account->accountIdentifier()) {
+                return [$this->account];
+            }
+        }
+
+        return [];
+    }
+
     public function findByEmail(Email $email): ?Account
     {
         return null;

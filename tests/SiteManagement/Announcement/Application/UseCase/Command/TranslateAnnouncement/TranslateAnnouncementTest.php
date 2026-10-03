@@ -15,6 +15,7 @@ use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnounc
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementOutput;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
@@ -100,7 +101,9 @@ class TranslateAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(TranslationServiceInterface::class, $translationService);
         $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
-        $announcements = $translateAnnouncement->process($input);
+        $output = new TranslateAnnouncementOutput();
+        $translateAnnouncement->process($input, $output);
+        $announcements = $output->announcements();
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->enAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
     }
@@ -135,7 +138,7 @@ class TranslateAnnouncementTest extends TestCase
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(TranslationServiceInterface::class, $translationService);
         $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
-        $translateAnnouncement->process($input);
+        $translateAnnouncement->process($input, new TranslateAnnouncementOutput());
     }
 
     /**
@@ -174,7 +177,7 @@ class TranslateAnnouncementTest extends TestCase
 
         $this->expectException(AnnouncementNotFoundException::class);
         $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
-        $translateAnnouncement->process($input);
+        $translateAnnouncement->process($input, new TranslateAnnouncementOutput());
     }
 
     /**

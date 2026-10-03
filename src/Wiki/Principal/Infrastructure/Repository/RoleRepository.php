@@ -22,6 +22,11 @@ use UnexpectedValueException;
 
 class RoleRepository implements RoleRepositoryInterface
 {
+    public function deleteByAccountIdentifier(AccountIdentifier $accountIdentifier): void
+    {
+        RoleEloquent::query()->where('account_id', (string) $accountIdentifier)->delete();
+    }
+
     public function save(Role $role): void
     {
         RoleEloquent::query()->updateOrCreate(

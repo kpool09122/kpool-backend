@@ -14,6 +14,12 @@ interface AccountRepositoryInterface
 
     public function findById(AccountIdentifier $identifier): ?Account;
 
+    /**
+     * @param AccountIdentifier[] $identifiers
+     * @return Account[]
+     */
+    public function findByIds(array $identifiers): array;
+
     public function findByEmail(Email $email): ?Account;
 
     public function delete(Account $account): void;

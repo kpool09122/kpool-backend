@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementOutput;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
@@ -87,7 +88,9 @@ class DeleteAnnouncementTest extends TestCase
         $this->app()->instance(UserRepositoryInterface::class, $userRepository);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
-        $announcements = $deleteAnnouncement->process($input);
+        $output = new DeleteAnnouncementOutput();
+        $deleteAnnouncement->process($input, $output);
+        $announcements = $output->announcements();
         $this->assertSame((string) $dummy->jaAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
         $this->assertSame((string) $dummy->enAnnouncementIdentifier, (string) $announcements[2]->announcementIdentifier());
@@ -121,7 +124,7 @@ class DeleteAnnouncementTest extends TestCase
         $this->app()->instance(UserRepositoryInterface::class, $userRepository);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
-        $deleteAnnouncement->process($input);
+        $deleteAnnouncement->process($input, new DeleteAnnouncementOutput());
     }
 
     /**
@@ -155,7 +158,9 @@ class DeleteAnnouncementTest extends TestCase
         $this->app()->instance(UserRepositoryInterface::class, $userRepository);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
-        $deletedAnnouncements = $deleteAnnouncement->process($input);
+        $output = new DeleteAnnouncementOutput();
+        $deleteAnnouncement->process($input, $output);
+        $deletedAnnouncements = $output->announcements();
         $this->assertEmpty($deletedAnnouncements);
     }
 
