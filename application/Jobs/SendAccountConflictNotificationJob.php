@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Source\Identity\Application\Service\AuthCodeSendingRateLimitServiceInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
@@ -23,33 +24,23 @@ class SendAccountConflictNotificationJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
-
     public int $backoff = 60;
 
-    public function __construct(
-        private readonly Email $email,
-        private readonly Language $language,
-    ) {
+    public function __construct(private readonly Email $email, private readonly Language $language)
+    {
     }
 
-    public function handle(AuthCodeServiceInterface $authCodeService): void
+    public function handle(AuthCodeServiceInterface $authCodeService, AuthCodeSendingRateLimitServiceInterface $authCodeSendingRateLimitService): void
     {
-        Log::info('SendAccountConflictNotificationJob started', [
-            'email' => (string) $this->email,
-        ]);
-
-        $authCodeService->notifyConflict($this->email, $this->language);
-
-        Log::info('SendAccountConflictNotificationJob completed', [
-            'email' => (string) $this->email,
-        ]);
+        Log::info('SendAccountConflictNotificationJob started', ['email' => (string) $this->email]);
+        if ($authCodeSendingRateLimitService->reserve($this->email)->sendingAllowed) {
+            $authCodeService->notifyConflict($this->email, $this->language);
+        }
+        Log::info('SendAccountConflictNotificationJob completed', ['email' => (string) $this->email]);
     }
 
     public function failed(Throwable $exception): void
     {
-        Log::error('SendAccountConflictNotificationJob failed permanently', [
-            'email' => (string) $this->email,
-            'exception' => $exception->getMessage(),
-        ]);
+        Log::error('SendAccountConflictNotificationJob failed permanently', ['email' => (string) $this->email, 'exception' => $exception->getMessage()]);
     }
 }

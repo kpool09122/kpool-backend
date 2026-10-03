@@ -29,7 +29,7 @@ class GetMyContactDetailTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = StrTestHelper::generateUuid();
         $this->insertContact($contactIdentifier, (string) $identityIdentifier, 'お問い合わせ内容');
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $sentReply = CreateReplyContact::create(
             new ContactIdentifier($contactIdentifier),
             new Email('contact@example.com'),
@@ -52,7 +52,7 @@ class GetMyContactDetailTest extends TestCase
         );
 
         $output = new GetMyContactDetailOutput();
-        $this->app->make(GetMyContactDetailInterface::class)->process(
+        $this->app()->make(GetMyContactDetailInterface::class)->process(
             new GetMyContactDetailInput($identityIdentifier, new ContactIdentifier($contactIdentifier)),
             $output,
         );
@@ -79,7 +79,7 @@ class GetMyContactDetailTest extends TestCase
         $this->insertContact($contactIdentifier, StrTestHelper::generateUuid(), '他人のお問い合わせ内容');
 
         $this->expectException(ContactNotFoundException::class);
-        $this->app->make(GetMyContactDetailInterface::class)->process(
+        $this->app()->make(GetMyContactDetailInterface::class)->process(
             new GetMyContactDetailInput(new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
             new GetMyContactDetailOutput(),
         );
@@ -92,7 +92,7 @@ class GetMyContactDetailTest extends TestCase
             'identity_identifier' => $identityIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => '問い合わせ者',
-            'email' => $this->app->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'),
+            'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'),
             'content' => $content,
             'language' => 'ja',
             'created_at' => '2026-08-16 10:00:00',

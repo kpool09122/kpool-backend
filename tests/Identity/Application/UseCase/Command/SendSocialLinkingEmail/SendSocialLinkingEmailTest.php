@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSession;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmail;
@@ -38,14 +39,14 @@ class SendSocialLinkingEmailTest extends TestCase
         $identities = Mockery::mock(IdentityRepositoryInterface::class);
         $identities->shouldReceive('findById')->once()->with($id)->andReturn($target === 'deleted' ? null : new Identity($id, new IdentityName('User'), $target === 'changed' ? new Email('new@example.com') : $email, Language::ENGLISH, null, null));
         if ($target === 'valid') {
-            $sessions->shouldReceive('sendCode')->once()->with(Language::JAPANESE);
+            $sessions->shouldReceive('sendCode')->once()->with(Language::JAPANESE)->andReturn(new EmailSendingStatus(true, 4, 60));
         } else {
             $sessions->shouldNotReceive('sendCode');
             $this->expectException(SocialLinkingVerificationFailedException::class);
         }
         $output = new SendSocialLinkingEmailOutput();
         (new SendSocialLinkingEmail($sessions, $identities))->process(new SendSocialLinkingEmailInput(Language::JAPANESE), $output);
-        $this->assertSame(['accepted' => true], $output->toArray());
+        $this->assertSame(['accepted' => true, 'remainingSends' => 4, 'retryAfterSeconds' => 60], $output->toArray());
     }
 
     /** @return array<string, array{string}> */

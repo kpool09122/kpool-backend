@@ -12,6 +12,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use RuntimeException;
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSession;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmailInputPort;
@@ -66,7 +67,7 @@ class SocialLinkingHttpTest extends TestCase
         $useCase = Mockery::mock(SendSocialLinkingEmailInterface::class);
         $useCase->shouldReceive('process')->once()->andReturnUsing(function (SendSocialLinkingEmailInputPort $input, SendSocialLinkingEmailOutputPort $output): void {
             $this->assertSame(Language::JAPANESE, $input->language());
-            $output->setAccepted(true);
+            $output->setStatus(new EmailSendingStatus(true, 4, 60));
         });
         $this->app()->instance(SendSocialLinkingEmailInterface::class, $useCase);
 
@@ -78,7 +79,7 @@ class SocialLinkingHttpTest extends TestCase
             'returnTo' => 'https://evil.example',
         ], ['Accept-Language' => 'ja-JP']);
 
-        $response->assertOk()->assertExactJson(['accepted' => true]);
+        $response->assertOk()->assertExactJson(['accepted' => true, 'remainingSends' => 4, 'retryAfterSeconds' => 60]);
         $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
         $this->assertGuest();
     }

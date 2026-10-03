@@ -497,14 +497,20 @@ model SocialLinkingResponse {
   @body body: SocialLinkingResult;
 }
 
-model SendSocialLinkingEmailResult {
-  @doc("The request was processed. Cooldown or rate-limited requests also return true without sending another email.")
+@doc("Common email-send state returned without revealing whether an account exists or whether delivery completed.")
+model EmailSendingStatusResult {
+  @doc("The valid request was processed. Cooldown or rate-limited requests also return true.")
   accepted: boolean;
+  @doc("Number of sends remaining in the applicable limit after this request. Social linking returns the smaller of the hourly and operation budgets.")
+  remainingSends: int32;
+  @doc("Seconds until another send can be attempted. Zero means immediately available. Null means the social-linking operation cannot send again because its operation limit or expiry was reached.")
+  retryAfterSeconds: int32 | null;
 }
 
-model SendSocialLinkingEmailResponse {
+@doc("200 response containing the common email-send state. Example after the first allowed send: accepted=true, remainingSends=4, retryAfterSeconds=60.")
+model EmailSendingStatusResponse {
   @statusCode statusCode: 200;
-  @body body: SendSocialLinkingEmailResult;
+  @body body: EmailSendingStatusResult;
 }
 
 model VerifySocialLinkingEmailRequestBody {
@@ -534,7 +540,7 @@ interface IdentityAuthOperations {
   @post
   @route("/social/link/email")
   @doc("Request a dedicated code for the pending target's registered email using the same session cookie. No request body is required. Codes expire with the ten-minute pending operation; a successful resend invalidates the old code without resetting failed attempts. A 60-second cooldown and a maximum of five sends per pending operation and per target identity per hour apply; throttled requests return accepted=true without a new code. Invalid or expired pending operations return 422.")
-  sendSocialLinkingEmail(): SendSocialLinkingEmailResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
+  sendSocialLinkingEmail(): EmailSendingStatusResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/social/link/email/verification")
@@ -548,7 +554,7 @@ interface IdentityAuthOperations {
   @doc("Send an auth code to the specified email address.")
   sendAuthCode(
     @body body: SendAuthCodeRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
+  ): EmailSendingStatusResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/verify-email")
@@ -588,7 +594,7 @@ interface IdentityAuthOperations {
   @doc("Send a passkey recovery code while returning the same response whether or not the email is registered.")
   sendPasskeyRecoveryEmail(
     @body body: SendPasskeyRecoveryEmailRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
+  ): EmailSendingStatusResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
 
   @post
   @route("/passkeys/recovery/email/verification")

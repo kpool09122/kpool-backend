@@ -26,7 +26,6 @@ readonly class SendSocialLinkingEmail implements SendSocialLinkingEmailInterface
         if ($identity === null || (string) $identity->email() !== (string) $session->email) {
             throw new SocialLinkingVerificationFailedException();
         }
-        $this->socialLinkingSessionStorageService->sendCode($input->language());
-        $output->setAccepted(true);
+        $output->setStatus($this->socialLinkingSessionStorageService->sendCode($input->language()));
     }
 }

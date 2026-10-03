@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSession;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
@@ -67,32 +68,51 @@ class SocialLinkingSessionStorageService implements SocialLinkingSessionStorageS
         return $this->toSession($this->read($this->key()));
     }
 
-    public function sendCode(Language $language): void
+    public function sendCode(Language $language): EmailSendingStatus
     {
         $key = $this->key();
         $data = $this->read($key);
         if (TypedValue::int($data['attempts']) >= self::MAX_ATTEMPTS) {
             throw new SocialLinkingVerificationFailedException();
         }
-        $now = time();
-        if (TypedValue::int($data['sends']) >= self::MAX_SENDS
-            || TypedValue::int($data['sent_at']) + self::COOLDOWN_SECONDS > $now) {
-            return;
+
+        $operationSends = TypedValue::int($data['sends']);
+        if ($operationSends >= self::MAX_SENDS) {
+            return new EmailSendingStatus(false, 0, null);
         }
+
+        $now = time();
         $sendCountKey = 'social_linking_email_sends:' . hash('sha256', TypedValue::string($data['identity_id']));
-        if (TypedValue::numericInt(Redis::get($sendCountKey) ?? '0') >= self::MAX_SENDS) {
-            return;
+        $hourlySends = TypedValue::numericInt(Redis::get($sendCountKey) ?? '0');
+        $hourlyRemaining = max(0, self::MAX_SENDS - $hourlySends);
+        if ($hourlyRemaining === 0) {
+            return new EmailSendingStatus(false, 0, max(0, (int) Redis::ttl($sendCountKey)));
+        }
+
+        $cooldown = TypedValue::int($data['sent_at']) + self::COOLDOWN_SECONDS - $now;
+        if ($cooldown > 0) {
+            return new EmailSendingStatus(false, min(self::MAX_SENDS - $operationSends, $hourlyRemaining), $cooldown);
         }
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $data['code_hash'] = $this->codeHash($code);
         $data['sent_at'] = $now;
-        $data['sends'] = TypedValue::int($data['sends']) + 1;
+        $data['sends'] = $operationSends + 1;
         $this->write($key, $data);
-        if (TypedValue::numericInt(Redis::incr($sendCountKey)) === 1) {
+        $hourlySends = TypedValue::numericInt(Redis::incr($sendCountKey));
+        if ($hourlySends === 1) {
             Redis::expire($sendCountKey, 3600);
         }
         Mail::to(TypedValue::string($data['email']))->queue(new SocialLinkingCodeMail($language, $code));
+
+        $operationRemaining = self::MAX_SENDS - $data['sends'];
+        $hourlyRemaining = self::MAX_SENDS - $hourlySends;
+        $remaining = min($operationRemaining, $hourlyRemaining);
+        $retryAfter = $operationRemaining === 0
+            ? null
+            : ($hourlyRemaining === 0 ? max(0, (int) Redis::ttl($sendCountKey)) : self::COOLDOWN_SECONDS);
+
+        return new EmailSendingStatus(true, $remaining, $retryAfter);
     }
 
     public function verifyAndConsume(AuthCode $code): SocialLinkingSession

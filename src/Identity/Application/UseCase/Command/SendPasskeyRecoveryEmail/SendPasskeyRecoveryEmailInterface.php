@@ -6,5 +6,5 @@ namespace Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail;
 
 interface SendPasskeyRecoveryEmailInterface
 {
-    public function process(SendPasskeyRecoveryEmailInputPort $input): void;
+    public function process(SendPasskeyRecoveryEmailInputPort $input, SendPasskeyRecoveryEmailOutputPort $output): void;
 }

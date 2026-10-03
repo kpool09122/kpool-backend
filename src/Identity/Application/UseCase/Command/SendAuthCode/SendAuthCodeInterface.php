@@ -6,5 +6,5 @@ namespace Source\Identity\Application\UseCase\Command\SendAuthCode;
 
 interface SendAuthCodeInterface
 {
-    public function process(SendAuthCodeInputPort $input): void;
+    public function process(SendAuthCodeInputPort $input, SendAuthCodeOutputPort $output): void;
 }

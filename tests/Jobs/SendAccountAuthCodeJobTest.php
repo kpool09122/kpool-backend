@@ -9,6 +9,7 @@ use Mockery;
 use Mockery\MockInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInput;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
+use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeOutputPort;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class SendAccountAuthCodeJobTest extends TestCase
             ->with(Mockery::on(
                 static fn (SendAuthCodeInput $input): bool => (string) $input->email() === (string) $email
                     && $input->language() === $language
-            ));
+            ), Mockery::type(SendAuthCodeOutputPort::class));
 
         $job->handle($sendAuthCode);
     }

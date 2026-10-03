@@ -27,7 +27,7 @@ class ListContactsByIdentityTest extends TestCase
 {
     public function testUseCaseIsBoundToInfrastructureQuery(): void
     {
-        $this->assertSame(ListContactsByIdentity::class, $this->app->make(ListContactsByIdentityInterface::class)::class);
+        $this->assertSame(ListContactsByIdentity::class, $this->app()->make(ListContactsByIdentityInterface::class)::class);
     }
 
     #[Group('useDb')]
@@ -44,7 +44,7 @@ class ListContactsByIdentityTest extends TestCase
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-17 10:00:00');
 
         $output = new ListContactsByIdentityOutput();
-        $this->app->make(ListContactsByIdentityInterface::class)->process(new ListContactsByIdentityInput($requester, $target), $output);
+        $this->app()->make(ListContactsByIdentityInterface::class)->process(new ListContactsByIdentityInput($requester, $target), $output);
 
         $this->assertSame([$newer, $older], array_column($output->toArray(), 'contactIdentifier'));
         $this->assertSame([[], []], array_column($output->toArray(), 'replyIdentifiers'));
@@ -62,7 +62,7 @@ class ListContactsByIdentityTest extends TestCase
         CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
 
         $this->expectException(UnauthorizedException::class);
-        $this->app->make(ListContactsByIdentityInterface::class)->process(
+        $this->app()->make(ListContactsByIdentityInterface::class)->process(
             new ListContactsByIdentityInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid())),
             new ListContactsByIdentityOutput(),
         );
@@ -75,7 +75,7 @@ class ListContactsByIdentityTest extends TestCase
             'identity_identifier' => $identityIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => '問い合わせ者',
-            'email' => $this->app->make(EncryptionServiceInterface::class)->encrypt($email),
+            'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt($email),
             'content' => 'お問い合わせ内容',
             'language' => 'ja',
             'created_at' => $createdAt,

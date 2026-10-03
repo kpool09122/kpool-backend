@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\Service\SocialLinking;
 
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
 use Source\Identity\Domain\Exception\SocialLinkingVerificationFailedException;
 use Source\Identity\Domain\ValueObject\AuthCode;
@@ -23,7 +24,7 @@ interface SocialLinkingSessionStorageServiceInterface
      * @throws SocialLinkingSessionInvalidException
      * @throws SocialLinkingVerificationFailedException
      */
-    public function sendCode(Language $language): void;
+    public function sendCode(Language $language): EmailSendingStatus;
 
     /**
      * @throws SocialLinkingSessionInvalidException
