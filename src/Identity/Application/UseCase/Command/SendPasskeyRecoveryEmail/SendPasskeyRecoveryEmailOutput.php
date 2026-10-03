@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail;
+namespace Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail;
 
 use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Shared\Application\Exception\OutputNotInitializedException;
 
-class SendSocialLinkingEmailOutput implements SendSocialLinkingEmailOutputPort
+class SendPasskeyRecoveryEmailOutput implements SendPasskeyRecoveryEmailOutputPort
 {
     private ?EmailSendingStatus $status = null;
 

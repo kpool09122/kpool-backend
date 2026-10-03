@@ -13,9 +13,9 @@ readonly class SendPasskeyRecoveryEmail implements SendPasskeyRecoveryEmailInter
     {
     }
 
-    public function process(SendPasskeyRecoveryEmailInputPort $input): void
+    public function process(SendPasskeyRecoveryEmailInputPort $input, SendPasskeyRecoveryEmailOutputPort $output): void
     {
         $identity = $this->identityRepository->findByEmail($input->email());
-        $this->passkeyRecoveryEmailVerificationService->send($input->email(), $identity?->identityIdentifier(), $input->language());
+        $output->setStatus($this->passkeyRecoveryEmailVerificationService->send($input->email(), $identity?->identityIdentifier(), $input->language()));
     }
 }

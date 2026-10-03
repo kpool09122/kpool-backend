@@ -6,14 +6,15 @@ namespace Application\Http\Action\Identity\Command\SendAuthCode;
 
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInput;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
+use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeOutput;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
-use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 readonly class SendAuthCodeAction
@@ -26,10 +27,10 @@ readonly class SendAuthCodeAction
 
     /**
      * @param SendAuthCodeRequest $request
-     * @return Response
+     * @return JsonResponse
      * @throws InternalServerErrorHttpException
      */
-    public function __invoke(SendAuthCodeRequest $request): Response
+    public function __invoke(SendAuthCodeRequest $request): JsonResponse
     {
         try {
             try {
@@ -44,7 +45,8 @@ readonly class SendAuthCodeAction
             DB::beginTransaction();
 
             try {
-                $this->sendAuthCode->process($input);
+                $output = new SendAuthCodeOutput();
+                $this->sendAuthCode->process($input, $output);
                 DB::commit();
             } catch (Throwable $e) {
                 DB::rollBack();
@@ -61,6 +63,6 @@ readonly class SendAuthCodeAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->noContent();
+        return response()->json($output->toArray())->header('Cache-Control', 'no-store');
     }
 }

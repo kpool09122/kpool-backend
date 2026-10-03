@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Service;
 
 use Application\Mail\PasskeyRecoveryCodeMail;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Psr\Log\LoggerInterface;
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -28,25 +29,29 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
     {
     }
 
-    public function send(Email $email, ?IdentityIdentifier $identityIdentifier, Language $language): void
+    public function send(Email $email, ?IdentityIdentifier $identityIdentifier, Language $language): EmailSendingStatus
     {
         $hash = $this->hash($email);
-        $cooldownSet = Cache::store('redis')->add(
-            'passkey_recovery_email_cooldown:' . $hash,
-            '1',
-            self::COOLDOWN_SECONDS,
-        );
-        if ($cooldownSet === false) {
-            return;
-        }
         $countKey = 'passkey_recovery_email_sends:' . $hash;
+        $cooldownKey = 'passkey_recovery_email_cooldown:' . $hash;
+        $count = TypedValue::numericInt(Redis::get($countKey) ?? '0');
+        $windowTtl = max(0, (int) Redis::ttl($countKey));
+        if ($count >= self::MAX_SENDS) {
+            return new EmailSendingStatus(false, 0, $windowTtl);
+        }
+        $cooldownTtl = max(0, (int) Redis::ttl($cooldownKey));
+        if ($cooldownTtl > 0) {
+            return new EmailSendingStatus(false, self::MAX_SENDS - $count, $cooldownTtl);
+        }
+
         $count = (int) Redis::incr($countKey);
         if ($count === 1) {
             Redis::expire($countKey, 3600);
+            $windowTtl = 3600;
+        } else {
+            $windowTtl = max(0, (int) Redis::ttl($countKey));
         }
-        if ($count > self::MAX_SENDS) {
-            return;
-        }
+        Redis::setex($cooldownKey, self::COOLDOWN_SECONDS, '1');
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Redis::setex('passkey_recovery_email:' . $hash, self::TTL_SECONDS, json_encode([
@@ -60,6 +65,10 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
                 $this->logger->error('Failed to queue passkey recovery code email.', ['exception' => $exception]);
             }
         }
+
+        $remaining = self::MAX_SENDS - $count;
+
+        return new EmailSendingStatus(true, $remaining, $remaining === 0 ? $windowTtl : self::COOLDOWN_SECONDS);
     }
 
     public function verify(Email $email, AuthCode $code): IdentityIdentifier

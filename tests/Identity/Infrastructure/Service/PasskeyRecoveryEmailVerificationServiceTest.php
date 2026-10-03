@@ -6,7 +6,6 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Mail\PasskeyRecoveryCodeMail;
 use Illuminate\Mail\PendingMail;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Mockery;
@@ -31,8 +30,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
     {
         $hash = hash('sha256', self::EMAIL);
         $key = 'passkey_recovery_email:' . $hash;
-        Redis::del($key, $key . ':attempts', 'passkey_recovery_email_sends:' . $hash);
-        Cache::store('redis')->forget('passkey_recovery_email_cooldown:' . $hash);
+        Redis::del($key, $key . ':attempts', 'passkey_recovery_email_sends:' . $hash, 'passkey_recovery_email_cooldown:' . $hash);
         parent::tearDown();
     }
 
@@ -76,16 +74,32 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         }
     }
 
-    public function testHourlySendLimitStopsAfterFiveEmails(): void
+    public function testHourlySendLimitStopsAfterFiveEmailsAndReturnsState(): void
     {
         Mail::fake();
         $email = new Email(self::EMAIL);
         $service = new PasskeyRecoveryEmailVerificationService(new NullLogger());
         $hash = hash('sha256', self::EMAIL);
-        for ($i = 0; $i < 6; $i++) {
-            $service->send($email, new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
-            Cache::store('redis')->forget('passkey_recovery_email_cooldown:' . $hash);
+        $first = $service->send($email, new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
+        $this->assertTrue($first->sendingAllowed);
+        $this->assertSame(4, $first->remainingSends);
+        $this->assertSame(60, $first->retryAfterSeconds);
+        $cooldown = $service->send(new Email('USER@example.com'), new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
+        $this->assertFalse($cooldown->sendingAllowed);
+        $this->assertSame(4, $cooldown->remainingSends);
+        $this->assertContains($cooldown->retryAfterSeconds, [59, 60]);
+
+        for ($send = 2; $send <= 5; $send++) {
+            Redis::del('passkey_recovery_email_cooldown:' . $hash);
+            $status = $service->send($email, new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
         }
+        $this->assertTrue($status->sendingAllowed);
+        $this->assertSame(0, $status->remainingSends);
+        $this->assertGreaterThan(3500, $status->retryAfterSeconds);
+        $sixth = $service->send($email, new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000'), Language::JAPANESE);
+        $this->assertFalse($sixth->sendingAllowed);
+        $this->assertSame(0, $sixth->remainingSends);
+        $this->assertSame('5', Redis::get('passkey_recovery_email_sends:' . $hash));
         Mail::assertQueued(PasskeyRecoveryCodeMail::class, 5);
         Mail::assertNothingSent();
     }

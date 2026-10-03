@@ -8,9 +8,11 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmail;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailInput;
+use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\IdentityName;
@@ -34,17 +36,14 @@ class SendPasskeyRecoveryEmailTest extends TestCase
         $verification = Mockery::mock(PasskeyRecoveryEmailVerificationServiceInterface::class);
         $verification->shouldReceive('send')->once()->with(
             $email,
-            Mockery::on(static fn (?IdentityIdentifier $actual): bool => $exists
-                ? (string) $actual === (string) $identityId
-                : $actual === null),
+            Mockery::on(static fn (?IdentityIdentifier $actual): bool => $exists ? (string) $actual === (string) $identityId : $actual === null),
             Language::JAPANESE,
-        );
+        )->andReturn(new EmailSendingStatus(true, 4, 60));
+        $output = new SendPasskeyRecoveryEmailOutput();
 
-        (new SendPasskeyRecoveryEmail($identityRepository, $verification))->process(
-            new SendPasskeyRecoveryEmailInput($email, Language::JAPANESE),
-        );
+        (new SendPasskeyRecoveryEmail($identityRepository, $verification))->process(new SendPasskeyRecoveryEmailInput($email, Language::JAPANESE), $output);
 
-        $this->addToAssertionCount(1);
+        $this->assertSame(['accepted' => true, 'remainingSends' => 4, 'retryAfterSeconds' => 60], $output->toArray());
     }
 
     /** @return array<array{bool}> */

@@ -6,13 +6,14 @@ namespace Application\Http\Action\Identity\Command\SendPasskeyRecoveryEmail;
 
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailInput;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailInterface;
+use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailOutput;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
-use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 readonly class SendPasskeyRecoveryEmailAction
@@ -23,7 +24,7 @@ readonly class SendPasskeyRecoveryEmailAction
     ) {
     }
 
-    public function __invoke(SendPasskeyRecoveryEmailRequest $request): Response
+    public function __invoke(SendPasskeyRecoveryEmailRequest $request): JsonResponse
     {
         try {
             try {
@@ -35,7 +36,8 @@ readonly class SendPasskeyRecoveryEmailAction
                 throw new UnprocessableEntityHttpException(detail: $exception->getMessage(), previous: $exception);
             }
 
-            $this->useCase->process($input);
+            $output = new SendPasskeyRecoveryEmailOutput();
+            $this->useCase->process($input, $output);
         } catch (UnprocessableEntityHttpException $exception) {
             $this->logger->error((string) $exception);
 
@@ -49,6 +51,6 @@ readonly class SendPasskeyRecoveryEmailAction
             );
         }
 
-        return response()->noContent();
+        return response()->json($output->toArray())->header('Cache-Control', 'no-store');
     }
 }

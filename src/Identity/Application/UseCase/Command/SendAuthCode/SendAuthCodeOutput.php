@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail;
+namespace Source\Identity\Application\UseCase\Command\SendAuthCode;
 
 use Source\Identity\Application\Service\EmailSendingStatus;
 use Source\Shared\Application\Exception\OutputNotInitializedException;
 
-class SendSocialLinkingEmailOutput implements SendSocialLinkingEmailOutputPort
+class SendAuthCodeOutput implements SendAuthCodeOutputPort
 {
     private ?EmailSendingStatus $status = null;
 

@@ -226,6 +226,33 @@ class SocialLinkingSessionStorageServiceTest extends TestCase
         Mail::assertQueued(SocialLinkingCodeMail::class, 5);
     }
 
+    public function testSendingStatusIncludesCooldownAndOperationLimit(): void
+    {
+        $this->issue();
+        $first = $this->socialLinkingSessionStorageService->sendCode(Language::JAPANESE);
+        $this->assertTrue($first->sendingAllowed);
+        $this->assertSame(4, $first->remainingSends);
+        $this->assertSame(60, $first->retryAfterSeconds);
+
+        $cooldown = $this->socialLinkingSessionStorageService->sendCode(Language::JAPANESE);
+        $this->assertFalse($cooldown->sendingAllowed);
+        $this->assertSame(4, $cooldown->remainingSends);
+        $this->assertContains($cooldown->retryAfterSeconds, [59, 60]);
+
+        for ($send = 2; $send <= 5; $send++) {
+            $this->updateData(['sent_at' => time() - 61]);
+            $status = $this->socialLinkingSessionStorageService->sendCode(Language::JAPANESE);
+        }
+        $this->assertTrue($status->sendingAllowed);
+        $this->assertSame(0, $status->remainingSends);
+        $this->assertNull($status->retryAfterSeconds);
+
+        $exhausted = $this->socialLinkingSessionStorageService->sendCode(Language::JAPANESE);
+        $this->assertFalse($exhausted->sendingAllowed);
+        $this->assertSame(0, $exhausted->remainingSends);
+        $this->assertNull($exhausted->retryAfterSeconds);
+    }
+
     public function testPendingSendBudgetStopsAtFiveEmails(): void
     {
         $this->issue();

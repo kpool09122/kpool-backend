@@ -355,8 +355,12 @@ paths:
       description: Send a passkey recovery code while returning the same response whether or not the email is registered.
       parameters: []
       responses:
-        '204':
-          description: Response with no content.
+        '200':
+          description: '200 response containing the common email-send state. Example after the first allowed send: accepted=true, remainingSends=4, retryAfterSeconds=60.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailSendingStatusResult'
         '419':
           description: Client error
           content:
@@ -701,8 +705,12 @@ paths:
       description: Send an auth code to the specified email address.
       parameters: []
       responses:
-        '204':
-          description: Response with no content.
+        '200':
+          description: '200 response containing the common email-send state. Example after the first allowed send: accepted=true, remainingSends=4, retryAfterSeconds=60.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailSendingStatusResult'
         '419':
           description: Client error
           content:
@@ -758,11 +766,11 @@ paths:
       parameters: []
       responses:
         '200':
-          description: The request has succeeded.
+          description: '200 response containing the common email-send state. Example after the first allowed send: accepted=true, remainingSends=4, retryAfterSeconds=60.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SendSocialLinkingEmailResult'
+                $ref: '#/components/schemas/EmailSendingStatusResult'
         '419':
           description: Client error
           content:
@@ -1496,6 +1504,26 @@ components:
           nullable: true
           description: Application return path retained for signup completion.
       description: Request body for starting passkey registration.
+    EmailSendingStatusResult:
+      type: object
+      required:
+        - accepted
+        - remainingSends
+        - retryAfterSeconds
+      properties:
+        accepted:
+          type: boolean
+          description: The valid request was processed. Cooldown or rate-limited requests also return true.
+        remainingSends:
+          type: integer
+          format: int32
+          description: Number of sends remaining in the applicable limit after this request. Social linking returns the smaller of the hourly and operation budgets.
+        retryAfterSeconds:
+          type: integer
+          format: int32
+          nullable: true
+          description: Seconds until another send can be attempted. Zero means immediately available. Null means the social-linking operation cannot send again because its operation limit or expiry was reached.
+      description: Common email-send state returned without revealing whether an account exists or whether delivery completed.
     EmptyJsonArray:
       type: array
       items: {}
@@ -1957,14 +1985,6 @@ components:
           type: string
           description: Registered email address that will receive the recovery code when it exists.
       description: Request body for sending a passkey recovery verification code.
-    SendSocialLinkingEmailResult:
-      type: object
-      required:
-        - accepted
-      properties:
-        accepted:
-          type: boolean
-          description: The request was processed. Cooldown or rate-limited requests also return true without sending another email.
     SocialLinkingResult:
       type: object
       required:
