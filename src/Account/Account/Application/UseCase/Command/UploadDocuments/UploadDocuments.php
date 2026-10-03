@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -19,7 +20,7 @@ readonly class UploadDocuments implements UploadDocumentsInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
-        private DocumentStorageServiceInterface $storageService,
+        private DocumentStorageServiceInterface $documentStorageService,
         private AccountDocumentFileTypeDetectorInterface $fileTypeDetector,
         private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
     ) {
@@ -36,8 +37,10 @@ readonly class UploadDocuments implements UploadDocumentsInterface
             throw new AccountDocumentUploadForbiddenException();
         }
 
+        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
+
         $this->documentRequirementValidator->validate(
-            $account->type(),
+            $accountType,
             array_map(static fn (DocumentData $document) => $document->documentType, $input->documents()),
         );
 
@@ -55,7 +58,7 @@ readonly class UploadDocuments implements UploadDocumentsInterface
 
         try {
             foreach ($input->documents() as $index => $documentData) {
-                $documentPath = $this->storageService->storeForAccount(
+                $documentPath = $this->documentStorageService->storeForAccount(
                     $input->accountIdentifier(),
                     $documentData->documentType,
                     $fileTypes[$index],
@@ -71,7 +74,7 @@ readonly class UploadDocuments implements UploadDocumentsInterface
             }
         } catch (Throwable $e) {
             foreach ($storedPaths as $path) {
-                $this->storageService->delete($path);
+                $this->documentStorageService->delete($path);
             }
 
             throw new DocumentStorageFailedException('Failed to store account documents: ' . $e->getMessage(), $e);
@@ -82,14 +85,14 @@ readonly class UploadDocuments implements UploadDocumentsInterface
             $this->accountRepository->save($account);
         } catch (Throwable $e) {
             foreach ($storedPaths as $path) {
-                $this->storageService->delete($path);
+                $this->documentStorageService->delete($path);
             }
 
             throw $e;
         }
 
         foreach ($oldPaths as $path) {
-            $this->storageService->deleteAfterCommit($path);
+            $this->documentStorageService->deleteAfterCommit($path);
         }
 
         $output->setDocuments($documents);

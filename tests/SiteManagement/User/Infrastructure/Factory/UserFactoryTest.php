@@ -23,7 +23,7 @@ class UserFactoryTest extends TestCase
     public function testCreate(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $factory = $this->app->make(UserFactoryInterface::class);
+        $factory = $this->app()->make(UserFactoryInterface::class);
         $user = $factory->create($identityIdentifier);
 
         $this->assertTrue(UuidValidator::isValid((string)$user->userIdentifier()));

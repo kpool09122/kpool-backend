@@ -77,11 +77,11 @@ class RecordPaymentTest extends TestCase
                 return $inv === $invoice && $pay === $payment;
             });
 
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
 
-        $useCase = $this->app->make(RecordPaymentInterface::class);
+        $useCase = $this->app()->make(RecordPaymentInterface::class);
 
         $output = new RecordPaymentOutput();
         $useCase->process($input, $output);
@@ -113,11 +113,11 @@ class RecordPaymentTest extends TestCase
         $paymentMatcherService = Mockery::mock(PaymentMatcherServiceInterface::class);
         $paymentMatcherService->shouldNotReceive('match');
 
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
 
-        $useCase = $this->app->make(RecordPaymentInterface::class);
+        $useCase = $this->app()->make(RecordPaymentInterface::class);
 
         $this->expectException(InvoiceNotFoundException::class);
 
@@ -157,11 +157,11 @@ class RecordPaymentTest extends TestCase
         $paymentMatcherService = Mockery::mock(PaymentMatcherServiceInterface::class);
         $paymentMatcherService->shouldNotReceive('match');
 
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
 
-        $useCase = $this->app->make(RecordPaymentInterface::class);
+        $useCase = $this->app()->make(RecordPaymentInterface::class);
 
         $this->expectException(PaymentNotFoundException::class);
 
@@ -204,11 +204,11 @@ class RecordPaymentTest extends TestCase
             ->once()
             ->andThrow(new PaymentAmountMismatchForMatchingException());
 
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-        $this->app->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $this->app()->instance(PaymentRepositoryInterface::class, $paymentRepository);
+        $this->app()->instance(PaymentMatcherServiceInterface::class, $paymentMatcherService);
 
-        $useCase = $this->app->make(RecordPaymentInterface::class);
+        $useCase = $this->app()->make(RecordPaymentInterface::class);
 
         $this->expectException(PaymentAmountMismatchForMatchingException::class);
         $this->expectExceptionMessage('Payment amount does not match invoice total.');

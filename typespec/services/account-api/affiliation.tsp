@@ -20,13 +20,13 @@ model TerminateAffiliationRequestBody {
 @doc("Response returned when an affiliation is created.")
 model CreateAffiliationResponse {
   @statusCode statusCode: 201;
-  @body body: AffiliationSummary;
+  @body body: AffiliationCommandSummary;
 }
 
 @doc("Response returned when an affiliation operation succeeds.")
 model OkAffiliationResponse {
   @statusCode statusCode: 200;
-  @body body: AffiliationSummary;
+  @body body: AffiliationCommandSummary;
 }
 
 @doc("Response returned when listing affiliations succeeds.")
@@ -50,7 +50,7 @@ interface AffiliationOperations {
   @doc("Request an affiliation.")
   requestAffiliation(
     @body body: RequestAffiliationRequestBody,
-  ): CreateAffiliationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreateAffiliationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{affiliationId}/approve")

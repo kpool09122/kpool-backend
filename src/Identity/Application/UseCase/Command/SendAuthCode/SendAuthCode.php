@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SendAuthCode;
 
-use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
-use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
+use DateTimeImmutable;
+use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 
 readonly class SendAuthCode implements SendAuthCodeInterface
 {
     public function __construct(
         private AuthCodeServiceInterface $authCodeService,
-        private IdentityRepositoryInterface  $identityRepository,
-        private AuthCodeSessionFactoryInterface $authCodeSessionFactory,
-        private AuthCodeSessionRepositoryInterface $authCodeSessionRepository,
+        private IdentityRepositoryInterface $identityRepository,
+        private AuthCodeSessionStorageServiceInterface $authCodeSessionStorageService,
     ) {
     }
 
@@ -31,8 +31,8 @@ readonly class SendAuthCode implements SendAuthCodeInterface
         }
 
         $code = $this->authCodeService->generateCode($email);
-        $session = $this->authCodeSessionFactory->create($email, $code);
-        $this->authCodeSessionRepository->save($session);
+        $session = new AuthCodeSession($email, $code, new DateTimeImmutable('now'));
+        $this->authCodeSessionStorageService->store($session);
         $this->authCodeService->send($email, $input->language(), $session);
     }
 }

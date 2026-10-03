@@ -39,7 +39,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             ->orderBy('display_order')
             ->get();
 
-        return $models->map(fn (WikiImageSnapshot $model) => $this->toEntity($model))->toArray();
+        return $models->map(fn (WikiImageSnapshot $model) => $this->toEntity($model))->all();
     }
 
     public function save(ImageSnapshot $imageSnapshot): void

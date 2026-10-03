@@ -27,7 +27,7 @@ class UserRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $this->assertInstanceOf(UserRepository::class, $repository);
     }
 
@@ -45,7 +45,7 @@ class UserRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier);
         CreateUser::create($userIdentifier, $identityIdentifier, ['role' => Role::ADMIN]);
 
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $result = $repository->findById($userIdentifier);
 
         $this->assertNotNull($result);
@@ -64,7 +64,7 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $result = $repository->findById(new UserIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -84,7 +84,7 @@ class UserRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier);
         CreateUser::create($userIdentifier, $identityIdentifier, ['role' => Role::NONE]);
 
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $result = $repository->findByIdentityIdentifier($identityIdentifier);
 
         $this->assertNotNull($result);
@@ -103,7 +103,7 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdentityIdentifierReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -128,7 +128,7 @@ class UserRepositoryTest extends TestCase
             Role::ADMIN,
         );
 
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $repository->save($user);
 
         $this->assertDatabaseHas('site_management_users', [
@@ -158,7 +158,7 @@ class UserRepositoryTest extends TestCase
             Role::ADMIN,
         );
 
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
         $repository->save($updatedUser);
 
         $this->assertDatabaseHas('site_management_users', [
@@ -177,7 +177,7 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveAndFindWithDifferentRoles(): void
     {
-        $repository = $this->app->make(UserRepositoryInterface::class);
+        $repository = $this->app()->make(UserRepositoryInterface::class);
 
         foreach (Role::cases() as $role) {
             $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());

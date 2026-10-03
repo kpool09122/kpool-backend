@@ -14,7 +14,7 @@ class EncryptionServiceTest extends TestCase
      */
     public function testEncryptProducesDifferentString(): void
     {
-        $service = $this->app->make(EncryptionServiceInterface::class);
+        $service = $this->app()->make(EncryptionServiceInterface::class);
 
         $plainText = 'sensitive-secret';
         $encrypted = $service->encrypt($plainText);
@@ -28,7 +28,7 @@ class EncryptionServiceTest extends TestCase
      */
     public function testEncryptCanBeDecrypted(): void
     {
-        $service = $this->app->make(EncryptionServiceInterface::class);
+        $service = $this->app()->make(EncryptionServiceInterface::class);
 
         $plainText = 'sensitive-secret';
         $encrypted = $service->encrypt($plainText);

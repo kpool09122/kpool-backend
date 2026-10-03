@@ -25,7 +25,7 @@ class ListMyContactsTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->assertInstanceOf(ListMyContacts::class, $this->app->make(ListMyContactsInterface::class));
+        $this->assertInstanceOf(ListMyContacts::class, $this->app()->make(ListMyContactsInterface::class));
     }
 
     #[Group('useDb')]
@@ -72,7 +72,7 @@ class ListMyContactsTest extends TestCase
             content: '匿名の内容',
             createdAt: '2026-08-17 11:00:00',
         );
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $sentReply = CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
@@ -107,7 +107,7 @@ class ListMyContactsTest extends TestCase
         $output = new ListMyContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $this->app->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identityIdentifier), $output);
+        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identityIdentifier), $output);
 
         $this->assertCount(2, DB::getQueryLog());
 
@@ -136,7 +136,7 @@ class ListMyContactsTest extends TestCase
     {
         $output = new ListMyContactsOutput();
 
-        $this->app->make(ListMyContactsInterface::class)->process(
+        $this->app()->make(ListMyContactsInterface::class)->process(
             new ListMyContactsInput(new IdentityIdentifier(StrTestHelper::generateUuid())),
             $output,
         );
@@ -153,7 +153,7 @@ class ListMyContactsTest extends TestCase
         string $content,
         string $createdAt,
     ): void {
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
 
         DB::table('contacts')->insert([
             'id' => $id,

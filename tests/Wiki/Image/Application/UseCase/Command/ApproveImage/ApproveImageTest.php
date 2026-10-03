@@ -7,6 +7,7 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\ApproveImage;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -58,15 +59,15 @@ class ApproveImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $this->assertInstanceOf(ApproveImage::class, $approveImage);
     }
 
@@ -84,7 +85,7 @@ class ApproveImageTest extends TestCase
     {
         $testData = $this->createTestDataForNewImage();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
@@ -118,7 +119,7 @@ class ApproveImageTest extends TestCase
                 $testData->altText,
                 Mockery::type(PrincipalIdentifier::class),
                 Mockery::type(PrincipalIdentifier::class),
-                Mockery::type(\DateTimeImmutable::class),
+                Mockery::type(DateTimeImmutable::class),
                 $testData->draftImage->rightsConfirmationAgreed(),
             )
             ->andReturn($testData->image);
@@ -141,16 +142,16 @@ class ApproveImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
 
@@ -188,16 +189,16 @@ class ApproveImageTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
     }
@@ -215,7 +216,7 @@ class ApproveImageTest extends TestCase
     {
         $testData = $this->createTestDataWithInvalidStatus();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
@@ -245,17 +246,17 @@ class ApproveImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(InvalidStatusException::class);
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
     }
@@ -274,7 +275,7 @@ class ApproveImageTest extends TestCase
     {
         $testData = $this->createTestDataForExistingImage();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
@@ -346,16 +347,16 @@ class ApproveImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
 
@@ -379,7 +380,7 @@ class ApproveImageTest extends TestCase
     {
         $testData = $this->createTestDataForNewImage();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
@@ -410,17 +411,17 @@ class ApproveImageTest extends TestCase
             ->with($testData->draftImage)
             ->andReturn($resource);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(DisallowedException::class);
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
     }
@@ -460,16 +461,16 @@ class ApproveImageTest extends TestCase
 
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage = $this->app()->make(ApproveImageInterface::class);
         $output = new ApproveImageOutput();
         $approveImage->process($input, $output);
     }

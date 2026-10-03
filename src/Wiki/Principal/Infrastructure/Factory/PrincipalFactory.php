@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Factory;
 
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -20,10 +21,12 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
 
     public function create(
         IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
     ): Principal {
         return new Principal(
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $identityIdentifier,
+            $accountIdentifier,
             null,
             true,
         );
@@ -37,6 +40,7 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
         return new Principal(
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $delegatedIdentityIdentifier,
+            $originalPrincipal->accountIdentifier(),
             $delegationIdentifier,
             true,
         );

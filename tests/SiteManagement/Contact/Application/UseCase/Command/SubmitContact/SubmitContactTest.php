@@ -37,8 +37,8 @@ class SubmitContactTest extends TestCase
     public function test__construct(): void
     {
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
-        $submitContact = $this->app->make(SubmitContactInterface::class);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
+        $submitContact = $this->app()->make(SubmitContactInterface::class);
         $this->assertInstanceOf(SubmitContact::class, $submitContact);
     }
 
@@ -103,10 +103,10 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andReturnNull();
 
-        $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
-        $submitContact = $this->app->make(SubmitContactInterface::class);
+        $this->app()->instance(ContactFactoryInterface::class, $contactFactory);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
+        $submitContact = $this->app()->make(SubmitContactInterface::class);
         $output = new SubmitContactOutput();
         $submitContact->process($input, $output);
 
@@ -177,12 +177,12 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andReturnNull();
 
-        $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ContactFactoryInterface::class, $contactFactory);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);
-        $submitContact = $this->app->make(SubmitContactInterface::class);
+        $submitContact = $this->app()->make(SubmitContactInterface::class);
         $submitContact->process($input, new SubmitContactOutput());
     }
 
@@ -247,12 +247,12 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andReturnNull();
 
-        $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
-        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app()->instance(ContactFactoryInterface::class, $contactFactory);
+        $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
+        $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);
-        $submitContact = $this->app->make(SubmitContactInterface::class);
+        $submitContact = $this->app()->make(SubmitContactInterface::class);
         $submitContact->process($input, new SubmitContactOutput());
     }
 }

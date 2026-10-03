@@ -18,7 +18,7 @@ class UpdatePrincipalGroupMembersOutput implements UpdatePrincipalGroupMembersOu
         $this->principalGroups = $principalGroups;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{principalGroups: array<int, array{principalGroupIdentifier: string, accountIdentifier: string, name: string, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}>} */
     public function toArray(): array
     {
         return [

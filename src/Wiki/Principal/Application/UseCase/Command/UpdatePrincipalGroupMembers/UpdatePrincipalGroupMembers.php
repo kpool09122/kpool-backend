@@ -103,10 +103,10 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         ) !== null;
     }
 
-    /** @param array<int, PrincipalGroup> $principalGroups */
+    /** @param array<PrincipalGroup> $principalGroups */
     private function assertHasWikiAdministrator(array $principalGroups): void
     {
-        $wikiAdministratorRole = $this->roleRepository->findByName(self::WIKI_ADMINISTRATOR_ROLE);
+        $wikiAdministratorRole = $this->roleRepository->findSystemByName(self::WIKI_ADMINISTRATOR_ROLE);
         if ($wikiAdministratorRole === null) {
             throw new CannotRemoveLastWikiAdministratorException();
         }

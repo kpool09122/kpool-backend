@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -16,19 +20,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $discount_amount
  * @property int $tax_amount
  * @property int $total
- * @property \Illuminate\Support\Carbon $issued_at
- * @property \Illuminate\Support\Carbon $due_date
+ * @property Carbon $issued_at
+ * @property Carbon $due_date
  * @property string $status
  * @property ?string $tax_document_type
  * @property ?string $tax_document_country
  * @property ?string $tax_document_registration_number
- * @property ?\Illuminate\Support\Carbon $tax_document_issue_deadline
+ * @property ?Carbon $tax_document_issue_deadline
  * @property ?string $tax_document_reason
- * @property ?\Illuminate\Support\Carbon $paid_at
- * @property ?\Illuminate\Support\Carbon $voided_at
+ * @property ?Carbon $paid_at
+ * @property ?Carbon $voided_at
  * @property ?string $void_reason
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'order_id',
     'buyer_monetization_account_id',
@@ -49,16 +53,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'voided_at',
     'void_reason',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invoices', keyType: 'string')]
+#[Table(name: 'invoices', keyType: 'string')]
 class Invoice extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -90,12 +90,12 @@ class ContributionPointServiceTest extends TestCase
             ->times(3)
             ->andReturn($this->createSummary());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             $editorId,
             $approverId,
@@ -140,12 +140,12 @@ class ContributionPointServiceTest extends TestCase
             ->times(3)
             ->andReturn($this->createSummary());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             $editorId,
             $approverId,
@@ -186,12 +186,12 @@ class ContributionPointServiceTest extends TestCase
             ->once()
             ->andReturn($this->createSummary());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             null,
             $approverId,
@@ -238,12 +238,12 @@ class ContributionPointServiceTest extends TestCase
             ->times(2)
             ->andReturn($this->createSummary());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             $editorId,
             $approverId,
@@ -290,12 +290,12 @@ class ContributionPointServiceTest extends TestCase
             ->times(3)
             ->andReturn($this->createSummary());
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             $editorId,
             $approverId,
@@ -344,12 +344,12 @@ class ContributionPointServiceTest extends TestCase
         $summaryFactory = Mockery::mock(ContributionPointSummaryFactoryInterface::class);
         $summaryFactory->shouldNotReceive('create');
 
-        $this->app->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
+        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
+        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
 
-        $service = $this->app->make(ContributionPointServiceInterface::class);
+        $service = $this->app()->make(ContributionPointServiceInterface::class);
         $service->grantPoints(
             $editorId,
             $approverId,

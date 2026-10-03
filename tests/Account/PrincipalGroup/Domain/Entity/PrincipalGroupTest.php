@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Account\PrincipalGroup\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
@@ -147,10 +149,11 @@ class PrincipalGroupTest extends TestCase
     public function testAddRoleDoesNotDuplicateRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
 
-        $principalGroup->addRole($roleIdentifier);
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
+        $principalGroup->addRole($role);
 
         $this->assertCount(1, $principalGroup->roles());
         $this->assertTrue($principalGroup->hasRole($roleIdentifier));
@@ -159,13 +162,22 @@ class PrincipalGroupTest extends TestCase
     public function testRemoveRole(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
 
-        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($role);
         $principalGroup->removeRole($roleIdentifier);
 
         $this->assertSame([], $principalGroup->roles());
         $this->assertFalse($principalGroup->hasRole($roleIdentifier));
+    }
+
+    public function testAddRoleRejectsRoleFromAnotherAccount(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+
+        $this->expectException(InvalidArgumentException::class);
+        $principalGroup->addRole($this->createRole(new AccountIdentifier(StrTestHelper::generateUuid())));
     }
 
     private function createPrincipalGroup(): PrincipalGroup
@@ -176,6 +188,16 @@ class PrincipalGroupTest extends TestCase
             name: 'テストグループ',
             isDefault: false,
             createdAt: new DateTimeImmutable(),
+        );
+    }
+
+    private function createRole(?AccountIdentifier $accountIdentifier): Role
+    {
+        return new Role(
+            new RoleIdentifier(StrTestHelper::generateUuid()),
+            'テストロール',
+            [],
+            $accountIdentifier,
         );
     }
 }

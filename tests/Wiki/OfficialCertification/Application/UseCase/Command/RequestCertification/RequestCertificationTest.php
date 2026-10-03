@@ -53,10 +53,10 @@ class RequestCertificationTest extends TestCase
     {
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
 
         $this->assertInstanceOf(RequestCertification::class, $useCase);
     }
@@ -94,11 +94,11 @@ class RequestCertificationTest extends TestCase
             ->with(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier)
             ->andReturn($certification);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
         $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::AGENCY, true);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
 
         $input = new RequestCertificationInput(
             ResourceType::AGENCY,
@@ -141,11 +141,11 @@ class RequestCertificationTest extends TestCase
 
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
         $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::AGENCY, true);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
 
         $input = new RequestCertificationInput(
             ResourceType::AGENCY,
@@ -194,11 +194,11 @@ class RequestCertificationTest extends TestCase
             ->with(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier)
             ->andReturn($certification);
 
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
         $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::AGENCY, true);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
         $output = new RequestCertificationOutput();
 
         $useCase->process(new RequestCertificationInput(
@@ -219,11 +219,11 @@ class RequestCertificationTest extends TestCase
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
         $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::TALENT, false, expectPolicyEvaluation: false);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
         $input = new RequestCertificationInput(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier, $principalIdentifier);
         $output = new RequestCertificationOutput();
 
@@ -240,11 +240,11 @@ class RequestCertificationTest extends TestCase
 
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
-        $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
-        $this->app->instance(OfficialCertificationFactoryInterface::class, $factory);
+        $this->app()->instance(OfficialCertificationRepositoryInterface::class, $repository);
+        $this->app()->instance(OfficialCertificationFactoryInterface::class, $factory);
         $this->registerAuthorizationDependencies($wikiId, $ownerAccountIdentifier, $principalIdentifier, ResourceType::AGENCY, false);
 
-        $useCase = $this->app->make(RequestCertificationInterface::class);
+        $useCase = $this->app()->make(RequestCertificationInterface::class);
         $input = new RequestCertificationInput(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier, $principalIdentifier);
         $output = new RequestCertificationOutput();
 
@@ -270,7 +270,7 @@ class RequestCertificationTest extends TestCase
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')->with($wikiId)->andReturn([$wiki]);
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 
@@ -300,10 +300,10 @@ class RequestCertificationTest extends TestCase
             $policyExpectation->never();
         }
 
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function account(AccountIdentifier $identifier, AccountCategory $category): Account

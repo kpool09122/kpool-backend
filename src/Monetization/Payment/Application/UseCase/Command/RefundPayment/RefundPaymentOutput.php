@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Payment\Application\UseCase\Command\RefundPayment;
 
+use DateTimeInterface;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 
 class RefundPaymentOutput implements RefundPaymentOutputPort
@@ -55,14 +56,14 @@ class RefundPaymentOutput implements RefundPaymentOutputPort
             'paymentMethodLabel' => $this->payment->paymentMethod()->label(),
             'paymentMethodRecurringEnabled' => $this->payment->paymentMethod()->isRecurringEnabled(),
             'status' => $this->payment->status()->value,
-            'createdAt' => $this->payment->createdAt()->format(\DateTimeInterface::ATOM),
-            'authorizedAt' => $this->payment->authorizedAt()?->format(\DateTimeInterface::ATOM),
-            'capturedAt' => $this->payment->capturedAt()?->format(\DateTimeInterface::ATOM),
-            'failedAt' => $this->payment->failedAt()?->format(\DateTimeInterface::ATOM),
+            'createdAt' => $this->payment->createdAt()->format(DateTimeInterface::ATOM),
+            'authorizedAt' => $this->payment->authorizedAt()?->format(DateTimeInterface::ATOM),
+            'capturedAt' => $this->payment->capturedAt()?->format(DateTimeInterface::ATOM),
+            'failedAt' => $this->payment->failedAt()?->format(DateTimeInterface::ATOM),
             'failureReason' => $this->payment->failureReason(),
             'refundedAmount' => $this->payment->refundedMoney()->amount(),
             'refundedCurrency' => $this->payment->refundedMoney()->currency()->value,
-            'lastRefundedAt' => $this->payment->lastRefundedAt()?->format(\DateTimeInterface::ATOM),
+            'lastRefundedAt' => $this->payment->lastRefundedAt()?->format(DateTimeInterface::ATOM),
             'lastRefundReason' => $this->payment->lastRefundReason(),
         ];
     }

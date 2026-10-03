@@ -43,7 +43,7 @@ class InvoiceRepositoryTest extends TestCase
             'status' => InvoiceStatus::ISSUED,
         ]);
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $result = $repository->findById($invoiceIdentifier);
 
         $this->assertNotNull($result);
@@ -65,7 +65,7 @@ class InvoiceRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $result = $repository->findById(new InvoiceIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -104,7 +104,7 @@ class InvoiceRepositoryTest extends TestCase
             InvoiceStatus::ISSUED,
         );
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $repository->save($invoice);
 
         $this->assertDatabaseHas('invoices', [
@@ -171,7 +171,7 @@ class InvoiceRepositoryTest extends TestCase
             $paidAt,
         );
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $repository->save($invoice);
 
         $this->assertDatabaseHas('invoices', [
@@ -231,7 +231,7 @@ class InvoiceRepositoryTest extends TestCase
             $taxDocument,
         );
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $repository->save($invoice);
 
         $this->assertDatabaseHas('invoices', [
@@ -285,7 +285,7 @@ class InvoiceRepositoryTest extends TestCase
             InvoiceStatus::ISSUED,
         );
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $repository->save($invoice);
 
         $result = $repository->findById(new InvoiceIdentifier($invoiceId));
@@ -332,7 +332,7 @@ class InvoiceRepositoryTest extends TestCase
             'キャンセルのため',
         );
 
-        $repository = $this->app->make(InvoiceRepositoryInterface::class);
+        $repository = $this->app()->make(InvoiceRepositoryInterface::class);
         $repository->save($invoice);
 
         $result = $repository->findById(new InvoiceIdentifier($invoiceId));

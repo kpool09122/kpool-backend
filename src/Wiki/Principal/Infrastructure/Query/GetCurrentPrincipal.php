@@ -21,6 +21,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
         $principal = PrincipalModel::query()
             ->with('memberships.principalGroup.roleAttachments.role.policyAttachments.policy')
             ->where('identity_id', (string) $input->identityIdentifier())
+            ->where('account_id', (string) $input->accountIdentifier())
             ->first();
 
         if ($principal === null) {
@@ -37,12 +38,12 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
             identityIdentifier: $principal->identity_id,
             isDelegatedPrincipal: $principal->delegation_identifier !== null,
             isEnabled: $principal->enabled,
-            policies: $this->effectivePolicies($principal),
+            policies: array_values($this->effectivePolicies($principal)),
         );
     }
 
     /**
-     * @return array<int, array{policyIdentifier: string, name: string, isSystemPolicy: bool, statements: array<int, array<string, mixed>>}>
+     * @return array<array-key, array{policyIdentifier: string, name: string, isSystemPolicy: bool, statements: array<array-key, array<string, mixed>>}>
      */
     private function effectivePolicies(PrincipalModel $principal): array
     {
@@ -80,21 +81,21 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
     }
 
     /**
-     * @return array{policyIdentifier: string, name: string, isSystemPolicy: bool, statements: array<int, array<string, mixed>>}
+     * @return array{policyIdentifier: string, name: string, isSystemPolicy: bool, statements: array<array-key, array<string, mixed>>}
      */
     private function toPolicyArray(PolicyModel $policy): array
     {
         return [
             'policyIdentifier' => $policy->id,
             'name' => $policy->name,
-            'isSystemPolicy' => $policy->is_system_policy,
+            'isSystemPolicy' => $policy->account_id === null,
             'statements' => array_map($this->toStatementArray(...), $policy->statements),
         ];
     }
 
     /**
      * @param array{effect: string, actions: array<string>, resource_types: array<string>, condition?: array<array{key: string, operator: string, value: string|bool}>|null} $statement
-     * @return array{effect: string, actions: array<string>, resourceTypes: array<string>, condition: array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null}
+     * @return array{effect: string, actions: array<string>, resourceTypes: array<string>, condition: array{clauses: array<array-key, array{field: string, operator: string, value: string|bool}>}|null}
      */
     private function toStatementArray(array $statement): array
     {
@@ -108,7 +109,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
 
     /**
      * @param array<array{key: string, operator: string, value: string|bool}>|null $condition
-     * @return array{clauses: array<int, array{field: string, operator: string, value: string|bool}>}|null
+     * @return array{clauses: array<array-key, array{field: string, operator: string, value: string|bool}>}|null
      */
     private function toConditionArray(?array $condition): ?array
     {

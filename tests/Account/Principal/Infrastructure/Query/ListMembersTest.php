@@ -15,6 +15,7 @@ use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization;
 use Source\Account\Principal\Infrastructure\Query\ListMembers;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -28,8 +29,8 @@ class ListMembersTest extends TestCase
 {
     public function test__construct(): void
     {
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->assertInstanceOf(ListMembers::class, $this->app->make(ListMembersInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->assertInstanceOf(ListMembers::class, $this->app()->make(ListMembersInterface::class));
     }
 
     #[Group('useDb')]
@@ -66,7 +67,7 @@ class ListMembersTest extends TestCase
             ->with($principal, Action::PRINCIPAL_GROUP_MANAGE, Mockery::type(Resource::class))
             ->andReturnTrue();
 
-        $members = (new ListMembers(new \Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization($policyEvaluator)))->process(
+        $members = (new ListMembers(new PrincipalGroupManageAuthorization($policyEvaluator)))->process(
             new ListMembersInput($accountIdentifier, $principal),
         );
 
@@ -95,7 +96,7 @@ class ListMembersTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnFalse();
 
         $this->expectException(AccountUpdateForbiddenException::class);
-        (new ListMembers(new \Source\Account\Principal\Infrastructure\Query\Authorization\PrincipalGroupManageAuthorization($policyEvaluator)))
+        (new ListMembers(new PrincipalGroupManageAuthorization($policyEvaluator)))
             ->process(new ListMembersInput($accountIdentifier, $principal));
     }
 

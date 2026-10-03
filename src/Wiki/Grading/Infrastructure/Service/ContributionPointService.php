@@ -20,8 +20,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 readonly class ContributionPointService implements ContributionPointServiceInterface
 {
     public function __construct(
-        private ContributionPointHistoryRepositoryInterface $historyRepository,
-        private ContributionPointSummaryRepositoryInterface $summaryRepository,
+        private ContributionPointHistoryRepositoryInterface $contributionPointHistoryRepository,
+        private ContributionPointSummaryRepositoryInterface $contributionPointSummaryRepository,
         private ContributionPointHistoryFactoryInterface    $historyFactory,
         private ContributionPointSummaryFactoryInterface    $summaryFactory,
     ) {
@@ -108,7 +108,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         bool                $isNewCreation,
     ): Point {
         // Check cooldown for editor only
-        $lastPublishDate = $this->historyRepository->findLastPublishDate(
+        $lastPublishDate = $this->contributionPointHistoryRepository->findLastPublishDate(
             $editorIdentifier,
             $resourceType,
             $wikiIdentifier,
@@ -146,7 +146,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
             $createdAt,
         );
 
-        $this->historyRepository->save($history);
+        $this->contributionPointHistoryRepository->save($history);
     }
 
     private function updateSummary(
@@ -154,7 +154,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         YearMonth $yearMonth,
         Point $points,
     ): void {
-        $existingSummary = $this->summaryRepository->findByPrincipalAndYearMonth(
+        $existingSummary = $this->contributionPointSummaryRepository->findByPrincipalAndYearMonth(
             $principalIdentifier,
             $yearMonth,
         );
@@ -162,10 +162,10 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         if ($existingSummary !== null) {
             $existingSummary->addPoints($points);
             $existingSummary->setUpdatedAt(new DateTimeImmutable());
-            $this->summaryRepository->save($existingSummary);
+            $this->contributionPointSummaryRepository->save($existingSummary);
         } else {
             $newSummary = $this->summaryFactory->create($principalIdentifier, $yearMonth, $points);
-            $this->summaryRepository->save($newSummary);
+            $this->contributionPointSummaryRepository->save($newSummary);
         }
     }
 }

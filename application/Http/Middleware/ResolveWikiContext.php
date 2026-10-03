@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Http\Middleware;
 
+use Application\Http\Context\AccountContext;
+use Application\Http\Context\AccountResolver;
 use Application\Http\Context\ActorContext;
-use Application\Http\Context\AuthContextCache;
 use Application\Http\Context\PrincipalResolver;
 use Application\Http\Context\WikiContext;
 use Closure;
@@ -16,7 +17,7 @@ class ResolveWikiContext
 {
     public function __construct(
         private readonly PrincipalResolver $principalResolver,
-        private readonly AuthContextCache $cache,
+        private readonly AccountResolver $accountResolver,
     ) {
     }
 
@@ -24,15 +25,12 @@ class ResolveWikiContext
     {
         /** @var ActorContext $actorContext */
         $actorContext = app(ActorContext::class);
-
-        $wikiContext = $this->cache->resolveWiki(
-            $actorContext->identityIdentifier,
-            fn () => new WikiContext(
-                principalIdentifier: $this->principalResolver->resolve($actorContext->identityIdentifier),
-            ),
-        );
-
-        app()->instance(WikiContext::class, $wikiContext);
+        /** @var AccountContext $accountContext */
+        $accountContext = app()->bound(AccountContext::class)
+            ? app(AccountContext::class)
+            : $this->accountResolver->resolve($actorContext->identityIdentifier);
+        app()->instance(AccountContext::class, $accountContext);
+        app()->instance(WikiContext::class, new WikiContext($this->principalResolver->resolve($accountContext)));
 
         return $next($request);
     }

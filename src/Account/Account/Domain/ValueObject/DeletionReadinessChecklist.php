@@ -16,17 +16,11 @@ readonly class DeletionReadinessChecklist
      */
     public function __construct(array $blockers = [])
     {
-        $this->blockers = array_values(
-            array_reduce(
-                $blockers,
-                static function (array $carry, DeletionBlockReason $reason): array {
-                    $carry[$reason->value] = $reason;
-
-                    return $carry;
-                },
-                []
-            )
-        );
+        $unique = [];
+        foreach ($blockers as $reason) {
+            $unique[$reason->value] = $reason;
+        }
+        $this->blockers = array_values($unique);
     }
 
     public static function ready(): self

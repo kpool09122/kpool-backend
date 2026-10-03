@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\RejectAccountCategoryChangeRequest;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RejectAccountCategoryChangeRequestRequest extends FormRequest
@@ -35,11 +36,13 @@ class RejectAccountCategoryChangeRequestRequest extends FormRequest
 
     public function rejectionReasonCode(): string
     {
-        return (string) $this->input('rejectionReasonCode');
+        return RequestValue::string($this->input('rejectionReasonCode'));
     }
 
     public function rejectionReasonDetail(): ?string
     {
-        return $this->input('rejectionReasonDetail');
+        $value = $this->input('rejectionReasonDetail');
+
+        return $value === null ? null : RequestValue::string($value);
     }
 }

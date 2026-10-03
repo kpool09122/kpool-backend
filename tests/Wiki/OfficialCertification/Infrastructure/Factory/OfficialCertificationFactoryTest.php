@@ -24,7 +24,7 @@ class OfficialCertificationFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(OfficialCertificationFactoryInterface::class);
+        $factory = $this->app()->make(OfficialCertificationFactoryInterface::class);
         $this->assertInstanceOf(OfficialCertificationFactory::class, $factory);
     }
 
@@ -39,7 +39,7 @@ class OfficialCertificationFactoryTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $factory = $this->app->make(OfficialCertificationFactoryInterface::class);
+        $factory = $this->app()->make(OfficialCertificationFactoryInterface::class);
         $certification = $factory->create(
             $resourceType,
             $translationSetIdentifier,

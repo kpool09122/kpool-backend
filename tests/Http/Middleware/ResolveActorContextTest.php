@@ -19,14 +19,9 @@ class ResolveActorContextTest extends TestCase
     public function testBindsActorContextToContainerAndSetsLocale(): void
     {
         $identityId = StrTestHelper::generateUuid();
-        $delegationId = StrTestHelper::generateUuid();
-        $originalIdentityId = StrTestHelper::generateUuid();
-
         $identity = new Identity();
         $identity->id = $identityId;
         $identity->language = 'ja';
-        $identity->delegation_identifier = $delegationId;
-        $identity->original_identity_identifier = $originalIdentityId;
 
         Auth::shouldReceive('user')->once()->andReturn($identity);
 
@@ -47,40 +42,6 @@ class ResolveActorContextTest extends TestCase
 
         $this->assertSame($identityId, (string) $actorContext->identityIdentifier);
         $this->assertSame(Language::JAPANESE, $actorContext->language);
-        $this->assertSame($delegationId, (string) $actorContext->delegationIdentifier);
-        $this->assertSame($originalIdentityId, (string) $actorContext->originalIdentityIdentifier);
         $this->assertSame('ja', app()->getLocale());
-    }
-
-    public function testBindsActorContextWithNullDelegation(): void
-    {
-        $identityId = StrTestHelper::generateUuid();
-
-        $identity = new Identity();
-        $identity->id = $identityId;
-        $identity->language = 'en';
-        $identity->delegation_identifier = null;
-        $identity->original_identity_identifier = null;
-
-        Auth::shouldReceive('user')->once()->andReturn($identity);
-
-        $request = Request::create('/api/test', 'GET');
-        Redis::shouldReceive('get')->once()->andReturn(null);
-        Redis::shouldReceive('setex')->once();
-
-        $middleware = app(ResolveActorContext::class);
-
-        $middleware->handle($request, function () {
-            return response('ok');
-        });
-
-        /** @var ActorContext $actorContext */
-        $actorContext = app(ActorContext::class);
-
-        $this->assertSame($identityId, (string) $actorContext->identityIdentifier);
-        $this->assertSame(Language::ENGLISH, $actorContext->language);
-        $this->assertNull($actorContext->delegationIdentifier);
-        $this->assertNull($actorContext->originalIdentityIdentifier);
-        $this->assertSame('en', app()->getLocale());
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -19,19 +22,19 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, PrincipalGroupMembership> $memberships
  * @property-read Collection<int, PrincipalGroupRoleAttachment> $roleAttachments
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'account_id',
     'name',
     'is_default',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principal_groups', keyType: 'string')]
+#[Table(name: 'wiki_principal_groups', keyType: 'string')]
 class PrincipalGroup extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

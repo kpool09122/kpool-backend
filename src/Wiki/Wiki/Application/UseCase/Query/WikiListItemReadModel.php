@@ -42,7 +42,7 @@ readonly class WikiListItemReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikiIdentifier: string, translationSetIdentifier: string, slug: string, language: string, resourceType: string, version: int, isOfficial: bool, themeColor: string|null, fontStyle: string|null, title: string|null, metaDescription: string|null, keywords: list<string>|null, imageIdentifier: string|null, imageUrl: string|null, imageAltText: string|null, isHidden: bool|null, name: string, normalizedName: string, publishedAt: string|null, updatedAt: string|null}
      */
     public function toArray(): array
     {

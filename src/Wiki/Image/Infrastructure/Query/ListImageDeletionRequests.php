@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Query;
 use Application\Models\Wiki\ImageDeletionRequest;
 use Application\Models\Wiki\WikiImage;
 use DateTimeInterface;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\ImageDeletionRequestListItemReadModel;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInputPort;
@@ -80,7 +81,7 @@ readonly class ListImageDeletionRequests implements ListImageDeletionRequestsInt
         $lastPage = max(1, (int) ceil($total / $perPage));
         $pageItems = array_slice($readModels, ($currentPage - 1) * $perPage, $perPage);
 
-        $output->output($pageItems, $currentPage, $lastPage, $total, $perPage);
+        $output->output(array_values($pageItems), $currentPage, $lastPage, $total, $perPage);
     }
 
     private function toReadModel(WikiImage $image, ImageDeletionRequest $request): ImageDeletionRequestListItemReadModel
@@ -112,6 +113,6 @@ readonly class ListImageDeletionRequests implements ListImageDeletionRequestsInt
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 }

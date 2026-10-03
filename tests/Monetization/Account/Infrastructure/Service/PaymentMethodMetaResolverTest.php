@@ -37,9 +37,9 @@ class PaymentMethodMetaResolverTest extends TestCase
                 expYear: 2030,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $resolver = $this->app->make(PaymentMethodMetaResolverInterface::class);
+        $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
         $paymentMethodId = new PaymentMethodId('pm_test1234567890');
         $meta = $resolver->resolve($paymentMethodId);
@@ -71,9 +71,9 @@ class PaymentMethodMetaResolverTest extends TestCase
                 expYear: null,
             ));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $resolver = $this->app->make(PaymentMethodMetaResolverInterface::class);
+        $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
         $meta = $resolver->resolve(new PaymentMethodId('pm_test1234567890'));
 
@@ -97,9 +97,9 @@ class PaymentMethodMetaResolverTest extends TestCase
             ->once()
             ->andThrow(InvalidRequestException::factory('No such payment method', 404));
 
-        $this->app->instance(StripeClient::class, $mockStripeClient);
+        $this->app()->instance(StripeClient::class, $mockStripeClient);
 
-        $resolver = $this->app->make(PaymentMethodMetaResolverInterface::class);
+        $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
         $meta = $resolver->resolve(new PaymentMethodId('pm_test1234567890'));
 

@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Service;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsRequest;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Wiki\Application\Service\TranslatedWikiData;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
@@ -46,7 +47,7 @@ readonly class TranslationService implements TranslationServiceInterface
         // 翻訳対象のテキストを収集
         $texts = [];
         foreach ($translatableKeys as $key) {
-            $texts[] = $basicArray[$key] ?? '';
+            $texts[] = TypedValue::string($basicArray[$key] ?? '');
         }
         $this->collectSectionTexts($wiki->sections(), $texts);
 
@@ -64,12 +65,13 @@ readonly class TranslationService implements TranslationServiceInterface
             $basicArray[$key] = $translations[$offset] ?? $basicArray[$key];
             $offset++;
         }
-        $translatedBasic = match ($basicArray['type']) {
+        $storedBasicType = TypedValue::string($basicArray['type']);
+        $translatedBasic = match ($storedBasicType) {
             'talent' => TalentBasic::fromArray($basicArray),
             'agency' => AgencyBasic::fromArray($basicArray),
             'group' => GroupBasic::fromArray($basicArray),
             'song' => SongBasic::fromArray($basicArray),
-            default => throw new InvalidArgumentException("Unsupported basic type: {$basicArray['type']}"),
+            default => throw new InvalidArgumentException("Unsupported basic type: {$storedBasicType}"),
         };
 
         // セクションを再構築

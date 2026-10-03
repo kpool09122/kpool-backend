@@ -38,10 +38,10 @@ class UpdateAccountTest extends TestCase
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
-        $useCase = $this->app->make(UpdateAccountInterface::class);
+        $useCase = $this->app()->make(UpdateAccountInterface::class);
 
         $this->assertInstanceOf(UpdateAccount::class, $useCase);
     }
@@ -76,6 +76,7 @@ class UpdateAccountTest extends TestCase
         $output = new UpdateAccountOutput();
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('name', $output->toArray()));
         $this->assertSame('Updated Account', $output->toArray()['name']);
     }
 
@@ -120,6 +121,7 @@ class UpdateAccountTest extends TestCase
         $output = new UpdateAccountOutput();
         $useCase->process($input, $output);
 
+        self::assertTrue(array_key_exists('name', $output->toArray()));
         $this->assertSame('Updated Account', $output->toArray()['name']);
     }
 
@@ -218,6 +220,7 @@ class UpdateAccountTest extends TestCase
         $output = new UpdateAccountOutput();
         (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, $output);
 
+        self::assertTrue(array_key_exists('name', $output->toArray()));
         $this->assertSame('Updated Individual Account', $output->toArray()['name']);
     }
 

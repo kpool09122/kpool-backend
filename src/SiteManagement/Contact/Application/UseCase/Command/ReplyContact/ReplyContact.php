@@ -16,6 +16,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Throwable;
+use UnexpectedValueException;
 
 readonly class ReplyContact implements ReplyContactInterface
 {
@@ -23,7 +24,7 @@ readonly class ReplyContact implements ReplyContactInterface
         private ContactRepositoryInterface $contactRepository,
         private ReplyContactFactoryInterface $replyContactFactory,
         private ReplyContactRepositoryInterface $replyContactRepository,
-        private ContactEmailServiceInterface $emailService,
+        private ContactEmailServiceInterface $contactEmailService,
         private UserRepositoryInterface $userRepository,
     ) {
     }
@@ -58,12 +59,13 @@ readonly class ReplyContact implements ReplyContactInterface
         $this->replyContactRepository->save($reply);
 
         try {
-            $this->emailService->sendReplyToUser(
+            $this->contactEmailService->sendReplyToUser(
                 $contact,
                 $content,
             );
         } catch (Throwable $e) {
-            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
+                ?? throw new UnexpectedValueException('Saved contact reply is missing.');
             $failed = new ReplyCotact(
                 $persisted->replyIdentifier(),
                 $persisted->contactIdentifier(),
@@ -80,7 +82,8 @@ readonly class ReplyContact implements ReplyContactInterface
         }
 
         // findById で取得してから送信完了日時を更新
-        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
+                ?? throw new UnexpectedValueException('Saved contact reply is missing.');
         $sentAt = new DateTimeImmutable('now');
         $sent = new ReplyCotact(
             $persisted->replyIdentifier(),

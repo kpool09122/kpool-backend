@@ -48,7 +48,7 @@ class SearchTranslationSetMasterWikisTest extends TestCase
     private function process(ResourceType $resourceType, string $keyword, ?int $limit = null): SearchTranslationSetMasterWikisOutput
     {
         $output = new SearchTranslationSetMasterWikisOutput();
-        $this->app->make(SearchTranslationSetMasterWikisInterface::class)->process(
+        $this->app()->make(SearchTranslationSetMasterWikisInterface::class)->process(
             new SearchTranslationSetMasterWikisInput($resourceType, $keyword, $limit),
             $output,
         );

@@ -13,7 +13,7 @@ class ListRelatedWikisRequest extends FormRequest
 {
     use ResolvesLanguage;
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     public function validationData(): array
     {
         return [

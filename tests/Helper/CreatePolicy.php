@@ -13,7 +13,7 @@ class CreatePolicy
      * @param array{
      *     name?: string,
      *     statements?: array<array{effect: string, actions: array<string>, resource_types: array<string>, condition: array<array{key: string, operator: string, value: string|bool}>|null}>,
-     *     is_system_policy?: bool,
+     *     account_id?: string|null,
      * } $overrides
      */
     public static function create(
@@ -22,7 +22,7 @@ class CreatePolicy
     ): void {
         DB::table('wiki_policies')->insert([
             'id' => (string) $policyIdentifier,
-            'name' => $overrides['name'] ?? 'Test Policy',
+            'name' => $overrides['name'] ?? 'Test Policy ' . (string) $policyIdentifier,
             'statements' => json_encode($overrides['statements'] ?? [
                 [
                     'effect' => 'allow',
@@ -31,7 +31,7 @@ class CreatePolicy
                     'condition' => null,
                 ],
             ]),
-            'is_system_policy' => $overrides['is_system_policy'] ?? false,
+            'account_id' => $overrides['account_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

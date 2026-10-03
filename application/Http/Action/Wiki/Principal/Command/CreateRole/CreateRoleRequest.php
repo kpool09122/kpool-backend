@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Principal\Command\CreateRole;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreateRoleRequest extends FormRequest
 {
@@ -20,13 +22,13 @@ class CreateRoleRequest extends FormRequest
             'name' => ['required', 'string'],
             'policies' => ['nullable', 'array'],
             'policies.*' => ['uuid'],
-            'isSystemRole' => ['required', 'boolean'],
+            'accountId' => ['nullable', 'uuid'],
         ];
     }
 
     public function name(): string
     {
-        return (string) $this->input('name');
+        return RequestValue::string($this->input('name'));
     }
 
     /**
@@ -34,11 +36,15 @@ class CreateRoleRequest extends FormRequest
      */
     public function policies(): ?array
     {
-        return $this->input('policies');
+        $value = $this->input('policies');
+
+        return $value === null ? null : RequestValue::strings($value);
     }
 
-    public function isSystemRole(): bool
+    public function accountIdentifier(): ?AccountIdentifier
     {
-        return (bool) $this->input('isSystemRole');
+        $accountId = $this->input('accountId');
+
+        return is_string($accountId) ? new AccountIdentifier($accountId) : null;
     }
 }

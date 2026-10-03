@@ -6,10 +6,15 @@ namespace Source\Account\Principal\Domain\Repository;
 
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface PolicyRepositoryInterface
 {
     public function save(Policy $policy): void;
+
+    public function findSystemByName(string $name): ?Policy;
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Policy;
 
     /**
      * @param PolicyIdentifier[] $policyIdentifiers
@@ -21,4 +26,6 @@ interface PolicyRepositoryInterface
      * @return Policy[]
      */
     public function findAll(): array;
+
+    public function delete(Policy $policy): void;
 }

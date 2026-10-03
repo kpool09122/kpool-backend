@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePolicy;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyOutput;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
@@ -38,7 +39,7 @@ class CreatePolicyOutputTest extends TestCase
                     null,
                 ),
             ],
-            $isSystemPolicy,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             $createdAt,
         );
 

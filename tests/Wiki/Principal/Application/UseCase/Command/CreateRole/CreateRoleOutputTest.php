@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Application\UseCase\Command\CreateRole;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleOutput;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -28,7 +29,7 @@ class CreateRoleOutputTest extends TestCase
             $roleIdentifier,
             $name,
             [new PolicyIdentifier(StrTestHelper::generateUuid())],
-            $isSystemRole,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             $createdAt,
         );
 

@@ -7,13 +7,12 @@ namespace Tests\Helper;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
-class CreateWiki
-{
-    /**
-     * @param array{
+/**
+ * @phpstan-type WikiOverrides array{
      *     translation_set_identifier?: string,
      *     slug?: string,
      *     language?: string,
+     *     image_identifier?: ?string,
      *     sections?: string,
      *     theme_color?: ?string,
      *     version?: int,
@@ -29,7 +28,12 @@ class CreateWiki
      *     title?: ?string,
      *     meta_description?: ?string,
      *     keywords?: ?string,
-     * } $overrides
+ * }
+ */
+class CreateWiki
+{
+    /**
+     * @param WikiOverrides $overrides
      * @param array<string, mixed> $basicOverrides
      */
     public static function create(string $wikiId, string $resourceType, array $overrides = [], array $basicOverrides = []): void
@@ -111,7 +115,7 @@ class CreateWiki
     private static function createTalentBasic(string $wikiId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode((string) $overrides['group_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['group_identifiers'])
             : [];
 
         DB::table('wiki_talent_basics')->insert([
@@ -166,10 +170,10 @@ class CreateWiki
     private static function createSongBasic(string $wikiId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode((string) $overrides['group_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['group_identifiers'])
             : [];
         $talentIdentifiers = isset($overrides['talent_identifiers'])
-            ? json_decode((string) $overrides['talent_identifiers'], true)
+            ? JsonFixture::identifiers($overrides['talent_identifiers'])
             : [];
 
         DB::table('wiki_song_basics')->insert([

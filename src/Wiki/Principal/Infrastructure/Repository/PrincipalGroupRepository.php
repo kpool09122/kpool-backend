@@ -10,12 +10,15 @@ use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use UnexpectedValueException;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
@@ -24,6 +27,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $previousPrincipalIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         PrincipalGroupEloquent::query()->updateOrCreate(
@@ -135,6 +139,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         PrincipalGroupEloquent::query()
@@ -144,7 +149,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $this->forgetWikiContextsForPrincipalIds($principalIds);
     }
 
-    /** @param array<int, string> $principalIds */
+    /** @param array<string> $principalIds */
     private function forgetWikiContextsForPrincipalIds(array $principalIds): void
     {
         if (empty($principalIds)) {
@@ -154,10 +159,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -168,7 +174,8 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $existingMemberIds = PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', $principalGroupId)
             ->pluck('principal_id')
-            ->toArray();
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
+            ->all();
 
         $currentMemberIds = array_map(
             static fn (PrincipalIdentifier $identifier) => (string) $identifier,
@@ -222,20 +229,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
+        $roles = $eloquent->roleAttachments->map(
+            static fn (PrincipalGroupRoleAttachmentEloquent $attachment) => new RoleIdentifier($attachment->role_id)
+        )->all();
+
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($eloquent->id),
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
             $eloquent->is_default,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
+            $roles,
         );
 
         foreach ($eloquent->memberships as $membership) {
             $principalGroup->addMember(new PrincipalIdentifier($membership->principal_id));
-        }
-
-        foreach ($eloquent->roleAttachments as $roleAttachment) {
-            $principalGroup->addRole(new RoleIdentifier($roleAttachment->role_id));
         }
 
         return $principalGroup;

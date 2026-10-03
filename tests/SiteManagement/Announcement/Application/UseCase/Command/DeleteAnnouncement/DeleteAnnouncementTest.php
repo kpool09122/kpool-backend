@@ -39,8 +39,8 @@ class DeleteAnnouncementTest extends TestCase
     public function test__construct(): void
     {
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $deleteAnnouncement = $this->app->make(DeleteAnnouncementInterface::class);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
         $this->assertInstanceOf(DeleteAnnouncement::class, $deleteAnnouncement);
     }
 
@@ -84,9 +84,9 @@ class DeleteAnnouncementTest extends TestCase
             ->with($dummy->enAnnouncement)
             ->andReturn(null);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $deleteAnnouncement = $this->app->make(DeleteAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
         $announcements = $deleteAnnouncement->process($input);
         $this->assertSame((string) $dummy->jaAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
         $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
@@ -118,9 +118,9 @@ class DeleteAnnouncementTest extends TestCase
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $deleteAnnouncement = $this->app->make(DeleteAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
         $deleteAnnouncement->process($input);
     }
 
@@ -152,9 +152,9 @@ class DeleteAnnouncementTest extends TestCase
             ->with($dummy->translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $deleteAnnouncement = $this->app->make(DeleteAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
         $deletedAnnouncements = $deleteAnnouncement->process($input);
         $this->assertEmpty($deletedAnnouncements);
     }

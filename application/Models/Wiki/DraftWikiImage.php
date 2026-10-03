@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Override;
 
 /**
  * @property string $id
@@ -26,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $uploaded_at
  * @property-read Collection<int, Wiki> $wikis
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'published_id',
     'resource_type',
@@ -42,16 +45,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'rights_confirmation_agreed',
     'uploaded_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wiki_images', keyType: 'string')]
+#[Table(name: 'draft_wiki_images', keyType: 'string')]
 class DraftWikiImage extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'display_order' => 'integer',
         'agreed_to_terms_at' => 'datetime',

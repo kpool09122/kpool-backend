@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -81,7 +82,7 @@ readonly class ListRelatedWikis implements ListRelatedWikisInterface
             return;
         }
 
-        $sourceIds = $sources->map(static fn (WikiModel $wiki): string => $wiki->id)->all();
+        $sourceIds = array_values($sources->map(static fn (WikiModel $wiki): string => $wiki->id)->all());
 
         $query = WikiModel::query()
             ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
@@ -100,7 +101,7 @@ readonly class ListRelatedWikis implements ListRelatedWikisInterface
             ->values()
             ->all();
 
-        $output->output($wikis);
+        $output->output(array_values($wikis));
     }
 
     private function authorize(Principal $principal, WikiModel $source): void
@@ -154,6 +155,7 @@ readonly class ListRelatedWikis implements ListRelatedWikisInterface
         });
     }
 
+    /** @return literal-string */
     private function nameSortExpression(): string
     {
         return 'COALESCE(wiki_talent_basics.name, wiki_group_basics.name, wiki_agency_basics.name, wiki_song_basics.name)';
@@ -202,11 +204,11 @@ readonly class ListRelatedWikis implements ListRelatedWikisInterface
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
             isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
-            name: (string) $basic->getAttribute('name'),
-            normalizedName: (string) $basic->getAttribute('normalized_name'),
+            name: (TypedValue::nullableString($basic->getAttribute('name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($basic->getAttribute('normalized_name')) ?? ''),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
             isOfficial: $wiki->owner_account_id !== null,
@@ -243,7 +245,7 @@ readonly class ListRelatedWikis implements ListRelatedWikisInterface
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 
     private function nullableBool(mixed $value): ?bool

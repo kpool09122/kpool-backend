@@ -7,9 +7,9 @@ namespace Source\Identity\Infrastructure\Service;
 use Application\Mail\AuthCodeMail;
 use Application\Mail\ConflictNotificationMail;
 use Illuminate\Support\Facades\Mail;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 

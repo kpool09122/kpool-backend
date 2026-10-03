@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
 
 /**
  * @property string $wiki_id
@@ -19,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $official_website
  * @property array<string> $social_links
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'wiki_id',
     'name',
     'normalized_name',
@@ -31,13 +34,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'official_website',
     'social_links',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wiki_agency_basics', key: 'wiki_id', keyType: 'string')]
+#[Table(name: 'draft_wiki_agency_basics', key: 'wiki_id', keyType: 'string')]
 class DraftWikiAgencyBasic extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'social_links' => 'array',
     ];

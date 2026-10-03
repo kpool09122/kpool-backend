@@ -77,9 +77,9 @@ class OnboardSellerTest extends TestCase
             )
             ->andReturn($expectedUrl);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
-        $this->app->instance(ConnectGatewayInterface::class, $connectGateway);
-        $useCase = $this->app->make(OnboardSellerInterface::class);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $repository);
+        $this->app()->instance(ConnectGatewayInterface::class, $connectGateway);
+        $useCase = $this->app()->make(OnboardSellerInterface::class);
 
         $input = new OnboardSellerInput(
             new MonetizationAccountIdentifier($monetizationAccountId),
@@ -135,9 +135,9 @@ class OnboardSellerTest extends TestCase
             )
             ->andReturn($expectedUrl);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
-        $this->app->instance(ConnectGatewayInterface::class, $connectGateway);
-        $useCase = $this->app->make(OnboardSellerInterface::class);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $repository);
+        $this->app()->instance(ConnectGatewayInterface::class, $connectGateway);
+        $useCase = $this->app()->make(OnboardSellerInterface::class);
 
         $input = new OnboardSellerInput(
             new MonetizationAccountIdentifier($monetizationAccountId),
@@ -178,9 +178,9 @@ class OnboardSellerTest extends TestCase
 
         $this->expectException(MonetizationAccountNotFoundException::class);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
-        $this->app->instance(ConnectGatewayInterface::class, $connectGateway);
-        $useCase = $this->app->make(OnboardSellerInterface::class);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $repository);
+        $this->app()->instance(ConnectGatewayInterface::class, $connectGateway);
+        $useCase = $this->app()->make(OnboardSellerInterface::class);
 
         $input = new OnboardSellerInput(
             new MonetizationAccountIdentifier($monetizationAccountId),

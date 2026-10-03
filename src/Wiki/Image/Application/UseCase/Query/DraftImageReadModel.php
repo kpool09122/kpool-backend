@@ -24,7 +24,7 @@ readonly class DraftImageReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}
      */
     public function toArray(): array
     {

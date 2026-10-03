@@ -53,16 +53,16 @@ class InviteMemberTest extends TestCase
      */
     public function test__construct(): void
     {
-        $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
-        $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
-        $this->app->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
-        $this->app->instance(InvitationMailServiceInterface::class, Mockery::mock(InvitationMailServiceInterface::class));
-        $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
+        $this->app()->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
+        $this->app()->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
+        $this->app()->instance(InvitationMailServiceInterface::class, Mockery::mock(InvitationMailServiceInterface::class));
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
 
         $this->assertInstanceOf(InviteMember::class, $useCase);
     }
@@ -106,11 +106,11 @@ class InviteMemberTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
@@ -131,10 +131,10 @@ class InviteMemberTest extends TestCase
         $this->bindAccountRepository($data);
         $this->bindPolicyEvaluator($data, false);
 
-        $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
-        $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
+        $this->app()->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
+        $this->app()->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
     }
@@ -152,14 +152,14 @@ class InviteMemberTest extends TestCase
         $data = $this->createTestData(AccountType::INDIVIDUAL);
 
         $this->bindAccountRepository($data);
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
-        $this->app->instance(InvitationMailServiceInterface::class, Mockery::mock(InvitationMailServiceInterface::class));
-        $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
-        $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(IdentityRepositoryInterface::class, Mockery::mock(IdentityRepositoryInterface::class));
+        $this->app()->instance(InvitationMailServiceInterface::class, Mockery::mock(InvitationMailServiceInterface::class));
+        $this->app()->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
+        $this->app()->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
     }
@@ -203,11 +203,11 @@ class InviteMemberTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
@@ -270,9 +270,9 @@ class InviteMemberTest extends TestCase
         $invitationFactory->shouldReceive('create')->once()->with($accountIdentifier, $inviterIdentityIdentifier, $email1)->andReturn($invitation1);
         $invitationFactory->shouldReceive('create')->once()->with($accountIdentifier, $inviterIdentityIdentifier, $email2)->andReturn($invitation2);
 
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         $accountRepository->shouldReceive('findById')
             ->once()
@@ -280,13 +280,13 @@ class InviteMemberTest extends TestCase
             ->andReturn($account);
         $accountRepository->shouldReceive('findByEmail')->once()->with($email1)->andReturnNull();
         $accountRepository->shouldReceive('findByEmail')->once()->with($email2)->andReturnNull();
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->bindInvitationMailServiceNeverSendsExistingEmailNotification();
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($input, $output);
 
@@ -330,13 +330,13 @@ class InviteMemberTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationFactoryInterface::class, $invitationFactory);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
@@ -393,14 +393,14 @@ class InviteMemberTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
-        $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
-        $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
-        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationRepositoryInterface::class, $invitationRepository);
+        $this->app()->instance(InvitationFactoryInterface::class, $invitationFactory);
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
-        $useCase = $this->app->make(InviteMemberInterface::class);
+        $useCase = $this->app()->make(InviteMemberInterface::class);
         $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
@@ -422,14 +422,14 @@ class InviteMemberTest extends TestCase
             )
             ->andReturn($allowed);
 
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
             ->once()
             ->with($data->principalIdentifier)
             ->andReturn($data->principal);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
     }
 
     private function bindAccountRepository(InviteMemberTestData $data): void
@@ -443,7 +443,7 @@ class InviteMemberTest extends TestCase
             ->with($data->email)
             ->andReturnNull()
             ->byDefault();
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
     }
 
     private function bindNoExistingIdentityRepository(): void
@@ -453,7 +453,7 @@ class InviteMemberTest extends TestCase
             ->andReturnNull()
             ->byDefault();
 
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
     }
 
     private function bindInvitationMailServiceNeverSendsExistingEmailNotification(): void
@@ -461,7 +461,7 @@ class InviteMemberTest extends TestCase
         $invitationMailService = Mockery::mock(InvitationMailServiceInterface::class);
         $invitationMailService->shouldNotReceive('sendExistingEmailNotification');
 
-        $this->app->instance(InvitationMailServiceInterface::class, $invitationMailService);
+        $this->app()->instance(InvitationMailServiceInterface::class, $invitationMailService);
     }
 
     private function createTestData(AccountType $accountType = AccountType::CORPORATION): InviteMemberTestData

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\Support;
 
+use Application\Http\Action\Support\RequestValue;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
@@ -54,7 +55,7 @@ final class WikiCommandPayloadMapper
                 throw new InvalidArgumentException(sprintf('Section content must be an object at %s.%s.', $path, $index));
             }
 
-            $mapped[] = self::sectionContent($content, sprintf('%s.%s', $path, $index));
+            $mapped[] = self::sectionContent(RequestValue::object($content), sprintf('%s.%s', $path, $index));
         }
 
         return $mapped;
@@ -98,10 +99,10 @@ final class WikiCommandPayloadMapper
 
         return array_values(array_map(
             static fn (array $color): array => [
-                'color_code' => $color['colorCode'],
-                'label' => $color['label'],
+                'color_code' => RequestValue::string($color['colorCode']),
+                'label' => RequestValue::string($color['label']),
             ],
-            $basic['officialColors'],
+            RequestValue::objects($basic['officialColors']),
         ));
     }
 
@@ -181,14 +182,14 @@ final class WikiCommandPayloadMapper
      */
     private static function sectionContent(array $content, string $path): array
     {
-        $type = $content['type'] ?? '';
+        $type = RequestValue::string($content['type'] ?? '');
 
         if ($type === 'section') {
             return [
                 'type' => 'section',
                 'title' => $content['title'] ?? '',
                 'display_order' => $content['displayOrder'] ?? 0,
-                'contents' => self::sectionContents($content['contents'] ?? [], $path . '.contents'),
+                'contents' => self::sectionContents(RequestValue::values($content['contents'] ?? []), $path . '.contents'),
             ];
         }
 
@@ -219,7 +220,7 @@ final class WikiCommandPayloadMapper
             'items' => $content['items'] ?? [],
             'header_cells' => $content['headerCells'] ?? null,
             'row_cells' => $content['rowCells'] ?? [],
-            'table_width' => isset($content['tableWidth']) ? (string) $content['tableWidth'] : null,
+            'table_width' => isset($content['tableWidth']) ? RequestValue::string($content['tableWidth']) : null,
             'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
             'title' => $content['title'] ?? null,
         ];
@@ -232,7 +233,7 @@ final class WikiCommandPayloadMapper
     private static function relatedWikiIdentifiers(array $basic, string $identifierKey, string $summaryKey): array
     {
         if (array_key_exists($identifierKey, $basic)) {
-            return (array) $basic[$identifierKey];
+            return RequestValue::strings($basic[$identifierKey]);
         }
 
         if (! array_key_exists($summaryKey, $basic)) {
@@ -241,7 +242,7 @@ final class WikiCommandPayloadMapper
 
         return array_values(array_filter(array_map(
             static fn (mixed $summary): ?string => is_array($summary) && isset($summary['wikiIdentifier'])
-                ? (string) $summary['wikiIdentifier']
+                ? RequestValue::string($summary['wikiIdentifier'])
                 : null,
             (array) $basic[$summaryKey],
         )));

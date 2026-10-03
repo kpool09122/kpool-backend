@@ -22,7 +22,9 @@ use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use UnexpectedValueException;
 
 class PolicyRepository implements PolicyRepositoryInterface
 {
@@ -34,13 +36,27 @@ class PolicyRepository implements PolicyRepositoryInterface
         PolicyEloquent::query()->updateOrCreate(
             ['id' => $policyIdentifier],
             [
+                'account_id' => $policy->accountIdentifier() !== null ? (string) $policy->accountIdentifier() : null,
                 'name' => $policy->name(),
                 'statements' => $this->serializeStatements($policy->statements()),
-                'is_system_policy' => $policy->isSystemPolicy(),
             ]
         );
 
         $this->forgetAccountContextsForRoles($affectedRoles);
+    }
+
+    public function findSystemByName(string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->whereNull('account_id')->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Policy
+    {
+        $eloquent = PolicyEloquent::query()->where('account_id', (string) $accountIdentifier)->where('name', $name)->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     /**
@@ -75,6 +91,13 @@ class PolicyRepository implements PolicyRepositoryInterface
             ->get()
             ->map(fn (PolicyEloquent $policy) => $this->toDomainEntity($policy))
             ->all();
+    }
+
+    public function delete(Policy $policy): void
+    {
+        $policyId = (string) $policy->policyIdentifier();
+        $this->forgetAccountContextsForRoles($this->rolesAttachedToPolicy($policyId));
+        PolicyEloquent::query()->where('id', $policyId)->delete();
     }
 
     /**
@@ -122,8 +145,8 @@ class PolicyRepository implements PolicyRepositoryInterface
             new PolicyIdentifier($eloquent->id),
             $eloquent->name,
             $this->deserializeStatements($eloquent->statements),
-            $eloquent->is_system_policy,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->toDateTimeString()),
         );
     }
 
@@ -156,14 +179,14 @@ class PolicyRepository implements PolicyRepositoryInterface
      */
     private function deserializeCondition(array $conditionData): Condition
     {
-        return new Condition(array_map(
+        return new Condition(array_values(array_map(
             static fn (array $clauseData): ConditionClause => new ConditionClause(
                 ConditionKey::from($clauseData['key']),
                 ConditionOperator::from($clauseData['operator']),
                 $clauseData['value'],
             ),
             $conditionData
-        ));
+        )));
     }
 
     /** @return array<int, string> */
@@ -171,7 +194,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return RolePolicyAttachmentEloquent::query()
             ->where('policy_id', $policyIdentifier)
-            ->pluck('role_id')
+            ->get(['role_id'])->map(static fn (RolePolicyAttachmentEloquent $attachment): string => $attachment->role_id)
             ->unique()
             ->values()
             ->all();
@@ -195,14 +218,14 @@ class PolicyRepository implements PolicyRepositoryInterface
 
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
-            ->pluck('principal_id')
+            ->get(['principal_id'])->map(static fn (PrincipalGroupMembershipEloquent $membership): string => $membership->principal_id)
             ->unique()
             ->values()
             ->all();
 
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
-            ->pluck('identity_id')
+            ->get(['identity_id'])->map(static fn (PrincipalEloquent $principal): string => $principal->identity_id)
             ->all();
 
         foreach ($identityIds as $identityId) {

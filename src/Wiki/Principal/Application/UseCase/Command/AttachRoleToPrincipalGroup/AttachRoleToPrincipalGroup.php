@@ -35,7 +35,7 @@ readonly class AttachRoleToPrincipalGroup implements AttachRoleToPrincipalGroupI
             throw new RoleNotFoundException();
         }
 
-        $principalGroup->addRole($input->roleIdentifier());
+        $principalGroup->addRole($role);
 
         $this->principalGroupRepository->save($principalGroup);
     }

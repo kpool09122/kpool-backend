@@ -1,11 +1,12 @@
 includes:
     - ./vendor/larastan/larastan/extension.neon
 parameters:
-    level: 6
+    level: 10
     paths:
         - src
         - application/Http/Action
         - tests
+        - phpstan/Rules
     excludePaths:
         - vendor/*
     exceptions:
@@ -26,6 +27,14 @@ parameters:
     checkDynamicProperties: true
     reportUnmatchedIgnoredErrors: true
 services:
+    -
+        class: Kpool\PHPStan\Rules\ExceptionConstructorRule
+        arguments:
+            targetClassNamePatterns:
+                - '#^Source\\(?:[^\\]+\\)*Domain\\(?:[^\\]+\\)*[^\\]+Exception$#'
+                - '#^Source\\(?:[^\\]+\\)*Application\\(?:[^\\]+\\)*[^\\]+Exception$#'
+        tags:
+            - phpstan.rules.rule
     -
         class: Kpool\PHPStan\Rules\ForbiddenExternalLibraryInDomainAndUseCaseRule
         arguments:
@@ -117,5 +126,13 @@ services:
             allowedFunctionNames:
                 - whereLike
                 - whereStartsWith
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\DependencyNameRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\RequireImportedNameRule
         tags:
             - phpstan.rules.rule

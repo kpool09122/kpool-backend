@@ -95,8 +95,12 @@ readonly class SocialOAuthService implements SocialOAuthServiceInterface
         /** @var string|int $id */
         $id = $userInfo['id'];
 
-        /** @var string $email */
-        $email = $userInfo['email'];
+        /** @var mixed $email */
+        $email = $userInfo['email'] ?? null;
+
+        if (! is_string($email) || $email === '') {
+            throw new SocialOAuthException('Email not available from Google. Please grant email permission.');
+        }
 
         /** @var string|null $name */
         $name = $userInfo['name'] ?? null;

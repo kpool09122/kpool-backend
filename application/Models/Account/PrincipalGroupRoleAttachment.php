@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,11 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $role_id
  * @property-read Role|null $role
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'principal_group_id',
     'role_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_principal_group_role_attachments')]
+#[Table(name: 'account_principal_group_role_attachments')]
 class PrincipalGroupRoleAttachment extends Model
 {
     public $incrementing = false;

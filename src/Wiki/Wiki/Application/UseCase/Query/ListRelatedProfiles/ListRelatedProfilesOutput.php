@@ -20,7 +20,7 @@ class ListRelatedProfilesOutput implements ListRelatedProfilesOutputPort
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{profiles: list<array{wikiIdentifier: string, slug: string, language: string, resourceType: string, name: string, normalizedName: string, imageIdentifier: string|null, imageUrl: string|null, imageAltText: string|null}>}
      */
     public function toArray(): array
     {

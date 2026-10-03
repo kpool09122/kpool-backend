@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Principal\Command\AttachRoleToPrincipalGroup;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttachRoleToPrincipalGroupRequest extends FormRequest
@@ -28,6 +29,6 @@ class AttachRoleToPrincipalGroupRequest extends FormRequest
 
     public function roleIdentifier(): string
     {
-        return (string) $this->input('roleIdentifier');
+        return RequestValue::string($this->input('roleIdentifier'));
     }
 }

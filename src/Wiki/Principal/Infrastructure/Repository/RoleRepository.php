@@ -11,10 +11,14 @@ use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAt
 use Application\Models\Wiki\Role as RoleEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
+use UnexpectedValueException;
 
 class RoleRepository implements RoleRepositoryInterface
 {
@@ -23,8 +27,8 @@ class RoleRepository implements RoleRepositoryInterface
         RoleEloquent::query()->updateOrCreate(
             ['id' => (string) $role->roleIdentifier()],
             [
+                'account_id' => $role->accountIdentifier() !== null ? (string) $role->accountIdentifier() : null,
                 'name' => $role->name(),
-                'is_system_role' => $role->isSystemRole(),
             ]
         );
 
@@ -83,11 +87,12 @@ class RoleRepository implements RoleRepositoryInterface
         return $eloquentModels->map(fn (RoleEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
-    public function findByName(string $name): ?Role
+    public function findSystemByName(string $name): ?Role
     {
         $eloquent = RoleEloquent::query()
             ->with('policyAttachments')
             ->where('name', $name)
+            ->whereNull('account_id')
             ->first();
 
         if ($eloquent === null) {
@@ -95,6 +100,17 @@ class RoleRepository implements RoleRepositoryInterface
         }
 
         return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role
+    {
+        $eloquent = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->where('account_id', (string) $accountIdentifier)
+            ->where('name', $name)
+            ->first();
+
+        return $eloquent !== null ? $this->toDomainEntity($eloquent) : null;
     }
 
     public function delete(Role $role): void
@@ -120,6 +136,7 @@ class RoleRepository implements RoleRepositoryInterface
         $principalIds = PrincipalGroupMembershipEloquent::query()
             ->whereIn('principal_group_id', $principalGroupIds)
             ->pluck('principal_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         if (empty($principalIds)) {
@@ -129,10 +146,11 @@ class RoleRepository implements RoleRepositoryInterface
         $identityIds = PrincipalEloquent::query()
             ->whereIn('id', $principalIds)
             ->pluck('identity_id')
+            ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->all();
 
         foreach ($identityIds as $identityId) {
-            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));
         }
     }
 
@@ -167,8 +185,8 @@ class RoleRepository implements RoleRepositoryInterface
             new RoleIdentifier($eloquent->id),
             $eloquent->name,
             $policies,
-            $eloquent->is_system_role,
-            new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            $eloquent->account_id !== null ? new AccountIdentifier($eloquent->account_id) : null,
+            new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
         );
     }
 }

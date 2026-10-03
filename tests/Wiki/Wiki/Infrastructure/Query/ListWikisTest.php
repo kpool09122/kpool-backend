@@ -228,7 +228,7 @@ class ListWikisTest extends TestCase
 
     private function listWikis(): ListWikisInterface
     {
-        return $this->app->make(ListWikisInterface::class);
+        return $this->app()->make(ListWikisInterface::class);
     }
 
     private function process(ListWikisInput $input): ListWikisOutput
@@ -262,7 +262,7 @@ class ListWikisTest extends TestCase
                 'published_at' => '2026-04-01 00:00:00',
                 'title' => "{$name} Wiki",
                 'meta_description' => "{$name} profile.",
-                'keywords' => json_encode([$name, $resourceType]),
+                'keywords' => json_encode([$name, $resourceType], JSON_THROW_ON_ERROR),
                 'version' => $version,
                 'owner_account_id' => $ownerAccountId,
             ],

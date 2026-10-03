@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -29,10 +30,10 @@ class RequestAccountCategoryChangeRequest extends FormRequest
 
     public function requestedAccountCategory(): string
     {
-        return (string) $this->input('requestedAccountCategory');
+        return RequestValue::string($this->input('requestedAccountCategory'));
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     public function validationData(): array
     {
         return [

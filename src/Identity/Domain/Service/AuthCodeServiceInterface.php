@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Identity\Domain\Service;
 
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\ValueObject\AuthCode;
+use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 

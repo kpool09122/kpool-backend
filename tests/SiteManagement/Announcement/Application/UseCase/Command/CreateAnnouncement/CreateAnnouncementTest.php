@@ -41,8 +41,8 @@ class CreateAnnouncementTest extends TestCase
     public function test__construct(): void
     {
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
         $this->assertInstanceOf(CreateAnnouncement::class, $createAnnouncement);
     }
 
@@ -92,10 +92,10 @@ class CreateAnnouncementTest extends TestCase
             ->with($dummy->draftAnnouncement)
             ->andReturn(null);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
         $announcement = $createAnnouncement->process($input);
 
         $this->assertTrue(UuidValidator::isValid((string) $announcement->announcementIdentifier()));
@@ -138,10 +138,10 @@ class CreateAnnouncementTest extends TestCase
         $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
         $createAnnouncement->process($input);
     }
 

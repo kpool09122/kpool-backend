@@ -27,7 +27,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 readonly class RequestCertification implements RequestCertificationInterface
 {
     public function __construct(
-        private OfficialCertificationRepositoryInterface $repository,
+        private OfficialCertificationRepositoryInterface $officialCertificationRepository,
         private OfficialCertificationFactoryInterface $factory,
         private WikiRepositoryInterface $wikiRepository,
         private PrincipalRepositoryInterface $principalRepository,
@@ -72,7 +72,7 @@ readonly class RequestCertification implements RequestCertificationInterface
             throw new DisallowedException();
         }
 
-        $existing = $this->repository->findByResourceAndStatus(
+        $existing = $this->officialCertificationRepository->findByResourceAndStatus(
             $input->resourceType(),
             $input->translationSetIdentifier(),
             CertificationStatus::PENDING,
@@ -88,7 +88,7 @@ readonly class RequestCertification implements RequestCertificationInterface
             $input->ownerAccountIdentifier(),
         );
 
-        $this->repository->save($certification);
+        $this->officialCertificationRepository->save($certification);
 
         $output->setOfficialCertification($certification);
     }

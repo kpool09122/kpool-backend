@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationOwnerAccountTypeMissingException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsOutput;
@@ -30,12 +31,28 @@ use Tests\TestCase;
 
 class ListMyOfficialCertificationsTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testRejectsOwnerAccountWithoutType(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = StrTestHelper::generateUuid();
+        $this->registerAuthorizedPrincipal($principalIdentifier, true);
+        CreateAccount::create($accountIdentifier, ['type' => null, 'status' => 'active']);
+        $this->insertCertification(CertificationStatus::APPROVED, '2024-01-01 00:00:00', ownerAccountIdentifier: $accountIdentifier);
+
+        $this->expectException(OfficialCertificationOwnerAccountTypeMissingException::class);
+        $this->app()->make(ListMyOfficialCertificationsInterface::class)->process(
+            new ListMyOfficialCertificationsInput($principalIdentifier, new AccountIdentifier($accountIdentifier), AccountCategory::TALENT),
+            new ListMyOfficialCertificationsOutput(),
+        );
+    }
+
     public function test__construct(): void
     {
-        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
-        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app()->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app()->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
 
         $this->assertInstanceOf(ListMyOfficialCertifications::class, $useCase);
     }
@@ -50,7 +67,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $ownCertificationId = $this->insertCertification(CertificationStatus::PENDING, '2024-01-03 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
         $this->insertCertification(CertificationStatus::APPROVED, '2024-01-04 00:00:00', ownerAccountIdentifier: $otherAccountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, $accountIdentifier, AccountCategory::TALENT, perPage: 10), $output);
@@ -69,7 +86,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $pendingCertificationId = $this->insertCertification(CertificationStatus::PENDING, '2024-01-01 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
         $this->insertCertification(CertificationStatus::APPROVED, '2024-01-02 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, $accountIdentifier, AccountCategory::TALENT, CertificationStatus::PENDING, 10), $output);
@@ -111,13 +128,14 @@ class ListMyOfficialCertificationsTest extends TestCase
             $accountIdentifier,
         );
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $useCase->process(new ListMyOfficialCertificationsInput($principalIdentifier, new AccountIdentifier($accountIdentifier), AccountCategory::TALENT, perPage: 10), $output);
 
         $item = $output->toArray()['officialCertifications'][0];
         $this->assertSame($certificationId, $item['certificationIdentifier']);
+        self::assertNotNull($item['ownerAccount']);
         $this->assertSame($accountIdentifier, $item['ownerAccount']['accountIdentifier']);
         $this->assertSame($wikiIdentifier, $item['wikis'][0]['wikiIdentifier']);
     }
@@ -130,7 +148,7 @@ class ListMyOfficialCertificationsTest extends TestCase
         $this->registerAuthorizedPrincipal($principalIdentifier, false);
         $this->insertCertification(CertificationStatus::PENDING, '2024-01-01 00:00:00', ownerAccountIdentifier: (string) $accountIdentifier);
 
-        $useCase = $this->app->make(ListMyOfficialCertificationsInterface::class);
+        $useCase = $this->app()->make(ListMyOfficialCertificationsInterface::class);
         $output = new ListMyOfficialCertificationsOutput();
 
         $this->expectException(DisallowedException::class);
@@ -140,7 +158,7 @@ class ListMyOfficialCertificationsTest extends TestCase
 
     private function registerAuthorizedPrincipal(PrincipalIdentifier $principalIdentifier, bool $allowed): void
     {
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')->with($principalIdentifier)->andReturn($principal);
 
@@ -152,8 +170,8 @@ class ListMyOfficialCertificationsTest extends TestCase
             ))
             ->andReturn($allowed);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 
     private function insertCertification(

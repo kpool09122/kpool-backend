@@ -8,9 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -33,7 +31,6 @@ class UpdateIdentityOutputTest extends TestCase
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/updated.png');
-        $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $emailVerifiedAt = new DateTimeImmutable();
 
         $identity = new Identity(
@@ -42,7 +39,6 @@ class UpdateIdentityOutputTest extends TestCase
             $email,
             $language,
             $profileImage,
-            $hashedPassword,
             $emailVerifiedAt,
         );
 
@@ -51,6 +47,7 @@ class UpdateIdentityOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('identityIdentifier', $result));
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertSame((string) $identityName, $result['identityName']);
         $this->assertSame((string) $email, $result['email']);
@@ -66,13 +63,13 @@ class UpdateIdentityOutputTest extends TestCase
             new Email('user@example.com'),
             Language::JAPANESE,
             null,
-            HashedPassword::fromPlain(new PlainPassword('PlainPass1!')),
             new DateTimeImmutable(),
         );
 
         $output = new UpdateIdentityOutput();
         $output->setIdentity($identity);
 
+        self::assertTrue(array_key_exists('profileImage', $output->toArray()));
         $this->assertNull($output->toArray()['profileImage']);
     }
 }

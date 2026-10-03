@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Affiliation\Command\RequestAffiliation;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -46,8 +47,8 @@ readonly class RequestAffiliationAction
                     terms: $terms === null
                         ? null
                         : new AffiliationTerms(
-                            isset($terms['revenueSharePercentage']) ? new Percentage((int) $terms['revenueSharePercentage']) : null,
-                            isset($terms['contractNotes']) ? (string) $terms['contractNotes'] : null,
+                            isset($terms['revenueSharePercentage']) ? new Percentage(RequestValue::integer($terms['revenueSharePercentage'])) : null,
+                            isset($terms['contractNotes']) ? RequestValue::string($terms['contractNotes']) : null,
                         ),
                 );
                 $output = new RequestAffiliationOutput();

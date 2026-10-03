@@ -40,8 +40,8 @@ class UpdateAnnouncementTest extends TestCase
     public function test__construct(): void
     {
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $this->assertInstanceOf(UpdateAnnouncement::class, $updateAnnouncement);
     }
 
@@ -82,9 +82,9 @@ class UpdateAnnouncementTest extends TestCase
             ->with($dummy->announcementIdentifier)
             ->andReturn($dummy->draftAnnouncement);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $announcement = $updateAnnouncement->process($input);
         $this->assertSame((string) $dummy->announcementIdentifier, (string) $announcement->announcementIdentifier());
         $this->assertSame($dummy->language->value, $announcement->translation()->value);
@@ -123,9 +123,9 @@ class UpdateAnnouncementTest extends TestCase
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $updateAnnouncement->process($input);
     }
 
@@ -161,10 +161,10 @@ class UpdateAnnouncementTest extends TestCase
             ->with($dummy->announcementIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(UserRepositoryInterface::class, $userRepository);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->expectException(AnnouncementNotFoundException::class);
-        $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
+        $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $updateAnnouncement->process($input);
     }
 

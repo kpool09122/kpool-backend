@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\DraftWiki as DraftWikiModel;
 use Application\Models\Wiki\DraftWikiGroupBasic as DraftWikiGroupBasicModel;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -66,7 +67,7 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
             keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
-                'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),
+                'src' => ImageUrl::fromPath(TypedValue::nullableString($model->getAttribute('hero_image_path'))),
                 'alt' => $model->getAttribute('hero_image_alt_text'),
                 'isHidden' => $model->getAttribute('hero_image_is_hidden') === null
                     ? null
@@ -82,12 +83,12 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
                 generation: $basic->generation,
                 debutDate: $basic->debut_date,
                 disbandDate: $basic->disband_date,
-                fandomName: $basic->fandom_name,
-                officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
-                emoji: $basic->emoji,
-                representativeSymbol: $basic->representative_symbol,
+                fandomName: TypedValue::string($basic->fandom_name),
+                officialColors: OfficialColorReadModelMapper::toArray(array_values($basic->official_colors)),
+                emoji: TypedValue::string($basic->emoji),
+                representativeSymbol: TypedValue::string($basic->representative_symbol),
             ),
-            sections: $this->sectionsWithImages($model->sections),
+            sections: $this->sectionsWithImages(array_values($model->sections)),
             status: $model->status,
             rejectionReason: $model->rejection_reason,
         );
@@ -104,7 +105,7 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
 
     /**
      * @param list<array<string, mixed>> $sections
-     * @return list<array<string, mixed>>
+     * @return list<array<array-key, mixed>>
      */
     private function sectionsWithImages(array $sections): array
     {

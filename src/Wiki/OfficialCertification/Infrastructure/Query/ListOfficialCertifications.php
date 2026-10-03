@@ -13,8 +13,11 @@ use Application\Models\Wiki\WikiTalentBasic;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationOwnerAccountTypeMissingException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInputPort;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsOutputPort;
@@ -64,7 +67,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
         $query = OfficialCertification::query()
             ->with([
                 'ownerAccount',
-                'wikis' => fn ($query) => $query
+                'wikis' => fn (Relation $query) => $query
                     ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
                     ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
                     ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
@@ -80,7 +83,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
 
         /** @var LengthAwarePaginator<int, OfficialCertification> $paginator */
         $paginator = $query->paginate($input->perPage());
-        $certifications = $paginator->items();
+        $certifications = array_values($paginator->items());
 
         $output->output(
             array_map(
@@ -118,14 +121,14 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
             ownerAccount: $ownerAccount === null ? null : new OfficialCertificationOwnerAccountReadModel(
                 accountIdentifier: $ownerAccount->id,
                 email: $ownerAccount->email,
-                type: $ownerAccount->type,
+                type: $ownerAccount->type ?? throw new OfficialCertificationOwnerAccountTypeMissingException(),
                 name: $ownerAccount->name,
                 status: $ownerAccount->status,
                 category: $ownerAccount->category,
             ),
-            wikis: $certification->wikis
+            wikis: array_values($certification->wikis
                 ->map(fn (WikiModel $wiki): WikiListItemReadModel => $this->toWikiReadModel($wiki))
-                ->all(),
+                ->all()),
             status: $certification->status,
             requestedAt: $this->formatDateTime($certification->requested_at) ?? '',
             approvedAt: $this->formatDateTime($certification->approved_at),
@@ -150,11 +153,11 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
             imageIdentifier: $wiki->image_identifier,
-            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
-            imageAltText: $wiki->getAttribute('image_alt_text'),
+            imageUrl: ImageUrl::fromPath(TypedValue::nullableString($wiki->getAttribute('image_path'))),
+            imageAltText: TypedValue::nullableString($wiki->getAttribute('image_alt_text')),
             isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
-            name: (string) $basic->getAttribute('name'),
-            normalizedName: (string) $basic->getAttribute('normalized_name'),
+            name: (TypedValue::nullableString($basic->getAttribute('name')) ?? ''),
+            normalizedName: (TypedValue::nullableString($basic->getAttribute('normalized_name')) ?? ''),
             publishedAt: $this->formatDateTime($wiki->published_at),
             updatedAt: $this->formatDateTime($wiki->updated_at),
             isOfficial: $wiki->owner_account_id !== null,
@@ -191,7 +194,7 @@ readonly class ListOfficialCertifications implements ListOfficialCertificationsI
             return $dateTime->format(DateTimeInterface::ATOM);
         }
 
-        return (string) $dateTime;
+        return TypedValue::string($dateTime);
     }
 
     private function nullableBool(mixed $value): ?bool

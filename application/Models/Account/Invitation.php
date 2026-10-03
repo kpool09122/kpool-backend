@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -19,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $accepted_at
  * @property Carbon $created_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'account_id',
     'invited_by_identity_id',
@@ -31,16 +34,16 @@ use Illuminate\Support\Carbon;
     'accepted_at',
     'created_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invitations', keyType: 'string')]
+#[Table(name: 'invitations', keyType: 'string')]
 class Invitation extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

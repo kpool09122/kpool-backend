@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Affiliation\Command\RequestAffiliation;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RequestAffiliationRequest extends FormRequest
@@ -26,7 +27,7 @@ class RequestAffiliationRequest extends FormRequest
 
     public function targetEmail(): string
     {
-        return (string) $this->input('targetEmail');
+        return RequestValue::string($this->input('targetEmail'));
     }
 
     /**
@@ -36,6 +37,6 @@ class RequestAffiliationRequest extends FormRequest
     {
         $value = $this->input('terms');
 
-        return $value !== null ? (array) $value : null;
+        return $value !== null ? RequestValue::object($value) : null;
     }
 }

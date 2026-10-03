@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Service;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -59,15 +60,15 @@ class PolicyEvaluatorTest extends TestCase
     {
         parent::setUp();
         /** @var PolicyRepositoryInterface $policyRepository */
-        $policyRepository = $this->app->make(PolicyRepositoryInterface::class);
+        $policyRepository = $this->app()->make(PolicyRepositoryInterface::class);
         $this->policyRepository = $policyRepository;
 
         /** @var RoleRepositoryInterface $roleRepository */
-        $roleRepository = $this->app->make(RoleRepositoryInterface::class);
+        $roleRepository = $this->app()->make(RoleRepositoryInterface::class);
         $this->roleRepository = $roleRepository;
 
         /** @var PrincipalGroupRepositoryInterface $principalGroupRepository */
-        $principalGroupRepository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
         $this->principalGroupRepository = $principalGroupRepository;
     }
 
@@ -101,6 +102,7 @@ class PolicyEvaluatorTest extends TestCase
         return new Principal(
             new PrincipalIdentifier($principalId),
             new IdentityIdentifier($identityId),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
         );
     }
 
@@ -157,7 +159,7 @@ class PolicyEvaluatorTest extends TestCase
 
         // Roleを追加
         foreach ($roleIdentifiers as $roleIdentifier) {
-            \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+            DB::table('wiki_principal_group_role_attachments')->insert([
                 'principal_group_id' => $groupId,
                 'role_id' => (string) $roleIdentifier,
             ]);
@@ -168,12 +170,10 @@ class PolicyEvaluatorTest extends TestCase
             new AccountIdentifier($accountId),
             'Test Group',
             true,
-            new DateTimeImmutable()
+            new DateTimeImmutable(),
+            $roleIdentifiers,
         );
         $group->addMember($principalIdentifier);
-        foreach ($roleIdentifiers as $roleIdentifier) {
-            $group->addRole($roleIdentifier);
-        }
 
         return $group;
     }
@@ -187,11 +187,12 @@ class PolicyEvaluatorTest extends TestCase
         array $policyIdentifiers = [],
         bool $isSystemRole = false,
     ): Role {
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
         $role = new Role(
-            new RoleIdentifier(StrTestHelper::generateUuid()),
-            'Test Role',
+            $roleIdentifier,
+            'Test Role ' . (string) $roleIdentifier,
             $policyIdentifiers,
-            $isSystemRole,
+            $isSystemRole ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable()
         );
         $this->roleRepository->save($role);
@@ -208,11 +209,12 @@ class PolicyEvaluatorTest extends TestCase
         array $statements,
         bool $isSystemPolicy = false,
     ): Policy {
+        $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         $policy = new Policy(
-            new PolicyIdentifier(StrTestHelper::generateUuid()),
-            'Test Policy',
+            $policyIdentifier,
+            'Test Policy ' . (string) $policyIdentifier,
             $statements,
-            $isSystemPolicy,
+            $isSystemPolicy ? null : new AccountIdentifier('00000000-0000-7000-8000-000000000001'),
             new DateTimeImmutable()
         );
         $this->policyRepository->save($policy);
@@ -450,7 +452,7 @@ class PolicyEvaluatorTest extends TestCase
             ['name' => 'Test Group 2', 'is_default' => false]
         );
         CreatePrincipalGroupMembership::create($groupId2, (string) $principal->principalIdentifier());
-        \Illuminate\Support\Facades\DB::table('wiki_principal_group_role_attachments')->insert([
+        DB::table('wiki_principal_group_role_attachments')->insert([
             'principal_group_id' => $groupId2,
             'role_id' => (string) $approveRole->roleIdentifier(),
         ]);

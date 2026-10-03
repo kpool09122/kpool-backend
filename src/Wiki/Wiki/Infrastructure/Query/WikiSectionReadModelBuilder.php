@@ -6,14 +6,15 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 
 use Application\Models\Wiki\Wiki as WikiModel;
 use Application\Models\Wiki\WikiImage as WikiImageModel;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Wiki\Application\UseCase\Query\RelatedProfileReadModel;
 
 final readonly class WikiSectionReadModelBuilder
 {
     /**
-     * @param list<array<string, mixed>> $sections
-     * @return list<array<string, mixed>>
+     * @param list<array<array-key, mixed>> $sections
+     * @return list<array<array-key, mixed>>
      */
     public static function build(array $sections): array
     {
@@ -21,8 +22,8 @@ final readonly class WikiSectionReadModelBuilder
     }
 
     /**
-     * @param list<array<string, mixed>> $sections
-     * @return list<array<string, mixed>>
+     * @param list<array<array-key, mixed>> $sections
+     * @return list<array<array-key, mixed>>
      */
     private function sectionsWithDetails(array $sections): array
     {
@@ -33,10 +34,10 @@ final readonly class WikiSectionReadModelBuilder
     }
 
     /**
-     * @param array<string, mixed> $section
+     * @param array<array-key, mixed> $section
      * @param array<string, array{src: ?string, alt: ?string}> $imageDetails
      * @param array<string, array<string, mixed>> $profileDetails
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     private function sectionWithDetails(array $section, array $imageDetails, array $profileDetails): array
     {
@@ -97,14 +98,14 @@ final readonly class WikiSectionReadModelBuilder
     }
 
     /**
-     * @param list<array<string, mixed>> $sections
+     * @param list<array<array-key, mixed>> $sections
      * @return list<string>
      */
     private function imageIdentifiers(array $sections): array
     {
         $identifiers = [];
         foreach ($sections as $section) {
-            foreach (($section['contents'] ?? []) as $content) {
+            foreach (TypedValue::array($section['contents'] ?? []) as $content) {
                 if (! is_array($content)) {
                     continue;
                 }
@@ -158,14 +159,14 @@ final readonly class WikiSectionReadModelBuilder
     }
 
     /**
-     * @param list<array<string, mixed>> $sections
+     * @param list<array<array-key, mixed>> $sections
      * @return list<string>
      */
     private function profileWikiIdentifiers(array $sections): array
     {
         $identifiers = [];
         foreach ($sections as $section) {
-            foreach (($section['contents'] ?? []) as $content) {
+            foreach (TypedValue::array($section['contents'] ?? []) as $content) {
                 if (! is_array($content)) {
                     continue;
                 }
@@ -219,11 +220,11 @@ final readonly class WikiSectionReadModelBuilder
                 slug: $profile->slug,
                 language: $profile->language,
                 resourceType: $profile->resource_type,
-                name: (string) $profile->getAttribute('profile_name'),
-                normalizedName: (string) $profile->getAttribute('profile_normalized_name'),
+                name: (TypedValue::nullableString($profile->getAttribute('profile_name')) ?? ''),
+                normalizedName: (TypedValue::nullableString($profile->getAttribute('profile_normalized_name')) ?? ''),
                 imageIdentifier: $profile->image_identifier,
-                imageUrl: ImageUrl::fromPath($profile->getAttribute('image_path')),
-                imageAltText: $profile->getAttribute('image_alt_text'),
+                imageUrl: ImageUrl::fromPath(TypedValue::nullableString($profile->getAttribute('image_path'))),
+                imageAltText: TypedValue::nullableString($profile->getAttribute('image_alt_text')),
             ))->toArray();
         }
 

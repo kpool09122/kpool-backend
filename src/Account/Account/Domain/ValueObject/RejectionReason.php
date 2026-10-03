@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 
 class RejectionReason
 {
@@ -41,7 +42,7 @@ class RejectionReason
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{code: string, detail: string|null}
      */
     public function toArray(): array
     {
@@ -52,14 +53,14 @@ class RejectionReason
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      * @return self
      */
     public static function fromArray(array $data): self
     {
         return new self(
-            code: RejectionReasonCode::from($data['code']),
-            detail: $data['detail'] ?? null,
+            code: RejectionReasonCode::from(TypedValue::string($data['code'])),
+            detail: TypedValue::nullableString($data['detail'] ?? null),
         );
     }
 }

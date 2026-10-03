@@ -17,7 +17,7 @@ class RemovePrincipalFromPrincipalGroupOutput implements RemovePrincipalFromPrin
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{}|array{principalGroupIdentifier: string, accountIdentifier: string, name: string, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}
      */
     public function toArray(): array
     {

@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -23,13 +24,13 @@ readonly class PolicyFactory implements PolicyFactoryInterface
     public function create(
         string $name,
         array $statements,
-        bool $isSystemPolicy,
+        ?AccountIdentifier $accountIdentifier,
     ): Policy {
         return new Policy(
             new PolicyIdentifier($this->generator->generate()),
             $name,
             $statements,
-            $isSystemPolicy,
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
     }

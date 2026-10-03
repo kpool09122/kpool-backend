@@ -25,7 +25,7 @@ class AffiliationGrantFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(AffiliationGrantFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationGrantFactoryInterface::class);
         $this->assertInstanceOf(AffiliationGrantFactory::class, $factory);
     }
 
@@ -42,7 +42,7 @@ class AffiliationGrantFactoryTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $type = AffiliationGrantType::TALENT_SIDE;
 
-        $factory = $this->app->make(AffiliationGrantFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationGrantFactoryInterface::class);
         $affiliationGrant = $factory->create(
             $affiliationIdentifier,
             $policyIdentifier,
@@ -73,7 +73,7 @@ class AffiliationGrantFactoryTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $type = AffiliationGrantType::AGENCY_SIDE;
 
-        $factory = $this->app->make(AffiliationGrantFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationGrantFactoryInterface::class);
         $affiliationGrant = $factory->create(
             $affiliationIdentifier,
             $policyIdentifier,

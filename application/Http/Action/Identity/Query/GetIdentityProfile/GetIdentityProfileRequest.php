@@ -19,7 +19,7 @@ class GetIdentityProfileRequest extends FormRequest
         ];
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     public function validationData(): array
     {
         return array_merge(parent::validationData(), [

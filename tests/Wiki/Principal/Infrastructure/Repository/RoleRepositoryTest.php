@@ -26,7 +26,7 @@ class RoleRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $this->assertInstanceOf(RoleRepository::class, $repository);
     }
 
@@ -37,7 +37,7 @@ class RoleRepositoryTest extends TestCase
      */
     public function testFindByIdsWithEmptyIdentifiers(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $this->assertSame([], $repository->findByIds([]));
     }
 
@@ -55,17 +55,17 @@ class RoleRepositoryTest extends TestCase
             new RoleIdentifier($roleId),
             'Administrator',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $repository->save($role);
 
         $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Administrator',
-            'is_system_role' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -92,11 +92,11 @@ class RoleRepositoryTest extends TestCase
                 new PolicyIdentifier($policyId1),
                 new PolicyIdentifier($policyId2),
             ],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $repository->save($role);
 
         $this->assertDatabaseHas('wiki_roles', [
@@ -127,11 +127,11 @@ class RoleRepositoryTest extends TestCase
             new RoleIdentifier($roleId),
             [
                 'name' => 'Test Role',
-                'is_system_role' => true,
+                'account_id' => null,
             ]
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $result = $repository->findById(new RoleIdentifier($roleId));
 
         $this->assertNotNull($result);
@@ -164,7 +164,7 @@ class RoleRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $result = $repository->findById(new RoleIdentifier($roleId));
 
         $this->assertNotNull($result);
@@ -182,7 +182,7 @@ class RoleRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $result = $repository->findById(new RoleIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -208,7 +208,7 @@ class RoleRepositoryTest extends TestCase
             ['name' => 'Role 2']
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $result = $repository->findAll();
 
         $this->assertCount(2, $result);
@@ -225,7 +225,7 @@ class RoleRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindAllWhenEmpty(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
         $result = $repository->findAll();
 
         $this->assertSame([], $result);
@@ -246,13 +246,13 @@ class RoleRepositoryTest extends TestCase
         // 削除前に存在確認
         $this->assertDatabaseHas('wiki_roles', ['id' => $roleId]);
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $role = new Role(
             new RoleIdentifier($roleId),
             'Test Role',
             [],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -286,13 +286,13 @@ class RoleRepositoryTest extends TestCase
             'policy_id' => $policyId,
         ]);
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $role = new Role(
             new RoleIdentifier($roleId),
             'Test Role',
             [new PolicyIdentifier($policyId)],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -319,7 +319,7 @@ class RoleRepositoryTest extends TestCase
             new RoleIdentifier($roleId),
             [
                 'name' => 'Original Name',
-                'is_system_role' => false,
+                'account_id' => null,
             ]
         );
 
@@ -327,16 +327,16 @@ class RoleRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Original Name',
-            'is_system_role' => false,
+            'account_id' => null,
         ]);
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $updatedRole = new Role(
             new RoleIdentifier($roleId),
             'Updated Name',
             [],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -346,7 +346,7 @@ class RoleRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_roles', [
             'id' => $roleId,
             'name' => 'Updated Name',
-            'is_system_role' => true,
+            'account_id' => null,
         ]);
     }
 
@@ -384,7 +384,7 @@ class RoleRepositoryTest extends TestCase
         ]);
 
         // 更新: policy1 を削除、policy3 を追加 (policy2 は維持)
-        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
 
         $updatedRole = new Role(
             new RoleIdentifier($roleId),
@@ -393,7 +393,7 @@ class RoleRepositoryTest extends TestCase
                 new PolicyIdentifier($policyId2),
                 new PolicyIdentifier($policyId3),
             ],
-            false,
+            null,
             new DateTimeImmutable(),
         );
 
@@ -430,12 +430,12 @@ class RoleRepositoryTest extends TestCase
             new RoleIdentifier($roleId),
             [
                 'name' => $roleName,
-                'is_system_role' => true,
+                'account_id' => null,
             ]
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
-        $result = $repository->findByName($roleName);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        $result = $repository->findSystemByName($roleName);
 
         $this->assertNotNull($result);
         $this->assertSame($roleId, (string) $result->roleIdentifier());
@@ -451,8 +451,8 @@ class RoleRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByNameWhenNotFound(): void
     {
-        $repository = $this->app->make(RoleRepositoryInterface::class);
-        $result = $repository->findByName('NON_EXISTENT_ROLE');
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        $result = $repository->findSystemByName('NON_EXISTENT_ROLE');
 
         $this->assertNull($result);
     }
@@ -481,8 +481,8 @@ class RoleRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(RoleRepositoryInterface::class);
-        $result = $repository->findByName($roleName);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        $result = $repository->findSystemByName($roleName);
 
         $this->assertNotNull($result);
         $this->assertSame($roleName, $result->name());

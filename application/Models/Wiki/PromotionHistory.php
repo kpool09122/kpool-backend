@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -15,7 +18,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $reason
  * @property Carbon $processed_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'principal_id',
     'from_role',
@@ -23,16 +26,16 @@ use Illuminate\Support\Carbon;
     'reason',
     'processed_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'promotion_histories', keyType: 'string')]
+#[Table(name: 'promotion_histories', keyType: 'string')]
 class PromotionHistory extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

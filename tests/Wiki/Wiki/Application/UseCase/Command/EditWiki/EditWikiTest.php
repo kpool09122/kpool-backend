@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -52,8 +53,8 @@ class EditWikiTest extends TestCase
     public function test__construct(): void
     {
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $this->assertInstanceOf(EditWiki::class, $editWiki);
     }
 
@@ -71,7 +72,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $updatedBasic = new GroupBasic(
             name: new Name('ITZY'),
@@ -127,11 +128,11 @@ class EditWikiTest extends TestCase
             ->with($testData->draftWiki)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $output = new EditWikiOutput();
         $editWiki->process($input, $output);
         $result = $output->toArray();
@@ -182,11 +183,11 @@ class EditWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(WikiNotFoundException::class);
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
     }
 
@@ -228,11 +229,11 @@ class EditWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn($testData->draftWiki);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
     }
 
@@ -250,7 +251,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -283,11 +284,11 @@ class EditWikiTest extends TestCase
             ->with($testData->draftWiki)
             ->andReturn(null);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
 
         $this->assertNotNull($testData->draftWiki->editedAt());
@@ -306,7 +307,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -335,12 +336,12 @@ class EditWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->andReturn($testData->draftWiki);
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(DisallowedException::class);
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
     }
 
@@ -383,7 +384,7 @@ class EditWikiTest extends TestCase
         $testData = $this->createDummyEditWiki($status);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -413,12 +414,12 @@ class EditWikiTest extends TestCase
             ->andReturn($testData->draftWiki);
         $draftWikiRepository->shouldNotReceive('save');
 
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $this->expectException(InvalidStatusException::class);
-        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki = $this->app()->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
     }
 

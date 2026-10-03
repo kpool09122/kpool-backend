@@ -74,11 +74,11 @@ class ExecuteTransferTest extends TestCase
             ->with($transfer, $monetizationAccount)
             ->andReturn($stripeTransferId);
 
-        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(TransferGatewayInterface::class, $transferGateway);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(TransferGatewayInterface::class, $transferGateway);
 
-        $useCase = $this->app->make(ExecuteTransferInterface::class);
+        $useCase = $this->app()->make(ExecuteTransferInterface::class);
 
         $input = new ExecuteTransferInput($transferIdentifier);
         $useCase->process($input);
@@ -108,13 +108,13 @@ class ExecuteTransferTest extends TestCase
         $transferGateway = Mockery::mock(TransferGatewayInterface::class);
         $transferGateway->shouldNotReceive('execute');
 
-        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(TransferGatewayInterface::class, $transferGateway);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(TransferGatewayInterface::class, $transferGateway);
 
         $this->expectException(TransferNotFoundException::class);
 
-        $useCase = $this->app->make(ExecuteTransferInterface::class);
+        $useCase = $this->app()->make(ExecuteTransferInterface::class);
 
         $input = new ExecuteTransferInput($transferIdentifier);
         $useCase->process($input);
@@ -151,13 +151,13 @@ class ExecuteTransferTest extends TestCase
         $transferGateway = Mockery::mock(TransferGatewayInterface::class);
         $transferGateway->shouldNotReceive('execute');
 
-        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(TransferGatewayInterface::class, $transferGateway);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(TransferGatewayInterface::class, $transferGateway);
 
         $this->expectException(MonetizationAccountNotFoundException::class);
 
-        $useCase = $this->app->make(ExecuteTransferInterface::class);
+        $useCase = $this->app()->make(ExecuteTransferInterface::class);
 
         $input = new ExecuteTransferInput($transferIdentifier);
         $useCase->process($input);
@@ -204,11 +204,11 @@ class ExecuteTransferTest extends TestCase
             ->with($transfer, $monetizationAccount)
             ->andThrow(new TransferGatewayException('Stripe API error'));
 
-        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(TransferGatewayInterface::class, $transferGateway);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(TransferGatewayInterface::class, $transferGateway);
 
-        $useCase = $this->app->make(ExecuteTransferInterface::class);
+        $useCase = $this->app()->make(ExecuteTransferInterface::class);
 
         $input = new ExecuteTransferInput($transferIdentifier);
         $useCase->process($input);

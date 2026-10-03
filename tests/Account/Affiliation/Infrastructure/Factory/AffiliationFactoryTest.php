@@ -24,7 +24,7 @@ class AffiliationFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(AffiliationFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationFactoryInterface::class);
 
         $this->assertInstanceOf(AffiliationFactory::class, $factory);
     }
@@ -41,7 +41,7 @@ class AffiliationFactoryTest extends TestCase
         $requestedBy = $agencyAccountIdentifier;
         $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
 
-        $factory = $this->app->make(AffiliationFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationFactoryInterface::class);
         $affiliation = $factory->create(
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
@@ -71,7 +71,7 @@ class AffiliationFactoryTest extends TestCase
         $talentAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $requestedBy = $talentAccountIdentifier;
 
-        $factory = $this->app->make(AffiliationFactoryInterface::class);
+        $factory = $this->app()->make(AffiliationFactoryInterface::class);
         $affiliation = $factory->create(
             $agencyAccountIdentifier,
             $talentAccountIdentifier,

@@ -7,6 +7,8 @@ namespace Application\Providers\Account;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequest;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
+use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetup;
+use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
@@ -15,6 +17,8 @@ use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChan
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
+use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccount;
+use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
@@ -41,14 +45,12 @@ use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAf
 use Source\Account\Affiliation\Infrastructure\Query\ListAffiliations;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegation;
+use Source\Account\Delegation\Application\UseCase\Command\RejectDelegation\RejectDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
-use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegation;
-use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegationInterface;
-use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermission;
-use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
-use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
-use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermissionInterface as RevokeDelegationPermissionInterfaceNew;
+use Source\Account\Delegation\Application\UseCase\Query\ListDelegations\ListDelegationsInterface;
+use Source\Account\Delegation\Infrastructure\Query\ListDelegations;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
@@ -71,6 +73,7 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
+        $this->app->singleton(CompleteInitialSetupInterface::class, CompleteInitialSetup::class);
         $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
@@ -78,8 +81,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(ListMembersInterface::class, ListMembers::class);
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
-        $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
-        $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
         $this->app->singleton(UpdateAccountInterface::class, UpdateAccount::class);
         $this->app->singleton(GetAccountInterface::class, GetAccount::class);
@@ -87,9 +88,11 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListAccountCategoryChangeRequestsInterface::class, ListAccountCategoryChangeRequests::class);
         $this->app->singleton(ListAccountDocumentsInterface::class, ListAccountDocuments::class);
         $this->app->singleton(GetAccountDocumentInterface::class, GetAccountDocument::class);
-        $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
+        $this->app->singleton(RejectDelegationInterface::class, RejectDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
+        $this->app->singleton(SwitchAccountInterface::class, SwitchAccount::class);
+        $this->app->singleton(ListDelegationsInterface::class, ListDelegations::class);
         $this->app->singleton(ApproveAffiliationInterface::class, ApproveAffiliation::class);
         $this->app->singleton(ListAffiliationsInterface::class, ListAffiliations::class);
         $this->app->singleton(TerminateAffiliationInterface::class, TerminateAffiliation::class);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Monetization\Payment\Application\UseCase\Command\AuthorizePayment;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
@@ -71,8 +72,8 @@ class AuthorizePaymentOutputTest extends TestCase
         $this->assertSame('Visa **** 1234', $result['paymentMethodLabel']);
         $this->assertTrue($result['paymentMethodRecurringEnabled']);
         $this->assertSame('authorized', $result['status']);
-        $this->assertSame($now->format(\DateTimeInterface::ATOM), $result['createdAt']);
-        $this->assertSame($now->format(\DateTimeInterface::ATOM), $result['authorizedAt']);
+        $this->assertSame($now->format(DateTimeInterface::ATOM), $result['createdAt']);
+        $this->assertSame($now->format(DateTimeInterface::ATOM), $result['authorizedAt']);
         $this->assertNull($result['capturedAt']);
         $this->assertNull($result['failedAt']);
         $this->assertNull($result['failureReason']);

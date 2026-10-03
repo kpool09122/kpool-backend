@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Delegation\Command\ApproveDelegation;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -17,9 +18,7 @@ use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperatio
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
-use Source\Account\Delegation\Domain\Exception\InvalidDelegationApprovalException;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -27,30 +26,21 @@ readonly class ApproveDelegationAction
 {
     public function __construct(
         private ApproveDelegationInterface $approveDelegation,
+        private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * @param ApproveDelegationRequest $request
-     * @return JsonResponse
-     * @throws InternalServerErrorHttpException
-     */
     public function __invoke(ApproveDelegationRequest $request): JsonResponse
     {
         try {
             try {
-                $input = new ApproveDelegationInput(
-                    delegationIdentifier: new DelegationIdentifier($request->delegationId()),
-                    approverIdentifier: new IdentityIdentifier($request->approverIdentifier()),
-                );
+                $input = new ApproveDelegationInput(new DelegationIdentifier($request->delegationId()), $this->accountContext->principal());
                 $output = new ApproveDelegationOutput();
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }
-
             DB::beginTransaction();
-
             $language = $request->language();
 
             try {
@@ -64,10 +54,6 @@ readonly class ApproveDelegationAction
                 DB::rollBack();
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed_delegation_operation', $language), previous: $e);
-            } catch (InvalidDelegationApprovalException $e) {
-                DB::rollBack();
-
-                throw new UnprocessableEntityHttpException(detail: error_message('invalid_delegation_approval', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

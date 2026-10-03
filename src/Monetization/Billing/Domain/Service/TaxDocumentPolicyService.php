@@ -102,6 +102,7 @@ class TaxDocumentPolicyService implements TaxDocumentPolicyServiceInterface
         );
     }
 
+    /** @phpstan-assert DateTimeImmutable $deadline */
     private function assertDeadline(?DateTimeImmutable $deadline): void
     {
         if ($deadline === null) {

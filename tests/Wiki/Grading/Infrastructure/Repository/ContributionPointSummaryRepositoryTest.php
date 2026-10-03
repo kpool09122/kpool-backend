@@ -30,7 +30,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
         $this->assertInstanceOf(ContributionPointSummaryRepository::class, $repository);
     }
 
@@ -62,7 +62,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
         $repository->save($summary);
 
         $this->assertDatabaseHas('contribution_point_summaries', [
@@ -106,7 +106,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
         ]);
 
         // 更新
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
         $summary = new ContributionPointSummary(
             new ContributionPointSummaryIdentifier($summaryId),
             new PrincipalIdentifier($principalId),
@@ -153,7 +153,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
         $result = $repository->findByPrincipalAndYearMonth(
             new PrincipalIdentifier($principalId),
             new YearMonth($yearMonth),
@@ -174,7 +174,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPrincipalAndYearMonthWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
 
         $result = $repository->findByPrincipalAndYearMonth(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
@@ -227,7 +227,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
         $results = $repository->findByYearMonth(new YearMonth($yearMonth));
 
         $this->assertCount(2, $results);
@@ -247,7 +247,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByYearMonthWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
 
         $results = $repository->findByYearMonth(new YearMonth('2020-01'));
 
@@ -297,7 +297,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
 
         // 2024-01と2024-03のみ取得
         $results = $repository->findByYearMonths([
@@ -323,7 +323,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByYearMonthsWhenNotFound(): void
     {
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
 
         $results = $repository->findByYearMonths([
             new YearMonth('2020-01'),
@@ -341,7 +341,7 @@ class ContributionPointSummaryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByYearMonthsWithEmptyArray(): void
     {
-        $repository = $this->app->make(ContributionPointSummaryRepositoryInterface::class);
+        $repository = $this->app()->make(ContributionPointSummaryRepositoryInterface::class);
 
         $results = $repository->findByYearMonths([]);
 

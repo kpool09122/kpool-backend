@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Image\Command\RejectImageDeletion;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RejectImageDeletionRequest extends FormRequest
@@ -28,6 +29,6 @@ class RejectImageDeletionRequest extends FormRequest
 
     public function rejectReason(): string
     {
-        return (string) $this->input('rejectReason');
+        return RequestValue::string($this->input('rejectReason'));
     }
 }

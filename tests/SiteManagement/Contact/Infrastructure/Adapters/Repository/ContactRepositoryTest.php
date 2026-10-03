@@ -43,7 +43,7 @@ class ContactRepositoryTest extends TestCase
             Language::KOREAN,
         );
 
-        $repository = $this->app->make(ContactRepositoryInterface::class);
+        $repository = $this->app()->make(ContactRepositoryInterface::class);
         $repository->save($contact);
 
         $record = DB::table('contacts')
@@ -51,14 +51,16 @@ class ContactRepositoryTest extends TestCase
             ->first();
 
         $this->assertNotNull($record);
-        $this->assertSame($contact->category()->value, (int)$record->category);
+        self::assertIsInt($record->category);
+        self::assertIsString($record->email);
+        $this->assertSame($contact->category()->value, $record->category);
         $this->assertSame((string)$identityIdentifier, $record->identity_identifier);
         $this->assertSame((string)$contact->name(), $record->name);
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$contact->email(), $record->email);
         $this->assertNotEmpty($record->email);
         // 復号すると登録したメールアドレスと一致すること
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $this->assertSame((string)$contact->email(), $encryptionService->decrypt($record->email));
         $this->assertSame((string)$contact->content(), $record->content);
         $this->assertSame($contact->language()->value, $record->language);
@@ -73,7 +75,7 @@ class ContactRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindById(): void
     {
-        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
 
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $email = new Email('john.doe@example.com');
@@ -90,7 +92,7 @@ class ContactRepositoryTest extends TestCase
             'updated_at' => $createdAt->format('Y-m-d H:i:s'),
         ]);
 
-        $repository = $this->app->make(ContactRepositoryInterface::class);
+        $repository = $this->app()->make(ContactRepositoryInterface::class);
         $contact = $repository->findById($contactIdentifier);
 
         $this->assertNotNull($contact);
@@ -111,7 +113,7 @@ class ContactRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
-        $repository = $this->app->make(ContactRepositoryInterface::class);
+        $repository = $this->app()->make(ContactRepositoryInterface::class);
         $contact = $repository->findById(new ContactIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($contact);

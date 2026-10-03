@@ -11,7 +11,7 @@ use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryI
 readonly class ProvisionMonetizationAccount implements ProvisionMonetizationAccountInterface
 {
     public function __construct(
-        private MonetizationAccountRepositoryInterface $repository,
+        private MonetizationAccountRepositoryInterface $monetizationAccountRepository,
         private MonetizationAccountFactoryInterface $factory,
     ) {
     }
@@ -24,14 +24,14 @@ readonly class ProvisionMonetizationAccount implements ProvisionMonetizationAcco
      */
     public function process(ProvisionMonetizationAccountInputPort $input, ProvisionMonetizationAccountOutputPort $output): void
     {
-        $existing = $this->repository->findByAccountIdentifier($input->accountIdentifier());
+        $existing = $this->monetizationAccountRepository->findByAccountIdentifier($input->accountIdentifier());
 
         if ($existing !== null) {
             throw new MonetizationAccountAlreadyExistsException();
         }
 
         $account = $this->factory->create($input->accountIdentifier());
-        $this->repository->save($account);
+        $this->monetizationAccountRepository->save($account);
 
         $output->setMonetizationAccount($account);
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\SendAuthCode;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SendAuthCodeRequest extends FormRequest
@@ -23,6 +24,6 @@ class SendAuthCodeRequest extends FormRequest
 
     public function email(): string
     {
-        return (string) $this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 }

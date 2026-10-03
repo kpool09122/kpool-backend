@@ -8,6 +8,7 @@ readonly class AuthenticatedIdentityReadModel
 {
     /**
      * @param array<int, array<string, mixed>> $accountPolicies
+     * @param SwitchableAccountReadModel[] $switchableAccounts
      */
     public function __construct(
         private string $identityIdentifier,
@@ -18,8 +19,12 @@ readonly class AuthenticatedIdentityReadModel
         private ?string $accountIdentifier,
         private ?string $accountPrincipalIdentifier,
         private ?string $accountType,
+        private AuthenticationMethodsReadModel $authenticationMethods,
         private array $accountPolicies = [],
         private ?AuthenticatedAccountSummaryReadModel $account = null,
+        private ?AuthenticatedAccountReferenceReadModel $originalAccount = null,
+        private ?string $delegationIdentifier = null,
+        private array $switchableAccounts = [],
     ) {
     }
 
@@ -76,8 +81,29 @@ readonly class AuthenticatedIdentityReadModel
         return $this->account;
     }
 
+    public function originalAccount(): ?AuthenticatedAccountReferenceReadModel
+    {
+        return $this->originalAccount;
+    }
+
+    public function delegationIdentifier(): ?string
+    {
+        return $this->delegationIdentifier;
+    }
+
+    /** @return SwitchableAccountReadModel[] */
+    public function switchableAccounts(): array
+    {
+        return $this->switchableAccounts;
+    }
+
+    public function authenticationMethods(): AuthenticationMethodsReadModel
+    {
+        return $this->authenticationMethods;
+    }
+
     /**
-     * @return array<string, mixed>
+     * @return array{identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
      */
     public function toArray(): array
     {
@@ -92,6 +118,13 @@ readonly class AuthenticatedIdentityReadModel
             'accountType' => $this->accountType,
             'accountPolicies' => $this->accountPolicies,
             'account' => $this->account?->toArray(),
+            'originalAccount' => $this->originalAccount?->toArray(),
+            'delegationIdentifier' => $this->delegationIdentifier,
+            'switchableAccounts' => array_map(
+                static fn (SwitchableAccountReadModel $account): array => $account->toArray(),
+                $this->switchableAccounts,
+            ),
+            'authenticationMethods' => $this->authenticationMethods->toArray(),
         ];
     }
 }

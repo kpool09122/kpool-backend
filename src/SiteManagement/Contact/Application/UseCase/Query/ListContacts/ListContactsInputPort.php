@@ -13,4 +13,8 @@ interface ListContactsInputPort
     public function targetIdentityIdentifier(): ?IdentityIdentifier;
 
     public function hasReply(): ?bool;
+
+    public function perPage(): int;
+
+    public function page(): int;
 }

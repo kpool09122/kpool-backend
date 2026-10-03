@@ -40,7 +40,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLink = $repository->findById(new VideoLinkIdentifier($videoLinkId));
 
         $this->assertInstanceOf(VideoLink::class, $videoLink);
@@ -62,7 +62,7 @@ class VideoLinkRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLink = $repository->findById(new VideoLinkIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($videoLink);
@@ -109,7 +109,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLinks = $repository->findByResource(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -137,7 +137,7 @@ class VideoLinkRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceWhenNotExist(): void
     {
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLinks = $repository->findByResource(
             ResourceType::TALENT,
             new WikiIdentifier(StrTestHelper::generateUuid()),
@@ -168,7 +168,7 @@ class VideoLinkRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($videoLink);
 
         $this->assertDatabaseHas('video_links', [
@@ -215,7 +215,7 @@ class VideoLinkRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($videoLink);
 
         $this->assertDatabaseHas('video_links', [
@@ -247,7 +247,7 @@ class VideoLinkRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('video_links', ['id' => $videoLinkId]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->delete(new VideoLinkIdentifier($videoLinkId));
 
         $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId]);
@@ -283,7 +283,7 @@ class VideoLinkRepositoryTest extends TestCase
             'wiki_id' => $otherResourceId,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->deleteByResource(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -333,7 +333,7 @@ class VideoLinkRepositoryTest extends TestCase
             'video_usage' => VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->deleteAutoCollectedByResource(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -386,7 +386,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 3,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLink = $repository->findByResourceWithMaxDisplayOrder(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -405,7 +405,7 @@ class VideoLinkRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByResourceWithMaxDisplayOrderWhenNotExist(): void
     {
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLink = $repository->findByResourceWithMaxDisplayOrder(
             ResourceType::TALENT,
             new WikiIdentifier(StrTestHelper::generateUuid()),
@@ -446,7 +446,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 10,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLink = $repository->findByResourceWithMaxDisplayOrder(
             ResourceType::TALENT,
             new WikiIdentifier($targetResourceId),
@@ -492,7 +492,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 2,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLinks = $repository->findByResourceAndUrls(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
@@ -533,7 +533,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLinks = $repository->findByResourceAndUrls(
             ResourceType::TALENT,
             new WikiIdentifier($targetResourceId),
@@ -562,7 +562,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
-        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $videoLinks = $repository->findByResourceAndUrls(
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),

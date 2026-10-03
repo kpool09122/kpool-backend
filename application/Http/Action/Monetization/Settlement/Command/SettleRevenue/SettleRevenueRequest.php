@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Settlement\Command\SettleRevenue;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SettleRevenueRequest extends FormRequest
@@ -32,7 +33,7 @@ class SettleRevenueRequest extends FormRequest
 
     public function settlementScheduleId(): string
     {
-        return (string) $this->input('settlementScheduleId');
+        return RequestValue::string($this->input('settlementScheduleId'));
     }
 
     /**
@@ -40,40 +41,40 @@ class SettleRevenueRequest extends FormRequest
      */
     public function paidAmounts(): array
     {
-        return (array) $this->input('paidAmounts', []);
+        return RequestValue::objects($this->input('paidAmounts', []));
     }
 
     public function gatewayFeeRate(): int
     {
-        return (int) $this->input('gatewayFeeRate');
+        return RequestValue::integer($this->input('gatewayFeeRate'));
     }
 
     public function platformFeeRate(): int
     {
-        return (int) $this->input('platformFeeRate');
+        return RequestValue::integer($this->input('platformFeeRate'));
     }
 
     public function fixedFeeAmount(): ?int
     {
         $value = $this->input('fixedFeeAmount');
 
-        return $value !== null ? (int) $value : null;
+        return $value !== null ? RequestValue::integer($value) : null;
     }
 
     public function fixedFeeCurrency(): ?string
     {
         $value = $this->input('fixedFeeCurrency');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function periodStart(): string
     {
-        return (string) $this->input('periodStart');
+        return RequestValue::string($this->input('periodStart'));
     }
 
     public function periodEnd(): string
     {
-        return (string) $this->input('periodEnd');
+        return RequestValue::string($this->input('periodEnd'));
     }
 }

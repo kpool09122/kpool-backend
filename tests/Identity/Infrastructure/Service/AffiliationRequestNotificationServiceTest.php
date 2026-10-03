@@ -8,10 +8,11 @@ use Application\Mail\AffiliationRequestMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
+use Mockery\MockInterface;
+use Override;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService;
 use Source\Shared\Domain\ValueObject\Email;
@@ -22,17 +23,17 @@ use Tests\TestCase;
 
 class AffiliationRequestNotificationServiceTest extends TestCase
 {
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->app['view']->addLocation(dirname(__DIR__, 4) . '/resources/views');
+        $this->app()['view']->addLocation(dirname(__DIR__, 4) . '/resources/views');
     }
 
     public function test__construct(): void
     {
-        $service = $this->app->make(AffiliationRequestNotificationServiceInterface::class);
+        $service = $this->app()->make(AffiliationRequestNotificationServiceInterface::class);
 
         $this->assertInstanceOf(AffiliationRequestNotificationService::class, $service);
     }
@@ -41,7 +42,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::JAPANESE));
 
@@ -57,7 +58,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn(null);
 
@@ -71,7 +72,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::ENGLISH));
 
@@ -85,7 +86,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
     {
         Mail::fake();
         $email = new Email('target@example.com');
-        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $identityRepository */
+        /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturn($this->identity($email, Language::ENGLISH));
 
@@ -114,6 +115,6 @@ class AffiliationRequestNotificationServiceTest extends TestCase
 
     private function identity(Email $email, Language $language): Identity
     {
-        return new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Target'), $email, $language, null, new HashedPassword(password_hash('password', PASSWORD_BCRYPT)), null);
+        return new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Target'), $email, $language, null, null);
     }
 }

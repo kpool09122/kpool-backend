@@ -63,7 +63,6 @@ class AccountContextInvalidationServiceTest extends TestCase
             'identity_name' => substr(str_replace('-', '', $identityIdentifier), 0, 32),
             'email' => $email,
             'language' => 'ja',
-            'password' => 'password',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

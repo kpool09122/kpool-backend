@@ -42,11 +42,17 @@ class GeminiClientTest extends TestCase
             ->once()
             ->withArgs(function (RequestInterface $request): bool {
                 $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+                self::assertIsArray($body);
+                self::assertIsArray($body['tools']);
+                self::assertIsArray($body['tools'][0]);
                 $googleSearch = $body['tools'][0]['google_search'] ?? null;
 
+                $generationConfig = $body['generationConfig'] ?? [];
+                self::assertIsArray($generationConfig);
+
                 return $googleSearch === []
-                    && ! isset($body['generationConfig']['responseMimeType'])
-                    && ! isset($body['generationConfig']['responseSchema']);
+                    && ! isset($generationConfig['responseMimeType'])
+                    && ! isset($generationConfig['responseSchema']);
             })
             ->andReturn($response);
 

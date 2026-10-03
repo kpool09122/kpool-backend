@@ -28,7 +28,7 @@ class DraftImageFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(DraftImageFactoryInterface::class);
+        $factory = $this->app()->make(DraftImageFactoryInterface::class);
         $this->assertInstanceOf(DraftImageFactory::class, $factory);
     }
 
@@ -50,7 +50,7 @@ class DraftImageFactoryTest extends TestCase
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
         $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
-        $factory = $this->app->make(DraftImageFactoryInterface::class);
+        $factory = $this->app()->make(DraftImageFactoryInterface::class);
         $draftImage = $factory->create(
             null,
             $resourceType,
@@ -98,7 +98,7 @@ class DraftImageFactoryTest extends TestCase
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
         $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
-        $factory = $this->app->make(DraftImageFactoryInterface::class);
+        $factory = $this->app()->make(DraftImageFactoryInterface::class);
         $draftImage = $factory->create(
             $publishedImageIdentifier,
             $resourceType,

@@ -10,6 +10,7 @@ use Application\Models\Wiki\WikiGroupBasic;
 use Application\Models\Wiki\WikiSongBasic;
 use Application\Models\Wiki\WikiTalentBasic;
 use InvalidArgumentException;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -90,7 +91,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
-        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -111,7 +112,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->whereIn('language', array_map(static fn (Language $language): string => $language->value, $languages))
             ->get();
 
-        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     /**
@@ -127,7 +128,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->take($limit)
             ->get();
 
-        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     public function findByOwnerAccountId(
@@ -200,7 +201,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->where('image_identifier', (string) $imageIdentifier)
             ->get();
 
-        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
     }
 
     private function saveBasic(string $wikiId, ResourceType $resourceType, BasicInterface $basic): void
@@ -215,9 +216,8 @@ readonly class WikiRepository implements WikiRepositoryInterface
 
         match ($resourceType) {
             ResourceType::TALENT => (function () use ($wikiId, $basicArray, $groupIdentifiers) {
-                WikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
-                $talentBasic = WikiTalentBasic::query()->where('wiki_id', $wikiId)->first();
-                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+                $talentBasic = WikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $talentBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
             })(),
             ResourceType::GROUP => WikiGroupBasic::query()->updateOrCreate(
                 ['wiki_id' => $wikiId],
@@ -228,10 +228,9 @@ readonly class WikiRepository implements WikiRepositoryInterface
                 $basicArray
             ),
             ResourceType::SONG => (function () use ($wikiId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
-                WikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
-                $songBasic = WikiSongBasic::query()->where('wiki_id', $wikiId)->first();
-                $songBasic->groups()->sync($groupIdentifiers ?? []);
-                $songBasic->talents()->sync($talentIdentifiers ?? []);
+                $songBasic = WikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $songBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
+                $songBasic->talents()->sync(TypedValue::stringArray($talentIdentifiers ?? []));
             })(),
             ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };

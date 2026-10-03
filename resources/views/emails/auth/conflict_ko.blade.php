@@ -25,9 +25,6 @@
                             <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.8; color: #555555;">
                                 이미 계정이 있으시다면 로그인 페이지에서 로그인해 주세요.
                             </p>
-                            <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.8; color: #555555;">
-                                비밀번호를 잊으셨다면 로그인 페이지의 "비밀번호 찾기"를 이용하여 비밀번호를 재설정해 주세요.
-                            </p>
                         </td>
                     </tr>
                     <tr>

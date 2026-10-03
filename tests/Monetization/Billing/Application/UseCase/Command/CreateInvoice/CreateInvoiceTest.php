@@ -109,6 +109,7 @@ class CreateInvoiceTest extends TestCase
 
                 // 商品明細の検証
                 $productLine = $invoiceLines[0];
+                $this->assertInstanceOf(InvoiceLine::class, $productLine);
                 if ($productLine->description() !== 'Test Product' ||
                     $productLine->unitPrice()->amount() !== 1000 ||
                     $productLine->quantity() !== 2) {
@@ -117,6 +118,7 @@ class CreateInvoiceTest extends TestCase
 
                 // 送料明細の検証
                 $shippingLine = $invoiceLines[1];
+                $this->assertInstanceOf(InvoiceLine::class, $shippingLine);
                 if ($shippingLine->description() !== 'Shipping' ||
                     $shippingLine->unitPrice()->amount() !== 500 ||
                     $shippingLine->quantity() !== 1) {
@@ -148,10 +150,10 @@ class CreateInvoiceTest extends TestCase
             ->once()
             ->with($expectedInvoice);
 
-        $this->app->instance(InvoiceFactoryInterface::class, $invoiceFactory);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $useCase = $this->app->make(CreateInvoiceInterface::class);
+        $this->app()->instance(InvoiceFactoryInterface::class, $invoiceFactory);
+        $this->app()->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $useCase = $this->app()->make(CreateInvoiceInterface::class);
 
         $output = new CreateInvoiceOutput();
         $useCase->process($input, $output);
@@ -201,7 +203,7 @@ class CreateInvoiceTest extends TestCase
             ->withArgs(
                 // 送料0円の場合、商品明細のみ（1件）
                 fn (OrderIdentifier $orderId, MonetizationAccountIdentifier $buyerAccountId, array $invoiceLines) => count($invoiceLines) === 1 &&
-                $invoiceLines[0]->description() === 'Test Product'
+                $invoiceLines[0] instanceof InvoiceLine && $invoiceLines[0]->description() === 'Test Product'
             )
             ->andReturn($expectedInvoice);
 
@@ -221,10 +223,10 @@ class CreateInvoiceTest extends TestCase
             ->once()
             ->with($expectedInvoice);
 
-        $this->app->instance(InvoiceFactoryInterface::class, $invoiceFactory);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $useCase = $this->app->make(CreateInvoiceInterface::class);
+        $this->app()->instance(InvoiceFactoryInterface::class, $invoiceFactory);
+        $this->app()->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $useCase = $this->app()->make(CreateInvoiceInterface::class);
 
         $output = new CreateInvoiceOutput();
         $useCase->process($input, $output);
@@ -279,9 +281,9 @@ class CreateInvoiceTest extends TestCase
             ->withArgs(
                 // 2つの商品明細 + 送料 = 3件
                 fn (OrderIdentifier $orderId, MonetizationAccountIdentifier $buyerAccountId, array $invoiceLines) => count($invoiceLines) === 3 &&
-                $invoiceLines[0]->description() === 'Product A' &&
-                $invoiceLines[1]->description() === 'Product B' &&
-                $invoiceLines[2]->description() === 'Shipping'
+                $invoiceLines[0] instanceof InvoiceLine && $invoiceLines[0]->description() === 'Product A' &&
+                $invoiceLines[1] instanceof InvoiceLine && $invoiceLines[1]->description() === 'Product B' &&
+                $invoiceLines[2] instanceof InvoiceLine && $invoiceLines[2]->description() === 'Shipping'
             )
             ->andReturn($expectedInvoice);
 
@@ -301,10 +303,10 @@ class CreateInvoiceTest extends TestCase
             ->once()
             ->with($expectedInvoice);
 
-        $this->app->instance(InvoiceFactoryInterface::class, $invoiceFactory);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $useCase = $this->app->make(CreateInvoiceInterface::class);
+        $this->app()->instance(InvoiceFactoryInterface::class, $invoiceFactory);
+        $this->app()->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $useCase = $this->app()->make(CreateInvoiceInterface::class);
 
         $output = new CreateInvoiceOutput();
         $useCase->process($input, $output);
@@ -348,10 +350,10 @@ class CreateInvoiceTest extends TestCase
         $invoiceRepository = Mockery::mock(InvoiceRepositoryInterface::class);
         $invoiceRepository->shouldNotReceive('save');
 
-        $this->app->instance(InvoiceFactoryInterface::class, $invoiceFactory);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
-        $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
-        $useCase = $this->app->make(CreateInvoiceInterface::class);
+        $this->app()->instance(InvoiceFactoryInterface::class, $invoiceFactory);
+        $this->app()->instance(TaxDocumentPolicyServiceInterface::class, $taxDocumentPolicyService);
+        $this->app()->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
+        $useCase = $this->app()->make(CreateInvoiceInterface::class);
 
         $this->expectException(EmptyInvoiceLinesException::class);
         $this->expectExceptionMessage('At least one product line is required.');

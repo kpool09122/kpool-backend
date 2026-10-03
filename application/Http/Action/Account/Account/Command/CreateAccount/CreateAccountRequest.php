@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\CreateAccount;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,7 +23,6 @@ class CreateAccountRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
-            'accountType' => ['required', 'string'],
             'accountName' => ['required', 'string'],
             'identityIdentifier' => ['nullable', 'uuid'],
             'phone' => ['nullable', 'string'],
@@ -44,31 +44,26 @@ class CreateAccountRequest extends FormRequest
 
     public function email(): string
     {
-        return (string) $this->input('email');
-    }
-
-    public function accountType(): string
-    {
-        return (string) $this->input('accountType');
+        return RequestValue::string($this->input('email'));
     }
 
     public function accountName(): string
     {
-        return (string) $this->input('accountName');
+        return RequestValue::string($this->input('accountName'));
     }
 
     public function identityIdentifier(): ?string
     {
         $value = $this->input('identityIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function phone(): ?string
     {
         $value = $this->input('phone');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     /** @return array<string, mixed>|null */
@@ -76,7 +71,7 @@ class CreateAccountRequest extends FormRequest
     {
         $value = $this->input('address');
 
-        return is_array($value) ? $value : null;
+        return is_array($value) ? RequestValue::object($value) : null;
     }
 
     /** @return list<string> */

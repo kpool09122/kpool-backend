@@ -9,6 +9,7 @@ use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Infrastructure\Factory\PrincipalGroupFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class PrincipalGroupFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $this->assertInstanceOf(PrincipalGroupFactory::class, $factory);
     }
 
@@ -38,7 +39,7 @@ class PrincipalGroupFactoryTest extends TestCase
         $name = 'Test Group';
         $isDefault = true;
 
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
@@ -66,7 +67,7 @@ class PrincipalGroupFactoryTest extends TestCase
         $name = 'Non Default Group';
         $isDefault = false;
 
-        $factory = $this->app->make(PrincipalGroupFactoryInterface::class);
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
         $principalGroup = $factory->create(
             $accountIdentifier,
             $name,
@@ -78,5 +79,26 @@ class PrincipalGroupFactoryTest extends TestCase
         $this->assertSame($name, $principalGroup->name());
         $this->assertFalse($principalGroup->isDefault());
         $this->assertNotNull($principalGroup->createdAt());
+    }
+
+    /**
+     * 正常系: 委譲IDを指定してPrincipalGroupを作成できること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testCreateWithDelegationIdentifier(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+
+        $factory = $this->app()->make(PrincipalGroupFactoryInterface::class);
+        $principalGroup = $factory->create(
+            $accountIdentifier,
+            'Delegation Group',
+            false,
+            $delegationIdentifier,
+        );
+
+        $this->assertSame($delegationIdentifier, $principalGroup->delegationIdentifier());
     }
 }

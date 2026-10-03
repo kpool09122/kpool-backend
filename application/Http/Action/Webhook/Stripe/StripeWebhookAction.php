@@ -53,6 +53,9 @@ readonly class StripeWebhookAction
             }
 
             $connectedAccountId = $event->account;
+            if ($connectedAccountId === null) {
+                throw new BadRequestHttpException(detail: 'Missing connected account identifier');
+            }
             /** @var BankAccount $externalAccount */
             $externalAccount = $event->data->object;
 

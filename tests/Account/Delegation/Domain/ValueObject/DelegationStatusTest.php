@@ -19,29 +19,29 @@ class DelegationStatusTest extends TestCase
         $this->assertSame('approved', DelegationStatus::APPROVED->value);
     }
 
-    public function testRevokedValue(): void
+    public function testRejectedValue(): void
     {
-        $this->assertSame('revoked', DelegationStatus::REVOKED->value);
+        $this->assertSame('rejected', DelegationStatus::REJECTED->value);
     }
 
     public function testIsPending(): void
     {
         $this->assertTrue(DelegationStatus::PENDING->isPending());
         $this->assertFalse(DelegationStatus::APPROVED->isPending());
-        $this->assertFalse(DelegationStatus::REVOKED->isPending());
+        $this->assertFalse(DelegationStatus::REJECTED->isPending());
     }
 
     public function testIsApproved(): void
     {
         $this->assertFalse(DelegationStatus::PENDING->isApproved());
         $this->assertTrue(DelegationStatus::APPROVED->isApproved());
-        $this->assertFalse(DelegationStatus::REVOKED->isApproved());
+        $this->assertFalse(DelegationStatus::REJECTED->isApproved());
     }
 
-    public function testIsRevoked(): void
+    public function testIsRejected(): void
     {
-        $this->assertFalse(DelegationStatus::PENDING->isRevoked());
-        $this->assertFalse(DelegationStatus::APPROVED->isRevoked());
-        $this->assertTrue(DelegationStatus::REVOKED->isRevoked());
+        $this->assertFalse(DelegationStatus::PENDING->isRejected());
+        $this->assertFalse(DelegationStatus::APPROVED->isRejected());
+        $this->assertTrue(DelegationStatus::REJECTED->isRejected());
     }
 }

@@ -58,9 +58,9 @@ class ProvisionMonetizationAccountTest extends TestCase
             ->with($expectedAccount)
             ->once();
 
-        $this->app->instance(MonetizationAccountFactoryInterface::class, $factory);
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(ProvisionMonetizationAccountInterface::class);
+        $this->app()->instance(MonetizationAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(ProvisionMonetizationAccountInterface::class);
         $useCase->process($input, $output);
 
         $result = $output->toArray();
@@ -102,8 +102,8 @@ class ProvisionMonetizationAccountTest extends TestCase
 
         $this->expectException(MonetizationAccountAlreadyExistsException::class);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(ProvisionMonetizationAccountInterface::class);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(ProvisionMonetizationAccountInterface::class);
         $useCase->process($input, $output);
     }
 }

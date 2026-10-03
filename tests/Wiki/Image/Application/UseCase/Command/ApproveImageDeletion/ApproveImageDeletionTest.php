@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -67,7 +68,7 @@ class ApproveImageDeletionTest extends TestCase
             } else {
                 $repository->shouldReceive('findByImageIdentifier')->byDefault()->andReturn([]);
             }
-            $this->app->instance($interface, $repository);
+            $this->app()->instance($interface, $repository);
         }
     }
 
@@ -83,7 +84,7 @@ class ApproveImageDeletionTest extends TestCase
             $imageService->shouldNotReceive('delete');
         }
 
-        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app()->instance(ImageServiceInterface::class, $imageService);
     }
 
     /**
@@ -97,13 +98,13 @@ class ApproveImageDeletionTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
         $this->bindReferenceRepositories();
         $this->bindImageService();
 
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $this->assertInstanceOf(ApproveImageDeletion::class, $approveImageDeletionRequest);
     }
 
@@ -117,7 +118,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
@@ -150,14 +151,14 @@ class ApproveImageDeletionTest extends TestCase
             ->with($image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
         $this->bindReferenceRepositories($imageIdentifier);
         $this->bindImageService($image->imagePath());
 
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $output = new ApproveImageDeletionOutput();
         $approveImageDeletionRequest->process($input, $output);
 
@@ -187,15 +188,15 @@ class ApproveImageDeletionTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->bindReferenceRepositories();
         $this->bindImageService();
 
         $this->expectException(ImageNotFoundException::class);
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $output = new ApproveImageDeletionOutput();
         $approveImageDeletionRequest->process($input, $output);
     }
@@ -210,7 +211,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithoutDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
@@ -236,16 +237,16 @@ class ApproveImageDeletionTest extends TestCase
             ->with($image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->bindReferenceRepositories();
         $this->bindImageService();
 
         $this->expectException(ImageDeletionRequestNotPendingException::class);
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $output = new ApproveImageDeletionOutput();
         $approveImageDeletionRequest->process($input, $output);
     }
@@ -277,15 +278,15 @@ class ApproveImageDeletionTest extends TestCase
 
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->bindReferenceRepositories();
         $this->bindImageService();
 
         $this->expectException(PrincipalNotFoundException::class);
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $output = new ApproveImageDeletionOutput();
         $approveImageDeletionRequest->process($input, $output);
     }
@@ -300,7 +301,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
         $resource = new Resource(type: ResourceType::IMAGE);
 
         $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
@@ -327,16 +328,16 @@ class ApproveImageDeletionTest extends TestCase
             ->with($image)
             ->andReturn($resource);
 
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+        $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->bindReferenceRepositories();
         $this->bindImageService();
 
         $this->expectException(DisallowedException::class);
-        $approveImageDeletionRequest = $this->app->make(ApproveImageDeletionInterface::class);
+        $approveImageDeletionRequest = $this->app()->make(ApproveImageDeletionInterface::class);
         $output = new ApproveImageDeletionOutput();
         $approveImageDeletionRequest->process($input, $output);
     }

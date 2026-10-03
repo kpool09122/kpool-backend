@@ -42,7 +42,7 @@ class InvitationMailServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service = $this->app()->make(InvitationMailServiceInterface::class);
         $this->assertInstanceOf(InvitationMailService::class, $service);
     }
 
@@ -74,10 +74,10 @@ class InvitationMailServiceTest extends TestCase
             ->with($data->inviterIdentityIdentifier)
             ->andReturn($identity);
 
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
         Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
@@ -115,10 +115,10 @@ class InvitationMailServiceTest extends TestCase
             ->with($data->inviterIdentityIdentifier)
             ->andReturn($identity);
 
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
         Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
@@ -156,10 +156,10 @@ class InvitationMailServiceTest extends TestCase
             ->with($data->inviterIdentityIdentifier)
             ->andReturn($identity);
 
-        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
-        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app()->instance(AccountRepositoryInterface::class, $accountRepository);
+        $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
 
-        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
         $expectedQuery = http_build_query([
@@ -181,7 +181,7 @@ class InvitationMailServiceTest extends TestCase
 
         $data = $this->createTestData();
 
-        $service = $this->app->make(InvitationMailServiceInterface::class);
+        $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendExistingEmailNotification($data->invitation->email(), Language::JAPANESE);
 
         Mail::assertSent(ConflictNotificationMail::class, static fn (ConflictNotificationMail $mail): bool => $mail->hasTo((string) $data->invitation->email())

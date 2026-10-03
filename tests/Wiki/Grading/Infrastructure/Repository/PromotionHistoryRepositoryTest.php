@@ -28,7 +28,7 @@ class PromotionHistoryRepositoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
         $this->assertInstanceOf(PromotionHistoryRepository::class, $repository);
     }
 
@@ -60,7 +60,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             $processedAt,
         );
 
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
         $repository->save($history);
 
         $this->assertDatabaseHas('promotion_histories', [
@@ -99,7 +99,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
         $repository->save($history);
 
         $this->assertDatabaseHas('promotion_histories', [
@@ -140,7 +140,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
         $results = $repository->findByPrincipal(new PrincipalIdentifier($principalId));
 
         $this->assertCount(1, $results);
@@ -201,7 +201,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
         $results = $repository->findByPrincipal(new PrincipalIdentifier($principalId));
 
         $this->assertCount(3, $results);
@@ -219,7 +219,7 @@ class PromotionHistoryRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByPrincipalWhenNotFound(): void
     {
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
 
         $results = $repository->findByPrincipal(
             new PrincipalIdentifier(StrTestHelper::generateUuid())
@@ -272,7 +272,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             ]
         );
 
-        $repository = $this->app->make(PromotionHistoryRepositoryInterface::class);
+        $repository = $this->app()->make(PromotionHistoryRepositoryInterface::class);
 
         // Principal1のみ取得
         $results = $repository->findByPrincipal(new PrincipalIdentifier($principalId1));

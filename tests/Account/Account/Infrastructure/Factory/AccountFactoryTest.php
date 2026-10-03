@@ -7,9 +7,9 @@ namespace Tests\Account\Account\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\Email;
@@ -24,7 +24,7 @@ class AccountFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $factory = $this->app->make(AccountFactoryInterface::class);
+        $factory = $this->app()->make(AccountFactoryInterface::class);
         $this->assertInstanceOf(AccountFactory::class, $factory);
     }
 
@@ -36,19 +36,18 @@ class AccountFactoryTest extends TestCase
     public function testCreate(): void
     {
         $email = new Email('test@test.com');
-        $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
 
-        $factory = $this->app->make(AccountFactoryInterface::class);
+        $factory = $this->app()->make(AccountFactoryInterface::class);
         $account = $factory->create(
             $email,
-            $accountType,
             $accountName,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $account->accountIdentifier()));
         $this->assertSame($email, $account->email());
-        $this->assertSame($accountType, $account->type());
+        $this->assertNull($account->type());
+        $this->assertSame(AccountStatus::PENDING, $account->status());
         $this->assertSame($accountName, $account->name());
         $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());
         $this->assertEquals(DeletionReadinessChecklist::ready(), $account->deletionReadiness());

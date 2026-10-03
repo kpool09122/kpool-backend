@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Monetization;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -14,14 +18,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $currency
  * @property int $amount
  * @property string $status
- * @property ?\Illuminate\Support\Carbon $sent_at
- * @property ?\Illuminate\Support\Carbon $failed_at
+ * @property ?Carbon $sent_at
+ * @property ?Carbon $failed_at
  * @property ?string $failure_reason
  * @property ?string $stripe_transfer_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'settlement_batch_id',
     'monetization_account_id',
@@ -33,13 +37,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'failure_reason',
     'stripe_transfer_id',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'transfers', keyType: 'string')]
+#[Table(name: 'transfers', keyType: 'string')]
 class Transfer extends Model
 {
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -19,7 +19,7 @@ class AccountCreatedHandlerTest extends TestCase
 {
     public function test__construct(): void
     {
-        $handler = $this->app->make(AccountCreatedHandler::class);
+        $handler = $this->app()->make(AccountCreatedHandler::class);
 
         $this->assertInstanceOf(AccountCreatedHandler::class, $handler);
     }
@@ -37,7 +37,7 @@ class AccountCreatedHandlerTest extends TestCase
             language: $language,
         );
 
-        $handler = $this->app->make(AccountCreatedHandler::class);
+        $handler = $this->app()->make(AccountCreatedHandler::class);
         $handler->handle($event);
 
         Bus::assertDispatched(SendAccountAuthCodeJob::class);
@@ -54,7 +54,7 @@ class AccountCreatedHandlerTest extends TestCase
             language: Language::ENGLISH,
         );
 
-        $handler = $this->app->make(AccountCreatedHandler::class);
+        $handler = $this->app()->make(AccountCreatedHandler::class);
         $handler->handle($event);
 
         Bus::assertNotDispatched(SendAccountAuthCodeJob::class);

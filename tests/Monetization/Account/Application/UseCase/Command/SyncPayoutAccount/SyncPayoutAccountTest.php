@@ -52,13 +52,13 @@ class SyncPayoutAccountTest extends TestCase
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldNotReceive('create');
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
         $this->expectException(MonetizationAccountNotFoundException::class);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 
@@ -97,11 +97,11 @@ class SyncPayoutAccountTest extends TestCase
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldNotReceive('create');
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 
@@ -133,11 +133,11 @@ class SyncPayoutAccountTest extends TestCase
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldNotReceive('create');
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 
@@ -186,11 +186,11 @@ class SyncPayoutAccountTest extends TestCase
             ->once()
             ->andReturn($newPayoutAccount);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 
@@ -239,11 +239,11 @@ class SyncPayoutAccountTest extends TestCase
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldReceive('create')->once()->andReturn($newPayoutAccount);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 
@@ -299,11 +299,11 @@ class SyncPayoutAccountTest extends TestCase
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldReceive('create')->once()->andReturn($newPayoutAccount);
 
-        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
-        $this->app->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
-        $this->app->instance(PayoutAccountFactoryInterface::class, $factory);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(PayoutAccountRepositoryInterface::class, $payoutAccountRepository);
+        $this->app()->instance(PayoutAccountFactoryInterface::class, $factory);
 
-        $useCase = $this->app->make(SyncPayoutAccountInterface::class);
+        $useCase = $this->app()->make(SyncPayoutAccountInterface::class);
         $useCase->process($input);
     }
 

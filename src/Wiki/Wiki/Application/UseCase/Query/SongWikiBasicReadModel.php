@@ -34,7 +34,7 @@ readonly class SongWikiBasicReadModel implements WikiBasicReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{name: string, normalizedName: string, songType: string|null, genres: list<string>, agencyIdentifier: string|null, agency: array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string}|null, releaseDate: string|null, albumName: string|null, lyricist: string, normalizedLyricist: string, composer: string, normalizedComposer: string, arranger: string, normalizedArranger: string, groups: list<array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string, agencyIdentifier: string|null, groupType: string|null, status: string|null, generation: string|null, debutDate: string|null, disbandDate: string|null, fandomName: string, officialColors: list<array{colorCode: string, label: string}>, emoji: string, representativeSymbol: string}>, talents: list<array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string, realName: string, normalizedRealName: string, birthday: string|null, agencyIdentifier: string|null, emoji: string, representativeSymbol: string, position: string, mbti: string|null, zodiacSign: string|null, englishLevel: string|null, height: int|string|null, bloodType: string|null, fandomName: string}>}
      */
     public function toArray(): array
     {

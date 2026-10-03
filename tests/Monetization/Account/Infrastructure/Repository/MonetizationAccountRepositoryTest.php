@@ -56,7 +56,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             'stripe_customer_id' => 'cus_1234567890abcdef',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
 
         $this->assertNotNull($result);
@@ -75,7 +75,7 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findById(new MonetizationAccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -99,7 +99,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             'stripe_connected_account_id' => 'acct_1234567890abcdef',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findByAccountIdentifier(new AccountIdentifier($accountId));
 
         $this->assertNotNull($result);
@@ -118,7 +118,7 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdentifierWhenNotFound(): void
     {
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findByAccountIdentifier(new AccountIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
@@ -142,7 +142,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             'stripe_connected_account_id' => 'acct_findtest1234567',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findByConnectedAccountId(new ConnectedAccountId('acct_findtest1234567'));
 
         $this->assertNotNull($result);
@@ -162,7 +162,7 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByConnectedAccountIdWhenNotFound(): void
     {
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findByConnectedAccountId(new ConnectedAccountId('acct_nonexistent12345'));
 
         $this->assertNull($result);
@@ -185,7 +185,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             'capabilities' => '[]',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
 
         $this->assertNotNull($result);
@@ -229,7 +229,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             ],
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
 
         $this->assertNotNull($result);
@@ -286,7 +286,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             'billing_method' => 'bank_transfer',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
 
         $this->assertNotNull($result);
@@ -330,7 +330,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $repository->save($account);
 
         $this->assertDatabaseHas('monetization_accounts', [
@@ -362,7 +362,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             null,
         );
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $repository->save($account);
 
         // 更新
@@ -376,6 +376,7 @@ class MonetizationAccountRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
+        $this->assertNotNull($result);
         $this->assertTrue($result->hasCapability(Capability::PURCHASE));
     }
 
@@ -414,7 +415,7 @@ class MonetizationAccountRepositoryTest extends TestCase
         );
         $account->setBillingInfo($billingAddress, $billingContact, BillingMethod::CREDIT_CARD, null);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $repository->save($account);
 
         // 再取得して検証
@@ -457,10 +458,11 @@ class MonetizationAccountRepositoryTest extends TestCase
             'capabilities' => '[]',
         ]);
 
-        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $repository = $this->app()->make(MonetizationAccountRepositoryInterface::class);
         $account = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
 
         // Billing情報を更新
+        $this->assertNotNull($account);
         $account->setBillingMethod(BillingMethod::INVOICE);
         $account->setTaxInfo(new TaxInfo(TaxRegion::US, TaxCategory::EXEMPT));
         $repository->save($account);
@@ -471,7 +473,9 @@ class MonetizationAccountRepositoryTest extends TestCase
         ]);
 
         $result = $repository->findById(new MonetizationAccountIdentifier($monetizationAccountId));
+        $this->assertNotNull($result);
         $this->assertSame(BillingMethod::INVOICE, $result->billingMethod());
+        $this->assertNotNull($result->taxInfo());
         $this->assertSame(TaxRegion::US, $result->taxInfo()->region());
         $this->assertSame(TaxCategory::EXEMPT, $result->taxInfo()->category());
     }

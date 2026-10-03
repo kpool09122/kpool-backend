@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Query;
 
+use InvalidArgumentException;
+
 readonly class WikiReadModel
 {
     private string $wikiIdentifier;
@@ -22,13 +24,13 @@ readonly class WikiReadModel
     /** @var array<string, mixed> */
     private array $heroImage;
     private WikiBasicReadModel $basic;
-    /** @var list<array<string, mixed>> */
+    /** @var list<array<array-key, mixed>> */
     private array $sections;
 
     /**
      * @param array<string, mixed> $heroImage
      * @param array<string, mixed>|WikiBasicReadModel $basic
-     * @param list<array<string, mixed>> $sections
+     * @param list<array<array-key, mixed>> $sections
      * @param list<string>|null $keywords
      */
     public function __construct(
@@ -66,7 +68,7 @@ readonly class WikiReadModel
             'talent' => WikiBasicReadModelFactory::talent($basic),
             'song' => WikiBasicReadModelFactory::song($basic),
             'agency' => WikiBasicReadModelFactory::agency($basic),
-            default => throw new \InvalidArgumentException("Unsupported resource type: {$resourceType}"),
+            default => throw new InvalidArgumentException("Unsupported resource type: {$resourceType}"),
         } : $basic;
         $this->sections = $sections;
     }
@@ -150,7 +152,7 @@ readonly class WikiReadModel
     }
 
     /**
-     * @return list<array<string, mixed>>
+     * @return list<array<array-key, mixed>>
      */
     public function sections(): array
     {
@@ -158,7 +160,7 @@ readonly class WikiReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{wikiIdentifier: string, translationSetIdentifier: string, slug: string, language: string, resourceType: string, version: int, isOfficial: bool, themeColor: string|null, fontStyle: string|null, title: string|null, metaDescription: string|null, keywords: list<string>|null, heroImage: array<string, mixed>, basic: array<string, mixed>, sections: list<array<array-key, mixed>>}
      */
     public function toArray(): array
     {

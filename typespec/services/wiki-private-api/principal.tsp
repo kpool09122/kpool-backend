@@ -51,8 +51,8 @@ model CreateRoleRequestBody {
   name: string;
   @doc("Policy identifiers attached to the role.")
   policies?: Uuid[];
-  @doc("Whether this is a system role.")
-  isSystemRole: boolean;
+  @doc("Account identifier. Omit or null for a system/global role.")
+  accountId?: Uuid | null;
 }
 
 @doc("Request body for attaching or detaching a policy from a role.")
@@ -67,8 +67,8 @@ model CreatePolicyRequestBody {
   name: string;
   @doc("Statements that define the policy.")
   statements: PolicyStatement[];
-  @doc("Whether this is a system policy.")
-  isSystemPolicy: boolean;
+  @doc("Account identifier. Omit or null for a system/global policy.")
+  accountId?: Uuid | null;
 }
 
 @doc("Response returned when a principal is created.")

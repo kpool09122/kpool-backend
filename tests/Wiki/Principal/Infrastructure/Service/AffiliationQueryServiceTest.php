@@ -29,9 +29,9 @@ class AffiliationQueryServiceTest extends TestCase
     {
         $affiliationRepository = Mockery::mock(AffiliationRepositoryInterface::class);
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
-        $query = $this->app->make(AffiliationQueryServiceInterface::class);
+        $query = $this->app()->make(AffiliationQueryServiceInterface::class);
 
         $this->assertInstanceOf(AffiliationQueryService::class, $query);
     }
@@ -67,9 +67,9 @@ class AffiliationQueryServiceTest extends TestCase
             ->with($affiliationIdentifier)
             ->andReturn($affiliation);
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
-        $query = $this->app->make(AffiliationQueryServiceInterface::class);
+        $query = $this->app()->make(AffiliationQueryServiceInterface::class);
 
         $result = $query->findAccountIdentifiersByAffiliationId($affiliationIdentifier);
 
@@ -95,9 +95,9 @@ class AffiliationQueryServiceTest extends TestCase
             ->with($affiliationIdentifier)
             ->andReturnNull();
 
-        $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app()->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
 
-        $query = $this->app->make(AffiliationQueryServiceInterface::class);
+        $query = $this->app()->make(AffiliationQueryServiceInterface::class);
 
         $result = $query->findAccountIdentifiersByAffiliationId($affiliationIdentifier);
 

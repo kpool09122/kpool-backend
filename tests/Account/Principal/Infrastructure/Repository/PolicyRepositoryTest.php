@@ -26,7 +26,7 @@ class PolicyRepositoryTest extends TestCase
 {
     public function test__construct(): void
     {
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
 
         $this->assertInstanceOf(PolicyRepository::class, $repository);
     }
@@ -49,17 +49,17 @@ class PolicyRepositoryTest extends TestCase
                     ),
                 ]),
             )],
-            true,
+            null,
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $repository = $this->app()->make(PolicyRepositoryInterface::class);
         $repository->save($policy);
 
         $this->assertDatabaseHas('account_policies', [
             'id' => (string) $policy->policyIdentifier(),
             'name' => 'ACCOUNT_INVITE_MEMBER_TEST',
-            'is_system_policy' => true,
+            'account_id' => null,
         ]);
 
         $foundPolicies = $repository->findByIds([$policy->policyIdentifier()]);

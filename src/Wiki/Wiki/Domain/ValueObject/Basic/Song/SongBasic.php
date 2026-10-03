@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Song;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -189,30 +190,30 @@ final readonly class SongBasic implements BasicInterface
     {
         return new self(
             // 基本情報
-            name: new Name($data['name']),
-            normalizedName: $data['normalized_name'] ?? '',
-            songType: isset($data['song_type']) ? SongType::from($data['song_type']) : null,
+            name: new Name(TypedValue::string($data['name'])),
+            normalizedName: TypedValue::string($data['normalized_name'] ?? ''),
+            songType: isset($data['song_type']) ? SongType::from(TypedValue::string($data['song_type'])) : null,
             genres: isset($data['genres'])
-                ? array_map(SongGenre::from(...), $data['genres'])
+                ? array_map(SongGenre::from(...), TypedValue::stringArray($data['genres']))
                 : [],
             // 関連エンティティ
-            agencyIdentifier: isset($data['agency_identifier']) ? new WikiIdentifier($data['agency_identifier']) : null,
+            agencyIdentifier: isset($data['agency_identifier']) ? new WikiIdentifier(TypedValue::string($data['agency_identifier'])) : null,
             groupIdentifiers: isset($data['group_identifiers'])
-                ? array_map(static fn (string $id) => new WikiIdentifier($id), $data['group_identifiers'])
+                ? array_map(static fn (string $id) => new WikiIdentifier($id), TypedValue::stringArray($data['group_identifiers']))
                 : [],
             talentIdentifiers: isset($data['talent_identifiers'])
-                ? array_map(static fn (string $id) => new WikiIdentifier($id), $data['talent_identifiers'])
+                ? array_map(static fn (string $id) => new WikiIdentifier($id), TypedValue::stringArray($data['talent_identifiers']))
                 : [],
             // リリース情報
-            releaseDate: isset($data['release_date']) ? new ReleaseDate(new DateTimeImmutable($data['release_date'])) : null,
-            albumName: $data['album_name'] ?? null,
+            releaseDate: isset($data['release_date']) ? new ReleaseDate(new DateTimeImmutable(TypedValue::string($data['release_date']))) : null,
+            albumName: TypedValue::nullableString($data['album_name'] ?? null),
             // クレジット情報
-            lyricist: new Lyricist($data['lyricist'] ?? ''),
-            normalizedLyricist: $data['normalized_lyricist'] ?? '',
-            composer: new Composer($data['composer'] ?? ''),
-            normalizedComposer: $data['normalized_composer'] ?? '',
-            arranger: new Arranger($data['arranger'] ?? ''),
-            normalizedArranger: $data['normalized_arranger'] ?? '',
+            lyricist: new Lyricist(TypedValue::string($data['lyricist'] ?? '')),
+            normalizedLyricist: TypedValue::string($data['normalized_lyricist'] ?? ''),
+            composer: new Composer(TypedValue::string($data['composer'] ?? '')),
+            normalizedComposer: TypedValue::string($data['normalized_composer'] ?? ''),
+            arranger: new Arranger(TypedValue::string($data['arranger'] ?? '')),
+            normalizedArranger: TypedValue::string($data['normalized_arranger'] ?? ''),
         );
     }
 }

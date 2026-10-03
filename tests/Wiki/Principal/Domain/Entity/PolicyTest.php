@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -38,7 +39,7 @@ class PolicyTest extends TestCase
             $policyIdentifier,
             $name,
             $statements,
-            $isSystemPolicy,
+            null,
             $createdAt,
         );
 
@@ -114,7 +115,7 @@ class PolicyTest extends TestCase
                     null,
                 ),
             ],
-            $isSystemPolicy,
+            $isSystemPolicy ? null : new AccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
         );
     }

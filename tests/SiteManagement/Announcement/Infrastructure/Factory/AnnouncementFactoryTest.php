@@ -28,7 +28,7 @@ class AnnouncementFactoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $announcementFactory = $this->app->make(AnnouncementFactoryInterface::class);
+        $announcementFactory = $this->app()->make(AnnouncementFactoryInterface::class);
         $this->assertInstanceOf(AnnouncementFactory::class, $announcementFactory);
     }
 
@@ -67,7 +67,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 今すぐ投票に参加して、あなたの愛を"推し"に届けましょう！
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
-        $announcementFactory = $this->app->make(AnnouncementFactoryInterface::class);
+        $announcementFactory = $this->app()->make(AnnouncementFactoryInterface::class);
         $announcement = $announcementFactory->create(
             $translationSetIdentifier,
             $language,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Image\Command\UploadImage;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UploadImageRequest extends FormRequest
@@ -41,47 +42,47 @@ class UploadImageRequest extends FormRequest
     {
         $value = $this->input('publishedImageIdentifier');
 
-        return $value !== null ? (string) $value : null;
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function resourceType(): string
     {
-        return (string) $this->input('resourceType');
+        return RequestValue::string($this->input('resourceType'));
     }
 
     public function translationSetIdentifier(): string
     {
-        return (string) $this->input('translationSetIdentifier');
+        return RequestValue::string($this->input('translationSetIdentifier'));
     }
 
     public function base64EncodedImage(): string
     {
-        return (string) $this->input('base64EncodedImage');
+        return RequestValue::string($this->input('base64EncodedImage'));
     }
 
     public function displayOrder(): string
     {
-        return (string) $this->input('displayOrder');
+        return RequestValue::string($this->input('displayOrder'));
     }
 
     public function sourceUrl(): string
     {
-        return (string) $this->input('sourceUrl');
+        return RequestValue::string($this->input('sourceUrl'));
     }
 
     public function sourceName(): string
     {
-        return (string) $this->input('sourceName');
+        return RequestValue::string($this->input('sourceName'));
     }
 
     public function altText(): string
     {
-        return (string) $this->input('altText');
+        return RequestValue::string($this->input('altText'));
     }
 
     public function agreedToTermsAt(): string
     {
-        return (string) $this->input('agreedToTermsAt');
+        return RequestValue::string($this->input('agreedToTermsAt'));
     }
 
     public function rightsConfirmationAgreed(): bool

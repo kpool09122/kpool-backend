@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\DeletePolicy;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\Exception\CannotDeleteSystemPolicyException;
 use Source\Wiki\Principal\Application\Exception\PolicyNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicy;
@@ -30,8 +31,8 @@ class DeletePolicyTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PolicyRepositoryInterface::class);
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
-        $useCase = $this->app->make(DeletePolicyInterface::class);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
+        $useCase = $this->app()->make(DeletePolicyInterface::class);
         $this->assertInstanceOf(DeletePolicy::class, $useCase);
     }
 
@@ -53,23 +54,23 @@ class DeletePolicyTest extends TestCase
                     null,
                 ),
             ],
-            false, // isSystemPolicy = false
+            new AccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
         );
 
         $repository = Mockery::mock(PolicyRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturn($policy);
         $repository->shouldReceive('delete')
             ->once()
             ->with($policy)
             ->andReturnNull();
 
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePolicyInterface::class);
+        $useCase = $this->app()->make(DeletePolicyInterface::class);
         $input = new DeletePolicyInput($policyIdentifier);
 
         $useCase->process($input);
@@ -85,13 +86,13 @@ class DeletePolicyTest extends TestCase
         $repository = Mockery::mock(PolicyRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturnNull();
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePolicyInterface::class);
+        $useCase = $this->app()->make(DeletePolicyInterface::class);
         $input = new DeletePolicyInput($policyIdentifier);
 
         $this->expectException(PolicyNotFoundException::class);
@@ -117,20 +118,20 @@ class DeletePolicyTest extends TestCase
                     null,
                 ),
             ],
-            true, // isSystemPolicy = true
+            null, // isSystemPolicy = true
             new DateTimeImmutable(),
         );
 
         $repository = Mockery::mock(PolicyRepositoryInterface::class);
         $repository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn ($arg) => (string) $arg === (string) $policyIdentifier))
+            ->with(Mockery::on(fn (PolicyIdentifier $arg) => (string) $arg === (string) $policyIdentifier))
             ->andReturn($policy);
         $repository->shouldNotReceive('delete');
 
-        $this->app->instance(PolicyRepositoryInterface::class, $repository);
+        $this->app()->instance(PolicyRepositoryInterface::class, $repository);
 
-        $useCase = $this->app->make(DeletePolicyInterface::class);
+        $useCase = $this->app()->make(DeletePolicyInterface::class);
         $input = new DeletePolicyInput($policyIdentifier);
 
         $this->expectException(CannotDeleteSystemPolicyException::class);

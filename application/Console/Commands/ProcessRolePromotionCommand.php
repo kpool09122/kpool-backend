@@ -6,6 +6,7 @@ namespace Application\Console\Commands;
 
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Command;
+use Override;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionOutput;
@@ -16,12 +17,12 @@ use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 class ProcessRolePromotionCommand extends Command
 {
-    #[\Override]
+    #[Override]
     protected $signature = 'wiki:process-role-promotion
                             {--month= : 処理対象月（YYYY-MM形式、指定がなければ今月）}
                             {--sync : ジョブをキューに入れず同期実行}';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Wiki Collaboratorの昇格・降格処理を実行する';
 
     public function handle(

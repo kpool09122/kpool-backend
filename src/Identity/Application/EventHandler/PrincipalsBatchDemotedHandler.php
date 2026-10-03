@@ -12,7 +12,7 @@ readonly class PrincipalsBatchDemotedHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
-        private CollaboratorNotificationServiceInterface $notificationService,
+        private CollaboratorNotificationServiceInterface $collaboratorNotificationService,
     ) {
     }
 
@@ -21,7 +21,7 @@ readonly class PrincipalsBatchDemotedHandler
         $identities = $this->identityRepository->findByIds($event->demotedIdentities());
 
         foreach ($identities as $identity) {
-            $this->notificationService->sendDemotionNotification(
+            $this->collaboratorNotificationService->sendDemotionNotification(
                 $identity->email(),
                 $identity->language(),
             );

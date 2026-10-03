@@ -20,15 +20,21 @@ class ListContactsOutputTest extends TestCase
             name: '問い合わせ太郎',
             replyIdentifiers: [],
             createdAt: '2026-08-27T12:00:00+00:00',
-        )]);
+        )], 2, 5, 41, 10);
 
-        $this->assertSame([[
-            'contactIdentifier' => '00000000-0000-0000-0000-000000000001',
-            'identityIdentifier' => null,
-            'category' => 1,
-            'name' => '問い合わせ太郎',
-            'replyIdentifiers' => [],
-            'createdAt' => '2026-08-27T12:00:00+00:00',
-        ]], $output->toArray());
+        $this->assertSame([
+            'contacts' => [[
+                'contactIdentifier' => '00000000-0000-0000-0000-000000000001',
+                'identityIdentifier' => null,
+                'category' => 1,
+                'name' => '問い合わせ太郎',
+                'replyIdentifiers' => [],
+                'createdAt' => '2026-08-27T12:00:00+00:00',
+            ]],
+            'current_page' => 2,
+            'last_page' => 5,
+            'total' => 41,
+            'per_page' => 10,
+        ], $output->toArray());
     }
 }

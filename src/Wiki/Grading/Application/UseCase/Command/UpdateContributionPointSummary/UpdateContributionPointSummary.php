@@ -14,8 +14,8 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 readonly class UpdateContributionPointSummary implements UpdateContributionPointSummaryInterface
 {
     public function __construct(
-        private ContributionPointHistoryRepositoryInterface $historyRepository,
-        private ContributionPointSummaryRepositoryInterface $summaryRepository,
+        private ContributionPointHistoryRepositoryInterface $contributionPointHistoryRepository,
+        private ContributionPointSummaryRepositoryInterface $contributionPointSummaryRepository,
         private ContributionPointSummaryFactoryInterface $summaryFactory,
     ) {
     }
@@ -25,7 +25,7 @@ readonly class UpdateContributionPointSummary implements UpdateContributionPoint
         UpdateContributionPointSummaryOutputPort $output,
     ): void {
         $yearMonth = $input->yearMonth();
-        $histories = $this->historyRepository->findByYearMonth($yearMonth);
+        $histories = $this->contributionPointHistoryRepository->findByYearMonth($yearMonth);
 
         $pointsByPrincipal = [];
         foreach ($histories as $history) {
@@ -33,7 +33,7 @@ readonly class UpdateContributionPointSummary implements UpdateContributionPoint
             $pointsByPrincipal[$principalId] = ($pointsByPrincipal[$principalId] ?? new Point(0))->add($history->points());
         }
 
-        $existingSummaries = $this->summaryRepository->findByYearMonth($yearMonth);
+        $existingSummaries = $this->contributionPointSummaryRepository->findByYearMonth($yearMonth);
         $summaryByPrincipalId = [];
         foreach ($existingSummaries as $summary) {
             $summaryByPrincipalId[(string) $summary->principalIdentifier()] = $summary;
@@ -45,14 +45,14 @@ readonly class UpdateContributionPointSummary implements UpdateContributionPoint
             if ($existingSummary !== null) {
                 $existingSummary->setPoints($points);
                 $existingSummary->setUpdatedAt(new DateTimeImmutable());
-                $this->summaryRepository->save($existingSummary);
+                $this->contributionPointSummaryRepository->save($existingSummary);
             } else {
                 $newSummary = $this->summaryFactory->create(
                     new PrincipalIdentifier($principalId),
                     $yearMonth,
                     $points,
                 );
-                $this->summaryRepository->save($newSummary);
+                $this->contributionPointSummaryRepository->save($newSummary);
             }
         }
 

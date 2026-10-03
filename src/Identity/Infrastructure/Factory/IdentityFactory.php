@@ -6,13 +6,10 @@ namespace Source\Identity\Infrastructure\Factory;
 
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
-use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
-use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -25,10 +22,9 @@ readonly class IdentityFactory implements IdentityFactoryInterface
     }
 
     public function create(
-        IdentityName      $identityName,
-        Email         $email,
-        Language      $language,
-        PlainPassword $plainPassword,
+        IdentityName $identityName,
+        Email $email,
+        Language $language,
     ): Identity {
         return new Identity(
             new IdentityIdentifier($this->ulidGenerator->generate()),
@@ -36,7 +32,6 @@ readonly class IdentityFactory implements IdentityFactoryInterface
             $email,
             $language,
             null,
-            HashedPassword::fromPlain($plainPassword),
             null,
         );
     }
@@ -44,7 +39,6 @@ readonly class IdentityFactory implements IdentityFactoryInterface
     public function createFromSocialProfile(SocialProfile $profile): Identity
     {
         $identityName = $this->buildIdentityName($profile);
-        $password = $this->generateRandomPassword();
 
         return new Identity(
             new IdentityIdentifier($this->ulidGenerator->generate()),
@@ -52,7 +46,6 @@ readonly class IdentityFactory implements IdentityFactoryInterface
             $profile->email(),
             Language::ENGLISH,
             null,
-            HashedPassword::fromPlain($password),
             null,
             [new SocialConnection($profile->provider(), $profile->providerUserId())],
         );
@@ -66,30 +59,5 @@ readonly class IdentityFactory implements IdentityFactoryInterface
         }
 
         return new IdentityName(mb_substr($name, 0, IdentityName::MAX_LENGTH));
-    }
-
-    private function generateRandomPassword(): PlainPassword
-    {
-        $random = substr($this->ulidGenerator->generate(), 0, PlainPassword::MIN_LENGTH);
-
-        return new PlainPassword($random);
-    }
-
-    public function createDelegatedIdentity(
-        Identity $originalIdentity,
-        DelegationIdentifier $delegationIdentifier,
-    ): Identity {
-        return new Identity(
-            new IdentityIdentifier($this->ulidGenerator->generate()),
-            $originalIdentity->identityName(),
-            $originalIdentity->email(),
-            $originalIdentity->language(),
-            $originalIdentity->profileImage(),
-            HashedPassword::fromPlain($this->generateRandomPassword()),
-            null,
-            [],
-            $delegationIdentifier,
-            $originalIdentity->identityIdentifier(),
-        );
     }
 }

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string $id
@@ -15,13 +19,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $status
  * @property ?int $revenue_share_percentage
  * @property ?string $contract_notes
- * @property \Illuminate\Support\Carbon $requested_at
- * @property ?\Illuminate\Support\Carbon $activated_at
- * @property ?\Illuminate\Support\Carbon $terminated_at
+ * @property Carbon $requested_at
+ * @property ?Carbon $activated_at
+ * @property ?Carbon $terminated_at
  * @property-read Account|null $agencyAccount
  * @property-read Account|null $talentAccount
  */
-#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+#[Fillable([
     'id',
     'agency_account_id',
     'talent_account_id',
@@ -33,14 +37,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'activated_at',
     'terminated_at',
 ])]
-#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_affiliations', keyType: 'string')]
+#[Table(name: 'account_affiliations', keyType: 'string')]
 class Affiliation extends Model
 {
     public $incrementing = false;
 
     public $timestamps = false;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -29,7 +29,7 @@ readonly class GroupWikiBasicReadModel implements WikiBasicReadModel
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{name: string, normalizedName: string, agencyIdentifier: string|null, agency: array{wikiIdentifier: string, slug: string, language: string, name: string, normalizedName: string}|null, groupType: string|null, status: string|null, generation: string|null, debutDate: string|null, disbandDate: string|null, fandomName: string, officialColors: list<array{colorCode: string, label: string}>, emoji: string, representativeSymbol: string}
      */
     public function toArray(): array
     {

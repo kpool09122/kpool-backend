@@ -368,7 +368,23 @@ class InvoiceTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $values
+     * @param array{
+     *     invoiceIdentifier?: InvoiceIdentifier,
+     *     orderIdentifier?: OrderIdentifier,
+     *     buyerMonetizationAccountIdentifier?: MonetizationAccountIdentifier,
+     *     invoiceLines?: list<InvoiceLine>,
+     *     subtotal?: Money,
+     *     discountAmount?: Money,
+     *     taxAmount?: Money,
+     *     total?: Money,
+     *     issuedAt?: DateTimeImmutable,
+     *     dueDate?: DateTimeImmutable,
+     *     status?: InvoiceStatus,
+     *     taxDocument?: TaxDocument|null,
+     *     paidAt?: DateTimeImmutable|null,
+     *     voidedAt?: DateTimeImmutable|null,
+     *     voidReason?: string|null
+     * } $values
      * @return Invoice
      */
     private function createInvoice(array $values = []): Invoice

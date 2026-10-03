@@ -6,11 +6,12 @@ namespace Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGr
 
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
-use Source\Account\Principal\Application\Exception\PrincipalAlreadyAssignedToPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
+use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -18,8 +19,10 @@ use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Effect;
+use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -72,8 +75,6 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             $principalGroupsById[$principalGroupId]->replaceMembers($principalIdentifiers);
         }
 
-        $this->assertPrincipalsAssignedToSingleGroup($principalGroups);
-
         $principalsById = $this->principalRepository->findByIds(array_values($this->collectPrincipalIdentifiers($principalGroups)));
         $this->assertPrincipalsBelongToAccount(array_values($allRequestedPrincipalIdentifiers), $principalsById, $accountIdentifier);
 
@@ -86,25 +87,6 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         }
 
         $output->setPrincipalGroups(array_values(array_intersect_key($principalGroupsById, $requestedPrincipalIdentifiersByGroupId)));
-    }
-
-    /**
-     * @param array<int, PrincipalGroup> $principalGroups
-     */
-    private function assertPrincipalsAssignedToSingleGroup(array $principalGroups): void
-    {
-        $groupIdsByPrincipalId = [];
-        foreach ($principalGroups as $principalGroup) {
-            $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
-            foreach ($principalGroup->members() as $principalIdentifier) {
-                $principalId = (string) $principalIdentifier;
-                if (isset($groupIdsByPrincipalId[$principalId]) && $groupIdsByPrincipalId[$principalId] !== $principalGroupId) {
-                    throw new PrincipalAlreadyAssignedToPrincipalGroupException();
-                }
-
-                $groupIdsByPrincipalId[$principalId] = $principalGroupId;
-            }
-        }
     }
 
     /**
@@ -122,7 +104,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @param array<string, Principal> $principalsById
      */
     private function hasPrincipalGroupManager(array $principalGroups, array $principalsById): bool
@@ -144,7 +126,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @return array<string, PrincipalIdentifier>
      */
     private function collectPrincipalIdentifiers(array $principalGroups): array
@@ -160,9 +142,9 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<int, PrincipalGroup> $principalGroups
+     * @param array<PrincipalGroup> $principalGroups
      * @param array<string, Principal> $principalsById
-     * @return array<string, array<string, \Source\Account\Principal\Domain\ValueObject\RoleIdentifier>>
+     * @return array<string, array<string, RoleIdentifier>>
      */
     private function collectRoleIdentifiersByPrincipalId(array $principalGroups, array $principalsById): array
     {
@@ -183,9 +165,9 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<string, array<string, \Source\Account\Principal\Domain\ValueObject\RoleIdentifier>> $roleIdentifiersByPrincipalId
-     * @param array<string, \Source\Account\Principal\Domain\Entity\Role> $roles
-     * @return array<string, array<string, \Source\Account\Principal\Domain\ValueObject\PolicyIdentifier>>
+     * @param array<string, array<string, RoleIdentifier>> $roleIdentifiersByPrincipalId
+     * @param array<string, Role> $roles
+     * @return array<string, array<string, PolicyIdentifier>>
      */
     private function collectPolicyIdentifiersByPrincipalId(array $roleIdentifiersByPrincipalId, array $roles): array
     {
@@ -206,8 +188,8 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
     }
 
     /**
-     * @param array<string, \Source\Account\Principal\Domain\ValueObject\PolicyIdentifier> $policyIdentifiers
-     * @param array<string, \Source\Account\Principal\Domain\Entity\Policy> $policies
+     * @param array<string, PolicyIdentifier> $policyIdentifiers
+     * @param array<string, Policy> $policies
      */
     private function canManagePrincipalGroups(array $policyIdentifiers, array $policies): bool
     {

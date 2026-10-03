@@ -100,7 +100,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             keywords: $keywords,
         );
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
 
         $this->assertDatabaseHas('wiki_snapshots', [
@@ -119,7 +119,8 @@ class WikiSnapshotRepositoryTest extends TestCase
             'meta_description' => 'Snapshot profile for TWICE.',
         ]);
         $storedKeywords = DB::table('wiki_snapshots')->where('id', $snapshotId)->value('keywords');
-        $this->assertSame(['TWICE', 'snapshot'], json_decode((string) $storedKeywords, true));
+        $this->assertIsString($storedKeywords);
+        $this->assertSame(['TWICE', 'snapshot'], json_decode($storedKeywords, true));
         $this->assertDatabaseHas('wiki_snapshot_group_basics', [
             'snapshot_id' => $snapshotId,
             'name' => 'TWICE',
@@ -181,7 +182,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
 
         $this->assertDatabaseHas('wiki_snapshots', [
@@ -244,7 +245,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
 
         $this->assertDatabaseHas('wiki_snapshots', [
@@ -313,7 +314,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
 
         $this->assertDatabaseHas('wiki_snapshots', [
@@ -361,7 +362,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'gr-other-snapshot',
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByWikiIdentifier(new WikiIdentifier($wikiId));
 
         $this->assertCount(2, $snapshots);
@@ -382,7 +383,7 @@ class WikiSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByWikiIdentifierWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByWikiIdentifier(new WikiIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertIsArray($snapshots);
@@ -412,14 +413,14 @@ class WikiSnapshotRepositoryTest extends TestCase
             'version' => 2,
             'title' => 'TWICE Snapshot Wiki',
             'meta_description' => 'Snapshot profile for TWICE.',
-            'keywords' => json_encode(['TWICE', 'snapshot']),
+            'keywords' => json_encode(['TWICE', 'snapshot'], JSON_THROW_ON_ERROR),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
             'fandom_name' => 'ONCE',
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $found = $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
 
         $this->assertInstanceOf(WikiSnapshot::class, $found);
@@ -461,7 +462,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'normalized_real_name' => 'sonchaeyoung',
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $found = $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
 
         $this->assertInstanceOf(WikiSnapshot::class, $found);
@@ -500,7 +501,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'normalized_ceo' => 'j.y. park',
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $found = $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
 
         $this->assertInstanceOf(WikiSnapshot::class, $found);
@@ -543,7 +544,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'normalized_arranger' => 'rado',
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $found = $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
 
         $this->assertInstanceOf(WikiSnapshot::class, $found);
@@ -562,7 +563,7 @@ class WikiSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByWikiAndVersionWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $found = $repository->findByWikiAndVersion(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new Version(1),
@@ -602,7 +603,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'version' => 1,
         ]);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
             new TranslationSetIdentifier($translationSetId),
             new Version(2),
@@ -626,7 +627,7 @@ class WikiSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTranslationSetIdentifierAndVersionWhenNotExist(): void
     {
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Version(1),
@@ -677,7 +678,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('IMAGE resource type does not have a Basic.');
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->save($snapshot);
     }
 
@@ -698,7 +699,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'gr-image-find-wiki',
             'language' => 'ko',
             'resource_type' => 'image',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'editor_id' => StrTestHelper::generateUuid(),
         ]);
@@ -709,14 +710,14 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'gr-image-snapshot-find',
             'language' => 'ko',
             'resource_type' => 'image',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'created_at' => now(),
         ]);
 
         $this->expectException(InvalidArgumentException::class);
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
     }
 
@@ -740,7 +741,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'tl-missing-talent-snap',
             'language' => 'ko',
             'resource_type' => 'talent',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'created_at' => now(),
         ]);
@@ -748,7 +749,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('TalentBasic not found for WikiSnapshot.');
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
     }
 
@@ -772,7 +773,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'gr-missing-group-snap',
             'language' => 'ko',
             'resource_type' => 'group',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'created_at' => now(),
         ]);
@@ -780,7 +781,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('GroupBasic not found for WikiSnapshot.');
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
     }
 
@@ -804,7 +805,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'ag-missing-agency-snap',
             'language' => 'ko',
             'resource_type' => 'agency',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'created_at' => now(),
         ]);
@@ -812,7 +813,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('AgencyBasic not found for WikiSnapshot.');
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
     }
 
@@ -836,7 +837,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'slug' => 'sg-missing-song-snap',
             'language' => 'ko',
             'resource_type' => 'song',
-            'sections' => json_encode([]),
+            'sections' => json_encode([], JSON_THROW_ON_ERROR),
             'version' => 1,
             'created_at' => now(),
         ]);
@@ -844,7 +845,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('SongBasic not found for WikiSnapshot.');
 
-        $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
         $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
     }
 }

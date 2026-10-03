@@ -34,7 +34,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
     private const string SENIOR_COLLABORATOR_GROUP_NAME = 'Senior Collaborator';
 
     public function __construct(
-        private ContributionPointSummaryRepositoryInterface $summaryRepository,
+        private ContributionPointSummaryRepositoryInterface $contributionPointSummaryRepository,
         private DemotionWarningRepositoryInterface $demotionWarningRepository,
         private DemotionWarningFactoryInterface $demotionWarningFactory,
         private PromotionHistoryRepositoryInterface $promotionHistoryRepository,
@@ -55,8 +55,8 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         $now = new DateTimeImmutable();
 
         // Load roles once
-        $seniorCollaboratorRole = $this->roleRepository->findByName(self::SENIOR_COLLABORATOR_ROLE);
-        $collaboratorRole = $this->roleRepository->findByName(self::COLLABORATOR_ROLE);
+        $seniorCollaboratorRole = $this->roleRepository->findSystemByName(self::SENIOR_COLLABORATOR_ROLE);
+        $collaboratorRole = $this->roleRepository->findSystemByName(self::COLLABORATOR_ROLE);
 
         // Step 1: Calculate cumulative points for last 3 months
         $yearMonths = $this->getEvaluationPeriodMonths($yearMonth);
@@ -147,7 +147,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
      */
     private function calculateCumulativePoints(array $yearMonths): array
     {
-        $summaries = $this->summaryRepository->findByYearMonths($yearMonths);
+        $summaries = $this->contributionPointSummaryRepository->findByYearMonths($yearMonths);
 
         $cumulativePoints = [];
         foreach ($summaries as $summary) {
@@ -328,7 +328,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                         self::SENIOR_COLLABORATOR_GROUP_NAME,
                         false,
                     );
-                    $seniorCollaboratorGroup->addRole($seniorCollaboratorRole->roleIdentifier());
+                    $seniorCollaboratorGroup->addRole($seniorCollaboratorRole);
                 }
 
                 if ($defaultGroup->hasMember($principalIdentifier)) {
@@ -430,7 +430,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
      */
     private function toIdentityIdentifiers(array $principalIdentifiers): array
     {
-        $principals = $this->principalRepository->findByIds($principalIdentifiers);
+        $principals = $this->principalRepository->findByIds(array_values($principalIdentifiers));
 
         return array_map(
             static fn ($principal) => $principal->identityIdentifier(),

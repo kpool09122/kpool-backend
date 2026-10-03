@@ -7,6 +7,7 @@ namespace Tests\Helper;
 use Exception;
 use RuntimeException;
 use Symfony\Component\Uid\Uuid;
+use ValueError;
 
 class StrTestHelper
 {
@@ -83,7 +84,12 @@ class StrTestHelper
     public static function generateHex(int $length = self::DEFAULT_LENGTH): string
     {
         try {
-            return bin2hex(random_bytes((int)($length / 2)));
+            $byteLength = intdiv($length, 2);
+            if ($byteLength < 1) {
+                throw new ValueError('Hex length must be at least two.');
+            }
+
+            return bin2hex(random_bytes($byteLength));
         } catch (Exception $e) {
             exit($e->getMessage());
         }

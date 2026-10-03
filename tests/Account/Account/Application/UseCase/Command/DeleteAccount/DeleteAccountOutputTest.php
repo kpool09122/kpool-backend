@@ -19,6 +19,26 @@ use Tests\TestCase;
 
 class DeleteAccountOutputTest extends TestCase
 {
+    public function testToArrayPreservesUnselectedAccountType(): void
+    {
+        $account = new Account(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new Email('pending@example.com'),
+            null,
+            new AccountName('Pending Account'),
+            AccountStatus::PENDING,
+            AccountCategory::GENERAL,
+            DeletionReadinessChecklist::ready(),
+            new AccountDocuments(),
+        );
+        $output = new DeleteAccountOutput();
+        $output->setAccount($account);
+        $result = $output->toArray();
+
+        self::assertTrue(array_key_exists('type', $result));
+        $this->assertNull($result['type']);
+    }
+
     /**
      * 正常系: AccountがセットされるとtoArrayが正しい値を返すこと.
      */
@@ -46,6 +66,7 @@ class DeleteAccountOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        self::assertTrue(array_key_exists('accountIdentifier', $result));
         $this->assertSame((string) $identifier, $result['accountIdentifier']);
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($accountType->value, $result['type']);

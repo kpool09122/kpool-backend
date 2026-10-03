@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\SiteManagement;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -12,10 +13,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $identity_identifier
  * @property string $to_email
  * @property string $content
- * @property \Illuminate\Support\Carbon|null $sent_at
- * @property \Illuminate\Support\Carbon|null $failed_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $failed_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ContactReply extends Model
 {

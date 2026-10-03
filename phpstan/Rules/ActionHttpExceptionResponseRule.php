@@ -22,6 +22,7 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\TryCatch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -53,11 +54,11 @@ final class ActionHttpExceptionResponseRule implements Rule
     /**
      * @param ClassMethod $node
      * @param Scope $scope
-     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     * @return list<IdentifierRuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->isTargetMethod($node, $scope)) {
+        if (! $this->isTargetMethod($node, $scope)) {
             return [];
         }
 
@@ -76,18 +77,18 @@ final class ActionHttpExceptionResponseRule implements Rule
 
         foreach ($outerTryCatches as $tryCatch) {
             foreach ($tryCatch->catches as $catch) {
-                if (!$this->catchesClientErrorHttpException($catch, $scope)) {
+                if (! $this->catchesClientErrorHttpException($catch, $scope)) {
                     continue;
                 }
 
-                if (!$this->catchLogsException($catch)) {
+                if (! $this->catchLogsException($catch)) {
                     $errors[] = RuleErrorBuilder::message('4xx HTTP exception catches in Actions must log with $this->logger->error((string) $e).')
                         ->identifier('actionHttpExceptionResponse.clientErrorNotLogged')
                         ->line($catch->getStartLine())
                         ->build();
                 }
 
-                if (!$this->catchReturnsProblemDetailsJson($catch)) {
+                if (! $this->catchReturnsProblemDetailsJson($catch)) {
                     $errors[] = RuleErrorBuilder::message('4xx HTTP exception catches in Actions must return response()->json($e->toProblemDetails(), $e->getHttpStatus()).')
                         ->identifier('actionHttpExceptionResponse.clientErrorNotReturnedAsProblemDetails')
                         ->line($catch->getStartLine())
@@ -95,9 +96,9 @@ final class ActionHttpExceptionResponseRule implements Rule
                 }
             }
 
-            $lastCatch = $tryCatch->catches[array_key_last($tryCatch->catches)] ?? null;
+            $lastCatch = $tryCatch->catches === [] ? null : $tryCatch->catches[array_key_last($tryCatch->catches)];
 
-            if (!$lastCatch instanceof Catch_ || !$this->catchesBroadException($lastCatch, $scope)) {
+            if (! $lastCatch instanceof Catch_ || ! $this->catchesBroadException($lastCatch, $scope)) {
                 $errors[] = RuleErrorBuilder::message('Action try/catch must end with a defensive Throwable catch.')
                     ->identifier('actionHttpExceptionResponse.missingFinalThrowableCatch')
                     ->line($tryCatch->getStartLine())
@@ -106,14 +107,14 @@ final class ActionHttpExceptionResponseRule implements Rule
                 continue;
             }
 
-            if (!$this->catchLogsException($lastCatch)) {
+            if (! $this->catchLogsException($lastCatch)) {
                 $errors[] = RuleErrorBuilder::message('Final Throwable catches in Actions must log with $this->logger->error((string) $e).')
                     ->identifier('actionHttpExceptionResponse.throwableNotLogged')
                     ->line($lastCatch->getStartLine())
                     ->build();
             }
 
-            if (!$this->catchThrowsInternalServerError($lastCatch, $scope)) {
+            if (! $this->catchThrowsInternalServerError($lastCatch, $scope)) {
                 $errors[] = RuleErrorBuilder::message(sprintf(
                     'Final Throwable catches in Actions must throw %s.',
                     $this->internalServerErrorHttpExceptionClass
@@ -129,7 +130,7 @@ final class ActionHttpExceptionResponseRule implements Rule
 
     private function isTargetMethod(ClassMethod $method, Scope $scope): bool
     {
-        if ($this->targetMethodNames !== [] && !in_array($method->name->toString(), $this->targetMethodNames, true)) {
+        if ($this->targetMethodNames !== [] && ! in_array($method->name->toString(), $this->targetMethodNames, true)) {
             return false;
         }
 
@@ -155,6 +156,7 @@ final class ActionHttpExceptionResponseRule implements Rule
         foreach ($nodes as $node) {
             if ($node instanceof TryCatch) {
                 $tryCatches[] = $node;
+
                 continue;
             }
 
@@ -171,12 +173,12 @@ final class ActionHttpExceptionResponseRule implements Rule
                     }
                 }
 
-                if (!is_array($subNode)) {
+                if (! is_array($subNode)) {
                     continue;
                 }
 
                 foreach ($subNode as $item) {
-                    if (!$item instanceof Node) {
+                    if (! $item instanceof Node) {
                         continue;
                     }
 
@@ -231,25 +233,25 @@ final class ActionHttpExceptionResponseRule implements Rule
         }
 
         foreach ($this->nodes($catch->stmts) as $node) {
-            if (!$node instanceof MethodCall) {
+            if (! $node instanceof MethodCall) {
                 continue;
             }
 
-            if (!$this->isIdentifier($node->name, 'error')) {
+            if (! $this->isIdentifier($node->name, 'error')) {
                 continue;
             }
 
-            if (!$node->var instanceof PropertyFetch || !$this->isIdentifier($node->var->name, 'logger')) {
+            if (! $node->var instanceof PropertyFetch || ! $this->isIdentifier($node->var->name, 'logger')) {
                 continue;
             }
 
-            if (!$node->var->var instanceof Variable || $node->var->var->name !== 'this') {
+            if (! $node->var->var instanceof Variable || $node->var->var->name !== 'this') {
                 continue;
             }
 
             $firstArg = $node->args[0] ?? null;
 
-            if (!$firstArg instanceof Arg || !$firstArg->value instanceof String_) {
+            if (! $firstArg instanceof Arg || ! $firstArg->value instanceof String_) {
                 continue;
             }
 
@@ -270,17 +272,17 @@ final class ActionHttpExceptionResponseRule implements Rule
         }
 
         foreach ($this->nodes($catch->stmts) as $node) {
-            if (!$node instanceof Return_ || !$node->expr instanceof MethodCall) {
+            if (! $node instanceof Return_ || ! $node->expr instanceof MethodCall) {
                 continue;
             }
 
             $jsonCall = $node->expr;
 
-            if (!$this->isIdentifier($jsonCall->name, 'json')) {
+            if (! $this->isIdentifier($jsonCall->name, 'json')) {
                 continue;
             }
 
-            if (!$jsonCall->var instanceof FuncCall || !$jsonCall->var->name instanceof Name) {
+            if (! $jsonCall->var instanceof FuncCall || ! $jsonCall->var->name instanceof Name) {
                 continue;
             }
 
@@ -291,11 +293,11 @@ final class ActionHttpExceptionResponseRule implements Rule
             $bodyArg = $jsonCall->args[0] ?? null;
             $statusArg = $jsonCall->args[1] ?? null;
 
-            if (!$bodyArg instanceof Arg || !$statusArg instanceof Arg) {
+            if (! $bodyArg instanceof Arg || ! $statusArg instanceof Arg) {
                 continue;
             }
 
-            if (!$this->isMethodCallOnVariable($bodyArg->value, $variableName, 'toProblemDetails')) {
+            if (! $this->isMethodCallOnVariable($bodyArg->value, $variableName, 'toProblemDetails')) {
                 continue;
             }
 
@@ -310,13 +312,13 @@ final class ActionHttpExceptionResponseRule implements Rule
     private function catchThrowsInternalServerError(Catch_ $catch, Scope $scope): bool
     {
         foreach ($this->nodes($catch->stmts) as $node) {
-            if (!$node instanceof Throw_ || !$node->expr instanceof New_) {
+            if (! $node instanceof Throw_ || ! $node->expr instanceof New_) {
                 continue;
             }
 
             $new = $node->expr;
 
-            if (!$new->class instanceof Name) {
+            if (! $new->class instanceof Name) {
                 continue;
             }
 
@@ -325,7 +327,7 @@ final class ActionHttpExceptionResponseRule implements Rule
             if (
                 $exceptionClass !== $this->internalServerErrorHttpExceptionClass
                 && RuleSupport::shortName($exceptionClass) !== RuleSupport::shortName($this->internalServerErrorHttpExceptionClass)
-                && !RuleSupport::isTypeOf($exceptionClass, $this->internalServerErrorHttpExceptionClass, $this->reflectionProvider)
+                && ! RuleSupport::isTypeOf($exceptionClass, $this->internalServerErrorHttpExceptionClass, $this->reflectionProvider)
             ) {
                 continue;
             }
@@ -360,12 +362,12 @@ final class ActionHttpExceptionResponseRule implements Rule
                     }
                 }
 
-                if (!is_array($subNode)) {
+                if (! is_array($subNode)) {
                     continue;
                 }
 
                 foreach ($subNode as $item) {
-                    if (!$item instanceof Node) {
+                    if (! $item instanceof Node) {
                         continue;
                     }
 
@@ -381,7 +383,7 @@ final class ActionHttpExceptionResponseRule implements Rule
 
     private function catchVariableName(Catch_ $catch): ?string
     {
-        if (!$catch->var instanceof Variable || !is_string($catch->var->name)) {
+        if (! $catch->var instanceof Variable || ! is_string($catch->var->name)) {
             return null;
         }
 

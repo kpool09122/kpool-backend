@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
@@ -23,13 +24,13 @@ readonly class RoleFactory implements RoleFactoryInterface
     public function create(
         string $name,
         array $policies,
-        bool $isSystemRole,
+        ?AccountIdentifier $accountIdentifier,
     ): Role {
         return new Role(
             new RoleIdentifier($this->generator->generate()),
             $name,
             $policies,
-            $isSystemRole,
+            $accountIdentifier,
             new DateTimeImmutable(),
         );
     }

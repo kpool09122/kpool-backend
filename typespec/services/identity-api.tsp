@@ -26,7 +26,7 @@ model AccountPolicyConditionClause {
   @doc("Operator used for the comparison.")
   operator: string;
   @doc("Value to compare against.")
-  value: string | boolean;
+  value: string | string[] | boolean;
 }
 
 @doc("Conditional constraints for an account policy statement.")
@@ -81,8 +81,8 @@ model AuthenticatedAccountSummary {
   accountIdentifier: Uuid;
   @doc("Account email address.")
   email: string;
-  @doc("Account type.")
-  type: string;
+  @doc("Account type. Null while initial setup is pending.")
+  type: string | null;
   @doc("Account display name.")
   name: string;
   @doc("Account status.")
@@ -95,6 +95,34 @@ model AuthenticatedAccountSummary {
   address?: AuthenticatedAccountAddressSummary | null;
 }
 
+@doc("Account reference used by account switching controls.")
+model AuthenticatedAccountReferenceSummary {
+  @doc("Account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Account display name.")
+  name: string;
+}
+
+@doc("Account that the authenticated identity can switch to through an approved delegation.")
+model SwitchableAccountSummary {
+  @doc("Approved delegation identifier used by POST /accounts/switch.")
+  delegationIdentifier: Uuid;
+  @doc("Target account identifier.")
+  accountIdentifier: Uuid;
+  @doc("Target account information used for display.")
+  account: AuthenticatedAccountReferenceSummary;
+  @doc("Whether this delegation currently supplies the effective account context.")
+  isCurrent: boolean;
+}
+
+@doc("Authentication methods available to the current identity without exposing passkey or provider-account details.")
+model AuthenticationMethodsSummary {
+  @doc("Number of passkeys registered by the current identity.")
+  passkeyCount: int32;
+  @doc("Social providers linked to the current identity.")
+  linkedSocialProviders: string[];
+}
+
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
@@ -105,8 +133,16 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
-  @doc("Detailed account information associated with the authenticated identity.")
+  @doc("Detailed information for the currently effective account.")
   account?: AuthenticatedAccountSummary | null;
+  @doc("Original account to return to when ending delegated account context.")
+  originalAccount: AuthenticatedAccountReferenceSummary | null;
+  @doc("Delegation currently supplying the effective account context.")
+  delegationIdentifier: Uuid | null;
+  @doc("Approved delegated accounts available from the original account.")
+  switchableAccounts: SwitchableAccountSummary[];
+  @doc("Authentication methods available to the current identity.")
+  authenticationMethods: AuthenticationMethodsSummary;
 }
 
 @doc("Public profile fields for a requested identity.")
@@ -119,18 +155,6 @@ model IdentityProfileSummary {
   language: string;
   @doc("Profile image URL.")
   profileImage?: string | null;
-}
-
-@doc("Identity summary returned after email login.")
-model LoginIdentitySummary extends IdentitySummary {
-  @doc("Normalized application return path after login.")
-  returnTo?: string | null;
-}
-
-@doc("Identity summary returned after switching active identity.")
-model SwitchedIdentitySummary extends IdentitySummary {
-  @doc("Whether the active identity is delegated.")
-  isDelegated: boolean;
 }
 
 @doc("Email verification result.")
@@ -161,22 +185,222 @@ model VerifyEmailRequestBody {
   authCode: string;
 }
 
-@doc("Request body for registering a new identity.")
-model CreateIdentityRequestBody {
-  @doc("Requested identityName.")
-  identityName: string;
-  @doc("Email address.")
+@doc("Request body for sending a passkey recovery verification code.")
+model SendPasskeyRecoveryEmailRequestBody {
+  @doc("Registered email address that will receive the recovery code when it exists.")
   email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Password confirmation.")
-  confirmedPassword: string;
-  @doc("Base64-encoded profile image.")
-  base64EncodedImage?: string | null;
-  @doc("One-time token used during signup.")
-  oneTimeToken?: string | null;
 }
 
+@doc("Request body for verifying a passkey recovery email code.")
+model VerifyPasskeyRecoveryEmailRequestBody {
+  @doc("Email address used to request the recovery code.")
+  email: string;
+  @doc("Six-digit recovery code delivered to the email address.")
+  @minLength(6)
+  @maxLength(6)
+  authCode: string;
+}
+
+@doc("Result of successful passkey recovery identity verification.")
+model PasskeyRecoveryVerificationResult {
+  @doc("Short-lived, one-time key authorizing passkey recovery registration.")
+  recoveryKey: Uuid;
+}
+
+@doc("Request body for creating passkey recovery registration options.")
+model CreatePasskeyRecoveryOptionsRequestBody {
+  @doc("Short-lived passkey recovery authorization key.")
+  recoveryKey: Uuid;
+}
+
+@doc("Request body for starting passkey registration.")
+model CreatePasskeyRegistrationOptionsRequestBody {
+  @doc("Verified or invited email address.")
+  email: string;
+  @doc("Invitation token retained for signup completion.")
+  oneTimeToken?: string | null;
+  @doc("Application return path retained for signup completion.")
+  return_to?: string | null;
+}
+
+model PasskeyRelyingPartyEntity {
+  name: string;
+  id: string;
+}
+
+model PasskeyUserEntity {
+  name: string;
+  id: string;
+  displayName: string;
+}
+
+model PasskeyCredentialParameter {
+  type: string;
+  alg: int32;
+}
+
+model PasskeyCredentialDescriptor {
+  type: string;
+  id: string;
+  transports?: string[] | null;
+}
+
+model PasskeyAuthenticatorSelection {
+  residentKey: string;
+  userVerification: string;
+  requireResidentKey?: boolean | null;
+}
+
+@doc("WebAuthn PublicKeyCredentialCreationOptions returned to the browser.")
+model PasskeyRegistrationOptions {
+  rp: PasskeyRelyingPartyEntity;
+  user: PasskeyUserEntity;
+  challenge: string;
+  pubKeyCredParams: PasskeyCredentialParameter[];
+  timeout: int32;
+  excludeCredentials: PasskeyCredentialDescriptor[];
+  authenticatorSelection: PasskeyAuthenticatorSelection;
+  attestation: string;
+}
+
+@doc("Result for starting passkey registration.")
+model PasskeyRegistrationOptionsResult {
+  @doc("Key used to submit the registration attestation.")
+  challengeKey: Uuid;
+  options: PasskeyRegistrationOptions;
+}
+
+@doc("WebAuthn PublicKeyCredentialRequestOptions returned to the browser.")
+model PasskeyAuthenticationOptions {
+  challenge: string;
+  timeout: int32;
+  rpId: string;
+  allowCredentials: PasskeyCredentialDescriptor[];
+  userVerification: string;
+}
+
+@doc("Result for starting passkey authentication.")
+model PasskeyAuthenticationOptionsResult {
+  @doc("Key used to submit the authentication assertion.")
+  challengeKey: Uuid;
+  options: PasskeyAuthenticationOptions;
+}
+
+@doc("Public metadata for a passkey registered by the authenticated identity.")
+model PasskeySummary {
+  @doc("Application identifier for the registered passkey.")
+  passkeyIdentifier: Uuid;
+  @doc("User-visible name for the passkey.")
+  displayName: string;
+  @doc("Authenticator transports reported at registration.")
+  transports: string[];
+  @doc("Whether the credential is eligible for backup and synchronization.")
+  backupEligible: boolean;
+  @doc("Whether the credential is currently backed up.")
+  backupState: boolean;
+  @doc("Timestamp of the most recent successful authentication.")
+  lastUsedAt: Timestamp | null;
+  @doc("Timestamp when the passkey was registered.")
+  createdAt: Timestamp;
+}
+
+@doc("Registered passkeys belonging to the authenticated identity.")
+model PasskeyListResult {
+  passkeys: PasskeySummary[];
+}
+
+model PasskeyAuthenticatorAssertionResponse {
+  clientDataJSON: string;
+  authenticatorData: string;
+  signature: string;
+  userHandle?: string | null;
+}
+
+model PasskeyAuthenticationCredential {
+  id: string;
+  rawId: string;
+  type: "public-key";
+  response: PasskeyAuthenticatorAssertionResponse;
+  authenticatorAttachment?: string | null;
+  clientExtensionResults?: EmptyJsonObject | null;
+}
+
+model PasskeyAuthenticatorAttestationResponse {
+  clientDataJSON: string;
+  attestationObject: string;
+  transports?: string[] | null;
+}
+
+model PasskeyRegistrationCredential {
+  id: string;
+  rawId: string;
+  type: "public-key";
+  response: PasskeyAuthenticatorAttestationResponse;
+  authenticatorAttachment?: string | null;
+  clientExtensionResults?: EmptyJsonObject | null;
+}
+
+@doc("Request body for completing passkey-based identity registration.")
+model RegisterWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  @doc("Requested identity name.")
+  @minLength(1)
+  @maxLength(32)
+  identityName: string;
+  @minLength(1)
+  @maxLength(64)
+  @doc("User-visible name for the passkey.")
+  displayName: string;
+  @doc("Base64-encoded profile image.")
+  base64EncodedImage?: string | null;
+  credential: PasskeyRegistrationCredential;
+}
+
+@doc("Identity and retained navigation state returned after passkey registration.")
+model PasskeyIdentityRegistrationResult extends IdentitySummary {
+  returnTo?: string | null;
+}
+
+@doc("Request body for completing registration of an additional passkey.")
+model AddPasskeyRequestBody {
+  challengeKey: Uuid;
+  @maxLength(64)
+  displayName: string;
+  credential: PasskeyRegistrationCredential;
+}
+
+@doc("Request body for replacing all existing passkeys during account recovery.")
+model RecoverPasskeyRequestBody {
+  @doc("Short-lived passkey recovery authorization key.")
+  recoveryKey: Uuid;
+  @doc("Key returned with the recovery registration options.")
+  challengeKey: Uuid;
+  @minLength(1)
+  @maxLength(64)
+  @doc("User-visible name for the replacement passkey.")
+  displayName: string;
+  credential: PasskeyRegistrationCredential;
+}
+
+@doc("Request body for updating a registered passkey.")
+model UpdatePasskeyRequestBody {
+  @minLength(1)
+  @maxLength(64)
+  @doc("New user-visible name for the passkey.")
+  displayName: string;
+}
+
+@doc("Request body for completing passkey authentication.")
+model AuthenticateWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  credential: PasskeyAuthenticationCredential;
+}
+
+@doc("Request body for completing passkey step-up authentication.")
+model CompleteStepUpWithPasskeyRequestBody {
+  challengeKey: Uuid;
+  credential: PasskeyAuthenticationCredential;
+}
 
 @doc("Request body for updating an identity profile.")
 model UpdateIdentityRequestBody {
@@ -188,44 +412,44 @@ model UpdateIdentityRequestBody {
   base64EncodedImage?: string | null;
 }
 
-@doc("Request body for logging in.")
-model LoginRequestBody {
-  @doc("Email address.")
-  email: string;
-  @doc("Plain text password.")
-  password: string;
-  @doc("Application return path after login.")
-  return_to?: string | null;
-}
+@doc("Empty JSON array returned by endpoints with no payload.")
+@maxItems(0)
+model EmptyJsonArray is Array<unknown>;
 
-@doc("Request body for switching the active identity.")
-model SwitchIdentityRequestBody {
-  @doc("Delegation identifier to switch into. Null means returning to the original identity.")
-  targetDelegationIdentifier?: Uuid | null;
-}
-
-@doc("Response returned when an endpoint succeeds with an empty JSON object.")
+@doc("Response returned when an endpoint succeeds with an empty JSON array.")
 model OkEmptyResponse {
   @statusCode statusCode: 200;
-  @body body: EmptyJsonObject;
+  @body body: EmptyJsonArray;
 }
 
-@doc("Response returned when an identity is created.")
-model CreateIdentityResponse {
+@doc("Response returned when passkey registration options are created.")
+model PasskeyRegistrationOptionsResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyRegistrationOptionsResult;
+}
+
+@doc("Response returned when passkey authentication options are created.")
+model PasskeyAuthenticationOptionsResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyAuthenticationOptionsResult;
+}
+
+@doc("Response returned when registered passkeys are listed.")
+model PasskeyListResponse {
+  @statusCode statusCode: 200;
+  @body body: PasskeyListResult;
+}
+
+@doc("Response returned when passkey-based identity registration succeeds.")
+model PasskeyIdentityRegistrationResponse {
   @statusCode statusCode: 201;
-  @body body: IdentitySummary;
+  @body body: PasskeyIdentityRegistrationResult;
 }
 
 @doc("Response returned when an identity operation succeeds.")
 model OkIdentityResponse {
   @statusCode statusCode: 200;
   @body body: IdentitySummary;
-}
-
-@doc("Response returned when email login succeeds.")
-model OkLoginResponse {
-  @statusCode statusCode: 200;
-  @body body: LoginIdentitySummary;
 }
 
 @doc("Response returned when fetching the current authenticated identity succeeds.")
@@ -246,10 +470,10 @@ model VerifyEmailResponse {
   @body body: VerifyEmailResult;
 }
 
-@doc("Response returned when identity switching succeeds.")
-model SwitchIdentityResponse {
+@doc("Response returned after passkey recovery identity verification succeeds.")
+model PasskeyRecoveryVerificationResponse {
   @statusCode statusCode: 200;
-  @body body: SwitchedIdentitySummary;
+  @body body: PasskeyRecoveryVerificationResult;
 }
 
 @doc("Response returned by social login endpoints.")
@@ -258,14 +482,68 @@ model RedirectUrlResponse {
   @body body: RedirectUrlResult;
 }
 
+@doc("Pending SSO addition, available only in the Laravel session that completed OAuth. No login or linking has occurred yet.")
+model SocialLinkingResult {
+  @doc("Authenticated SSO provider being added. The provider account ID remains server-side.")
+  provider: string;
+  @doc("Registered email address receiving the dedicated linking code; cannot be changed by the client.")
+  email: string;
+  @doc("Absolute expiry of the pending linking operation. Restart OAuth after expiry.")
+  expiresAt: Timestamp;
+}
+
+model SocialLinkingResponse {
+  @statusCode statusCode: 200;
+  @body body: SocialLinkingResult;
+}
+
+model SendSocialLinkingEmailResult {
+  @doc("The request was processed. Cooldown or rate-limited requests also return true without sending another email.")
+  accepted: boolean;
+}
+
+model SendSocialLinkingEmailResponse {
+  @statusCode statusCode: 200;
+  @body body: SendSocialLinkingEmailResult;
+}
+
+model VerifySocialLinkingEmailRequestBody {
+  @doc("Dedicated six-digit SSO linking code. Registration and passkey recovery codes cannot authorize linking.")
+  @pattern("^[0-9]{6}$")
+  authCode: string;
+}
+
+@doc("Actual browser redirect returned by the OAuth callback.")
+model SocialCallbackRedirectResponse {
+  @statusCode statusCode: 302;
+  @header location: string;
+}
+
 @route("/auth")
 interface IdentityAuthOperations {
+  @get
+  @route("/social/link")
+  @doc("Read pending SSO linking confirmation using the originating Laravel session cookie. Returns 422 when absent, expired, consumed, or accessed from another session. No provider, identity, email, return path or pending key is accepted from the client.")
+  getSocialLinking(): SocialLinkingResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/social/link/email")
+  @doc("Request a dedicated code for the pending target's registered email using the same session cookie. No request body is required. Codes expire with the ten-minute pending operation; a successful resend invalidates the old code without resetting failed attempts. A 60-second cooldown and a maximum of five sends per pending operation and per target identity per hour apply; throttled requests return accepted=true without a new code. Invalid or expired pending operations return 422.")
+  sendSocialLinkingEmail(): SendSocialLinkingEmailResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/social/link/email/verification")
+  @doc("Verify the dedicated code and consume pending authorization in the originating Laravel session. Re-fetch and check the target and SSO ownership, save the addition and log in with a regenerated session ID within an Action-managed database transaction. Returns an allowed frontend return path. Invalid codes, expiry, five failed attempts, reuse and linking conflicts return 422. A save failure never logs in; the authorization remains consumed and OAuth must be restarted before retrying.")
+  verifySocialLinkingEmail(
+    @body body: VerifySocialLinkingEmailRequestBody,
+  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/send-auth-code")
   @doc("Send an auth code to the specified email address.")
   sendAuthCode(
     @body body: SendAuthCodeRequestBody,
-  ): OkEmptyResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/verify-email")
@@ -275,37 +553,83 @@ interface IdentityAuthOperations {
   ): VerifyEmailResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/register")
-  @doc("Register a new identity.")
-  createIdentity(
-    @body body: CreateIdentityRequestBody,
-  ): CreateIdentityResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @route("/passkeys/registration/options")
+  @doc("Create WebAuthn registration options for a verified or invited email address.")
+  createPasskeyRegistrationOptions(
+    @body body: CreatePasskeyRegistrationOptionsRequestBody,
+  ): PasskeyRegistrationOptionsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/login")
-  @doc("Authenticate with email and password.")
-  login(
-    @body body: LoginRequestBody,
-  ): OkLoginResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @route("/passkeys/registration")
+  @doc("Verify a WebAuthn attestation, create an identity and establish an authenticated session.")
+  registerWithPasskey(
+    @body body: RegisterWithPasskeyRequestBody,
+  ): PasskeyIdentityRegistrationResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/authentication/options")
+  @doc("Create discoverable WebAuthn authentication options without requiring an email address.")
+  createPasskeyAuthenticationOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/authentication")
+  @doc("Verify a WebAuthn assertion and establish an authenticated session.")
+  authenticateWithPasskey(
+    @body body: AuthenticateWithPasskeyRequestBody,
+  ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/email")
+  @doc("Send a passkey recovery code while returning the same response whether or not the email is registered.")
+  sendPasskeyRecoveryEmail(
+    @body body: SendPasskeyRecoveryEmailRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/email/verification")
+  @doc("Verify a passkey recovery email code and issue a short-lived recovery key.")
+  verifyPasskeyRecoveryEmail(
+    @body body: VerifyPasskeyRecoveryEmailRequestBody,
+  ): PasskeyRecoveryVerificationResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/passkeys/recovery/social/{provider}/redirect")
+  @doc("Create a social reauthentication URL. Identify the recovery target from the linked social account on callback.")
+  startPasskeyRecoveryWithSocial(
+    @path provider: string,
+  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery/options")
+  @doc("Create WebAuthn registration options authorized by a passkey recovery key.")
+  createPasskeyRecoveryOptions(
+    @body body: CreatePasskeyRecoveryOptionsRequestBody,
+  ): PasskeyRegistrationOptionsResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/recovery")
+  @doc("Register a replacement passkey, remove all previous passkeys, and invalidate existing login sessions.")
+  recoverPasskey(
+    @body body: RecoverPasskeyRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/redirect")
   @doc("Create an OAuth redirect URL for the selected social provider.")
   socialLoginRedirect(
     @path provider: string,
-    @query accountType?: string,
     @query oneTimeToken?: string,
     @query return_to?: string | null,
   ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/callback")
-  @doc("Handle the social login callback and return the client redirect URL.")
+  @doc("Handle OAuth and redirect the browser. An unlinked provider whose email matches an existing identity redirects to the frontend /auth/social/link confirmation screen, retaining server-side pending data for ten minutes in the originating Laravel session. No linking or login occurs before dedicated email verification. Linked login, new identity, invitation, step-up and passkey recovery flows retain their existing redirects.")
   socialLoginCallback(
     @path provider: string,
     @query code: string,
     @query state: string,
-  ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): SocialCallbackRedirectResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/logout")
@@ -318,18 +642,63 @@ interface IdentityAuthOperations {
   getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
+  @route("/passkeys")
+  @doc("List passkeys registered by the current authenticated identity after recent passkey management authentication.")
+  listPasskeys(): PasskeyListResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/step-up/passkey/options")
+  @doc("Create identity-bound WebAuthn options for passkey management step-up authentication.")
+  createStepUpPasskeyOptions(): PasskeyAuthenticationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/step-up/passkey")
+  @doc("Verify an existing passkey and grant reusable passkey management authorization to the current login session for up to ten minutes.")
+  completeStepUpWithPasskey(
+    @body body: CompleteStepUpWithPasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/step-up/social/{provider}/redirect")
+  @doc("Create a linked-SSO reauthentication URL for initial passkey registration.")
+  startStepUpWithSocial(
+    @path provider: string,
+  ): RedirectUrlResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/addition/options")
+  @doc("Create WebAuthn registration options for adding a passkey to the authenticated identity.")
+  createPasskeyOptions(): PasskeyRegistrationOptionsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
+  @route("/passkeys/addition")
+  @doc("Verify and register an additional passkey for the authenticated identity.")
+  addPasskey(
+    @body body: AddPasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Update a passkey belonging to the authenticated identity after recent passkey management authentication.")
+  updatePasskey(
+    @path passkeyIdentifier: Uuid,
+    @body body: UpdatePasskeyRequestBody,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @delete
+  @route("/passkeys/{passkeyIdentifier}")
+  @doc("Delete a passkey belonging to the authenticated identity while preserving another authentication method.")
+  deletePasskey(
+    @path passkeyIdentifier: Uuid,
+  ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
   @route("/identities/{identityIdentifier}/profile")
   @doc("Get profile fields for the requested identity. Any authenticated identity may fetch the profile.")
   getIdentityProfile(
     @path identityIdentifier: Uuid,
   ): IdentityProfileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
-  @post
-  @route("/switch-identity")
-  @doc("Switch the current authenticated identity or clear delegation.")
-  switchIdentity(
-    @body body: SwitchIdentityRequestBody,
-  ): SwitchIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/identities")

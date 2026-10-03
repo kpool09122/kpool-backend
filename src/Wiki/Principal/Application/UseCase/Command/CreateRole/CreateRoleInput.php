@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreateRole;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 
 readonly class CreateRoleInput implements CreateRoleInputPort
@@ -14,7 +15,7 @@ readonly class CreateRoleInput implements CreateRoleInputPort
     public function __construct(
         private string $name,
         private array $policies,
-        private bool $isSystemRole,
+        private ?AccountIdentifier $accountIdentifier,
     ) {
     }
 
@@ -31,8 +32,8 @@ readonly class CreateRoleInput implements CreateRoleInputPort
         return $this->policies;
     }
 
-    public function isSystemRole(): bool
+    public function accountIdentifier(): ?AccountIdentifier
     {
-        return $this->isSystemRole;
+        return $this->accountIdentifier;
     }
 }

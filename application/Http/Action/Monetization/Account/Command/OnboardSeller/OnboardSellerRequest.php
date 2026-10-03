@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Monetization\Account\Command\OnboardSeller;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OnboardSellerRequest extends FormRequest
@@ -27,26 +28,26 @@ class OnboardSellerRequest extends FormRequest
 
     public function monetizationAccountId(): string
     {
-        return (string) $this->input('monetizationAccountId');
+        return RequestValue::string($this->input('monetizationAccountId'));
     }
 
     public function email(): string
     {
-        return (string) $this->input('email');
+        return RequestValue::string($this->input('email'));
     }
 
     public function countryCode(): string
     {
-        return (string) $this->input('countryCode');
+        return RequestValue::string($this->input('countryCode'));
     }
 
     public function refreshUrl(): string
     {
-        return (string) $this->input('refreshUrl');
+        return RequestValue::string($this->input('refreshUrl'));
     }
 
     public function returnUrl(): string
     {
-        return (string) $this->input('returnUrl');
+        return RequestValue::string($this->input('returnUrl'));
     }
 }
