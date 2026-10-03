@@ -14,6 +14,8 @@ class ListContactsRequest extends FormRequest
         return [
             'identityIdentifier' => ['nullable', 'uuid'],
             'hasReply' => ['nullable', 'string', 'in:0,1'],
+            'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -25,5 +27,17 @@ class ListContactsRequest extends FormRequest
     public function hasReply(): ?bool
     {
         return $this->query('hasReply') !== null ? $this->boolean('hasReply') : null;
+    }
+
+    public function perPage(): ?int
+    {
+        $perPage = $this->query('perPage');
+
+        return $perPage === null ? null : (int) $perPage;
+    }
+
+    public function page(): int
+    {
+        return $this->query('page') !== null ? (int) $this->query('page') : 1;
     }
 }

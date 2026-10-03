@@ -7,6 +7,7 @@ namespace Source\SiteManagement\Contact\Infrastructure\Query;
 use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInputPort;
@@ -30,7 +31,8 @@ readonly class ListContacts implements ListContactsInterface
             throw new UnauthorizedException();
         }
 
-        $contacts = ContactModel::query()
+        /** @var LengthAwarePaginator<int, ContactModel> $paginator */
+        $paginator = ContactModel::query()
             ->select([
                 'id',
                 'identity_identifier',
@@ -56,17 +58,23 @@ readonly class ListContacts implements ListContactsInterface
                 ->whereNull('failed_at')))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->get()
-            ->map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
-                contactIdentifier: (string) $contact->id,
-                identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
-                category: (int) $contact->category,
-                name: (string) $contact->name,
-                replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
-                createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
-            ))
-            ->all();
+            ->paginate($input->perPage(), ['*'], 'page', $input->page());
 
-        $output->output($contacts);
+        $contacts = array_map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
+            contactIdentifier: (string) $contact->id,
+            identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
+            category: (int) $contact->category,
+            name: (string) $contact->name,
+            replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
+            createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
+        ), $paginator->items());
+
+        $output->output(
+            $contacts,
+            $paginator->currentPage(),
+            $paginator->lastPage(),
+            $paginator->total(),
+            $paginator->perPage(),
+        );
     }
 }

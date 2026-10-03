@@ -46,12 +46,12 @@ class ListContactsTest extends TestCase
         $output = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, $target, null), $output);
 
-        $this->assertSame([$newer, $older], array_column($output->toArray(), 'contactIdentifier'));
-        $this->assertSame([[], []], array_column($output->toArray(), 'replyIdentifiers'));
+        $this->assertSame([$newer, $older], array_column($output->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([[], []], array_column($output->toArray()['contacts'], 'replyIdentifiers'));
         $this->assertSame([
             (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
             (new DateTimeImmutable('2026-08-15 10:00:00'))->format(DateTimeInterface::ATOM),
-        ], array_column($output->toArray(), 'createdAt'));
+        ], array_column($output->toArray()['contacts'], 'createdAt'));
     }
 
     #[Group('useDb')]
@@ -83,8 +83,36 @@ class ListContactsTest extends TestCase
         $output = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $output);
 
-        $this->assertSame([$anonymousContact, $identityContact], array_column($output->toArray(), 'contactIdentifier'));
-        $this->assertSame([null, $targetIdentityIdentifier], array_column($output->toArray(), 'identityIdentifier'));
+        $this->assertSame([$anonymousContact, $identityContact], array_column($output->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([null, $targetIdentityIdentifier], array_column($output->toArray()['contacts'], 'identityIdentifier'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsRequestedContactPageAndPaginationMetadata(): void
+    {
+        $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($requester);
+        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $first = StrTestHelper::generateUuid();
+        $second = StrTestHelper::generateUuid();
+        $third = StrTestHelper::generateUuid();
+        $this->insertContact($first, null, 'first@example.com', '2026-08-15 10:00:00');
+        $this->insertContact($second, null, 'second@example.com', '2026-08-16 10:00:00');
+        $this->insertContact($third, null, 'third@example.com', '2026-08-17 10:00:00');
+
+        $output = new ListContactsOutput();
+        $this->app()->make(ListContactsInterface::class)->process(
+            new ListContactsInput($requester, null, null, 2, 2),
+            $output,
+        );
+
+        $this->assertSame([$first], array_column($output->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([
+            'current_page' => 2,
+            'last_page' => 2,
+            'total' => 3,
+            'per_page' => 2,
+        ], array_intersect_key($output->toArray(), array_flip(['current_page', 'last_page', 'total', 'per_page'])));
     }
 
     #[Group('useDb')]
@@ -111,21 +139,21 @@ class ListContactsTest extends TestCase
         DB::enableQueryLog();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
 
-        $this->assertCount(3, DB::getQueryLog());
-        $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray(), 'contactIdentifier'));
-        $this->assertSame([[$sentReply, $laterReply]], array_column($hasReplyOutput->toArray(), 'replyIdentifiers'));
+        $this->assertCount(4, DB::getQueryLog());
+        $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([[$sentReply, $laterReply]], array_column($hasReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
 
         $hasNoReplyOutput = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, false), $hasNoReplyOutput);
 
-        $this->assertSame([$failedContact, $unrepliedContact], array_column($hasNoReplyOutput->toArray(), 'contactIdentifier'));
-        $this->assertSame([[], []], array_column($hasNoReplyOutput->toArray(), 'replyIdentifiers'));
+        $this->assertSame([$failedContact, $unrepliedContact], array_column($hasNoReplyOutput->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([[], []], array_column($hasNoReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
 
         $allContactsOutput = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
 
-        $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray(), 'contactIdentifier'));
-        $this->assertSame([[$sentReply, $laterReply], [], []], array_column($allContactsOutput->toArray(), 'replyIdentifiers'));
+        $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame([[$sentReply, $laterReply], [], []], array_column($allContactsOutput->toArray()['contacts'], 'replyIdentifiers'));
     }
 
     private function insertContact(string $id, ?string $identityIdentifier, string $email, string $createdAt): void

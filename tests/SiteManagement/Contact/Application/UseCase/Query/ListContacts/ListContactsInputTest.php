@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInput;
@@ -21,6 +22,8 @@ class ListContactsInputTest extends TestCase
         $this->assertSame($requesterIdentityIdentifier, $input->requesterIdentityIdentifier());
         $this->assertSame($targetIdentityIdentifier, $input->targetIdentityIdentifier());
         $this->assertTrue($input->hasReply());
+        $this->assertSame(50, $input->perPage());
+        $this->assertSame(1, $input->page());
     }
 
     public function testConstructAllowsNullTargetIdentityIdentifier(): void
@@ -31,5 +34,33 @@ class ListContactsInputTest extends TestCase
 
         $this->assertNull($input->targetIdentityIdentifier());
         $this->assertNull($input->hasReply());
+    }
+
+    public function testConstructAcceptsPaginationValues(): void
+    {
+        $requesterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        $input = new ListContactsInput($requesterIdentityIdentifier, null, null, 20, 3);
+
+        $this->assertSame(20, $input->perPage());
+        $this->assertSame(3, $input->page());
+    }
+
+    public function testConstructRejectsPerPageOutsideAllowedRange(): void
+    {
+        $requesterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        $this->expectException(InvalidArgumentException::class);
+
+        new ListContactsInput($requesterIdentityIdentifier, null, null, 101);
+    }
+
+    public function testConstructRejectsPageLessThanOne(): void
+    {
+        $requesterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        $this->expectException(InvalidArgumentException::class);
+
+        new ListContactsInput($requesterIdentityIdentifier, null, null, null, 0);
     }
 }

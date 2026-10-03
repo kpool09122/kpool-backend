@@ -34,6 +34,8 @@ readonly class ListContactsAction
                 $this->actorContext->identityIdentifier,
                 $request->identityIdentifier() === null ? null : new IdentityIdentifier($request->identityIdentifier()),
                 $request->hasReply(),
+                $request->perPage(),
+                $request->page(),
             ), $output);
         } catch (UnauthorizedException $e) {
             $this->logger->error((string) $e);
