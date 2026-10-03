@@ -105,8 +105,11 @@ interface ContactListOperations {
     @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
     @query hasReply?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
+    @minValue(1)
+    @maxValue(100)
     @query perPage?: int32 | null,
     @doc("Page number, starting at 1 (default 1).")
+    @minValue(1)
     @query page?: int32 | null,
   ): ListContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
