@@ -149,3 +149,16 @@ services:
         class: Kpool\PHPStan\Rules\ForbiddenLogFacadeRule
         tags:
             - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\MissingDedicatedTestRule
+        arguments:
+            sourceDirectory: %currentWorkingDirectory%/src
+            testsDirectory: %currentWorkingDirectory%/tests
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\TestFilesResultCacheMetaExtension
+        arguments:
+            testsDirectory: %currentWorkingDirectory%/tests
+        tags:
+            - phpstan.resultCacheMetaExtension

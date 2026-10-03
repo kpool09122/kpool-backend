@@ -1,0 +1,203 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Account\Principal\Domain\Entity;
+
+use DateTimeImmutable;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
+use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Tests\Helper\StrTestHelper;
+
+class PrincipalGroupTest extends TestCase
+{
+    /**
+     * 正常系: インスタンスが生成されること
+     */
+    public function test__construct(): void
+    {
+        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $createdAt = new DateTimeImmutable('2024-01-01T00:00:00+00:00');
+
+        $principalGroup = new PrincipalGroup(
+            principalGroupIdentifier: $principalGroupIdentifier,
+            accountIdentifier: $accountIdentifier,
+            name: 'オーナーグループ',
+            isDefault: true,
+            createdAt: $createdAt,
+        );
+
+        $this->assertSame($principalGroupIdentifier, $principalGroup->principalGroupIdentifier());
+        $this->assertSame($accountIdentifier, $principalGroup->accountIdentifier());
+        $this->assertSame('オーナーグループ', $principalGroup->name());
+        $this->assertTrue($principalGroup->isDefault());
+        $this->assertSame($createdAt, $principalGroup->createdAt());
+        $this->assertEmpty($principalGroup->members());
+        $this->assertSame([], $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: メンバーを追加できること
+     */
+    public function testAddMember(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addMember($principalIdentifier);
+
+        $this->assertCount(1, $principalGroup->members());
+        $this->assertTrue($principalGroup->hasMember($principalIdentifier));
+    }
+
+    /**
+     * 異常系: 同じメンバーを二重に追加しようとすると例外がスローされること
+     */
+    public function testAddMemberThrowsExceptionWhenAlreadyMember(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addMember($principalIdentifier);
+
+        $this->expectException(PrincipalAlreadyMemberException::class);
+        $principalGroup->addMember($principalIdentifier);
+    }
+
+    /**
+     * 正常系: メンバーを削除できること
+     */
+    public function testRemoveMember(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addMember($principalIdentifier);
+        $principalGroup->removeMember($principalIdentifier);
+
+        $this->assertCount(0, $principalGroup->members());
+        $this->assertFalse($principalGroup->hasMember($principalIdentifier));
+    }
+
+    /**
+     * 異常系: 存在しないメンバーを削除しようとすると例外がスローされること
+     */
+    public function testRemoveMemberThrowsExceptionWhenNotMember(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $this->expectException(PrincipalNotMemberException::class);
+        $principalGroup->removeMember($principalIdentifier);
+    }
+
+    /**
+     * 正常系: メンバー数を取得できること
+     */
+    public function testMemberCount(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+
+        $this->assertSame(0, $principalGroup->memberCount());
+
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertSame(2, $principalGroup->memberCount());
+    }
+
+    public function testReplaceMembers(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $oldMember = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $newMemberA = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $newMemberB = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalGroup->addMember($oldMember);
+
+        $principalGroup->replaceMembers([$newMemberA, $newMemberB, $newMemberA]);
+
+        $this->assertFalse($principalGroup->hasMember($oldMember));
+        $this->assertTrue($principalGroup->hasMember($newMemberA));
+        $this->assertTrue($principalGroup->hasMember($newMemberB));
+        $this->assertSame(2, $principalGroup->memberCount());
+        $this->assertSame([
+            (string) $newMemberA => $newMemberA,
+            (string) $newMemberB => $newMemberB,
+        ], $principalGroup->members());
+    }
+
+    public function testReplaceMembersCanClearMembers(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+
+        $principalGroup->replaceMembers([]);
+
+        $this->assertSame([], $principalGroup->members());
+        $this->assertSame(0, $principalGroup->memberCount());
+    }
+
+    public function testAddRoleDoesNotDuplicateRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
+
+        $principalGroup->addRole($role);
+        $principalGroup->addRole($role);
+
+        $this->assertCount(1, $principalGroup->roles());
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier));
+    }
+
+    public function testRemoveRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $role = $this->createRole($principalGroup->accountIdentifier());
+        $roleIdentifier = $role->roleIdentifier();
+
+        $principalGroup->addRole($role);
+        $principalGroup->removeRole($roleIdentifier);
+
+        $this->assertSame([], $principalGroup->roles());
+        $this->assertFalse($principalGroup->hasRole($roleIdentifier));
+    }
+
+    public function testAddRoleRejectsRoleFromAnotherAccount(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+
+        $this->expectException(InvalidArgumentException::class);
+        $principalGroup->addRole($this->createRole(new AccountIdentifier(StrTestHelper::generateUuid())));
+    }
+
+    private function createPrincipalGroup(): PrincipalGroup
+    {
+        return new PrincipalGroup(
+            principalGroupIdentifier: new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            accountIdentifier: new AccountIdentifier(StrTestHelper::generateUuid()),
+            name: 'テストグループ',
+            isDefault: false,
+            createdAt: new DateTimeImmutable(),
+        );
+    }
+
+    private function createRole(?AccountIdentifier $accountIdentifier): Role
+    {
+        return new Role(
+            new RoleIdentifier(StrTestHelper::generateUuid()),
+            'テストロール',
+            [],
+            $accountIdentifier,
+        );
+    }
+}
