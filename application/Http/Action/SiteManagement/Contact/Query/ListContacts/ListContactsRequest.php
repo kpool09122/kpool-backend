@@ -13,7 +13,7 @@ class ListContactsRequest extends FormRequest
     {
         return [
             'identityIdentifier' => ['nullable', 'uuid'],
-            'hasReply' => ['nullable', 'boolean'],
+            'hasReply' => ['nullable', 'string', 'in:0,1'],
         ];
     }
 

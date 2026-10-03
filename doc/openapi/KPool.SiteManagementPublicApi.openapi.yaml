@@ -57,9 +57,12 @@ paths:
         - name: hasReply
           in: query
           required: false
-          description: Whether the inquiry has at least one successfully sent reply. When omitted (null), no reply-status filter is applied.
+          description: 'Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.'
           schema:
-            type: boolean
+            type: string
+            enum:
+              - '0'
+              - '1'
             nullable: true
           explode: false
       responses:

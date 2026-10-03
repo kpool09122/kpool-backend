@@ -88,8 +88,8 @@ interface ContactListOperations {
   @doc("List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.")
   listContacts(
     @query identityIdentifier?: Uuid | null,
-    @doc("Whether the inquiry has at least one successfully sent reply. When omitted (null), no reply-status filter is applied.")
-    @query hasReply?: boolean | null,
+    @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
+    @query hasReply?: "0" | "1" | null,
   ): ListContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
