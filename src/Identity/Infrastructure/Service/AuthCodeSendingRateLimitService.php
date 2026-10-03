@@ -22,7 +22,12 @@ class AuthCodeSendingRateLimitService implements AuthCodeSendingRateLimitService
         $countKey = 'auth_code_email_sends:' . $hash;
         $cooldownKey = 'auth_code_email_cooldown:' . $hash;
         $count = TypedValue::numericInt(Redis::get($countKey) ?? '0');
-        $windowTtl = max(0, (int) Redis::ttl($countKey));
+        $windowTtl = (int) Redis::ttl($countKey);
+        if ($count > 0 && $windowTtl < 0) {
+            Redis::expire($countKey, self::WINDOW_SECONDS);
+            $windowTtl = self::WINDOW_SECONDS;
+        }
+        $windowTtl = max(0, $windowTtl);
 
         if ($count >= self::MAX_SENDS) {
             return new EmailSendingStatus(false, 0, $windowTtl);
@@ -34,6 +39,11 @@ class AuthCodeSendingRateLimitService implements AuthCodeSendingRateLimitService
         }
 
         $count = (int) Redis::incr($countKey);
+        if ($count > self::MAX_SENDS) {
+            Redis::decr($countKey);
+
+            return new EmailSendingStatus(false, 0, max(0, (int) Redis::ttl($countKey)));
+        }
         if ($count === 1) {
             Redis::expire($countKey, self::WINDOW_SECONDS);
             $windowTtl = self::WINDOW_SECONDS;

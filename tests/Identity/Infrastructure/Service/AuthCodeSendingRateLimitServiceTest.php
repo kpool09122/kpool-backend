@@ -48,13 +48,19 @@ class AuthCodeSendingRateLimitServiceTest extends TestCase
         $this->assertContains($suppressed->retryAfterSeconds, [59, 60]);
         $this->assertSame('1', Redis::get($countKey));
 
+        Redis::expire($cooldownKey, 1);
+        sleep(2);
+        $afterCooldown = $service->reserve($email);
+        $this->assertTrue($afterCooldown->sendingAllowed);
+        $this->assertSame(3, $afterCooldown->remainingSends);
+
         $otherEmail = new Email('other@example.com');
         $this->keysFor($otherEmail);
         $other = $service->reserve($otherEmail);
         $this->assertTrue($other->sendingAllowed);
         $this->assertSame(4, $other->remainingSends);
 
-        for ($send = 2; $send <= 5; $send++) {
+        for ($send = 3; $send <= 5; $send++) {
             Redis::del($cooldownKey);
             $status = $service->reserve($email);
             $this->assertTrue($status->sendingAllowed);
@@ -67,10 +73,26 @@ class AuthCodeSendingRateLimitServiceTest extends TestCase
         $this->assertEqualsWithDelta($windowTtl, $sixth->retryAfterSeconds, 1);
         $this->assertSame('5', Redis::get($countKey));
 
-        Redis::del($countKey, $cooldownKey);
+        Redis::expire($countKey, 1);
+        Redis::expire($cooldownKey, 1);
+        sleep(2);
         $reset = $service->reserve($email);
         $this->assertTrue($reset->sendingAllowed);
         $this->assertSame(4, $reset->remainingSends);
+    }
+
+    public function testMissingWindowExpiryIsRepairedBeforeSuppression(): void
+    {
+        $email = new Email('user@example.com');
+        [$countKey] = $this->keysFor($email);
+        Redis::set($countKey, '5');
+
+        $status = (new AuthCodeSendingRateLimitService())->reserve($email);
+
+        $this->assertFalse($status->sendingAllowed);
+        $this->assertSame(0, $status->remainingSends);
+        $this->assertEqualsWithDelta(3600, $status->retryAfterSeconds, 1);
+        $this->assertEqualsWithDelta(3600, Redis::ttl($countKey), 1);
     }
 
     /** @return array{string, string} */

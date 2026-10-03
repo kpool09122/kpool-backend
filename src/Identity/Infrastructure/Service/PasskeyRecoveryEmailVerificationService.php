@@ -35,7 +35,12 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         $countKey = 'passkey_recovery_email_sends:' . $hash;
         $cooldownKey = 'passkey_recovery_email_cooldown:' . $hash;
         $count = TypedValue::numericInt(Redis::get($countKey) ?? '0');
-        $windowTtl = max(0, (int) Redis::ttl($countKey));
+        $windowTtl = (int) Redis::ttl($countKey);
+        if ($count > 0 && $windowTtl < 0) {
+            Redis::expire($countKey, 3600);
+            $windowTtl = 3600;
+        }
+        $windowTtl = max(0, $windowTtl);
         if ($count >= self::MAX_SENDS) {
             return new EmailSendingStatus(false, 0, $windowTtl);
         }
@@ -45,6 +50,11 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         }
 
         $count = (int) Redis::incr($countKey);
+        if ($count > self::MAX_SENDS) {
+            Redis::decr($countKey);
+
+            return new EmailSendingStatus(false, 0, max(0, (int) Redis::ttl($countKey)));
+        }
         if ($count === 1) {
             Redis::expire($countKey, 3600);
             $windowTtl = 3600;
