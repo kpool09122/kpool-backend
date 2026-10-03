@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Application\UseCase\Command\WithdrawFromService;
 
+use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
+use Application\Http\Context\ActorContext;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\NullLogger;
+use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutput;
 use Source\Account\Account\Domain\Exception\IdentityWithdrawalNotAllowedException;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
@@ -25,6 +30,7 @@ class WithdrawFromServiceTest extends TestCase
         $identityIdentifier = $this->createIdentityArchive();
         [$individual, $individualPrincipal] = $this->createMembership($identityIdentifier, 'individual');
         [$corporation, $corporatePrincipal] = $this->createMembership($identityIdentifier, 'corporation');
+        $this->assertReadEligibility($identityIdentifier, true);
 
         $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
 
@@ -54,6 +60,7 @@ class WithdrawFromServiceTest extends TestCase
         $identityIdentifier = $this->createIdentityArchive();
         [$individual] = $this->createMembership($identityIdentifier, 'individual');
         [$disallowedAccount] = $this->createMembership($identityIdentifier, $type, $category);
+        $this->assertReadEligibility($identityIdentifier, false);
 
         try {
             $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
@@ -83,6 +90,7 @@ class WithdrawFromServiceTest extends TestCase
             DB::table('account_principal_group_memberships')->insert(['id' => StrTestHelper::generateUuid(), 'principal_id' => $member, 'principal_group_id' => $group]);
         }
 
+        $this->assertReadEligibility($identityIdentifier, false);
         $this->expectException(IdentityWithdrawalNotAllowedException::class);
         $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
     }
@@ -124,6 +132,81 @@ class WithdrawFromServiceTest extends TestCase
         } else {
             $this->assertDatabaseMissing('accounts', ['id' => $account]);
         }
+    }
+
+    /** @return array<string, array{string, bool}> */
+    public static function matchingEmailMemberships(): array
+    {
+        return [
+            'individual member' => ['individual', false],
+            'individual Owner' => ['individual', true],
+            'corporate member' => ['corporation', false],
+            'corporate Owner' => ['corporation', true],
+        ];
+    }
+
+    #[DataProvider('matchingEmailMemberships')]
+    public function testMatchingAccountEmailOnlyBlocksCorporateMembershipsRegardlessOfRole(string $type, bool $isOwner): void
+    {
+        $identityIdentifier = $this->createIdentityArchive();
+        [$otherAccount] = $this->createMembership($identityIdentifier, 'individual');
+        [$account, $principal] = $this->createMembership($identityIdentifier, $type);
+        DB::table('accounts')->where('id', $account)->update(['email' => 'TEST@EXAMPLE.COM']);
+        if ($isOwner) {
+            $group = StrTestHelper::generateUuid();
+            $role = StrTestHelper::generateUuid();
+            DB::table('account_principal_groups')->insert(['id' => $group, 'account_id' => $account, 'name' => 'Administrators', 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('account_roles')->insert(['id' => $role, 'account_id' => null, 'name' => 'Owner']);
+            DB::table('account_principal_group_role_attachments')->insert(['principal_group_id' => $group, 'role_id' => $role]);
+            DB::table('account_principal_group_memberships')->insert(['id' => StrTestHelper::generateUuid(), 'principal_id' => $principal, 'principal_group_id' => $group]);
+        }
+        $this->assertReadEligibility($identityIdentifier, $type === 'individual');
+        if ($type === 'individual') {
+            $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+
+            $this->assertDatabaseMissing('accounts', ['id' => $account]);
+            $this->assertDatabaseMissing('accounts', ['id' => $otherAccount]);
+            $this->assertDatabaseMissing('account_principals', ['id' => $principal]);
+            $this->assertDatabaseHas('archived_accounts', ['account_id' => $account]);
+            $this->assertDatabaseHas('archived_principals', ['principal_id' => $principal]);
+
+            return;
+        }
+
+        try {
+            $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+            $this->fail('Matching corporate account email must prevent withdrawal.');
+        } catch (IdentityWithdrawalNotAllowedException) {
+            $this->assertDatabaseHas('accounts', ['id' => $account]);
+            $this->assertDatabaseHas('accounts', ['id' => $otherAccount]);
+            $this->assertDatabaseHas('account_principals', ['id' => $principal]);
+            $this->assertDatabaseCount('archived_accounts', 0);
+            $this->assertDatabaseCount('archived_principals', 0);
+        }
+    }
+
+    public function testNoMembershipIsIneligible(): void
+    {
+        $identityIdentifier = $this->createIdentityArchive();
+        $this->assertReadEligibility($identityIdentifier, false);
+    }
+
+    private function assertReadEligibility(IdentityIdentifier $identityIdentifier, bool $expected): void
+    {
+        $accounts = DB::table('accounts')->count();
+        $archives = DB::table('archived_accounts')->count();
+        $action = new GetWithdrawalEligibilityAction(
+            $this->app()->make(WithdrawalEligibilityServiceInterface::class),
+            new ActorContext($identityIdentifier, Language::JAPANESE),
+            new NullLogger(),
+        );
+
+        $response = $action();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(['canWithdraw' => $expected], $response->getData(true));
+        $this->assertSame($accounts, DB::table('accounts')->count());
+        $this->assertSame($archives, DB::table('archived_accounts')->count());
     }
 
     private function createIdentityArchive(): IdentityIdentifier

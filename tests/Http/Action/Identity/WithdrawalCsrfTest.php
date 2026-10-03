@@ -119,7 +119,7 @@ class WithdrawalCsrfTest extends TestCase
         $this->assertArrayHasKey('XSRF-TOKEN', $cookies);
         $this->assertArrayHasKey(config()->string('session.cookie'), $cookies);
         $this->assertNotEmpty($cookies['XSRF-TOKEN']);
-        $parameters = $method === 'POST' ? ['_method' => 'DELETE'] : [];
+        $parameters = ['confirmationIdentityName' => 'test-identity'] + ($method === 'POST' ? ['_method' => 'DELETE'] : []);
         $headers = ['HTTP_ACCEPT' => 'application/json', 'HTTP_SEC_FETCH_SITE' => 'cross-site'];
         if ($token !== null) {
             $headers['HTTP_X_XSRF_TOKEN'] = $allowed ? $cookies['XSRF-TOKEN'] : $token;

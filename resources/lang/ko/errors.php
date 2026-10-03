@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'recent_authentication_required' => '최근 재인증이 필요합니다.',
+    'identity_name_confirmation_mismatch' => '입력한 사용자 이름이 현재 사용자 이름과 일치하지 않습니다.',
     'identity_withdrawal_not_allowed' => '이 사용자는 일반 탈퇴 절차를 이용할 수 없습니다.',
     'csrf_token_mismatch' => '요청 검증 토큰이 유효하지 않거나 누락되었습니다.',
     'agency_not_found' => '지정된 사무소의 초안 위키를 찾을 수 없습니다.',

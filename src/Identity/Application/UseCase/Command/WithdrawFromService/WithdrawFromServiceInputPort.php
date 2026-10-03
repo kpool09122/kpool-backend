@@ -8,5 +8,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 interface WithdrawFromServiceInputPort
 {
+    public function confirmationIdentityName(): string;
+
     public function identityIdentifier(): IdentityIdentifier;
 }

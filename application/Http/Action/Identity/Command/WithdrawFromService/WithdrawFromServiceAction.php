@@ -9,6 +9,7 @@ use Application\Http\Context\ServiceWithdrawalContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnauthorizedHttpException;
+use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
@@ -16,6 +17,7 @@ use Source\Account\Account\Domain\Exception\IdentityWithdrawalNotAllowedExceptio
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutput;
+use Source\Identity\Domain\Exception\IdentityNameConfirmationMismatchException;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,10 +33,10 @@ readonly class WithdrawFromServiceAction
     ) {
     }
 
-    public function __invoke(): Response
+    public function __invoke(WithdrawFromServiceRequest $request): Response
     {
         try {
-            $input = new WithdrawFromServiceInput($this->actorContext->identityIdentifier);
+            $input = new WithdrawFromServiceInput($this->actorContext->identityIdentifier, $request->confirmationIdentityName());
             $output = new WithdrawFromServiceOutput();
             DB::transaction(function () use ($input, $output): void {
                 $this->withdrawFromService->process($input, $output);
@@ -42,6 +44,14 @@ readonly class WithdrawFromServiceAction
                     ServiceWithdrawalContext::markCommitted($this->request);
                 });
             });
+        } catch (IdentityNameConfirmationMismatchException $exception) {
+            $problem = new UnprocessableEntityHttpException(
+                detail: error_message('identity_name_confirmation_mismatch', $this->actorContext->language->value),
+                extensions: ['code' => 'identity_name_confirmation_mismatch'],
+                previous: $exception,
+            );
+
+            return response()->json($problem->toProblemDetails(), $problem->getHttpStatus());
         } catch (StepUpAuthenticationRequiredException $exception) {
             $problem = new UnauthorizedHttpException(
                 detail: error_message('recent_authentication_required', $this->actorContext->language->value),

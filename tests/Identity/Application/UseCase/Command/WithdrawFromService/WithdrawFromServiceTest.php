@@ -22,6 +22,7 @@ use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\ArchivedIdentityIdentifier;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\StepUpAuthentication;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
@@ -73,7 +74,7 @@ class WithdrawFromServiceTest extends TestCase
         $imageService->shouldNotReceive('delete');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
     }
 
     public function testArchivesBeforeDispatchAndDeletesAfterServiceCleanup(): void
@@ -87,6 +88,7 @@ class WithdrawFromServiceTest extends TestCase
         $actorContextService = Mockery::mock(ActorContextServiceInterface::class);
         $createdAt = new DateTimeImmutable('2020-01-01');
         $identity = Mockery::mock(Identity::class);
+        $identity->shouldReceive('identityName')->once()->andReturn(new IdentityName('test-identity'));
         $identity->shouldReceive('language')->once()->andReturn(Language::JAPANESE);
         $identity->shouldReceive('createdAt')->once()->andReturn($createdAt);
         $profileImage = new ImagePath('images/withdrawal.webp');
@@ -118,7 +120,7 @@ class WithdrawFromServiceTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('delete')->once()->with($profileImage)->andReturn(true)->globally()->ordered();
 
-        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
+        (new WithdrawFromService($authentication, $actorContextService, $events, $identitySessionService, $identityRepository, $archivedIdentityFactory, $archivedIdentityRepository, $imageService))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
 
         $this->addToAssertionCount(1);
     }

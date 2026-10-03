@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'recent_authentication_required' => '需要重新驗證身分。',
+    'identity_name_confirmation_mismatch' => '輸入的使用者名稱與目前使用者名稱不一致。',
     'identity_withdrawal_not_allowed' => '此使用者無法透過一般流程註銷。',
     'csrf_token_mismatch' => '請求驗證權杖無效或遺漏。',
     'agency_not_found' => '找不到指定事務所的草稿維基。',

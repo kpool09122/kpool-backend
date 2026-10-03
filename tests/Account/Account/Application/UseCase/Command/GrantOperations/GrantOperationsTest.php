@@ -7,7 +7,6 @@ namespace Tests\Account\Account\Application\UseCase\Command\GrantOperations;
 use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\Exception\EmailNotVerifiedException;
 use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperations;
 use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperationsInput;
 use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperationsInterface;
@@ -335,7 +334,7 @@ class GrantOperationsTest extends TestCase
         $useCase->process($input, $output);
     }
 
-    public function testThrowsEmailNotVerifiedException(): void
+    public function testGrantsOperationsWithoutEmailVerification(): void
     {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
@@ -360,15 +359,29 @@ class GrantOperationsTest extends TestCase
             null,
         );
         $identityRepository->shouldReceive('findByEmail')->once()->with($testData->email)->andReturn($identity);
-        $accountRepository->shouldNotReceive('findByEmail');
-        $principalGroupFactory->shouldNotReceive('create');
-        $principalGroupRepository->shouldNotReceive('save');
+        $accountRepository->shouldReceive('findByEmail')->once()
+            ->with($testData->email)->andReturn($testData->account);
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()
+            ->with($identity->identityIdentifier(), $testData->account->accountIdentifier())->andReturn($testData->principal);
+        $roleRepository->shouldReceive('findSystemByName')->once()
+            ->with(Role::OPERATIONS)->andReturn($testData->operationsRole);
+        $principalGroupRepository->shouldReceive('findByAccountIdAndRole')->once()
+            ->with($testData->account->accountIdentifier(), $testData->operationsRole->roleIdentifier())->andReturnNull();
+        $principalGroupFactory->shouldReceive('create')->once()
+            ->with($testData->account->accountIdentifier(), 'Operations', false)->andReturn($testData->principalGroup);
+        $principalGroupRepository->shouldReceive('save')->once()->with($testData->principalGroup);
 
-        $this->expectException(EmailNotVerifiedException::class);
         $input = new GrantOperationsInput($testData->email);
         $output = new GrantOperationsOutput();
         $useCase = $this->app()->make(GrantOperationsInterface::class);
         $useCase->process($input, $output);
+
+        $this->assertNull($identity->emailVerifiedAt());
+        $this->assertSame([$testData->operationsRole->roleIdentifier()], $testData->principalGroup->roles());
+        $this->assertSame(
+            [(string) $testData->principal->principalIdentifier() => $testData->principal->principalIdentifier()],
+            $testData->principalGroup->members(),
+        );
     }
 
     private function createTestData(): GrantOperationsTestData

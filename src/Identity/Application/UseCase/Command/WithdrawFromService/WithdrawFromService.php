@@ -8,6 +8,7 @@ use Source\Identity\Application\Service\ActorContextServiceInterface;
 use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
+use Source\Identity\Domain\Exception\IdentityNameConfirmationMismatchException;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
@@ -37,6 +38,9 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         $identity = $this->identityRepository->findById($identityIdentifier);
         if ($identity === null) {
             throw new IdentityNotFoundException();
+        }
+        if ((string) $identity->identityName() !== $input->confirmationIdentityName()) {
+            throw new IdentityNameConfirmationMismatchException();
         }
         $archivedIdentity = $this->archivedIdentityFactory->create(
             $identityIdentifier,
