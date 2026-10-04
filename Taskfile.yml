@@ -10,6 +10,11 @@ vars:
   PHP_EXEC: docker-compose exec php
 
 tasks:
+  infra:validate:
+    desc: Validate CloudFormation templates and foundation security contracts offline
+    cmds:
+      - bash scripts/cloudformation/validate.sh
+
   wait-for-db:
     desc: Wait for database to be ready
     cmds:

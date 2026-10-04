@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Kpool issue 668 foundation. Package nested templates before deployment.
+# Local nested paths are intentional: deployment must use cloudformation package.
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks: [W3002]
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: kpool-prod
+    AllowedPattern: '[a-z][a-z0-9-]{2,19}'
+    Description: Unique immutable name per environment in this account and region.
+  DeploymentRegion:
+    Type: String
+    Default: ap-northeast-1
+    AllowedValues: [ap-northeast-1]
+  DatabaseInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+    AllowedValues: [db.t4g.micro, db.t4g.small, db.t4g.medium]
+  DatabaseMultiAZ:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  DatabaseDeletionProtection:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+Rules:
+  TokyoOnly:
+    Assertions:
+      - Assert: !Equals [!Ref 'AWS::Region', !Ref DeploymentRegion]
+        AssertDescription: Deploy this foundation only in ap-northeast-1.
+Resources:
+  Network:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: network.yaml
+  Data:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: data.yaml
+      Parameters:
+        ResourcePrefix: !Ref ResourcePrefix
+        DataSubnetIds: !GetAtt Network.Outputs.DataSubnetIds
+        DatabaseSecurityGroupId: !GetAtt Network.Outputs.DatabaseSecurityGroupId
+        CacheSecurityGroupId: !GetAtt Network.Outputs.CacheSecurityGroupId
+        DatabaseInstanceClass: !Ref DatabaseInstanceClass
+        DatabaseMultiAZ: !Ref DatabaseMultiAZ
+        DatabaseDeletionProtection: !Ref DatabaseDeletionProtection
+  Storage:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: storage.yaml
+Outputs:
+  VpcId:
+    Value: !GetAtt Network.Outputs.VpcId
+  PublicSubnetIds:
+    Value: !GetAtt Network.Outputs.PublicSubnetIds
+  DataSubnetIds:
+    Value: !GetAtt Network.Outputs.DataSubnetIds
+  ApplicationSecurityGroupId:
+    Value: !GetAtt Network.Outputs.ApplicationSecurityGroupId
+  DatabaseSecurityGroupId:
+    Value: !GetAtt Network.Outputs.DatabaseSecurityGroupId
+  CacheSecurityGroupId:
+    Value: !GetAtt Network.Outputs.CacheSecurityGroupId
+  DatabaseEndpoint:
+    Value: !GetAtt Data.Outputs.DatabaseEndpoint
+  DatabasePort:
+    Value: !GetAtt Data.Outputs.DatabasePort
+  DatabaseName:
+    Value: !GetAtt Data.Outputs.DatabaseName
+  DatabaseSecretArn:
+    Value: !GetAtt Data.Outputs.DatabaseSecretArn
+  DatabaseIdentifier:
+    Value: !GetAtt Data.Outputs.DatabaseIdentifier
+  CacheEndpoint:
+    Value: !GetAtt Data.Outputs.CacheEndpoint
+  CachePort:
+    Value: !GetAtt Data.Outputs.CachePort
+  CacheArn:
+    Value: !GetAtt Data.Outputs.CacheArn
+  CacheUsername:
+    Value: !GetAtt Data.Outputs.CacheUsername
+  CacheSecretArn:
+    Value: !GetAtt Data.Outputs.CacheSecretArn
+  PublicImagesBucketName:
+    Value: !GetAtt Storage.Outputs.PublicImagesBucketName
+  PublicImagesBucketArn:
+    Value: !GetAtt Storage.Outputs.PublicImagesBucketArn
+  PrivateFilesBucketName:
+    Value: !GetAtt Storage.Outputs.PrivateFilesBucketName
+  PrivateFilesBucketArn:
+    Value: !GetAtt Storage.Outputs.PrivateFilesBucketArn
+  ImageDistributionId:
+    Value: !GetAtt Storage.Outputs.ImageDistributionId
+  ImageBaseUrl:
+    Value: !GetAtt Storage.Outputs.ImageBaseUrl
+  QueueUrl:
+    Value: !GetAtt Storage.Outputs.QueueUrl
+  QueueArn:
+    Value: !GetAtt Storage.Outputs.QueueArn
+  DeadLetterQueueUrl:
+    Value: !GetAtt Storage.Outputs.DeadLetterQueueUrl
+  DeadLetterQueueArn:
+    Value: !GetAtt Storage.Outputs.DeadLetterQueueArn
