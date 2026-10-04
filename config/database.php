@@ -61,11 +61,11 @@ return [
     */
 
     'redis' => [
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => 'phpredis',
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) config('app.name')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

@@ -9,13 +9,11 @@ use Sentry\EventHint;
 return [
     'dsn' => env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN')),
 
-    'environment' => env('SENTRY_ENVIRONMENT'),
+    'environment' => config('app.env'),
 
-    'traces_sample_rate' => env('SENTRY_TRACES_SAMPLE_RATE') === null
-        ? null
-        : (float) env('SENTRY_TRACES_SAMPLE_RATE'),
+    'traces_sample_rate' => 0.0,
 
-    'send_default_pii' => env('SENTRY_SEND_DEFAULT_PII', false),
+    'send_default_pii' => false,
 
     'before_send' => static function (Event $event, ?EventHint $hint): ?Event {
         $exception = $hint?->exception;

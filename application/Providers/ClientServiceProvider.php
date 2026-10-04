@@ -62,7 +62,7 @@ class ClientServiceProvider extends ServiceProvider
 
         $this->app->singleton(YouTubeClient::class, function (Application $app) {
             /** @var string $apiKey */
-            $apiKey = config('youtube.api_key', '');
+            $apiKey = (string) config('services.youtube.api_key', '');
 
             $httpFactory = new HttpFactory();
 
@@ -87,10 +87,10 @@ class ClientServiceProvider extends ServiceProvider
 
         $this->app->singleton(GeminiClient::class, function (Application $app) {
             /** @var string $apiKey */
-            $apiKey = config('google.gemini_api_key', '');
+            $apiKey = (string) config('google.gemini_api_key', '');
 
             /** @var string $model */
-            $model = config('google.gemini_model', 'gemini-2.0-flash');
+            $model = (string) (config('google.gemini_model') ?? GeminiClient::DEFAULT_MODEL);
 
             return new GeminiClient(
                 apiKey: $apiKey,
