@@ -1,0 +1,1885 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: kpool production ECS, ALB, release boundary and observability (ap-northeast-1).
+Parameters:
+  ProjectName:
+    Type: String
+    AllowedPattern: '[a-z][a-z0-9-]{2,23}'
+    Default: kpool-production
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  AppSecretArn:
+    Type: String
+  MigrationSecretArn:
+    Type: String
+  ImagesBucketArn:
+    Type: String
+  FilesBucketArn:
+    Type: String
+  QueueArn:
+    Type: String
+  ApiDomainName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9.-]+'
+  CertificateArn:
+    Type: String
+    Description: Existing ACM certificate in ap-northeast-1, or empty to create DNS-validated ACM certificate.
+    Default: ''
+  HostedZoneId:
+    Type: String
+    Description: Required when creating certificate. Public Route53 zone hosting ApiDomainName.
+    Default: ''
+  ApiPort:
+    Type: Number
+    MinValue: 1024
+    MaxValue: 65535
+    Default: 8080
+  HealthCheckPath:
+    Type: String
+    AllowedPattern: /.*
+    Default: /health
+  ApiCpu:
+    Type: String
+    AllowedValues:
+    - '512'
+    - '1024'
+    Default: '512'
+  ApiMemory:
+    Type: String
+    AllowedValues:
+    - '1024'
+    - '2048'
+    - '3072'
+    - '4096'
+    Default: '1024'
+  WorkerCpu:
+    Type: String
+    AllowedValues:
+    - '256'
+    - '512'
+    Default: '256'
+  WorkerMemory:
+    Type: String
+    AllowedValues:
+    - '512'
+    - '1024'
+    - '2048'
+    Default: '512'
+  ApiTaskDefinitionArn:
+    Type: String
+    Description: Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition.
+    Default: ''
+  WorkerTaskDefinitionArn:
+    Type: String
+    Description: Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition.
+    Default: ''
+  SchedulerTaskDefinitionArn:
+    Type: String
+    Description: Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition.
+    Default: ''
+  ApiDesiredCount:
+    Type: Number
+    MinValue: 0
+    MaxValue: 10
+    Default: 0
+  WorkerDesiredCount:
+    Type: Number
+    MinValue: 0
+    MaxValue: 10
+    Default: 0
+  SchedulerState:
+    Type: String
+    AllowedValues:
+    - DISABLED
+    - ENABLED
+    Default: DISABLED
+  ScheduleExpression:
+    Type: String
+    Default: rate(1 minute)
+  PrimaryTargetGroup:
+    Type: String
+    AllowedValues:
+    - Blue
+    - Green
+    Description: Current service primary target group; reconcile from ECS before infrastructure updates.
+    Default: Blue
+  ProductionTargetGroup:
+    Type: String
+    AllowedValues:
+    - Blue
+    - Green
+    Description: Current production rule target with weight 1 (other 0). Only update when deployment is stable.
+    Default: Blue
+  TestTargetGroup:
+    Type: String
+    AllowedValues:
+    - Blue
+    - Green
+    Description: Current test rule target with weight 1 (other 0).
+    Default: Green
+  HookArtifactBucket:
+    Type: String
+    Description: 'Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together.'
+    Default: ''
+  HookArtifactKey:
+    Type: String
+    Description: 'Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together.'
+    Default: ''
+  HookArtifactVersion:
+    Type: String
+    Description: 'Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together.'
+    Default: ''
+  ExternalCanaryAlarmName:
+    Type: String
+    Description: 'Existing ap-northeast-1 alarm: continuous HTTPS smoke test, 60s, missing data breaching. Required
+      before API activation.'
+    Default: ''
+  NotificationEmail:
+    Type: String
+    AllowedPattern: '[^@]+@[^@]+'
+  LogRetentionDays:
+    Type: Number
+    AllowedValues:
+    - 7
+    - 14
+    - 30
+    - 60
+    - 90
+    - 180
+    - 365
+    Default: 30
+  AlarmPeriod:
+    Type: Number
+    AllowedValues:
+    - 60
+    - 120
+    Default: 60
+  AlarmEvaluationPeriods:
+    Type: Number
+    MinValue: 1
+    MaxValue: 2
+    Default: 2
+  ErrorCountThreshold:
+    Type: Number
+    MinValue: 1
+    Default: 5
+  LatencyThresholdSeconds:
+    Type: Number
+    MinValue: 0.1
+    Default: 2
+  AlarmMissingData:
+    Type: String
+    AllowedValues:
+    - notBreaching
+    - breaching
+    - missing
+    Description: ALB emits sparse metrics; external continuous canary must detect no-traffic failures.
+    Default: notBreaching
+  AppSecretKmsKeyArn:
+    Type: String
+    Description: Optional customer KMS key for app secret only; empty for AWS-managed key.
+    Default: ''
+  MigrationSecretKmsKeyArn:
+    Type: String
+    Description: Optional customer KMS key for migration secret only.
+    Default: ''
+  ApplicationSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  DatabaseSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  CacheSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  CacheSecretArn:
+    Type: String
+    Description: Foundation password secret ARN, injected by the app execution role; never a literal password.
+Conditions:
+  HasApiRelease:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: ApiTaskDefinitionArn
+      - ''
+  HasWorkerRelease:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: WorkerTaskDefinitionArn
+      - ''
+  HasSchedulerRelease:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: SchedulerTaskDefinitionArn
+      - ''
+  CreateCertificate:
+    Fn::Equals:
+    - Ref: CertificateArn
+    - ''
+  HasHook:
+    Fn::And:
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: HookArtifactBucket
+        - ''
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: HookArtifactKey
+        - ''
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: HookArtifactVersion
+        - ''
+  HasCanary:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: ExternalCanaryAlarmName
+      - ''
+  PrimaryBlue:
+    Fn::Equals:
+    - Ref: PrimaryTargetGroup
+    - Blue
+  ProductionBlue:
+    Fn::Equals:
+    - Ref: ProductionTargetGroup
+    - Blue
+  TestBlue:
+    Fn::Equals:
+    - Ref: TestTargetGroup
+    - Blue
+  HasAppKms:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: AppSecretKmsKeyArn
+      - ''
+  HasMigrationKms:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: MigrationSecretKmsKeyArn
+      - ''
+Rules:
+  TokyoOnly:
+    Assertions:
+    - Assert:
+        Fn::Equals:
+        - Ref: AWS::Region
+        - ap-northeast-1
+      AssertDescription: Deploy in ap-northeast-1 only.
+  CertificateInput:
+    RuleCondition:
+      Fn::Equals:
+      - Ref: CertificateArn
+      - ''
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: HostedZoneId
+          - ''
+      AssertDescription: Certificate creation requires a public Route53 hosted zone.
+  ApiActivation:
+    RuleCondition:
+      Fn::Not:
+      - Fn::Equals:
+        - Ref: ApiDesiredCount
+        - '0'
+    Assertions:
+    - Assert:
+        Fn::And:
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: ApiTaskDefinitionArn
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactBucket
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactKey
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactVersion
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: ExternalCanaryAlarmName
+            - ''
+      AssertDescription: Positive desired count requires a release revision and API deployment verification contracts.
+  WorkerActivation:
+    RuleCondition:
+      Fn::Not:
+      - Fn::Equals:
+        - Ref: WorkerDesiredCount
+        - '0'
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: WorkerTaskDefinitionArn
+          - ''
+      AssertDescription: Positive desired count requires a release revision and API deployment verification contracts.
+  HookArtifactComplete:
+    RuleCondition:
+      Fn::Or:
+      - Fn::Not:
+        - Fn::Equals:
+          - Ref: HookArtifactBucket
+          - ''
+      - Fn::Not:
+        - Fn::Equals:
+          - Ref: HookArtifactKey
+          - ''
+      - Fn::Not:
+        - Fn::Equals:
+          - Ref: HookArtifactVersion
+          - ''
+    Assertions:
+    - Assert:
+        Fn::And:
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactBucket
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactKey
+            - ''
+        - Fn::Not:
+          - Fn::Equals:
+            - Ref: HookArtifactVersion
+            - ''
+      AssertDescription: Supply bucket, key and immutable object version together.
+  SchedulerActivation:
+    RuleCondition:
+      Fn::Equals:
+      - Ref: SchedulerState
+      - ENABLED
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: SchedulerTaskDefinitionArn
+          - ''
+      AssertDescription: Enable only with an approved scheduler release task definition.
+  ApiSize:
+    RuleCondition:
+      Fn::Equals:
+      - Ref: ApiCpu
+      - '1024'
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: ApiMemory
+          - '1024'
+      AssertDescription: 1024 CPU requires at least 2048 MiB.
+  WorkerSize:
+    RuleCondition:
+      Fn::Equals:
+      - Ref: WorkerCpu
+      - '512'
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: WorkerMemory
+          - '512'
+      AssertDescription: 512 CPU requires at least 1024 MiB.
+Resources:
+  Repository:
+    Type: AWS::ECR::Repository
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      RepositoryName:
+        Ref: ProjectName
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      LifecyclePolicy:
+        LifecyclePolicyText: '{"rules":[{"rulePriority":1,"description":"Expire untagged images after 14 days; keep
+          tagged release digests for explicit retirement","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":14},"action":{"type":"expire"}}]}'
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName:
+        Ref: ProjectName
+      ClusterSettings:
+      - Name: containerInsights
+        Value: enabled
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName:
+        Fn::Sub: /kpool/${ProjectName}/api
+      RetentionInDays:
+        Ref: LogRetentionDays
+  WorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName:
+        Fn::Sub: /kpool/${ProjectName}/worker
+      RetentionInDays:
+        Ref: LogRetentionDays
+  MigrationLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName:
+        Fn::Sub: /kpool/${ProjectName}/migration
+      RetentionInDays:
+        Ref: LogRetentionDays
+  SchedulerLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName:
+        Fn::Sub: /kpool/${ProjectName}/scheduler
+      RetentionInDays:
+        Ref: LogRetentionDays
+  HookLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName:
+        Fn::Sub: /kpool/${ProjectName}/hook
+      RetentionInDays:
+        Ref: LogRetentionDays
+  AppExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-app-execution
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecr:GetAuthorizationToken
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - ecr:BatchCheckLayerAvailability
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            Resource:
+              Fn::GetAtt:
+              - Repository
+              - Arn
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - Fn::GetAtt:
+              - ApiLogGroup
+              - Arn
+            - Fn::GetAtt:
+              - WorkerLogGroup
+              - Arn
+            - Fn::GetAtt:
+              - SchedulerLogGroup
+              - Arn
+          - Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Ref: AppSecretArn
+          - Fn::If:
+            - HasAppKms
+            - Effect: Allow
+              Action:
+              - kms:Decrypt
+              Resource:
+                Ref: AppSecretKmsKeyArn
+              Condition:
+                StringEquals:
+                  kms:ViaService:
+                    Fn::Sub: secretsmanager.${AWS::Region}.amazonaws.com
+            - Ref: AWS::NoValue
+          - Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Ref: CacheSecretArn
+  MigrationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-migration-execution
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecr:GetAuthorizationToken
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - ecr:BatchCheckLayerAvailability
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            Resource:
+              Fn::GetAtt:
+              - Repository
+              - Arn
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - Fn::GetAtt:
+              - MigrationLogGroup
+              - Arn
+          - Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Ref: MigrationSecretArn
+          - Fn::If:
+            - HasMigrationKms
+            - Effect: Allow
+              Action:
+              - kms:Decrypt
+              Resource:
+                Ref: MigrationSecretKmsKeyArn
+              Condition:
+                StringEquals:
+                  kms:ViaService:
+                    Fn::Sub: secretsmanager.${AWS::Region}.amazonaws.com
+            - Ref: AWS::NoValue
+  ApiTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-api-task
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: ImagesBucketArn
+                - /images/*
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: FilesBucketArn
+                - /verification-documents/*
+          - Effect: Allow
+            Action:
+            - sqs:SendMessage
+            - sqs:GetQueueAttributes
+            - sqs:GetQueueUrl
+            Resource:
+              Ref: QueueArn
+  WorkerTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-worker-task
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: ImagesBucketArn
+                - /images/*
+          - Effect: Allow
+            Action:
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:ChangeMessageVisibility
+            - sqs:GetQueueAttributes
+            - sqs:GetQueueUrl
+            Resource:
+              Ref: QueueArn
+  MigrationTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-migration-task
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+  ApiBootstrapTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family:
+        Fn::Sub: ${ProjectName}-api-bootstrap
+      Cpu:
+        Ref: ApiCpu
+      Memory:
+        Ref: ApiMemory
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      ExecutionRoleArn:
+        Fn::GetAtt:
+        - AppExecutionRole
+        - Arn
+      TaskRoleArn:
+        Fn::GetAtt:
+        - ApiTaskRole
+        - Arn
+      ContainerDefinitions:
+      - Name: api
+        Image:
+          Fn::Sub: ${Repository.RepositoryUri}:bootstrap-unpublished
+        Essential: true
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: ApiLogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: api
+        StopTimeout: 120
+        ReadonlyRootFilesystem: true
+        PortMappings:
+        - ContainerPort:
+            Ref: ApiPort
+          Protocol: tcp
+  WorkerBootstrapTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family:
+        Fn::Sub: ${ProjectName}-worker-bootstrap
+      Cpu:
+        Ref: WorkerCpu
+      Memory:
+        Ref: WorkerMemory
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      ExecutionRoleArn:
+        Fn::GetAtt:
+        - AppExecutionRole
+        - Arn
+      TaskRoleArn:
+        Fn::GetAtt:
+        - WorkerTaskRole
+        - Arn
+      ContainerDefinitions:
+      - Name: worker
+        Image:
+          Fn::Sub: ${Repository.RepositoryUri}:bootstrap-unpublished
+        Essential: true
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: WorkerLogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: worker
+        StopTimeout: 120
+        ReadonlyRootFilesystem: true
+        Command:
+        - php
+        - artisan
+        - queue:work
+        - sqs
+        - --timeout=90
+        - --tries=3
+  MigrationBootstrapTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family:
+        Fn::Sub: ${ProjectName}-migration-bootstrap
+      Cpu:
+        Ref: WorkerCpu
+      Memory:
+        Ref: WorkerMemory
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      ExecutionRoleArn:
+        Fn::GetAtt:
+        - MigrationExecutionRole
+        - Arn
+      TaskRoleArn:
+        Fn::GetAtt:
+        - MigrationTaskRole
+        - Arn
+      ContainerDefinitions:
+      - Name: migration
+        Image:
+          Fn::Sub: ${Repository.RepositoryUri}:bootstrap-unpublished
+        Essential: true
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: MigrationLogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: migration
+        StopTimeout: 120
+        ReadonlyRootFilesystem: true
+        Command:
+        - php
+        - artisan
+        - migrate
+        - --force
+  SchedulerBootstrapTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family:
+        Fn::Sub: ${ProjectName}-scheduler-bootstrap
+      Cpu:
+        Ref: WorkerCpu
+      Memory:
+        Ref: WorkerMemory
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      ExecutionRoleArn:
+        Fn::GetAtt:
+        - AppExecutionRole
+        - Arn
+      TaskRoleArn:
+        Fn::GetAtt:
+        - WorkerTaskRole
+        - Arn
+      ContainerDefinitions:
+      - Name: scheduler
+        Image:
+          Fn::Sub: ${Repository.RepositoryUri}:bootstrap-unpublished
+        Essential: true
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: SchedulerLogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: scheduler
+        StopTimeout: 120
+        ReadonlyRootFilesystem: true
+        Command:
+        - php
+        - artisan
+        - schedule:run
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: CreateCertificate
+    Properties:
+      DomainName:
+        Ref: ApiDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+      - DomainName:
+          Ref: ApiDomainName
+        HostedZoneId:
+          Ref: HostedZoneId
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets:
+        Ref: PublicSubnetIds
+      SecurityGroups:
+      - Ref: AlbSecurityGroup
+      LoadBalancerAttributes:
+      - Key: deletion_protection.enabled
+        Value: 'true'
+      - Key: routing.http.drop_invalid_header_fields.enabled
+        Value: 'true'
+  BlueTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port:
+        Ref: ApiPort
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Ref: VpcId
+      HealthCheckPath:
+        Ref: HealthCheckPath
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '60'
+  GreenTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port:
+        Ref: ApiPort
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Ref: VpcId
+      HealthCheckPath:
+        Ref: HealthCheckPath
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '60'
+  ProductionListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      Certificates:
+      - CertificateArn:
+          Fn::If:
+          - CreateCertificate
+          - Ref: Certificate
+          - Ref: CertificateArn
+      DefaultActions:
+      - Type: fixed-response
+        FixedResponseConfig:
+          StatusCode: '403'
+          ContentType: text/plain
+          MessageBody: Forbidden
+  ProductionRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn:
+        Ref: ProductionListener
+      Priority: 10
+      Conditions:
+      - Field: host-header
+        HostHeaderConfig:
+          Values:
+          - Ref: ApiDomainName
+      Actions:
+      - Type: forward
+        ForwardConfig:
+          TargetGroups:
+          - TargetGroupArn:
+              Ref: BlueTargetGroup
+            Weight:
+              Fn::If:
+              - ProductionBlue
+              - 1
+              - 0
+          - TargetGroupArn:
+              Ref: GreenTargetGroup
+            Weight:
+              Fn::If:
+              - ProductionBlue
+              - 0
+              - 1
+  TestListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 8443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      Certificates:
+      - CertificateArn:
+          Fn::If:
+          - CreateCertificate
+          - Ref: Certificate
+          - Ref: CertificateArn
+      DefaultActions:
+      - Type: fixed-response
+        FixedResponseConfig:
+          StatusCode: '403'
+          ContentType: text/plain
+          MessageBody: Forbidden
+  TestRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn:
+        Ref: TestListener
+      Priority: 10
+      Conditions:
+      - Field: host-header
+        HostHeaderConfig:
+          Values:
+          - Ref: ApiDomainName
+      Actions:
+      - Type: forward
+        ForwardConfig:
+          TargetGroups:
+          - TargetGroupArn:
+              Ref: BlueTargetGroup
+            Weight:
+              Fn::If:
+              - TestBlue
+              - 1
+              - 0
+          - TargetGroupArn:
+              Ref: GreenTargetGroup
+            Weight:
+              Fn::If:
+              - TestBlue
+              - 0
+              - 1
+  AlbInfrastructureRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-alb-infrastructure
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - elasticloadbalancing:DescribeListeners
+            - elasticloadbalancing:DescribeRules
+            - elasticloadbalancing:DescribeTargetGroups
+            - elasticloadbalancing:DescribeTargetHealth
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - elasticloadbalancing:ModifyRule
+            Resource:
+            - Ref: ProductionRule
+            - Ref: TestRule
+          - Effect: Allow
+            Action:
+            - elasticloadbalancing:RegisterTargets
+            - elasticloadbalancing:DeregisterTargets
+            Resource:
+            - Ref: BlueTargetGroup
+            - Ref: GreenTargetGroup
+  HookExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-hook-execution
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+              Fn::GetAtt:
+              - HookLogGroup
+              - Arn
+          - Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DescribeSubnets
+            - ec2:DeleteNetworkInterface
+            - ec2:AssignPrivateIpAddresses
+            - ec2:UnassignPrivateIpAddresses
+            Resource: '*'
+    Condition: HasHook
+  LifecycleHook:
+    Type: AWS::Lambda::Function
+    Condition: HasHook
+    Properties:
+      FunctionName:
+        Fn::Sub: ${ProjectName}-deployment-hook
+      Runtime: python3.13
+      Architectures:
+      - arm64
+      Handler: handler.handler
+      Role:
+        Fn::GetAtt:
+        - HookExecutionRole
+        - Arn
+      Timeout: 120
+      MemorySize: 256
+      Code:
+        S3Bucket:
+          Ref: HookArtifactBucket
+        S3Key:
+          Ref: HookArtifactKey
+        S3ObjectVersion:
+          Ref: HookArtifactVersion
+      VpcConfig:
+        SubnetIds:
+          Ref: PrivateSubnetIds
+        SecurityGroupIds:
+        - Ref: HookSecurityGroup
+      LoggingConfig:
+        LogGroup:
+          Ref: HookLogGroup
+      Environment:
+        Variables:
+          ALB_ARN:
+            Ref: LoadBalancer
+          ALB_DNS_NAME:
+            Fn::GetAtt:
+            - LoadBalancer
+            - DNSName
+          API_HOST:
+            Ref: ApiDomainName
+          TEST_PORT: '8443'
+          HEALTH_PATH:
+            Ref: HealthCheckPath
+          VPC_ID:
+            Ref: VpcId
+  HookInvocationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-hook-invocation
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource:
+              Fn::GetAtt:
+              - LifecycleHook
+              - Arn
+    Condition: HasHook
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName:
+        Fn::Sub: ${ProjectName}-runtime-alarms
+      Subscription:
+      - Protocol: email
+        Endpoint:
+          Ref: NotificationEmail
+  ServerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      Namespace: AWS/ApplicationELB
+      MetricName: HTTPCode_Target_5XX_Count
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          Fn::GetAtt:
+          - LoadBalancer
+          - LoadBalancerFullName
+      Statistic: Sum
+      Period:
+        Ref: AlarmPeriod
+      EvaluationPeriods:
+        Ref: AlarmEvaluationPeriods
+      Threshold:
+        Ref: ErrorCountThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData:
+        Ref: AlarmMissingData
+      AlarmActions:
+      - Ref: AlarmTopic
+  LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      Namespace: AWS/ApplicationELB
+      MetricName: TargetResponseTime
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          Fn::GetAtt:
+          - LoadBalancer
+          - LoadBalancerFullName
+      Statistic: Average
+      Period:
+        Ref: AlarmPeriod
+      EvaluationPeriods:
+        Ref: AlarmEvaluationPeriods
+      Threshold:
+        Ref: LatencyThresholdSeconds
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData:
+        Ref: AlarmMissingData
+      AlarmActions:
+      - Ref: AlarmTopic
+  ApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName:
+        Fn::Sub: ${ProjectName}-api
+      Cluster:
+        Ref: Cluster
+      LaunchType: FARGATE
+      PlatformVersion: 1.4.0
+      DesiredCount:
+        Ref: ApiDesiredCount
+      EnableExecuteCommand: false
+      DeploymentController:
+        Type: ECS
+      DeploymentConfiguration:
+        Strategy: BLUE_GREEN
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+        BakeTimeInMinutes: 5
+        Alarms:
+          Enable: true
+          Rollback: true
+          AlarmNames:
+          - Ref: ServerErrorAlarm
+          - Ref: LatencyAlarm
+          - Fn::If:
+            - HasCanary
+            - Ref: ExternalCanaryAlarmName
+            - Ref: AWS::NoValue
+        LifecycleHooks:
+          Fn::If:
+          - HasHook
+          - - HookTargetArn:
+                Fn::GetAtt:
+                - LifecycleHook
+                - Arn
+              RoleArn:
+                Fn::GetAtt:
+                - HookInvocationRole
+                - Arn
+              LifecycleStages:
+              - POST_TEST_TRAFFIC_SHIFT
+              HookDetails:
+                contractVersion: '1'
+                expectedHost:
+                  Ref: ApiDomainName
+                testPort: 8443
+                healthPath:
+                  Ref: HealthCheckPath
+          - Ref: AWS::NoValue
+      TaskDefinition:
+        Fn::If:
+        - HasApiRelease
+        - Ref: ApiTaskDefinitionArn
+        - Ref: ApiBootstrapTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            Ref: PublicSubnetIds
+          SecurityGroups:
+          - Ref: ApiSecurityGroup
+      EnableECSManagedTags: true
+      PropagateTags: SERVICE
+      HealthCheckGracePeriodSeconds: 60
+      LoadBalancers:
+      - ContainerName: api
+        ContainerPort:
+          Ref: ApiPort
+        TargetGroupArn:
+          Fn::If:
+          - PrimaryBlue
+          - Ref: BlueTargetGroup
+          - Ref: GreenTargetGroup
+        AdvancedConfiguration:
+          AlternateTargetGroupArn:
+            Fn::If:
+            - PrimaryBlue
+            - Ref: GreenTargetGroup
+            - Ref: BlueTargetGroup
+          ProductionListenerRule:
+            Ref: ProductionRule
+          TestListenerRule:
+            Ref: TestRule
+          RoleArn:
+            Fn::GetAtt:
+            - AlbInfrastructureRole
+            - Arn
+  WorkerService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName:
+        Fn::Sub: ${ProjectName}-worker
+      Cluster:
+        Ref: Cluster
+      LaunchType: FARGATE
+      PlatformVersion: 1.4.0
+      DesiredCount:
+        Ref: WorkerDesiredCount
+      EnableExecuteCommand: false
+      DeploymentController:
+        Type: ECS
+      DeploymentConfiguration:
+        Strategy: ROLLING
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      TaskDefinition:
+        Fn::If:
+        - HasWorkerRelease
+        - Ref: WorkerTaskDefinitionArn
+        - Ref: WorkerBootstrapTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            Ref: PublicSubnetIds
+          SecurityGroups:
+          - Ref: ApplicationSecurityGroupId
+      EnableECSManagedTags: true
+      PropagateTags: SERVICE
+  SchedulerDlq:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      MessageRetentionPeriod: 1209600
+      SqsManagedSseEnabled: true
+  ScheduleGroup:
+    Type: AWS::Scheduler::ScheduleGroup
+    Properties:
+      Name:
+        Ref: ProjectName
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: ${ProjectName}-scheduler
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: scheduler.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnEquals:
+              aws:SourceArn:
+                Fn::GetAtt:
+                - ScheduleGroup
+                - Arn
+      Policies:
+      - PolicyName: ScopedAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecs:RunTask
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${ProjectName}-scheduler-release:*
+            Condition:
+              ArnEquals:
+                ecs:cluster:
+                  Fn::GetAtt:
+                  - Cluster
+                  - Arn
+          - Effect: Allow
+            Action:
+            - iam:PassRole
+            Resource:
+            - Fn::GetAtt:
+              - AppExecutionRole
+              - Arn
+            - Fn::GetAtt:
+              - WorkerTaskRole
+              - Arn
+            Condition:
+              StringEquals:
+                iam:PassedToService: ecs-tasks.amazonaws.com
+          - Effect: Allow
+            Action:
+            - sqs:SendMessage
+            Resource:
+              Fn::GetAtt:
+              - SchedulerDlq
+              - Arn
+  Schedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      GroupName:
+        Ref: ScheduleGroup
+      State:
+        Ref: SchedulerState
+      ScheduleExpression:
+        Ref: ScheduleExpression
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn:
+          Fn::GetAtt:
+          - Cluster
+          - Arn
+        RoleArn:
+          Fn::GetAtt:
+          - SchedulerRole
+          - Arn
+        EcsParameters:
+          TaskDefinitionArn:
+            Fn::If:
+            - HasSchedulerRelease
+            - Ref: SchedulerTaskDefinitionArn
+            - Ref: SchedulerBootstrapTaskDefinition
+          TaskCount: 1
+          LaunchType: FARGATE
+          PlatformVersion: 1.4.0
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets:
+                Ref: PublicSubnetIds
+              SecurityGroups:
+              - Ref: ApplicationSecurityGroupId
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 60
+          MaximumRetryAttempts: 0
+        DeadLetterConfig:
+          Arn:
+            Fn::GetAtt:
+            - SchedulerDlq
+            - Arn
+  SchedulerDlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+      - Name: QueueName
+        Value:
+          Fn::GetAtt:
+          - SchedulerDlq
+          - QueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+      - Ref: AlarmTopic
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public HTTPS; test listener only from lifecycle hook
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort:
+          Ref: ApiPort
+        ToPort:
+          Ref: ApiPort
+        CidrIp: 127.0.0.1/32
+  ApiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: API from ALB only; HTTPS egress for AWS and external APIs
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort:
+          Ref: ApiPort
+        ToPort:
+          Ref: ApiPort
+        SourceSecurityGroupId:
+          Ref: AlbSecurityGroup
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 5432
+        ToPort: 5432
+        DestinationSecurityGroupId:
+          Ref: DatabaseSecurityGroupId
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6380
+        DestinationSecurityGroupId:
+          Ref: CacheSecurityGroupId
+  MigrationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Migration has no inbound listeners
+      VpcId:
+        Ref: VpcId
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 5432
+        ToPort: 5432
+        DestinationSecurityGroupId:
+          Ref: DatabaseSecurityGroupId
+  HookSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Private lifecycle Lambda can reach ALB test listener only
+      VpcId:
+        Ref: VpcId
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        DestinationSecurityGroupId:
+          Ref: AlbSecurityGroup
+  EndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EC2 endpoint for lifecycle hook ALB private address discovery
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        SourceSecurityGroupId:
+          Ref: HookSecurityGroup
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 1
+        ToPort: 1
+        CidrIp: 127.0.0.1/32
+  Ec2Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId:
+        Ref: VpcId
+      VpcEndpointType: Interface
+      ServiceName:
+        Fn::Sub: com.amazonaws.${AWS::Region}.ec2
+      PrivateDnsEnabled: true
+      SubnetIds:
+        Ref: PrivateSubnetIds
+      SecurityGroupIds:
+      - Ref: EndpointSecurityGroup
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: '*'
+          Action: ec2:DescribeNetworkInterfaces
+          Resource: '*'
+          Condition:
+            ArnEquals:
+              aws:PrincipalArn:
+                Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-execution
+  TestListenerIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: AlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 8443
+      ToPort: 8443
+      SourceSecurityGroupId:
+        Ref: HookSecurityGroup
+  AlbApiEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: AlbSecurityGroup
+      IpProtocol: tcp
+      FromPort:
+        Ref: ApiPort
+      ToPort:
+        Ref: ApiPort
+      DestinationSecurityGroupId:
+        Ref: ApiSecurityGroup
+  ApiDatabaseIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: DatabaseSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId:
+        Ref: ApiSecurityGroup
+  MigrationDatabaseIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: DatabaseSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId:
+        Ref: MigrationSecurityGroup
+  ApiCacheIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: CacheSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 6379
+      ToPort: 6380
+      SourceSecurityGroupId:
+        Ref: ApiSecurityGroup
+  HookEndpointEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: HookSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      DestinationSecurityGroupId:
+        Ref: EndpointSecurityGroup
+Outputs:
+  RepositoryUri:
+    Value:
+      Fn::GetAtt:
+      - Repository
+      - RepositoryUri
+  RepositoryArn:
+    Value:
+      Fn::GetAtt:
+      - Repository
+      - Arn
+  ClusterArn:
+    Value:
+      Fn::GetAtt:
+      - Cluster
+      - Arn
+  ClusterName:
+    Value:
+      Ref: Cluster
+  ApiServiceName:
+    Value:
+      Fn::GetAtt:
+      - ApiService
+      - Name
+  WorkerServiceName:
+    Value:
+      Fn::GetAtt:
+      - WorkerService
+      - Name
+  ApiServiceArn:
+    Value:
+      Ref: ApiService
+  WorkerServiceArn:
+    Value:
+      Ref: WorkerService
+  LoadBalancerArn:
+    Value:
+      Ref: LoadBalancer
+  LoadBalancerDnsName:
+    Value:
+      Fn::GetAtt:
+      - LoadBalancer
+      - DNSName
+  LoadBalancerHostedZoneId:
+    Value:
+      Fn::GetAtt:
+      - LoadBalancer
+      - CanonicalHostedZoneID
+  ProductionRuleArn:
+    Value:
+      Ref: ProductionRule
+  TestRuleArn:
+    Value:
+      Ref: TestRule
+  BlueTargetGroupArn:
+    Value:
+      Ref: BlueTargetGroup
+  GreenTargetGroupArn:
+    Value:
+      Ref: GreenTargetGroup
+  ProductionListenerArn:
+    Value:
+      Ref: ProductionListener
+  TestListenerArn:
+    Value:
+      Ref: TestListener
+  CertificateArn:
+    Value:
+      Fn::If:
+      - CreateCertificate
+      - Ref: Certificate
+      - Ref: CertificateArn
+  ApiUrl:
+    Value:
+      Fn::Sub: https://${ApiDomainName}
+  AlarmTopicArn:
+    Value:
+      Ref: AlarmTopic
+  SchedulerArn:
+    Value:
+      Fn::GetAtt:
+      - Schedule
+      - Arn
+  SchedulerDlqUrl:
+    Value:
+      Ref: SchedulerDlq
+  ApiTaskRoleArn:
+    Value:
+      Fn::GetAtt:
+      - ApiTaskRole
+      - Arn
+  WorkerTaskRoleArn:
+    Value:
+      Fn::GetAtt:
+      - WorkerTaskRole
+      - Arn
+  MigrationTaskRoleArn:
+    Value:
+      Fn::GetAtt:
+      - MigrationTaskRole
+      - Arn
+  AppExecutionRoleArn:
+    Value:
+      Fn::GetAtt:
+      - AppExecutionRole
+      - Arn
+  MigrationExecutionRoleArn:
+    Value:
+      Fn::GetAtt:
+      - MigrationExecutionRole
+      - Arn
+  AlbInfrastructureRoleArn:
+    Value:
+      Fn::GetAtt:
+      - AlbInfrastructureRole
+      - Arn
+  SchedulerRoleArn:
+    Value:
+      Fn::GetAtt:
+      - SchedulerRole
+      - Arn
+  HookInvocationRoleArn:
+    Value:
+      Fn::GetAtt:
+      - HookInvocationRole
+      - Arn
+    Condition: HasHook
+  HookExecutionRoleArn:
+    Value:
+      Fn::GetAtt:
+      - HookExecutionRole
+      - Arn
+    Condition: HasHook
+  LifecycleHookArn:
+    Value:
+      Fn::GetAtt:
+      - LifecycleHook
+      - Arn
+    Condition: HasHook
+  ApiBootstrapTaskDefinitionArn:
+    Value:
+      Ref: ApiBootstrapTaskDefinition
+  WorkerBootstrapTaskDefinitionArn:
+    Value:
+      Ref: WorkerBootstrapTaskDefinition
+  MigrationBootstrapTaskDefinitionArn:
+    Value:
+      Ref: MigrationBootstrapTaskDefinition
+  SchedulerBootstrapTaskDefinitionArn:
+    Value:
+      Ref: SchedulerBootstrapTaskDefinition
+  ApiReleaseFamily:
+    Value:
+      Fn::Sub: ${ProjectName}-api-release
+  WorkerReleaseFamily:
+    Value:
+      Fn::Sub: ${ProjectName}-worker-release
+  MigrationReleaseFamily:
+    Value:
+      Fn::Sub: ${ProjectName}-migration-release
+  SchedulerReleaseFamily:
+    Value:
+      Fn::Sub: ${ProjectName}-scheduler-release
+  ApiLogGroupName:
+    Value:
+      Ref: ApiLogGroup
+  WorkerLogGroupName:
+    Value:
+      Ref: WorkerLogGroup
+  MigrationLogGroupName:
+    Value:
+      Ref: MigrationLogGroup
+  SchedulerLogGroupName:
+    Value:
+      Ref: SchedulerLogGroup
+  HookLogGroupName:
+    Value:
+      Ref: HookLogGroup
+  ServerErrorAlarmName:
+    Value:
+      Ref: ServerErrorAlarm
+  LatencyAlarmName:
+    Value:
+      Ref: LatencyAlarm
+  SchedulerDlqAlarmName:
+    Value:
+      Ref: SchedulerDlqAlarm
+  ContainerNames:
+    Value: api,worker,migration,scheduler
+  MigrationSecurityGroupId:
+    Value:
+      Ref: MigrationSecurityGroup
+  ExternalCanaryAlarmName:
+    Value:
+      Ref: ExternalCanaryAlarmName
+  ApiSecurityGroupId:
+    Value:
+      Ref: ApiSecurityGroup
+  WorkerSecurityGroupId:
+    Value:
+      Ref: ApplicationSecurityGroupId
+  AlbSecurityGroupId:
+    Value:
+      Ref: AlbSecurityGroup
+  HookSecurityGroupId:
+    Value:
+      Ref: HookSecurityGroup

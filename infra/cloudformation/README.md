@@ -74,6 +74,8 @@ Task がない場合は `PATH=/tmp/kpool-cfn313/bin:$PATH bash scripts/cloudform
 
 root stack 名は、生成される子スタック名・OAC 名・SQS 名の長さ制限に収まるよう **20 文字以内**にします。
 
+先に bootstrap を管理者本人の権限で適用し、Output `CloudFormationExecutionRoleArn` の実値を `CFN_EXECUTION_ROLE_ARN` に設定します。root の Change Set はその実行ロールを指定し、`--include-nested-stacks` で子スタックもレビュー対象に含めます。
+
 ```bash
 export AWS_REGION=ap-northeast-1
 STACK_NAME=kpool-prod-base
@@ -89,6 +91,7 @@ aws cloudformation package \
 aws cloudformation create-change-set \
   --stack-name "$STACK_NAME" --change-set-name "$CHANGE_SET" \
   --change-set-type CREATE --include-nested-stacks \
+  --role-arn "$CFN_EXECUTION_ROLE_ARN" \
   --template-body file://build/cloudformation/packaged.yaml \
   --parameters file://infra/cloudformation/parameters.production.json
 
@@ -152,3 +155,7 @@ SQS は standard queue で重複・順序入替があり得ます。consumer の
 - [Serverless の TLS](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/in-transit-encryption.html)
 - [Valkey user group と既定ユーザーの無効化](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Clusters.RBAC.html)
 - [CloudFront ViewerCertificate / ACM と TLS ポリシー](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudfront-distribution-viewercertificate.html)
+
+## ECS / OIDC の追加スタック (#673)
+
+[本番運用・配備契約](../../doc/infrastructure/operations.md) を参照。root の Network / Data / Storage を一度だけ適用し、その Outputs を integration / runtime に渡す。子テンプレートを別スタックで重複作成しない。PostgreSQL は major 16 を維持し、cfn-lint 1.47.0 の検証に合わせて minor 16.13 を明示している。適用前に東京の提供 minor と既存 DB の実 version を確認し、downgrade しない。

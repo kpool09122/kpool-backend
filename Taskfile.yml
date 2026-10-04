@@ -11,7 +11,7 @@ vars:
 
 tasks:
   infra:validate:
-    desc: Validate CloudFormation templates and foundation security contracts offline
+    desc: Validate all CloudFormation templates and foundation/runtime security contracts offline
     cmds:
       - bash scripts/cloudformation/validate.sh
 
@@ -205,3 +205,23 @@ tasks:
     desc: Show available tasks
     cmds:
       - task --list
+
+  cfn:install:
+    desc: Install pinned CloudFormation validator (CFN_PYTHON=python3.13, CFN_VENV=/tmp/kpool-cfn-tools)
+    cmds:
+      - bash scripts/cloudformation/run.sh install
+
+  cfn:lint:
+    desc: Validate CloudFormation against ap-northeast-1 schemas without AWS credentials
+    cmds:
+      - bash scripts/cloudformation/run.sh lint
+
+  cfn:test:
+    desc: Check CloudFormation security, bootstrap, and cross-stack contracts offline
+    cmds:
+      - bash scripts/cloudformation/run.sh test
+
+  cfn:check:
+    desc: Run all CloudFormation static checks without AWS credentials
+    cmds:
+      - bash scripts/cloudformation/run.sh check

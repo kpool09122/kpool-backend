@@ -1,0 +1,182 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "kpool-production"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-0123456789abcdef0"
+  },
+  {
+    "ParameterKey": "PublicSubnetIds",
+    "ParameterValue": "subnet-0123456789abcdef0,subnet-0123456789abcdef1"
+  },
+  {
+    "ParameterKey": "PrivateSubnetIds",
+    "ParameterValue": "subnet-0123456789abcdef2,subnet-0123456789abcdef3"
+  },
+  {
+    "ParameterKey": "AppSecretArn",
+    "ParameterValue": "arn:aws:secretsmanager:ap-northeast-1:123456789012:secret:kpool-production/application-EXAMPL"
+  },
+  {
+    "ParameterKey": "MigrationSecretArn",
+    "ParameterValue": "arn:aws:secretsmanager:ap-northeast-1:123456789012:secret:kpool-production/migration-EXAMPL"
+  },
+  {
+    "ParameterKey": "ImagesBucketArn",
+    "ParameterValue": "arn:aws:s3:::kpool-production-123456789012-ap-northeast-1-images"
+  },
+  {
+    "ParameterKey": "FilesBucketArn",
+    "ParameterValue": "arn:aws:s3:::kpool-production-123456789012-ap-northeast-1-files"
+  },
+  {
+    "ParameterKey": "QueueArn",
+    "ParameterValue": "arn:aws:sqs:ap-northeast-1:123456789012:kpool-production-jobs"
+  },
+  {
+    "ParameterKey": "ApiDomainName",
+    "ParameterValue": "api.example.com"
+  },
+  {
+    "ParameterKey": "CertificateArn",
+    "ParameterValue": "arn:aws:acm:ap-northeast-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+  },
+  {
+    "ParameterKey": "HostedZoneId",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "ApiPort",
+    "ParameterValue": "8080"
+  },
+  {
+    "ParameterKey": "HealthCheckPath",
+    "ParameterValue": "/health"
+  },
+  {
+    "ParameterKey": "ApiCpu",
+    "ParameterValue": "512"
+  },
+  {
+    "ParameterKey": "ApiMemory",
+    "ParameterValue": "1024"
+  },
+  {
+    "ParameterKey": "WorkerCpu",
+    "ParameterValue": "256"
+  },
+  {
+    "ParameterKey": "WorkerMemory",
+    "ParameterValue": "512"
+  },
+  {
+    "ParameterKey": "ApiTaskDefinitionArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "WorkerTaskDefinitionArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "SchedulerTaskDefinitionArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "ApiDesiredCount",
+    "ParameterValue": "0"
+  },
+  {
+    "ParameterKey": "WorkerDesiredCount",
+    "ParameterValue": "0"
+  },
+  {
+    "ParameterKey": "SchedulerState",
+    "ParameterValue": "DISABLED"
+  },
+  {
+    "ParameterKey": "ScheduleExpression",
+    "ParameterValue": "rate(1 minute)"
+  },
+  {
+    "ParameterKey": "PrimaryTargetGroup",
+    "ParameterValue": "Blue"
+  },
+  {
+    "ParameterKey": "ProductionTargetGroup",
+    "ParameterValue": "Blue"
+  },
+  {
+    "ParameterKey": "TestTargetGroup",
+    "ParameterValue": "Green"
+  },
+  {
+    "ParameterKey": "HookArtifactBucket",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "HookArtifactKey",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "HookArtifactVersion",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "ExternalCanaryAlarmName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "NotificationEmail",
+    "ParameterValue": "operations@example.com"
+  },
+  {
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "30"
+  },
+  {
+    "ParameterKey": "AlarmPeriod",
+    "ParameterValue": "60"
+  },
+  {
+    "ParameterKey": "AlarmEvaluationPeriods",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "ErrorCountThreshold",
+    "ParameterValue": "5"
+  },
+  {
+    "ParameterKey": "LatencyThresholdSeconds",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "AlarmMissingData",
+    "ParameterValue": "notBreaching"
+  },
+  {
+    "ParameterKey": "AppSecretKmsKeyArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "MigrationSecretKmsKeyArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "ApplicationSecurityGroupId",
+    "ParameterValue": "sg-0123456789abcdef0"
+  },
+  {
+    "ParameterKey": "DatabaseSecurityGroupId",
+    "ParameterValue": "sg-0123456789abcdef1"
+  },
+  {
+    "ParameterKey": "CacheSecurityGroupId",
+    "ParameterValue": "sg-0123456789abcdef2"
+  },
+  {
+    "ParameterKey": "CacheSecretArn",
+    "ParameterValue": "arn:aws:secretsmanager:ap-northeast-1:123456789012:secret:kpool-prod-base-Data-CacheSecret-example"
+  }
+]

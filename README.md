@@ -2,6 +2,10 @@
 
 PHP Project with PHPUnit
 
+## AWS 本番基盤
+
+CloudFormation の構成、パラメータ・Outputs 契約、適用・更新・復旧と #157/#156 への引き渡しは [AWS 本番基盤の運用・設計資料](doc/infrastructure/operations.md) を参照してください。静的検証は `task cfn:install` 後に `task cfn:check` で実行できます（AWS 認証不要）。
+
 ## PostgreSQL Database Setup
 
 ### Environment Variables

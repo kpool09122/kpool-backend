@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Secret destinations, nonsecret SSM metadata and budget on the PR674 foundation.
+Parameters:
+  ProjectName:
+    Type: String
+    Default: kpool-production
+    AllowedPattern: '[a-z][a-z0-9-]{2,23}'
+  AppSecretArn:
+    Type: String
+    Default: ''
+    AllowedPattern: ^$|arn:aws:secretsmanager:ap-northeast-1:[0-9]{12}:secret:.+
+    Description: Existing runtime JSON secret ARN; blank creates an empty destination.
+  MigrationSecretArn:
+    Type: String
+    Default: ''
+    AllowedPattern: ^$|arn:aws:secretsmanager:ap-northeast-1:[0-9]{12}:secret:.+
+    Description: Existing migration JSON secret ARN; blank creates an empty destination.
+  BudgetAlertEmail:
+    Type: String
+    AllowedPattern: '[^@\s]+@[^@\s]+\.[^@\s]+'
+  MonthlyBudgetUSD:
+    Type: Number
+    Default: 100
+    MinValue: 1
+  DatabaseEndpoint:
+    Type: String
+  DatabaseName:
+    Type: String
+  CacheEndpoint:
+    Type: String
+  QueueUrl:
+    Type: String
+  ImagesBucketName:
+    Type: String
+  FilesBucketName:
+    Type: String
+Rules:
+  TokyoOnly:
+    Assertions:
+    - Assert:
+        Fn::Equals:
+        - Ref: AWS::Region
+        - ap-northeast-1
+      AssertDescription: Deploy in ap-northeast-1 only.
+Conditions:
+  CreateAppSecret:
+    Fn::Equals:
+    - Ref: AppSecretArn
+    - ''
+  CreateMigrationSecret:
+    Fn::Equals:
+    - Ref: MigrationSecretArn
+    - ''
+Resources:
+  AppSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: CreateAppSecret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name:
+        Fn::Sub: ${ProjectName}/application
+      Description: Empty runtime JSON destination; populate out of band before starting ECS.
+  MigrationSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: CreateMigrationSecret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name:
+        Fn::Sub: ${ProjectName}/migration
+      Description: Empty migration JSON destination; separate DDL identity, never the RDS master.
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName:
+          Fn::Sub: ${ProjectName}-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount:
+            Ref: MonthlyBudgetUSD
+          Unit: USD
+      NotificationsWithSubscribers:
+      - Notification:
+          NotificationType: ACTUAL
+          ComparisonOperator: GREATER_THAN
+          Threshold: 80
+          ThresholdType: PERCENTAGE
+        Subscribers:
+        - SubscriptionType: EMAIL
+          Address:
+            Ref: BudgetAlertEmail
+      - Notification:
+          NotificationType: FORECASTED
+          ComparisonOperator: GREATER_THAN
+          Threshold: 100
+          ThresholdType: PERCENTAGE
+        Subscribers:
+        - SubscriptionType: EMAIL
+          Address:
+            Ref: BudgetAlertEmail
+  RuntimeConfiguration:
+    Type: AWS::SSM::Parameter
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name:
+        Fn::Sub: /${ProjectName}/runtime/config
+      Type: String
+      Description: Nonsecret foundation metadata; not application-ready configuration.
+      Value:
+        Fn::Sub: '{"APP_ENV":"production","DB_HOST":"${DatabaseEndpoint}","DB_DATABASE":"${DatabaseName}","REDIS_HOST":"${CacheEndpoint}","REDIS_PORT":6379,"REDIS_DB":0,"REDIS_CACHE_DB":0,"SQS_QUEUE_URL":"${QueueUrl}","IMAGE_BUCKET":"${ImagesBucketName}","FILE_BUCKET":"${FilesBucketName}"}'
+Outputs:
+  AppSecretArn:
+    Value:
+      Fn::If:
+      - CreateAppSecret
+      - Ref: AppSecret
+      - Ref: AppSecretArn
+  MigrationSecretArn:
+    Value:
+      Fn::If:
+      - CreateMigrationSecret
+      - Ref: MigrationSecret
+      - Ref: MigrationSecretArn
+  RuntimeConfigParameterArn:
+    Value:
+      Fn::Sub: arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${RuntimeConfiguration}
+  RuntimeConfigParameterName:
+    Value:
+      Ref: RuntimeConfiguration
