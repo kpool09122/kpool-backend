@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LoggerInterface;
+use RedisException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -46,6 +47,10 @@ final readonly class Handler
 
     private function render(Throwable $e, Request $request): Response
     {
+        if (! $e instanceof ServiceUnavailableHttpException && $this->causedByRedisConnectionFailure($e)) {
+            $e = new ServiceUnavailableHttpException($e);
+        }
+
         if ($request->expectsJson()) {
             return $this->renderJson($e, $request);
         }
@@ -79,10 +84,14 @@ final readonly class Handler
             return response()->json($httpException->toProblemDetails(), $httpException->getHttpStatus());
         }
 
-        if ($e instanceof HttpException && $e->getHttpStatus() < 500) {
-            $this->logHandledException($e, $request);
+        if ($e instanceof HttpException) {
+            $e->getHttpStatus() >= 500
+                ? $this->logServerException($e, $request)
+                : $this->logHandledException($e, $request);
 
-            return response()->json($e->toProblemDetails(), $e->getHttpStatus());
+            return response()
+                ->json($e->toProblemDetails(), $e->getHttpStatus())
+                ->withHeaders($e->getHeaders());
         }
 
         $this->logServerException($e, $request);
@@ -116,6 +125,18 @@ final readonly class Handler
         $actorContext = app()->bound(ActorContext::class) ? app(ActorContext::class) : null;
 
         return $actorContext?->language->value ?? $request->header('Accept-Language', 'en');
+    }
+
+    private function causedByRedisConnectionFailure(Throwable $exception): bool
+    {
+        do {
+            if ($exception instanceof RedisException) {
+                return true;
+            }
+            $exception = $exception->getPrevious();
+        } while ($exception !== null);
+
+        return false;
     }
 
     private function logServerException(Throwable $e, Request $request): void

@@ -64,6 +64,14 @@ abstract class HttpException extends Exception
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function getHeaders(): array
+    {
+        return [];
+    }
+
+    /**
      * RFC 9457準拠の配列表現を取得
      *
      * @return array<string, mixed>
