@@ -152,3 +152,7 @@ SQS は standard queue で重複・順序入替があり得ます。consumer の
 - [Serverless の TLS](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/in-transit-encryption.html)
 - [Valkey user group と既定ユーザーの無効化](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Clusters.RBAC.html)
 - [CloudFront ViewerCertificate / ACM と TLS ポリシー](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudfront-distribution-viewercertificate.html)
+
+## ECS / OIDC の追加スタック (#673)
+
+[本番運用・配備契約](../../doc/infrastructure/operations.md) を参照。root の Network / Data / Storage を一度だけ適用し、その Outputs を integration / runtime に渡す。子テンプレートを別スタックで重複作成しない。PostgreSQL は major 16 を維持し、cfn-lint 1.47.0 の検証に合わせて minor 16.13 を明示している。適用前に東京の提供 minor と既存 DB の実 version を確認し、downgrade しない。

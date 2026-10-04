@@ -1,0 +1,601 @@
+{
+  "version": 2,
+  "region": "ap-northeast-1",
+  "stacks": [
+    "bootstrap",
+    "network",
+    "data",
+    "storage",
+    "root",
+    "integration",
+    "runtime"
+  ],
+  "deploymentOrder": [
+    "bootstrap",
+    "root",
+    "integration",
+    "runtime"
+  ],
+  "nestedStacks": [
+    "network",
+    "data",
+    "storage"
+  ],
+  "links": [
+    {
+      "from": "root",
+      "output": "VpcId",
+      "to": "runtime",
+      "parameter": "VpcId"
+    },
+    {
+      "from": "root",
+      "output": "PublicSubnetIds",
+      "to": "runtime",
+      "parameter": "PublicSubnetIds"
+    },
+    {
+      "from": "root",
+      "output": "DataSubnetIds",
+      "to": "runtime",
+      "parameter": "PrivateSubnetIds"
+    },
+    {
+      "from": "root",
+      "output": "ApplicationSecurityGroupId",
+      "to": "runtime",
+      "parameter": "ApplicationSecurityGroupId"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseSecurityGroupId",
+      "to": "runtime",
+      "parameter": "DatabaseSecurityGroupId"
+    },
+    {
+      "from": "root",
+      "output": "CacheSecurityGroupId",
+      "to": "runtime",
+      "parameter": "CacheSecurityGroupId"
+    },
+    {
+      "from": "root",
+      "output": "PublicImagesBucketArn",
+      "to": "runtime",
+      "parameter": "ImagesBucketArn"
+    },
+    {
+      "from": "root",
+      "output": "PrivateFilesBucketArn",
+      "to": "runtime",
+      "parameter": "FilesBucketArn"
+    },
+    {
+      "from": "root",
+      "output": "QueueArn",
+      "to": "runtime",
+      "parameter": "QueueArn"
+    },
+    {
+      "from": "root",
+      "output": "CacheSecretArn",
+      "to": "runtime",
+      "parameter": "CacheSecretArn"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseEndpoint",
+      "to": "integration",
+      "parameter": "DatabaseEndpoint"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseName",
+      "to": "integration",
+      "parameter": "DatabaseName"
+    },
+    {
+      "from": "root",
+      "output": "CacheEndpoint",
+      "to": "integration",
+      "parameter": "CacheEndpoint"
+    },
+    {
+      "from": "root",
+      "output": "QueueUrl",
+      "to": "integration",
+      "parameter": "QueueUrl"
+    },
+    {
+      "from": "root",
+      "output": "PublicImagesBucketName",
+      "to": "integration",
+      "parameter": "ImagesBucketName"
+    },
+    {
+      "from": "root",
+      "output": "PrivateFilesBucketName",
+      "to": "integration",
+      "parameter": "FilesBucketName"
+    },
+    {
+      "from": "integration",
+      "output": "AppSecretArn",
+      "to": "runtime",
+      "parameter": "AppSecretArn"
+    },
+    {
+      "from": "integration",
+      "output": "MigrationSecretArn",
+      "to": "runtime",
+      "parameter": "MigrationSecretArn"
+    },
+    {
+      "from": "network",
+      "output": "DataSubnetIds",
+      "to": "data",
+      "parameter": "DataSubnetIds"
+    },
+    {
+      "from": "network",
+      "output": "DatabaseSecurityGroupId",
+      "to": "data",
+      "parameter": "DatabaseSecurityGroupId"
+    },
+    {
+      "from": "network",
+      "output": "CacheSecurityGroupId",
+      "to": "data",
+      "parameter": "CacheSecurityGroupId"
+    }
+  ],
+  "externalInputs": [
+    {
+      "stack": "runtime",
+      "parameter": "ProjectName",
+      "description": "runtime operator configuration: ProjectName; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiDomainName",
+      "description": "runtime operator configuration: ApiDomainName; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "CertificateArn",
+      "description": "Existing ACM certificate in ap-northeast-1, or empty to create DNS-validated ACM certificate."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "HostedZoneId",
+      "description": "Required when creating certificate. Public Route53 zone hosting ApiDomainName."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiPort",
+      "description": "runtime operator configuration: ApiPort; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "HealthCheckPath",
+      "description": "runtime operator configuration: HealthCheckPath; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiCpu",
+      "description": "runtime operator configuration: ApiCpu; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiMemory",
+      "description": "runtime operator configuration: ApiMemory; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "WorkerCpu",
+      "description": "runtime operator configuration: WorkerCpu; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "WorkerMemory",
+      "description": "runtime operator configuration: WorkerMemory; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiTaskDefinitionArn",
+      "description": "Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "WorkerTaskDefinitionArn",
+      "description": "Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "SchedulerTaskDefinitionArn",
+      "description": "Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ApiDesiredCount",
+      "description": "runtime operator configuration: ApiDesiredCount; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "WorkerDesiredCount",
+      "description": "runtime operator configuration: WorkerDesiredCount; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "SchedulerState",
+      "description": "runtime operator configuration: SchedulerState; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ScheduleExpression",
+      "description": "runtime operator configuration: ScheduleExpression; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "PrimaryTargetGroup",
+      "description": "Current service primary target group; reconcile from ECS before infrastructure updates."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ProductionTargetGroup",
+      "description": "Current production rule target with weight 1 (other 0). Only update when deployment is stable."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "TestTargetGroup",
+      "description": "Current test rule target with weight 1 (other 0)."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "HookArtifactBucket",
+      "description": "Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "HookArtifactKey",
+      "description": "Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "HookArtifactVersion",
+      "description": "Reviewed immutable Lambda ZIP artifact supplied by #157; all three are required together."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ExternalCanaryAlarmName",
+      "description": "Existing ap-northeast-1 alarm: continuous HTTPS smoke test, 60s, missing data breaching. Required before API activation."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "NotificationEmail",
+      "description": "runtime operator configuration: NotificationEmail; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "LogRetentionDays",
+      "description": "runtime operator configuration: LogRetentionDays; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "AlarmPeriod",
+      "description": "runtime operator configuration: AlarmPeriod; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "AlarmEvaluationPeriods",
+      "description": "runtime operator configuration: AlarmEvaluationPeriods; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "ErrorCountThreshold",
+      "description": "runtime operator configuration: ErrorCountThreshold; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "LatencyThresholdSeconds",
+      "description": "runtime operator configuration: LatencyThresholdSeconds; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "AlarmMissingData",
+      "description": "ALB emits sparse metrics; external continuous canary must detect no-traffic failures."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "AppSecretKmsKeyArn",
+      "description": "Optional customer KMS key for app secret only; empty for AWS-managed key."
+    },
+    {
+      "stack": "runtime",
+      "parameter": "MigrationSecretKmsKeyArn",
+      "description": "Optional customer KMS key for migration secret only."
+    },
+    {
+      "stack": "data",
+      "parameter": "ResourcePrefix",
+      "description": "data operator configuration: ResourcePrefix; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "data",
+      "parameter": "DatabaseInstanceClass",
+      "description": "data operator configuration: DatabaseInstanceClass; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "data",
+      "parameter": "DatabaseMultiAZ",
+      "description": "data operator configuration: DatabaseMultiAZ; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "data",
+      "parameter": "DatabaseDeletionProtection",
+      "description": "data operator configuration: DatabaseDeletionProtection; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "root",
+      "parameter": "ResourcePrefix",
+      "description": "Unique immutable name per environment in this account and region."
+    },
+    {
+      "stack": "root",
+      "parameter": "DeploymentRegion",
+      "description": "root operator configuration: DeploymentRegion; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "root",
+      "parameter": "WorkQueueName",
+      "description": "Versioned physical queue name; change it when replacement is required."
+    },
+    {
+      "stack": "root",
+      "parameter": "DatabaseInstanceClass",
+      "description": "root operator configuration: DatabaseInstanceClass; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "root",
+      "parameter": "DatabaseMultiAZ",
+      "description": "root operator configuration: DatabaseMultiAZ; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "root",
+      "parameter": "DatabaseDeletionProtection",
+      "description": "root operator configuration: DatabaseDeletionProtection; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "storage",
+      "parameter": "WorkQueueName",
+      "description": "storage operator configuration: WorkQueueName; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "ProjectName",
+      "description": "bootstrap operator configuration: ProjectName; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "GitHubRepository",
+      "description": "bootstrap operator configuration: GitHubRepository; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "GitHubEnvironment",
+      "description": "bootstrap operator configuration: GitHubEnvironment; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "ExistingOidcProviderArn",
+      "description": "bootstrap operator configuration: ExistingOidcProviderArn; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "HookArtifactObjectArn",
+      "description": "Exact S3 object ARN of the separately supplied hook ZIP, not a bucket ARN."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "CertificateHostedZoneId",
+      "description": "Optional Route53 zone for ACM DNS validation; match runtime HostedZoneId."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "FoundationStackName",
+      "description": "Root stack name used for generated nested resources."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "FoundationTemplateBucketName",
+      "description": "Existing packaging bucket; read-only nested templates."
+    },
+    {
+      "stack": "bootstrap",
+      "parameter": "FoundationWorkQueueName",
+      "description": "Foundation WorkQueueName physical name, including version."
+    },
+    {
+      "stack": "integration",
+      "parameter": "ProjectName",
+      "description": "integration operator configuration: ProjectName; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "integration",
+      "parameter": "AppSecretArn",
+      "description": "Existing runtime JSON secret ARN; blank creates an empty destination."
+    },
+    {
+      "stack": "integration",
+      "parameter": "MigrationSecretArn",
+      "description": "Existing migration JSON secret ARN; blank creates an empty destination."
+    },
+    {
+      "stack": "integration",
+      "parameter": "BudgetAlertEmail",
+      "description": "integration operator configuration: BudgetAlertEmail; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "integration",
+      "parameter": "MonthlyBudgetUSD",
+      "description": "integration operator configuration: MonthlyBudgetUSD; nested inputs are supplied by root, see operations.md."
+    },
+    {
+      "stack": "root",
+      "parameter": "ImageDomainName",
+      "description": "Custom image hostname covered by the ACM certificate; configure DNS before use."
+    },
+    {
+      "stack": "root",
+      "parameter": "ImageCertificateArn",
+      "description": "ARN of an issued ACM certificate in us-east-1 covering ImageDomainName."
+    },
+    {
+      "stack": "storage",
+      "parameter": "ImageDomainName",
+      "description": "Custom image hostname covered by the ACM certificate; configure DNS before use."
+    },
+    {
+      "stack": "storage",
+      "parameter": "ImageCertificateArn",
+      "description": "ARN of an issued ACM certificate in us-east-1 covering ImageDomainName."
+    }
+  ],
+  "sharedParameters": [
+    "ProjectName"
+  ],
+  "serviceRoles": {
+    "cloudformation": "bootstrap.CloudFormationExecutionRoleArn",
+    "deployment": "bootstrap.DeploymentRoleArn"
+  },
+  "outputInventory": {
+    "runtime": [
+      "RepositoryUri",
+      "RepositoryArn",
+      "ClusterArn",
+      "ClusterName",
+      "ApiServiceName",
+      "WorkerServiceName",
+      "ApiServiceArn",
+      "WorkerServiceArn",
+      "LoadBalancerArn",
+      "LoadBalancerDnsName",
+      "LoadBalancerHostedZoneId",
+      "ProductionRuleArn",
+      "TestRuleArn",
+      "BlueTargetGroupArn",
+      "GreenTargetGroupArn",
+      "ProductionListenerArn",
+      "TestListenerArn",
+      "CertificateArn",
+      "ApiUrl",
+      "AlarmTopicArn",
+      "SchedulerArn",
+      "SchedulerDlqUrl",
+      "ApiTaskRoleArn",
+      "WorkerTaskRoleArn",
+      "MigrationTaskRoleArn",
+      "AppExecutionRoleArn",
+      "MigrationExecutionRoleArn",
+      "AlbInfrastructureRoleArn",
+      "SchedulerRoleArn",
+      "HookInvocationRoleArn",
+      "HookExecutionRoleArn",
+      "LifecycleHookArn",
+      "ApiBootstrapTaskDefinitionArn",
+      "WorkerBootstrapTaskDefinitionArn",
+      "MigrationBootstrapTaskDefinitionArn",
+      "SchedulerBootstrapTaskDefinitionArn",
+      "ApiReleaseFamily",
+      "WorkerReleaseFamily",
+      "MigrationReleaseFamily",
+      "SchedulerReleaseFamily",
+      "ApiLogGroupName",
+      "WorkerLogGroupName",
+      "MigrationLogGroupName",
+      "SchedulerLogGroupName",
+      "HookLogGroupName",
+      "ServerErrorAlarmName",
+      "LatencyAlarmName",
+      "SchedulerDlqAlarmName",
+      "ContainerNames",
+      "MigrationSecurityGroupId",
+      "ExternalCanaryAlarmName",
+      "ApiSecurityGroupId",
+      "WorkerSecurityGroupId",
+      "AlbSecurityGroupId",
+      "HookSecurityGroupId"
+    ],
+    "network": [
+      "VpcId",
+      "PublicSubnetIds",
+      "DataSubnetIds",
+      "ApplicationSecurityGroupId",
+      "DatabaseSecurityGroupId",
+      "CacheSecurityGroupId"
+    ],
+    "data": [
+      "DatabaseEndpoint",
+      "DatabasePort",
+      "DatabaseName",
+      "DatabaseSecretArn",
+      "DatabaseIdentifier",
+      "CacheEndpoint",
+      "CachePort",
+      "CacheArn",
+      "CacheUsername",
+      "CacheSecretArn"
+    ],
+    "root": [
+      "VpcId",
+      "PublicSubnetIds",
+      "DataSubnetIds",
+      "ApplicationSecurityGroupId",
+      "DatabaseSecurityGroupId",
+      "CacheSecurityGroupId",
+      "DatabaseEndpoint",
+      "DatabasePort",
+      "DatabaseName",
+      "DatabaseSecretArn",
+      "DatabaseIdentifier",
+      "CacheEndpoint",
+      "CachePort",
+      "CacheArn",
+      "CacheUsername",
+      "CacheSecretArn",
+      "PublicImagesBucketName",
+      "PublicImagesBucketArn",
+      "PrivateFilesBucketName",
+      "PrivateFilesBucketArn",
+      "ImageDistributionId",
+      "ImageBaseUrl",
+      "QueueUrl",
+      "QueueArn",
+      "DeadLetterQueueUrl",
+      "DeadLetterQueueArn"
+    ],
+    "storage": [
+      "PublicImagesBucketName",
+      "PublicImagesBucketArn",
+      "PrivateFilesBucketName",
+      "PrivateFilesBucketArn",
+      "ImageDistributionId",
+      "ImageBaseUrl",
+      "QueueUrl",
+      "QueueArn",
+      "DeadLetterQueueUrl",
+      "DeadLetterQueueArn"
+    ],
+    "bootstrap": [
+      "DeploymentRoleArn",
+      "CloudFormationExecutionRoleArn",
+      "OidcProviderArn"
+    ],
+    "integration": [
+      "AppSecretArn",
+      "MigrationSecretArn",
+      "RuntimeConfigParameterArn",
+      "RuntimeConfigParameterName"
+    ]
+  }
+}

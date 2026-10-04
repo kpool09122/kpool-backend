@@ -41,7 +41,8 @@ Resources:
     UpdateReplacePolicy: Snapshot
     Properties:
       Engine: postgres
-      EngineVersion: '16'
+      # Explicit supported minor for the pinned validator; verify Tokyo availability before applying.
+      EngineVersion: '16.13'
       DBInstanceClass: !Ref DatabaseInstanceClass
       DBName: kpool
       MasterUsername: kpooladmin
