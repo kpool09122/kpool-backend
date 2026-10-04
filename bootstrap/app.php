@@ -6,13 +6,11 @@ use Application\Http\Exceptions\Handler;
 use Application\Http\Middleware\EnforceApiRateLimit;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
-use Application\Http\Middleware\EnsureCloudTaskAuthenticated;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Application\Http\Middleware\StartApplicationSession;
-use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
 use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
 use Application\Providers\Account\UseCaseServiceProvider as AccountUseCaseServiceProvider;
@@ -35,20 +33,10 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
 use Sentry\Laravel\Integration as SentryIntegration;
-use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
-use Stackkit\LaravelGoogleCloudTasksQueue\TaskHandler;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         then: function () {
-            if (config('cloud-tasks.handler_enabled') && ! app()->environment('local', 'testing')) {
-                /** @var string $cloudTaskUri */
-                $cloudTaskUri = config('cloud-tasks.uri');
-                Route::post($cloudTaskUri, [TaskHandler::class, 'handle'])
-                    ->middleware(EnsureCloudTaskAuthenticated::class)
-                    ->name('cloud-tasks.handle-task');
-            }
-
             Route::middleware(['api', 'session'])
                 ->prefix('api/identity')
                 ->group(base_path('routes/identity_api.php'));
@@ -74,9 +62,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ])
     ->withSchedule(function (Schedule $schedule) {
         // Wiki Collaborator promotion/demotion: 1st of each month at 03:00 JST
-        $schedule->call(function () {
-            ProcessRolePromotionJob::dispatch(YearMonth::current());
-        })->monthlyOn(1, '03:00')->timezone('Asia/Tokyo');
+        // Production is owned by EventBridge Scheduler; never start the same batch twice.
+        if (! app()->environment('production')) {
+            $schedule->command('wiki:process-role-promotion')
+                ->monthlyOn(1, '03:00')->timezone('Asia/Tokyo');
+        }
     })
     ->withProviders([
         // Shared

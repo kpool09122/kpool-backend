@@ -40,7 +40,7 @@ class SyncPayoutAccountJob implements ShouldQueue
         private readonly ?string $accountHolderType = null,
         private readonly bool $isDefault = false,
     ) {
-        $this->onQueue('webhook');
+        $this->onQueue(config('queue.routing.webhook', 'webhook'));
     }
 
     public function handle(SyncPayoutAccountInterface $syncPayoutAccount): void

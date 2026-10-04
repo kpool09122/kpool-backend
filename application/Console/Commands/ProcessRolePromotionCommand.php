@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Console\Commands;
 
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Console\Command;
 use Override;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
@@ -14,6 +16,7 @@ use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSumma
 use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryOutput;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
+use Throwable;
 
 class ProcessRolePromotionCommand extends Command
 {
@@ -33,26 +36,33 @@ class ProcessRolePromotionCommand extends Command
         $isSync = (bool) $this->option('sync');
 
         if ($monthString !== null) {
-            if (! preg_match('/^\d{4}-\d{2}$/', $monthString)) {
+            if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $monthString)) {
                 $this->error('Invalid month format. Please use YYYY-MM format.');
 
                 return self::FAILURE;
             }
             $yearMonth = YearMonth::fromString($monthString);
         } else {
-            $yearMonth = YearMonth::current();
+            $yearMonth = YearMonth::fromDateTime(new DateTimeImmutable('now', new DateTimeZone('Asia/Tokyo')));
         }
 
         $this->info("Processing role promotion for: {$yearMonth}");
 
-        if ($isSync) {
-            return $this->executeSync($updateSummaryUseCase, $rolePromotionUseCase, $yearMonth);
+        try {
+            if ($isSync) {
+                return $this->executeSync($updateSummaryUseCase, $rolePromotionUseCase, $yearMonth);
+            }
+
+            ProcessRolePromotionJob::dispatch($yearMonth);
+            $this->info('ProcessRolePromotionJob dispatched successfully.');
+
+            return self::SUCCESS;
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->error('Role promotion command failed. See application logs.');
+
+            return self::FAILURE;
         }
-
-        ProcessRolePromotionJob::dispatch($yearMonth);
-        $this->info('ProcessRolePromotionJob dispatched successfully.');
-
-        return self::SUCCESS;
     }
 
     private function executeSync(

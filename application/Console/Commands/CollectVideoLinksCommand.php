@@ -7,6 +7,7 @@ namespace Application\Console\Commands;
 use Application\Jobs\Wiki\CollectVideoLinksJob;
 use Illuminate\Console\Command;
 use Override;
+use Throwable;
 
 class CollectVideoLinksCommand extends Command
 {
@@ -18,7 +19,14 @@ class CollectVideoLinksCommand extends Command
 
     public function handle(): int
     {
-        CollectVideoLinksJob::dispatch();
+        try {
+            CollectVideoLinksJob::dispatch();
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->error('Video collection enqueue failed. See application logs.');
+
+            return self::FAILURE;
+        }
 
         $this->info('CollectVideoLinksJob dispatched.');
 

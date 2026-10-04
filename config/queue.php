@@ -2,21 +2,40 @@
 
 declare(strict_types=1);
 
+$defaultConnection = env('QUEUE_CONNECTION', in_array(env('APP_ENV', 'production'), ['local', 'testing'], true) ? 'redis' : 'sqs');
+$workQueue = env('SQS_QUEUE_URL', env('SQS_QUEUE', 'default'));
+
 return [
-    'default' => env('QUEUE_CONNECTION', in_array(env('APP_ENV', 'production'), ['local', 'testing'], true) ? 'redis' : 'cloudtasks'),
+    'default' => $defaultConnection,
+    // #673 provisions one work queue: all logical producers share its task-role permissions.
+    'routing' => [
+        'webhook' => $defaultConnection === 'sqs' ? $workQueue : 'webhook',
+        'settlement' => $defaultConnection === 'sqs' ? $workQueue : 'settlement',
+    ],
 
     'connections' => [
-        'cloudtasks' => [
-            'driver' => 'cloudtasks',
-            'queue' => env('CLOUD_TASKS_QUEUE', 'default'),
+        'sqs' => [
+            'driver' => 'sqs',
+            // No static credentials: the AWS SDK uses the ECS task role credential chain.
+            'prefix' => env('SQS_PREFIX', ''),
+            'queue' => $workQueue,
+            'suffix' => env('SQS_SUFFIX', ''),
+            'region' => env('AWS_DEFAULT_REGION', 'ap-northeast-1'),
             'after_commit' => false,
-
-            'project' => env('CLOUD_TASKS_PROJECT', ''),
-            'location' => env('CLOUD_TASKS_LOCATION', ''),
-            'handler' => env('CLOUD_TASKS_HANDLER', ''),
-            'service_account_email' => env('CLOUD_TASKS_SERVICE_EMAIL', ''),
-            'app_engine' => false,
-            'backoff' => 60,
         ],
+        'redis' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => env('REDIS_QUEUE', 'default'),
+            'retry_after' => 300,
+            'block_for' => 5,
+            'after_commit' => false,
+        ],
+    ],
+
+    'failed' => [
+        'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
+        'database' => env('DB_CONNECTION', 'pgsql'),
+        'table' => 'failed_jobs',
     ],
 ];

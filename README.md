@@ -98,53 +98,18 @@ The backend is published on `http://localhost:8080`, and containers joined to th
 
 If the frontend runs on another origin, set `FRONTEND_URL` in `.env` so CORS permits requests from that origin.
 
-### Default Mail Queue
+### Queue / EventBridge 運用（Issue #666）
 
-Passkey recovery and SSO linking emails use the default connection and queue.
-`APP_ENV=local` and `APP_ENV=testing` default to Redis; all other environments
-default to Google Cloud Tasks. `QUEUE_CONNECTION` can override the connection.
+`local` / `testing` は Redis、それ以外（production / staging / preview）は
+Laravel 標準 SQS driver を既定とします。`QUEUE_CONNECTION` の明示指定は優先されます。
+メール、Wiki、webhook、settlement の producer は本番では #673 の単一 work queue を共有します。
+ローカルは `task queue-work` で `webhook,settlement,default` を消費します。
 
-For local development, start the worker with:
-
-```bash
-task queue-work
-```
-
-Google Cloud infrastructure can be provisioned later. Before enabling queued
-emails in a hosted environment, create a Cloud Tasks queue and configure:
-
-```bash
-APP_ENV=production
-CLOUD_TASKS_PROJECT=your-project-id
-CLOUD_TASKS_LOCATION=asia-northeast1
-CLOUD_TASKS_QUEUE=default
-CLOUD_TASKS_HANDLER=https://your-task-handler.example.com
-CLOUD_TASKS_SERVICE_EMAIL=tasks@your-project-id.iam.gserviceaccount.com
-CLOUD_TASKS_HANDLER_ENABLED=true
-```
-
-`CLOUD_TASKS_HANDLER` is the HTTPS base URL of the Laravel app that processes
-mail. Tasks are delivered to `/internal/queue/default`. The app verifies
-the Google ID token's signature, expiry, issuer, audience and service account
-email before processing the job. The handler is disabled by default and remains
-disabled in local and testing environments. Cloud Tasks uses HTTP delivery, so
-this connection does not use `queue:work` in hosted environments.
-
-Install dependencies with `composer install` on PHP 8.5 or later. Configure Google
-Application Default Credentials on the app runtime, enable the Cloud Tasks API,
-and grant the runtime service account permission to enqueue and inspect tasks
-and to act as `CLOUD_TASKS_SERVICE_EMAIL`. If the HTTP service enforces platform
-IAM authentication, configure its invoker permissions and accepted audience for
-the task URL as well. Rebuild Laravel's config and route caches after setting
-these values. The producer and handler must use compatible application code and
-the same `APP_KEY`.
-
-Until these resources and settings are ready, hosted environments cannot deliver
-recovery mail. Queue submission errors are reported while preserving the API's
-existing response behavior.
-
-References: [Cloud Tasks HTTP targets](https://docs.cloud.google.com/tasks/docs/creating-http-target-tasks),
-[Laravel Cloud Tasks driver](https://github.com/stackkit/laravel-google-cloud-tasks-queue).
+SQS QueueUrl、タスクロール権限、worker timeout / 停止契約、EventBridge CLI、
+失敗ジョブと DLQ の区別、Cloud Tasks の drain / 切り替え / 復旧、#665 / #157 での
+実環境検証は [SQS・EventBridge 運用手順](doc/infrastructure/queue-operations.md)を参照してください。
+依存は `task install`、検証は `task check` を使用します。
+Google Cloud Translation と Google OAuth の依存・資格情報は移行後も維持します。
 
 ### Test Organization
 
