@@ -1,6 +1,7 @@
 """Offline security/topology contracts beyond CloudFormation's resource schema."""
 import ipaddress
 import json
+import re
 from pathlib import Path
 import unittest
 
@@ -12,6 +13,7 @@ BASE = Path(__file__).resolve().parents[2] / 'infra' / 'cloudformation'
 class FoundationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        """Decode local templates once and reject malformed CloudFormation YAML."""
         cls.templates = {}
         for path in BASE.glob('*.yaml'):
             template, errors = decode(str(path))
@@ -20,6 +22,7 @@ class FoundationTest(unittest.TestCase):
             cls.templates[path.stem] = template
 
     def resources(self, stack, kind):
+        """Select resources by AWS type suffix while preserving logical IDs."""
         return {
             key: value for key, value in self.templates[stack]['Resources'].items()
             if value['Type'] == 'AWS::' + kind
@@ -143,6 +146,38 @@ class FoundationTest(unittest.TestCase):
         self.assertEqual(allows[0]['Principal'], {'Service': 'cloudfront.amazonaws.com'})
         self.assertIn('${ImageDistribution}', allows[0]['Condition']['StringEquals']['AWS:SourceArn']['Fn::Sub'])
         self.assertFalse(any(s['Effect'] == 'Allow' for s in policies['PrivateFilesBucketPolicy']['Properties']['PolicyDocument']['Statement']))
+
+    def test_image_delivery_requires_custom_domain_and_tls12(self):
+        """Require TLS 1.2 with an explicit hostname and a us-east-1 certificate."""
+        distribution = self.resources('storage', 'CloudFront::Distribution')['ImageDistribution']['Properties']['DistributionConfig']
+        self.assertEqual(distribution['Aliases'], [{'Ref': 'ImageDomainName'}])
+        self.assertEqual(distribution['ViewerCertificate'], {
+            'AcmCertificateArn': {'Ref': 'ImageCertificateArn'},
+            'MinimumProtocolVersion': 'TLSv1.2_2021',
+            'SslSupportMethod': 'sni-only',
+        })
+        self.assertEqual(distribution['DefaultCacheBehavior']['ViewerProtocolPolicy'], 'redirect-to-https')
+        self.assertEqual(distribution['HttpVersion'], 'http2and3')
+        self.assertEqual(self.templates['storage']['Outputs']['ImageBaseUrl']['Value'], {
+            'Fn::Sub': 'https://${ImageDomainName}',
+        })
+        storage_parameters = self.templates['root']['Resources']['Storage']['Properties']['Parameters']
+        valid = {
+            'ImageDomainName': 'images.example.com',
+            'ImageCertificateArn': 'arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012',
+        }
+        invalid = {
+            'ImageDomainName': ['', 'https://images.example.com', '*.example.com', 'images', '-images.example.com'],
+            'ImageCertificateArn': ['', valid['ImageCertificateArn'].replace('us-east-1', 'ap-northeast-1')],
+        }
+        for name, value in valid.items():
+            self.assertEqual(storage_parameters[name], {'Ref': name})
+            for stack in ['root', 'storage']:
+                spec = self.templates[stack]['Parameters'][name]
+                self.assertNotIn('Default', spec)
+                self.assertIsNotNone(re.fullmatch(spec['AllowedPattern'], value))
+                for rejected in invalid[name]:
+                    self.assertIsNone(re.fullmatch(spec['AllowedPattern'], rejected))
 
     def test_queue_redrive_encryption_and_retention(self):
         queues = self.resources('storage', 'SQS::Queue')

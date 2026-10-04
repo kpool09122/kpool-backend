@@ -1,6 +1,8 @@
 [
   {"ParameterKey": "ResourcePrefix", "ParameterValue": "kpool-prod"},
   {"ParameterKey": "DeploymentRegion", "ParameterValue": "ap-northeast-1"},
+  {"ParameterKey": "ImageDomainName", "ParameterValue": ""},
+  {"ParameterKey": "ImageCertificateArn", "ParameterValue": ""},
   {"ParameterKey": "WorkQueueName", "ParameterValue": "kpool-prod-work-v1"},
   {"ParameterKey": "DatabaseInstanceClass", "ParameterValue": "db.t4g.micro"},
   {"ParameterKey": "DatabaseMultiAZ", "ParameterValue": "false"},

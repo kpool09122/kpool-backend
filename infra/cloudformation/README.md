@@ -21,18 +21,20 @@ public のみ IGW へのデフォルトルートを持ちます。data は AZ �
 
 ## Parameters
 
-`parameters.production.json` は秘密情報を含まない本番初期設定です。環境ごとにコピーして管理します。
+`parameters.production.json` は秘密情報を含まない本番初期設定です。環境ごとにコピーして管理します。`ImageDomainName` と `ImageCertificateArn` は未確定のため空欄です。適用前に実際の値を入力してください。空欄のままではパラメーター制約で失敗します。
 
 | root Parameter | 既定値・用途 |
 | --- | --- |
 | `ResourcePrefix` | `kpool-prod`。英小文字で開始する 3–20 文字の英小文字・数字・ハイフン。同一アカウント・リージョン内で一意にする。Valkey 名とユーザー ID に使うため稼働後は固定 |
 | `DeploymentRegion` | `ap-northeast-1` のみ。Rules で実際のリージョンと一致を確認 |
+| `ImageDomainName` | 必須・既定値なし。公開画像用の独自ホスト名（例: `images.example.com`）。証明書の対象と一致させる |
+| `ImageCertificateArn` | 必須・既定値なし。上記ホスト名をカバーする `us-east-1` の発行済み ACM 証明書 ARN |
 | `WorkQueueName` | `kpool-prod-work-v1`。SQS の物理名。置換が必要な更新では `-v2` など未使用の名前へ変更し、consumer 切替後に Retain された旧 queue を廃止 |
 | `DatabaseInstanceClass` | `db.t4g.micro`。`db.t4g.small` / `db.t4g.medium` に変更可能 |
 | `DatabaseMultiAZ` | 文字列 `false`。可用性要件に応じて `true` に変更 |
 | `DatabaseDeletionProtection` | 文字列 `true`。意図した廃止時だけ別の更新で解除 |
 
-Data 子スタックには `DataSubnetIds`、`DatabaseSecurityGroupId`、`CacheSecurityGroupId` を、Storage 子スタックには `WorkQueueName` を root から渡します。子スタックへ直接入力する必要はありません。Network 子スタックに Parameters はありません。
+Data 子スタックには `DataSubnetIds`、`DatabaseSecurityGroupId`、`CacheSecurityGroupId` を、Storage 子スタックには `WorkQueueName`、`ImageDomainName`、`ImageCertificateArn` を root から渡します。子スタックへ直接入力する必要はありません。Network 子スタックに Parameters はありません。
 
 PostgreSQL は 16 系、gp3 20 GiB、最大 100 GiB のストレージ自動拡張、暗号化、7 日バックアップです。自動 minor upgrade は有効、major upgrade は無効です。バックアップは UTC 17:00–17:30（JST 02:00–02:30）、maintenance は日曜 UTC 18:00–19:00（月曜 JST 03:00–04:00）です。`rds.force_ssl=1` とし、クライアントも RDS CA を使用した `sslmode=verify-full` を設定します。
 
@@ -49,7 +51,7 @@ root は次の値を公開します。秘密値はありません。Export/Impor
 | `CacheEndpoint`, `CachePort`, `CacheArn`, `CacheUsername`, `CacheSecretArn` | Valkey TLS 接続先、ユーザー名、secret ARN |
 | `PublicImagesBucketName`, `PublicImagesBucketArn` | 公開画像保存先。S3 自体は非公開 |
 | `PrivateFilesBucketName`, `PrivateFilesBucketArn` | 非公開ファイル保存先。CloudFront origin には登録しない |
-| `ImageDistributionId`, `ImageBaseUrl` | invalidation 対象と HTTPS 配信 URL |
+| `ImageDistributionId`, `ImageBaseUrl` | invalidation 対象と独自ドメインの HTTPS 配信 URL |
 | `QueueUrl`, `QueueArn`, `DeadLetterQueueUrl`, `DeadLetterQueueArn` | producer / consumer / DLQ 運用の参照先 |
 
 ## オフライン検証
@@ -67,6 +69,8 @@ Task がない場合は `PATH=/tmp/kpool-cfn313/bin:$PATH bash scripts/cloudform
 ## Package と change set による適用
 
 以下は将来の適用時の手順です。この実装作業では実行しません。AWS CLI v2 と承認済みの実行権限を用意し、`aws sts get-caller-identity` でアカウントを確認します。テンプレート用 S3 バケットは事前に東京で用意し、非公開・暗号化・versioning を有効にしてください。テンプレート履歴は rollback 用に保持します。バケット作成やデプロイ IAM/OIDC は本 Issue の対象外です。
+
+画像配信用の独自ドメインを確定し、そのホスト名をカバーする ACM 証明書を **`us-east-1`** で発行・DNS 検証して、両パラメーターを入力します。証明書の作成や DNS の変更は本テンプレートでは行いません。配備後、独自ドメインの CNAME / Alias を CloudFront distribution のドメインへ向け、TLS 1.2 以上での疎通と TLS 1.0 / 1.1 の拒否を確認します。Cloudflare を使う場合の DNS / proxy 設定は #671 で扱います。
 
 root stack 名は、生成される子スタック名・OAC 名・SQS 名の長さ制限に収まるよう **20 文字以内**にします。
 
@@ -137,7 +141,7 @@ RDS の初期構成は Single-AZ のため AZ 障害時の自動フェイルオ�
 
 SQS は standard queue で重複・順序入替があり得ます。consumer の冪等性と `VisibilityTimeout=300` 秒より短い処理時間、または visibility 延長を後続で設計します。5 回の受信失敗で DLQ に送ります。DLQ はこの queue からだけ redrive を受け付けます。監視、DLQ アラーム、手動 redrive 権限は別途整備します。
 
-画像 bucket の全オブジェクトは CloudFront 経由で公開されます。非公開ファイルを保存しないでください。非公開ファイルは認可後の署名 URL 等を後続実装で提供します。画像配信は既定の `cloudfront.net` ドメイン、GET/HEAD、HTTPS リダイレクトと managed cache/security headers policy を使います。独自ドメイン・ACM・WAF・アクセスログは未設定です。オブジェクト名を不変にし、差替えは新しい key を使います。削除や緊急公開停止は cache TTL と invalidation も考慮します。
+画像 bucket の全オブジェクトは CloudFront 経由で公開されます。非公開ファイルを保存しないでください。非公開ファイルは認可後の署名 URL 等を後続実装で提供します。画像配信は独自ドメインと `us-east-1` の ACM 証明書、SNI、`TLSv1.2_2021`、GET/HEAD、HTTPS リダイレクトと managed cache/security headers policy を使います。WAF・アクセスログは未設定です。オブジェクト名を不変にし、差替えは新しい key を使います。削除や緊急公開停止は cache TTL と invalidation も考慮します。
 
 監視・通知、コスト予算、性能試験、実 AWS 上の権限・quota・疎通と復旧検証は後続の運用準備で実施してください。Serverless の利用量上限は未設定のため、負荷に応じて課金が増加します。
 
@@ -147,3 +151,4 @@ SQS は standard queue で重複・順序入替があり得ます。consumer の
 - [ElastiCache ServerlessCache](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-serverlesscache.html)
 - [Serverless の TLS](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/in-transit-encryption.html)
 - [Valkey user group と既定ユーザーの無効化](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Clusters.RBAC.html)
+- [CloudFront ViewerCertificate / ACM と TLS ポリシー](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudfront-distribution-viewercertificate.html)
