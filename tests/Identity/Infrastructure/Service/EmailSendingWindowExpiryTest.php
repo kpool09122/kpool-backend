@@ -41,7 +41,7 @@ class EmailSendingWindowExpiryTest extends TestCase
             Redis::shouldReceive('expire')->once()->with($countKey, 3600)->andReturn(true);
             Redis::shouldReceive('setex')->once()->with($cooldownKey, 60, '1')->andReturn(true);
             if ($passkeyRecovery) {
-                Redis::shouldReceive('setex')->once()->with('passkey_recovery_email:' . $hash, 900, Mockery::type('string'))->andReturn(true);
+                Redis::shouldReceive('setex')->once()->with('passkey_recovery_email:' . $hash, 600, Mockery::type('string'))->andReturn(true);
             }
         }
 

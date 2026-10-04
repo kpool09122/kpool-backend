@@ -59,7 +59,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
             '{"email":"test@example.com","authCode":"123456","generatedAt":"2024-01-01T12:00:00+00:00","verifiedAt":null}',
             Redis::get($key),
         );
-        $this->assertContains(Redis::ttl($key), [899, 900]);
+        $this->assertContains(Redis::ttl($key), [599, 600]);
 
         $found = $service->findByEmail($email);
         $this->assertNotNull($found);
@@ -72,7 +72,7 @@ class AuthCodeSessionStorageServiceTest extends TestCase
     public function testFindByEmailRestoresExistingVerifiedSessionFormat(): void
     {
         $email = new Email('verified@example.com');
-        Redis::setex('auth_code_session:' . $email, 900, json_encode([
+        Redis::setex('auth_code_session:' . $email, 600, json_encode([
             'email' => 'verified@example.com',
             'authCode' => '654321',
             'generatedAt' => '2024-01-01T12:00:00+00:00',

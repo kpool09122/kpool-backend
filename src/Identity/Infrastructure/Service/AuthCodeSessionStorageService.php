@@ -15,7 +15,6 @@ use Source\Shared\Domain\ValueObject\Email;
 class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInterface
 {
     private const string KEY_PREFIX = 'auth_code_session:';
-    private const int TTL_SECONDS = 900;
 
     public function findByEmail(Email $email): ?AuthCodeSession
     {
@@ -44,7 +43,7 @@ class AuthCodeSessionStorageService implements AuthCodeSessionStorageServiceInte
             'verifiedAt' => $authCodeSession->verifiedAt()?->format(DateTimeImmutable::ATOM),
         ]);
 
-        Redis::setex($this->buildKey($authCodeSession->email()), self::TTL_SECONDS, $data);
+        Redis::setex($this->buildKey($authCodeSession->email()), AuthCode::TTL_SECONDS, $data);
     }
 
     public function delete(Email $email): void

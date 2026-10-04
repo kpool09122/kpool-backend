@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Shared\Domain\ValueObject\Language;
 
 class PasskeyRecoveryCodeMail extends Mailable
@@ -29,6 +30,6 @@ class PasskeyRecoveryCodeMail extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'emails.passkey_recovery.code_' . $this->language->value);
+        return new Content(view: 'emails.passkey_recovery.code_' . $this->language->value, with: ['ttlMinutes' => AuthCode::TTL_MINUTES]);
     }
 }
