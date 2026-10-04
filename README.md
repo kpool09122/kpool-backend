@@ -177,6 +177,12 @@ If you prefer to set up PostgreSQL manually:
 4. Grant privileges: `GRANT ALL PRIVILEGES ON DATABASE kpool TO kpool;`
 5. Enable extensions: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
 
+## AWS 基盤（Issue #668）
+
+CloudFormation の構成・Parameters/Outputs・change set・保持方針は
+[ネットワーク・データ基盤の運用手順](infra/cloudformation/README.md)を参照してください。
+依存ツールの準備後、`task infra:validate` で AWS 認証情報なしに検証できます。
+
 ## Automated Dependency Updates
 
 Dependencies are automatically reviewed by Renovate using the rules in `renovate.json`. It groups Composer updates, schedules them for early Tokyo mornings, and surfaces all pending changes on the Renovate dashboard so pull requests stay easy to review. Enable Renovate for this repository on GitHub (connecting it once is enough) to keep tooling current without manual version tracking.

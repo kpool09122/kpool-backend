@@ -1,0 +1,192 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Private object storage, public image delivery via OAC, and encrypted work queues.
+Parameters:
+  ImageDomainName:
+    Type: String
+    MaxLength: 253
+    AllowedPattern: '[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+'
+    Description: Custom image hostname covered by the ACM certificate; configure DNS before use.
+  ImageCertificateArn:
+    Type: String
+    AllowedPattern: 'arn:aws:acm:us-east-1:[0-9]{12}:certificate/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    Description: ARN of an issued ACM certificate in us-east-1 covering ImageDomainName.
+  WorkQueueName:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9_-]{1,80}'
+Resources:
+  PublicImagesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VersioningConfiguration: {Status: Enabled}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: {SSEAlgorithm: AES256}
+      OwnershipControls:
+        Rules: [{ObjectOwnership: BucketOwnerEnforced}]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload: {DaysAfterInitiation: 7}
+  PrivateFilesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VersioningConfiguration: {Status: Enabled}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: {SSEAlgorithm: AES256}
+      OwnershipControls:
+        Rules: [{ObjectOwnership: BucketOwnerEnforced}]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload: {DaysAfterInitiation: 7}
+  ImageOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-images'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  ImageDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Public images only
+        Aliases: [!Ref ImageDomainName]
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_200
+        Origins:
+          - Id: images
+            DomainName: !GetAtt PublicImagesBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt ImageOriginAccessControl.Id
+            S3OriginConfig: {OriginAccessIdentity: ''}
+        DefaultCacheBehavior:
+          TargetOriginId: images
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          # AWS managed CachingOptimized policy; use immutable object keys.
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03
+        ViewerCertificate:
+          AcmCertificateArn: !Ref ImageCertificateArn
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+  PublicImagesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref PublicImagesBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!GetAtt PublicImagesBucket.Arn, !Sub '${PublicImagesBucket.Arn}/*']
+            Condition: {Bool: {'aws:SecureTransport': 'false'}}
+          - Sid: AllowImageDistributionOnly
+            Effect: Allow
+            Principal: {Service: cloudfront.amazonaws.com}
+            Action: s3:GetObject
+            Resource: !Sub '${PublicImagesBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${ImageDistribution}'
+  PrivateFilesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref PrivateFilesBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!GetAtt PrivateFilesBucket.Arn, !Sub '${PrivateFilesBucket.Arn}/*']
+            Condition: {Bool: {'aws:SecureTransport': 'false'}}
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy:
+        redrivePermission: byQueue
+        # Construct the ARN to avoid a dependency cycle with Queue.RedrivePolicy.
+        sourceQueueArns: [!Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${WorkQueueName}']
+  Queue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      QueueName: !Ref WorkQueueName
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 345600
+      VisibilityTimeout: 300
+      ReceiveMessageWaitTimeSeconds: 20
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
+  QueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Queues: [!Ref Queue, !Ref DeadLetterQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 'sqs:*'
+            Resource: [!GetAtt Queue.Arn, !GetAtt DeadLetterQueue.Arn]
+            Condition: {Bool: {'aws:SecureTransport': 'false'}}
+Outputs:
+  PublicImagesBucketName:
+    Value: !Ref PublicImagesBucket
+  PublicImagesBucketArn:
+    Value: !GetAtt PublicImagesBucket.Arn
+  PrivateFilesBucketName:
+    Value: !Ref PrivateFilesBucket
+  PrivateFilesBucketArn:
+    Value: !GetAtt PrivateFilesBucket.Arn
+  ImageDistributionId:
+    Value: !Ref ImageDistribution
+  ImageBaseUrl:
+    Value: !Sub 'https://${ImageDomainName}'
+  QueueUrl:
+    Value: !Ref Queue
+  QueueArn:
+    Value: !GetAtt Queue.Arn
+  DeadLetterQueueUrl:
+    Value: !Ref DeadLetterQueue
+  DeadLetterQueueArn:
+    Value: !GetAtt DeadLetterQueue.Arn

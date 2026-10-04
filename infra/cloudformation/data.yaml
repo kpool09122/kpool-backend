@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PostgreSQL and TLS Valkey data foundation.
+Parameters:
+  ResourcePrefix:
+    Type: String
+    AllowedPattern: '[a-z][a-z0-9-]{2,19}'
+  DataSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  DatabaseSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  CacheSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  DatabaseInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+    AllowedValues: [db.t4g.micro, db.t4g.small, db.t4g.medium]
+  DatabaseMultiAZ:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  DatabaseDeletionProtection:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+Resources:
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private data subnets in two AZs
+      SubnetIds: !Ref DataSubnetIds
+  DatabaseParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: PostgreSQL 16 requires TLS
+      Family: postgres16
+      Parameters:
+        rds.force_ssl: '1'
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: postgres
+      EngineVersion: '16'
+      DBInstanceClass: !Ref DatabaseInstanceClass
+      DBName: kpool
+      MasterUsername: kpooladmin
+      ManageMasterUserPassword: true
+      AllocatedStorage: '20'
+      MaxAllocatedStorage: 100
+      StorageType: gp3
+      StorageEncrypted: true
+      MultiAZ: !Ref DatabaseMultiAZ
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      DBParameterGroupName: !Ref DatabaseParameterGroup
+      VPCSecurityGroups: [!Ref DatabaseSecurityGroupId]
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '17:00-17:30'
+      PreferredMaintenanceWindow: 'sun:18:00-sun:19:00'
+      AutoMinorVersionUpgrade: true
+      AllowMajorVersionUpgrade: false
+      DeletionProtection: !Ref DatabaseDeletionProtection
+      CopyTagsToSnapshot: true
+      DeleteAutomatedBackups: false
+      EnableCloudwatchLogsExports: [postgresql, upgrade]
+  CacheSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Valkey application password; rotate together with the ElastiCache user
+      GenerateSecretString:
+        PasswordLength: 64
+        ExcludePunctuation: true
+  CacheUser:
+    Type: AWS::ElastiCache::User
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Engine: valkey
+      UserId: !Sub '${ResourcePrefix}-application'
+      UserName: application
+      AccessString: 'on ~* +@all -@dangerous'
+      AuthenticationMode:
+        Type: password
+        Passwords: [!Sub '{{resolve:secretsmanager:${CacheSecret}:SecretString}}']
+  CacheUserGroup:
+    Type: AWS::ElastiCache::UserGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Engine: valkey
+      UserGroupId: !Sub '${ResourcePrefix}-application'
+      UserIds: [!Ref CacheUser]
+  Cache:
+    Type: AWS::ElastiCache::ServerlessCache
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      ServerlessCacheName: !Sub '${ResourcePrefix}-cache'
+      Engine: valkey
+      MajorEngineVersion: '8'
+      SubnetIds: !Ref DataSubnetIds
+      SecurityGroupIds: [!Ref CacheSecurityGroupId]
+      UserGroupId: !Ref CacheUserGroup
+      SnapshotRetentionLimit: 7
+      DailySnapshotTime: '17:30'
+Outputs:
+  DatabaseEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+  DatabasePort:
+    Value: !GetAtt Database.Endpoint.Port
+  DatabaseName:
+    Value: kpool
+  DatabaseSecretArn:
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+  DatabaseIdentifier:
+    Value: !Ref Database
+  CacheEndpoint:
+    Value: !GetAtt Cache.Endpoint.Address
+  CachePort:
+    Value: !GetAtt Cache.Endpoint.Port
+  CacheArn:
+    Value: !GetAtt Cache.ARN
+  CacheUsername:
+    Value: application
+  CacheSecretArn:
+    Value: !Ref CacheSecret
