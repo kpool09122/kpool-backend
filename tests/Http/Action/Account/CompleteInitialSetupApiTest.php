@@ -45,6 +45,14 @@ class CompleteInitialSetupApiTest extends TestCase
             ->group(__DIR__ . '/../../../../routes/account_api.php');
     }
 
+    public function testLegacyAccountCreationEndpointIsUnavailable(): void
+    {
+        $this->postJson('/api/account/accounts', [
+            'email' => 'new@example.com',
+            'accountName' => 'New account',
+        ])->assertNotFound();
+    }
+
     public function testValidatesAccountType(): void
     {
         $this->authenticatePendingAccount();

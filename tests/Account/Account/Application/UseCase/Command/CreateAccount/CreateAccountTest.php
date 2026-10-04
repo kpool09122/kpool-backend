@@ -12,7 +12,6 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -135,15 +134,7 @@ class CreateAccountTest extends TestCase
             ->andReturnNull();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')
-            ->once()
-            ->with(Mockery::on(
-                static fn (object $event): bool => $event instanceof AccountCreated
-                    && (string) $event->accountIdentifier === (string) $testData->identifier
-                    && (string) $event->email === (string) $testData->email
-                    && (string) $event->identityIdentifier === (string) $testData->identityIdentifier
-                    && $event->language === $testData->language
-            ));
+        $eventDispatcher->shouldNotReceive('dispatch');
 
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
@@ -228,15 +219,7 @@ class CreateAccountTest extends TestCase
             ->andReturnNull();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')
-            ->once()
-            ->with(Mockery::on(
-                static fn (object $event): bool => $event instanceof AccountCreated
-                    && (string) $event->accountIdentifier === (string) $testData->identifier
-                    && (string) $event->email === (string) $testData->email
-                    && $event->identityIdentifier === null
-                    && $event->language === $testData->language
-            ));
+        $eventDispatcher->shouldNotReceive('dispatch');
 
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
@@ -331,7 +314,7 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository->shouldReceive('save')->twice();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')->once();
+        $eventDispatcher->shouldNotReceive('dispatch');
 
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);

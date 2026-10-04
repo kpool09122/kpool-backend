@@ -13,20 +13,6 @@ model UpdateAccountRequestBody {
   address?: ContactAddressSummary | null;
 }
 
-@doc("Request body for creating an account.")
-model CreateAccountRequestBody {
-  @doc("Account email address.")
-  email: string;
-  @doc("Account display name.")
-  accountName: string;
-  @doc("Identity identifier to attach to the account.")
-  principalIdentifier?: Uuid | null;
-  @doc("Contact phone number.")
-  phone?: string | null;
-  @doc("Contact address.")
-  address?: ContactAddressSummary | null;
-}
-
 @doc("Request body for completing initial account setup.")
 model CompleteInitialSetupRequestBody {
   @doc("Selected account type.")
@@ -36,12 +22,6 @@ model CompleteInitialSetupRequestBody {
 @doc("Request body for switching the current effective account context. Null switches back to the original account.")
 model SwitchAccountRequestBody {
   delegationIdentifier?: Uuid | null;
-}
-
-@doc("Response returned when an account is created.")
-model CreateAccountResponse {
-  @statusCode statusCode: 201;
-  @body body: CreateAccountResult;
 }
 
 @doc("Selected account context.")
@@ -93,12 +73,6 @@ interface MyAccountOperations {
 
 @route("/accounts")
 interface AccountOperations {
-  @post
-  @doc("Create an account.")
-  createAccount(
-    @body body: CreateAccountRequestBody,
-  ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
-
   @post
   @route("/setup")
   @doc("Select the account type and activate a pending account.")
