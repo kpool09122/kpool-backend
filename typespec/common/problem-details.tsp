@@ -48,6 +48,17 @@ model UnprocessableEntityProblemResponse {
   @body body: ProblemDetails;
 }
 
+model TooManyRequestsProblemResponse {
+  @statusCode statusCode: 429;
+  @header("Retry-After") retryAfter: int32;
+  @body body: ProblemDetails;
+}
+
+model ServiceUnavailableProblemResponse {
+  @statusCode statusCode: 503;
+  @body body: ProblemDetails;
+}
+
 model InternalServerErrorProblemResponse {
   @statusCode statusCode: 500;
   @body body: ProblemDetails;

@@ -30,50 +30,66 @@ use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\Lis
 use Illuminate\Support\Facades\Route;
 
 // Account
-Route::post('/accounts/setup', CompleteInitialSetupAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::middleware(['auth.api', 'resolve.actor', 'rate-limit:screen,command'])->group(function () {
+    Route::post('/accounts/setup', CompleteInitialSetupAction::class);
+});
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
-    // Account
-    Route::get('/my/documents', ListMyAccountDocumentsAction::class);
-    Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
-    Route::get('/accounts/{accountId}', GetAccountAction::class);
-    Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
-    // Disabled by #605: Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
-    Route::post('/accounts/switch', SwitchAccountAction::class);
-    Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);
-    Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Account
+        Route::get('/my/documents', ListMyAccountDocumentsAction::class);
+        Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
+        Route::get('/accounts/{accountId}', GetAccountAction::class);
+        Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
 
-    // Delegation
-    Route::get('/delegations', ListDelegationsAction::class);
-    Route::post('/delegations', RequestDelegationAction::class);
-    Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
-    Route::post('/delegations/{delegationId}/reject', RejectDelegationAction::class);
+        // Delegation
+        Route::get('/delegations', ListDelegationsAction::class);
 
-    // Member
-    Route::get('/members', ListMembersAction::class);
+        // Member
+        Route::get('/members', ListMembersAction::class);
 
-    // PrincipalGroup
-    Route::get('/principal-groups', ListPrincipalGroupsAction::class);
-    // Disabled by #605: Route::post('/principal-groups', CreatePrincipalGroupAction::class);
-    // Disabled by #605: Route::post('/principal-groups/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
-    // Disabled by #605: Route::post('/principal-groups/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
-    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
-    // Disabled by #605: Route::delete('/principal-groups/{principalGroupId}', DeletePrincipalGroupAction::class);
+        // PrincipalGroup
+        Route::get('/principal-groups', ListPrincipalGroupsAction::class);
 
-    // Invitation
-    Route::post('/invitations', InviteMemberAction::class);
+        // AccountCategoryChangeRequest
+        Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
+        Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
 
-    // AccountCategoryChangeRequest
-    Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
-    Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
-    Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
-    Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
-    Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);
+        // Affiliation
+        Route::get('/affiliations', ListAffiliationsAction::class);
+    });
 
-    // Affiliation
-    Route::get('/affiliations', ListAffiliationsAction::class);
-    Route::post('/affiliations', RequestAffiliationAction::class);
-    Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
-    Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);
-    // Disabled by #605: Route::post('/affiliations/{affiliationId}/terminate', TerminateAffiliationAction::class);
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        // Account
+        Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
+        // Disabled by #605: Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
+        Route::post('/accounts/switch', SwitchAccountAction::class);
+        Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);
+
+        // Delegation
+        Route::post('/delegations', RequestDelegationAction::class);
+        Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
+        Route::post('/delegations/{delegationId}/reject', RejectDelegationAction::class);
+
+        // PrincipalGroup
+        // Disabled by #605: Route::post('/principal-groups', CreatePrincipalGroupAction::class);
+        // Disabled by #605: Route::post('/principal-groups/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
+        // Disabled by #605: Route::post('/principal-groups/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+        Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
+        // Disabled by #605: Route::delete('/principal-groups/{principalGroupId}', DeletePrincipalGroupAction::class);
+
+        // Invitation
+        Route::post('/invitations', InviteMemberAction::class);
+
+        // AccountCategoryChangeRequest
+        Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
+        Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
+        Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);
+
+        // Affiliation
+        Route::post('/affiliations', RequestAffiliationAction::class);
+        Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
+        Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);
+        // Disabled by #605: Route::post('/affiliations/{affiliationId}/terminate', TerminateAffiliationAction::class);
+    });
 });

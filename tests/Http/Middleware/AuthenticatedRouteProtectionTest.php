@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Http\Middleware;
 
 use Application\Http\Exceptions\UnauthorizedHttpException;
+use Application\Http\Middleware\EnforceApiRateLimit;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\PreventRequestForgery;
@@ -36,6 +37,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
+        $router->aliasMiddleware('rate-limit', EnforceApiRateLimit::class);
         $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
 
         $routePath = static fn (string $file): string => __DIR__ . '/../../../routes/' . $file;
@@ -51,13 +53,13 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->group($routePath('account_api.php'));
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/site-management')
-            ->group($routePath('siteManagiment_public_api.php'));
+            ->group($routePath('site_management_api.php'));
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/wiki')
-            ->group($routePath('wiki_private_api.php'));
+            ->group($routePath('wiki_api.php'));
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/site-management')
-            ->group($routePath('siteManagiment_public_api.php'));
+            ->group($routePath('site_management_api.php'));
         RouteFacade::prefix('webhook')
             ->group($routePath('webhook.php'));
     }
@@ -216,6 +218,34 @@ class AuthenticatedRouteProtectionTest extends TestCase
         sort($expectedPublicWikiRouteUris);
 
         $this->assertSame($expectedPublicWikiRouteUris, $actualPublicWikiRouteUris);
+    }
+
+    public function testEveryApiRouteHasExactlyOneExplicitRateLimitClassificationAfterAuthenticationContext(): void
+    {
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/')) {
+                continue;
+            }
+
+            $middleware = $route->gatherMiddleware();
+            $rateLimits = array_values(array_filter(
+                $middleware,
+                static fn (mixed $name): bool => is_string($name) && str_starts_with($name, 'rate-limit:'),
+            ));
+            $this->assertCount(1, $rateLimits, $route->uri());
+
+            $action = $route->getActionName();
+            $operation = str_contains($action, '\\Query\\') ? 'query' : 'command';
+            $this->assertSame('rate-limit:screen,' . $operation, $rateLimits[0], $route->uri());
+
+            $rateLimitIndex = array_search($rateLimits[0], $middleware, true);
+            foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $prerequisite) {
+                $prerequisiteIndex = array_search($prerequisite, $middleware, true);
+                if ($prerequisiteIndex !== false) {
+                    $this->assertLessThan($rateLimitIndex, $prerequisiteIndex, $route->uri());
+                }
+            }
+        }
     }
 
     /**

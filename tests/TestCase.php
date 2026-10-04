@@ -29,6 +29,7 @@ use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Override;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Tests\Support\PassThroughApiRateLimit;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -130,6 +131,9 @@ abstract class TestCase extends OrchestraTestCase
 
         // Auth設定: 正しいIdentityモデルを使用
         $app['config']->set('auth.providers.users.model', Identity::class);
+
+        // Most HTTP tests exercise Actions in isolation. Rate limiting has dedicated tests.
+        $app['router']->aliasMiddleware('rate-limit', PassThroughApiRateLimit::class);
     }
 
     /**

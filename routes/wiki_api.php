@@ -54,64 +54,28 @@ use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisA
 use Application\Http\Action\Wiki\Wiki\Query\SearchTranslationSetMasterWikis\SearchTranslationSetMasterWikisAction;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
-    Route::post('/wiki/create', CreateWikiAction::class);
-    Route::post('/wiki/auto-create', AutoCreateWikiAction::class);
-    Route::delete('/wiki/{wikiId}', DeleteWikiAction::class);
-    Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
-    Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
-    // Disabled by #605: Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
-    Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
-    Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
-    // Disabled by #605: Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
-    Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
-    Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
-    Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
-});
-Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
-Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class)->middleware('auth.api');
-Route::get('/wiki-translation-sets/masters', SearchTranslationSetMasterWikisAction::class)->middleware('auth.api');
-Route::get('/wikis/{language}', ListWikisAction::class);
-Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/my/owned-wikis', ListMyOwnedWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.account']);
-Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
-Route::get('/wiki/{resourceType}/{translationSetIdentifier}/related-wikis', ListRelatedWikisAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
-Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
-Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class)->middleware('auth.api');
-Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);
-Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class)->middleware('auth.api');
-Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/wiki/{language}/song/{slug}', GetSongWikiAction::class);
-Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class)->middleware('auth.api');
-Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
-Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class)->middleware('auth.api');
-Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-
-// Image
-Route::get('/draft-images', ListDraftImagesAction::class)->middleware('auth.api');
-Route::get('/images', ListUploadedImagesAction::class)->middleware('auth.api');
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
-    Route::post('/image/{imageId}/approve', ApproveImageAction::class);
-    // Disabled by #605: Route::delete('/image/{imageId}', DeleteImageAction::class);
-    Route::post('/image/{imageId}/reject', RejectImageAction::class);
-    // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
-    Route::post('/image/upload', UploadImageAction::class);
-});
-
-// Principal
-Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.account']);
-Route::post('/principal/create', CreatePrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::middleware('auth.api')->group(function () {
-    Route::get('/principal-groups', ListPrincipalGroupsAction::class);
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Wiki
+        Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class);
+        Route::get('/wiki-translation-sets/masters', SearchTranslationSetMasterWikisAction::class);
+        Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class);
+        Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class);
+        Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class);
+        Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class);
+
+        // Image
+        Route::get('/draft-images', ListDraftImagesAction::class);
+        Route::get('/images', ListUploadedImagesAction::class);
+
+        // Principal
+        Route::get('/principal-groups', ListPrincipalGroupsAction::class);
+    });
+
+    // Principal
     // Disabled by #605: Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
     // Disabled by #605: Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
     // Disabled by #605: Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
-    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class)
-        ->middleware(['resolve.actor', 'resolve.account', 'resolve.wiki']);
     // Disabled by #605: Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
     // Disabled by #605: Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
     // Disabled by #605: Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
@@ -123,27 +87,106 @@ Route::middleware('auth.api')->group(function () {
     // Disabled by #605: Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 });
 
-// ImageDeletionRequest
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
-    Route::get('/image-deletion-requests', ListImageDeletionRequestsAction::class);
-    Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);
-    Route::post('/image/{imageId}/approve-deletion', ApproveImageDeletionAction::class);
-    Route::post('/image/{imageId}/reject-deletion', RejectImageDeletionAction::class);
+Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Wiki
+        Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class);
+    });
+
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        // Principal
+        Route::post('/principal/create', CreatePrincipalAction::class);
+    });
 });
 
-// OfficialCertification
-Route::get('/official-certifications', ListOfficialCertificationsAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::get('/my/official-certifications', ListMyOfficialCertificationsAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
-Route::post('/official-certification/request', RequestCertificationAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
-Route::put('/official-certification/owned-wikis', SyncOwnedWikiCertificationsAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki']);
-Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
-Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class)
-    ->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Wiki
+        Route::get('/my/draft-wikis', ListMyDraftWikisAction::class);
+        Route::get('/draft-wikis', ListDraftWikisAction::class);
+        Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class);
+        Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class);
+        Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class);
+        Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class);
+
+        // ImageDeletionRequest
+        Route::get('/image-deletion-requests', ListImageDeletionRequestsAction::class);
+
+        // OfficialCertification
+        Route::get('/official-certifications', ListOfficialCertificationsAction::class);
+    });
+
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        // Wiki
+        Route::post('/wiki/create', CreateWikiAction::class);
+        Route::post('/wiki/auto-create', AutoCreateWikiAction::class);
+        Route::delete('/wiki/{wikiId}', DeleteWikiAction::class);
+        Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
+        Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
+        // Disabled by #605: Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
+        Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
+        Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
+        // Disabled by #605: Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
+        Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
+        Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+        Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
+
+        // Image
+        Route::post('/image/{imageId}/approve', ApproveImageAction::class);
+        // Disabled by #605: Route::delete('/image/{imageId}', DeleteImageAction::class);
+        Route::post('/image/{imageId}/reject', RejectImageAction::class);
+        // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
+        Route::post('/image/upload', UploadImageAction::class);
+
+        // ImageDeletionRequest
+        Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);
+        Route::post('/image/{imageId}/approve-deletion', ApproveImageDeletionAction::class);
+        Route::post('/image/{imageId}/reject-deletion', RejectImageDeletionAction::class);
+
+        // OfficialCertification
+        Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
+        Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
+    });
+});
+
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Wiki
+        Route::get('/my/owned-wikis', ListMyOwnedWikisAction::class);
+
+        // Principal
+        Route::get('/principal/me', GetCurrentPrincipalAction::class);
+    });
+});
+
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki'])->group(function () {
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        // Wiki
+        Route::get('/wiki/{resourceType}/{translationSetIdentifier}/related-wikis', ListRelatedWikisAction::class);
+
+        // OfficialCertification
+        Route::get('/my/official-certifications', ListMyOfficialCertificationsAction::class);
+    });
+
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        // Principal
+        Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
+
+        // OfficialCertification
+        Route::post('/official-certification/request', RequestCertificationAction::class);
+        Route::put('/official-certification/owned-wikis', SyncOwnedWikiCertificationsAction::class);
+    });
+});
+
+Route::middleware('rate-limit:screen,query')->group(function () {
+    // Wiki
+    Route::get('/wikis/{language}', ListWikisAction::class);
+    Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
+    Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
+    Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);
+    Route::get('/wiki/{language}/song/{slug}', GetSongWikiAction::class);
+    Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
+});
 
 // VideoLink
 // Disabled by #605: Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

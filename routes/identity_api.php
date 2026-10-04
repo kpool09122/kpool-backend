@@ -34,45 +34,54 @@ use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawa
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/auth/csrf-token', GetCsrfTokenAction::class);
+Route::middleware('rate-limit:screen,query')->group(function () {
+    Route::get('/auth/csrf-token', GetCsrfTokenAction::class);
 
-// Public Auth
-Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
-Route::post('/auth/verify-email', VerifyEmailAction::class);
-Route::post('/auth/passkeys/registration/options', CreatePasskeyRegistrationOptionsAction::class);
-Route::post('/auth/passkeys/registration', RegisterWithPasskeyAction::class);
-Route::post('/auth/passkeys/authentication/options', CreatePasskeyAuthenticationOptionsAction::class);
-Route::post('/auth/passkeys/authentication', AuthenticateWithPasskeyAction::class);
-Route::post('/auth/passkeys/recovery/email', SendPasskeyRecoveryEmailAction::class);
-Route::post('/auth/passkeys/recovery/email/verification', VerifyPasskeyRecoveryEmailAction::class);
-Route::get('/auth/passkeys/recovery/social/{provider}/redirect', StartPasskeyRecoveryWithSocialAction::class);
-Route::post('/auth/passkeys/recovery/options', CreatePasskeyRecoveryOptionsAction::class);
-Route::post('/auth/passkeys/recovery', RecoverPasskeyAction::class);
+    // SSO linking is authorized by the originating session and its dedicated email code.
+    Route::get('/auth/social/link', GetSocialLinkingAction::class);
+});
 
-// SSO linking is authorized by the originating session and its dedicated email code.
-Route::get('/auth/social/link', GetSocialLinkingAction::class);
-Route::post('/auth/social/link/email', SendSocialLinkingEmailAction::class);
-Route::post('/auth/social/link/email/verification', VerifySocialLinkingEmailAction::class);
+Route::middleware('rate-limit:screen,command')->group(function () {
+    // Public Auth
+    Route::post('/auth/send-auth-code', SendAuthCodeAction::class);
+    Route::post('/auth/verify-email', VerifyEmailAction::class);
+    Route::post('/auth/passkeys/registration/options', CreatePasskeyRegistrationOptionsAction::class);
+    Route::post('/auth/passkeys/registration', RegisterWithPasskeyAction::class);
+    Route::post('/auth/passkeys/authentication/options', CreatePasskeyAuthenticationOptionsAction::class);
+    Route::post('/auth/passkeys/authentication', AuthenticateWithPasskeyAction::class);
+    Route::post('/auth/passkeys/recovery/email', SendPasskeyRecoveryEmailAction::class);
+    Route::post('/auth/passkeys/recovery/email/verification', VerifyPasskeyRecoveryEmailAction::class);
+    Route::get('/auth/passkeys/recovery/social/{provider}/redirect', StartPasskeyRecoveryWithSocialAction::class);
+    Route::post('/auth/passkeys/recovery/options', CreatePasskeyRecoveryOptionsAction::class);
+    Route::post('/auth/passkeys/recovery', RecoverPasskeyAction::class);
 
-// Social authentication (public)
-Route::get('/auth/social/{provider}/redirect', SocialLoginRedirectAction::class);
-Route::get('/auth/social/{provider}/callback', SocialAuthenticateCallbackAction::class);
+    // SSO linking is authorized by the originating session and its dedicated email code.
+    Route::post('/auth/social/link/email', SendSocialLinkingEmailAction::class);
+    Route::post('/auth/social/link/email/verification', VerifySocialLinkingEmailAction::class);
 
-// Authenticated
+    // Social authentication (public)
+    Route::get('/auth/social/{provider}/redirect', SocialLoginRedirectAction::class);
+    Route::get('/auth/social/{provider}/callback', SocialAuthenticateCallbackAction::class);
+});
+
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
-    Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
-    Route::get('/auth/passkeys', ListPasskeysAction::class);
-    Route::post('/auth/step-up/passkey/options', CreateStepUpPasskeyOptionsAction::class);
-    Route::post('/auth/step-up/passkey', CompleteStepUpWithPasskeyAction::class);
-    Route::get('/auth/step-up/social/{provider}/redirect', StartStepUpWithSocialAction::class);
-    Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
-    Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
-    Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
-    Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
-    // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
-    Route::post('/auth/logout', LogoutAction::class);
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
+        Route::get('/auth/passkeys', ListPasskeysAction::class);
+        // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
+        Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
+    });
 
-    Route::patch('/identities/me', UpdateIdentityAction::class);
-    Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
-    Route::delete('/identities/me', WithdrawFromServiceAction::class);
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        Route::post('/auth/step-up/passkey/options', CreateStepUpPasskeyOptionsAction::class);
+        Route::post('/auth/step-up/passkey', CompleteStepUpWithPasskeyAction::class);
+        Route::get('/auth/step-up/social/{provider}/redirect', StartStepUpWithSocialAction::class);
+        Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
+        Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
+        Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
+        Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
+        Route::post('/auth/logout', LogoutAction::class);
+        Route::patch('/identities/me', UpdateIdentityAction::class);
+        Route::delete('/identities/me', WithdrawFromServiceAction::class);
+    });
 });

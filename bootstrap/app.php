@@ -2,15 +2,37 @@
 
 declare(strict_types=1);
 
+use Application\Http\Exceptions\Handler;
+use Application\Http\Middleware\EnforceApiRateLimit;
+use Application\Http\Middleware\EnsureAccountActive;
+use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\EnsureCloudTaskAuthenticated;
-use Illuminate\Cookie\Middleware\EncryptCookies;
+use Application\Http\Middleware\PreventRequestForgery;
+use Application\Http\Middleware\ResolveAccountContext;
+use Application\Http\Middleware\ResolveActorContext;
+use Application\Http\Middleware\ResolveWikiContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
+use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
+use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
+use Application\Providers\Account\UseCaseServiceProvider as AccountUseCaseServiceProvider;
+use Application\Providers\ClientServiceProvider;
+use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
+use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
+use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
+use Application\Providers\Monetization\DomainServiceProvider as MonetizationDomainServiceProvider;
+use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
+use Application\Providers\SharedServiceProvider;
+use Application\Providers\SiteManagement\DomainServiceProvider as SiteManagementDomainServiceProvider;
+use Application\Providers\SiteManagement\UseCaseServiceProvider as SiteManagementUseCaseServiceProvider;
+use Application\Providers\Wiki\DomainServiceProvider as WikiDomainServiceProvider;
+use Application\Providers\Wiki\EventServiceProvider as WikiEventServiceProvider;
+use Application\Providers\Wiki\UseCaseServiceProvider as WikiUseCaseServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Application\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
 use Sentry\Laravel\Integration as SentryIntegration;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
@@ -20,7 +42,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         then: function () {
             if (config('cloud-tasks.handler_enabled') && ! app()->environment('local', 'testing')) {
-                Route::post(config('cloud-tasks.uri'), [TaskHandler::class, 'handle'])
+                /** @var string $cloudTaskUri */
+                $cloudTaskUri = config('cloud-tasks.uri');
+                Route::post($cloudTaskUri, [TaskHandler::class, 'handle'])
                     ->middleware(EnsureCloudTaskAuthenticated::class)
                     ->name('cloud-tasks.handle-task');
             }
@@ -36,11 +60,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/account_api.php'));
             Route::middleware(['api', 'session'])
                 ->prefix('api/site-management')
-                ->group(base_path('routes/siteManagiment_public_api.php'));
-//            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
+                ->group(base_path('routes/site_management_api.php'));
+            //            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
             Route::middleware(['api', 'session'])
                 ->prefix('api/wiki')
-                ->group(base_path('routes/wiki_private_api.php'));
+                ->group(base_path('routes/wiki_api.php'));
             Route::prefix('webhook')
                 ->group(base_path('routes/webhook.php'));
         },
@@ -56,31 +80,31 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withProviders([
         // Shared
-        \Application\Providers\SharedServiceProvider::class,
-        \Application\Providers\ClientServiceProvider::class,
+        SharedServiceProvider::class,
+        ClientServiceProvider::class,
 
         // Account
-        \Application\Providers\Account\DomainServiceProvider::class,
-        \Application\Providers\Account\UseCaseServiceProvider::class,
-        \Application\Providers\Account\EventServiceProvider::class,
+        AccountDomainServiceProvider::class,
+        AccountUseCaseServiceProvider::class,
+        AccountEventServiceProvider::class,
 
         // Identity
-        \Application\Providers\Identity\DomainServiceProvider::class,
-        \Application\Providers\Identity\UseCaseServiceProvider::class,
-        \Application\Providers\Identity\EventServiceProvider::class,
+        IdentityDomainServiceProvider::class,
+        IdentityUseCaseServiceProvider::class,
+        IdentityEventServiceProvider::class,
 
         // Monetization
-        \Application\Providers\Monetization\DomainServiceProvider::class,
-        \Application\Providers\Monetization\UseCaseServiceProvider::class,
+        MonetizationDomainServiceProvider::class,
+        MonetizationUseCaseServiceProvider::class,
 
         // SiteManagement
-        \Application\Providers\SiteManagement\DomainServiceProvider::class,
-        \Application\Providers\SiteManagement\UseCaseServiceProvider::class,
+        SiteManagementDomainServiceProvider::class,
+        SiteManagementUseCaseServiceProvider::class,
 
         // Wiki
-        \Application\Providers\Wiki\DomainServiceProvider::class,
-        \Application\Providers\Wiki\UseCaseServiceProvider::class,
-        \Application\Providers\Wiki\EventServiceProvider::class,
+        WikiDomainServiceProvider::class,
+        WikiUseCaseServiceProvider::class,
+        WikiEventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trimStrings(except: ['confirmationIdentityName']);
@@ -90,24 +114,25 @@ $app = Application::configure(basePath: dirname(__DIR__))
             PreventRequestForgery::class,
         ]);
         $middleware->group('auth.api', [
-            \Application\Http\Middleware\EnsureAuthenticated::class,
-            \Application\Http\Middleware\EnsureAccountActive::class,
+            EnsureAuthenticated::class,
+            EnsureAccountActive::class,
         ]);
         $middleware->alias([
-            'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
-            'resolve.account' => \Application\Http\Middleware\ResolveAccountContext::class,
-            'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,
+            'resolve.actor' => ResolveActorContext::class,
+            'resolve.account' => ResolveAccountContext::class,
+            'resolve.wiki' => ResolveWikiContext::class,
+            'rate-limit' => EnforceApiRateLimit::class,
         ]);
         $middleware->preventRequestForgery(except: [
             'webhook/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        if (env('APP_ENV') === 'production' && filled(env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN')))) {
+        if (app()->environment('production') && filled(config('sentry.dsn'))) {
             SentryIntegration::handles($exceptions);
         }
 
-        $exceptions->render(app(\Application\Http\Exceptions\Handler::class));
+        $exceptions->render(app(Handler::class));
     })
     ->create();
 
