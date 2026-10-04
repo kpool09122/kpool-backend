@@ -23,6 +23,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class GeminiClient
 {
+    public const string DEFAULT_MODEL = 'gemini-3.8-flash';
+
     private const string API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
     public function __construct(

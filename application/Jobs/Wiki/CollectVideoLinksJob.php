@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Jobs\Wiki;
 
+use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,8 +27,14 @@ class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
 
     public int $uniqueFor = 2700;
 
-    public function handle(CollectVideoLinksInterface $useCase): void
+    public function handle(CollectVideoLinksInterface $useCase, YouTubeClient $youTubeClient): void
     {
+        if (! $youTubeClient->isConfigured()) {
+            Log::warning('CollectVideoLinksJob skipped: YouTube API key is not configured');
+
+            return;
+        }
+
         Log::info('CollectVideoLinksJob started');
 
         $output = new CollectVideoLinksOutput();
