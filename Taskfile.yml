@@ -66,11 +66,26 @@ tasks:
       - docker-compose logs -f {{.API_SERVICES}}
 
   queue-work:
-    desc: "Start Laravel queue worker. Usage: task queue-work [connection=redis] [queue=default] [once=1]"
+    desc: "Start local Redis worker. Usage: task queue-work [connection=redis] [queue=webhook,settlement,default] [once=1]"
     cmds:
       - docker-compose up -d php db redis mail
       - task: wait-for-db
-      - '{{.PHP_EXEC}} php artisan queue:work {{if .connection}}{{.connection}}{{end}} {{if .queue}}--queue={{.queue}}{{end}} {{if (index . "once")}}--once{{end}}'
+      - '{{.PHP_EXEC}} php artisan queue:work {{.connection | default "redis"}} --queue={{.queue | default "webhook,settlement,default"}} --timeout=90 --tries=3 {{if (index . "once")}}--once{{end}}'
+
+  queue-work-sqs:
+    desc: "Run the #673 worker contract with injected SQS/ECS credentials; does not provision AWS"
+    cmds:
+      - '{{.PHP_RUN}} php artisan queue:work sqs --timeout=90 --tries=3 {{if (index . "once")}}--once{{end}}'
+
+  wiki:process-role-promotion:
+    desc: "Enqueue monthly promotion (Asia/Tokyo). Usage: task wiki:process-role-promotion [month=2026-02] [sync=1]"
+    cmds:
+      - '{{.PHP_RUN}} php artisan wiki:process-role-promotion {{if .month}}--month={{.month}}{{end}} {{if (index . "sync")}}--sync{{end}}'
+
+  video-links:collect:
+    desc: "Enqueue video collection; zero exit means enqueue, not processing completed"
+    cmds:
+      - '{{.PHP_RUN}} php artisan video-links:collect'
 
   shell:
     desc: Open a shell in the php container

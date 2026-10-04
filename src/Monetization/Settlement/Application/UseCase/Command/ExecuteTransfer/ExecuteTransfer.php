@@ -13,6 +13,7 @@ use Source\Monetization\Settlement\Domain\Exception\TransferGatewayException;
 use Source\Monetization\Settlement\Domain\Exception\TransferNotFoundException;
 use Source\Monetization\Settlement\Domain\Repository\TransferRepositoryInterface;
 use Source\Monetization\Settlement\Domain\Service\TransferGatewayInterface;
+use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 
 readonly class ExecuteTransfer implements ExecuteTransferInterface
 {
@@ -36,6 +37,11 @@ readonly class ExecuteTransfer implements ExecuteTransferInterface
 
         if ($transfer === null) {
             throw new TransferNotFoundException($input->transferIdentifier());
+        }
+
+        // A redelivered message must not repeat a completed external payment.
+        if ($transfer->status() === TransferStatus::SENT) {
+            return;
         }
 
         $monetizationAccount = $this->monetizationAccountRepository->findById(

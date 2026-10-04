@@ -29,7 +29,7 @@ class ExecuteTransferJob implements ShouldQueue
     public function __construct(
         private readonly TransferIdentifier $transferIdentifier
     ) {
-        $this->onQueue('settlement');
+        $this->onQueue(config('queue.routing.settlement', 'settlement'));
     }
 
     public function handle(ExecuteTransferInterface $executeTransfer): void

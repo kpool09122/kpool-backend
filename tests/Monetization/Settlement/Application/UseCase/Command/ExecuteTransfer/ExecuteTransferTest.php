@@ -84,6 +84,30 @@ class ExecuteTransferTest extends TestCase
         $useCase->process($input);
     }
 
+    public function testRedeliveryAfterSentDoesNotExecuteGatewayAgain(): void
+    {
+        $transferIdentifier = new TransferIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
+        $transfer = $this->createTransfer($transferIdentifier, $accountIdentifier);
+        $stripeTransferId = new StripeTransferId('tr_1234567890abcdefghijklmn');
+        $transferRepository = Mockery::mock(TransferRepositoryInterface::class);
+        $transferRepository->shouldReceive('findById')->twice()->andReturn($transfer);
+        $transferRepository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (Transfer $saved): bool => $saved->status() === TransferStatus::SENT
+        ));
+        $monetizationAccountRepository = Mockery::mock(MonetizationAccountRepositoryInterface::class);
+        $account = $this->createMonetizationAccount($accountIdentifier);
+        $monetizationAccountRepository->shouldReceive('findById')->once()->andReturn($account);
+        $transferGateway = Mockery::mock(TransferGatewayInterface::class);
+        $transferGateway->shouldReceive('execute')->once()->andReturn($stripeTransferId);
+        $this->app()->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app()->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app()->instance(TransferGatewayInterface::class, $transferGateway);
+        $useCase = $this->app()->make(ExecuteTransferInterface::class);
+        $useCase->process(new ExecuteTransferInput($transferIdentifier));
+        $useCase->process(new ExecuteTransferInput($transferIdentifier));
+    }
+
     /**
      * 異常系: 送金が見つからない場合、例外がスローされること.
      *

@@ -10,12 +10,10 @@ use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Application\Http\Client\StripeClient\StripeClient;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
-use Google\Auth\AccessToken;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Log\LoggerInterface;
 
@@ -23,10 +21,6 @@ class ClientServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(AccessToken::class, fn (Application $app) => new AccessToken(
-            cache: $app->make(CacheItemPoolInterface::class),
-        ));
-
         $this->app->singleton(ClientInterface::class, fn () => new GuzzleClient());
 
         $this->app->singleton(PsrFactories::class, function () {
