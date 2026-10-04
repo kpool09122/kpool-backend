@@ -7,12 +7,12 @@ namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Account\Account\Application\Exception\AccountEmailConflictException;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
@@ -32,7 +32,6 @@ use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -58,7 +57,6 @@ class CreateAccountTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -66,7 +64,6 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app()->make(CreateAccountInterface::class);
         $this->assertInstanceOf(CreateAccount::class, $useCase);
     }
@@ -133,9 +130,6 @@ class CreateAccountTest extends TestCase
             ->with($testData->ownerPrincipalGroup)
             ->andReturnNull();
 
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldNotReceive('dispatch');
-
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -143,7 +137,6 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app()->make(CreateAccountInterface::class);
 
@@ -218,9 +211,6 @@ class CreateAccountTest extends TestCase
             ->with($testData->ownerPrincipalGroup)
             ->andReturnNull();
 
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldNotReceive('dispatch');
-
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -228,7 +218,6 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app()->make(CreateAccountInterface::class);
 
@@ -313,9 +302,6 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('save')->twice();
 
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldNotReceive('dispatch');
-
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -323,7 +309,6 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app()->make(CreateAccountInterface::class);
         $output = new CreateAccountOutput();
@@ -334,11 +319,11 @@ class CreateAccountTest extends TestCase
     }
 
     /**
-     * 正常系: アカウントが重複した時に、通知イベントを発火して早期returnすること.
+     * 異常系: アカウントが重複した時に、独自例外で処理を中断すること.
      *
      * @throws BindingResolutionException
      */
-    public function testProcessDispatchesConflictEventWhenDuplicate(): void
+    public function testProcessThrowsAccountEmailConflictExceptionWhenDuplicate(): void
     {
         $testData = $this->createDummyAccountTestData();
         $input = $testData->input;
@@ -367,15 +352,6 @@ class CreateAccountTest extends TestCase
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldNotReceive('findSystemByName');
 
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')
-            ->once()
-            ->with(Mockery::on(
-                static fn (object $event): bool => $event instanceof AccountCreationConflicted
-                    && (string) $event->email === (string) $testData->email
-                    && $event->language === $testData->language
-            ));
-
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -383,14 +359,14 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app()->make(CreateAccountInterface::class);
 
+        $this->expectException(AccountEmailConflictException::class);
+        $this->expectExceptionMessage('An account already exists for the email address.');
+
         $output = new CreateAccountOutput();
         $useCase->process($input, $output);
-
-        $this->assertSame([], $output->toArray());
     }
 
     public function testProcessThrowsDedicatedExceptionWhenOwnerRoleIsMissing(): void
@@ -437,9 +413,6 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldNotReceive('save');
 
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldNotReceive('dispatch');
-
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);
         $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
@@ -447,7 +420,6 @@ class CreateAccountTest extends TestCase
         $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $this->expectException(SystemRoleNotFoundException::class);
         $this->expectExceptionMessage('Owner account role is not found.');
