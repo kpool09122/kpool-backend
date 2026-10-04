@@ -1,5 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Private object storage, public image delivery via OAC, and encrypted work queues.
+Parameters:
+  WorkQueueName:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9_-]{1,80}'
 Resources:
   PublicImagesBucket:
     Type: AWS::S3::Bucket
@@ -123,13 +127,13 @@ Resources:
       RedriveAllowPolicy:
         redrivePermission: byQueue
         # Construct the ARN to avoid a dependency cycle with Queue.RedrivePolicy.
-        sourceQueueArns: [!Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${AWS::StackName}-work']
+        sourceQueueArns: [!Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${WorkQueueName}']
   Queue:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      QueueName: !Sub '${AWS::StackName}-work'
+      QueueName: !Ref WorkQueueName
       SqsManagedSseEnabled: true
       MessageRetentionPeriod: 345600
       VisibilityTimeout: 300

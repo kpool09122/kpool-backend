@@ -27,11 +27,12 @@ public のみ IGW へのデフォルトルートを持ちます。data は AZ �
 | --- | --- |
 | `ResourcePrefix` | `kpool-prod`。英小文字で開始する 3–20 文字の英小文字・数字・ハイフン。同一アカウント・リージョン内で一意にする。Valkey 名とユーザー ID に使うため稼働後は固定 |
 | `DeploymentRegion` | `ap-northeast-1` のみ。Rules で実際のリージョンと一致を確認 |
+| `WorkQueueName` | `kpool-prod-work-v1`。SQS の物理名。置換が必要な更新では `-v2` など未使用の名前へ変更し、consumer 切替後に Retain された旧 queue を廃止 |
 | `DatabaseInstanceClass` | `db.t4g.micro`。`db.t4g.small` / `db.t4g.medium` に変更可能 |
 | `DatabaseMultiAZ` | 文字列 `false`。可用性要件に応じて `true` に変更 |
 | `DatabaseDeletionProtection` | 文字列 `true`。意図した廃止時だけ別の更新で解除 |
 
-Data 子スタックには加えて `DataSubnetIds`、`DatabaseSecurityGroupId`、`CacheSecurityGroupId` を root から渡します。手入力は不要です。Network / Storage 子スタックに Parameters はありません。
+Data 子スタックには `DataSubnetIds`、`DatabaseSecurityGroupId`、`CacheSecurityGroupId` を、Storage 子スタックには `WorkQueueName` を root から渡します。子スタックへ直接入力する必要はありません。Network 子スタックに Parameters はありません。
 
 PostgreSQL は 16 系、gp3 20 GiB、最大 100 GiB のストレージ自動拡張、暗号化、7 日バックアップです。自動 minor upgrade は有効、major upgrade は無効です。バックアップは UTC 17:00–17:30（JST 02:00–02:30）、maintenance は日曜 UTC 18:00–19:00（月曜 JST 03:00–04:00）です。`rds.force_ssl=1` とし、クライアントも RDS CA を使用した `sslmode=verify-full` を設定します。
 
@@ -111,7 +112,7 @@ UPDATE の完了待ちは `stack-update-complete`。保護設定はテンプレ�
 
 ## データ保持・廃止・復旧
 
-- root の全子スタックに `DeletionPolicy` / `UpdateReplacePolicy: Retain` を設定しています。root を削除しても子スタック・データ・ネットワークが残り、課金は継続します。この場合 RDS の削除 Snapshot はまだ作成されません。残った子スタック ID を記録し、再作成で同名リソースを作ろうとせず、移管・import・廃止手順を個別に計画します。
+- root の nested stack 自体は保持しません。root の削除時には子スタックも通常の順序で削除され、保持が必要な RDS / Valkey / secret / S3 / SQS は各子テンプレートの policy に従います。これによりネットワークや CloudFront は依存解消後に削除でき、データリソースだけが残ります。保持されたリソースは課金が継続するため、物理 ID を記録して移管・import・廃止手順を個別に計画します。
 - RDS リソース自身は両 policy とも `Snapshot`。DB の削除保護を解除した上で実際に削除・置換すると最終 snapshot を残します。自動バックアップも削除を抑止しますが保持期間は 7 日です。手動 snapshot は別途保持費用が発生します。復元は別 DB の作成・接続先切替を伴い、テンプレートの再実行だけでは復元しません。
 - Valkey/cache user/user group/secret は Retain。日次 snapshot を 7 日保持します。データ subnet を廃止する前に cache の ENI と依存関係を整理してください。
 - S3 の両バケットと bucket policy は Retain、versioning 有効。オブジェクトおよび旧 version の期限削除は設定しません。7 日経過した未完了 multipart upload のみ破棄します。削除マーカー・旧 version も課金対象であり、廃止には全 version の棚卸しが必要です。

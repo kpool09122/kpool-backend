@@ -15,6 +15,11 @@ Parameters:
     Type: String
     Default: ap-northeast-1
     AllowedValues: [ap-northeast-1]
+  WorkQueueName:
+    Type: String
+    Default: kpool-prod-work-v1
+    AllowedPattern: '[A-Za-z0-9_-]{1,80}'
+    Description: Versioned physical queue name; change it when replacement is required.
   DatabaseInstanceClass:
     Type: String
     Default: db.t4g.micro
@@ -35,14 +40,10 @@ Rules:
 Resources:
   Network:
     Type: AWS::CloudFormation::Stack
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: network.yaml
   Data:
     Type: AWS::CloudFormation::Stack
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: data.yaml
       Parameters:
@@ -55,10 +56,10 @@ Resources:
         DatabaseDeletionProtection: !Ref DatabaseDeletionProtection
   Storage:
     Type: AWS::CloudFormation::Stack
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: storage.yaml
+      Parameters:
+        WorkQueueName: !Ref WorkQueueName
 Outputs:
   VpcId:
     Value: !GetAtt Network.Outputs.VpcId

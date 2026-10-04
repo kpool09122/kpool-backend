@@ -31,8 +31,8 @@ class FoundationTest(unittest.TestCase):
             child = self.templates[Path(resource['Properties']['TemplateURL']).stem]
             parameters = resource['Properties'].get('Parameters', {})
             self.assertEqual(set(parameters), set(child.get('Parameters', {})))
-            self.assertEqual(resource['DeletionPolicy'], 'Retain')
-            self.assertEqual(resource['UpdateReplacePolicy'], 'Retain')
+            self.assertNotIn('DeletionPolicy', resource)
+            self.assertNotIn('UpdateReplacePolicy', resource)
         for output in root['Outputs'].values():
             stack, attribute = output['Value']['Fn::GetAtt']
             name = attribute.removeprefix('Outputs.')
@@ -63,7 +63,10 @@ class FoundationTest(unittest.TestCase):
         self.assertFalse(self.resources('network', 'EC2::NatGateway'))
         routes = self.resources('network', 'EC2::Route')
         self.assertEqual(len(routes), 1)
-        self.assertEqual(next(iter(routes.values()))['Properties']['RouteTableId'], {'Ref': 'PublicRouteTable'})
+        public_route = next(iter(routes.values()))['Properties']
+        self.assertEqual(public_route['RouteTableId'], {'Ref': 'PublicRouteTable'})
+        self.assertEqual(public_route['DestinationCidrBlock'], '0.0.0.0/0')
+        self.assertEqual(public_route['GatewayId'], {'Ref': 'InternetGateway'})
         associations = self.resources('network', 'EC2::SubnetRouteTableAssociation')
         self.assertEqual(len(associations), 4)
         for resource in associations.values():
@@ -106,7 +109,9 @@ class FoundationTest(unittest.TestCase):
         self.assertEqual(p['UserGroupId'], {'Ref': 'CacheUserGroup'})
         user = self.resources('data', 'ElastiCache::User')['CacheUser']['Properties']
         self.assertEqual(user['AuthenticationMode']['Type'], 'password')
-        self.assertIn('resolve:secretsmanager:', str(user['AuthenticationMode']['Passwords']))
+        self.assertEqual(user['AuthenticationMode']['Passwords'], [
+            {'Fn::Sub': '{{resolve:secretsmanager:${CacheSecret}:SecretString}}'},
+        ])
         self.assertIn('GenerateSecretString', self.resources('data', 'SecretsManager::Secret')['CacheSecret']['Properties'])
 
     def test_buckets_private_encrypted_versioned_and_retained(self):
@@ -149,7 +154,8 @@ class FoundationTest(unittest.TestCase):
         self.assertEqual(queue['RedrivePolicy']['deadLetterTargetArn'], {'Fn::GetAtt': ['DeadLetterQueue', 'Arn']})
         self.assertGreater(dlq['MessageRetentionPeriod'], queue['MessageRetentionPeriod'])
         self.assertEqual(dlq['RedriveAllowPolicy']['redrivePermission'], 'byQueue')
-        self.assertIn(queue['QueueName']['Fn::Sub'], dlq['RedriveAllowPolicy']['sourceQueueArns'][0]['Fn::Sub'])
+        self.assertEqual(queue['QueueName'], {'Ref': 'WorkQueueName'})
+        self.assertIn('${WorkQueueName}', dlq['RedriveAllowPolicy']['sourceQueueArns'][0]['Fn::Sub'])
 
 
 if __name__ == '__main__':
