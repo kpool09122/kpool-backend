@@ -291,6 +291,27 @@ class CloudFormationContracts(unittest.TestCase):
             self.assertLessEqual((ROOT / f'{stack}.yaml').stat().st_size, 51200,
                                  'Documented template-body path must fit CloudFormation limit')
 
+    def test_private_dns_endpoint_execution_permission(self):
+        """Private DNS endpoints need a global Route 53 association permission."""
+        runtime = self.templates['runtime']['Resources']
+        self.assertTrue(runtime['Ec2Endpoint']['Properties']['PrivateDnsEnabled'])
+        bootstrap = self.templates['bootstrap']['Resources']
+        role = bootstrap['CloudFormationExecutionRole']['Properties']
+        grants = []
+        for policy_ref in role['ManagedPolicyArns']:
+            policy = bootstrap[policy_ref['Ref']]['Properties']['PolicyDocument']
+            for statement in policy['Statement']:
+                actions = statement.get('Action', [])
+                if isinstance(actions, str):
+                    actions = [actions]
+                if statement.get('Effect') == 'Allow' and 'route53:AssociateVPCWithHostedZone' in actions:
+                    grants.append(statement)
+        self.assertTrue(grants, 'CloudFormation must be able to associate endpoint private DNS')
+        for grant in grants:
+            self.assertNotIn('aws:RequestedRegion', serialized(grant.get('Condition', {})))
+            self.assertEqual(grant['Resource'],
+                             {'Fn::Sub': 'arn:${AWS::Partition}:route53:::hostedzone/*'})
+
     def test_native_runtime_bootstrap(self):
         runtime = self.templates['runtime']
         for name in ['ApiDesiredCount', 'WorkerDesiredCount']:

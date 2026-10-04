@@ -82,7 +82,7 @@ git diff --check
 
 1. IAM Identity Center 等の短期認証で管理者がログインする。AWS account/region と既存 OIDC の有無を確認する。bootstrap の新規作成・更新は管理者本人の権限で実施し、作成した実行ロールで自分自身を更新しない。Actions に管理者資格情報を渡さない。
 2. リポジトリ外の作業用ディレクトリへ各 JSON 例をコピーし、架空の値を実値へ置換する。PostgreSQL は `aws rds describe-db-engine-versions --engine postgres --region ap-northeast-1` と `describe-orderable-db-instance-options` で提供組合せを確認する。外部成果物未準備なら 0タスク・Scheduler DISABLED のまま進める。
-3. root は [基盤 README](../../infra/cloudformation/README.md) に従って `aws cloudformation package` で既存の管理用 S3 に子テンプレートをアップロードし、出力された root テンプレートだけを適用する。package 用 S3 の作成・アップロードは管理者（Actions ではない）の責務で、本テンプレートは新しい artifact bucket を作らない。bootstrap → root → integration → runtime の順に Change Set を作成し、変更・置換・削除・IAM をレビューして実行する。後続には contracts.json の接続に従って前段 Outputs を転記する。以下は単一スタックの例。新規は CREATE、既存は UPDATE を選ぶ。bootstrap に限り `--role-arn` を省略する。
+3. root は [基盤 README](../../infra/cloudformation/README.md) に従って `aws cloudformation package` で既存の管理用 S3 に子テンプレートをアップロードし、出力された root テンプレートだけを適用する。package 用 S3 の作成・アップロードは管理者（Actions ではない）の責務で、本テンプレートは新しい artifact bucket を作らない。bootstrap → root → integration → runtime の順に Change Set を作成し、変更・置換・削除・IAM をレビューして実行する。bootstrap の Output `CloudFormationExecutionRoleArn` を `CFN_EXECUTION_ROLE_ARN` に設定し、root の Change Set 作成時には `--role-arn "$CFN_EXECUTION_ROLE_ARN"` と `--include-nested-stacks` を指定する。後続には contracts.json の接続に従って前段 Outputs を転記する。以下は単一スタックの例。新規は CREATE、既存は UPDATE を選ぶ。bootstrap に限り `--role-arn` を省略する。
 
 ```sh
 export AWS_PROFILE=kpool-infrastructure

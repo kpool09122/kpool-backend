@@ -233,6 +233,12 @@ Resources:
             Resource:
               Fn::Sub: arn:${AWS::Partition}:route53:::change/*
           - Ref: AWS::NoValue
+        # Private DNS endpoint creation requires this global Route 53 action.
+        - Sid: AssociateEndpointPrivateDns
+          Effect: Allow
+          Action: route53:AssociateVPCWithHostedZone
+          Resource:
+            Fn::Sub: arn:${AWS::Partition}:route53:::hostedzone/*
         - Sid: RegionalFoundation
           Effect: Allow
           Action:
