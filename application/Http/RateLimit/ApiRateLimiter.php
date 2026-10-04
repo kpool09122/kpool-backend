@@ -26,10 +26,15 @@ readonly class ApiRateLimiter
             ),
         ];
 
+        $retryAfter = 0;
         foreach ($limits as $key => $maximumAttempts) {
             if ($this->rateLimiter->tooManyAttempts($key, $maximumAttempts)) {
-                throw new TooManyRequestsHttpException(max(1, $this->rateLimiter->availableIn($key)));
+                $retryAfter = max(1, $retryAfter, $this->rateLimiter->availableIn($key));
             }
+        }
+
+        if ($retryAfter > 0) {
+            throw new TooManyRequestsHttpException($retryAfter);
         }
 
         $decaySeconds = $this->configuredLimit('decay_seconds');

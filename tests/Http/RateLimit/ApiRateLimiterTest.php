@@ -95,6 +95,40 @@ class ApiRateLimiterTest extends TestCase
         $this->assertSame(2, $this->rateLimiter()->attempts('api-rate-limit:global:query'));
     }
 
+    public function testRetryAfterWaitsUntilBothExceededLimitsExpireWithoutChangingAnyCounter(): void
+    {
+        config()->set('api_rate_limit.global.query', 2);
+        config()->set('api_rate_limit.surfaces.screen.account.query', 1);
+
+        $this->apiRateLimiter()->hit(
+            RateLimitSurface::SCREEN,
+            RateLimitOperation::QUERY,
+            RateLimitSubject::account('account-a'),
+        );
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(30));
+        $subject = RateLimitSubject::account('account-b');
+        $this->apiRateLimiter()->hit(RateLimitSurface::SCREEN, RateLimitOperation::QUERY, $subject);
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(10));
+        $exception = $this->rateLimitException(fn () => $this->apiRateLimiter()->hit(
+            RateLimitSurface::SCREEN,
+            RateLimitOperation::QUERY,
+            $subject,
+        ));
+
+        $this->assertSame(50, $exception->retryAfter);
+        $this->assertSame(['Retry-After' => '50'], $exception->getHeaders());
+        $this->assertSame(2, $this->rateLimiter()->attempts('api-rate-limit:global:query'));
+        $this->assertSame(1, $this->rateLimiter()->attempts('api-rate-limit:screen:account:account-b:query'));
+
+        Carbon::setTestNow(Carbon::now()->addSeconds($exception->retryAfter));
+        $this->apiRateLimiter()->hit(RateLimitSurface::SCREEN, RateLimitOperation::QUERY, $subject);
+
+        $this->assertSame(1, $this->rateLimiter()->attempts('api-rate-limit:global:query'));
+        $this->assertSame(1, $this->rateLimiter()->attempts('api-rate-limit:screen:account:account-b:query'));
+    }
+
     public function testQueryAndCommandAreIndependent(): void
     {
         $subject = RateLimitSubject::account('account-a');
