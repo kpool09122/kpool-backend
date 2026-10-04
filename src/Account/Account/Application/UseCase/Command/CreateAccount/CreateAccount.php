@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
-use Source\Account\Account\Domain\Event\AccountCreationConflicted;
+use Source\Account\Account\Application\Exception\AccountEmailConflictException;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Entity\Role;
@@ -14,7 +14,6 @@ use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\ContactAddress;
 
 readonly class CreateAccount implements CreateAccountInterface
@@ -30,7 +29,6 @@ readonly class CreateAccount implements CreateAccountInterface
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
-        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -44,12 +42,7 @@ readonly class CreateAccount implements CreateAccountInterface
         $account = $this->accountRepository->findByEmail($input->email());
 
         if ($account) {
-            $this->eventDispatcher->dispatch(new AccountCreationConflicted(
-                email: $input->email(),
-                language: $input->language(),
-            ));
-
-            return;
+            throw new AccountEmailConflictException();
         }
 
         $account = $this->accountFactory->create(

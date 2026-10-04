@@ -66,7 +66,10 @@ readonly class SocialAuthenticateCallbackAction
         } catch (Throwable $e) {
             $this->logger->error((string) $e);
 
-            throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
+            throw new InternalServerErrorHttpException(
+                detail: error_message('internal_server_error', $request->language()),
+                previous: $e,
+            );
         }
 
         return redirect()->away(ReturnToUrl::toFrontendUrl($output->redirectUrl()));
