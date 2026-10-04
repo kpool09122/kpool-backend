@@ -335,9 +335,6 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: passkey recovery options' => ['POST', '/api/identity/auth/passkeys/recovery/options'],
             'identity: recover passkey' => ['POST', '/api/identity/auth/passkeys/recovery'],
 
-            // Account: signup フローで利用する公開例外
-            'account: create account' => ['POST', '/api/account/accounts'],
-
             // SiteManagement: kpool-frontend の問い合わせフォームで利用する公開API
             'site management: submit contact' => ['POST', '/api/site-management/contact/submit/v1'],
 
@@ -360,6 +357,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: removed register route' => ['POST', 'api/identity/auth/register'],
             'identity: removed login route' => ['POST', 'api/identity/auth/login'],
             'identity: get identity profile' => ['GET', 'api/identity/auth/identities/{identityIdentifier}/profile'],
+            'account: removed create account route' => ['POST', 'api/account/accounts'],
             'account: delete account' => ['DELETE', 'api/account/accounts/{accountId}'],
             'account: create delegation permission' => ['POST', 'api/account/delegation-permissions'],
             'account: delete delegation permission' => ['DELETE', 'api/account/delegation-permissions/{delegationPermissionId}'],

@@ -24,7 +24,7 @@
                                 <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #2563eb; font-family: 'Courier New', monospace;">{{ (string) $session->authCode() }}</span>
                             </div>
                             <p style="margin: 0 0 8px; font-size: 14px; color: #888888; text-align: center;">
-                                이 코드는 <strong style="color: #555555;">15분</strong> 동안 유효합니다.
+                                이 코드는 <strong style="color: #555555;">{{ $ttlMinutes }}분</strong> 동안 유효합니다.
                             </p>
                         </td>
                     </tr>

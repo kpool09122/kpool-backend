@@ -20,7 +20,7 @@ readonly class AuthCodeSession
         private DateTimeImmutable      $generatedAt,
         private ?DateTimeImmutable     $verifiedAt = null,
     ) {
-        $this->expiresAt = $this->generatedAt->modify('+15 minutes');
+        $this->expiresAt = $this->generatedAt->modify('+' . AuthCode::TTL_SECONDS . ' seconds');
         $this->retryableAt = $this->generatedAt->modify('+1 minute');
     }
 

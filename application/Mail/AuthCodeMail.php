@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Shared\Domain\ValueObject\Language;
 
@@ -40,6 +41,7 @@ class AuthCodeMail extends Mailable
     {
         return new Content(
             view: 'emails.auth.auth_code_' . $this->language->value,
+            with: ['ttlMinutes' => AuthCode::TTL_MINUTES],
         );
     }
 }

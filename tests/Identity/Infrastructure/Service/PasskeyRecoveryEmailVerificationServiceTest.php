@@ -112,6 +112,7 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         $identityId = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
         $service = new PasskeyRecoveryEmailVerificationService(new NullLogger());
         $service->send($email, $identityId, Language::JAPANESE);
+        $this->assertContains(Redis::ttl($this->verificationKey($email)), [599, 600]);
 
         Mail::assertQueued(PasskeyRecoveryCodeMail::class, function (PasskeyRecoveryCodeMail $mail) use ($service, $email, $identityId): bool {
             $this->assertEquals($identityId, $service->verify($email, new AuthCode($mail->code)));
@@ -150,12 +151,12 @@ class PasskeyRecoveryEmailVerificationServiceTest extends TestCase
         $key = $this->verificationKey($email);
         $appKey = config('app.key');
         $this->assertIsString($appKey);
-        Redis::setex($key, 900, json_encode([
+        Redis::setex($key, 600, json_encode([
             'identity_id' => '123e4567-e89b-72d3-a456-426614174000',
             'code_hash' => hash_hmac('sha256', (string) $code, $appKey),
         ], JSON_THROW_ON_ERROR));
         if ($attempts > 0) {
-            Redis::setex($key . ':attempts', 900, (string) $attempts);
+            Redis::setex($key . ':attempts', 600, (string) $attempts);
         }
     }
 

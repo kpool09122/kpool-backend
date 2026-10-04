@@ -20,7 +20,6 @@ use Throwable;
 
 class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVerificationServiceInterface
 {
-    private const int TTL_SECONDS = 900;
     private const int COOLDOWN_SECONDS = 60;
     private const int MAX_SENDS = 5;
     private const int MAX_ATTEMPTS = 5;
@@ -66,7 +65,7 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         Redis::setex($cooldownKey, self::COOLDOWN_SECONDS, '1');
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        Redis::setex('passkey_recovery_email:' . $hash, self::TTL_SECONDS, json_encode([
+        Redis::setex('passkey_recovery_email:' . $hash, AuthCode::TTL_SECONDS, json_encode([
             'identity_id' => $identityIdentifier === null ? null : (string) $identityIdentifier,
             'code_hash' => hash_hmac('sha256', $code, config()->string('app.key')),
         ], JSON_THROW_ON_ERROR));
@@ -89,7 +88,7 @@ class PasskeyRecoveryEmailVerificationService implements PasskeyRecoveryEmailVer
         $attemptsKey = $key . ':attempts';
         $attempts = (int) Redis::incr($attemptsKey);
         if ($attempts === 1) {
-            Redis::expire($attemptsKey, self::TTL_SECONDS);
+            Redis::expire($attemptsKey, AuthCode::TTL_SECONDS);
         }
         if ($attempts > self::MAX_ATTEMPTS) {
             Redis::del($key, $attemptsKey);

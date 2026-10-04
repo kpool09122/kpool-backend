@@ -28,7 +28,6 @@ class SocialLinkingSessionStorageService implements SocialLinkingSessionStorageS
     private const string SESSION_KEY = 'social_linking_pending';
     private const string KEY_PREFIX = 'social_linking_pending:';
     private const string PURPOSE = 'sso.link';
-    private const int TTL_SECONDS = 600;
     private const int MAX_ATTEMPTS = 5;
     private const int MAX_SENDS = 5;
     private const int COOLDOWN_SECONDS = 60;
@@ -46,7 +45,7 @@ class SocialLinkingSessionStorageService implements SocialLinkingSessionStorageS
             Redis::del(self::KEY_PREFIX . $oldToken);
         }
         $token = bin2hex(random_bytes(32));
-        Redis::setex(self::KEY_PREFIX . $token, self::TTL_SECONDS, json_encode([
+        Redis::setex(self::KEY_PREFIX . $token, AuthCode::TTL_SECONDS, json_encode([
             'purpose' => self::PURPOSE,
             'session_binding' => $binding,
             'identity_id' => (string) $identityIdentifier,
@@ -54,7 +53,7 @@ class SocialLinkingSessionStorageService implements SocialLinkingSessionStorageS
             'provider' => $connection->provider()->value,
             'provider_user_id' => $connection->providerUserId(),
             'return_to' => $returnTo,
-            'expires_at' => time() + self::TTL_SECONDS,
+            'expires_at' => time() + AuthCode::TTL_SECONDS,
             'attempts' => 0,
             'sends' => 0,
             'sent_at' => 0,

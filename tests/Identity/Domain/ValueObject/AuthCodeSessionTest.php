@@ -32,7 +32,7 @@ class AuthCodeSessionTest extends TestCase
         $this->assertSame($email, $session->email());
         $this->assertSame($authCode, $session->authCode());
         $this->assertEquals(
-            $generatedAt->modify('+15 minutes'),
+            $generatedAt->modify('+10 minutes'),
             $session->expiresAt()
         );
         $this->assertSame($generatedAt, $session->generatedAt());
@@ -76,7 +76,7 @@ class AuthCodeSessionTest extends TestCase
             $generatedAt,
         );
 
-        $now = $generatedAt->modify('+10 minutes');
+        $now = $generatedAt->modify('+599 seconds');
         $session->checkNotExpired($now);
 
         $this->addToAssertionCount(1);
@@ -97,7 +97,7 @@ class AuthCodeSessionTest extends TestCase
             $generatedAt,
         );
 
-        $now = $generatedAt->modify('+16 minutes');
+        $now = $generatedAt->modify('+601 seconds');
 
         $this->expectException(AuthCodeExpiredException::class);
         $this->expectExceptionMessage('認証コードの有効期限が切れています。');
@@ -120,7 +120,7 @@ class AuthCodeSessionTest extends TestCase
             $generatedAt,
         );
 
-        $now = $generatedAt->modify('+15 minutes');
+        $now = $generatedAt->modify('+10 minutes');
 
         $this->expectException(AuthCodeExpiredException::class);
 

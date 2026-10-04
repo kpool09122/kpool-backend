@@ -73,26 +73,6 @@ model AccountSummary {
   address?: ContactAddressSummary | null;
 }
 
-@doc("Account creation request result. Empty when the request is accepted without exposing whether an account already exists.")
-model CreateAccountResult {
-  @doc("Account identifier when a new account was created.")
-  accountIdentifier?: Uuid;
-  @doc("Account email address when a new account was created.")
-  email?: string;
-  @doc("Account category when a new account was created.")
-  type?: string;
-  @doc("Account display name when a new account was created.")
-  name?: string;
-  @doc("Account status when a new account was created.")
-  status?: string;
-  @doc("Account category assigned during creation.")
-  accountCategory?: string;
-  @doc("Contact phone number.")
-  phone?: string | null;
-  @doc("Contact address.")
-  address?: ContactAddressSummary | null;
-}
-
 @doc("Affiliation contract terms.")
 model AffiliationTermsSummary {
   @doc("Revenue share percentage.")

@@ -55,7 +55,7 @@ class VerifyEmailTest extends TestCase
                 $this->assertGreaterThanOrEqual($before->getTimestamp(), $session->generatedAt()->getTimestamp());
                 $this->assertLessThanOrEqual((new DateTimeImmutable('now'))->getTimestamp(), $session->generatedAt()->getTimestamp());
                 $this->assertSame($session->generatedAt(), $session->verifiedAt());
-                $this->assertSame($session->generatedAt()->modify('+15 minutes')->getTimestamp(), $session->expiresAt()->getTimestamp());
+                $this->assertSame($session->generatedAt()->modify('+10 minutes')->getTimestamp(), $session->expiresAt()->getTimestamp());
 
                 return true;
             }));

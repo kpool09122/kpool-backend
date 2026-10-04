@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
-use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -91,13 +90,6 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);
         $this->principalGroupRepository->save($ownerPrincipalGroup);
-
-        $this->eventDispatcher->dispatch(new AccountCreated(
-            accountIdentifier: $account->accountIdentifier(),
-            email: $account->email(),
-            identityIdentifier: $input->identityIdentifier(),
-            language: $input->language(),
-        ));
 
         $output->setAccount($account);
     }

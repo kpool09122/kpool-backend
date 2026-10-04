@@ -237,48 +237,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RejectAccountCategoryChangeRequestBody'
-  /accounts:
-    post:
-      operationId: AccountOperations_createAccount
-      description: Create an account.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when an account is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateAccountResult'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '419':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAccountRequestBody'
   /accounts/setup:
     post:
       operationId: AccountOperations_completeInitialSetup
@@ -1987,68 +1945,6 @@ components:
           type: string
           nullable: true
           description: Secondary address line.
-    CreateAccountRequestBody:
-      type: object
-      required:
-        - email
-        - accountName
-      properties:
-        email:
-          type: string
-          description: Account email address.
-        accountName:
-          type: string
-          description: Account display name.
-        principalIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Identity identifier to attach to the account.
-        phone:
-          type: string
-          nullable: true
-          description: Contact phone number.
-        address:
-          type: object
-          allOf:
-            - $ref: '#/components/schemas/ContactAddressSummary'
-          nullable: true
-          description: Contact address.
-      description: Request body for creating an account.
-    CreateAccountResult:
-      type: object
-      properties:
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier when a new account was created.
-        email:
-          type: string
-          description: Account email address when a new account was created.
-        type:
-          type: string
-          description: Account category when a new account was created.
-        name:
-          type: string
-          description: Account display name when a new account was created.
-        status:
-          type: string
-          description: Account status when a new account was created.
-        accountCategory:
-          type: string
-          description: Account category assigned during creation.
-        phone:
-          type: string
-          nullable: true
-          description: Contact phone number.
-        address:
-          type: object
-          allOf:
-            - $ref: '#/components/schemas/ContactAddressSummary'
-          nullable: true
-          description: Contact address.
-      description: Account creation request result. Empty when the request is accepted without exposing whether an account already exists.
     CreatePrincipalGroupRequestBody:
       type: object
       required:
