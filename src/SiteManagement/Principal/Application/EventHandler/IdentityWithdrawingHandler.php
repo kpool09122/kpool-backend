@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Principal\Application\EventHandler;
 
+use Illuminate\Support\Facades\DB;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
@@ -17,6 +18,8 @@ readonly class IdentityWithdrawingHandler
 
     public function handle(IdentityWithdrawing $event): void
     {
-        $this->withdrawFromService->process(new WithdrawFromServiceInput($event->identityIdentifier), new WithdrawFromServiceOutput());
+        DB::transaction(function () use ($event): void {
+            $this->withdrawFromService->process(new WithdrawFromServiceInput($event->identityIdentifier), new WithdrawFromServiceOutput());
+        });
     }
 }
