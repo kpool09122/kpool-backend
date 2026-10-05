@@ -23,14 +23,26 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(result['MonthlyBudgetUSD'], '250')
         self.assertEqual(result['ProjectName'], config['projectName'])
 
-    def test_rejects_unknown_secret_derived_and_pipeline_owned_inputs(self):
+    def test_rejects_unknown_derived_and_pipeline_owned_inputs(self):
         templates, contract = environment.load_contract(ROOT)
-        for stack, name in [('runtime', 'ApiDesiredCount'), ('runtime', 'VpcId'),
-                            ('runtime', 'DB_PASSWORD'), ('root', 'Typo')]:
+        for stack, name, message in [('runtime', 'ApiDesiredCount', 'Derived input'),
+                                     ('runtime', 'VpcId', 'Derived input'),
+                                     ('root', 'Typo', 'Unknown input')]:
             config = json.loads((ROOT / 'environment.example.json').read_text())
             config['inputs'][stack][name] = 'unexpected'
-            with self.subTest(name=name), self.assertRaises(ValueError):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, message):
                 environment.validate_config(config, templates, contract)
+
+    def test_rejects_secret_values_for_known_parameters(self):
+        templates, contract = environment.load_contract(ROOT)
+        for name, definition in [('DbCredential', {'Type': 'String', 'NoEcho': True}),
+                                 ('DbPassword', {'Type': 'String'})]:
+            secret_templates = copy.deepcopy(templates)
+            secret_templates['runtime']['Parameters'][name] = definition
+            config = json.loads((ROOT / 'environment.example.json').read_text())
+            config['inputs']['runtime'][name] = 'value'
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'never secret values'):
+                environment.validate_config(config, secret_templates, contract)
 
     def test_rejects_invalid_runtime_input_offline(self):
         config = json.loads((ROOT / 'environment.example.json').read_text())
