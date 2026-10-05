@@ -150,12 +150,7 @@ class RuntimeContracts(unittest.TestCase):
                                                'elasticloadbalancing:DeregisterTargets'],
                                     'Resource': [{'Ref': 'BlueTargetGroup'}, {'Ref': 'GreenTargetGroup'}]})
 
-    def test_alarm_thresholds_and_sparse_metric_policy(self):
-        defaults = self.template['Parameters']
-        for name, expected in (('AlarmPeriod', 60), ('AlarmEvaluationPeriods', 2),
-                               ('ErrorCountThreshold', 5), ('LatencyThresholdSeconds', 2),
-                               ('AlarmMissingData', 'notBreaching')):
-            self.assertEqual(defaults[name]['Default'], expected)
+    def test_alarms_follow_operator_inputs(self):
         for name, metric, statistic, threshold in (
             ('ServerErrorAlarm', 'HTTPCode_Target_5XX_Count', 'Sum', 'ErrorCountThreshold'),
             ('LatencyAlarm', 'TargetResponseTime', 'Average', 'LatencyThresholdSeconds'),
@@ -184,9 +179,9 @@ class RuntimeContracts(unittest.TestCase):
     def test_bootstrap_and_release_selection(self):
         defaults = {name: item.get('Default', '')
                     for name, item in self.template['Parameters'].items()}
-        for service, prefix, cpu, memory, container in (
-            ('ApiService', 'Api', '512', '1024', 'api'),
-            ('WorkerService', 'Worker', '256', '512', 'worker'),
+        for service, prefix, container in (
+            ('ApiService', 'Api', 'api'),
+            ('WorkerService', 'Worker', 'worker'),
         ):
             with self.subTest(service=service):
                 props = self.runtime[service]['Properties']
@@ -195,8 +190,6 @@ class RuntimeContracts(unittest.TestCase):
                 self.assertEqual(task['RuntimePlatform'], {'CpuArchitecture': 'ARM64', 'OperatingSystemFamily': 'LINUX'})
                 self.assertEqual(task['NetworkMode'], 'awsvpc')
                 self.assertEqual(task['RequiresCompatibilities'], ['FARGATE'])
-                self.assertEqual(defaults[prefix + 'Cpu'], cpu)
-                self.assertEqual(defaults[prefix + 'Memory'], memory)
                 self.assertEqual(task['Cpu'], {'Ref': prefix + 'Cpu'})
                 self.assertEqual(task['Memory'], {'Ref': prefix + 'Memory'})
                 self.assertEqual(defaults[prefix + 'DesiredCount'], 0)

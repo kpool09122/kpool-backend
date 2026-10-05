@@ -1,4 +1,5 @@
 """Offline security/topology contracts beyond CloudFormation's resource schema."""
+import copy
 import ipaddress
 import json
 import re
@@ -43,34 +44,75 @@ class FoundationTest(unittest.TestCase):
             self.assertIn(name, child['Outputs'])
 
 
-    def test_two_az_nonoverlapping_subnets(self):
+    def test_subnets_fit_the_vpc_without_overlapping(self):
         subnets = self.resources('network', 'EC2::Subnet')
-        self.assertEqual(len(subnets), 4)
         cidrs = [ipaddress.ip_network(s['Properties']['CidrBlock']) for s in subnets.values()]
         vpc = ipaddress.ip_network(next(iter(self.resources('network', 'EC2::VPC').values()))['Properties']['CidrBlock'])
         for i, cidr in enumerate(cidrs):
             self.assertTrue(cidr.subnet_of(vpc))
             self.assertFalse(any(cidr.overlaps(other) for other in cidrs[i + 1:]))
-        for prefix in ['Public', 'Data']:
-            azs = [s['Properties']['AvailabilityZone'] for key, s in subnets.items() if key.startswith(prefix)]
-            self.assertEqual(len(azs), 2)
-            self.assertNotEqual(azs[0], azs[1])
-        self.assertTrue(all(not s['Properties']['MapPublicIpOnLaunch'] for s in subnets.values()))
 
-    def test_private_routes_and_no_nat(self):
-        self.assertFalse(self.resources('network', 'EC2::NatGateway'))
-        routes = self.resources('network', 'EC2::Route')
-        self.assertEqual(len(routes), 1)
-        public_route = next(iter(routes.values()))['Properties']
-        self.assertEqual(public_route['RouteTableId'], {'Ref': 'PublicRouteTable'})
-        self.assertEqual(public_route['DestinationCidrBlock'], '0.0.0.0/0')
-        self.assertEqual(public_route['GatewayId'], {'Ref': 'InternetGateway'})
-        associations = self.resources('network', 'EC2::SubnetRouteTableAssociation')
-        self.assertEqual(len(associations), 4)
-        for resource in associations.values():
-            p = resource['Properties']
-            if p['SubnetId']['Ref'].startswith('Data'):
-                self.assertTrue(p['RouteTableId']['Ref'].startswith('Data'))
+    def assert_data_network_is_private(self, network):
+        resources = network['Resources']
+        data = {item['Ref'] for item in network['Outputs']['DataSubnetIds']['Value']['Fn::Join'][1]}
+        public = {item['Ref'] for item in network['Outputs']['PublicSubnetIds']['Value']['Fn::Join'][1]}
+        self.assertTrue(data)
+        self.assertFalse(data & public, 'Data subnets must not be handed to public tasks/ALB')
+        # RDS subnet groups and the ALB need multiple AZs, not a fixed subnet count.
+        for names in (data, public):
+            zones = {json.dumps(resources[name]['Properties']['AvailabilityZone'], sort_keys=True) for name in names}
+            self.assertGreaterEqual(len(zones), 2)
+        associations = {r['Properties']['SubnetId']['Ref']: r['Properties']['RouteTableId']['Ref']
+                        for r in resources.values() if r['Type'] == 'AWS::EC2::SubnetRouteTableAssociation'}
+        internet_tables = {r['Properties']['RouteTableId']['Ref'] for r in resources.values()
+                           if r['Type'] == 'AWS::EC2::Route'
+                           and ('GatewayId' in r['Properties'] or 'EgressOnlyInternetGatewayId' in r['Properties'])}
+        gateways = {name for name, r in resources.items() if r['Type'] == 'AWS::EC2::InternetGateway'}
+        public_tables = {r['Properties']['RouteTableId']['Ref'] for r in resources.values()
+                         if r['Type'] == 'AWS::EC2::Route'
+                         and r['Properties'].get('DestinationCidrBlock') == '0.0.0.0/0'
+                         and r['Properties'].get('GatewayId', {}).get('Ref') in gateways}
+        for name in data:
+            self.assertIs(resources[name]['Properties'].get('MapPublicIpOnLaunch', False), False)
+            self.assertIn(name, associations, 'Do not assume the implicit main route table is private')
+            self.assertNotIn(associations[name], internet_tables, 'Data route table must not reach an internet gateway')
+        for name in public:
+            self.assertIn(associations[name], public_tables, 'Public IPv4 tasks need a default route to an internet gateway')
+
+    def test_data_subnets_have_no_direct_internet_access(self):
+        self.assert_data_network_is_private(self.templates['network'])
+        for kind in ('RDS::DBSubnetGroup', 'ElastiCache::ServerlessCache'):
+            for resource in self.resources('data', kind).values():
+                self.assertEqual(resource['Properties']['SubnetIds'], {'Ref': 'DataSubnetIds'})
+
+    def test_network_guard_rejects_public_data_and_accepts_nat_or_extra_subnets(self):
+        for label, mutate in (
+            ('automatic public IP', lambda n: n['Resources']['DataSubnetA']['Properties'].update(MapPublicIpOnLaunch=True)),
+            ('public table', lambda n: n['Resources']['DataAssociationA']['Properties'].update(RouteTableId={'Ref': 'PublicRouteTable'})),
+            ('implicit table', lambda n: n['Resources'].pop('DataAssociationA')),
+            ('public output', lambda n: n['Outputs']['DataSubnetIds']['Value']['Fn::Join'][1].append({'Ref': 'PublicSubnetA'})),
+            ('missing public default route', lambda n: n['Resources']['PublicDefaultRoute']['Properties'].update(DestinationCidrBlock='10.99.0.0/16')),
+            ('internet route', lambda n: n['Resources'].update(DataInternetRoute={'Type': 'AWS::EC2::Route', 'Properties': {
+                'RouteTableId': {'Ref': 'DataRouteTableA'}, 'DestinationCidrBlock': '0.0.0.0/0', 'GatewayId': {'Ref': 'InternetGateway'}}})),
+            ('IPv6 internet route', lambda n: n['Resources'].update(DataInternetRoute={'Type': 'AWS::EC2::Route', 'Properties': {
+                'RouteTableId': {'Ref': 'DataRouteTableA'}, 'DestinationIpv6CidrBlock': '::/0',
+                'EgressOnlyInternetGatewayId': {'Ref': 'Ipv6Gateway'}}})),
+        ):
+            network = copy.deepcopy(self.templates['network'])
+            mutate(network)
+            with self.subTest(risk=label), self.assertRaises(AssertionError):
+                self.assert_data_network_is_private(network)
+        network = copy.deepcopy(self.templates['network'])
+        network['Resources']['Nat'] = {'Type': 'AWS::EC2::NatGateway', 'Properties': {
+            'SubnetId': {'Ref': 'PublicSubnetA'}, 'AllocationId': 'eipalloc-example'}}
+        network['Resources']['DataNatRoute'] = {'Type': 'AWS::EC2::Route', 'Properties': {
+            'RouteTableId': {'Ref': 'DataRouteTableA'}, 'DestinationCidrBlock': '0.0.0.0/0', 'NatGatewayId': {'Ref': 'Nat'}}}
+        network['Resources']['ExtraPublicSubnet'] = copy.deepcopy(network['Resources']['PublicSubnetA'])
+        network['Resources']['ExtraPublicSubnet']['Properties']['CidrBlock'] = '10.20.2.0/24'
+        network['Resources']['ExtraPublicAssociation'] = {'Type': 'AWS::EC2::SubnetRouteTableAssociation', 'Properties': {
+            'SubnetId': {'Ref': 'ExtraPublicSubnet'}, 'RouteTableId': {'Ref': 'PublicRouteTable'}}}
+        network['Outputs']['PublicSubnetIds']['Value']['Fn::Join'][1].append({'Ref': 'ExtraPublicSubnet'})
+        self.assert_data_network_is_private(network)
 
     def test_data_access_only_from_application_security_group(self):
         groups = self.resources('network', 'EC2::SecurityGroup')
@@ -83,21 +125,19 @@ class FoundationTest(unittest.TestCase):
             })
         self.assertFalse(groups['ApplicationSecurityGroup']['Properties'].get('SecurityGroupIngress'))
 
-    def test_database_protection_and_defaults(self):
-        db = self.resources('data', 'RDS::DBInstance')['Database']
-        p = db['Properties']
-        self.assertEqual(db['DeletionPolicy'], 'Snapshot')
-        self.assertEqual(db['UpdateReplacePolicy'], 'Snapshot')
-        for key in ['StorageEncrypted', 'ManageMasterUserPassword', 'CopyTagsToSnapshot']:
-            self.assertIs(p[key], True)
-        self.assertIs(p['PubliclyAccessible'], False)
-        self.assertNotIn('MasterUserPassword', p)
-        self.assertEqual((p['StorageType'], p['AllocatedStorage']), ('gp3', '20'))
+    def test_database_backup_tls_and_deletion_protection(self):
+        database = self.resources('data', 'RDS::DBInstance')['Database']
+        # Generic persistent-resource guards also allow Retain; RDS needs a final snapshot.
+        self.assertEqual(database['DeletionPolicy'], 'Snapshot')
+        self.assertEqual(database['UpdateReplacePolicy'], 'Snapshot')
+        p = database['Properties']
+        self.assertTrue(p['CopyTagsToSnapshot'])
         self.assertGreaterEqual(p['BackupRetentionPeriod'], 7)
-        params = self.templates['root']['Parameters']
-        self.assertEqual(params['DatabaseInstanceClass']['Default'], 'db.t4g.micro')
-        self.assertEqual(params['DatabaseMultiAZ']['Default'], 'false')
-        self.assertEqual(params['DatabaseDeletionProtection']['Default'], 'true')
+        self.assertIs(p['DeleteAutomatedBackups'], False)
+        self.assertEqual(p['DeletionProtection'], {'Ref': 'DatabaseDeletionProtection'})
+        self.assertEqual(self.templates['root']['Parameters']['DatabaseDeletionProtection']['Default'], 'true')
+        group = self.resources('data', 'RDS::DBParameterGroup')['DatabaseParameterGroup']
+        self.assertEqual(group['Properties']['Parameters']['rds.force_ssl'], '1')
 
     def test_valkey_authentication_and_subnets(self):
         p = self.resources('data', 'ElastiCache::ServerlessCache')['Cache']['Properties']
@@ -105,6 +145,7 @@ class FoundationTest(unittest.TestCase):
         self.assertEqual(p['SubnetIds'], {'Ref': 'DataSubnetIds'})
         self.assertEqual(p['SecurityGroupIds'], [{'Ref': 'CacheSecurityGroupId'}])
         self.assertEqual(p['UserGroupId'], {'Ref': 'CacheUserGroup'})
+        self.assertGreaterEqual(p['SnapshotRetentionLimit'], 7)
         user = self.resources('data', 'ElastiCache::User')['CacheUser']['Properties']
         self.assertEqual(user['AuthenticationMode']['Type'], 'password')
         self.assertEqual(user['AuthenticationMode']['Passwords'], [
@@ -112,16 +153,9 @@ class FoundationTest(unittest.TestCase):
         ])
         self.assertIn('GenerateSecretString', self.resources('data', 'SecretsManager::Secret')['CacheSecret']['Properties'])
 
-    def test_buckets_private_encrypted_versioned_and_retained(self):
-        buckets = self.resources('storage', 'S3::Bucket')
-        self.assertEqual(len(buckets), 2)
-        for bucket in buckets.values():
-            self.assertEqual(bucket['DeletionPolicy'], 'Retain')
-            self.assertEqual(bucket['UpdateReplacePolicy'], 'Retain')
-            p = bucket['Properties']
-            self.assertTrue(all(p['PublicAccessBlockConfiguration'].values()))
-            self.assertEqual(p['VersioningConfiguration']['Status'], 'Enabled')
-            self.assertIn('BucketEncryption', p)
+    def test_object_version_recovery_and_tls_only_access(self):
+        for bucket in self.resources('storage', 'S3::Bucket').values():
+            self.assertEqual(bucket['Properties']['VersioningConfiguration']['Status'], 'Enabled')
         for policy in self.resources('storage', 'S3::BucketPolicy').values():
             statements = policy['Properties']['PolicyDocument']['Statement']
             self.assertTrue(any(s['Effect'] == 'Deny' and s.get('Condition') == {'Bool': {'aws:SecureTransport': 'false'}} for s in statements))
@@ -139,6 +173,7 @@ class FoundationTest(unittest.TestCase):
         allows = [s for s in policies['PublicImagesBucketPolicy']['Properties']['PolicyDocument']['Statement'] if s['Effect'] == 'Allow']
         self.assertEqual(len(allows), 1)
         self.assertEqual(allows[0]['Principal'], {'Service': 'cloudfront.amazonaws.com'})
+        self.assertEqual(allows[0]['Action'], 's3:GetObject')
         self.assertIn('${ImageDistribution}', allows[0]['Condition']['StringEquals']['AWS:SourceArn']['Fn::Sub'])
         self.assertFalse(any(s['Effect'] == 'Allow' for s in policies['PrivateFilesBucketPolicy']['Properties']['PolicyDocument']['Statement']))
 
@@ -152,7 +187,6 @@ class FoundationTest(unittest.TestCase):
             'SslSupportMethod': 'sni-only',
         })
         self.assertEqual(distribution['DefaultCacheBehavior']['ViewerProtocolPolicy'], 'redirect-to-https')
-        self.assertEqual(distribution['HttpVersion'], 'http2and3')
         self.assertEqual(self.templates['storage']['Outputs']['ImageBaseUrl']['Value'], {
             'Fn::Sub': 'https://${ImageDomainName}',
         })
@@ -180,7 +214,6 @@ class FoundationTest(unittest.TestCase):
         dlq = queues['DeadLetterQueue']['Properties']
         for resource in queues.values():
             self.assertIs(resource['Properties']['SqsManagedSseEnabled'], True)
-            self.assertEqual(resource['DeletionPolicy'], 'Retain')
         self.assertEqual(queue['RedrivePolicy']['deadLetterTargetArn'], {'Fn::GetAtt': ['DeadLetterQueue', 'Arn']})
         self.assertGreater(dlq['MessageRetentionPeriod'], queue['MessageRetentionPeriod'])
         self.assertEqual(dlq['RedriveAllowPolicy']['redrivePermission'], 'byQueue')

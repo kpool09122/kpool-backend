@@ -10,7 +10,7 @@ Variables はバックエンド repository の Settings → Environments → pro
 | --- | --- | --- | --- |
 | 環境・4親stack | 外部台帳の account、東京、4stack名 | Variables `AWS_ACCOUNT_ID`, `AWS_REGION`, `CFN_BOOTSTRAP_STACK`, `CFN_ROOT_STACK`, `CFN_INTEGRATION_STACK`, `CFN_RUNTIME_STACK` | STS account、DescribeStacks の region/status、基盤管理者→Pipeline担当 |
 | OIDC アプリ配備 | bootstrap `DeploymentRoleArn`, `OidcProviderArn` | Variables `AWS_DEPLOY_ROLE_ARN`、AWS配備jobの OIDC | audience `sts.amazonaws.com`、subject `repo:kpool09122/kpool-backend:environment:<Environment>`、許可ref、Pipeline担当／実環境検証担当 |
-| 基盤変更 | bootstrap `CloudFormationExecutionRoleArn` | 管理者のローカル `CFN_EXECUTION_ROLE_ARN` のみ | CloudFormation trust と管理者 PassRole。Actionsへの登録／AssumeRoleは禁止、基盤管理者 |
+| 基盤変更 | bootstrap `CloudFormationExecutionRoleArn` | 管理者の操作ツールが実Outputsから取得（環境変数への転記不要） | CloudFormation trust と管理者 PassRole。Actionsへの登録／AssumeRoleは禁止、基盤管理者 |
 | ECR・ECS | runtime `RepositoryUri`, `RepositoryArn`, `ClusterArn`, `ApiServiceName`, `WorkerServiceName`, `ApiServiceArn`, `WorkerServiceArn` | Pipeline担当 build/publish/deploy job が Outputs から取得 | repository、cluster、2serviceを照合、digest固定、Pipeline担当 |
 | 雛形・release family | runtime `ApiBootstrapTaskDefinitionArn`, `WorkerBootstrapTaskDefinitionArn`, `MigrationBootstrapTaskDefinitionArn`, `SchedulerBootstrapTaskDefinitionArn` と `ApiReleaseFamily`, `WorkerReleaseFamily`, `MigrationReleaseFamily`, `SchedulerReleaseFamily`, `ContainerNames` | Pipeline担当 の用途別release定義 | ARM64、container名、CPU/memory、volume、command、StopTimeout、Pipeline担当／実環境検証担当 |
 | 実行権限 | runtime `ApiTaskRoleArn`, `WorkerTaskRoleArn`, `MigrationTaskRoleArn`, `AppExecutionRoleArn`, `MigrationExecutionRoleArn` | release定義 taskRoleArn/executionRoleArn | 用途別 ARN、Secrets/KMS、PassRole を照合、Pipeline担当 |
@@ -60,7 +60,7 @@ Variables はバックエンド repository の Settings → Environments → pro
 | 未確定／文書だけでは解消できない項目 | 担当・依存 | 解消証跡 |
 | --- | --- | --- |
 | hook ZIP・canary・通知先、DBユーザーとSecret実値 | 基盤管理者／実環境検証担当、Pipeline担当開始前 | ARN／artifact version、alarm設定・試験、秘密値を含まないチェック結果 |
-| 2用途Schedulerと非0 STOPPED監視、送金の外部成功／DB未保存境界 | 基盤管理者／実環境検証担当、[queue契約](queue-operations.md) | command／周期／timezone／監視／重複抑止試験。汎用scheduleを有効化しない |
+| 2用途Scheduler、producer用SendMessage権限、非0 STOPPED監視、送金の外部成功／DB未保存境界 | 基盤管理者／実環境検証担当、[queue契約](queue-operations.md) | command／周期／timezone／role／監視／重複抑止試験。現Scheduler雛形のWorkerTaskRoleは受信権限のみ。汎用scheduleを有効化しない |
 | Workers方式、Wrangler等の場所、bindings、Next.js互換性 | frontend／基盤管理者／実環境検証担当 | 固定SHAのbuild／preview／deploy結果、binding台帳 |
 | 統合workflow・Secret名・配備停止方法と排他 | Pipeline担当 | workflowファイル名／固定SHA、all／backend／frontendの試験 |
 | 復元DB／CacheのCloudFormation再管理、Valkey rotation実装、保持期限の承認 | 基盤管理者／実環境検証担当 | Change Set／import可否、演習とRPO/RTO、承認済み期限 |

@@ -3,11 +3,11 @@
 [構成](../../infra/cloudformation/README.md)、[操作](operations.md)、[接続](pipeline-handoff.md)、[設計判断](design-decisions.md)から該当変更を選ぶ。
 初回配備や従来の全項目消化をリファクタリングの完了条件にしない。静的PASSはAWS/Cloudflareでの成功の証明ではない。
 
-## 今回の確認と未実施
+## 検証の区分と記録先
 
-- 静的: `task infra:validate`（cfn-lint＋保護/接続/操作テスト）、`task infra:operate -- config-check --environment infra/cloudformation/environment.example.json`。
-- 机上: 下表の5通常操作を正本からたどり、値の取得元・担当・失敗時中止・復旧先を確認。
-- 実環境: 対象accountを確認できる権限がなく未実施。環境が無いとは判定しない。AWS/Cloudflareへの書込なし。
+- オフライン: `task infra:validate`（cfn-lint＋保護/接続/操作テスト）、`task infra:operate -- config-check --environment infra/cloudformation/environment.example.json`。実行結果は各PRへ記載し、この文書を恒久的なPASS記録にしない。例のJSONは架空入力のschema検査だけに使う。
+- 机上: 下表の5通常操作を正本からたどり、値の取得元・担当・失敗時中止・復旧先を確認。実行可能なPipelineや復元成功の証明ではない。
+- 実環境: 明示承認された対象account・権限・検証データを用意し、下記のrepo外記録を残す。未実施なら未確認とし、環境が無いとは判定しない。過去のSTS/AccessDeniedを今回の確認にしない。
 
 | 操作 | 入口 / 正本 | 必要な確認 / 中止 / 復旧 |
 |---|---|---|

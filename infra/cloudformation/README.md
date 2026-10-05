@@ -37,7 +37,7 @@ root 内の子は個別に配備しない。手動転記のための分割では
 
 - 非秘密の環境入力は **リポジトリ外の1つの environment JSON**。雛形は [environment.example.json](environment.example.json)。例は架空の値で適用しない。
 - Parameter の型・制約・既定値は各 `.yaml` が正本。環境JSONには必須の外部入力と変更したい任意入力だけを書く。既存環境の任意入力の省略値は現在の CloudFormation Parameters を維持する。
-- [contracts.json](contracts.json) は適用順、スタック間の接続、Pipeline向けOutputキーの契約。テンプレート内のParameter定義を複製しない。
+- [contracts.json](contracts.json) は操作ツールが読むregion・親の適用順・親間の接続だけを持つ。子の接続とParameter/Output定義はテンプレート、Pipelineの消費項目・担当は接続台帳が正本。未使用の全Output在庫を複製しない。
 - リソースID・endpoint・ARNは実 Outputs、稼働revision・capacity・転送先は ECS/ALB/Scheduler が正本。environment JSON にコピーしない。
 - Secret 値は Secrets Manager、Cloudflare token/App鍵は GitHub Environment Secrets。環境JSON・plan・Outputs・ログへ入れない。
 
@@ -53,7 +53,7 @@ task infra:validate              # AWS認証不要。CIも同じ実装を実行
 task infra:operate -- --help
 ```
 
-`CFN_PYTHON` / `CFN_VENV` でPythonと仮想環境を選べる。旧 `cfn:check` / `validate.sh` は同じ検証のaliasである。
+`CFN_PYTHON` / `CFN_VENV` でPythonと仮想環境を選べる。部分検証は `task cfn:lint` / `task cfn:test`。CIも `run.sh check` を直接実行する。旧 `cfn:check` / `validate.sh` は削除し、通常入口へ統一した。
 AWSを操作する `plan` / `execute` は明示操作であり、検証やCIからは呼ばれない。
 
 ## 基盤の保護と制約
