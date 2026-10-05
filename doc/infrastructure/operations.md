@@ -150,7 +150,7 @@ aws cloudformation describe-stacks --stack-name kpool-production-runtime \
 aws ecs describe-services --cluster "$CLUSTER_ARN" \
   --services "$API_SERVICE" "$WORKER_SERVICE" > services-before.json
 # deployments の複数存在、未安定、失敗、進行中の bake/rollback を確認して中断する
-aws ecs list-service-deployments --service "$API_SERVICE_ARN" \
+aws ecs list-service-deployments --cluster "$CLUSTER_ARN" --service "$API_SERVICE_ARN" \
   --status PENDING IN_PROGRESS STOP_REQUESTED ROLLBACK_REQUESTED ROLLBACK_IN_PROGRESS
 aws elbv2 describe-rules --rule-arns "$PRODUCTION_RULE_ARN" "$TEST_RULE_ARN" > rules-before.json
 aws scheduler get-schedule --group-name "$SCHEDULE_GROUP" --name "$SCHEDULE_NAME" > scheduler-before.json
