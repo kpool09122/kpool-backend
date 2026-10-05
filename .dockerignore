@@ -25,3 +25,7 @@ public/storage
 !routes/**
 !docker/
 !docker/**
+**/.env*
+**/auth.json
+**/*.pem
+**/*.key
