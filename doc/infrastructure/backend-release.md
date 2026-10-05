@@ -63,6 +63,7 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 
 - `target=backend`、`mode=deploy`。`backend_ref=main` または main の履歴に存在する完全 SHA。plan 作成時に SHA を解決し、build／配備は同じ SHA と artifact を使う。production control code は起動元 workflow SHA に固定し、アプリ source SHA を control code として実行しない。
 - validation job は control checkout に `github.workflow_sha` を直接使い、source checkout 前に plan の SHA 一致と main の履歴への到達性を再確認する。main 外の SHA、GitHub API の確認失敗、固定 SHA の解決不一致ではアプリコードを実行せず停止する。
+- source checkout は固定の `main` と全履歴を取得する。信頼済み control の `select-source.sh` が取得済み `origin/main` への祖先関係を Git で確認してから、対象の固定 SHA に切り替える。入力 SHA を checkout action の ref に渡さず、検証とビルドはこの選択の成功後に同じ job で実行する。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
 - `paused=true`、unstable stack/service、未設定 hook/alarm/bake、CA／compatibility 未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
 - 検証は Taskfile の install、非破壊 cs-check、phpstan、test を使う。ARM runner で既存 production target を build し、archive SHA256 と platform を記録。公開 job は archive を検証して ECR へ公開し、ECR 応答の digest を以後の全用途へ渡す。
@@ -108,3 +109,4 @@ ACTIONLINT=/tmp/kpool-release-bin/actionlint CFN_VENV=/tmp/kpool-cfn-tools task 
 ```
 
 これは release の公開 API／state machine／AWS transport fixture テスト、実 botocore request shape 照合、workflow graph／権限／action SHA の検査、actionlint、既存 CF lint＋全テストを実行する。fixture は TEST ONLY と明記しており、runtime は cloud 応答の代わりに fixture を使わない。PHP変更はなく、task check の破壊的 style fix は今回のローカル確認対象外。production Docker build と container verify は別の実行証跡を参照する。
+PR の CI infrastructure job でも同じ release／CloudFormation 検証を実行する。source 選択のテストは一時 Git repository を使い、main の現在・過去 commit の選択と、未マージ commit・不正 SHA・不完全な履歴の拒否を確認する。

@@ -20,7 +20,14 @@ jobs:
         with:
           python-version: '3.13'
       - run: bash scripts/cloudformation/run.sh install
-      - run: bash scripts/cloudformation/run.sh check
+      - name: Install pinned workflow validator
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-bin"
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+      - name: Validate release and infrastructure contracts
+        env:
+          ACTIONLINT: ${{ runner.temp }}/release-bin/actionlint
+        run: bash scripts/release/run.sh check
 
   test:
     runs-on: ubuntu-latest

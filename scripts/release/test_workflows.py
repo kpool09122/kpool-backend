@@ -20,6 +20,16 @@ class WorkflowTests(unittest.TestCase):
             self.assertNotEqual(step.get('working-directory'), 'source')
         control = next(step for step in steps if step.get('with', {}).get('path') == 'control')
         self.assertEqual(control['with']['ref'], '${{ github.workflow_sha }}')
+        self.assertEqual(steps[source_index]['with']['ref'], 'main')
+        self.assertEqual(steps[source_index]['with']['fetch-depth'], 0)
+        select_index = next(i for i, step in enumerate(steps) if 'select-source.sh' in step.get('run', ''))
+        self.assertLess(source_index, select_index)
+        self.assertEqual(steps[select_index]['run'], 'bash control/scripts/release/select-source.sh source')
+        validation_index = next(i for i, step in enumerate(steps) if 'task test' in step.get('run', ''))
+        build_index = next(i for i, step in enumerate(steps) if 'docker build ' in step.get('run', ''))
+        self.assertLess(select_index, validation_index)
+        self.assertLess(validation_index, build_index)
+        self.assertEqual(set(workflow('backend-validation.yml')['jobs']), {'validate-build'})
         script = '\n'.join(steps[check_index]['run'].splitlines()[1:-1])
         plan = fixture()[3]
         environment = {'SOURCE_SHA': plan['backend_sha'], 'CONTROL_SHA': plan['workflow_sha']}
