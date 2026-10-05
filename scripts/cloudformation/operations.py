@@ -124,6 +124,24 @@ def change_set(aws, arn, root_arn=None, parent_arn=None):
     return change
 
 
+def validate_bootstrap_permissions(config, stack, templates, contract, previous_stacks):
+    """Reject dependent plans whose scoped permissions need a bootstrap update."""
+    if stack not in ('root', 'runtime'):
+        return
+    live = previous_stacks['bootstrap']
+    wanted = parameters(config, 'bootstrap', templates, contract, {}, live, previous_stacks)
+    if stack == 'root':
+        queue = wanted['FoundationWorkQueueName']
+        covered = any(live.get(prefix) and queue.startswith(live[prefix] + '-')
+                      for prefix in ('ProjectName', 'FoundationStackName'))
+        names = () if covered else ('FoundationWorkQueueName',)
+    else:
+        names = ('CertificateHostedZoneId', 'HookArtifactObjectArn')
+    for name in names:
+        if live.get(name) != wanted[name]:
+            raise ValueError(f'Bootstrap is stale ({name}); plan and apply bootstrap first')
+
+
 def prepare(aws, config, stack, root, directory, paused):
     templates, contract = load_contract(root)
     validate_config(config, templates, contract)
@@ -139,6 +157,7 @@ def prepare(aws, config, stack, root, directory, paused):
     previous_stacks = {key: {item['ParameterKey']: item['ParameterValue']
                              for item in (value or {}).get('Parameters') or []}
                        for key, value in before['stacks'].items()}
+    validate_bootstrap_permissions(config, stack, templates, contract, previous_stacks)
     values = parameters(config, stack, templates, contract, outputs, previous, previous_stacks)
     for name in ('ProjectName', 'ResourcePrefix'):
         if name in previous and values.get(name) != previous[name]:

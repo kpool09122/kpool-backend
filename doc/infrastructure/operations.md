@@ -41,6 +41,9 @@ task infra:operate -- plan --environment "$ENVIRONMENT" --stack "$STACK"   --rec
 
 plan はSTS accountと4親の存在・安定を確認し、前段Outputsをcontractsに従って自動接続する。
 bootstrapだけは管理者本人の権限、他の親はbootstrap OutputのCloudFormation実行roleを使う。
+runtimeのHostedZoneIdやhook bucket/key、rootのWorkQueueNameを変更すると、bootstrapの権限更新が必要になる場合がある。
+planが `Bootstrap is stale` で停止したら、同じenvironmentでbootstrapを先にplan/review/executeし、対象の親を再計画する。
+キュー名が既存bootstrapのProjectNameまたはFoundationStackNameの接頭辞で許可済みなら、キュー名だけのためにbootstrapを更新する必要はない。
 rootはpackageし `--include-nested-stacks` で子Change Setも作る。
 既存runtimeの task ARN/desired/primary/production/test/Scheduler State・ARNを実状態から取込み、旧Parametersをそのまま再利用しない。
 複数deployment、中間重み、不明target、service不安定、取得失敗は中止。test targetをproductionの逆と推測しない。

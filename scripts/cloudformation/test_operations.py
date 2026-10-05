@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import environment
 import operations
 from test_runtime_state import fixture
 
@@ -118,6 +119,55 @@ class OperationsTests(unittest.TestCase):
             plan = operations.prepare(self.aws, self.config, 'bootstrap', ROOT, Path(directory), True)
         values = {item['ParameterKey']: item['ParameterValue'] for item in plan['parameters']}
         self.assertEqual(values['FoundationWorkQueueName'], 'custom-work-v9')
+
+    def test_stale_runtime_bootstrap_permissions_abort_before_changeset_creation(self):
+        templates, contract = environment.load_contract(ROOT)
+        for name, changes in (
+            ('CertificateHostedZoneId', {'HostedZoneId': 'ZNEWZONE'}),
+            ('HookArtifactObjectArn', {'HookArtifactBucket': 'new-hook-bucket', 'HookArtifactKey': 'hook.zip'}),
+        ):
+            self.aws = FakeAws()
+            config = copy.deepcopy(self.config)
+            live = environment.parameters(config, 'bootstrap', templates, contract, {})
+            config['inputs']['runtime'].update(changes)
+            for stack in ('bootstrap', 'root', 'integration', 'runtime'):
+                self.aws.stacks[self.config['stacks'][stack]] = {'StackStatus': 'UPDATE_COMPLETE'}
+            self.aws.stacks[self.config['stacks']['bootstrap']]['Parameters'] = [
+                {'ParameterKey': key, 'ParameterValue': value} for key, value in live.items()]
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(ValueError, f'Bootstrap is stale \\({name}\\)'):
+                    operations.prepare(self.aws, config, 'runtime', ROOT, Path(directory), True)
+            self.assertFalse(any(call[1] == 'create-change-set' for call in self.aws.calls))
+
+    def test_custom_queue_requires_bootstrap_update_before_packaging(self):
+        templates, contract = environment.load_contract(ROOT)
+        live = environment.parameters(self.config, 'bootstrap', templates, contract, {})
+        self.aws.stacks[self.config['stacks']['bootstrap']] = {
+            'StackStatus': 'UPDATE_COMPLETE', 'Parameters': [
+                {'ParameterKey': key, 'ParameterValue': value} for key, value in live.items()]}
+        self.config['inputs']['root']['WorkQueueName'] = 'custom-work-v9'
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, 'Bootstrap is stale \\(FoundationWorkQueueName\\)'):
+                operations.prepare(self.aws, self.config, 'root', ROOT, Path(directory), True)
+        self.assertFalse(any(call[1] in ('package', 'create-change-set') for call in self.aws.calls))
+
+    def test_existing_bootstrap_permissions_accept_covered_queues_and_matching_runtime_inputs(self):
+        templates, contract = environment.load_contract(ROOT)
+        self.config['inputs']['runtime'].update(HostedZoneId='ZCURRENT', HookArtifactBucket='hook-bucket',
+                                                HookArtifactKey='hook.zip')
+        live = environment.parameters(self.config, 'bootstrap', templates, contract, {})
+        previous_stacks = {'bootstrap': live}
+        operations.validate_bootstrap_permissions(self.config, 'runtime', templates, contract, previous_stacks)
+        preserved_config = copy.deepcopy(self.config)
+        for name in ('HostedZoneId', 'HookArtifactBucket', 'HookArtifactKey'):
+            del preserved_config['inputs']['runtime'][name]
+        previous_stacks['runtime'] = self.config['inputs']['runtime']
+        operations.validate_bootstrap_permissions(preserved_config, 'runtime', templates, contract, previous_stacks)
+        for queue in (live['ProjectName'] + '-work-v2', live['FoundationStackName'] + '-work-v2',
+                      live['FoundationWorkQueueName']):
+            self.config['inputs']['root']['WorkQueueName'] = queue
+            with self.subTest(queue=queue):
+                operations.validate_bootstrap_permissions(self.config, 'root', templates, contract, previous_stacks)
 
     def test_target_stack_changed_during_planning_is_not_adopted_as_reviewed_state(self):
         name = self.config['stacks']['bootstrap']
@@ -246,8 +296,7 @@ class OperationsTests(unittest.TestCase):
         self.assertNotEqual(before, after)
 
     def test_initial_runtime_create_with_and_without_pause_verifies_zero_task_state(self):
-        import environment
-        _, contract = environment.load_contract(ROOT)
+        templates, contract = environment.load_contract(ROOT)
         for paused in (False, True):
             self.aws = FakeAws()
             for predecessor in ('bootstrap', 'root', 'integration'):
@@ -258,6 +307,9 @@ class OperationsTests(unittest.TestCase):
                 self.aws.stacks[self.config['stacks'][predecessor]] = {
                     'StackStatus': 'CREATE_COMPLETE', 'Outputs': [
                         {'OutputKey': key, 'OutputValue': value} for key, value in outputs.items()]}
+            bootstrap = environment.parameters(self.config, 'bootstrap', templates, contract, {})
+            self.aws.stacks[self.config['stacks']['bootstrap']]['Parameters'] = [
+                {'ParameterKey': key, 'ParameterValue': value} for key, value in bootstrap.items()]
             outputs, services, rules, schedule = fixture()
             outputs.update(ClusterArn='cluster', SchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/name',
                            ApiBootstrapTaskDefinitionArn='api-bootstrap:1', WorkerBootstrapTaskDefinitionArn='worker-bootstrap:1',
