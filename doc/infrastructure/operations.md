@@ -1,6 +1,6 @@
 # AWS 本番基盤 — 設計・適用・復旧・引き渡し
 
-対象は [#673](https://github.com/kpool09122/kpool-backend/issues/673)。東京 `ap-northeast-1` の CloudFormation 定義とオフライン検証を管理する。
+対象は [#673](https://github.com/kpool09122/kpool-backend/issues/673) と実行基盤補完 [#669](https://github.com/kpool09122/kpool-backend/issues/669)。東京 `ap-northeast-1` の CloudFormation 定義とオフライン検証を管理する。
 [#157](https://github.com/kpool09122/kpool-backend/issues/157) が実適用、アプリ対応、秘密値、hook・疎通監視成果物、DNS、負荷・復旧・費用確認を担当し、[#156](https://github.com/kpool09122/kpool-backend/issues/156) がイメージとリリース revision、Pipeline を担当する。本変更では AWS リソースを作成していない。
 
 ## ファイルと依存順序
@@ -64,7 +64,13 @@ ExternalCanaryAlarmName は #157 が別途提供する **既存の東京 CloudWa
 
 初回は0タスクなので疎通失敗が正常。初回起動には戻し先がないことを踏まえ、後続配備を止めて正常化を確認する。2回目以降は開始前に canary が実行中かつ alarm が OK であることを確認する（既に ALARM の監視を復旧済みと扱わない）。本番へ進む前に canary の失敗注入と rollback を実証する。
 
-ALB の 5xx Sum>=5 / 平均応答時間>=2秒は初期候補、60秒×2回、欠損 notBreaching。閾値・評価期間・欠損はパラメータ化している。無通信時は ALB 指標だけで判断できないため canary を必須契約とする。ECS 標準 BLUE_GREEN、5分 bake、circuit breaker と alarms の rollback を有効化。正常な旧 revision がない初回や配備完了後の無期限 rollback は保証しない。worker は ROLLING と circuit breaker。
+ALB の 5xx Sum>=5 / 平均応答時間>=2秒は初期候補、60秒×2回、欠損 notBreaching。閾値・評価期間・欠損はパラメータ化している。無通信時は ALB 指標だけで判断できないため canary を必須契約とする。ECS 標準 BLUE_GREEN、POST_TEST_TRAFFIC_SHIFT hook、5分 bake、alarms の rollback を有効化。API は rolling 専用の DeploymentCircuitBreaker を使用せず、hook の失敗・ECS deployment 状態・alarms で判定する。正常な旧 revision がない初回や配備完了後の無期限 rollback は保証しない。worker は ROLLING と circuit breaker。
+
+## API draining と停止の時間契約（#669）
+
+API の FPM request 上限95秒、nginx FastCGI 無通信待ち95秒、nginx graceful shutdown 上限100秒に対し、ALB idle timeout と Blue/Green 両 target の deregistration delay は120秒、ECS StopTimeout も120秒とする。60秒 draining/既定 idle timeout では処理中リクエストを先に切断し得る。95 < 100 < 120 を維持し、処理終了・draining・SIGTERM→SIGQUIT・強制停止の各段階を区別する。idle timeout は無通信時間であって処理全体の上限ではなく、FPM 上限超過の処理を保証する設定ではない。release 定義にも StopTimeout=120 を維持する。
+
+#157/#156 は新旧両 target で90秒程度の応答待ちを伴うリクエスト中に配備/停止し、正常応答、ALB 5xx、切断、daemon終了時刻を確認する。95秒上限を超える処理は中断される想定で、無制限処理やクライアント側の短い timeout を保証しない。worker は timeout90秒 < StopTimeout120秒 < SQS visibility300秒を維持し、重複配送・停止中の job 完了/再試行を別途確認する。
 
 ## ローカル静的検証（AWS 認証不要）
 
@@ -125,6 +131,35 @@ aws cloudformation describe-stacks --stack-name kpool-production-runtime \
 3. ApiTaskDefinitionArn/WorkerTaskDefinitionArn/DesiredCount を現在値にする。PrimaryTargetGroup は ECS の TargetGroupArn、ProductionTargetGroup/TestTargetGroup は各ルールで weight=1 の Blue/Green を設定する。複数宛先に非ゼロ重みがある、中間状態、サービス不安定なら更新を中断して配備を安定化する。Scheduler ARN は現在の release を維持する。
 4. Change Set で旧 revision・desired=0・旧 target・data 置換への変更がないことを確認する。UsePreviousValue だけで済ませない。実行後に同じ ECS/ALB の読み取りを再度行い、運用記録を更新して配備停止を解除する。
 
+### #156 の起動前・配備完了判定
+
+`contracts.json.outputInventory.runtime` のキーを使用する。Outputs の存在だけを設定済みの証明にしない。条件付き LifecycleHookArn/HookInvocationRoleArn/HookExecutionRoleArn は未準備では **出力されない**。ExternalCanaryAlarmName は未準備では空文字が出力されるため、必ず非空も確認する。Parameters 例は初回0タスク専用で、配備後の更新に再利用しない。
+
+- ECR RepositoryUri、ClusterArn、ApiServiceName/WorkerServiceName、用途別 BootstrapTaskDefinitionArn/ReleaseFamily、ContainerNames、TaskRole/ExecutionRole、SG、log group を release 定義と照合する。API 0.5 vCPU/1GiB、worker 0.25 vCPU/0.5GiB は初期候補であり負荷試験済みの容量ではない。
+- `describe-services` で API controller=ECS / Strategy=BLUE_GREEN / bake=5 / Alarms Enable+Rollback / POST_TEST_TRAFFIC_SHIFT hook と、その呼出し role・対象 Lambda を確認する。API の DeploymentCircuitBreaker は不在、worker は ROLLING+breaker を確認する。通常の UpdateService で infrastructure/hook role を再設定しない。
+- BlueTargetGroupArn/GreenTargetGroupArn、ProductionRuleArn/TestRuleArn、AlbInfrastructureRoleArn の対応を照合し、ALB 管理を Pipeline が代行しない。hook ZIP の bucket/key/version と bootstrap の正確な Object ARN 読取許可、Lambda code version の反映を管理者が確認する。
+- ALB 5xx/latency alarm および外部 alarm の実在、東京、ActionsEnabled、通知先、監視対象を確認する。外部 alarm は毎分計測、Period=60 / EvaluationPeriods=2 / DatapointsToAlarm=2（未指定時は2）/ TreatMissingData=breaching、成功と失敗の両方が計測されることを #157 が確認する。配備開始後に alarm 名だけを渡して監視が準備済みと扱わない。
+- 起動・hook 呼出しの有限の待機期限を Pipeline に設定し、ECS service deployment の失敗/rollback/タイムアウトをリリース失敗とする。`services-stable` 待機だけでは **旧 revision に rollback 済みの安定**を成功と誤認し得る。対象 deployment の成功完了、service/task の目的 release ARN/digest、production の対象、alarm状態を照合してから worker/フロントへ進む。bake 完了前に後続配備を開始しない。0タスクの安定や `/health` 200だけも成功判定にしない。
+- 初回には正常な旧 API がない。hook 失敗なら本番切替を止め、初回 bake 中の異常は自動復旧先がない前提で後続を止める。2回目以降の切替前失敗は旧API維持、bake中は ECS rollback、旧API停止後は正常 release ARN/digest の手動再配備を区別する。DBの自動巻き戻しは禁止。
+
+### 現行値の読み取り・反映・適用後照合
+
+以下は **読取専用** の例。stack Outputs から識別子を設定し、作業 JSON と証跡をリポジトリ外に保存する。API/worker と rule を同じ停止期間に読み取り、Change Set 実行直前にも再読取して値が変わっていないことを確認する。
+
+```sh
+aws ecs describe-services --cluster "$CLUSTER_ARN" \
+  --services "$API_SERVICE" "$WORKER_SERVICE" > services-before.json
+# deployments の複数存在、未安定、失敗、進行中の bake/rollback を確認して中断する
+aws ecs list-service-deployments --cluster "$CLUSTER_ARN" --service "$API_SERVICE_ARN" \
+  --status PENDING IN_PROGRESS STOP_REQUESTED ROLLBACK_REQUESTED ROLLBACK_IN_PROGRESS
+aws elbv2 describe-rules --rule-arns "$PRODUCTION_RULE_ARN" "$TEST_RULE_ARN" > rules-before.json
+aws scheduler get-schedule --group-name "$SCHEDULE_GROUP" --name "$SCHEDULE_NAME" > scheduler-before.json
+```
+
+services の failures が空、desiredCount=runningCount、pendingCount=0、目的 release が稼働し、service deployment が成功完了していることを確認する（worker も同様）。現在の `loadBalancers[].targetGroupArn` を Outputs の Blue/Green ARN に照合し PrimaryTargetGroup を決める。production と test は **それぞれの実 ForwardConfig** に従い ProductionTargetGroup/TestTargetGroup を決める。各ルールの重みは片方1・他方0が本テンプレートで表現できる安定値であり、中間重み・不明なARN・TargetGroupStickiness・予定外のactionは更新を中断して個別レビューする。test の宛先を推測で反転しない。ApiTaskDefinitionArn/WorkerTaskDefinitionArn、ApiDesiredCount/WorkerDesiredCount、SchedulerTaskDefinitionArn/SchedulerState も実値から更新する。UsePreviousValue は CloudFormation の保存値を再利用するだけで ECS/ALB の drift を取得しない。
+
+Change Set は UPDATE とし、現在値を反映した外部作業 JSON を使用する。既存データ・service/ALB/target の置換/削除、旧revision・0タスク・旧転送先への巻き戻しがあれば実行しない。適用後は `describe-services` / `describe-rules` / `get-schedule` を再実行し、task ARN・desired・primary/alternate・production/testの重み・scheduler state が読み取り時の値と一致すること、hook/alarm・目的 task の稼働を確認してから配備停止を解除する。失敗時は停止を維持して障害手順へ進む。既知driftがゼロになること自体は完了条件にしない。
+
 ECS `UpdateService` は IAM でイメージ変更だけに制限できない。Actions の侵害時は許可されたアプリ・migration の権限でコードを実行できる。workflow の検証は独立した権限境界ではない。OIDC の aud/repository/Environment、許可ref、レビュー、ログ、バックアップを組み合わせる。通常配備から ALB/hook ロールの再設定や infrastructure PassRole を要求する実装にしない。
 
 ## 保持・障害・復旧
@@ -168,7 +203,7 @@ CloudFormation 実行ロールは CloudFormation service のみを信頼し、Gi
 
 ## 仕様の根拠
 
-- [ECS native BLUE_GREEN の CloudFormation 例](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/migrate-codedeploy-to-ecs-bluegreen-cloudformation-template.html) と [配備失敗検知](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-failure-detection.html)：circuit breaker と BLUE_GREEN の併用を採用。古い API 文書の rolling-only 表記との差があるため実環境でも確認する。
+- [ECS native BLUE_GREEN の CloudFormation 例](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/migrate-codedeploy-to-ecs-bluegreen-cloudformation-template.html) と [配備失敗検知](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-failure-detection.html)と [CloudFormation DeploymentConfiguration](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-ecs-service-deploymentconfiguration.html)：DeploymentCircuitBreaker は rolling 専用のため API BLUE_GREEN から除外し、worker ROLLING だけに設定する。API は hook・ECS deployment 状態・CloudWatch alarms で失敗を判定する。
 - [ECS lifecycle hooks](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-lifecycle-hooks.html)、[ALB infrastructure policy](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonECSInfrastructureRolePolicyForLoadBalancers.html)、[ECS IAM resource support](https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazonelasticcontainerservice.html)。
 - [RDS PostgreSQL release notes](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-versions.html)。静的 schema は cfn-lint の同梱版で検証し、エンジン提供状況や実サービス制約は適用前に再確認する。
 

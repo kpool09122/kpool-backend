@@ -32,7 +32,7 @@ development ステージが Dockerfile の既定。既存 Compose も `target: d
 
 3つの書き込み領域はタスクごとの一時領域で、UID/GID **1000:1000** に書き込み可能にする。`storage` と `bootstrap/cache` は mode 0770、`/tmp` は 1770 を推奨。empty volume は、タスク起動前に所有者・モードを整える初期化コンテナ等を #156 で用意する（rootのままの空volumeを渡すだけでは動かない）。別タスクと共有せず、ソース全体やvendorをマウントしない。ローカル検証は所有者付きtmpfsを使う。FargateはDockerのtmpfsオプションをサポートしないため、ECS MountPointsのempty volume/EFSと初期化手順へ置き換える。アップロードの永続化は別途S3等の外部ストレージを使い、storageへの一時書き込みを永続データと扱わない。
 
-APIはtini -> bash supervisor -> nginx/FPM。SIGTERMを両daemonのSIGQUITに変換して新規受け付けを停止し、処理中リクエストを待つ。子daemonの予期しない終了（0も含む）は残りも停止し、タスクを非0で終了する。tiniが孤児を回収する。nginx shutdown上限100秒、FPM request上限95秒、nginx FastCGI待ち95秒。ECSの120秒猶予を超えない処理時間にする。ALB側のdrainingもこの上限と整合させる。
+APIはtini -> bash supervisor -> nginx/FPM。SIGTERMを両daemonのSIGQUITに変換して新規受け付けを停止し、処理中リクエストを待つ。子daemonの予期しない終了（0も含む）は残りも停止し、タスクを非0で終了する。tiniが孤児を回収する。nginx shutdown上限100秒、FPM request上限95秒、nginx FastCGI待ち95秒。ECSの120秒猶予を超えない処理時間にする。ALB は idle timeout 120秒、両ターゲットグループの deregistration delay 120秒とする（#669）。既定60秒では95秒の処理を途中で切断し得る。95秒 < nginx shutdown 100秒 < StopTimeout 120秒と整合させる。ALB idle timeout は無通信時間の制限であり処理全体の上限ではない。
 
 worker/単発コマンドは引数を保持してexecされ、tiniが実プロセスへSIGTERMを転送する。PCNTLによりworkerは処理中ジョブの完了を待って終了する。timeout90秒 < StopTimeout120秒。SQS visibility timeoutはジョブtimeoutより十分長くし、キューの配信/再試行契約は `queue-operations.md` を参照。長時間ジョブを設定する場合はtimeout・visibility・停止猶予を合わせて再設計する。API/worker起動にmigrationを含めず、配備前の独立タスクで実行する。失敗時の終了コードをpipelineで検出し、配備を止める。
 
