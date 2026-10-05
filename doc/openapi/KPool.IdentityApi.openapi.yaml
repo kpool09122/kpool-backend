@@ -2018,6 +2018,7 @@ components:
           description: Authentication methods available to the current identity.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
+      description: Authenticated identity summary returned for the current identity.
     AuthenticationMethodsSummary:
       type: object
       required:
@@ -2589,7 +2590,6 @@ components:
         condition:
           type: string
           nullable: true
-      description: Authenticated identity summary returned for the current identity.
     SocialLinkingResult:
       type: object
       required:

@@ -123,7 +123,6 @@ model AuthenticationMethodsSummary {
   linkedSocialProviders: string[];
 }
 
-@doc("Authenticated identity summary returned for the current identity.")
 model SiteManagementPolicyStatement {
   effect: string;
   actions: string[];
@@ -137,6 +136,7 @@ model SiteManagementEffectivePolicySummary {
   statements: SiteManagementPolicyStatement[];
 }
 
+@doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   siteManagementPrincipalIdentifier: Uuid | null;
   siteManagementPolicies: SiteManagementEffectivePolicySummary[];
