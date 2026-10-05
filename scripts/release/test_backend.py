@@ -112,6 +112,48 @@ class BackendTests(unittest.TestCase):
         self.aws.environment['DB_PASSWORD']='fixture-secret-value'
         with self.assertRaises(ValueError): self.run_release()
         self.assertNotIn('fixture-secret-value',json.dumps(self.journal.value))
+    def test_recovery_missing_required_revisions_fails_in_preflight_without_mutation(self):
+        cases = [('rollback-api', {}), ('rollback-api', {'Worker': 'unused-worker:7'}),
+                 ('rollback-worker', {}), ('rollback-worker', {'Api': 'unused-api:7'}),
+                 ('resume-worker', {}), ('resume-worker', {'Api': 'unused-api:7'}),
+                 ('resume-worker', {'Worker': 'unused-worker:7'})]
+        for mode, tasks in cases:
+            with self.subTest(mode=mode, tasks=tasks), tempfile.TemporaryDirectory() as directory:
+                plan = dict(self.plan, mode=mode, source_run='41')
+                previous = {'events': [{'stage': stage, 'status': 'success'} for stage in ('migration', 'api')]}
+                aws = FakeAws(self.o, self.env)
+                journal = Journal(Path(directory), plan)
+                backend = Backend(aws, plan, dict(self.manifest, task_definitions=tasks), journal, self.config, previous)
+                with self.assertRaisesRegex(ValueError, 'Recorded task revisions are required'):
+                    execute(backend, journal, mode)
+                self.assertFalse(any(op in ('register-task-definition', 'run-task', 'update-service') for _, op, _ in aws.calls))
+                events = journal.value['events']
+                self.assertTrue(any(e['stage']=='preflight' and e['status']=='failed' and e['error_type']=='ValueError' for e in events))
+                self.assertFalse(any(e['stage']=='preflight' and e['status']=='success' for e in events))
+                self.assertFalse(any(e['stage']=='migration' and e['status']=='inherited-success' for e in events))
+    def test_recovery_accepts_only_mode_required_owned_revisions(self):
+        for mode, kinds in [('rollback-api', ('Api',)), ('rollback-worker', ('Worker',)),
+                            ('resume-worker', ('Api', 'Worker'))]:
+            with self.subTest(mode=mode):
+                plan = dict(self.plan, mode=mode, source_run='41')
+                tasks = {kind: self.o[kind+'ReleaseFamily']+':7' for kind in kinds}
+                definitions = {arn: {'family': self.o[kind+'ReleaseFamily'],
+                                    'taskRoleArn': self.o[kind+'TaskRoleArn'],
+                                    'executionRoleArn': self.o['AppExecutionRoleArn'],
+                                    'containerDefinitions': [{'image': self.o['RepositoryUri']+'@'+self.manifest['image_digest']}]}
+                               for kind, arn in tasks.items()}
+                aws = FakeAws(self.o, self.env)
+                if mode == 'resume-worker': aws.services['Api']['taskDefinition'] = tasks['Api']
+                def recorded_aws(aws_service, operation, **arguments):
+                    if operation == 'describe-task-definition' and arguments['taskDefinition'] in definitions:
+                        return {'taskDefinition': definitions[arguments['taskDefinition']]}
+                    return aws(aws_service, operation, **arguments)
+                previous = {'events': [{'stage': stage, 'status': 'success'} for stage in ('migration', 'api')]}
+                backend = Backend(recorded_aws, plan, dict(self.manifest, task_definitions=tasks), self.journal, self.config, previous)
+                backend.preflight()
+                for definition in definitions.values(): definition['taskRoleArn'] = 'foreign-role'
+                with self.assertRaisesRegex(ValueError, 'not owned'):
+                    backend.preflight()
     def test_compatibility_is_required_before_any_mutation(self):
         self.config['compatibility']['approved']=False
         with self.assertRaises(ValueError): self.run_release()

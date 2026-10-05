@@ -155,6 +155,10 @@ class Backend:
         self.queue_attributes()
 
     def validate_previous(self, services):
+        required_tasks = {'rollback-api': {'Api'}, 'rollback-worker': {'Worker'},
+                          'resume-worker': {'Api', 'Worker'}}.get(self.plan['mode'], set())
+        if not required_tasks <= self.tasks.keys():
+            raise ValueError('Recorded task revisions are required for rollback/resume')
         if not self.previous:
             raise ValueError('Recorded journal required for replay/rollback')
         events = self.previous['events']
