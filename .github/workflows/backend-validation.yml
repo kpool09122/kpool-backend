@@ -34,14 +34,16 @@ jobs:
           PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ inputs.control_sha }}
+          ref: ${{ github.workflow_sha }}
           path: control
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: ${{ inputs.plan_artifact }}
           path: release
-      - env:
+      - name: Verify immutable plan and main ancestry before source checkout
+        env:
+          GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ inputs.source_sha }}
           CONTROL_SHA: ${{ inputs.control_sha }}
         run: |
@@ -49,9 +51,13 @@ jobs:
           import json, os, sys
           sys.path.insert(0, 'control/scripts/release')
           from cli import validate_plan
+          from contract import BACKEND
+          from github_source import resolve_source
           plan = validate_plan(json.load(open('release/plan.json')))
           if plan['backend_sha'] != os.environ['SOURCE_SHA'] or plan['workflow_sha'] != os.environ['CONTROL_SHA']:
               raise ValueError('Source/control SHA does not match immutable plan')
+          if resolve_source(BACKEND, os.environ['SOURCE_SHA']) != os.environ['SOURCE_SHA']:
+              raise ValueError('Source SHA did not resolve to the pinned commit')
           PY
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

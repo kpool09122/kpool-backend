@@ -1,13 +1,48 @@
+import json
 import re
 import unittest
 from pathlib import Path
+from unittest.mock import mock_open, patch
 import yaml
+from fixtures import fixture
 
 BASE=Path(__file__).resolve().parents[2]/'.github/workflows'
 
 def workflow(name): return yaml.safe_load((BASE/name).read_text())
 
 class WorkflowTests(unittest.TestCase):
+    def test_validation_checks_main_ancestry_before_checkout_and_execution(self):
+        steps = workflow('backend-validation.yml')['jobs']['validate-build']['steps']
+        check_index = next(i for i, step in enumerate(steps) if 'resolve_source' in step.get('run', ''))
+        source_index = next(i for i, step in enumerate(steps) if step.get('with', {}).get('path') == 'source')
+        self.assertLess(check_index, source_index)
+        for step in steps[:source_index]:
+            self.assertNotEqual(step.get('working-directory'), 'source')
+        control = next(step for step in steps if step.get('with', {}).get('path') == 'control')
+        self.assertEqual(control['with']['ref'], '${{ github.workflow_sha }}')
+        script = '\n'.join(steps[check_index]['run'].splitlines()[1:-1])
+        plan = fixture()[3]
+        environment = {'SOURCE_SHA': plan['backend_sha'], 'CONTROL_SHA': plan['workflow_sha']}
+        cases = [('ahead', plan['backend_sha'], None), ('identical', plan['backend_sha'], None),
+                 ('behind', plan['backend_sha'], ValueError), ('diverged', plan['backend_sha'], ValueError),
+                 ('ahead', 'f'*40, ValueError)]
+        for status, resolved_sha, error in cases:
+            with self.subTest(status=status, resolved_sha=resolved_sha), patch.dict('os.environ', environment), \
+                    patch('builtins.open', mock_open(read_data=json.dumps(plan))), \
+                    patch('github_source.gh', side_effect=[{'sha': resolved_sha}, {'status': status}]) as api:
+                if error:
+                    with self.assertRaises(error): exec(compile(script, '<source-check>', 'exec'), {})
+                else:
+                    exec(compile(script, '<source-check>', 'exec'), {})
+                    self.assertEqual(api.call_count, 2)
+        with patch.dict('os.environ', environment), patch('builtins.open', mock_open(read_data=json.dumps(plan))), \
+                patch('github_source.gh', side_effect=RuntimeError('GitHub read failed')):
+            with self.assertRaises(RuntimeError): exec(compile(script, '<source-check>', 'exec'), {})
+        with patch.dict('os.environ', dict(environment, SOURCE_SHA='f'*40)), \
+                patch('builtins.open', mock_open(read_data=json.dumps(plan))), patch('github_source.gh') as api:
+            with self.assertRaisesRegex(ValueError, 'immutable plan'):
+                exec(compile(script, '<source-check>', 'exec'), {})
+            api.assert_not_called()
     def test_aws_reusables_validate_trusted_control_sha_before_checkout(self):
         for name in ('backend-validation.yml','backend-publication.yml','backend-deployment.yml'):
             data=workflow(name)
