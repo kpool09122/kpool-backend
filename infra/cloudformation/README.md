@@ -2,6 +2,7 @@
 
 k-pool の AWS（東京）と Cloudflare の構成・設定・運用をここからたどる。
 
+- サービス全体・配備フロー・管理単位・ローカル環境の図: [インフラ構成図](../../doc/infrastructure/architecture.md)
 - 通常配備・基盤更新・Secret 更新・容量変更・障害復旧: [運用手順](../../doc/infrastructure/operations.md)
 - AWS / Cloudflare / GitHub / フロントとの接続: [接続台帳](../../doc/infrastructure/pipeline-handoff.md)
 - 変更の理由・既存環境への移行・未検証事項: [設計判断](../../doc/infrastructure/design-decisions.md)
@@ -59,11 +60,12 @@ AWSを操作する `plan` / `execute` は明示操作であり、検証やCIか�
 ## 基盤の保護と制約
 
 VPC は10.20.0.0/16、publicは .0.0/24 と .1.0/24、dataは .10.0/24 と .11.0/24。
-data にinternet既定経路はなく、task はpublic subnet + 明示public IPで必要な外向きHTTPSへ接続する。
+ALB と Fargate はpublic subnetに配置し、taskのpublic IPを明示的に有効化する。外向きHTTPSはInternet Gateway経由。
+NAT Gatewayとtask専用private subnetは設けず、dataにはinternet既定経路を設けない。
 DB/cacheは用途別SGのみ、API受信はALB SGのみ。test listenerはhook SGのみ。
 公開画像もS3自体は非公開・OAC経由。非公開書類は別bucketで認可後のAPI配信、CDNには接続しない。
 
-RDS は暗号化PostgreSQL16・gp3・7日backup・削除/置換Snapshot・削除保護、初期Single-AZ。
+RDS はローカル/テストと同じメジャーの暗号化PostgreSQL18（メジャー指定、作成時にRDSが対応minorを選択）・gp3・7日backup・削除/置換Snapshot・削除保護、初期Single-AZ。
 Valkeyはprivate/TLS/password認証・7日snapshot。S3はversioning、S3/SQS/Secret/cache/log/ECR等の保持policyを維持する。
 Retainは復元や無期限保存の保証ではない（SQS4日、DLQ14日、ログ既定30日）。廃止時も保持物の費用は継続する。
 API/worker/migrationの用途別roleとDML/DDLのDBユーザーを分離し、RDS master Secretを通常taskに渡さない。

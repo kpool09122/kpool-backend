@@ -23,10 +23,10 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 
 ### ネットワーク・compute・費用
 
-- 現在はpublic subnet + 明示public IPのFargate、受信は用途別SG、DB/cacheはprivate。必要な外向きHTTPSを確保し、NATの時間/処理費を追加しない。public IPそのものも課金/露出面を持ち、HTTPS egressは宛先のallowlistではない。
-- private task + NATならtaskのpublic IPをなくせるが、NAT費用・経路・AZ障害対応が増える。AWS用endpointのみではGoogle/Stripe等の外部APIを代替できない。現状はSGによる受信限定を採用するが、将来の規模/egress要件ではNAT案を再評価する。**NAT不使用やsubnetの固定数はセキュリティ不変条件ではない。**
+- 初期運用の費用を抑えるため、ALBとFargateはpublic subnetに配置し、taskのpublic IPを明示的に有効化する。外向きHTTPSはInternet Gateway経由とし、NATの時間/処理料金を追加しない。APIの受信はALB SGから8080のみ、worker/migrationには受信許可を設けない。DB/cacheとprivate hookはinternet既定経路のないdata subnetに置く。
+- public配置はSGの受信制限に依存する。受信元をInternetへ広げるとtaskへ直接到達できるため、template/testと実SGの照合でALB限定・用途別の受信制限を維持する。taskごとのpublic IPv4は課金対象。HTTPS egressは宛先allowlistではなく、侵害後の外部送信を防ぐものではない。private task + NATはSG誤設定時の直接到達を防ぐ追加の防御として、将来の要件・予算に応じて再評価する。AWS用endpointのみではGoogle/Stripe等の外部APIを代替できない。
 - private hookのEC2 interface endpointはALB ENI発見のため。ALBの8443はhook SGだけを許可し、hookのHost/SNI/TLS検証は外部コードの受入が必要。endpointの利用API/有効性を実hookで確かめるまで削除・拡張しない。
-- API native BLUE_GREENは旧新併存費用とhook/canary保守を伴うが、切替前smokeと切替後rollbackを分離できる。単純ROLLINGも候補だが、同等の切替前検証を新たに設計する必要があり今回は移行しない。workerはROLLINGを維持。
+- API native BLUE_GREENを維持し、切替前smokeと切替後rollbackを分離する。新旧taskの併存費用はdeployment/bake中に発生し、通常時にAPIを常時二重化する設定ではない。ALBとhook用EC2 interface endpointは配備の有無にかかわらず固定費が続き、hook/canaryの実行費用は別に扱う。workerはROLLINGを維持。
 - RDS Single-AZは費用を抑える初期選択で、自動failover/SLAの保証ではない。backupを高可用性と同一視しない。Multi-AZ/容量変更は復旧目標・実測に基づき管理者が選ぶ。Valkey Serverlessは容量管理を減らす一方、最小課金/処理費と復元検証が残る。
 - ALB、Fargate旧新task、public IPv4、Valkey、endpoint、canary、CloudFront転送、logs、S3 versions、Retain資源を費用台帳に含める。Budgetsはaccount全体の通知であり上限強制でもk-pool単体の原価でもない。Cloudflare/外部APIは別集計。見積金額・負荷実測なしに「最安」とは判断しない。
 
@@ -35,7 +35,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | 防ぐリスク | 現在の境界・維持理由 | 限界/稼働前に確認する事項 |
 |---|---|---|
 | Actionsから基盤/管理者権限へ昇格 | OIDC aud + exact repo/Environment subject、限定ECR/ECS、用途別PassRole + PassedToService。管理者だけがbootstrap/CF実行roleを扱う | Environmentの許可ref・Actions侵害対策はGitHub設定。UpdateServiceはimage変更だけに制限できず、配備コードはapp/DDL権限を使える |
-| DB/cache/APIへの直接侵入 | DataSubnetIdsにIGW直結なし、非公開RDS、用途別SG。APIはALB、8443はhookだけ | SG/routeの静的検査は実疎通、NACL、drift、TLS証明書の有効性を保証しない |
+| DB/cache/APIへの直接侵入 | DataSubnetIdsにIGW直結なし、非公開RDS、用途別SG。public APIの受信はALB、8443はhookだけ、worker/migrationに受信許可なし | public taskはSG誤設定時に直接到達し得る。SG/routeの静的検査は実疎通、NACL、drift、TLS証明書の有効性を保証しない |
 | Secretの混入/過剰共有 | 環境JSONは非秘密、OutputsはARNのみ、appとmigrationのexecution role/DBユーザーを分離。RDS masterは通常taskへ渡さない | DATABASE_URLのverify-full/CA、REDIS_URL TLS、Secret実値/rotationは管理者/Pipelineの未達ゲート。app Secret全体を共有する用途間の影響は残る |
 | 非公開書類のCDN公開 | 画像/書類を別bucket、BPA/暗号化/OAC、画像だけにCloudFront Allow。書類は認可API+private/no-store | APIのListBucketは書類bucket全キーを列挙可能。workerには与えない。S3/認可実動作はアプリ/実AWS検証が必要 |
 | 削除・置換/誤更新による消失 | RDS Snapshot/削除保護/backup/TLS、S3 versioning、永続資源のRetain/UpdateReplace、planの削除/置換拒否と終了保護 | Retainはbackup/復旧成功/無期限保存の保証ではない。SQS/log期限、version完全消去、復元/import、RPO/RTOは別検証 |
@@ -65,7 +65,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | cfn-lint 1.47.0 | 東京schema、型、intrinsic/Ref、template内部の誤接続 | 唯一のschema検査として維持。各Unit testで再lintしない | 実AWSのengine/quota/permissions、dynamic reference、driftは保証しない |
 | test_contracts.py | 親links、起動Rules、全体の暗号化/保持/Secret混入、OIDC/PassRole、S3 SDK権限、CF/endpoint権限の契約 | network/OACの重複大テスト、全template在庫、role数固定を削除。親linksは実resolverが読むため残す | IAM simulatorではない。文字列/構造assertはpolicyの全経路を網羅しない。少数mutationは全脆弱性の証明ではない |
 | test_foundation.py | nested接続、CIDR重複、data到達性、多AZ、SG、backup/TLS、Valkey認証、S3 version/OAC/TLS、redrive | NAT禁止/4subnet/route数固定、DB instance/MultiAZ/storage容量/HttpVersionの写し、汎用暗号化/保持の重複を削除（RDS固有のfinal Snapshotは維持）。data公開の拒否とNAT/追加subnetの許容を確認 | local Ref/Join/明示associationの現在のtemplate表現を対象。AZは式の比較であり東京の実提供や実経路解析ではない |
-| test_runtime.py | 独立target条件、hook/rollback/SG、release選択、alarm入力接続、draining/queue timeoutの層間契約 | CPU/memory/閾値defaultの写しを削除。初期0task、readonly、目的Output/role接続は消費者があるため維持 | hook/canaryコード・native deployment・本番imageの動作ではない。runtime定義の全IAM/commandを証明しない |
+| test_runtime.py | 独立target条件、public taskのsubnet/public IPとhook/rollback/SG、release選択、alarm入力接続、draining/queue timeoutの層間契約 | CPU/memory/閾値defaultの写しを削除。初期0task、readonly、目的Output/role接続は消費者があるため維持 | hook/canaryコード・native deployment・本番imageの動作ではない。runtime定義の全IAM/commandを証明しない |
 | test_environment.py | derived/secret/invalid/missing入力拒否、任意値維持、live接続、実アプリenv名 | resolverの公開挙動として維持 | 架空Outputs、外部ARNの実在/証明書SANやSecret keyは未確認 |
 | test_runtime_state.py | revision/capacity/3target/Schedulerの保持、不安定/表現不能拒否 | 純粋変換に集中して維持。operationsと重なる正常fixtureは純粋変換とAWS呼出しの責務が別 | fake応答。SDK/AWSの実応答形との整合は実環境試験が必要 |
 | test_operations.py | account、AccessDenied、exact Change Set、stale/置換/削除/競合、初期CREATE、native pagination/rollback、記録保護 | 副作用境界の振る舞いとして維持。安全ガードを削る根拠はない | FakeAwsは制御フローの証拠だけ。配備可能性/権限充足/復旧成功の証拠ではない |

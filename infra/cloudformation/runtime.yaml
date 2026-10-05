@@ -9,8 +9,10 @@ Parameters:
     Type: AWS::EC2::VPC::Id
   PublicSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
+    Description: Public subnets for the ALB and tasks; enable task public IP for outbound HTTPS.
   PrivateSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
+    Description: Isolated data subnets for the lifecycle hook and its EC2 endpoint.
   AppSecretArn:
     Type: String
   MigrationSecretArn:

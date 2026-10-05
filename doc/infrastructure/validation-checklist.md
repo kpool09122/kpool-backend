@@ -22,6 +22,7 @@
 | 変更 | 確認方法と期待結果 |
 |---|---|
 | 初回基盤 | 正しいaccount/4親、package bucket、CREATE/nested/終了保護、0task/DISABLED、秘密値が出力されない |
+| Public taskの起動設定 | API/worker/Schedulerとmigration等のRunTaskがPublicSubnetIds・public IP有効、Internet Gateway経由で外向きHTTPS。APIの8080はALB SGのみ、worker/migrationに受信許可なし、DB/cacheは非公開・用途別SG。ALB経由のAPI疎通とtaskへ直接接続できないことを確認 |
 | state取込み | 2回目配備でBlue/Greenを反転しplan→update。revision/desired/3target/Schedulerが実現在値から戻らない |
 | 競合/失敗 | plan後に検証環境で配備/容量変更しexecuteを拒否。中間重み、bake中、権限不足、stack更新中、waiter timeoutで後続を止める |
 | integration設定 | SSMの新env名をreleaseへ注入しSQS/S3/画像URLを確認。TLS付きDATABASE_URL/REDIS_URLとCAは別に検証 |
