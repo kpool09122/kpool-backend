@@ -1,0 +1,142 @@
+name: Production release
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        options: [backend, all, frontend]
+        default: backend
+      backend_ref:
+        description: main or full SHA reachable from production main
+        type: string
+        default: main
+      frontend_ref:
+        description: Frontend source seam (all/frontend currently fail closed)
+        type: string
+        default: main
+      mode:
+        type: choice
+        options: [deploy, redeploy, resume-worker, rollback-api, rollback-worker]
+        default: deploy
+      source_run:
+        description: Recorded release run ID for replay/rollback (no latest ref resolution)
+        type: string
+      source_attempt:
+        description: Immutable recorded attempt (rerun defaults to attempt 1)
+        type: string
+        default: '1'
+      initial:
+        description: Explicit first activation of BOTH zero-count services
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: kpool-release-production
+  cancel-in-progress: false
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      backend_sha: ${{ steps.plan.outputs.backend_sha }}
+      mode: ${{ steps.plan.outputs.mode }}
+      release_id: ${{ steps.plan.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TARGET: ${{ inputs.target }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          SOURCE_RUN: ${{ inputs.source_run }}
+          SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
+          INITIAL_ACTIVATION: ${{ inputs.initial }}
+          BACKEND_REF: ${{ inputs.backend_ref }}
+          CONTROL_SHA: ${{ github.workflow_sha }}
+          LIVE_FRONTEND_SHA: ${{ vars.LIVE_FRONTEND_SHA }}
+          FRONTEND_CONTRACT: ${{ vars.FRONTEND_RELEASE_CONTRACT }}
+        run: python3 -B scripts/release/cli.py plan
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-plan-${{ github.run_attempt }}
+          path: |
+            release/plan.json
+            release/manifest.json
+            release/previous.json
+            release/failure.json
+          if-no-files-found: error
+          retention-days: 90
+      - if: always()
+        run: python3 -B scripts/release/cli.py summary
+  validate-build:
+    needs: plan
+    if: inputs.target == 'backend' && needs.plan.outputs.mode == 'deploy'
+    uses: ./.github/workflows/backend-validation.yml
+    with:
+      source_sha: ${{ needs.plan.outputs.backend_sha }}
+      control_sha: ${{ github.workflow_sha }}
+      plan_artifact: release-plan-${{ github.run_attempt }}
+  publish:
+    needs: [plan, validate-build]
+    if: inputs.target == 'backend' && needs.plan.outputs.mode == 'deploy'
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/backend-publication.yml
+    with:
+      control_sha: ${{ github.workflow_sha }}
+      plan_artifact: release-plan-${{ github.run_attempt }}
+      build_artifact: ${{ needs.validate-build.outputs.artifact_name }}
+  deploy:
+    needs: [plan, validate-build, publish]
+    if: >-
+      always() && inputs.target == 'backend' && needs.plan.result == 'success' &&
+      ((needs.plan.outputs.mode == 'deploy' && needs.publish.result == 'success' && needs.validate-build.result == 'success') ||
+      (needs.plan.outputs.mode != 'deploy' && needs.publish.result == 'skipped' && needs.validate-build.result == 'skipped'))
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/backend-deployment.yml
+    with:
+      control_sha: ${{ github.workflow_sha }}
+      plan_artifact: release-plan-${{ github.run_attempt }}
+      image_artifact: ${{ needs.publish.outputs.artifact_name }}
+  record:
+    needs: [plan, validate-build, publish, deploy]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - env:
+          RESULTS: ${{ toJSON(needs) }}
+          RELEASE_TARGET: ${{ inputs.target }}
+        run: |
+          mkdir -p release
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ['RESULTS'])
+          safe = {key: value['result'] for key, value in results.items()}
+          with open('release/results.json', 'w') as stream:
+              json.dump({'target': os.environ['RELEASE_TARGET'], 'jobs': safe}, stream, indent=2)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
+              stream.write('Release jobs: ' + json.dumps(safe) + '\n')
+          PY
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-result-${{ github.run_attempt }}
+          path: release/results.json
+          retention-days: 90

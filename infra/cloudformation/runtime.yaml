@@ -394,8 +394,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      RepositoryName:
-        Ref: ProjectName
+      RepositoryName: {Ref: ProjectName}
       ImageTagMutability: IMMUTABLE
       ImageScanningConfiguration:
         ScanOnPush: true
@@ -407,8 +406,7 @@ Resources:
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName:
-        Ref: ProjectName
+      ClusterName: {Ref: ProjectName}
       ClusterSettings:
       - Name: containerInsights
         Value: enabled
@@ -419,8 +417,7 @@ Resources:
     Properties:
       LogGroupName:
         Fn::Sub: /kpool/${ProjectName}/api
-      RetentionInDays:
-        Ref: LogRetentionDays
+      RetentionInDays: {Ref: LogRetentionDays}
   WorkerLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -428,8 +425,7 @@ Resources:
     Properties:
       LogGroupName:
         Fn::Sub: /kpool/${ProjectName}/worker
-      RetentionInDays:
-        Ref: LogRetentionDays
+      RetentionInDays: {Ref: LogRetentionDays}
   MigrationLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -437,8 +433,7 @@ Resources:
     Properties:
       LogGroupName:
         Fn::Sub: /kpool/${ProjectName}/migration
-      RetentionInDays:
-        Ref: LogRetentionDays
+      RetentionInDays: {Ref: LogRetentionDays}
   SchedulerLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -446,8 +441,7 @@ Resources:
     Properties:
       LogGroupName:
         Fn::Sub: /kpool/${ProjectName}/scheduler
-      RetentionInDays:
-        Ref: LogRetentionDays
+      RetentionInDays: {Ref: LogRetentionDays}
   HookLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -455,8 +449,7 @@ Resources:
     Properties:
       LogGroupName:
         Fn::Sub: /kpool/${ProjectName}/hook
-      RetentionInDays:
-        Ref: LogRetentionDays
+      RetentionInDays: {Ref: LogRetentionDays}
   AppExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -511,15 +504,13 @@ Resources:
           - Effect: Allow
             Action:
             - secretsmanager:GetSecretValue
-            Resource:
-              Ref: AppSecretArn
+            Resource: {Ref: AppSecretArn}
           - Fn::If:
             - HasAppKms
             - Effect: Allow
               Action:
               - kms:Decrypt
-              Resource:
-                Ref: AppSecretKmsKeyArn
+              Resource: {Ref: AppSecretKmsKeyArn}
               Condition:
                 StringEquals:
                   kms:ViaService:
@@ -528,8 +519,7 @@ Resources:
           - Effect: Allow
             Action:
             - secretsmanager:GetSecretValue
-            Resource:
-              Ref: CacheSecretArn
+            Resource: {Ref: CacheSecretArn}
   MigrationExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -578,15 +568,13 @@ Resources:
           - Effect: Allow
             Action:
             - secretsmanager:GetSecretValue
-            Resource:
-              Ref: MigrationSecretArn
+            Resource: {Ref: MigrationSecretArn}
           - Fn::If:
             - HasMigrationKms
             - Effect: Allow
               Action:
               - kms:Decrypt
-              Resource:
-                Ref: MigrationSecretKmsKeyArn
+              Resource: {Ref: MigrationSecretKmsKeyArn}
               Condition:
                 StringEquals:
                   kms:ViaService:
@@ -660,15 +648,13 @@ Resources:
           # A prefix condition would not match HeadObject, which has no prefix parameter.
           - Effect: Allow
             Action: s3:ListBucket
-            Resource:
-              Ref: FilesBucketArn
+            Resource: {Ref: FilesBucketArn}
           - Effect: Allow
             Action:
             - sqs:SendMessage
             - sqs:GetQueueAttributes
             - sqs:GetQueueUrl
-            Resource:
-              Ref: QueueArn
+            Resource: {Ref: QueueArn}
   WorkerTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -720,8 +706,7 @@ Resources:
             - sqs:ChangeMessageVisibility
             - sqs:GetQueueAttributes
             - sqs:GetQueueUrl
-            Resource:
-              Ref: QueueArn
+            Resource: {Ref: QueueArn}
   MigrationTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -746,10 +731,8 @@ Resources:
     Properties:
       Family:
         Fn::Sub: ${ProjectName}-api-bootstrap
-      Cpu:
-        Ref: ApiCpu
-      Memory:
-        Ref: ApiMemory
+      Cpu: {Ref: ApiCpu}
+      Memory: {Ref: ApiMemory}
       RuntimePlatform:
         CpuArchitecture: ARM64
         OperatingSystemFamily: LINUX
@@ -764,6 +747,7 @@ Resources:
         Fn::GetAtt:
         - ApiTaskRole
         - Arn
+      Volumes: [{Name: release-tmp}, {Name: release-storage}, {Name: release-cache}]
       ContainerDefinitions:
       - Name: api
         Image:
@@ -779,6 +763,10 @@ Resources:
             awslogs-stream-prefix: api
         StopTimeout: 120
         ReadonlyRootFilesystem: true
+        MountPoints:
+        - {SourceVolume: release-tmp, ContainerPath: /tmp, ReadOnly: false}
+        - {SourceVolume: release-storage, ContainerPath: /var/www/html/storage, ReadOnly: false}
+        - {SourceVolume: release-cache, ContainerPath: /var/www/html/bootstrap/cache, ReadOnly: false}
         PortMappings:
         - ContainerPort:
             Ref: ApiPort
@@ -788,10 +776,8 @@ Resources:
     Properties:
       Family:
         Fn::Sub: ${ProjectName}-worker-bootstrap
-      Cpu:
-        Ref: WorkerCpu
-      Memory:
-        Ref: WorkerMemory
+      Cpu: {Ref: WorkerCpu}
+      Memory: {Ref: WorkerMemory}
       RuntimePlatform:
         CpuArchitecture: ARM64
         OperatingSystemFamily: LINUX
@@ -806,6 +792,7 @@ Resources:
         Fn::GetAtt:
         - WorkerTaskRole
         - Arn
+      Volumes: [{Name: release-tmp}, {Name: release-storage}, {Name: release-cache}]
       ContainerDefinitions:
       - Name: worker
         Image:
@@ -821,6 +808,10 @@ Resources:
             awslogs-stream-prefix: worker
         StopTimeout: 120
         ReadonlyRootFilesystem: true
+        MountPoints:
+        - {SourceVolume: release-tmp, ContainerPath: /tmp, ReadOnly: false}
+        - {SourceVolume: release-storage, ContainerPath: /var/www/html/storage, ReadOnly: false}
+        - {SourceVolume: release-cache, ContainerPath: /var/www/html/bootstrap/cache, ReadOnly: false}
         Command:
         - php
         - artisan
@@ -833,10 +824,8 @@ Resources:
     Properties:
       Family:
         Fn::Sub: ${ProjectName}-migration-bootstrap
-      Cpu:
-        Ref: WorkerCpu
-      Memory:
-        Ref: WorkerMemory
+      Cpu: {Ref: WorkerCpu}
+      Memory: {Ref: WorkerMemory}
       RuntimePlatform:
         CpuArchitecture: ARM64
         OperatingSystemFamily: LINUX
@@ -851,6 +840,7 @@ Resources:
         Fn::GetAtt:
         - MigrationTaskRole
         - Arn
+      Volumes: [{Name: release-tmp}, {Name: release-storage}, {Name: release-cache}]
       ContainerDefinitions:
       - Name: migration
         Image:
@@ -866,6 +856,10 @@ Resources:
             awslogs-stream-prefix: migration
         StopTimeout: 120
         ReadonlyRootFilesystem: true
+        MountPoints:
+        - {SourceVolume: release-tmp, ContainerPath: /tmp, ReadOnly: false}
+        - {SourceVolume: release-storage, ContainerPath: /var/www/html/storage, ReadOnly: false}
+        - {SourceVolume: release-cache, ContainerPath: /var/www/html/bootstrap/cache, ReadOnly: false}
         Command:
         - php
         - artisan
@@ -876,10 +870,8 @@ Resources:
     Properties:
       Family:
         Fn::Sub: ${ProjectName}-scheduler-bootstrap
-      Cpu:
-        Ref: WorkerCpu
-      Memory:
-        Ref: WorkerMemory
+      Cpu: {Ref: WorkerCpu}
+      Memory: {Ref: WorkerMemory}
       RuntimePlatform:
         CpuArchitecture: ARM64
         OperatingSystemFamily: LINUX
@@ -894,6 +886,7 @@ Resources:
         Fn::GetAtt:
         - WorkerTaskRole
         - Arn
+      Volumes: [{Name: release-tmp}, {Name: release-storage}, {Name: release-cache}]
       ContainerDefinitions:
       - Name: scheduler
         Image:
@@ -909,6 +902,10 @@ Resources:
             awslogs-stream-prefix: scheduler
         StopTimeout: 120
         ReadonlyRootFilesystem: true
+        MountPoints:
+        - {SourceVolume: release-tmp, ContainerPath: /tmp, ReadOnly: false}
+        - {SourceVolume: release-storage, ContainerPath: /var/www/html/storage, ReadOnly: false}
+        - {SourceVolume: release-cache, ContainerPath: /var/www/html/bootstrap/cache, ReadOnly: false}
         Command:
         - php
         - artisan
@@ -917,22 +914,19 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Condition: CreateCertificate
     Properties:
-      DomainName:
-        Ref: ApiDomainName
+      DomainName: {Ref: ApiDomainName}
       ValidationMethod: DNS
       DomainValidationOptions:
       - DomainName:
           Ref: ApiDomainName
-        HostedZoneId:
-          Ref: HostedZoneId
+        HostedZoneId: {Ref: HostedZoneId}
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
       Scheme: internet-facing
       IpAddressType: ipv4
-      Subnets:
-        Ref: PublicSubnetIds
+      Subnets: {Ref: PublicSubnetIds}
       SecurityGroups:
       - Ref: AlbSecurityGroup
       LoadBalancerAttributes:
@@ -945,14 +939,11 @@ Resources:
   BlueTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Port:
-        Ref: ApiPort
+      Port: {Ref: ApiPort}
       Protocol: HTTP
       TargetType: ip
-      VpcId:
-        Ref: VpcId
-      HealthCheckPath:
-        Ref: HealthCheckPath
+      VpcId: {Ref: VpcId}
+      HealthCheckPath: {Ref: HealthCheckPath}
       HealthCheckIntervalSeconds: 30
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -965,14 +956,11 @@ Resources:
   GreenTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Port:
-        Ref: ApiPort
+      Port: {Ref: ApiPort}
       Protocol: HTTP
       TargetType: ip
-      VpcId:
-        Ref: VpcId
-      HealthCheckPath:
-        Ref: HealthCheckPath
+      VpcId: {Ref: VpcId}
+      HealthCheckPath: {Ref: HealthCheckPath}
       HealthCheckIntervalSeconds: 30
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -985,8 +973,7 @@ Resources:
   ProductionListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn:
-        Ref: LoadBalancer
+      LoadBalancerArn: {Ref: LoadBalancer}
       Port: 443
       Protocol: HTTPS
       SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
@@ -1005,8 +992,7 @@ Resources:
   ProductionRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn:
-        Ref: ProductionListener
+      ListenerArn: {Ref: ProductionListener}
       Priority: 10
       Conditions:
       - Field: host-header
@@ -1034,8 +1020,7 @@ Resources:
   TestListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn:
-        Ref: LoadBalancer
+      LoadBalancerArn: {Ref: LoadBalancer}
       Port: 8443
       Protocol: HTTPS
       SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
@@ -1054,8 +1039,7 @@ Resources:
   TestRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn:
-        Ref: TestListener
+      ListenerArn: {Ref: TestListener}
       Priority: 10
       Conditions:
       - Field: host-header
@@ -1169,35 +1153,26 @@ Resources:
       Timeout: 120
       MemorySize: 256
       Code:
-        S3Bucket:
-          Ref: HookArtifactBucket
-        S3Key:
-          Ref: HookArtifactKey
-        S3ObjectVersion:
-          Ref: HookArtifactVersion
+        S3Bucket: {Ref: HookArtifactBucket}
+        S3Key: {Ref: HookArtifactKey}
+        S3ObjectVersion: {Ref: HookArtifactVersion}
       VpcConfig:
-        SubnetIds:
-          Ref: PrivateSubnetIds
+        SubnetIds: {Ref: PrivateSubnetIds}
         SecurityGroupIds:
         - Ref: HookSecurityGroup
       LoggingConfig:
-        LogGroup:
-          Ref: HookLogGroup
+        LogGroup: {Ref: HookLogGroup}
       Environment:
         Variables:
-          ALB_ARN:
-            Ref: LoadBalancer
+          ALB_ARN: {Ref: LoadBalancer}
           ALB_DNS_NAME:
             Fn::GetAtt:
             - LoadBalancer
             - DNSName
-          API_HOST:
-            Ref: ApiDomainName
+          API_HOST: {Ref: ApiDomainName}
           TEST_PORT: '8443'
-          HEALTH_PATH:
-            Ref: HealthCheckPath
-          VPC_ID:
-            Ref: VpcId
+          HEALTH_PATH: {Ref: HealthCheckPath}
+          VPC_ID: {Ref: VpcId}
   HookInvocationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -1230,8 +1205,7 @@ Resources:
         Fn::Sub: ${ProjectName}-runtime-alarms
       Subscription:
       - Protocol: email
-        Endpoint:
-          Ref: NotificationEmail
+        Endpoint: {Ref: NotificationEmail}
   ServerErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1245,15 +1219,11 @@ Resources:
           - LoadBalancer
           - LoadBalancerFullName
       Statistic: Sum
-      Period:
-        Ref: AlarmPeriod
-      EvaluationPeriods:
-        Ref: AlarmEvaluationPeriods
-      Threshold:
-        Ref: ErrorCountThreshold
+      Period: {Ref: AlarmPeriod}
+      EvaluationPeriods: {Ref: AlarmEvaluationPeriods}
+      Threshold: {Ref: ErrorCountThreshold}
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      TreatMissingData:
-        Ref: AlarmMissingData
+      TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
   LatencyAlarm:
@@ -1269,15 +1239,11 @@ Resources:
           - LoadBalancer
           - LoadBalancerFullName
       Statistic: Average
-      Period:
-        Ref: AlarmPeriod
-      EvaluationPeriods:
-        Ref: AlarmEvaluationPeriods
-      Threshold:
-        Ref: LatencyThresholdSeconds
+      Period: {Ref: AlarmPeriod}
+      EvaluationPeriods: {Ref: AlarmEvaluationPeriods}
+      Threshold: {Ref: LatencyThresholdSeconds}
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      TreatMissingData:
-        Ref: AlarmMissingData
+      TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
   ApiService:
@@ -1285,12 +1251,10 @@ Resources:
     Properties:
       ServiceName:
         Fn::Sub: ${ProjectName}-api
-      Cluster:
-        Ref: Cluster
+      Cluster: {Ref: Cluster}
       LaunchType: FARGATE
       PlatformVersion: 1.4.0
-      DesiredCount:
-        Ref: ApiDesiredCount
+      DesiredCount: {Ref: ApiDesiredCount}
       EnableExecuteCommand: false
       DeploymentController:
         Type: ECS
@@ -1324,11 +1288,9 @@ Resources:
               - POST_TEST_TRAFFIC_SHIFT
               HookDetails:
                 contractVersion: '1'
-                expectedHost:
-                  Ref: ApiDomainName
+                expectedHost: {Ref: ApiDomainName}
                 testPort: 8443
-                healthPath:
-                  Ref: HealthCheckPath
+                healthPath: {Ref: HealthCheckPath}
           - Ref: AWS::NoValue
       TaskDefinition:
         Fn::If:
@@ -1338,8 +1300,7 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
-          Subnets:
-            Ref: PublicSubnetIds
+          Subnets: {Ref: PublicSubnetIds}
           SecurityGroups:
           - Ref: ApiSecurityGroup
       EnableECSManagedTags: true
@@ -1347,8 +1308,7 @@ Resources:
       HealthCheckGracePeriodSeconds: 60
       LoadBalancers:
       - ContainerName: api
-        ContainerPort:
-          Ref: ApiPort
+        ContainerPort: {Ref: ApiPort}
         TargetGroupArn:
           Fn::If:
           - PrimaryBlue
@@ -1360,10 +1320,8 @@ Resources:
             - PrimaryBlue
             - Ref: GreenTargetGroup
             - Ref: BlueTargetGroup
-          ProductionListenerRule:
-            Ref: ProductionRule
-          TestListenerRule:
-            Ref: TestRule
+          ProductionListenerRule: {Ref: ProductionRule}
+          TestListenerRule: {Ref: TestRule}
           RoleArn:
             Fn::GetAtt:
             - AlbInfrastructureRole
@@ -1373,12 +1331,10 @@ Resources:
     Properties:
       ServiceName:
         Fn::Sub: ${ProjectName}-worker
-      Cluster:
-        Ref: Cluster
+      Cluster: {Ref: Cluster}
       LaunchType: FARGATE
       PlatformVersion: 1.4.0
-      DesiredCount:
-        Ref: WorkerDesiredCount
+      DesiredCount: {Ref: WorkerDesiredCount}
       EnableExecuteCommand: false
       DeploymentController:
         Type: ECS
@@ -1397,8 +1353,7 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
-          Subnets:
-            Ref: PublicSubnetIds
+          Subnets: {Ref: PublicSubnetIds}
           SecurityGroups:
           - Ref: ApplicationSecurityGroupId
       EnableECSManagedTags: true
@@ -1413,8 +1368,7 @@ Resources:
   ScheduleGroup:
     Type: AWS::Scheduler::ScheduleGroup
     Properties:
-      Name:
-        Ref: ProjectName
+      Name: {Ref: ProjectName}
   SchedulerRole:
     Type: AWS::IAM::Role
     Properties:
@@ -1475,12 +1429,9 @@ Resources:
   Schedule:
     Type: AWS::Scheduler::Schedule
     Properties:
-      GroupName:
-        Ref: ScheduleGroup
-      State:
-        Ref: SchedulerState
-      ScheduleExpression:
-        Ref: ScheduleExpression
+      GroupName: {Ref: ScheduleGroup}
+      State: {Ref: SchedulerState}
+      ScheduleExpression: {Ref: ScheduleExpression}
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -1504,8 +1455,7 @@ Resources:
           NetworkConfiguration:
             AwsvpcConfiguration:
               AssignPublicIp: ENABLED
-              Subnets:
-                Ref: PublicSubnetIds
+              Subnets: {Ref: PublicSubnetIds}
               SecurityGroups:
               - Ref: ApplicationSecurityGroupId
         RetryPolicy:
@@ -1539,8 +1489,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Public HTTPS; test listener only from lifecycle hook
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 443
@@ -1548,25 +1497,19 @@ Resources:
         CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
       - IpProtocol: tcp
-        FromPort:
-          Ref: ApiPort
-        ToPort:
-          Ref: ApiPort
+        FromPort: {Ref: ApiPort}
+        ToPort: {Ref: ApiPort}
         CidrIp: 127.0.0.1/32
   ApiSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: API from ALB only; HTTPS egress for AWS and external APIs
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort:
-          Ref: ApiPort
-        ToPort:
-          Ref: ApiPort
-        SourceSecurityGroupId:
-          Ref: AlbSecurityGroup
+        FromPort: {Ref: ApiPort}
+        ToPort: {Ref: ApiPort}
+        SourceSecurityGroupId: {Ref: AlbSecurityGroup}
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 443
@@ -1575,19 +1518,16 @@ Resources:
       - IpProtocol: tcp
         FromPort: 5432
         ToPort: 5432
-        DestinationSecurityGroupId:
-          Ref: DatabaseSecurityGroupId
+        DestinationSecurityGroupId: {Ref: DatabaseSecurityGroupId}
       - IpProtocol: tcp
         FromPort: 6379
         ToPort: 6380
-        DestinationSecurityGroupId:
-          Ref: CacheSecurityGroupId
+        DestinationSecurityGroupId: {Ref: CacheSecurityGroupId}
   MigrationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Migration has no inbound listeners
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 443
@@ -1596,32 +1536,27 @@ Resources:
       - IpProtocol: tcp
         FromPort: 5432
         ToPort: 5432
-        DestinationSecurityGroupId:
-          Ref: DatabaseSecurityGroupId
+        DestinationSecurityGroupId: {Ref: DatabaseSecurityGroupId}
   HookSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Private lifecycle Lambda can reach ALB test listener only
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 8443
         ToPort: 8443
-        DestinationSecurityGroupId:
-          Ref: AlbSecurityGroup
+        DestinationSecurityGroupId: {Ref: AlbSecurityGroup}
   EndpointSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: EC2 endpoint for lifecycle hook ALB private address discovery
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 443
         ToPort: 443
-        SourceSecurityGroupId:
-          Ref: HookSecurityGroup
+        SourceSecurityGroupId: {Ref: HookSecurityGroup}
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 1
@@ -1630,14 +1565,12 @@ Resources:
   Ec2Endpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      VpcId:
-        Ref: VpcId
+      VpcId: {Ref: VpcId}
       VpcEndpointType: Interface
       ServiceName:
         Fn::Sub: com.amazonaws.${AWS::Region}.ec2
       PrivateDnsEnabled: true
-      SubnetIds:
-        Ref: PrivateSubnetIds
+      SubnetIds: {Ref: PrivateSubnetIds}
       SecurityGroupIds:
       - Ref: EndpointSecurityGroup
       PolicyDocument:
@@ -1654,65 +1587,51 @@ Resources:
   TestListenerIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId:
-        Ref: AlbSecurityGroup
+      GroupId: {Ref: AlbSecurityGroup}
       IpProtocol: tcp
       FromPort: 8443
       ToPort: 8443
-      SourceSecurityGroupId:
-        Ref: HookSecurityGroup
+      SourceSecurityGroupId: {Ref: HookSecurityGroup}
   AlbApiEgress:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      GroupId:
-        Ref: AlbSecurityGroup
+      GroupId: {Ref: AlbSecurityGroup}
       IpProtocol: tcp
-      FromPort:
-        Ref: ApiPort
-      ToPort:
-        Ref: ApiPort
-      DestinationSecurityGroupId:
-        Ref: ApiSecurityGroup
+      FromPort: {Ref: ApiPort}
+      ToPort: {Ref: ApiPort}
+      DestinationSecurityGroupId: {Ref: ApiSecurityGroup}
   ApiDatabaseIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId:
-        Ref: DatabaseSecurityGroupId
+      GroupId: {Ref: DatabaseSecurityGroupId}
       IpProtocol: tcp
       FromPort: 5432
       ToPort: 5432
-      SourceSecurityGroupId:
-        Ref: ApiSecurityGroup
+      SourceSecurityGroupId: {Ref: ApiSecurityGroup}
   MigrationDatabaseIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId:
-        Ref: DatabaseSecurityGroupId
+      GroupId: {Ref: DatabaseSecurityGroupId}
       IpProtocol: tcp
       FromPort: 5432
       ToPort: 5432
-      SourceSecurityGroupId:
-        Ref: MigrationSecurityGroup
+      SourceSecurityGroupId: {Ref: MigrationSecurityGroup}
   ApiCacheIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId:
-        Ref: CacheSecurityGroupId
+      GroupId: {Ref: CacheSecurityGroupId}
       IpProtocol: tcp
       FromPort: 6379
       ToPort: 6380
-      SourceSecurityGroupId:
-        Ref: ApiSecurityGroup
+      SourceSecurityGroupId: {Ref: ApiSecurityGroup}
   HookEndpointEgress:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      GroupId:
-        Ref: HookSecurityGroup
+      GroupId: {Ref: HookSecurityGroup}
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      DestinationSecurityGroupId:
-        Ref: EndpointSecurityGroup
+      DestinationSecurityGroupId: {Ref: EndpointSecurityGroup}
 Outputs:
   RepositoryUri:
     Value:
@@ -1730,8 +1649,7 @@ Outputs:
       - Cluster
       - Arn
   ClusterName:
-    Value:
-      Ref: Cluster
+    Value: {Ref: Cluster}
   ApiServiceName:
     Value:
       Fn::GetAtt:
@@ -1743,14 +1661,11 @@ Outputs:
       - WorkerService
       - Name
   ApiServiceArn:
-    Value:
-      Ref: ApiService
+    Value: {Ref: ApiService}
   WorkerServiceArn:
-    Value:
-      Ref: WorkerService
+    Value: {Ref: WorkerService}
   LoadBalancerArn:
-    Value:
-      Ref: LoadBalancer
+    Value: {Ref: LoadBalancer}
   LoadBalancerDnsName:
     Value:
       Fn::GetAtt:
@@ -1762,23 +1677,17 @@ Outputs:
       - LoadBalancer
       - CanonicalHostedZoneID
   ProductionRuleArn:
-    Value:
-      Ref: ProductionRule
+    Value: {Ref: ProductionRule}
   TestRuleArn:
-    Value:
-      Ref: TestRule
+    Value: {Ref: TestRule}
   BlueTargetGroupArn:
-    Value:
-      Ref: BlueTargetGroup
+    Value: {Ref: BlueTargetGroup}
   GreenTargetGroupArn:
-    Value:
-      Ref: GreenTargetGroup
+    Value: {Ref: GreenTargetGroup}
   ProductionListenerArn:
-    Value:
-      Ref: ProductionListener
+    Value: {Ref: ProductionListener}
   TestListenerArn:
-    Value:
-      Ref: TestListener
+    Value: {Ref: TestListener}
   CertificateArn:
     Value:
       Fn::If:
@@ -1789,16 +1698,14 @@ Outputs:
     Value:
       Fn::Sub: https://${ApiDomainName}
   AlarmTopicArn:
-    Value:
-      Ref: AlarmTopic
+    Value: {Ref: AlarmTopic}
   SchedulerArn:
     Value:
       Fn::GetAtt:
       - Schedule
       - Arn
   SchedulerDlqUrl:
-    Value:
-      Ref: SchedulerDlq
+    Value: {Ref: SchedulerDlq}
   ApiTaskRoleArn:
     Value:
       Fn::GetAtt:
@@ -1853,17 +1760,13 @@ Outputs:
       - Arn
     Condition: HasHook
   ApiBootstrapTaskDefinitionArn:
-    Value:
-      Ref: ApiBootstrapTaskDefinition
+    Value: {Ref: ApiBootstrapTaskDefinition}
   WorkerBootstrapTaskDefinitionArn:
-    Value:
-      Ref: WorkerBootstrapTaskDefinition
+    Value: {Ref: WorkerBootstrapTaskDefinition}
   MigrationBootstrapTaskDefinitionArn:
-    Value:
-      Ref: MigrationBootstrapTaskDefinition
+    Value: {Ref: MigrationBootstrapTaskDefinition}
   SchedulerBootstrapTaskDefinitionArn:
-    Value:
-      Ref: SchedulerBootstrapTaskDefinition
+    Value: {Ref: SchedulerBootstrapTaskDefinition}
   ApiReleaseFamily:
     Value:
       Fn::Sub: ${ProjectName}-api-release
@@ -1877,46 +1780,32 @@ Outputs:
     Value:
       Fn::Sub: ${ProjectName}-scheduler-release
   ApiLogGroupName:
-    Value:
-      Ref: ApiLogGroup
+    Value: {Ref: ApiLogGroup}
   WorkerLogGroupName:
-    Value:
-      Ref: WorkerLogGroup
+    Value: {Ref: WorkerLogGroup}
   MigrationLogGroupName:
-    Value:
-      Ref: MigrationLogGroup
+    Value: {Ref: MigrationLogGroup}
   SchedulerLogGroupName:
-    Value:
-      Ref: SchedulerLogGroup
+    Value: {Ref: SchedulerLogGroup}
   HookLogGroupName:
-    Value:
-      Ref: HookLogGroup
+    Value: {Ref: HookLogGroup}
   ServerErrorAlarmName:
-    Value:
-      Ref: ServerErrorAlarm
+    Value: {Ref: ServerErrorAlarm}
   LatencyAlarmName:
-    Value:
-      Ref: LatencyAlarm
+    Value: {Ref: LatencyAlarm}
   SchedulerDlqAlarmName:
-    Value:
-      Ref: SchedulerDlqAlarm
+    Value: {Ref: SchedulerDlqAlarm}
   ContainerNames:
     Value: api,worker,migration,scheduler
   MigrationSecurityGroupId:
-    Value:
-      Ref: MigrationSecurityGroup
+    Value: {Ref: MigrationSecurityGroup}
   ExternalCanaryAlarmName:
-    Value:
-      Ref: ExternalCanaryAlarmName
+    Value: {Ref: ExternalCanaryAlarmName}
   ApiSecurityGroupId:
-    Value:
-      Ref: ApiSecurityGroup
+    Value: {Ref: ApiSecurityGroup}
   WorkerSecurityGroupId:
-    Value:
-      Ref: ApplicationSecurityGroupId
+    Value: {Ref: ApplicationSecurityGroupId}
   AlbSecurityGroupId:
-    Value:
-      Ref: AlbSecurityGroup
+    Value: {Ref: AlbSecurityGroup}
   HookSecurityGroupId:
-    Value:
-      Ref: HookSecurityGroup
+    Value: {Ref: HookSecurityGroup}

@@ -44,6 +44,12 @@ COPY --chmod=644 docker/production/php.ini /usr/local/etc/php/conf.d/zz-producti
 COPY --chmod=755 docker/production/entrypoint.sh docker/production/api.sh /usr/local/bin/
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache; \
     rm -f bootstrap/cache/*.php; chown -R app:app storage bootstrap/cache
+# ECS copies these image directories (including UID/mode) into Fargate volumes.
+VOLUME ["/tmp", "/var/www/html/storage", "/var/www/html/bootstrap/cache"]
+# Release builds supply a checksum-verified public RDS CA; local builds may omit it.
+ARG RDS_CA_SHA256=""
+RUN --mount=type=secret,id=rds_ca \
+    if [ -f /run/secrets/rds_ca ]; then test -n "$RDS_CA_SHA256"; cp /run/secrets/rds_ca /etc/ssl/certs/kpool-rds-ca.pem; chmod 644 /etc/ssl/certs/kpool-rds-ca.pem; fi
 USER 1000:1000
 EXPOSE 8080
 STOPSIGNAL SIGTERM
