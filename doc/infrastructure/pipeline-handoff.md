@@ -1,6 +1,6 @@
 # 本番環境・Pipeline 接続台帳
 
-操作の正本は [operations.md](operations.md)、構成・入力の正本は [インフラの入口](../../infra/cloudformation/README.md)。ここは外部接続と登録先だけを扱う。以下のGitHub登録名はPipeline担当者への提案名（アプリenvを除く）で、実装済workflowの入力名ではない。実値はアクセス制限した台帳で管理し、未確定は未登録/未検証とする。基盤入力は単一environment JSON、ARNは実Outputsから取得し重複コピーを正本にしない。
+操作の正本は [operations.md](operations.md)、構成・入力の正本は [インフラの入口](../../infra/cloudformation/README.md)。ここは外部接続と登録先だけを扱う。backend Pipeline の実装済み入力・登録名・再実行手順は [backend-release.md](backend-release.md) を正本とする。以下の旧提案表は外部接続の背景として参照する。実値はアクセス制限した台帳で管理し、未確定は未登録/未検証とする。基盤入力は単一environment JSON、ARNは実Outputsから取得し重複コピーを正本にしない。
 
 ## AWS 識別子・設定先
 
@@ -53,7 +53,7 @@ Variables はバックエンド repository の Settings → Environments → pro
 - GitHub Appを必要な2repositoryだけへinstallし、ref解決・checkoutに **Contents: read** の短命installation tokenを使用する。backend Environment Variables `SOURCE_APP_ID`、Environment Secrets `SOURCE_APP_PRIVATE_KEY` は提案名。秘密鍵は管理者保管庫にも保管し、期限・ownerを台帳に記録する。GITHUB_TOKENだけで別private repoをcheckoutできると扱わない。
 - App鍵更新: 新鍵発行→Environment Secret更新→両repoのref解決／checkout試験→実行中jobがないことを確認→旧鍵失効。Contents以外のwrite権限を付与しない。token・鍵をartifactへ保存しない。
 - reusable workflow参照は信頼する完全commit SHAへ固定し、アプリsourceの backend SHA／frontend SHAとは別に記録する。frontend jobにはCloudflare tokenと必要なsource取得tokenだけを明示渡しし、`secrets: inherit`でAWSやApp秘密鍵を一括共有しない。`id-token: write`はAWS操作jobだけへ。
-- Pipeline担当が確定する入力・Secret名、Environment、job権限、concurrency、初回起動フラグ、復旧／再実行入力をこの表と照合してから引き渡し完了とする。現在 **Pipeline担当未実装のためworkflow実動作は未確認**。
+- Pipeline担当が確定する入力・Secret名、Environment、job権限、concurrency、初回起動フラグ、復旧／再実行入力をこの表と照合してから引き渡し完了とする。backend workflow は実装済み。クラウドへの適用・workflow実動作とfrontend接続は未確認。
 
 ## 未達ゲート・担当
 

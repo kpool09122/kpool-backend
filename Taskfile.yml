@@ -41,6 +41,11 @@ tasks:
     cmds:
       - bash scripts/container/run.sh {{.CLI_ARGS}}
 
+  release:check:
+    desc: Offline release behavior, real AWS model, actionlint and CloudFormation validation
+    cmds:
+      - bash scripts/release/run.sh check
+
   infra:validate:
     desc: Canonical offline infrastructure validation (templates, inputs and operation safety)
     cmds:

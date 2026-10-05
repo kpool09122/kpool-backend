@@ -169,6 +169,27 @@ Resources:
             Resource:
             - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}-*/*
             - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${FoundationStackName}/*
+          # Release preflight reads metadata only; no Secret value permission.
+          - Sid: ReadRuntimeConfiguration
+            Effect: Allow
+            Action: ssm:GetParameter
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/runtime/config
+          - Sid: ObserveReleaseAlarms
+            Effect: Allow
+            Action: cloudwatch:DescribeAlarms
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-*
+          - Sid: ObserveReleaseHook
+            Effect: Allow
+            Action: lambda:GetFunctionConfiguration
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProjectName}-deployment-hook
+          - Sid: ObserveWorkQueue
+            Effect: Allow
+            Action: sqs:GetQueueAttributes
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${FoundationWorkQueueName}
           - Sid: PassApplicationRoles
             Effect: Allow
             Action: iam:PassRole

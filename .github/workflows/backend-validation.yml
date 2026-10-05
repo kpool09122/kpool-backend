@@ -1,0 +1,119 @@
+name: Backend validation and ARM64 build
+on:
+  workflow_call:
+    inputs:
+      source_sha: {type: string, required: true}
+      control_sha: {type: string, required: true}
+      plan_artifact: {type: string, required: true}
+    outputs:
+      artifact_name:
+        value: ${{ jobs.validate-build.outputs.artifact_name }}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  validate-build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    environment: production
+    outputs:
+      artifact_name: backend-build-${{ github.run_attempt }}
+    steps:
+      - name: Reject untrusted workflow control before checkout or credentials
+        env:
+          CONTROL_SHA: ${{ inputs.control_sha }}
+          EXPECTED_CONTROL_SHA: ${{ github.workflow_sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import os, re
+          if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
+              or os.environ['GITHUB_REF'] != 'refs/heads/main'
+              or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])
+              or os.environ['CONTROL_SHA'] != os.environ['EXPECTED_CONTROL_SHA']):
+              raise ValueError('Untrusted workflow control SHA/repository/ref')
+          PYCODE
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.plan_artifact }}
+          path: release
+      - name: Verify immutable plan and main ancestry before source checkout
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          CONTROL_SHA: ${{ inputs.control_sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          sys.path.insert(0, 'control/scripts/release')
+          from cli import validate_plan
+          from contract import BACKEND
+          from github_source import resolve_source
+          plan = validate_plan(json.load(open('release/plan.json')))
+          if plan['backend_sha'] != os.environ['SOURCE_SHA'] or plan['workflow_sha'] != os.environ['CONTROL_SHA']:
+              raise ValueError('Source/control SHA does not match immutable plan')
+          if resolve_source(BACKEND, os.environ['SOURCE_SHA']) != os.environ['SOURCE_SHA']:
+              raise ValueError('Source SHA did not resolve to the pinned commit')
+          PY
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: kpool09122/kpool-backend
+          ref: main
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - name: Select pinned source only from the checked-out main history
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: bash control/scripts/release/select-source.sh source
+      - name: Install pinned Task and Docker Compose compatibility command
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-bin"
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/go-task/task/v3/cmd/task@v3.45.4
+          printf '#!/bin/sh\nexec docker compose "$@"\n' > "$RUNNER_TEMP/release-bin/docker-compose"
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          chmod +x "$RUNNER_TEMP/release-bin/docker-compose"
+          echo "$RUNNER_TEMP/release-bin" >> "$GITHUB_PATH"
+      - name: Validate PHP through Taskfile (non-destructive style check)
+        working-directory: source
+        run: |
+          task install
+          task composer -- cs-check
+          task phpstan
+          task test
+      - name: Validate deployment controls and existing infrastructure offline
+        working-directory: control
+        run: |
+          CFN_PYTHON=python3 bash scripts/cloudformation/run.sh install
+          bash scripts/release/run.sh check
+      - name: Build only the production target on ARM64
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          RDS_CA_PEM: ${{ vars.RDS_CA_PEM }}
+          RDS_CA_SHA256: ${{ vars.RDS_CA_SHA256 }}
+        run: |
+          python3 -B control/scripts/release/cli.py prepare-ca
+          docker build --platform linux/arm64 --target production --secret id=rds_ca,src=release/rds-ca.pem --build-arg "RDS_CA_SHA256=$RDS_CA_SHA256" -t "kpool-release:$SOURCE_SHA" source
+          docker save --output release/backend-image.tar "kpool-release:$SOURCE_SHA"
+          python3 -B control/scripts/release/cli.py build-record
+          rm release/rds-ca.pem
+      - if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: backend-build-${{ github.run_attempt }}
+          path: |
+            release/backend-image.tar
+            release/build.json
+          if-no-files-found: error
+          retention-days: 14
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: backend-validation-record-${{ github.run_attempt }}
+          path: release/plan.json
+          if-no-files-found: warn
+          retention-days: 90
