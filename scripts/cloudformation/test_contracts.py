@@ -357,6 +357,8 @@ class CloudFormationContracts(unittest.TestCase):
             configuration = props['DeploymentConfiguration']
             strategies.append(configuration.get('Strategy', 'ROLLING'))
             if configuration.get('Strategy') == 'BLUE_GREEN':
+                self.assertNotIn('DeploymentCircuitBreaker', configuration,
+                                 'Circuit breaker is only supported for rolling updates')
                 self.assertEqual(configuration['BakeTimeInMinutes'], 5)
                 self.assertTrue(configuration['Alarms']['Rollback'])
                 self.assertTrue(configuration['LifecycleHooks'])
