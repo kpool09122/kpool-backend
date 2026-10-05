@@ -66,6 +66,9 @@ task infra:operate -- execute --record "$RECORD_DIR/$STACK.plan.json" --release-
 
 ## 3. 通常のアプリ配備
 
+API/worker/Schedulerとmigration等のRunTaskは root `PublicSubnetIds` と用途別SGを使用し、`assignPublicIp=ENABLED` にする。public subnetは自動public IP割当を無効にしているため、task起動設定で明示する。外向きHTTPSはInternet Gateway経由。
+起動後はALB経由のAPI疎通とtaskの外向き接続を確認し、APIの8080がALB SGのみ、worker/migrationに受信許可がないことを実SGと照合する。DB/cacheの非公開設定と用途別SGも確認する。
+
 **release Pipeline（#156）は未実装。以下は実装・受入後の運用契約であり、現在実行できるworkflowではない。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
 通常配備はCloudFormation更新なし、desiredは現在値を維持。初回0→1のみ起動時に変更する。
 API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+breaker。
@@ -85,6 +88,7 @@ Schedulerはアプリのcommand・周期・timezone・二重実行対策・終�
 - ValkeyはTLS URL（REDIS_URL）、applicationユーザー・password、DB0を設定。Secret値だけの更新ではcache userは同期しない。新旧2password期間、user/passwordとSecret更新、新task反映、旧password除去の順で移行する。自動rotationは未実装。
 - API/workerの容量: runtime ApiCpu/ApiMemory等を変更し、planが保持するrevision/desiredを確認。release定義のCPU/memoryもPipeline側で更新しなければ既存revisionへは反映されない。
 - DB instance/Multi-AZ: root inputsを変更し、再起動/費用/提供versionを確認。自動minor upgrade後の実versionより古いEngineVersionを適用しない。
+- PostgreSQLの新規作成はメジャー18 / parameter group `postgres18` を使用し、RDSが選択したminorをDB情報で確認する。東京でのengine versionとinstance classの提供を確認する。既存DBが16等の場合は通常更新と分けて、復元環境でアプリ/拡張機能の互換性、対応upgrade経路、backup、停止時間、復旧条件を検証する。メジャー更新時は対応するparameter groupの変更と `AllowMajorVersionUpgrade` の明示的な有効化が必要で、通常テンプレートでは `false` を維持する。parameter groupの置換を含む計画は§2の専用移行計画として扱う。
 - Budgetsはaccount全体のUSD（既定100、実績80%/予測100%）。Cloudflare/外部APIは別。旧新task併存、public IPv4、ALB、private endpoint、canary、保存version・Retain課金も見積もる。
 
 ## 5. 障害・復旧・切戻し

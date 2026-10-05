@@ -144,7 +144,7 @@ class DatabaseConnectionTest extends TestCase
 ### Database Connection
 
 The project is configured to connect to PostgreSQL with the following features:
-- PostgreSQL 16 Alpine image
+- PostgreSQL 18 Alpine image
 - UUID and crypto extensions enabled
 - Separate test database configuration
 - Connection via PDO with PostgreSQL driver
@@ -153,7 +153,7 @@ The project is configured to connect to PostgreSQL with the following features:
 
 If you prefer to set up PostgreSQL manually:
 
-1. Install PostgreSQL 16
+1. Install PostgreSQL 18
 2. Create database: `CREATE DATABASE kpool;`
 3. Create user: `CREATE USER kpool WITH PASSWORD 'secret';`
 4. Grant privileges: `GRANT ALL PRIVILEGES ON DATABASE kpool TO kpool;`

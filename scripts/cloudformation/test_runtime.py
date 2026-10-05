@@ -94,13 +94,21 @@ class RuntimeContracts(unittest.TestCase):
         self.assertEqual(worker['DeploymentCircuitBreaker'], {'Enable': True, 'Rollback': True})
         self.assertNotIn('LifecycleHooks', worker)
 
-    def test_private_hook_and_public_api_network_boundaries(self):
+    def test_private_hook_and_public_task_network_boundaries(self):
         for name, port in (('ProductionListener', 443), ('TestListener', 8443)):
             listener = self.runtime[name]['Properties']
             self.assertEqual(listener['Protocol'], 'HTTPS')
             self.assertEqual(listener['Port'], port)
             self.assertEqual(listener['DefaultActions'][0]['FixedResponseConfig']['StatusCode'], '403')
         self.assertEqual(self.runtime['LoadBalancer']['Properties']['Scheme'], 'internet-facing')
+        self.assertEqual(self.runtime['LoadBalancer']['Properties']['Subnets'], {'Ref': 'PublicSubnetIds'})
+        task_networks = [self.runtime[name]['Properties']['NetworkConfiguration']['AwsvpcConfiguration']
+                         for name in ('ApiService', 'WorkerService')]
+        task_networks.append(self.runtime['Schedule']['Properties']['Target']['EcsParameters']
+                             ['NetworkConfiguration']['AwsvpcConfiguration'])
+        for configuration in task_networks:
+            self.assertEqual(configuration['Subnets'], {'Ref': 'PublicSubnetIds'})
+            self.assertEqual(configuration['AssignPublicIp'], 'ENABLED')
         self.assertEqual(self.runtime['ApiSecurityGroup']['Properties']['SecurityGroupIngress'], [{
             'IpProtocol': 'tcp', 'FromPort': {'Ref': 'ApiPort'}, 'ToPort': {'Ref': 'ApiPort'},
             'SourceSecurityGroupId': {'Ref': 'AlbSecurityGroup'},
