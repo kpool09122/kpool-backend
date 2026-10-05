@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Shared\Infrastructure\Service;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
@@ -14,6 +15,38 @@ use Tests\TestCase;
 
 class ImageServiceTest extends TestCase
 {
+    public function testImportPreservesTransparencyAndStoresResizedWebpOnSelectedDisk(): void
+    {
+        Storage::fake('s3');
+        Storage::fake('public');
+        $image = imagecreatetruecolor(2048, 1024);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        $transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
+        self::assertNotFalse($transparent);
+        imagefill($image, 0, 0, $transparent);
+        ob_start();
+        imagepng($image);
+        $contents = ob_get_clean();
+        self::assertIsString($contents);
+        Http::fake(['https://example.test/image.png' => Http::response($contents)]);
+        $path = $this->app()->make(ImageServiceInterface::class)->importFromUrl('https://example.test/image.png');
+        self::assertMatchesRegularExpression('/^images\/[0-9a-f-]{36}\.webp$/', (string) $path);
+        $stored = Storage::disk('s3')->get((string) $path);
+        self::assertIsString($stored);
+        $size = getimagesizefromstring($stored);
+        self::assertNotFalse($size);
+        self::assertSame('image/webp', $size['mime']);
+        $decoded = imagecreatefromstring($stored);
+        self::assertNotFalse($decoded);
+        self::assertSame(1024, imagesx($decoded));
+        self::assertSame(512, imagesy($decoded));
+        $color = imagecolorat($decoded, 0, 0);
+        self::assertNotFalse($color);
+        self::assertSame(127, imagecolorsforindex($decoded, $color)['alpha']);
+        self::assertSame([], Storage::disk('public')->allFiles());
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

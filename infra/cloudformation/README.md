@@ -2,6 +2,10 @@
 
 運用担当者向けの東京リージョン `ap-northeast-1` 用構成です。AWS への適用は別途行います。ECS サービス、OIDC、アプリの SQS/S3 アダプタは含みません。
 
+## アプリS3接続（Issue #667）
+
+`PublicImagesBucketName` → `AWS_PUBLIC_IMAGES_BUCKET`、`PrivateFilesBucketName` → `AWS_PRIVATE_FILES_BUCKET`、`ImageBaseUrl` → `IMAGE_BASE_URL` を注入し、`IMAGE_STORAGE_DISK=s3` / `VERIFICATION_DOCUMENTS_DRIVER=s3` に設定します。画像実キーは `images/*`、書類はdisk rootにより `verification-documents/accounts/*` となり、`runtime.yaml` のタスクロール接頭辞と一致します。書類バケットはCloudFront originへ追加しません。BucketOwnerEnforcedに合わせpublic-read ACLは使いません。詳細と#157実AWS確認・失効手順は [S3保存・配信設定](../../docs/s3-storage.md) を参照してください。
+
 ## 構成と作成順序
 
 `root.yaml` をエントリポイントとして `aws cloudformation package` で子テンプレートをアップロードします。子スタックを個別に作成・更新せず、root の change set から管理します。
