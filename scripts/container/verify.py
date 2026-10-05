@@ -74,7 +74,7 @@ try:
         name = PREFIX + '-' + suffix
         CONTAINERS.append(name)
         docker('run', '-d', '--name', name, '--network', NETWORK, *options, image)
-    wait_for(lambda: docker('exec', PREFIX + '-db', 'pg_isready', '-U', 'kpool', check=False).returncode == 0, 'PostgreSQL')
+    wait_for(lambda: docker('exec', PREFIX + '-db', 'pg_isready', '-h', ENV['DB_HOST'], '-U', 'kpool', check=False).returncode == 0, 'PostgreSQL TCP')
     wait_for(lambda: docker('exec', PREFIX + '-redis', 'redis-cli', 'ping', check=False).returncode == 0, 'Redis')
 
     name, result = run('migration', 'php', 'artisan', 'migrate', '--force')
