@@ -625,6 +625,16 @@ Resources:
               - - Ref: ImagesBucketArn
                 - /images/*
           - Effect: Allow
+            Action: s3:PutObjectAcl
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: ImagesBucketArn
+                - /images/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Effect: Allow
             Action:
             - s3:GetObject
             - s3:PutObject
@@ -634,6 +644,22 @@ Resources:
               - ''
               - - Ref: FilesBucketArn
                 - /verification-documents/*
+          - Effect: Allow
+            Action: s3:PutObjectAcl
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: FilesBucketArn
+                - /verification-documents/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          # HeadObject needs bucket-level ListBucket to return 404 for missing documents.
+          # A prefix condition would not match HeadObject, which has no prefix parameter.
+          - Effect: Allow
+            Action: s3:ListBucket
+            Resource:
+              Ref: FilesBucketArn
           - Effect: Allow
             Action:
             - sqs:SendMessage
@@ -675,6 +701,16 @@ Resources:
               - ''
               - - Ref: ImagesBucketArn
                 - /images/*
+          - Effect: Allow
+            Action: s3:PutObjectAcl
+            Resource:
+              Fn::Join:
+              - ''
+              - - Ref: ImagesBucketArn
+                - /images/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
           - Effect: Allow
             Action:
             - sqs:ReceiveMessage

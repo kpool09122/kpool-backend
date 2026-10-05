@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Shared\Infrastructure\Service;
 
+use Aws\Command;
 use Aws\CommandInterface;
 use Aws\History;
 use Aws\Middleware;
 use Aws\MockHandler;
 use Aws\Result;
+use Aws\S3\Exception\S3Exception;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Utils;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToCheckFileExistence;
 use Tests\TestCase;
 
 class S3AdapterContractTest extends TestCase
@@ -57,6 +61,28 @@ class S3AdapterContractTest extends TestCase
             }
             self::assertSame(['PutObject', 'GetObject', 'HeadObject', 'DeleteObject'], $operations);
             self::assertSame('bucket-owner-full-control', $history[0]['command']['ACL']);
+
+            if ($name !== 'verification-documents') {
+                continue;
+            }
+
+            $handler->append(new S3Exception('Missing object', new Command('HeadObject'), [
+                'code' => 'NotFound',
+                'response' => new Response(404),
+            ]), new Result(['KeyCount' => 0]));
+            self::assertFalse($disk->exists($path));
+
+            $handler->append(new S3Exception('Access denied', new Command('HeadObject'), [
+                'code' => 'AccessDenied',
+                'response' => new Response(403),
+            ]));
+
+            try {
+                $disk->exists($path);
+                self::fail('Access errors must not be treated as missing objects.');
+            } catch (UnableToCheckFileExistence $exception) {
+                self::assertInstanceOf(S3Exception::class, $exception->getPrevious());
+            }
         }
     }
 }

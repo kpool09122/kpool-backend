@@ -64,6 +64,26 @@ class DocumentStreamingTest extends TestCase
         $this->assertPrivateStream($response);
     }
 
+    public function testMissingObjectReturns404ForOwnerAndAllowedReviewer(): void
+    {
+        $context = $this->context();
+        $accountId = (string) $context->principal()->accountIdentifier();
+        $this->document($accountId);
+        Storage::disk('verification-documents')->delete('accounts/' . $accountId . '/document.pdf');
+
+        /** @var ViewMyAccountDocumentRequest&Mockery\MockInterface $request */
+        $request = Mockery::mock(ViewMyAccountDocumentRequest::class);
+        $request->shouldReceive('documentType')->andReturn('business_registration');
+        $response = (new ViewMyAccountDocumentAction($context, new NullLogger()))($request);
+        self::assertSame(404, $response->getStatusCode());
+
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
+        $response = (new ViewAccountDocumentAction(new GetAccountDocument($policyEvaluator), $context, new NullLogger()))($this->reviewRequest($accountId));
+        self::assertSame(404, $response->getStatusCode());
+    }
+
     public function testDeniedReviewerNeverReadsStorage(): void
     {
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
