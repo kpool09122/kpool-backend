@@ -31,8 +31,8 @@ Resources:
   DatabaseParameterGroup:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: PostgreSQL 16 requires TLS
-      Family: postgres16
+      Description: PostgreSQL 18 requires TLS
+      Family: postgres18
       Parameters:
         rds.force_ssl: '1'
   Database:
@@ -41,8 +41,8 @@ Resources:
     UpdateReplacePolicy: Snapshot
     Properties:
       Engine: postgres
-      # Explicit supported minor for the pinned validator; verify Tokyo availability before applying.
-      EngineVersion: '16.13'
+      # Pin the major to local/test PostgreSQL; RDS selects a supported minor at creation.
+      EngineVersion: '18'
       DBInstanceClass: !Ref DatabaseInstanceClass
       DBName: kpool
       MasterUsername: kpooladmin
