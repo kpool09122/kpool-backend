@@ -252,12 +252,17 @@ aws cloudformation package --template-file infra/cloudformation/root.yaml \
 表のParameters例は `infra/cloudformation/` 配下、実ファイルはrepo外へコピーする。既存OIDC providerがある場合は `ExistingOidcProviderArn` を設定して重複作成を避ける。各stackの操作例は前掲 `create-change-set` を用い、以下を追加確認する。
 
 ```sh
+CHANGE_SET_TYPE=CREATE # create-change-setで指定した種別に合わせる。既存stackの更新はUPDATE
 aws cloudformation describe-change-set --stack-name "$STACK" --change-set-name "$CHANGE_SET" \
   --query '{Status:Status,Reason:StatusReason,Changes:Changes}'
 # rootではChanges内のResourceChange.ChangeSetIdを辿り子の変更もdescribeする
 aws cloudformation describe-change-set --change-set-name "$NESTED_CHANGE_SET_ARN"
 # 実行後、CREATEならstack-create-complete、UPDATEならstack-update-complete
-aws cloudformation wait stack-update-complete --stack-name "$STACK"
+case "$CHANGE_SET_TYPE" in
+  CREATE) aws cloudformation wait stack-create-complete --stack-name "$STACK" || exit 1 ;;
+  UPDATE) aws cloudformation wait stack-update-complete --stack-name "$STACK" || exit 1 ;;
+  *) echo "未対応のChange Set種別: $CHANGE_SET_TYPE" >&2; exit 1 ;;
+esac
 aws cloudformation describe-stacks --stack-name "$STACK" \
   --query 'Stacks[0].{Status:StackStatus,TerminationProtection:EnableTerminationProtection,Outputs:Outputs}'
 aws cloudformation list-stack-resources --stack-name "$STACK"
