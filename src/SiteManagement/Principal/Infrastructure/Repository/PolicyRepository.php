@@ -27,13 +27,14 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         if ($identifiers === []) {
             return [];
-        } $models = PolicyEloquent::query()->whereIn("id", array_map(static fn (PolicyIdentifier $id): string => (string) $id, $identifiers))->get();
+        }
+        $models = PolicyEloquent::query()->whereIn('id', array_map(static fn (PolicyIdentifier $id): string => (string) $id, $identifiers))->get();
         $result = [];
         foreach ($models as $model) {
             $entity = new Policy(new PolicyIdentifier($model->id), $model->name, array_map(static fn (array $s): Statement => new Statement(Effect::from($s['effect']), array_map(Action::from(...), $s['actions']), array_map(ResourceType::from(...), $s['resource_types']), isset($s['condition']) ? Condition::from($s['condition']) : null), $model->statements));
             $result[] = $entity;
         }
 
-return $result;
+        return $result;
     }
 }
