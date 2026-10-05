@@ -42,9 +42,14 @@ tasks:
       - bash scripts/container/run.sh {{.CLI_ARGS}}
 
   infra:validate:
-    desc: Validate all CloudFormation templates and foundation/runtime security contracts offline
+    desc: Canonical offline infrastructure validation (templates, inputs and operation safety)
     cmds:
-      - bash scripts/cloudformation/validate.sh
+      - bash scripts/cloudformation/run.sh check
+
+  infra:operate:
+    desc: 'Infrastructure config-check/plan/execute; task infra:operate -- --help'
+    cmds:
+      - '"${CFN_VENV:-/tmp/kpool-cfn-tools}/bin/python" -B scripts/cloudformation/operations.py {{.CLI_ARGS}}'
 
   wait-for-db:
     desc: Wait for database to be ready
@@ -268,6 +273,6 @@ tasks:
       - bash scripts/cloudformation/run.sh test
 
   cfn:check:
-    desc: Run all CloudFormation static checks without AWS credentials
+    desc: Compatibility alias for infra:validate
     cmds:
-      - bash scripts/cloudformation/run.sh check
+      - task: infra:validate
