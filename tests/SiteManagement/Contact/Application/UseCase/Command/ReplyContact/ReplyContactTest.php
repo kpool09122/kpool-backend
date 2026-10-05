@@ -28,9 +28,11 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Entity\User;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -77,7 +79,7 @@ class ReplyContactTest extends TestCase
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            $identityIdentifier,
+            new PrincipalIdentifier((string) $identityIdentifier),
             $expectedContent,
         );
         $this->bindAdminUser($identityIdentifier);
@@ -170,15 +172,15 @@ class ReplyContactTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $input = new ReplyContactInput(
             $contactIdentifier,
-            $identityIdentifier,
+            new PrincipalIdentifier((string) $identityIdentifier),
             '返信内容',
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findByIdentityIdentifier')
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($identityIdentifier)
-            ->andReturnNull();
+            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $identityIdentifier))
+            ->andReturn(new Principal(new PrincipalIdentifier((string) $identityIdentifier), $identityIdentifier));
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldNotReceive('findById');
@@ -192,7 +194,10 @@ class ReplyContactTest extends TestCase
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
         $replyContactRepository->shouldNotReceive('save');
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotAdmin');
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
@@ -218,7 +223,7 @@ class ReplyContactTest extends TestCase
 今しばらくお待ちください。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            $identityIdentifier,
+            new PrincipalIdentifier((string) $identityIdentifier),
             $expectedContent,
         );
         $this->bindAdminUser($identityIdentifier);
@@ -273,7 +278,7 @@ class ReplyContactTest extends TestCase
 恐れ入りますが、回答まで今しばらくお時間をいただけますと幸いです。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            $identityIdentifier,
+            new PrincipalIdentifier((string) $identityIdentifier),
             $expectedContent,
         );
         $this->bindAdminUser($identityIdentifier);
@@ -354,17 +359,17 @@ class ReplyContactTest extends TestCase
 
     private function bindAdminUser(IdentityIdentifier $identityIdentifier): void
     {
-        $user = Mockery::mock(User::class);
-        $user->shouldReceive('isAdmin')
-            ->once()
-            ->andReturnTrue();
+        $user = new Principal(new PrincipalIdentifier((string) $identityIdentifier), $identityIdentifier);
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findByIdentityIdentifier')
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($identityIdentifier)
+            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $identityIdentifier))
             ->andReturn($user);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotAdmin');
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

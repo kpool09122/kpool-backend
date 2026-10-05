@@ -10,12 +10,12 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
 {
     public function __construct(
-        private UserIdentifier             $userIdentifier,
+        private PrincipalIdentifier             $principalIdentifier,
         private ?TranslationSetIdentifier  $translationSetIdentifier,
         private Language                   $language,
         private Category                   $category,
@@ -25,9 +25,9 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
     ) {
     }
 
-    public function userIdentifier(): UserIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->userIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function translationSetIdentifier(): ?TranslationSetIdentifier

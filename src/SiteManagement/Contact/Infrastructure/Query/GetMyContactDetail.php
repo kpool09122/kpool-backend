@@ -12,14 +12,29 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ContactDetailReadMod
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutputPort;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use UnexpectedValueException;
 
 readonly class GetMyContactDetail implements GetMyContactDetailInterface
 {
+    public function __construct(private PrincipalRepositoryInterface $principalRepository, private PolicyEvaluatorInterface $policyEvaluator)
+    {
+    }
+
     public function process(GetMyContactDetailInputPort $input, GetMyContactDetailOutputPort $output): void
     {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->identityIdentifier()))) {
+            throw new UnauthorizedException();
+        }
+
         $contact = ContactModel::query()->select(['id', 'identity_identifier', 'category', 'name', 'content', 'created_at'])
-            ->where('id', (string) $input->contactIdentifier())->where('identity_identifier', (string) $input->identityIdentifier())->first();
+            ->where('id', (string) $input->contactIdentifier())->where('identity_identifier', (string) $principal->identityIdentifier())->first();
         if ($contact === null) {
             throw new ContactNotFoundException();
         }

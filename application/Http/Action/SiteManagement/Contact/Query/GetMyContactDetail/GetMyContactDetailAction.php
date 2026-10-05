@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Query\GetMyContactDetail;
 
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\SiteManagementContext;
+use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +16,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\G
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -21,8 +24,8 @@ readonly class GetMyContactDetailAction
 {
     public function __construct(
         private GetMyContactDetailInterface $getMyContactDetail,
+        private SiteManagementContext $siteManagementContext,
         private ActorContext $actorContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }
@@ -36,11 +39,13 @@ readonly class GetMyContactDetailAction
         try {
             $output = new GetMyContactDetailOutput();
             $this->getMyContactDetail->process(new GetMyContactDetailInput(
-                $this->actorContext->identityIdentifier,
+                $this->siteManagementContext->principalIdentifier,
                 new ContactIdentifier($request->contactIdentifier()),
             ), $output);
         } catch (ContactNotFoundException $e) {
             throw new NotFoundHttpException(detail: error_message('contact_not_found', $this->actorContext->language->value), previous: $e);
+        } catch (UnauthorizedException $e) {
+            throw new ForbiddenHttpException(detail: error_message('unauthorized', $this->actorContext->language->value), previous: $e);
         } catch (Throwable $e) {
             $this->logger->error((string) $e);
 

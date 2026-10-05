@@ -9,25 +9,31 @@ use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsOutputPort;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use UnexpectedValueException;
 
 readonly class ListContacts implements ListContactsInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
     public function process(ListContactsInputPort $input, ListContactsOutputPort $output): void
     {
-        $requester = $this->userRepository->findByIdentityIdentifier($input->requesterIdentityIdentifier());
-        if (! $requester?->isAdmin()) {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, null))) {
             throw new UnauthorizedException();
         }
 
@@ -59,6 +65,13 @@ readonly class ListContacts implements ListContactsInterface
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
+
+        foreach ($paginator->items() as $contact) {
+            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier($contact->identity_identifier);
+            if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
+                throw new UnauthorizedException();
+            }
+        }
 
         $contacts = array_map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
             contactIdentifier: (string) $contact->id,

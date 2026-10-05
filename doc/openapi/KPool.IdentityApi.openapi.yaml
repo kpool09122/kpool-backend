@@ -1948,6 +1948,8 @@ components:
     AuthenticatedIdentitySummary:
       type: object
       required:
+        - siteManagementPrincipalIdentifier
+        - siteManagementPolicies
         - accountIdentifier
         - accountPrincipalIdentifier
         - accountType
@@ -1957,6 +1959,15 @@ components:
         - switchableAccounts
         - authenticationMethods
       properties:
+        siteManagementPrincipalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        siteManagementPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteManagementEffectivePolicySummary'
         accountIdentifier:
           type: string
           allOf:
@@ -2007,7 +2018,6 @@ components:
           description: Authentication methods available to the current identity.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
-      description: Authenticated identity summary returned for the current identity.
     AuthenticationMethodsSummary:
       type: object
       required:
@@ -2543,6 +2553,43 @@ components:
           type: string
           description: Registered email address that will receive the recovery code when it exists.
       description: Request body for sending a passkey recovery verification code.
+    SiteManagementEffectivePolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - statements
+      properties:
+        policyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteManagementPolicyStatement'
+    SiteManagementPolicyStatement:
+      type: object
+      required:
+        - effect
+        - actions
+        - resourceTypes
+        - condition
+      properties:
+        effect:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+        resourceTypes:
+          type: array
+          items:
+            type: string
+        condition:
+          type: string
+          nullable: true
+      description: Authenticated identity summary returned for the current identity.
     SocialLinkingResult:
       type: object
       required:

@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Account\Invitation\Application\EventHandler;
 
+use Database\Seeders\SiteManagementAuthorizationSeeder;
 use DateTimeImmutable;
 use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use RuntimeException;
 use Source\Account\Invitation\Application\EventHandler\IdentityCreatedViaInvitationHandler;
 use Source\Account\Invitation\Application\Exception\InvitationEmailMismatchException;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
@@ -18,6 +24,7 @@ use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Event\PrincipalCreated;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -34,11 +41,70 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class IdentityCreatedViaInvitationHandlerTest extends TestCase
 {
+    /** @return array<string, array{bool, bool}> */
+    public static function invitationScenarios(): array
+    {
+        return ['new' => [false, false], 'existing' => [true, false], 'rollback new' => [false, true], 'rollback existing' => [true, true]];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('invitationScenarios')]
+    public function testRealInvitationListenersProvisionGeneralAndRollback(bool $existing, bool $rollback): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $inviter = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $account = StrTestHelper::generateUuid();
+        $invitation = StrTestHelper::generateUuid();
+        $token = new OneTimeToken(str_repeat('a', 64));
+        CreateIdentity::create($identity, ['email' => 'invitee@example.com']);
+        CreateIdentity::create($inviter);
+        CreateAccount::create($account);
+        DB::table('invitations')->insert(['id' => $invitation, 'account_id' => $account, 'invited_by_identity_id' => (string) $inviter, 'email' => 'invitee@example.com', 'token' => (string) $token, 'status' => 'pending', 'expires_at' => now()->addDay(), 'created_at' => now()]);
+        $existingId = null;
+        if ($existing) {
+            $output = new ProvisionPrincipalOutput();
+            $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity), $output);
+            $existingId = (string) $output->principal()?->principalIdentifier();
+        }
+        if ($rollback) {
+            Event::listen(InvitationAccepted::class, function () use ($identity, $invitation): void {
+                $this->assertDatabaseHas('invitations', ['id' => $invitation, 'status' => 'accepted']);
+                $this->assertDatabaseHas('site_management_principals', ['identity_id' => (string) $identity]);
+
+                throw new RuntimeException('invitation rollback');
+            });
+        }
+
+        try {
+            DB::transaction(fn () => $this->app()->make(IdentityCreatedViaInvitationHandler::class)->handle(new IdentityCreatedViaInvitation($identity, $token)));
+            $this->assertFalse($rollback, 'Expected downstream listener failure');
+        } catch (RuntimeException $exception) {
+            $this->assertTrue($rollback);
+            $this->assertSame('invitation rollback', $exception->getMessage());
+        }
+        $this->assertDatabaseHas('identities', ['id' => (string) $inviter]);
+        $this->assertDatabaseHas('accounts', ['id' => $account]);
+        $this->assertDatabaseHas('invitations', ['id' => $invitation, 'invited_by_identity_id' => (string) $inviter, 'status' => $rollback ? 'pending' : 'accepted', 'accepted_by_identity_id' => $rollback ? null : (string) $identity]);
+        $this->assertSame($rollback ? 0 : 1, DB::table('account_principals')->where('identity_id', (string) $identity)->count());
+        $this->assertSame($rollback ? 0 : 1, DB::table('account_principal_group_memberships')->join('account_principals', 'account_principals.id', '=', 'account_principal_group_memberships.principal_id')->where('account_principals.identity_id', (string) $identity)->count());
+        $this->assertSame($rollback && ! $existing ? 0 : 1, DB::table('site_management_principals')->where('identity_id', (string) $identity)->count());
+        $principalId = DB::table('site_management_principals')->where('identity_id', (string) $identity)->value('id');
+        if ($existing) {
+            $this->assertSame($existingId, $principalId);
+        }
+        $this->assertSame($rollback && ! $existing ? 0 : 1, DB::table('site_management_principal_group_memberships')->where('principal_id', $principalId)->where('principal_group_id', SiteManagementAuthorizationSeeder::GENERAL_GROUP)->count());
+    }
+
     /**
      * 正常系: DIが正しく動作していること
      *
@@ -77,6 +143,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $data = $this->createTestData();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::type(PrincipalCreated::class));
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
             ->with(Mockery::on(
@@ -148,6 +215,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $data = $this->createTestData();
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::type(PrincipalCreated::class));
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
             ->with(Mockery::on(

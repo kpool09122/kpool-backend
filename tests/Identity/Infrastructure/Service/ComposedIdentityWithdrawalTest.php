@@ -9,6 +9,7 @@ use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromSer
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
+use Database\Seeders\SiteManagementAuthorizationSeeder;
 use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
     {
         $subject = $this->createSubject();
         $other = $this->createSubject();
+        $history = $this->createSiteHistory($subject);
         $before = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $response = $this->action($subject['identities'])(WithdrawFromServiceRequest::create('/', 'DELETE', ['confirmationIdentityName' => 'Private person']));
         $after = (new DateTimeImmutable())->format('Y-m-d H:i:s');
@@ -50,6 +52,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
             $this->assertDatabaseMissing($table, ['id' => $id]);
             $this->assertDatabaseHas($table, ['id' => $other[$table]]);
         }
+        $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_id' => $subject['site_management_principals']]);
+        $this->assertSiteHistory($subject, $history);
         $archive = DB::table('archived_identities')->where('identity_id', $subject['identities'])->first();
         $this->assertNotNull($archive);
         $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at'], array_keys((array) $archive));
@@ -81,6 +85,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
     public function testDownstreamFailureRollsBackEveryContextAndArchive(): void
     {
         $subject = $this->createSubject();
+        $history = $this->createSiteHistory($subject);
         /** @var AuthContextCache&MockInterface $authContextCache */
         $authContextCache = Mockery::mock(AuthContextCache::class);
         $authContextCache->shouldNotReceive('forgetActor', 'forgetAccount', 'forgetWiki');
@@ -88,7 +93,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $observedDeletions = [];
         $failure = new RuntimeException('Downstream withdrawal failure');
         Event::listen(IdentityWithdrawing::class, function () use ($subject, &$observedDeletions, $failure): void {
-            foreach (['accounts', 'wiki_principals', 'site_management_users'] as $table) {
+            foreach (['accounts', 'wiki_principals', 'site_management_principals'] as $table) {
                 $observedDeletions[$table] = ! DB::table($table)->where('id', $subject[$table])->exists();
             }
 
@@ -100,10 +105,12 @@ class ComposedIdentityWithdrawalTest extends TestCase
             $this->fail('Expected transaction rollback');
         } catch (InternalServerErrorHttpException $exception) {
             $this->assertSame($failure, $exception->getPrevious());
-            $this->assertSame(['accounts' => true, 'wiki_principals' => true, 'site_management_users' => true], $observedDeletions);
+            $this->assertSame(['accounts' => true, 'wiki_principals' => true, 'site_management_principals' => true], $observedDeletions);
             foreach ($subject as $table => $id) {
                 $this->assertDatabaseHas($table, ['id' => $id]);
             }
+            $this->assertDatabaseHas('site_management_principal_group_memberships', ['principal_id' => $subject['site_management_principals'], 'principal_group_id' => SiteManagementAuthorizationSeeder::GENERAL_GROUP]);
+            $this->assertSiteHistory($subject, $history);
             foreach (['archived_identities', 'archived_accounts', 'archived_principals'] as $table) {
                 $this->assertDatabaseCount($table, 0);
             }
@@ -114,7 +121,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
     private function createSubject(): array
     {
         $ids = [];
-        foreach (['identities', 'accounts', 'account_principals', 'wiki_principals', 'passkey_users', 'passkey_credentials', 'site_management_users'] as $table) {
+        foreach (['identities', 'accounts', 'account_principals', 'wiki_principals', 'passkey_users', 'passkey_credentials', 'site_management_principals'] as $table) {
             $ids[$table] = StrTestHelper::generateUuid();
         }
         $identityIdentifier = new IdentityIdentifier($ids['identities']);
@@ -124,9 +131,37 @@ class ComposedIdentityWithdrawalTest extends TestCase
         CreatePrincipal::create(new PrincipalIdentifier($ids['wiki_principals']), $identityIdentifier, new AccountIdentifier($ids['accounts']));
         DB::table('passkey_users')->insert(['id' => $ids['passkey_users'], 'identity_id' => $ids['identities']]);
         DB::table('passkey_credentials')->insert(['id' => $ids['passkey_credentials'], 'passkey_user_id' => $ids['passkey_users'], 'credential_id' => $ids['passkey_credentials'], 'credential_source' => '{"private":"credential"}', 'backup_eligible' => false, 'backup_state' => false, 'display_name' => 'Private device']);
-        DB::table('site_management_users')->insert(['id' => $ids['site_management_users'], 'identity_id' => $ids['identities'], 'role' => 'admin']);
+        DB::table('site_management_principals')->insert(['id' => $ids['site_management_principals'], 'identity_id' => $ids['identities']]);
 
         return $ids;
+    }
+
+    /** @param array<string, string> $subject
+     * @return array{contact: string, reply: string}
+     */
+    private function createSiteHistory(array $subject): array
+    {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+        DB::table('site_management_principal_group_memberships')->insert(['principal_id' => $subject['site_management_principals'], 'principal_group_id' => SiteManagementAuthorizationSeeder::GENERAL_GROUP]);
+        $contact = StrTestHelper::generateUuid();
+        $reply = StrTestHelper::generateUuid();
+        DB::table('contacts')->insert(['id' => $contact, 'identity_identifier' => $subject['identities'], 'category' => 1, 'name' => 'History', 'email' => 'encrypted', 'content' => 'contact history', 'language' => 'ja']);
+        DB::table('contact_replies')->insert(['id' => $reply, 'contact_id' => $contact, 'identity_identifier' => $subject['identities'], 'content' => 'reply history', 'to_email' => 'encrypted']);
+
+        return ['contact' => $contact, 'reply' => $reply];
+    }
+
+    /** @param array<string, string> $subject
+     * @param array{contact: string, reply: string} $history
+     */
+    private function assertSiteHistory(array $subject, array $history): void
+    {
+        $this->assertDatabaseHas('contacts', ['id' => $history['contact'], 'identity_identifier' => $subject['identities'], 'content' => 'contact history']);
+        $this->assertDatabaseHas('contact_replies', ['id' => $history['reply'], 'contact_id' => $history['contact'], 'identity_identifier' => $subject['identities'], 'content' => 'reply history']);
+        $this->assertDatabaseCount('site_management_roles', 2);
+        $this->assertDatabaseCount('site_management_policies', 2);
+        $this->assertDatabaseCount('site_management_role_policy_attachments', 2);
+        $this->assertDatabaseCount('site_management_principal_group_role_attachments', 2);
     }
 
     private function action(string $identityId): WithdrawFromServiceAction

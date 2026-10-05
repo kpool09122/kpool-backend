@@ -10,6 +10,7 @@ use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Http\Middleware\ResolveWikiContext;
+use Application\Http\Middleware\ResolveSiteManagementContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
 use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
@@ -112,6 +113,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'resolve.actor' => ResolveActorContext::class,
             'resolve.account' => ResolveAccountContext::class,
             'resolve.wiki' => ResolveWikiContext::class,
+            'resolve.site-management' => ResolveSiteManagementContext::class,
             'rate-limit' => EnforceApiRateLimit::class,
         ]);
         $middleware->preventRequestForgery(except: [

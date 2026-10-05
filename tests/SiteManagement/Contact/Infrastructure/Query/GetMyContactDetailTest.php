@@ -18,6 +18,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\G
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Tests\Helper\CreateReplyContact;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -51,9 +52,10 @@ class GetMyContactDetailTest extends TestCase
             $encryptionService,
         );
 
+        $principalIdentifier = SiteManagementAuthorization::bind($identityIdentifier);
         $output = new GetMyContactDetailOutput();
         $this->app()->make(GetMyContactDetailInterface::class)->process(
-            new GetMyContactDetailInput($identityIdentifier, new ContactIdentifier($contactIdentifier)),
+            new GetMyContactDetailInput($principalIdentifier, new ContactIdentifier($contactIdentifier)),
             $output,
         );
 
@@ -78,9 +80,10 @@ class GetMyContactDetailTest extends TestCase
         $contactIdentifier = StrTestHelper::generateUuid();
         $this->insertContact($contactIdentifier, StrTestHelper::generateUuid(), '他人のお問い合わせ内容');
 
+        $principalIdentifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()));
         $this->expectException(ContactNotFoundException::class);
         $this->app()->make(GetMyContactDetailInterface::class)->process(
-            new GetMyContactDetailInput(new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
+            new GetMyContactDetailInput($principalIdentifier, new ContactIdentifier($contactIdentifier)),
             new GetMyContactDetailOutput(),
         );
     }

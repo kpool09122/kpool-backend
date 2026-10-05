@@ -124,7 +124,22 @@ model AuthenticationMethodsSummary {
 }
 
 @doc("Authenticated identity summary returned for the current identity.")
+model SiteManagementPolicyStatement {
+  effect: string;
+  actions: string[];
+  resourceTypes: string[];
+  condition: string | null;
+}
+
+model SiteManagementEffectivePolicySummary {
+  policyIdentifier: Uuid;
+  name: string;
+  statements: SiteManagementPolicyStatement[];
+}
+
 model AuthenticatedIdentitySummary extends IdentitySummary {
+  siteManagementPrincipalIdentifier: Uuid | null;
+  siteManagementPolicies: SiteManagementEffectivePolicySummary[];
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;
   @doc("Account principal identifier associated with the authenticated identity in the current account.")

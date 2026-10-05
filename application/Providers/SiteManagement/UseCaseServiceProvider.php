@@ -29,10 +29,10 @@ use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByIdentity;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
-use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUser;
-use Source\SiteManagement\User\Application\UseCase\Command\ProvisionUser\ProvisionUserInterface;
-use Source\SiteManagement\User\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
-use Source\SiteManagement\User\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipal;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
+use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -52,6 +52,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetContactDetailInterface::class, GetContactDetail::class);
         $this->app->singleton(TranslateAnnouncementInterface::class, TranslateAnnouncement::class);
         $this->app->singleton(PublishAnnouncementInterface::class, PublishAnnouncement::class);
-        $this->app->singleton(ProvisionUserInterface::class, ProvisionUser::class);
+        $this->app->singleton(ProvisionPrincipalInterface::class, ProvisionPrincipal::class);
     }
 }

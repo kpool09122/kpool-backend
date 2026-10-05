@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class ReplyContactInputTest extends TestCase
     public function testConstruct(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $content = 'お問い合わせありがとうございます。
 
 ご要望いただいた「公式MV一覧をYouTube連携で表示する機能」について、今後の改善候補として検討いたします。
@@ -28,12 +28,12 @@ class ReplyContactInputTest extends TestCase
 
         $input = new ReplyContactInput(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $content,
         );
 
         $this->assertSame((string)$contactIdentifier, (string)$input->contactIdentifier());
-        $this->assertSame((string)$identityIdentifier, (string)$input->identityIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$input->principalIdentifier());
         $this->assertSame($content, $input->content());
     }
 }

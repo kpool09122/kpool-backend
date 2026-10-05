@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -211,6 +217,12 @@ class WikiEditorSampleSeeder extends Seeder
             $this->seedPublishedTalent($talent);
             $this->seedDraftTalent($talent);
         }
+        DB::table('identities')->orderBy('id')->each(static function (object $identity): void {
+            app(ProvisionPrincipalInterface::class)->process(
+                new ProvisionPrincipalInput(new IdentityIdentifier($identity->id)),
+                new ProvisionPrincipalOutput(),
+            );
+        });
     }
 
     private function seedPublishedGroup(): void

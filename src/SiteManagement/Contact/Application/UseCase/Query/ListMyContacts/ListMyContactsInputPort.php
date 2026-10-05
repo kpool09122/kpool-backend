@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface ListMyContactsInputPort
 {
-    public function identityIdentifier(): IdentityIdentifier;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

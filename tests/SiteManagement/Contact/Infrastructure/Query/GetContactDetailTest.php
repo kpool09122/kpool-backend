@@ -15,10 +15,8 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\Get
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\CreateIdentity;
-use Tests\Helper\CreateUser;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -31,12 +29,12 @@ class GetContactDetailTest extends TestCase
         $target = new IdentityIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = StrTestHelper::generateUuid();
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $this->insertContact($contactIdentifier, (string) $target);
 
         $output = new GetContactDetailOutput();
         $this->app()->make(GetContactDetailInterface::class)->process(
-            new GetContactDetailInput($requester, $target, new ContactIdentifier($contactIdentifier)),
+            new GetContactDetailInput($principalIdentifier, $target, new ContactIdentifier($contactIdentifier)),
             $output,
         );
 
@@ -48,11 +46,11 @@ class GetContactDetailTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, false);
 
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(GetContactDetailInterface::class)->process(
-            new GetContactDetailInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier(StrTestHelper::generateUuid())),
+            new GetContactDetailInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier(StrTestHelper::generateUuid())),
             new GetContactDetailOutput(),
         );
     }
@@ -62,13 +60,13 @@ class GetContactDetailTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $contactIdentifier = StrTestHelper::generateUuid();
         $this->insertContact($contactIdentifier, StrTestHelper::generateUuid());
 
         $this->expectException(ContactNotFoundException::class);
         $this->app()->make(GetContactDetailInterface::class)->process(
-            new GetContactDetailInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
+            new GetContactDetailInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
             new GetContactDetailOutput(),
         );
     }

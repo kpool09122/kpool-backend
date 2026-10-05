@@ -17,7 +17,9 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListM
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\CreateReplyContact;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -104,10 +106,11 @@ class ListMyContactsTest extends TestCase
             $encryptionService,
         );
 
+        $principalIdentifier = SiteManagementAuthorization::bind($identityIdentifier);
         $output = new ListMyContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identityIdentifier), $output);
+        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($principalIdentifier), $output);
 
         $this->assertCount(2, DB::getQueryLog());
 
@@ -134,14 +137,22 @@ class ListMyContactsTest extends TestCase
     #[Group('useDb')]
     public function testProcessReturnsEmptyArrayWhenIdentityHasNoContacts(): void
     {
+        $principalIdentifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()));
         $output = new ListMyContactsOutput();
 
         $this->app()->make(ListMyContactsInterface::class)->process(
-            new ListMyContactsInput(new IdentityIdentifier(StrTestHelper::generateUuid())),
+            new ListMyContactsInput($principalIdentifier),
             $output,
         );
 
         $this->assertSame([], $output->toArray());
+    }
+
+    public function testPolicyDenialRejectsOwnListBeforeReadingContacts(): void
+    {
+        $identifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()), false);
+        $this->expectException(UnauthorizedException::class);
+        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($identifier), new ListMyContactsOutput());
     }
 
     private function insertContact(

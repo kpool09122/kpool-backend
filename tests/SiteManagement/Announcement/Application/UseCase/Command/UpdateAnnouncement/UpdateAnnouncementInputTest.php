@@ -11,7 +11,7 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -24,7 +24,7 @@ class UpdateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -52,7 +52,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new UpdateAnnouncementInput(
-            $userIdentifier,
+            $principalIdentifier,
             $announcementIdentifier,
             $category,
             $title,

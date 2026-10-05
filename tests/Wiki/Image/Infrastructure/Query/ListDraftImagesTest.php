@@ -162,6 +162,9 @@ class ListDraftImagesTest extends TestCase
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f601'),
         ))->toArray();
 
+        // Language names are a map; the unordered relation does not guarantee key insertion order.
+        ksort($payload['images'][0]['wiki']['names']);
+
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f501',
             'publishedImageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f502',
@@ -174,8 +177,8 @@ class ListDraftImagesTest extends TestCase
             'altText' => 'Cover image',
             'wiki' => [
                 'names' => [
-                    'ko' => 'TWICE',
                     'ja' => 'トゥワイス',
+                    'ko' => 'TWICE',
                 ],
                 'slug' => 'gr-twice',
             ],

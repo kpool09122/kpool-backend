@@ -8,6 +8,7 @@ use Source\Account\Invitation\Application\Exception\InvitationEmailMismatchExcep
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Principal\Domain\Event\PrincipalCreated;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -62,6 +63,7 @@ readonly class IdentityCreatedViaInvitationHandler
             $invitation->accountIdentifier(),
         );
         $this->principalRepository->save($principal);
+        $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
 
         $defaultGroup->addMember($principal->principalIdentifier());
         $this->principalGroupRepository->save($defaultGroup);

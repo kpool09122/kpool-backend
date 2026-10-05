@@ -13,8 +13,12 @@ use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Throwable;
 use UnexpectedValueException;
 
@@ -25,7 +29,8 @@ readonly class ReplyContact implements ReplyContactInterface
         private ReplyContactFactoryInterface $replyContactFactory,
         private ReplyContactRepositoryInterface $replyContactRepository,
         private ContactEmailServiceInterface $contactEmailService,
-        private UserRepositoryInterface $userRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -36,8 +41,8 @@ readonly class ReplyContact implements ReplyContactInterface
      */
     public function process(ReplyContactInputPort $input): void
     {
-        $user = $this->userRepository->findByIdentityIdentifier($input->identityIdentifier());
-        if (! $user?->isAdmin()) {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT))) {
             throw new UnauthorizedException();
         }
 
@@ -46,11 +51,15 @@ readonly class ReplyContact implements ReplyContactInterface
             throw new ContactNotFoundException();
         }
 
+        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT, $contact->identityIdentifier()))) {
+            throw new UnauthorizedException();
+        }
+
         $content = new ReplyContent($input->content());
 
         $reply = $this->replyContactFactory->create(
             $contact->contactIdentifier(),
-            $input->identityIdentifier(),
+            $principal->identityIdentifier(),
             $contact->email(),
             $content,
             null,

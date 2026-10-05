@@ -16,10 +16,8 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdenti
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByIdentity;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\CreateIdentity;
-use Tests\Helper\CreateUser;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,7 +34,7 @@ class ListContactsByIdentityTest extends TestCase
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         $target = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $older = StrTestHelper::generateUuid();
         $newer = StrTestHelper::generateUuid();
         $this->insertContact($older, (string) $target, 'older@example.com', '2026-08-15 10:00:00');
@@ -44,7 +42,7 @@ class ListContactsByIdentityTest extends TestCase
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-17 10:00:00');
 
         $output = new ListContactsByIdentityOutput();
-        $this->app()->make(ListContactsByIdentityInterface::class)->process(new ListContactsByIdentityInput($requester, $target), $output);
+        $this->app()->make(ListContactsByIdentityInterface::class)->process(new ListContactsByIdentityInput($principalIdentifier, $target), $output);
 
         $this->assertSame([$newer, $older], array_column($output->toArray(), 'contactIdentifier'));
         $this->assertSame([[], []], array_column($output->toArray(), 'replyIdentifiers'));
@@ -59,11 +57,11 @@ class ListContactsByIdentityTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, false);
 
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(ListContactsByIdentityInterface::class)->process(
-            new ListContactsByIdentityInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid())),
+            new ListContactsByIdentityInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid())),
             new ListContactsByIdentityOutput(),
         );
     }

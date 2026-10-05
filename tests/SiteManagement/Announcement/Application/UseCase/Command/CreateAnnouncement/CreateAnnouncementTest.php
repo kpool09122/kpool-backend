@@ -23,11 +23,14 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Entity\User;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -59,7 +62,7 @@ class CreateAnnouncementTest extends TestCase
         $dummy = $this->createDummyCreateAnnouncementData();
 
         $input = new CreateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->translationSetIdentifier,
             $dummy->language,
             $dummy->category,
@@ -68,11 +71,11 @@ class CreateAnnouncementTest extends TestCase
             $dummy->publishedDate,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
         $announcementFactory->shouldReceive('create')
@@ -93,7 +96,10 @@ class CreateAnnouncementTest extends TestCase
             ->with($dummy->draftAnnouncement)
             ->andReturn(null);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
@@ -121,10 +127,10 @@ class CreateAnnouncementTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $dummy = $this->createDummyCreateAnnouncementData(Role::NONE);
+        $dummy = $this->createDummyCreateAnnouncementData();
 
         $input = new CreateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->translationSetIdentifier,
             $dummy->language,
             $dummy->category,
@@ -133,16 +139,19 @@ class CreateAnnouncementTest extends TestCase
             $dummy->publishedDate,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $createAnnouncement = $this->app()->make(CreateAnnouncementInterface::class);
@@ -150,12 +159,11 @@ class CreateAnnouncementTest extends TestCase
     }
 
     /**
-     * @param Role $role
      * @return CreateAnnouncementTestData
      */
-    private function createDummyCreateAnnouncementData(Role $role = Role::ADMIN): CreateAnnouncementTestData
+    private function createDummyCreateAnnouncementData(): CreateAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
@@ -184,10 +192,9 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
-        $user = new User(
-            $userIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $role,
         );
 
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
@@ -202,14 +209,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
 
         return new CreateAnnouncementTestData(
-            $userIdentifier,
+            $principalIdentifier,
             $translationSetIdentifier,
             $language,
             $category,
             $title,
             $content,
             $publishedDate,
-            $user,
+            $principal,
             $announcementIdentifier,
             $draftAnnouncement,
         );
@@ -219,14 +226,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 readonly class CreateAnnouncementTestData
 {
     public function __construct(
-        public UserIdentifier $userIdentifier,
+        public PrincipalIdentifier $principalIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language $language,
         public Category $category,
         public Title $title,
         public Content $content,
         public PublishedDate $publishedDate,
-        public User $user,
+        public Principal $principal,
         public AnnouncementIdentifier $announcementIdentifier,
         public DraftAnnouncement $draftAnnouncement,
     ) {
