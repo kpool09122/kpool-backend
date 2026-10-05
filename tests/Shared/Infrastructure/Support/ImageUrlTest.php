@@ -27,8 +27,11 @@ class ImageUrlTest extends TestCase
 
     public function testLocalAndLeadingSlashPathsKeepExistingUrlBehavior(): void
     {
+        app('url')->forceRootUrl('http://localhost');
         config(['filesystems.image_disk' => 'public', 'filesystems.disks.public.url' => 'http://localhost:8080/storage']);
         self::assertSame('http://127.0.0.1:8080/storage/images/test.webp', ImageUrl::fromPath('images/test.webp'));
-        self::assertSame(url('/legacy/test.webp'), ImageUrl::fromPath('/legacy/test.webp'));
+        self::assertSame('http://127.0.0.1/legacy/test.webp', ImageUrl::fromPath('/legacy/test.webp'));
+        app('url')->forceRootUrl('http://127.0.0.1');
+        self::assertSame('http://127.0.0.1/legacy/test.webp', ImageUrl::fromPath('/legacy/test.webp'));
     }
 }
