@@ -66,7 +66,7 @@ task infra:operate -- execute --record "$RECORD_DIR/$STACK.plan.json" --release-
 
 ## 3. 通常のアプリ配備
 
-GitHub release Pipelineが固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
+**release Pipeline（#156）は未実装。以下は実装・受入後の運用契約であり、現在実行できるworkflowではない。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
 通常配備はCloudFormation更新なし、desiredは現在値を維持。初回0→1のみ起動時に変更する。
 API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+breaker。
 `services-stable`だけでは旧revisionへのrollbackを成功と誤認するため、目的revision/digest・deployment結果・転送先も確認する。
@@ -79,7 +79,7 @@ Schedulerはアプリのcommand・周期・timezone・二重実行対策・終�
 ## 4. 設定・Secret・容量を変える
 
 - 非秘密設定: environmentの該当inputsを変更し、関連親をplan/review/execute。integration SSMは実アプリ名の非秘密envを出力する。PipelineがSSMを読みECS envへ変換する。
-- Secret: appとmigrationの用途別ARNに必要JSON keyを保管庫/管理端末の安全なファイル経路で登録。CLI引数/ログ/履歴へ値を出さない。新task起動で注入を更新し、config cacheと新旧taskの接続を確認して旧資格情報を失効。
+- Secret: appとmigrationの用途別ARNに必要JSON keyを保管庫/管理端末の安全なファイル経路で登録。CLI引数/ログ/履歴へ値を出さない。新task起動で注入を更新し、新旧taskの接続を確認して旧資格情報を失効。本番imageはconfig cacheを構築しない（[コンテナ契約](container-runtime.md#環境変数秘密情報)）。
 - APP_KEYはAPI/worker共通。安易な変更はCookie/session/暗号化済データを壊す。通常の資格情報rotationと分ける。
 - PostgreSQLはDML/DDLを分離。既存configのsslmode既定preferに依存せず、DATABASE_URLのqueryでsslmode=verify-full/sslrootcertを渡し、信頼するCAをimageへ同梱。検証済URLのSecret注入・CA配布はrelease側の責任。
 - ValkeyはTLS URL（REDIS_URL）、applicationユーザー・password、DB0を設定。Secret値だけの更新ではcache userは同期しない。新旧2password期間、user/passwordとSecret更新、新task反映、旧password除去の順で移行する。自動rotationは未実装。
@@ -101,7 +101,7 @@ Schedulerはアプリのcommand・周期・timezone・二重実行対策・終�
 ## 権限・監視の判断
 
 管理者本人→CloudFormation service role、Actions→用途限定ECR/ECS/PassRole、task→用途別S3/SQS/Secretの境界を維持。
-ワイルドカードは未知IDを作るCloudFormation API、read-only ELB/EC2、ECR GetAuthorizationToken等のAPI制約によるもの。
+ワイルドカードには未知IDを作るAPIやresource指定不可のread-only APIが含まれるが、CloudFront/Budgetsの変更権限にも残る。すべてをAPI制約だけで正当化せず、管理者権限の残余リスクとして[設計判断](design-decisions.md)を確認する。
 ARNのaccount/region/project/prefix・RequestedRegion・PassedToService・OIDC aud/Environmentを組み合わせる。
 Actionsに基盤変更・管理role PassRole・Secret値取得は与えない。ただしECS UpdateServiceはimage変更だけにIAM制限できず、侵害時はアプリ/DDL権限のコード実行が残る。用途別DB/role・監査・backupで影響を抑える。
 

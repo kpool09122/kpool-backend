@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.13'
       - run: bash scripts/cloudformation/run.sh install
-      - run: bash scripts/cloudformation/validate.sh
+      - run: bash scripts/cloudformation/run.sh check
 
   test:
     runs-on: ubuntu-latest

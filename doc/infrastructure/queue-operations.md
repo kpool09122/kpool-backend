@@ -1,7 +1,7 @@
 # SQS / EventBridge 実行・復旧契約（#666）
 
 関連: [AWS配備手順](operations.md)、[CloudFormation](../../infra/cloudformation/README.md)。
-この文書はアプリ側の契約であり AWS の作成・有効化を行わない。#665 の本番イメージは未実装、#157 の疎通・停止・監視確認は別ゲートである。
+この文書はアプリ側の契約であり AWS の作成・有効化を行わない。本番イメージとローカルの起動/停止検証は[コンテナ契約](container-runtime.md)に実装済み。実AWSの疎通・停止・監視確認は別ゲートである。
 
 ## Producer と配送先
 
@@ -16,10 +16,10 @@
 その他の招待・問い合わせ・権限通知などの同期 `Mail::send` は従来どおり同期送信である。
 #673 は **単一 standard work queue** を作成している。物理名は root `WorkQueueName`（本番例 `kpool-prod-work-v1`）、URL は integration の `QueueUrl` を実行環境へ注入する。`config/queue.php` の routing は SQS 時のみ webhook/settlement をこの URL に対応させる。専用キューを新設しない。SQS 上では優先順・FIFO は保証しない。
 
-`QUEUE_CONNECTION` は明示指定を優先する。Redis へ上書きすると論理名を維持する。SQS を利用する環境は `AWS_DEFAULT_REGION=ap-northeast-1` と QueueUrl を設定し、API と worker の config cache を同じ値で作り直す。長期 AWS キーは設定しない。SDK は ECS task role credential chain を使用する。単独で per-job `onConnection` を差し替える運用はせず producer/worker の既定 connection を揃える。
+`QUEUE_CONNECTION` は明示指定を優先する。Redis へ上書きすると論理名を維持する。SQS を利用する環境は `AWS_DEFAULT_REGION=ap-northeast-1` と QueueUrl を設定し、API と worker を同じ設定の新taskへ入れ替える。本番imageはconfig cacheを構築しない。長期 AWS キーは設定しない。SDK は ECS task role credential chain を使用する。単独で per-job `onConnection` を差し替える運用はせず producer/worker の既定 connection を揃える。
 `SQS_PREFIX/SQS_QUEUE/SQS_SUFFIX` による名前解決も可能だが、#673 との連携は完全 URL を正とする。
 
-API/単発 producer に `sqs:SendMessage,GetQueueAttributes,GetQueueUrl`、worker に `ReceiveMessage,DeleteMessage,ChangeMessageVisibility,GetQueueAttributes,GetQueueUrl` を QueueArn のみに許可する（runtime の既存 task role）。worker が将来 nested job を dispatch する場合は SendMessage を明示的に検討する。operator の DLQ 再投入権限はアプリ role に付与しない。
+API/単発 producer に必要なのは `sqs:SendMessage,GetQueueAttributes,GetQueueUrl`、worker に必要なのは `ReceiveMessage,DeleteMessage,ChangeMessageVisibility,GetQueueAttributes,GetQueueUrl` を QueueArn のみに限定した権限。runtime の API/worker role はこの分離を持つが、**現在のScheduler雛形は受信専用WorkerTaskRoleを使い、producerのSendMessage権限を持たない**。用途別producer roleとPassRoleを設計・検証するまで月次/動画のenqueueに使わない。worker が将来 nested job を dispatch する場合も SendMessage を明示的に検討する。operator の DLQ 再投入権限はアプリ role に付与しない。
 
 Cloud Tasks connection、認証 HTTP handler、専用 middleware/config と driver 依存を撤去。Google Translation/OAuth は残るので `google/cloud-translate` / `google/auth` と runtime ADC は維持する。`after_commit=false` は従来方針を継承し、トランザクション外への公開タイミングを一律変更しない。
 
@@ -83,7 +83,7 @@ production の Laravel Schedule は月次を登録しない。local/testing/stag
 
 ## 実環境検証の引渡し
 
-- #665: 同一本番 ARM64 イメージで API / 上記worker / 3コマンド。SIGTERM→現在job完了→120秒内STOPPED、不正月/日付とenqueue障害でexit=1、sync例外のexit伝播、PID1 exec/PCNTL。**未実装につき本PRでは検証不可**。無関係なDocker実装は加えない。
+- 本番イメージ: API / worker / 単発コマンド、PID1/PCNTL、signal/exitのローカル検証は `task container:verify`。ECS上のSIGTERM→現在job完了→120秒内STOPPEDは実AWSで別途確認する。ローカルverifyはRedisを使い、SQS成功を証明しない。
 - #673/#157: work queue=QueueUrl、visibility=300、maxReceiveCount=5、StopTimeout=120、timeout=90/tries=3。Schedulerの2周期・初期DISABLED、delivery DLQと非0STOPPED検知は別設定として確認する。
 - #157: real task roleで送信→受信→正常削除、例外→60秒release、tries超過→failed_jobs/delete、worker kill→visibility後再配送→DLQ、ローリング停止とqueue:restart。SENT再実行と外部成功/DB未保存境界を照合する。
 - #157: mail delivery、Google Translation/OAuth疎通、YouTube設定/skip、月次sync/async、dry-run/対象なし/一部enqueue失敗。Scheduler受理・ECS終了・job完了をそれぞれ観測してから有効化する。
@@ -98,4 +98,4 @@ production の Laravel Schedule は月次を登録しない。local/testing/stag
 | CLI引数/正常/対象なし/dry-run/障害/sync | OperationalCommandsTest（Artisan公開API） |
 | schedule/旧HTTP route撤去 | QueueRuntimeContractTest |
 | 既存業務/Google依存/品質 | task check、関連既存tests、composer validate |
-| 本番signal/exit/AWS停止・DLQ | #665/#157 の未実行ゲート（上記） |
+| 本番signal/exit | container:verify（ローカルDocker/Redis）。実AWS停止・SQS/DLQは未実行ゲート（上記） |

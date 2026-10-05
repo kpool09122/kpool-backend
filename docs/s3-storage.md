@@ -14,7 +14,7 @@
 Outputsは `infra/cloudformation/root.yaml` / `storage.yaml` から取得する。
 API・worker・schedulerの実行環境に同じ設定を注入する。ローカルのDocker Composeは開発用であり、S3検証時は必要な環境変数を `docker-compose run -e ...` で明示する。
 ECSでは `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` を設定せず、SDKの認証チェーンでタスクロールを使用する。ローカルで実AWSを検証する場合のみ、一時認証情報とセッショントークンを注入する。認証情報をGitへ保存しない。
-バケット名は必ず別々のOutputを使用する。`IMAGE_BASE_URL` はCloudFrontのURLであり、S3バケットURLではない。本番配備前に全設定が揃っていることを確認し、Laravel設定キャッシュは実行環境の変数を注入後に構築する。
+バケット名は必ず別々のOutputを使用する。`IMAGE_BASE_URL` はCloudFrontのURLであり、S3バケットURLではない。本番配備前に全設定が揃っていることを確認する。本番imageは各起動で注入済み環境変数を読み、config cacheを構築しない（[コンテナ契約](../doc/infrastructure/container-runtime.md#環境変数秘密情報)）。
 
 ## キーと配信境界
 

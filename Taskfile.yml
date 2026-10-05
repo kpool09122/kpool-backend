@@ -271,8 +271,3 @@ tasks:
     desc: Check CloudFormation security, bootstrap, and cross-stack contracts offline
     cmds:
       - bash scripts/cloudformation/run.sh test
-
-  cfn:check:
-    desc: Compatibility alias for infra:validate
-    cmds:
-      - task: infra:validate

@@ -1,58 +1,91 @@
-# インフラ整理の設計判断と移行
+# インフラの設計判断・保証・残余リスク
 
-## 棚卸しと採用理由
+本書は現在の採否とその根拠の正本。全体像と設定は[入口](../../infra/cloudformation/README.md)、操作は[運用手順](operations.md)、担当・外部成果物は[接続台帳](pipeline-handoff.md)。
 
-| 観点 | 従来の課題 | 採用した構成・理由 |
+## 評価の範囲と証拠
+
+Issue #682 で `bootstrap/root/network/data/storage/integration/runtime`、環境入力・state・plan/execute、検証入口・CI、運用/コンテナ/queue/S3文書とテストを再評価した。旧設計の追認やテスト数の維持を目的にしない。
+
+- 根拠はリポジトリのテンプレート、実装、オフライン検証。今回AWSの照会・適用、Cloudflareの照会・変更は行っていない。稼働環境の有無、drift、資源状態、実効権限、費用は**未確認**。
+- 過去のSTS応答/AccessDeniedや過去の演習結果は今回の実環境確認ではない。環境が無いとも配備可能とも推測しない。
+- #156 は評価時点で OPEN、リポジトリのCIは品質検証のみ。通常配備の記述はPipelineへの要求であり、動くrelease workflowの証拠ではない。
+
+## 構成案の比較
+
+| 案 | 得られる簡素さ・保証 | 運用負荷・リスク | 判断 |
+|---|---|---|---|
+| 全資源を1stackへ統合 | 接続入力が減り、1回で更新できる | trustの起点、長期データ、computeを同じ変更/rollback範囲に置く。既存資源の所属移動/importが必要 | 不採用。既存環境のinventoryなしで移す利益が移行リスクを上回らない |
+| bootstrap + その他1stack | 管理者/OIDC境界を残して親操作を減らす | IAM境界自体は守れるが、Secret保存先・データ・computeの変更失敗を分離しにくい。所有移行は依然必要 | 不採用。小規模新環境では候補だが、今は移行の必要性を示せない |
+| 現在の4親 + root内の3子 | bootstrapを管理者だけで更新し、データ基盤/設定保存先/computeの更新を分離。子は1親操作で依存解決 | package bucketと4親の順序が必要。stack分割だけでアクセス制御/データ保護が成立するわけではない | 採用。bootstrap IAM、用途別role、保持policyで実際の境界を作る。子は独立した運用単位にしない |
+| サービス・alarm・IAMまで細分化 | 個々の更新をさらに分離 | Outputs/順序/変更レビュー/復旧責任が増える。具体的な独立運用者や頻度差がない | 不採用。新しい親や独自配備フレームワークは追加しない |
+
+root内のnetwork/data/storageは責務別のテンプレート分割であり、単独配備は禁止。分割自体はAWS資源の固定費を減らさない。integrationをruntimeへ移すことも技術的には可能だが、app/migration Secretと非秘密SSMの保存先をcomputeの変更から分け、既存所有を動かさない方を選ぶ。
+
+### ネットワーク・compute・費用
+
+- 現在はpublic subnet + 明示public IPのFargate、受信は用途別SG、DB/cacheはprivate。必要な外向きHTTPSを確保し、NATの時間/処理費を追加しない。public IPそのものも課金/露出面を持ち、HTTPS egressは宛先のallowlistではない。
+- private task + NATならtaskのpublic IPをなくせるが、NAT費用・経路・AZ障害対応が増える。AWS用endpointのみではGoogle/Stripe等の外部APIを代替できない。現状はSGによる受信限定を採用するが、将来の規模/egress要件ではNAT案を再評価する。**NAT不使用やsubnetの固定数はセキュリティ不変条件ではない。**
+- private hookのEC2 interface endpointはALB ENI発見のため。ALBの8443はhook SGだけを許可し、hookのHost/SNI/TLS検証は外部コードの受入が必要。endpointの利用API/有効性を実hookで確かめるまで削除・拡張しない。
+- API native BLUE_GREENは旧新併存費用とhook/canary保守を伴うが、切替前smokeと切替後rollbackを分離できる。単純ROLLINGも候補だが、同等の切替前検証を新たに設計する必要があり今回は移行しない。workerはROLLINGを維持。
+- RDS Single-AZは費用を抑える初期選択で、自動failover/SLAの保証ではない。backupを高可用性と同一視しない。Multi-AZ/容量変更は復旧目標・実測に基づき管理者が選ぶ。Valkey Serverlessは容量管理を減らす一方、最小課金/処理費と復元検証が残る。
+- ALB、Fargate旧新task、public IPv4、Valkey、endpoint、canary、CloudFront転送、logs、S3 versions、Retain資源を費用台帳に含める。Budgetsはaccount全体の通知であり上限強制でもk-pool単体の原価でもない。Cloudflare/外部APIは別集計。見積金額・負荷実測なしに「最安」とは判断しない。
+
+## セキュリティ・データ保護の判断
+
+| 防ぐリスク | 現在の境界・維持理由 | 限界/稼働前に確認する事項 |
 |---|---|---|
-| 親stack | 4親間のOutputsをJSONへ転記 | 4親の責務を維持し、contracts.linksから実Outputsを導出。データ保持・信頼bootstrap・computeを巨大な単一stackへ混ぜない |
-| runtime更新 | 稼働revision/desired/3target/schedulerを手動同期 | ECS/ALB/Schedulerを正本とするstate resolver。独立したproduction/test/primaryを読み、未安定なら拒否。計画中・直前・完了後に確認 |
-| 設定 | 複数の架空Parameter例とtemplate/contractに同じ定義 | 外部の1環境JSON、制約とdefaultはtemplate、接続とOutputキーはcontract。省略時は既存Parameterを維持 |
-| 名前 | ProjectNameとResourcePrefixの一括統一は置換リスク | 接頭辞の責務を明示し既存物理名を保持。bootstrap IAMへの基盤名/queue/hook/zone転記は導出 |
-| 非秘密SSM | IMAGE_BUCKET/FILE_BUCKETはアプリで未使用 | AWS_PUBLIC_IMAGES_BUCKET/AWS_PRIVATE_FILES_BUCKET等、現行config/queue/filesystemsのenv名へ整合。ImageBaseUrlもrootから接続 |
-| 操作 | 長い注意書き、UsePreviousValueの誤用 | plan/executeで同じ入力/実状態からimmutable Change Setを作成。account違い・missing output・AccessDenied・stale plan・置換/削除をfail closed |
-| 検証 | infra:validate/cfn:checkのPython/依存経路が別 | pinned run.shを唯一の実装、infra:validateを通常入口、CIも同じshellを実行 |
-| 文書 | 実装履歴、作成/同期操作の繰り返し | infra READMEから運用・接続・専門資料へ。操作はoperationsが正本。検証票は変更リスク選択型 |
+| Actionsから基盤/管理者権限へ昇格 | OIDC aud + exact repo/Environment subject、限定ECR/ECS、用途別PassRole + PassedToService。管理者だけがbootstrap/CF実行roleを扱う | Environmentの許可ref・Actions侵害対策はGitHub設定。UpdateServiceはimage変更だけに制限できず、配備コードはapp/DDL権限を使える |
+| DB/cache/APIへの直接侵入 | DataSubnetIdsにIGW直結なし、非公開RDS、用途別SG。APIはALB、8443はhookだけ | SG/routeの静的検査は実疎通、NACL、drift、TLS証明書の有効性を保証しない |
+| Secretの混入/過剰共有 | 環境JSONは非秘密、OutputsはARNのみ、appとmigrationのexecution role/DBユーザーを分離。RDS masterは通常taskへ渡さない | DATABASE_URLのverify-full/CA、REDIS_URL TLS、Secret実値/rotationは管理者/Pipelineの未達ゲート。app Secret全体を共有する用途間の影響は残る |
+| 非公開書類のCDN公開 | 画像/書類を別bucket、BPA/暗号化/OAC、画像だけにCloudFront Allow。書類は認可API+private/no-store | APIのListBucketは書類bucket全キーを列挙可能。workerには与えない。S3/認可実動作はアプリ/実AWS検証が必要 |
+| 削除・置換/誤更新による消失 | RDS Snapshot/削除保護/backup/TLS、S3 versioning、永続資源のRetain/UpdateReplace、planの削除/置換拒否と終了保護 | Retainはbackup/復旧成功/無期限保存の保証ではない。SQS/log期限、version完全消去、復元/import、RPO/RTOは別検証 |
+| 稼働revisionやcapacityの巻戻し | ECS/ALB/Schedulerを独立して取得し、未安定・権限不足・state変化で中止 | 分散ロックではない。全配備入口のpause排出と基盤管理者の単独操作が必要。AWS実行直前との競合窓は残る |
+| 配備失敗や無通信障害の見逃し | hook、ECS alarm rollback、worker breaker、外部canary要求、SNS/Scheduler DLQ | `/health`はDB/外部API疎通を保証しない。疎なALB metricsの欠損を正常扱いするため外部canaryが必須。通知配送/非0 STOPPED監視は未検証・一部未実装 |
 
-## セキュリティ見直し
+管理者CF実行roleには資源生成のための広い権限が残る。全wildcardを「AWS制約だから安全」とは扱わない。特にGlobalDeliveryAndBudgetはCloudFront/Budgetsの変更を `*` に許可するため、account内の他資源への影響が残る。専用account/管理者の短期認証・監査とChange Setの人的レビューが前提。実効権限/SCP/permissions boundaryは今回未確認。
 
-変更したのは運用入力/接続/実行手順。実AWSの安全性が確認できないため、用途別IAM/SG、OIDC、暗号化、非公開書類、保持とbackupの境界を緩めない。
-手動コピーを削除し、生成されたARNに限定したrole指定とaccount照合を採用。Secret値を扱うAPIを操作ツールに持たせない。
-resource数やNATの全面禁止は安全性そのものではないため、固定構成を守るテストを削除。private data、限定ingress、書類をCDNに出さないこと、用途別Secret/PassRole、保持、失敗時中止は残す。
-残るリスクは管理者の強い変更権限、Actions侵害時のアプリ/DDLコード実行、pause違反actorとの競合、外部hook/canary/rotationの実装・運用品質。スクリプトは分散排他の代わりではない。
+## 設定と操作ツールの採否
 
-## 既存環境の確認結果と移行
+| 対象 | 評価・判断 |
+|---|---|
+| environment JSON | 1つのrepo外非秘密入力を維持。必須入力と変更したい任意入力だけ。型/defaultはtemplate、既存省略値はlive Parameters。projectNameとresourcePrefixは用途が違うため一括改名しない |
+| contracts.json | 操作が実際に読むregion/deploymentOrder/親間linksだけを残す。未使用version/stacks/nestedStacks/serviceRoles/outputInventoryと子間linksを削除。nested接続/Output定義はroot/templateが正本で、消費者のない全Output一覧を複製しない |
+| environment.py | 手入力のOutputs/revisionやSecret拒否、live Outputsの必須接続、template制約の検査を維持。単なる転記をなくす利益が小さな専用resolverの保守を上回る。汎用schema/互換mapperは追加しない |
+| runtime_state.py | CF旧Parametersはrelease後の実状態を表さないため維持。primary/production/testを別に読む。CLIの単純なDescribeStacksだけでは安全に置換できない |
+| operations.py | native package/immutable Change Set/waiterを利用し、その前後のaccount・依存・state・置換検査だけを担当。手動AWS CLI案では検査漏れと再転記が増えるため採用しない。独自lock/自動復旧/Secret取得機能は追加しない |
+| 検証入口 | `task infra:validate`→`run.sh check`、CIも`run.sh check`に統一。未使用の旧`cfn:check`/`validate.sh`を削除。install/lint/testは同じpinned環境を使う部分実行として残す |
+| 文書 | 入口=全体像/正本、operations=操作、handoff=担当/接続、本文=採否、検証票=実環境の記録。コンテナ/queue/S3はアプリ固有契約だけ。過去の未実装表現とconfig cacheの矛盾を修正 |
 
-実装時に利用可能なAWS資格情報でSTSは応答したが、k-poolの配備先と確認できず、東京CloudFormation ListStacksとECS ListClustersはidentity policyの明示的Deny。
-**稼働環境の有無・資源状態は未確認**。未配備と推測して改名・置換・削除は行っていない。AWS/Cloudflareへの変更操作もしていない。
-管理者は正しいk-pool profile/accountを用意し、4親と物理ID・engine version・現revision・backup・DNSのinventoryを環境台帳へ記録する。AccessDeniedをnot found扱いしない。
+## テスト群の棚卸し
 
-移行手順:
+削除ごとに代替を増やすのではなく、必要な保証だけを残す。CloudFormation schemaの検査と、schema-validでも危険な変更を拒否する検査を分ける。
 
-1. 全配備を排出し、既存stack名/projectName/resourcePrefix/package bucketをそのまま環境JSONへ登録。運用記録を保管する。
-2. 必須外部入力と任意入力の変更希望をinputsへ設定。稼働stateとOutputsは転記しない。既存のカスタムqueue等の省略値は現在Parameterから保持する。
-3. bootstrap→必要な親の順にplan。削除/置換/命名変更を拒否し、nestedもレビューする。実行権限不足・不安定なら中止。
-4. integrationにImageBaseUrl入力が加わり、SSM JSONのIMAGE_BUCKET/FILE_BUCKETを実アプリenv名へ変更する。SSMを旧キーで読む配備側consumerがあれば、同時に新キーへ修正する。読み取りfallbackは追加しない。SSM物理名/Output ARN/Secret保存先は変更しない。
-5. runtime planが実revision/desired/転送先/Schedulerを維持することを確認し、実行後に比較。アプリsmoke/監視を確認後pause解除。
+| 群 | 防ぐ障害/検出範囲 | 重複・採否 | 限界 |
+|---|---|---|---|
+| cfn-lint 1.47.0 | 東京schema、型、intrinsic/Ref、template内部の誤接続 | 唯一のschema検査として維持。各Unit testで再lintしない | 実AWSのengine/quota/permissions、dynamic reference、driftは保証しない |
+| test_contracts.py | 親links、起動Rules、全体の暗号化/保持/Secret混入、OIDC/PassRole、S3 SDK権限、CF/endpoint権限の契約 | network/OACの重複大テスト、全template在庫、role数固定を削除。親linksは実resolverが読むため残す | IAM simulatorではない。文字列/構造assertはpolicyの全経路を網羅しない。少数mutationは全脆弱性の証明ではない |
+| test_foundation.py | nested接続、CIDR重複、data到達性、多AZ、SG、backup/TLS、Valkey認証、S3 version/OAC/TLS、redrive | NAT禁止/4subnet/route数固定、DB instance/MultiAZ/storage容量/HttpVersionの写し、汎用暗号化/保持の重複を削除（RDS固有のfinal Snapshotは維持）。data公開の拒否とNAT/追加subnetの許容を確認 | local Ref/Join/明示associationの現在のtemplate表現を対象。AZは式の比較であり東京の実提供や実経路解析ではない |
+| test_runtime.py | 独立target条件、hook/rollback/SG、release選択、alarm入力接続、draining/queue timeoutの層間契約 | CPU/memory/閾値defaultの写しを削除。初期0task、readonly、目的Output/role接続は消費者があるため維持 | hook/canaryコード・native deployment・本番imageの動作ではない。runtime定義の全IAM/commandを証明しない |
+| test_environment.py | derived/secret/invalid/missing入力拒否、任意値維持、live接続、実アプリenv名 | resolverの公開挙動として維持 | 架空Outputs、外部ARNの実在/証明書SANやSecret keyは未確認 |
+| test_runtime_state.py | revision/capacity/3target/Schedulerの保持、不安定/表現不能拒否 | 純粋変換に集中して維持。operationsと重なる正常fixtureは純粋変換とAWS呼出しの責務が別 | fake応答。SDK/AWSの実応答形との整合は実環境試験が必要 |
+| test_operations.py | account、AccessDenied、exact Change Set、stale/置換/削除/競合、初期CREATE、native pagination/rollback、記録保護 | 副作用境界の振る舞いとして維持。安全ガードを削る根拠はない | FakeAwsは制御フローの証拠だけ。配備可能性/権限充足/復旧成功の証拠ではない |
+| container verify/audit、PHPのqueue/S3 tests | imageの実起動・signal・内容と、アプリのSDK要求/認可を各境界で確認 | CF testsへ複製しない。今回image/PHPコード変更なしのため再build/全PHPテストは対象外 | DockerとSDK fakeの成功もFargate volume初期化やreal SQS/OACを保証しない |
 
-この変更のtemplate差分はintegrationの非秘密設定だけで、DB/VPC/ALB等のlogical IDやphysical namingを変えない。
-新環境なら同じ入口で4親を順にCREATEし、0task/DISABLEDのまま外部成果物を準備する。初回アプリ配備自体は本リファクタリングの完了条件ではない。
+## 変更影響・移行・切戻し
 
-切戻し: AWSに適用していない段階はコード/環境入力を戻すだけ。integration適用後はSSM consumerを先に照合し、旧templateへ戻すChange Setを別にレビューする。
-runtimeを含む切戻しも過去Parameter JSONを再利用せず、現stateを再取得する。接続変更・新DB書込後のデータ切戻しは通常コードrollbackと分ける。
+今回**CloudFormation YAML、logical/physical ID、IAM、ネットワーク、backup、アプリを変更しない**。AWSへの再配備・停止・データ移動は不要で、未知の既存環境の資源所属を変更しない。
 
-## テストの棚卸し・検証の限界
+- ローカル/外部CIで旧`cfn:check`または`validate.sh`を使う呼出しは`task infra:validate`または`bash scripts/cloudformation/run.sh check`へ変更する。repo内CI/文書は同時更新。
+- contractsの削除項目はrepo内の操作コードで未使用。外部で在庫表として読んでいればtemplate Outputs/接続台帳へ切替える。release向けAWS Outputキー、environment形式、plan形式は変えない。互換alias/旧metadata読取りは残さない。
+- 切戻しはこのPRのコード/入口/文書を戻すだけ。AWS変更もデータ書込もないためDB復元は不要。将来の構成変更はinventory→backup/移行/停止影響→Change Setレビュー→実試験→切戻し条件を別に承認する。
 
-削除: 全Parameterを例に複製する2テスト、foundationリソース数/親一覧を固定するテスト、runtime雛形の重複テスト、架空例全8ファイル、contractsのexternalInputs/sharedParameters重複。
-維持: cfn-lintのAWS schema、nested/link整合、private network、OAC、IAM/Secret分離、保持/暗号化、起動Rules、release選択、drainingとqueue timeoutの意味ある契約。
-追加: 設定の誤り/禁止入力、live Outputs取込み、非秘密env名、現在state保持と不安定拒否、account/権限不足、planの同一性/変化、置換・削除拒否、private記録。
-AWS応答のfixtureは**テスト用**で、実環境を成功と報告するための代替データではない。
+## 未達ゲートと保証できない事項
 
-静的検証とCLIのオフライン実行はPRのテスト結果に記載。AWS change set/create/update、IAM実権限、native BLUE_GREENの実応答、復旧/競合、Cloudflareは未実施。
-確認方法と変更別の選択は検証票参照。実環境の保証は行わない。
+担当・証跡は[接続台帳](pipeline-handoff.md#未達ゲート担当)、実施条件は[検証票](validation-checklist.md)。通常運用可能という判定は行わない。
 
-## Pipeline/フロントの対応範囲
+- Pipeline #156: immutable image/用途別revision・writable volume初期化、SSM/Secret/TLS/CA注入、purpose deployment判定、全入口pause排出、Cloudflare接続の実装・試験。
+- 基盤管理者/実環境検証: 正しいaccountとinventory、engine/quota/資源実状態、hook ZIP/endpoint API/canary/SNS、DML/DDLユーザー、backup別資源復元/import、Valkey rotation、保持期限/RPO/RTO/費用。
+- Scheduler: 現在は汎用1scheduleでDISABLED。月次/動画の2周期、producerのSendMessage権限（現雛形のWorkerTaskRoleは受信だけ）、非0 STOPPED監視、業務の重複抑止を準備するまで有効化しない。これは独立した機能/監視設計であり本PRで汎用枠を完成済みに見せない。
+- 送金の外部成功/DB未保存境界は[queue契約](queue-operations.md)の運用開始阻害条件。インフラのstatic PASSやqueue timeoutでは解消しない。
 
-関連リリースPipeline（Issue #156）は未実装であることをlive Issue/PR確認済み。AWS outputsのキーと4親名は維持する。
-必要な対応は新SSM env名の採用、TLS/CA付きDATABASE_URLとValkey TLS URLの安全な注入、基盤作業と全配備入口の排他、目的deploymentの判定。
-フロントのAPI URL/Cloudflare account/token/bindingsと認証originは既存接続台帳のまま。この変更によるfrontendコード/ドメイン変更はない。
-外部hook/canary、業務固有Scheduler、復元資源のimport/rotationは稼働前に確認する事項であり、未実装/未検証を本PRで実証済みとしない。
+採用したオフライン検証の今回の実測はPR本文へ記載し、今後の実環境結果はアクセス制限した検証票へ記録する。fake成功や文書の手順を実配備の成功へ読み替えない。
