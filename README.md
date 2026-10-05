@@ -6,6 +6,15 @@ PHP Project with PHPUnit
 
 CloudFormation の構成、パラメータ・Outputs 契約、適用・更新・復旧と #157/#156 への引き渡しは [AWS 本番基盤の運用・設計資料](doc/infrastructure/operations.md) を参照してください。静的検証は `task cfn:install` 後に `task cfn:check` で実行できます（AWS 認証不要）。
 
+## 本番用 ARM64 コンテナ
+
+`task container:build` でソース・本番vendor内包の Linux ARM64 イメージを生成します。
+`task container:smoke` と `task container:verify` で拡張、API、worker実ジョブ、migration、単発終了コード、read-only root、処理中の停止を検証できます。
+同じイメージのAPIは8080・`/health`、worker/migration/単発はコマンド指定で実行します。
+必要な環境変数、UID 1000の書き込みvolume、停止120秒、ECS #156への引き渡しは
+[本番コンテナ実行契約](doc/infrastructure/container-runtime.md) を参照してください。
+既存のローカル開発はComposeのdevelopmentステージを引き続き利用します。
+
 ## PostgreSQL Database Setup
 
 ### Environment Variables

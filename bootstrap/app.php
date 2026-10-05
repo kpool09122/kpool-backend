@@ -36,6 +36,7 @@ use Sentry\Laravel\Integration as SentryIntegration;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
+        health: '/health',
         then: function () {
             Route::middleware(['api', 'session'])
                 ->prefix('api/identity')

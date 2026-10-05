@@ -29,6 +29,8 @@
 
 ## 秘密情報と本番イメージの契約
 
+#665 の [本番コンテナ実行契約](container-runtime.md) を参照。#156 のリリースタスクは、8080・`/health`、UID 1000の書き込み領域3箇所、SIGTERM・停止猶予120秒を反映する。
+
 integration の AppSecretArn/MigrationSecretArn を空にすると **値のない保存先** を作る。#157 の管理者が秘密値を別経路で登録する。秘密値をパラメータ JSON、Outputs、Issue、シェル履歴、リリース記録へ入れない。SSM `/ProjectName/runtime/config` は非秘密メタデータだけで、完成した Laravel 設定ではない。
 
 | 対象 | #157 / #156 へ渡す契約 |
