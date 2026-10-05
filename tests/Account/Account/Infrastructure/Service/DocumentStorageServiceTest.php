@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Infrastructure\Service;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToWriteFile;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -38,6 +39,21 @@ class DocumentStorageServiceTest extends TestCase
         }
         DB::beginTransaction();
         parent::tearDown();
+    }
+
+    public function testFailedWriteDoesNotReturnDocumentPath(): void
+    {
+        $disk = Mockery::mock(Filesystem::class);
+        $disk->shouldReceive('put')->once()->andReturn(false);
+        Storage::shouldReceive('disk')->with('verification-documents')->andReturn($disk);
+        $this->expectException(UnableToWriteFile::class);
+
+        (new DocumentStorageService(new NullLogger()))->storeForAccount(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            DocumentType::BUSINESS_REGISTRATION,
+            AccountDocumentFileType::PDF,
+            'document',
+        );
     }
 
     public function testDeletesImmediatelyWithoutTransaction(): void

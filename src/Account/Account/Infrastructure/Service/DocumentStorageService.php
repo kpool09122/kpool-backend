@@ -7,6 +7,7 @@ namespace Source\Account\Account\Infrastructure\Service;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\UnableToWriteFile;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocumentFileType;
@@ -41,7 +42,9 @@ class DocumentStorageService implements DocumentStorageServiceInterface
             $fileType->extension(),
         );
 
-        Storage::disk(self::DISK)->put($path, $contents);
+        if (! Storage::disk(self::DISK)->put($path, $contents)) {
+            throw UnableToWriteFile::atLocation($path);
+        }
 
         $documentPath = new DocumentPath($path);
         if (DB::transactionLevel() > 0) {

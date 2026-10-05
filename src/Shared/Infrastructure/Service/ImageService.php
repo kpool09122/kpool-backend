@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\UnableToWriteFile;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Exception\InvalidRemoteImageException;
@@ -117,7 +118,9 @@ class ImageService implements ImageServiceInterface
         imagewebp($image);
         $webpData = ob_get_clean();
 
-        Storage::disk(config()->string('filesystems.image_disk', 'public'))->put($fileName, $webpData);
+        if (! Storage::disk(config()->string('filesystems.image_disk', 'public'))->put($fileName, $webpData)) {
+            throw UnableToWriteFile::atLocation($fileName);
+        }
 
         return $fileName;
     }

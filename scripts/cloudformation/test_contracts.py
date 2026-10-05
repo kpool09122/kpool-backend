@@ -249,6 +249,36 @@ class CloudFormationContracts(unittest.TestCase):
             if link['to'] in {'integration', 'runtime'} and link['from'] != 'integration':
                 self.assertEqual(link['from'], 'root')
 
+    def test_s3_task_permissions_match_uploads_and_document_existence(self):
+        runtime = self.templates['runtime']['Resources']
+        for role, expected in (
+            ('ApiTaskRole', [('ImagesBucketArn', '/images/*'),
+                             ('FilesBucketArn', '/verification-documents/*')]),
+            ('WorkerTaskRole', [('ImagesBucketArn', '/images/*')]),
+        ):
+            with self.subTest(role=role):
+                grants = list(statements(runtime[role]))
+                acl_grants = [s for s in grants if s['Action'] == 's3:PutObjectAcl']
+                self.assertEqual(len(acl_grants), len(expected))
+                self.assertEqual(
+                    [s['Resource'] for s in acl_grants],
+                    [{'Fn::Join': ['', [{'Ref': bucket}, prefix]]}
+                     for bucket, prefix in expected],
+                )
+                for grant in acl_grants:
+                    self.assertEqual(grant['Condition'], {
+                        'StringEquals': {'s3:x-amz-acl': 'bucket-owner-full-control'},
+                    })
+                list_grants = [s for s in grants if s['Action'] == 's3:ListBucket']
+                if role == 'ApiTaskRole':
+                    self.assertEqual(len(list_grants), 1)
+                    self.assertEqual(list_grants[0]['Resource'], {'Ref': 'FilesBucketArn'})
+                    # HeadObject supplies no s3:prefix context; a condition breaks missing-key 404s.
+                    self.assertNotIn('Condition', list_grants[0])
+                else:
+                    self.assertEqual(list_grants, [])
+                    self.assertNotIn('FilesBucketArn', serialized(grants))
+
     def test_password_cache_and_role_separation(self):
         runtime = self.templates['runtime']['Resources']
         app = serialized(list(statements(runtime['AppExecutionRole'])))
