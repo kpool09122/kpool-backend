@@ -12,7 +12,36 @@ permissions:
   contents: read
   actions: read
 jobs:
+  validate-source:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: kpool09122/kpool-backend
+          ref: ${{ inputs.source_sha }}
+          path: source
+          persist-credentials: false
+      - name: Install pinned Task and Docker Compose compatibility command
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-bin"
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/go-task/task/v3/cmd/task@v3.45.4
+          printf '#!/bin/sh\nexec docker compose "$@"\n' > "$RUNNER_TEMP/release-bin/docker-compose"
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          chmod +x "$RUNNER_TEMP/release-bin/docker-compose"
+          echo "$RUNNER_TEMP/release-bin" >> "$GITHUB_PATH"
+      - name: Validate PHP through Taskfile (non-destructive style check)
+        working-directory: source
+        run: |
+          task install
+          task composer -- cs-check
+          task phpstan
+          task test
+
   validate-build:
+    needs: validate-source
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 60
     environment: production
@@ -73,13 +102,6 @@ jobs:
           GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
           chmod +x "$RUNNER_TEMP/release-bin/docker-compose"
           echo "$RUNNER_TEMP/release-bin" >> "$GITHUB_PATH"
-      - name: Validate PHP through Taskfile (non-destructive style check)
-        working-directory: source
-        run: |
-          task install
-          task composer -- cs-check
-          task phpstan
-          task test
       - name: Validate deployment controls and existing infrastructure offline
         working-directory: control
         run: |
