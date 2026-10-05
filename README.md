@@ -8,7 +8,7 @@ PHP Project with PHPUnit
 
 ## AWS 本番基盤
 
-CloudFormation の構成、パラメータ・Outputs 契約、適用・更新・復旧と #157/#156 への引き渡しは [AWS 本番基盤の運用・設計資料](doc/infrastructure/operations.md) を参照してください。静的検証は `task cfn:install` 後に `task cfn:check` で実行できます（AWS 認証不要）。
+CloudFormation の構成、パラメータ・Outputs 契約、適用・更新・復旧と #157/#156 への引き渡しは [AWS 本番基盤の運用・設計資料](doc/infrastructure/operations.md) を参照してください。[AWS／Cloudflare／GitHub 引き渡し台帳](doc/infrastructure/pipeline-handoff.md) と [#672 実環境検証票](doc/infrastructure/validation-checklist.md) に設定先・未達ゲート・証跡形式をまとめています。静的検証は `task cfn:install` 後に `task cfn:check` で実行できます（AWS 認証不要）。
 
 ## 本番用 ARM64 コンテナ
 
