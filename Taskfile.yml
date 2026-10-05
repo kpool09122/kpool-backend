@@ -36,15 +36,10 @@ tasks:
       vars: [envfile]
     env:
       RUNTIME_ENV_FILE: '{{.envfile}}'
+      PRODUCTION_IMAGE: '{{.image | default "kpool-backend:production"}}'
+      API_PORT: '{{.port | default "18080"}}'
     cmds:
-      - >-
-        docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges
-        --stop-timeout=120 --env-file "$RUNTIME_ENV_FILE"
-        --tmpfs /tmp:uid=1000,gid=1000,mode=1770
-        --tmpfs /var/www/html/storage:uid=1000,gid=1000,mode=770
-        --tmpfs /var/www/html/bootstrap/cache:uid=1000,gid=1000,mode=770
-        -p {{.port | default "18080"}}:8080
-        {{.image | default "kpool-backend:production"}} {{.CLI_ARGS}}
+      - bash scripts/container/run.sh {{.CLI_ARGS}}
 
   infra:validate:
     desc: Validate all CloudFormation templates and foundation/runtime security contracts offline
