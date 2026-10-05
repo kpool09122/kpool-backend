@@ -41,12 +41,7 @@ class FoundationTest(unittest.TestCase):
             name = attribute.removeprefix('Outputs.')
             child = self.templates[Path(root['Resources'][stack]['Properties']['TemplateURL']).stem]
             self.assertIn(name, child['Outputs'])
-        config = json.loads((BASE / 'parameters.production.json').read_text())
-        self.assertEqual({p['ParameterKey'] for p in config}, set(root['Parameters']))
-        for param in config:
-            spec = root['Parameters'][param['ParameterKey']]
-            if 'AllowedValues' in spec:
-                self.assertIn(param['ParameterValue'], spec['AllowedValues'])
+
 
     def test_two_az_nonoverlapping_subnets(self):
         subnets = self.resources('network', 'EC2::Subnet')

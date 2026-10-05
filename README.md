@@ -8,7 +8,7 @@ PHP Project with PHPUnit
 
 ## AWS 本番基盤
 
-CloudFormation の構成、パラメータ・Outputs 契約、適用・更新・復旧と #157/#156 への引き渡しは [AWS 本番基盤の運用・設計資料](doc/infrastructure/operations.md) を参照してください。[AWS／Cloudflare／GitHub 引き渡し台帳](doc/infrastructure/pipeline-handoff.md) と [#672 実環境検証票](doc/infrastructure/validation-checklist.md) に設定先・未達ゲート・証跡形式をまとめています。静的検証は `task cfn:install` 後に `task cfn:check` で実行できます（AWS 認証不要）。
+構成・管理責任・設定の正本は [本番インフラの入口](infra/cloudformation/README.md)。通常配備、基盤変更、Secret更新、容量変更、障害復旧はそこからたどれます。非秘密の環境入力を1つにまとめ、実Outputsと配備stateの取込みは `task infra:operate` が行います。静的検証は `task cfn:install` 後に `task infra:validate`（AWS認証不要）。AWS変更操作は管理者がplan/review/executeで明示実行します。
 
 ## 本番用 ARM64 コンテナ
 

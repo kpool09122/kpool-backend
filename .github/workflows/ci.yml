@@ -10,6 +10,16 @@ permissions:
   contents: read
 
 jobs:
+  infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - run: bash scripts/cloudformation/run.sh install
+      - run: bash scripts/cloudformation/validate.sh
+
   test:
     runs-on: ubuntu-latest
 

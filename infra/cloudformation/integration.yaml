@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Secret destinations, nonsecret SSM metadata and budget on the PR674 foundation.
+Description: Secret destinations, application environment metadata and account budget.
 Parameters:
   ProjectName:
     Type: String
@@ -33,6 +33,8 @@ Parameters:
   ImagesBucketName:
     Type: String
   FilesBucketName:
+    Type: String
+  ImageBaseUrl:
     Type: String
 Rules:
   TokyoOnly:
@@ -111,7 +113,7 @@ Resources:
       Type: String
       Description: Nonsecret foundation metadata; not application-ready configuration.
       Value:
-        Fn::Sub: '{"APP_ENV":"production","DB_HOST":"${DatabaseEndpoint}","DB_DATABASE":"${DatabaseName}","REDIS_HOST":"${CacheEndpoint}","REDIS_PORT":6379,"REDIS_DB":0,"REDIS_CACHE_DB":0,"SQS_QUEUE_URL":"${QueueUrl}","IMAGE_BUCKET":"${ImagesBucketName}","FILE_BUCKET":"${FilesBucketName}"}'
+        Fn::Sub: '{"APP_ENV":"production","APP_DEBUG":"false","LOG_CHANNEL":"stderr","AWS_DEFAULT_REGION":"${AWS::Region}","DB_CONNECTION":"pgsql","DB_HOST":"${DatabaseEndpoint}","DB_DATABASE":"${DatabaseName}","REDIS_HOST":"${CacheEndpoint}","REDIS_PORT":"6379","REDIS_DB":"0","REDIS_CACHE_DB":"0","QUEUE_CONNECTION":"sqs","SQS_QUEUE_URL":"${QueueUrl}","IMAGE_STORAGE_DISK":"s3","VERIFICATION_DOCUMENTS_DRIVER":"s3","AWS_PUBLIC_IMAGES_BUCKET":"${ImagesBucketName}","AWS_PRIVATE_FILES_BUCKET":"${FilesBucketName}","IMAGE_BASE_URL":"${ImageBaseUrl}"}'
 Outputs:
   AppSecretArn:
     Value:
