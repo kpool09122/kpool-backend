@@ -9,10 +9,10 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class ReplyContactFactoryTest extends TestCase
     {
         $replyIdentifier = StrTestHelper::generateUuid();
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $content = new ReplyContent('返信本文');
         $sentAt = new DateTimeImmutable('2026-01-01 12:34:56');
@@ -44,7 +44,7 @@ class ReplyContactFactoryTest extends TestCase
         $before = new DateTimeImmutable('now');
         $reply = $factory->create(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $toEmail,
             $content,
             $sentAt,
@@ -54,7 +54,7 @@ class ReplyContactFactoryTest extends TestCase
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame($contactIdentifier, $reply->contactIdentifier());
-        $this->assertSame($identityIdentifier, $reply->identityIdentifier());
+        $this->assertSame($principalIdentifier, $reply->principalIdentifier());
         $this->assertSame($toEmail, $reply->toEmail());
         $this->assertSame($content, $reply->content());
         $this->assertSame($sentAt, $reply->sentAt());
@@ -84,7 +84,7 @@ class ReplyContactFactoryTest extends TestCase
 
         $reply = $factory->create(
             new ContactIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new Email('john.doe@example.com'),
             new ReplyContent('返信本文'),
             null,

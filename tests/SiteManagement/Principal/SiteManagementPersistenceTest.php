@@ -16,6 +16,7 @@ use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Tests\Helper\CreateAccount;
@@ -46,11 +47,12 @@ class SiteManagementPersistenceTest extends TestCase
         SiteManagementAuthorization::grantAdministrator($first);
 
         $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
-        $resource = new Resource(ResourceType::CONTACT, $identity);
+        $resource = new Resource(ResourceType::CONTACT, $first->principalIdentifier());
         $this->assertTrue($evaluator->evaluate($first, Action::CONTACT_REPLY, $resource));
         $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_REPLY, $resource));
-        $this->assertTrue($evaluator->evaluate($second, Action::CONTACT_VIEW, $resource));
-        $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, new IdentityIdentifier(StrTestHelper::generateUuid()))));
+        $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_VIEW, $resource));
+        $this->assertTrue($evaluator->evaluate($second, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $second->principalIdentifier())));
+        $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, new PrincipalIdentifier(StrTestHelper::generateUuid()))));
 
         // Even an invalid cross-account membership must not grant the other Account's permissions.
         $adminGroupId = DB::table('site_management_principal_groups')->where('account_id', (string) $firstAccount)->where('name', 'administrator')->value('id');

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Application\UseCase\Command\SubmitContact;
 
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -23,7 +23,7 @@ class SubmitContactInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -37,14 +37,14 @@ class SubmitContactInputTest extends TestCase
 ぜひ、ご検討いただけますと幸いです。
 これからも応援しています。');
         $input = new SubmitContactInput(
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
             $content,
             $language,
         );
-        $this->assertSame((string)$identityIdentifier, (string)$input->identityIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$input->principalIdentifier());
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$email, (string)$input->email());

@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $contact_id
- * @property string|null $identity_identifier
+ * @property string|null $principal_identifier
  * @property string $to_email
  * @property string $content
  * @property Carbon|null $sent_at
@@ -32,7 +32,7 @@ class ContactReply extends Model
     protected $fillable = [
         'id',
         'contact_id',
-        'identity_identifier',
+        'principal_identifier',
         'to_email',
         'content',
         'sent_at',

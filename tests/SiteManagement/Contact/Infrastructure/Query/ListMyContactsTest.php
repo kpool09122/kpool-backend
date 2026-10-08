@@ -31,16 +31,17 @@ class ListMyContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsOnlyAuthenticatedIdentityContactsNewestFirst(): void
+    public function testProcessReturnsOnlyAuthenticatedPrincipalContactsNewestFirst(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $otherIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $otherPrincipalIdentifier = SiteManagementAuthorization::bind($identityIdentifier);
+        $principalIdentifier = SiteManagementAuthorization::bind($identityIdentifier);
         $olderContactIdentifier = StrTestHelper::generateUuid();
         $newerContactIdentifier = StrTestHelper::generateUuid();
 
         $this->insertContact(
             id: $olderContactIdentifier,
-            identityIdentifier: (string) $identityIdentifier,
+            principalIdentifier: (string) $principalIdentifier,
             category: Category::SUGGESTIONS,
             name: '古い問い合わせ',
             email: 'older@example.com',
@@ -49,7 +50,7 @@ class ListMyContactsTest extends TestCase
         );
         $this->insertContact(
             id: $newerContactIdentifier,
-            identityIdentifier: (string) $identityIdentifier,
+            principalIdentifier: (string) $principalIdentifier,
             category: Category::ISSUES,
             name: '新しい問い合わせ',
             email: 'newer@example.com',
@@ -58,7 +59,7 @@ class ListMyContactsTest extends TestCase
         );
         $this->insertContact(
             id: StrTestHelper::generateUuid(),
-            identityIdentifier: (string) $otherIdentityIdentifier,
+            principalIdentifier: (string) $otherPrincipalIdentifier,
             category: Category::OTHERS,
             name: '他ユーザー',
             email: 'other@example.com',
@@ -67,7 +68,7 @@ class ListMyContactsTest extends TestCase
         );
         $this->insertContact(
             id: StrTestHelper::generateUuid(),
-            identityIdentifier: null,
+            principalIdentifier: null,
             category: Category::OTHERS,
             name: '匿名ユーザー',
             email: 'anonymous@example.com',
@@ -78,7 +79,7 @@ class ListMyContactsTest extends TestCase
         $sentReply = CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
-            $identityIdentifier,
+            $principalIdentifier,
             new DateTimeImmutable('2026-08-17 10:00:00'),
             null,
             new DateTimeImmutable('2026-08-17 10:00:00'),
@@ -88,7 +89,7 @@ class ListMyContactsTest extends TestCase
         CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
-            $identityIdentifier,
+            $principalIdentifier,
             null,
             new DateTimeImmutable('2026-08-17 10:01:00'),
             new DateTimeImmutable('2026-08-17 10:01:00'),
@@ -98,7 +99,7 @@ class ListMyContactsTest extends TestCase
         CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
-            $identityIdentifier,
+            $principalIdentifier,
             null,
             null,
             new DateTimeImmutable('2026-08-17 10:02:00'),
@@ -106,7 +107,6 @@ class ListMyContactsTest extends TestCase
             $encryptionService,
         );
 
-        $principalIdentifier = SiteManagementAuthorization::bind($identityIdentifier);
         $output = new ListMyContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
@@ -117,7 +117,7 @@ class ListMyContactsTest extends TestCase
         $this->assertSame([
             [
                 'contactIdentifier' => $newerContactIdentifier,
-                'identityIdentifier' => (string) $identityIdentifier,
+                'principalIdentifier' => (string) $principalIdentifier,
                 'category' => Category::ISSUES->value,
                 'name' => '新しい問い合わせ',
                 'replyIdentifiers' => [(string) $sentReply->replyIdentifier()],
@@ -125,7 +125,7 @@ class ListMyContactsTest extends TestCase
             ],
             [
                 'contactIdentifier' => $olderContactIdentifier,
-                'identityIdentifier' => (string) $identityIdentifier,
+                'principalIdentifier' => (string) $principalIdentifier,
                 'category' => Category::SUGGESTIONS->value,
                 'name' => '古い問い合わせ',
                 'replyIdentifiers' => [],
@@ -135,7 +135,7 @@ class ListMyContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsEmptyArrayWhenIdentityHasNoContacts(): void
+    public function testProcessReturnsEmptyArrayWhenPrincipalHasNoContacts(): void
     {
         $principalIdentifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()));
         $output = new ListMyContactsOutput();
@@ -157,7 +157,7 @@ class ListMyContactsTest extends TestCase
 
     private function insertContact(
         string $id,
-        ?string $identityIdentifier,
+        ?string $principalIdentifier,
         Category $category,
         string $name,
         string $email,
@@ -168,7 +168,7 @@ class ListMyContactsTest extends TestCase
 
         DB::table('contacts')->insert([
             'id' => $id,
-            'identity_identifier' => $identityIdentifier,
+            'principal_identifier' => $principalIdentifier,
             'category' => $category->value,
             'name' => $name,
             'email' => $encryptionService->encrypt($email),

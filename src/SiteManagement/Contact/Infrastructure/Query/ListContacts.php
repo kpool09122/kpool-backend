@@ -9,7 +9,6 @@ use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
@@ -17,6 +16,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListCon
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -41,7 +41,7 @@ readonly class ListContacts implements ListContactsInterface
         $paginator = ContactModel::query()
             ->select([
                 'id',
-                'identity_identifier',
+                'principal_identifier',
                 'category',
                 'name',
                 'created_at',
@@ -55,7 +55,7 @@ readonly class ListContacts implements ListContactsInterface
                         ->orderBy('id');
                 },
             ])
-            ->when($input->targetIdentityIdentifier() !== null, fn ($query) => $query->where('identity_identifier', (string) $input->targetIdentityIdentifier()))
+            ->when($input->targetPrincipalIdentifier() !== null, fn ($query) => $query->where('principal_identifier', (string) $input->targetPrincipalIdentifier()))
             ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies', static fn ($replyQuery) => $replyQuery
                 ->whereNotNull('sent_at')
                 ->whereNull('failed_at')))
@@ -67,7 +67,7 @@ readonly class ListContacts implements ListContactsInterface
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
 
         foreach ($paginator->items() as $contact) {
-            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier($contact->identity_identifier);
+            $owner = $contact->principal_identifier === null ? null : new PrincipalIdentifier($contact->principal_identifier);
             if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
                 throw new UnauthorizedException();
             }
@@ -75,7 +75,7 @@ readonly class ListContacts implements ListContactsInterface
 
         $contacts = array_map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
             contactIdentifier: (string) $contact->id,
-            identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
+            principalIdentifier: $contact->principal_identifier === null ? null : (string) $contact->principal_identifier,
             category: (int) $contact->category,
             name: (string) $contact->name,
             replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),

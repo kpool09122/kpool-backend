@@ -10,10 +10,10 @@ use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsOutput;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -34,7 +34,7 @@ readonly class ListContactsAction
             $output = new ListContactsOutput();
             $this->listContacts->process(new ListContactsInput(
                 $this->siteManagementContext->principalIdentifier,
-                $request->identityIdentifier() === null ? null : new IdentityIdentifier($request->identityIdentifier()),
+                $request->principalIdentifier() === null ? null : new PrincipalIdentifier($request->principalIdentifier()),
                 $request->hasReply(),
                 $request->perPage(),
                 $request->page(),

@@ -29,7 +29,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             if (! in_array($action, $statement->actions(), true) || ! in_array($resource->type(), $statement->resourceTypes(), true)) {
                 continue;
             }
-            if ($statement->condition() === Condition::OWN_CONTACT && ($resource->type() !== ResourceType::CONTACT || $resource->ownerIdentityIdentifier() === null || (string) $resource->ownerIdentityIdentifier() !== (string) $principal->identityIdentifier())) {
+            if ($statement->condition() === Condition::OWN_CONTACT && ($resource->type() !== ResourceType::CONTACT || $resource->ownerPrincipalIdentifier() === null || (string) $resource->ownerPrincipalIdentifier() !== (string) $principal->principalIdentifier())) {
                 continue;
             }
             if ($statement->effect() === Effect::DENY) {

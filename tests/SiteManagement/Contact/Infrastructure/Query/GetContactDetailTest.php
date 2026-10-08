@@ -20,6 +20,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -30,10 +31,10 @@ use Tests\TestCase;
 class GetContactDetailTest extends TestCase
 {
     #[Group('useDb')]
-    public function testProcessReturnsSpecifiedIdentityContactForAdmin(): void
+    public function testProcessReturnsSpecifiedPrincipalContactForAdmin(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $target = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $target = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = StrTestHelper::generateUuid();
         CreateIdentity::create($requester);
         $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
@@ -57,13 +58,13 @@ class GetContactDetailTest extends TestCase
 
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(GetContactDetailInterface::class)->process(
-            new GetContactDetailInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier(StrTestHelper::generateUuid())),
+            new GetContactDetailInput($principalIdentifier, new PrincipalIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier(StrTestHelper::generateUuid())),
             new GetContactDetailOutput(),
         );
     }
 
     #[Group('useDb')]
-    public function testProcessRejectsContactNotOwnedBySpecifiedIdentity(): void
+    public function testProcessRejectsContactNotOwnedBySpecifiedPrincipal(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
@@ -73,7 +74,7 @@ class GetContactDetailTest extends TestCase
 
         $this->expectException(ContactNotFoundException::class);
         $this->app()->make(GetContactDetailInterface::class)->process(
-            new GetContactDetailInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
+            new GetContactDetailInput($principalIdentifier, new PrincipalIdentifier(StrTestHelper::generateUuid()), new ContactIdentifier($contactIdentifier)),
             new GetContactDetailOutput(),
         );
     }
@@ -115,7 +116,7 @@ class GetContactDetailTest extends TestCase
                 ]], JSON_THROW_ON_ERROR),
             ]);
         }
-        $owner = $ownContact ? $identity : new IdentityIdentifier(StrTestHelper::generateUuid());
+        $owner = $ownContact ? $principal->principalIdentifier() : new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = StrTestHelper::generateUuid();
         $this->insertContact($contactIdentifier, (string) $owner);
         if (! $allowed) {
@@ -131,8 +132,8 @@ class GetContactDetailTest extends TestCase
         }
     }
 
-    private function insertContact(string $id, string $identityIdentifier): void
+    private function insertContact(string $id, string $principalIdentifier): void
     {
-        DB::table('contacts')->insert(['id' => $id, 'identity_identifier' => $identityIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
+        DB::table('contacts')->insert(['id' => $id, 'principal_identifier' => $principalIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
     }
 }

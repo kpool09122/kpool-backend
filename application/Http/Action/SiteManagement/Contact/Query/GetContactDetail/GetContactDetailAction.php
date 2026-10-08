@@ -11,12 +11,12 @@ use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -43,7 +43,7 @@ readonly class GetContactDetailAction
             $this->getContactDetail->process(
                 new GetContactDetailInput(
                     $this->siteManagementContext->principalIdentifier,
-                    new IdentityIdentifier($request->identityIdentifier()),
+                    new PrincipalIdentifier($request->principalIdentifier()),
                     new ContactIdentifier($request->contactIdentifier()),
                 ),
                 $output,

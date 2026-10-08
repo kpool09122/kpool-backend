@@ -6,17 +6,17 @@ namespace Source\SiteManagement\Contact\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ReplyCotact
 {
     public function __construct(
         private ContactReplyIdentifier $replyIdentifier,
         private ContactIdentifier $contactIdentifier,
-        private ?IdentityIdentifier $identityIdentifier,
+        private ?PrincipalIdentifier $principalIdentifier,
         private Email $toEmail,
         private ReplyContent $content,
         private ?DateTimeImmutable $sentAt,
@@ -35,9 +35,9 @@ readonly class ReplyCotact
         return $this->contactIdentifier;
     }
 
-    public function identityIdentifier(): ?IdentityIdentifier
+    public function principalIdentifier(): ?PrincipalIdentifier
     {
-        return $this->identityIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function toEmail(): Email

@@ -29,8 +29,8 @@ model SubmitContactRequestBody {
 model ContactSummary {
   @doc("Contact identifier.")
   contactIdentifier: Uuid;
-  @doc("Identity identifier when the inquiry is associated with a signed-in user.")
-  identityIdentifier?: Uuid | null;
+  @doc("Site-management principal identifier when the inquiry is associated with a signed-in user.")
+  principalIdentifier?: Uuid | null;
   @doc("Category of the inquiry.")
   category: int32;
   @doc("Name of the person submitting the inquiry.")
@@ -51,8 +51,8 @@ model SubmitContactResponse {
 model MyContactSummary {
   @doc("Contact identifier.")
   contactIdentifier: Uuid;
-  @doc("Identity identifier associated with the inquiry.")
-  identityIdentifier?: Uuid | null;
+  @doc("Site-management principal identifier associated with the inquiry.")
+  principalIdentifier?: Uuid | null;
   @doc("Category of the inquiry.")
   category: int32;
   @doc("Name of the person submitting the inquiry.")
@@ -73,7 +73,7 @@ model ContactReplyDetail {
 @doc("Contact inquiry detail.")
 model ContactDetail {
   contactIdentifier: Uuid;
-  identityIdentifier?: Uuid | null;
+  principalIdentifier?: Uuid | null;
   category: int32;
   name: string;
   createdAt: Timestamp;
@@ -81,7 +81,7 @@ model ContactDetail {
   replies: ContactReplyDetail[];
 }
 
-@doc("Response containing contact inquiries associated with the signed-in identity.")
+@doc("Response containing contact inquiries associated with the signed-in principal.")
 model ListMyContactsResponse {
   @statusCode statusCode: 200;
   @body body: MyContactSummary[];
@@ -91,18 +91,18 @@ model ListMyContactsResponse {
 interface MyContactOperations {
   @get
   @route("/{contactIdentifier}")
-  @doc("Get a contact inquiry associated with the signed-in identity.")
+  @doc("Get a contact inquiry associated with the signed-in principal.")
   getMyContactDetail(
     @path contactIdentifier: Uuid,
   ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get
-  @doc("List contact inquiries associated with the signed-in identity, newest first.")
+  @doc("List contact inquiries associated with the signed-in principal, newest first.")
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
-@doc("Response containing contact inquiries for an identity.")
-model ListContactsByIdentityResponse {
+@doc("Response containing contact inquiries for an principal.")
+model ListContactsByPrincipalResponse {
   @statusCode statusCode: 200;
   @body body: MyContactSummary[];
 }
@@ -130,9 +130,9 @@ model ListContactsResponse {
 @route("/contacts")
 interface ContactListOperations {
   @get
-  @doc("List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.")
+  @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management administrator.")
   listContacts(
-    @query identityIdentifier?: Uuid | null,
+    @query principalIdentifier?: Uuid | null,
     @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
     @query hasReply?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
@@ -148,20 +148,20 @@ interface ContactListOperations {
 @route("/contact")
 interface ContactOperations {
   @get
-  @route("/identities/{identityIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for an identity. Requires a site-management administrator.")
+  @route("/principals/{principalIdentifier}/{contactIdentifier}")
+  @doc("Get the specified contact inquiry for an principal. Requires a site-management administrator.")
   getContactDetail(
-    @path identityIdentifier: Uuid,
+    @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,
   ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
 
   @get
-  @route("/identities/{identityIdentifier}")
-  @doc("List contact inquiries for the specified identity. Requires a site-management administrator.")
-  listContactsByIdentity(
-    @path identityIdentifier: Uuid,
-  ): ListContactsByIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  @route("/principals/{principalIdentifier}")
+  @doc("List contact inquiries for the specified principal. Requires a site-management administrator.")
+  listContactsByPrincipal(
+    @path principalIdentifier: Uuid,
+  ): ListContactsByPrincipalResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
   @route("/submit/v{version}")

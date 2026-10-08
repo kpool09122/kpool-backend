@@ -15,7 +15,7 @@ class GetContactDetailOutputTest extends TestCase
         $output = new GetContactDetailOutput();
         $output->output(new ContactDetailReadModel(
             contactIdentifier: '00000000-0000-0000-0000-000000000001',
-            identityIdentifier: '00000000-0000-0000-0000-000000000002',
+            principalIdentifier: '00000000-0000-0000-0000-000000000002',
             category: 1,
             name: '問い合わせ太郎',
             createdAt: '2026-08-27T12:00:00+00:00',
@@ -25,7 +25,7 @@ class GetContactDetailOutputTest extends TestCase
 
         $this->assertSame([
             'contactIdentifier' => '00000000-0000-0000-0000-000000000001',
-            'identityIdentifier' => '00000000-0000-0000-0000-000000000002',
+            'principalIdentifier' => '00000000-0000-0000-0000-000000000002',
             'category' => 1,
             'name' => '問い合わせ太郎',
             'createdAt' => '2026-08-27T12:00:00+00:00',

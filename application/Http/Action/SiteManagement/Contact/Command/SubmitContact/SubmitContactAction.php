@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\SiteManagement\Contact\Command\SubmitContact;
 
+use Application\Http\Context\AccountResolver;
+use Application\Http\Context\SiteManagementPrincipalResolver;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmai
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
@@ -30,6 +33,8 @@ readonly class SubmitContactAction
     public function __construct(
         private SubmitContactInterface $submitContact,
         private LoggerInterface $logger,
+        private AccountResolver $accountResolver,
+        private SiteManagementPrincipalResolver $siteManagementPrincipalResolver,
     ) {
     }
 
@@ -45,7 +50,7 @@ readonly class SubmitContactAction
         try {
             try {
                 $input = new SubmitContactInput(
-                    $this->authenticatedIdentityIdentifier(),
+                    $this->authenticatedPrincipalIdentifier(),
                     Category::from($request->category()),
                     new ContactName($request->name()),
                     new Email($request->email()),
@@ -87,12 +92,14 @@ readonly class SubmitContactAction
         return response()->json($output->toArray(), Response::HTTP_CREATED);
     }
 
-    private function authenticatedIdentityIdentifier(): ?IdentityIdentifier
+    private function authenticatedPrincipalIdentifier(): ?PrincipalIdentifier
     {
         if (! Auth::check()) {
             return null;
         }
 
-        return new IdentityIdentifier((string) Auth::id());
+        return $this->siteManagementPrincipalResolver->resolve(
+            $this->accountResolver->resolve(new IdentityIdentifier((string) Auth::id())),
+        );
     }
 }

@@ -30,12 +30,12 @@ readonly class GetMyContactDetail implements GetMyContactDetailInterface
     public function process(GetMyContactDetailInputPort $input, GetMyContactDetailOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->identityIdentifier()))) {
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->principalIdentifier()))) {
             throw new UnauthorizedException();
         }
 
         $contact = ContactModel::query()
-            ->select(['id', 'identity_identifier', 'category', 'name', 'content', 'created_at'])
+            ->select(['id', 'principal_identifier', 'category', 'name', 'content', 'created_at'])
             ->with([
                 'replies' => static function (Relation $query): void {
                     $query->select(['id', 'contact_id', 'content', 'sent_at'])
@@ -46,7 +46,7 @@ readonly class GetMyContactDetail implements GetMyContactDetailInterface
                 },
             ])
             ->where('id', (string) $input->contactIdentifier())
-            ->where('identity_identifier', (string) $principal->identityIdentifier())
+            ->where('principal_identifier', (string) $principal->principalIdentifier())
             ->first();
         if ($contact === null) {
             throw new ContactNotFoundException();
@@ -63,7 +63,7 @@ readonly class GetMyContactDetail implements GetMyContactDetailInterface
 
         $output->output(new ContactDetailReadModel(
             (string) $contact->id,
-            (string) $contact->identity_identifier,
+            (string) $contact->principal_identifier,
             (int) $contact->category,
             (string) $contact->name,
             ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))

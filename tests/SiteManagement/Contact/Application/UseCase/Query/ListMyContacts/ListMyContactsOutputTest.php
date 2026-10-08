@@ -14,7 +14,7 @@ class ListMyContactsOutputTest extends TestCase
     {
         $contact = new ContactReadModel(
             contactIdentifier: '00000000-0000-0000-0000-000000000001',
-            identityIdentifier: '00000000-0000-0000-0000-000000000002',
+            principalIdentifier: '00000000-0000-0000-0000-000000000002',
             category: 1,
             name: '問い合わせ太郎',
             replyIdentifiers: ['00000000-0000-0000-0000-000000000003'],
@@ -27,7 +27,7 @@ class ListMyContactsOutputTest extends TestCase
         $this->assertSame([
             [
                 'contactIdentifier' => '00000000-0000-0000-0000-000000000001',
-                'identityIdentifier' => '00000000-0000-0000-0000-000000000002',
+                'principalIdentifier' => '00000000-0000-0000-0000-000000000002',
                 'category' => 1,
                 'name' => '問い合わせ太郎',
                 'replyIdentifiers' => ['00000000-0000-0000-0000-000000000003'],

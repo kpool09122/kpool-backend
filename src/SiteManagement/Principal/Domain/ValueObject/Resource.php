@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Principal\Domain\ValueObject;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-
 final readonly class Resource
 {
-    public function __construct(private ResourceType $type, private ?IdentityIdentifier $ownerIdentityIdentifier = null)
+    public function __construct(private ResourceType $type, private ?PrincipalIdentifier $ownerPrincipalIdentifier = null)
     {
     }
 
@@ -17,8 +15,8 @@ final readonly class Resource
         return $this->type;
     }
 
-    public function ownerIdentityIdentifier(): ?IdentityIdentifier
+    public function ownerPrincipalIdentifier(): ?PrincipalIdentifier
     {
-        return $this->ownerIdentityIdentifier;
+        return $this->ownerPrincipalIdentifier;
     }
 }

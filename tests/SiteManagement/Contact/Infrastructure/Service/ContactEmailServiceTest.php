@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Mail;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
@@ -22,6 +21,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -173,7 +173,7 @@ class ContactEmailServiceTest extends TestCase
     {
         return new Contact(
             new ContactIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),

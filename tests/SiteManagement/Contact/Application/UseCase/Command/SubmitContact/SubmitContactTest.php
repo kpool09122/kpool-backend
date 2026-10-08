@@ -8,7 +8,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
@@ -23,6 +22,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -50,7 +50,7 @@ class SubmitContactTest extends TestCase
      */
     public function testProcess(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -63,7 +63,7 @@ class SubmitContactTest extends TestCase
 ぜひ、ご検討いただけますと幸いです。
 これからも応援しています。');
         $input = new SubmitContactInput(
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -74,7 +74,7 @@ class SubmitContactTest extends TestCase
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -84,7 +84,7 @@ class SubmitContactTest extends TestCase
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
+            ->with($category, $name, $email, $content, $principalIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
@@ -112,7 +112,7 @@ class SubmitContactTest extends TestCase
 
         $this->assertSame([
             'contactIdentifier' => (string) $contactIdentifier,
-            'identityIdentifier' => (string) $identityIdentifier,
+            'principalIdentifier' => (string) $principalIdentifier,
             'category' => $category->value,
             'name' => (string) $name,
             'email' => (string) $email,
@@ -128,7 +128,7 @@ class SubmitContactTest extends TestCase
      */
     public function testWhenFailedToSendEmailToAdministrator(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -141,7 +141,7 @@ class SubmitContactTest extends TestCase
 ぜひ、ご検討いただけますと幸いです。
 これからも応援しています。');
         $input = new SubmitContactInput(
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -152,7 +152,7 @@ class SubmitContactTest extends TestCase
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -162,7 +162,7 @@ class SubmitContactTest extends TestCase
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
+            ->with($category, $name, $email, $content, $principalIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
@@ -194,7 +194,7 @@ class SubmitContactTest extends TestCase
      */
     public function testWhenFailedToSendEmailToUser(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -207,7 +207,7 @@ class SubmitContactTest extends TestCase
 ぜひ、ご検討いただけますと幸いです。
 これからも応援しています。');
         $input = new SubmitContactInput(
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -218,7 +218,7 @@ class SubmitContactTest extends TestCase
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $category,
             $name,
             $email,
@@ -228,7 +228,7 @@ class SubmitContactTest extends TestCase
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
+            ->with($category, $name, $email, $content, $principalIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);

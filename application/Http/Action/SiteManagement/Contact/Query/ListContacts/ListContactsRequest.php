@@ -12,16 +12,16 @@ class ListContactsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identityIdentifier' => ['nullable', 'uuid'],
+            'principalIdentifier' => ['nullable', 'uuid'],
             'hasReply' => ['nullable', 'string', 'in:0,1'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
-    public function identityIdentifier(): ?string
+    public function principalIdentifier(): ?string
     {
-        return $this->query('identityIdentifier') !== null ? (string) $this->query('identityIdentifier') : null;
+        return $this->query('principalIdentifier') !== null ? (string) $this->query('principalIdentifier') : null;
     }
 
     public function hasReply(): ?bool

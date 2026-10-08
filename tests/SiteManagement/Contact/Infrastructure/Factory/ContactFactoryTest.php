@@ -7,13 +7,13 @@ namespace SiteManagement\Contact\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -39,7 +39,7 @@ class ContactFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -58,11 +58,11 @@ class ContactFactoryTest extends TestCase
             $name,
             $email,
             $content,
-            $identityIdentifier,
+            $principalIdentifier,
             $language,
         );
         $this->assertTrue(UuidValidator::isValid((string)$contact->contactIdentifier()));
-        $this->assertSame((string)$identityIdentifier, (string)$contact->identityIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$contact->principalIdentifier());
         $this->assertSame($category->value, $contact->category()->value);
         $this->assertSame((string)$name, (string)$contact->name());
         $this->assertSame((string)$email, (string)$contact->email());

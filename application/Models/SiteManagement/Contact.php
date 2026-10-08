@@ -13,7 +13,7 @@ use Override;
 #[Fillable([
     'id',
     'category',
-    'identity_identifier',
+    'principal_identifier',
     'name',
     'email',
     'content',

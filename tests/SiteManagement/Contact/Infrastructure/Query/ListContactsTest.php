@@ -20,6 +20,7 @@ use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -35,10 +36,10 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsOnlySpecifiedIdentityContactsForAdmin(): void
+    public function testProcessReturnsOnlySpecifiedPrincipalContactsForAdmin(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $target = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $target = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
         $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $older = StrTestHelper::generateUuid();
@@ -65,7 +66,7 @@ class ListContactsTest extends TestCase
         CreateIdentity::create($requester);
         $principalIdentifier = SiteManagementAuthorization::bind($requester, false);
 
-        $target = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $target = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $this->insertContact(StrTestHelper::generateUuid(), (string) $target, 'denied@example.com', '2026-08-17 10:00:00');
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(ListContactsInterface::class)->process(
@@ -80,17 +81,17 @@ class ListContactsTest extends TestCase
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
         $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
-        $targetIdentityIdentifier = StrTestHelper::generateUuid();
+        $targetPrincipalIdentifier = StrTestHelper::generateUuid();
         $identityContact = StrTestHelper::generateUuid();
         $anonymousContact = StrTestHelper::generateUuid();
-        $this->insertContact($identityContact, $targetIdentityIdentifier, 'identity@example.com', '2026-08-15 10:00:00');
+        $this->insertContact($identityContact, $targetPrincipalIdentifier, 'identity@example.com', '2026-08-15 10:00:00');
         $this->insertContact($anonymousContact, null, 'anonymous@example.com', '2026-08-16 10:00:00');
 
         $output = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, null), $output);
 
         $this->assertSame([$anonymousContact, $identityContact], array_column($output->toArray()['contacts'], 'contactIdentifier'));
-        $this->assertSame([null, $targetIdentityIdentifier], array_column($output->toArray()['contacts'], 'identityIdentifier'));
+        $this->assertSame([null, $targetPrincipalIdentifier], array_column($output->toArray()['contacts'], 'principalIdentifier'));
     }
 
     #[Group('useDb')]
@@ -182,11 +183,11 @@ class ListContactsTest extends TestCase
         $this->assertSame([], $empty->toArray()['contacts']);
 
         $own = StrTestHelper::generateUuid();
-        $this->insertContact($own, (string) $identity, 'own@example.com', '2026-08-17 10:00:00');
+        $this->insertContact($own, (string) $principal->principalIdentifier(), 'own@example.com', '2026-08-17 10:00:00');
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-15 10:00:00');
         $this->insertContact(StrTestHelper::generateUuid(), null, 'anonymous@example.com', '2026-08-16 10:00:00');
         $ownContacts = new ListContactsOutput();
-        $query->process(new ListContactsInput($identifier, $identity, null), $ownContacts);
+        $query->process(new ListContactsInput($identifier, $identifier, null), $ownContacts);
         $this->assertSame([$own], array_column($ownContacts->toArray()['contacts'], 'contactIdentifier'));
 
         try {
@@ -214,11 +215,11 @@ class ListContactsTest extends TestCase
         $this->assertSame(2, $output->toArray()['total']);
     }
 
-    private function insertContact(string $id, ?string $identityIdentifier, string $email, string $createdAt): void
+    private function insertContact(string $id, ?string $principalIdentifier, string $email, string $createdAt): void
     {
         DB::table('contacts')->insert([
             'id' => $id,
-            'identity_identifier' => $identityIdentifier,
+            'principal_identifier' => $principalIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => '問い合わせ者',
             'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt($email),
@@ -234,7 +235,7 @@ class ListContactsTest extends TestCase
         DB::table('contact_replies')->insert([
             'id' => $id,
             'contact_id' => $contactIdentifier,
-            'identity_identifier' => null,
+            'principal_identifier' => null,
             'to_email' => 'encrypted@example.com',
             'content' => '返信内容',
             'sent_at' => $sentAt,
