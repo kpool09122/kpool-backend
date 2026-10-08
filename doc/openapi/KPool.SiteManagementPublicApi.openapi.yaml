@@ -272,6 +272,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /contacts/{contactIdentifier}/replies:
+    post:
+      operationId: ContactListOperations_replyContact
+      description: Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.
+      parameters:
+        - name: contactIdentifier
+          in: path
+          required: true
+          description: UUIDv7 contact identifier, matching the existing ContactIdentifier domain constraint.
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+            pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyContactRequestBody'
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
@@ -554,6 +629,16 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the inquiry was created.
       description: Contact inquiry summary returned to its submitter.
+    ReplyContactRequestBody:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          description: Non-empty reply content. No maximum length is imposed by ReplyContent.
+      description: Request body for replying to a contact inquiry.
     SubmitContactRequestBody:
       type: object
       required:
