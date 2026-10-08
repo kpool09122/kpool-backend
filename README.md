@@ -176,7 +176,7 @@ TypeSpec definitions live under `typespec/` and are split by Laravel route file 
 - `typespec/services/identity-api.tsp` -> `routes/identity_api.php`
 - `typespec/services/account-api.tsp` -> `routes/account_api.php`
 - `typespec/services/monetization-api.tsp` -> `routes/monetization_api.php`
-- `typespec/services/site-management-public-api.tsp` -> `routes/site_management_api.php`
+- `typespec/services/site-management-api.tsp` -> `routes/site_management_api.php`
 - `typespec/services/wiki-private-api.tsp` -> `routes/wiki_api.php`
 - `typespec/services/webhook.tsp` -> `routes/webhook.php`
 - `typespec/common/` holds shared schema fragments such as Problem Details

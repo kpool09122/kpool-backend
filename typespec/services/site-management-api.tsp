@@ -1,9 +1,9 @@
 using TypeSpec.Http;
 using KPool.Common;
 
-@service(#{ title: "k-pool Site Management Public API" })
+@service(#{ title: "k-pool Site Management API" })
 @server("/api/site-management", "Laravel route prefix from bootstrap/app.php.")
-namespace KPool.SiteManagementPublicApi;
+namespace KPool.SiteManagementApi;
 
 @doc("Contact category accepted by the submit-contact endpoint.")
 enum ContactCategory {
@@ -127,8 +127,25 @@ model ListContactsResponse {
   @body body: ListContactsPage;
 }
 
+@doc("Request body for replying to a contact inquiry.")
+model ReplyContactRequestBody {
+  @doc("Non-empty reply content. No maximum length is imposed by ReplyContent.")
+  @minLength(1)
+  content: string;
+}
+
 @route("/contacts")
 interface ContactListOperations {
+  @useAuth(SessionCookieAuth)
+  @post
+  @route("/{contactIdentifier}/replies")
+  @doc("Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.")
+  replyContact(
+    @doc("UUIDv7 contact identifier, matching the existing ContactIdentifier domain constraint.")
+    @path contactIdentifier: UuidV7,
+    @body body: ReplyContactRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management administrator.")
   listContacts(
