@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Command\ReplyContact;
 
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\SiteManagementContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -22,6 +23,7 @@ readonly class ReplyContactAction
     public function __construct(
         private ReplyContactInterface $replyContact,
         private ActorContext $actorContext,
+        private SiteManagementContext $siteManagementContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -38,7 +40,7 @@ readonly class ReplyContactAction
             $this->replyContact->process(
                 new ReplyContactInput(
                     new ContactIdentifier($request->contactIdentifier()),
-                    $this->actorContext->identityIdentifier,
+                    $this->siteManagementContext->principalIdentifier,
                     $request->content(),
                 ),
             );
