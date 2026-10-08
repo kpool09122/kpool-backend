@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ListContactsInput implements ListContactsInputPort
 {
@@ -15,7 +16,7 @@ readonly class ListContactsInput implements ListContactsInputPort
     private int $perPage;
 
     public function __construct(
-        private IdentityIdentifier $requesterIdentityIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
         private ?IdentityIdentifier $targetIdentityIdentifier,
         private ?bool $hasReply,
         ?int $perPage = null,
@@ -32,9 +33,9 @@ readonly class ListContactsInput implements ListContactsInputPort
         $this->perPage = $perPage ?? self::DEFAULT_PER_PAGE;
     }
 
-    public function requesterIdentityIdentifier(): IdentityIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->requesterIdentityIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function targetIdentityIdentifier(): ?IdentityIdentifier

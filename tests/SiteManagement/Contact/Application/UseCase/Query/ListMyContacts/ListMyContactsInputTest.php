@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts;
 
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInput;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ListMyContactsInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $input = new ListMyContactsInput($identityIdentifier);
+        $input = new ListMyContactsInput($principalIdentifier);
 
-        $this->assertSame($identityIdentifier, $input->identityIdentifier());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

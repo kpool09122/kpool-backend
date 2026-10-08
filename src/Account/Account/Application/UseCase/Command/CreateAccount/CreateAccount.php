@@ -8,12 +8,14 @@ use Source\Account\Account\Application\Exception\AccountEmailConflictException;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Event\PrincipalCreated;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\ContactAddress;
 
 readonly class CreateAccount implements CreateAccountInterface
@@ -29,6 +31,7 @@ readonly class CreateAccount implements CreateAccountInterface
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -78,6 +81,7 @@ readonly class CreateAccount implements CreateAccountInterface
                 $account->accountIdentifier(),
             );
             $this->principalRepository->save($principal);
+            $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
             $ownerPrincipalGroup->addMember($principal->principalIdentifier());
         }
 

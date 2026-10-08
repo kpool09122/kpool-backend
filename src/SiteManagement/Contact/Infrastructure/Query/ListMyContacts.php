@@ -8,16 +8,32 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsOutputPort;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use UnexpectedValueException;
 
 readonly class ListMyContacts implements ListMyContactsInterface
 {
+    public function __construct(private PrincipalRepositoryInterface $principalRepository, private PolicyEvaluatorInterface $policyEvaluator)
+    {
+    }
+
     public function process(ListMyContactsInputPort $input, ListMyContactsOutputPort $output): void
     {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->identityIdentifier()))) {
+            throw new UnauthorizedException();
+        }
+
         $contacts = ContactModel::query()
             ->select([
                 'id',
@@ -35,10 +51,17 @@ readonly class ListMyContacts implements ListMyContactsInterface
                         ->orderBy('id');
                 },
             ])
-            ->where('identity_identifier', (string) $input->identityIdentifier())
+            ->where('identity_identifier', (string) $principal->identityIdentifier())
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
+
+        foreach ($contacts as $contact) {
+            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier((string) $contact->identity_identifier);
+            if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
+                throw new UnauthorizedException();
+            }
+        }
 
         $contacts = $contacts
             ->map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(

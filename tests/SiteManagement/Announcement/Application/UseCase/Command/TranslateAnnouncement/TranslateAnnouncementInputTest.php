@@ -6,7 +6,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\Translat
 
 use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementInput;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -19,10 +19,10 @@ class TranslateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $input = new TranslateAnnouncementInput(
-            $userIdentifier,
+            $principalIdentifier,
             $announcementIdentifier,
         );
         $this->assertSame((string)$announcementIdentifier, (string)$input->announcementIdentifier());

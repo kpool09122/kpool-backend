@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class GetMyContactDetailInput implements GetMyContactDetailInputPort
 {
     public function __construct(
-        private IdentityIdentifier $identityIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
         private ContactIdentifier $contactIdentifier,
     ) {
     }
 
-    public function identityIdentifier(): IdentityIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->identityIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function contactIdentifier(): ContactIdentifier

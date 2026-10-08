@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Query\ListContactsByIdentity;
 
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\SiteManagementContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,7 @@ readonly class ListContactsByIdentityAction
     public function __construct(
         private ListContactsByIdentityInterface $listContactsByIdentity,
         private ActorContext $actorContext,
+        private SiteManagementContext $siteManagementContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -31,7 +33,7 @@ readonly class ListContactsByIdentityAction
         try {
             $output = new ListContactsByIdentityOutput();
             $this->listContactsByIdentity->process(new ListContactsByIdentityInput(
-                $this->actorContext->identityIdentifier,
+                $this->siteManagementContext->principalIdentifier,
                 new IdentityIdentifier($request->identityIdentifier()),
             ), $output);
         } catch (UnauthorizedException $e) {

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+
+
 use Application\Http\Context\AuthContextCache;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -11,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class TestAccountSeeder extends Seeder
 {
@@ -60,6 +66,12 @@ class TestAccountSeeder extends Seeder
         foreach (self::ACCOUNTS as $account) {
             $this->createTestAccount($account, $ownerRoleId, $now);
         }
+        DB::table('account_principals')->orderBy('id')->each(static function (object $principal): void {
+            app(ProvisionPrincipalInterface::class)->process(
+                new ProvisionPrincipalInput(new IdentityIdentifier($principal->identity_id), new AccountIdentifier($principal->account_id)),
+                new ProvisionPrincipalOutput(),
+            );
+        });
     }
 
     /**

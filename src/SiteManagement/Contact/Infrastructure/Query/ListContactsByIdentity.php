@@ -8,25 +8,31 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityOutputPort;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use UnexpectedValueException;
 
 readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
     public function process(ListContactsByIdentityInputPort $input, ListContactsByIdentityOutputPort $output): void
     {
-        $requester = $this->userRepository->findByIdentityIdentifier($input->requesterIdentityIdentifier());
-        if (! $requester?->isAdmin()) {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
             throw new UnauthorizedException();
         }
 
@@ -48,6 +54,13 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
             ->groupBy('contact_id')
             ->map(static fn (Collection $replies): array => $replies->map(static fn (ContactReplyModel $reply): string => $reply->id)->values()->all())
             ->all();
+
+        foreach ($contacts as $contact) {
+            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier((string) $contact->identity_identifier);
+            if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
+                throw new UnauthorizedException();
+            }
+        }
 
         $contacts = $contacts
             ->map(fn (ContactModel $contact): ContactReadModel => new ContactReadModel(

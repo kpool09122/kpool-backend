@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\Translat
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -24,11 +25,14 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Entity\User;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -63,15 +67,15 @@ class TranslateAnnouncementTest extends TestCase
         $dummy = $this->createDummyTranslateAnnouncementData();
 
         $input = new TranslateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->jaAnnouncementIdentifier,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementRepository->shouldReceive('findDraftById')
@@ -97,7 +101,10 @@ class TranslateAnnouncementTest extends TestCase
             ->with($dummy->jaAnnouncement, Language::ENGLISH)
             ->andReturn($dummy->enAnnouncement);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_TRANSLATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(TranslationServiceInterface::class, $translationService);
         $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
@@ -118,23 +125,26 @@ class TranslateAnnouncementTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $dummy = $this->createDummyTranslateAnnouncementData(Role::NONE);
+        $dummy = $this->createDummyTranslateAnnouncementData();
 
         $input = new TranslateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->jaAnnouncementIdentifier,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_TRANSLATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(TranslationServiceInterface::class, $translationService);
         $translateAnnouncement = $this->app()->make(TranslateAnnouncementInterface::class);
@@ -153,15 +163,15 @@ class TranslateAnnouncementTest extends TestCase
         $dummy = $this->createDummyTranslateAnnouncementData();
 
         $input = new TranslateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->jaAnnouncementIdentifier,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementRepository->shouldReceive('findDraftById')
@@ -171,7 +181,10 @@ class TranslateAnnouncementTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_TRANSLATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(TranslationServiceInterface::class, $translationService);
 
@@ -181,20 +194,19 @@ class TranslateAnnouncementTest extends TestCase
     }
 
     /**
-     * @param Role $role
      * @return TranslateAnnouncementTestData
      */
-    private function createDummyTranslateAnnouncementData(Role $role = Role::ADMIN): TranslateAnnouncementTestData
+    private function createDummyTranslateAnnouncementData(): TranslateAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
-        $user = new User(
-            $userIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $role,
+            new AccountIdentifier('00000000-0000-7000-8000-000000000009'),
         );
 
         $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
@@ -294,8 +306,8 @@ For detailed instructions, please check the guide below.
         );
 
         return new TranslateAnnouncementTestData(
-            $userIdentifier,
-            $user,
+            $principalIdentifier,
+            $principal,
             $jaAnnouncementIdentifier,
             $jaAnnouncement,
             $koAnnouncementIdentifier,
@@ -309,8 +321,8 @@ For detailed instructions, please check the guide below.
 readonly class TranslateAnnouncementTestData
 {
     public function __construct(
-        public UserIdentifier $userIdentifier,
-        public User $user,
+        public PrincipalIdentifier $principalIdentifier,
+        public Principal $principal,
         public AnnouncementIdentifier $jaAnnouncementIdentifier,
         public DraftAnnouncement $jaAnnouncement,
         public AnnouncementIdentifier $koAnnouncementIdentifier,

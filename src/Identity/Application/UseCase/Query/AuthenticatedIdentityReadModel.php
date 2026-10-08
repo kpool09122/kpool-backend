@@ -8,6 +8,7 @@ readonly class AuthenticatedIdentityReadModel
 {
     /**
      * @param array<int, array<string, mixed>> $accountPolicies
+     * @param array<int, array{policyIdentifier: string, name: string, statements: array<int, array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: string|null}>}> $siteManagementPolicies
      * @param SwitchableAccountReadModel[] $switchableAccounts
      */
     public function __construct(
@@ -25,7 +26,20 @@ readonly class AuthenticatedIdentityReadModel
         private ?AuthenticatedAccountReferenceReadModel $originalAccount = null,
         private ?string $delegationIdentifier = null,
         private array $switchableAccounts = [],
+        private ?string $siteManagementPrincipalIdentifier = null,
+        private array $siteManagementPolicies = [],
     ) {
+    }
+
+    public function siteManagementPrincipalIdentifier(): ?string
+    {
+        return $this->siteManagementPrincipalIdentifier;
+    }
+
+    /** @return array<int, array{policyIdentifier: string, name: string, statements: array<int, array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: string|null}>}> */
+    public function siteManagementPolicies(): array
+    {
+        return $this->siteManagementPolicies;
     }
 
     public function identityIdentifier(): string
@@ -103,11 +117,13 @@ readonly class AuthenticatedIdentityReadModel
     }
 
     /**
-     * @return array{identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
+     * @return array{siteManagementPrincipalIdentifier: string|null, siteManagementPolicies: array<int, array<string, mixed>>, identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
      */
     public function toArray(): array
     {
         return [
+            'siteManagementPrincipalIdentifier' => $this->siteManagementPrincipalIdentifier,
+            'siteManagementPolicies' => $this->siteManagementPolicies,
             'identityIdentifier' => $this->identityIdentifier,
             'identityName' => $this->identityName,
             'email' => $this->email,

@@ -10,6 +10,9 @@ use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\Delegation as DelegationModel;
 use Application\Models\Identity\Identity as IdentityModel;
 use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnectionModel;
+use Application\Models\SiteManagement\Policy as SiteManagementPolicyModel;
+use Application\Models\SiteManagement\Principal as SiteManagementPrincipalModel;
+use Application\Models\SiteManagement\RolePolicyAttachment;
 use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -147,6 +150,11 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             }
         }
 
+        $siteManagementPrincipal = $accountContext === null ? null : SiteManagementPrincipalModel::query()
+            ->where('identity_id', (string) $input->identityIdentifier())
+            ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+            ->first();
+
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
             identityName: $model->identity_name,
@@ -167,7 +175,34 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                 ? null
                 : (string) $accountContext->delegationIdentifier(),
             switchableAccounts: $switchableAccounts,
+            siteManagementPrincipalIdentifier: $siteManagementPrincipal?->id,
+            siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
         );
+    }
+
+    /** @return array<int, array{policyIdentifier: string, name: string, statements: array<int, array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>, condition: string|null}>}> */
+    private function siteManagementPolicies(SiteManagementPrincipalModel $principal): array
+    {
+        $policyIdentifiers = RolePolicyAttachment::query()
+            ->select('policy_id')
+            ->join('site_management_principal_group_role_attachments as roles', 'roles.role_id', '=', 'site_management_role_policy_attachments.role_id')
+            ->join('site_management_principal_group_memberships as memberships', 'memberships.principal_group_id', '=', 'roles.principal_group_id')
+            ->join('site_management_principal_groups as groups', 'groups.id', '=', 'memberships.principal_group_id')
+            ->join('site_management_roles as role_models', 'role_models.id', '=', 'roles.role_id')
+            ->where('memberships.principal_id', $principal->id)
+            ->where('groups.account_id', $principal->account_id)
+            ->where(static fn ($query) => $query->whereNull('role_models.account_id')->orWhere('role_models.account_id', $principal->account_id));
+
+        return SiteManagementPolicyModel::query()
+            ->whereIn('id', $policyIdentifiers)
+            ->where(static fn ($query) => $query->whereNull('account_id')->orWhere('account_id', $principal->account_id))
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (SiteManagementPolicyModel $policy): array => [
+                'policyIdentifier' => $policy->id,
+                'name' => $policy->name,
+                'statements' => $policy->statementValues(),
+            ])->all();
     }
 
     private static function accountReference(AccountModel $account): AuthenticatedAccountReferenceReadModel

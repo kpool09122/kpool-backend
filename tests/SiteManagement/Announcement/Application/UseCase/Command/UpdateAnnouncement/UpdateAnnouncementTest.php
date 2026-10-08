@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\UpdateAn
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -22,11 +23,14 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Entity\User;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -59,7 +63,7 @@ class UpdateAnnouncementTest extends TestCase
         $dummy = $this->createDummyUpdateAnnouncementData();
 
         $input = new UpdateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->announcementIdentifier,
             $dummy->category,
             $dummy->title,
@@ -67,11 +71,11 @@ class UpdateAnnouncementTest extends TestCase
             $dummy->publishedDate,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementRepository->shouldReceive('saveDraft')
@@ -83,7 +87,10 @@ class UpdateAnnouncementTest extends TestCase
             ->with($dummy->announcementIdentifier)
             ->andReturn($dummy->draftAnnouncement);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_UPDATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $output = new UpdateAnnouncementOutput();
@@ -108,10 +115,10 @@ class UpdateAnnouncementTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $dummy = $this->createDummyUpdateAnnouncementData(Role::NONE);
+        $dummy = $this->createDummyUpdateAnnouncementData();
 
         $input = new UpdateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->announcementIdentifier,
             $dummy->category,
             $dummy->title,
@@ -119,15 +126,18 @@ class UpdateAnnouncementTest extends TestCase
             $dummy->publishedDate,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_UPDATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
         $updateAnnouncement->process($input, new UpdateAnnouncementOutput());
@@ -145,7 +155,7 @@ class UpdateAnnouncementTest extends TestCase
         $dummy = $this->createDummyUpdateAnnouncementData();
 
         $input = new UpdateAnnouncementInput(
-            $dummy->userIdentifier,
+            $dummy->principalIdentifier,
             $dummy->announcementIdentifier,
             $dummy->category,
             $dummy->title,
@@ -153,11 +163,11 @@ class UpdateAnnouncementTest extends TestCase
             $dummy->publishedDate,
         );
 
-        $userRepository = Mockery::mock(UserRepositoryInterface::class);
-        $userRepository->shouldReceive('findById')
-            ->with($dummy->userIdentifier)
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummy->principalIdentifier)
             ->once()
-            ->andReturn($dummy->user);
+            ->andReturn($dummy->principal);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $announcementRepository->shouldReceive('findDraftById')
@@ -165,7 +175,10 @@ class UpdateAnnouncementTest extends TestCase
             ->with($dummy->announcementIdentifier)
             ->andReturn(null);
 
-        $this->app()->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_UPDATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->expectException(AnnouncementNotFoundException::class);
         $updateAnnouncement = $this->app()->make(UpdateAnnouncementInterface::class);
@@ -173,12 +186,11 @@ class UpdateAnnouncementTest extends TestCase
     }
 
     /**
-     * @param Role $role
      * @return UpdateAnnouncementTestData
      */
-    private function createDummyUpdateAnnouncementData(Role $role = Role::ADMIN): UpdateAnnouncementTestData
+    private function createDummyUpdateAnnouncementData(): UpdateAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
@@ -208,10 +220,10 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
-        $user = new User(
-            $userIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $role,
+            new AccountIdentifier('00000000-0000-7000-8000-000000000009'),
         );
 
         $draftAnnouncement = new DraftAnnouncement(
@@ -225,14 +237,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
 
         return new UpdateAnnouncementTestData(
-            $userIdentifier,
+            $principalIdentifier,
             $announcementIdentifier,
             $language,
             $category,
             $title,
             $content,
             $publishedDate,
-            $user,
+            $principal,
             $draftAnnouncement,
         );
     }
@@ -241,14 +253,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 readonly class UpdateAnnouncementTestData
 {
     public function __construct(
-        public UserIdentifier $userIdentifier,
+        public PrincipalIdentifier $principalIdentifier,
         public AnnouncementIdentifier $announcementIdentifier,
         public Language $language,
         public Category $category,
         public Title $title,
         public Content $content,
         public PublishedDate $publishedDate,
-        public User $user,
+        public Principal $principal,
         public DraftAnnouncement $draftAnnouncement,
     ) {
     }

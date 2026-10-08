@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Application\Models\SiteManagement;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Override;
+
+/**
+ * @property string $id
+ * @property ?string $account_id
+ * @property string $name
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property-read Collection<int, RolePolicyAttachment> $policyAttachments
+ */
+#[Fillable([
+    'id',
+    'account_id',
+    'name',
+])]
+#[Table(name: 'site_management_roles', keyType: 'string')]
+class Role extends Model
+{
+    #[Override]
+    public $incrementing = false;
+
+    /** @return HasMany<RolePolicyAttachment, $this> */
+    public function policyAttachments(): HasMany
+    {
+        return $this->hasMany(RolePolicyAttachment::class, 'role_id', 'id');
+    }
+}

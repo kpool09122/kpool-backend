@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Query\GetContactDetail;
 
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\SiteManagementContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -24,8 +25,8 @@ readonly class GetContactDetailAction
 {
     public function __construct(
         private GetContactDetailInterface $getContactDetail,
+        private SiteManagementContext $siteManagementContext,
         private ActorContext $actorContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }
@@ -41,7 +42,7 @@ readonly class GetContactDetailAction
             $output = new GetContactDetailOutput();
             $this->getContactDetail->process(
                 new GetContactDetailInput(
-                    $this->actorContext->identityIdentifier,
+                    $this->siteManagementContext->principalIdentifier,
                     new IdentityIdentifier($request->identityIdentifier()),
                     new ContactIdentifier($request->contactIdentifier()),
                 ),

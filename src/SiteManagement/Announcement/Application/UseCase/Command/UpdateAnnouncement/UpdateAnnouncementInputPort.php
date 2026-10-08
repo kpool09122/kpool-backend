@@ -9,11 +9,11 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface UpdateAnnouncementInputPort
 {
-    public function userIdentifier(): UserIdentifier;
+    public function principalIdentifier(): PrincipalIdentifier;
 
     public function announcementIdentifier(): AnnouncementIdentifier;
 

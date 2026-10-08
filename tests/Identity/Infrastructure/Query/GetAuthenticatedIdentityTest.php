@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Query;
 
 use Database\Seeders\AccountAuthorizationSeeder;
+use Database\Seeders\SiteManagementAuthorizationSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Group;
@@ -15,14 +16,56 @@ use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateAccountPrincipalGroup;
 use Tests\Helper\CreateIdentity;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class GetAuthenticatedIdentityTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testSitePoliciesUseCurrentAccountAndReturnGeneralAdminAndDeny(): void
+    {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identity);
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('set')->andReturn(true);
+
+        $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
+        $input = new GetAuthenticatedIdentityInput($identity);
+        $empty = $query->process($input);
+        $this->assertNull($empty->siteManagementPrincipalIdentifier());
+        $this->assertSame([], $empty->siteManagementPolicies());
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $account);
+        DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'identity_id' => (string) $identity, 'account_id' => (string) $account]);
+        $output = new ProvisionPrincipalOutput();
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $output);
+        $general = $query->process($input);
+        $principal = $output->principal();
+        $this->assertNotNull($principal);
+        $this->assertSame((string) $principal->principalIdentifier(), $general->siteManagementPrincipalIdentifier());
+        $this->assertSame('own_contact', $general->siteManagementPolicies()[0]['statements'][0]['condition']);
+        SiteManagementAuthorization::grantAdministrator($principal);
+        $admin = $query->process($input);
+        $this->assertCount(2, $admin->siteManagementPolicies());
+        // Change an attached policy to Deny; the response must retain the effect.
+        $id = $admin->siteManagementPolicies()[0]['policyIdentifier'];
+        DB::table('site_management_policies')->where('id', $id)->update(['statements' => json_encode([
+            ['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => null],
+        ])]);
+        $denied = $query->process($input);
+        $this->assertSame('deny', $denied->siteManagementPolicies()[0]['statements'][0]['effect']);
+        $this->assertSame($general->siteManagementPrincipalIdentifier(), $denied->siteManagementPrincipalIdentifier());
+    }
+
     #[Group('useDb')]
     public function testProcessReturnsAuthenticatedIdentity(): void
     {
@@ -298,6 +341,8 @@ class GetAuthenticatedIdentityTest extends TestCase
     #[Group('useDb')]
     public function testProcessReturnsDelegatedCurrentAndOriginalAccountContext(): void
     {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e101');
         $originalAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e102');
         $effectiveAccountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14e103');
@@ -345,7 +390,21 @@ class GetAuthenticatedIdentityTest extends TestCase
             (string) $effectiveAccountIdentifier,
         );
 
-        Redis::shouldReceive('get')->once()->andReturn(json_encode([
+        $ownerRoleId = DB::table('account_roles')->where('name', 'Owner')->value('id');
+        $this->assertIsString($ownerRoleId);
+        $effectiveGroup = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        CreateAccountPrincipalGroup::create($effectiveGroup, $effectiveAccountIdentifier, ['role_ids' => [$ownerRoleId]]);
+        DB::table('account_principal_group_memberships')->insert(['id' => StrTestHelper::generateUuid(), 'principal_group_id' => (string) $effectiveGroup, 'principal_id' => $effectivePrincipalIdentifier]);
+
+        $siteOutput = new ProvisionPrincipalOutput();
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identityIdentifier, $originalAccountIdentifier), $siteOutput);
+
+        $originalSitePrincipal = $siteOutput->principal();
+        $this->assertNotNull($originalSitePrincipal);
+        SiteManagementAuthorization::grantAdministrator($originalSitePrincipal);
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identityIdentifier, $effectiveAccountIdentifier), new ProvisionPrincipalOutput());
+
+        Redis::shouldReceive('get')->twice()->andReturn(null, json_encode([
             'originalIdentityIdentifier' => (string) $identityIdentifier,
             'originalAccountIdentifier' => (string) $originalAccountIdentifier,
             'originalPrincipalIdentifier' => $originalPrincipalIdentifier,
@@ -353,10 +412,21 @@ class GetAuthenticatedIdentityTest extends TestCase
             'effectivePrincipalIdentifier' => $effectivePrincipalIdentifier,
             'delegationIdentifier' => $delegationIdentifier,
         ], JSON_THROW_ON_ERROR));
-        Redis::shouldReceive('set')->never();
+        Redis::shouldReceive('set')->once();
 
-        $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
-            ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
+        $input = new GetAuthenticatedIdentityInput($identityIdentifier);
+        $before = $query->process($input);
+        $readModel = $query->process($input);
+        $this->assertSame((string) $originalAccountIdentifier, $before->accountIdentifier());
+        $this->assertSame($originalPrincipalIdentifier, $before->accountPrincipalIdentifier());
+        $this->assertSame($effectivePrincipalIdentifier, $readModel->accountPrincipalIdentifier());
+        $this->assertNotSame($before->accountPolicies(), $readModel->accountPolicies());
+        $this->assertNotNull($before->siteManagementPrincipalIdentifier());
+        $this->assertNotSame($before->siteManagementPrincipalIdentifier(), $readModel->siteManagementPrincipalIdentifier());
+        $this->assertNotSame($before->siteManagementPolicies(), $readModel->siteManagementPolicies());
+        $this->assertCount(1, $readModel->siteManagementPolicies());
+        $this->assertSame('own_contact', $readModel->siteManagementPolicies()[0]['statements'][0]['condition']);
 
         $this->assertSame((string) $effectiveAccountIdentifier, $readModel->accountIdentifier());
         $this->assertSame([

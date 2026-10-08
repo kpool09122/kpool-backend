@@ -6,7 +6,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\DeleteAn
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInput;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -19,13 +19,13 @@ class DeleteAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $input = new DeleteAnnouncementInput(
-            $userIdentifier,
+            $principalIdentifier,
             $translationSetIdentifier,
         );
-        $this->assertSame($userIdentifier, $input->userIdentifier());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame((string) $translationSetIdentifier, (string) $input->translationSetIdentifier());
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\SiteManagement\Contact\Query\ListContacts;
 
 use Application\Http\Context\ActorContext;
+use Application\Http\Context\SiteManagementContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,7 @@ readonly class ListContactsAction
     public function __construct(
         private ListContactsInterface $listContacts,
         private ActorContext $actorContext,
+        private SiteManagementContext $siteManagementContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -31,7 +33,7 @@ readonly class ListContactsAction
         try {
             $output = new ListContactsOutput();
             $this->listContacts->process(new ListContactsInput(
-                $this->actorContext->identityIdentifier,
+                $this->siteManagementContext->principalIdentifier,
                 $request->identityIdentifier() === null ? null : new IdentityIdentifier($request->identityIdentifier()),
                 $request->hasReply(),
                 $request->perPage(),

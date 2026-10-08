@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ListMyContactsInput implements ListMyContactsInputPort
 {
     public function __construct(
-        private IdentityIdentifier $identityIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
-    public function identityIdentifier(): IdentityIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->identityIdentifier;
+        return $this->principalIdentifier;
     }
 }

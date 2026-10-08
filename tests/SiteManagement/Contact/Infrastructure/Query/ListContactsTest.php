@@ -4,22 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Infrastructure\Query;
 
+use Database\Seeders\SiteManagementAuthorizationSeeder;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\ValueObject\Role;
-use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
-use Tests\Helper\CreateUser;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,7 +40,7 @@ class ListContactsTest extends TestCase
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         $target = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $older = StrTestHelper::generateUuid();
         $newer = StrTestHelper::generateUuid();
         $this->insertContact($older, (string) $target, 'older@example.com', '2026-08-15 10:00:00');
@@ -44,7 +48,7 @@ class ListContactsTest extends TestCase
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-17 10:00:00');
 
         $output = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, $target, null), $output);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, $target, null), $output);
 
         $this->assertSame([$newer, $older], array_column($output->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([[], []], array_column($output->toArray()['contacts'], 'replyIdentifiers'));
@@ -55,15 +59,17 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessRejectsNonAdmin(): void
+    public function testProcessRejectsContactWithoutViewPermission(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::NONE]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, false);
 
+        $target = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $this->insertContact(StrTestHelper::generateUuid(), (string) $target, 'denied@example.com', '2026-08-17 10:00:00');
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(ListContactsInterface::class)->process(
-            new ListContactsInput($requester, new IdentityIdentifier(StrTestHelper::generateUuid()), null),
+            new ListContactsInput($principalIdentifier, $target, null),
             new ListContactsOutput(),
         );
     }
@@ -73,7 +79,7 @@ class ListContactsTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $targetIdentityIdentifier = StrTestHelper::generateUuid();
         $identityContact = StrTestHelper::generateUuid();
         $anonymousContact = StrTestHelper::generateUuid();
@@ -81,7 +87,7 @@ class ListContactsTest extends TestCase
         $this->insertContact($anonymousContact, null, 'anonymous@example.com', '2026-08-16 10:00:00');
 
         $output = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $output);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, null), $output);
 
         $this->assertSame([$anonymousContact, $identityContact], array_column($output->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([null, $targetIdentityIdentifier], array_column($output->toArray()['contacts'], 'identityIdentifier'));
@@ -92,7 +98,7 @@ class ListContactsTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $first = StrTestHelper::generateUuid();
         $second = StrTestHelper::generateUuid();
         $third = StrTestHelper::generateUuid();
@@ -102,7 +108,7 @@ class ListContactsTest extends TestCase
 
         $output = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(
-            new ListContactsInput($requester, null, null, 2, 2),
+            new ListContactsInput($principalIdentifier, null, null, 2, 2),
             $output,
         );
 
@@ -120,7 +126,7 @@ class ListContactsTest extends TestCase
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
-        CreateUser::create(new UserIdentifier(StrTestHelper::generateUuid()), $requester, ['role' => Role::ADMIN]);
+        $principalIdentifier = SiteManagementAuthorization::bind($requester, true);
         $sentContact = StrTestHelper::generateUuid();
         $failedContact = StrTestHelper::generateUuid();
         $unrepliedContact = StrTestHelper::generateUuid();
@@ -137,23 +143,75 @@ class ListContactsTest extends TestCase
         $hasReplyOutput = new ListContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, true), $hasReplyOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, true), $hasReplyOutput);
 
-        $this->assertCount(4, DB::getQueryLog());
+        $this->assertCount(3, DB::getQueryLog());
         $this->assertSame([$sentContact], array_column($hasReplyOutput->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([[$sentReply, $laterReply]], array_column($hasReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
 
         $hasNoReplyOutput = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, false), $hasNoReplyOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, false), $hasNoReplyOutput);
 
         $this->assertSame([$failedContact, $unrepliedContact], array_column($hasNoReplyOutput->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([[], []], array_column($hasNoReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
 
         $allContactsOutput = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($requester, null, null), $allContactsOutput);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, null), $allContactsOutput);
 
         $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([[$sentReply, $laterReply], [], []], array_column($allContactsOutput->toArray()['contacts'], 'replyIdentifiers'));
+    }
+
+    #[Group('useDb')]
+    public function testRealAdminPolicyWithOwnContactDenyRejectsWholePageButAllowsOtherAndAnonymous(): void
+    {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
+        CreateAccount::create('00000000-0000-7000-8000-000000000009');
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identity);
+        $provision = new ProvisionPrincipalOutput();
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $provision);
+        $principal = $provision->principal();
+        $this->assertNotNull($principal);
+        $identifier = $principal->principalIdentifier();
+        $query = $this->app()->make(ListContactsInterface::class);
+
+        $empty = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, null, null), $empty);
+        $this->assertSame([], $empty->toArray()['contacts']);
+
+        $own = StrTestHelper::generateUuid();
+        $this->insertContact($own, (string) $identity, 'own@example.com', '2026-08-17 10:00:00');
+        $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-15 10:00:00');
+        $this->insertContact(StrTestHelper::generateUuid(), null, 'anonymous@example.com', '2026-08-16 10:00:00');
+        $ownContacts = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, $identity, null), $ownContacts);
+        $this->assertSame([$own], array_column($ownContacts->toArray()['contacts'], 'contactIdentifier'));
+
+        try {
+            $query->process(new ListContactsInput($identifier, null, null), new ListContactsOutput());
+            $this->fail('General policy must reject a page containing other owners');
+        } catch (UnauthorizedException) {
+        }
+        SiteManagementAuthorization::grantAdministrator($principal);
+        $allowed = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, null, null), $allowed);
+        $this->assertCount(3, $allowed->toArray()['contacts']);
+        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([
+            ['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact'],
+        ], JSON_THROW_ON_ERROR)]);
+
+        try {
+            $query->process(new ListContactsInput($identifier, null, null), new ListContactsOutput());
+            $this->fail('A denied contact must reject the whole page');
+        } catch (UnauthorizedException) {
+        }
+        DB::table('contacts')->where('id', $own)->delete();
+        $output = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, null, null), $output);
+        $this->assertCount(2, $output->toArray()['contacts']);
+        $this->assertSame(2, $output->toArray()['total']);
     }
 
     private function insertContact(string $id, ?string $identityIdentifier, string $email, string $createdAt): void

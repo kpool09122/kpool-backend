@@ -6,22 +6,27 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateA
 
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
 readonly class CreateAnnouncement implements CreateAnnouncementInterface
 {
     public function __construct(
         private DraftAnnouncementFactoryInterface $draftAnnouncementFactory,
         private AnnouncementRepositoryInterface   $announcementRepository,
-        private UserRepositoryInterface           $userRepository,
+        private PrincipalRepositoryInterface           $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
     public function process(CreateAnnouncementInputPort $input, CreateAnnouncementOutputPort $output): void
     {
-        $user = $this->userRepository->findById($input->userIdentifier());
-        if (! $user?->isAdmin()) {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::ANNOUNCEMENT_CREATE, new Resource(ResourceType::ANNOUNCEMENT))) {
             throw new UnauthorizedException();
         }
 
