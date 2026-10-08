@@ -1,9 +1,9 @@
 using TypeSpec.Http;
 using KPool.Common;
 
-@service(#{ title: "k-pool Site Management Public API" })
+@service(#{ title: "k-pool Site Management API" })
 @server("/api/site-management", "Laravel route prefix from bootstrap/app.php.")
-namespace KPool.SiteManagementPublicApi;
+namespace KPool.SiteManagementApi;
 
 @doc("Contact category accepted by the submit-contact endpoint.")
 enum ContactCategory {
@@ -136,6 +136,7 @@ model ReplyContactRequestBody {
 
 @route("/contacts")
 interface ContactListOperations {
+  @useAuth(SessionCookieAuth)
   @post
   @route("/{contactIdentifier}/replies")
   @doc("Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.")

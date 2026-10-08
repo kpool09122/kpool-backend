@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: k-pool Site Management Public API
+  title: k-pool Site Management API
   version: 0.0.0
 tags: []
 paths:
@@ -347,6 +347,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ReplyContactRequestBody'
+      security:
+        - SessionCookieAuth: []
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
@@ -661,6 +663,12 @@ components:
           type: string
           description: Inquiry details.
       description: Request body for submitting a contact inquiry.
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: k-pool_session
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
 servers:
   - url: /api/site-management
     description: Laravel route prefix from bootstrap/app.php.
