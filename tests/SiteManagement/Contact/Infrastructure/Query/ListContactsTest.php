@@ -59,15 +59,17 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessRejectsNonAdmin(): void
+    public function testProcessRejectsContactWithoutViewPermission(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
         $principalIdentifier = SiteManagementAuthorization::bind($requester, false);
 
+        $target = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $this->insertContact(StrTestHelper::generateUuid(), (string) $target, 'denied@example.com', '2026-08-17 10:00:00');
         $this->expectException(UnauthorizedException::class);
         $this->app()->make(ListContactsInterface::class)->process(
-            new ListContactsInput($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null),
+            new ListContactsInput($principalIdentifier, $target, null),
             new ListContactsOutput(),
         );
     }
@@ -175,16 +177,24 @@ class ListContactsTest extends TestCase
         $identifier = $principal->principalIdentifier();
         $query = $this->app()->make(ListContactsInterface::class);
 
+        $empty = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, null, null), $empty);
+        $this->assertSame([], $empty->toArray()['contacts']);
+
+        $own = StrTestHelper::generateUuid();
+        $this->insertContact($own, (string) $identity, 'own@example.com', '2026-08-17 10:00:00');
+        $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-15 10:00:00');
+        $this->insertContact(StrTestHelper::generateUuid(), null, 'anonymous@example.com', '2026-08-16 10:00:00');
+        $ownContacts = new ListContactsOutput();
+        $query->process(new ListContactsInput($identifier, $identity, null), $ownContacts);
+        $this->assertSame([$own], array_column($ownContacts->toArray()['contacts'], 'contactIdentifier'));
+
         try {
             $query->process(new ListContactsInput($identifier, null, null), new ListContactsOutput());
-            $this->fail('General policy must reject the administrative list');
+            $this->fail('General policy must reject a page containing other owners');
         } catch (UnauthorizedException) {
         }
         SiteManagementAuthorization::grantAdministrator($principal);
-        $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-15 10:00:00');
-        $this->insertContact(StrTestHelper::generateUuid(), null, 'anonymous@example.com', '2026-08-16 10:00:00');
-        $own = StrTestHelper::generateUuid();
-        $this->insertContact($own, (string) $identity, 'own@example.com', '2026-08-17 10:00:00');
         $allowed = new ListContactsOutput();
         $query->process(new ListContactsInput($identifier, null, null), $allowed);
         $this->assertCount(3, $allowed->toArray()['contacts']);

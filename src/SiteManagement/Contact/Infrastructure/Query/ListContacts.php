@@ -33,7 +33,7 @@ readonly class ListContacts implements ListContactsInterface
     public function process(ListContactsInputPort $input, ListContactsOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, null))) {
+        if ($principal === null) {
             throw new UnauthorizedException();
         }
 

@@ -32,10 +32,9 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
     public function process(ListContactsByIdentityInputPort $input, ListContactsByIdentityOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT))) {
+        if ($principal === null) {
             throw new UnauthorizedException();
         }
-
 
         $contacts = ContactModel::query()
             ->select(['id', 'identity_identifier', 'category', 'name', 'created_at'])
