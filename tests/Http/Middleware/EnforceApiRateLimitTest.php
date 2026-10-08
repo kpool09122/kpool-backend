@@ -43,7 +43,7 @@ class EnforceApiRateLimitTest extends TestCase
     public function testUnauthenticatedRequestsUseTheIpLimit(): void
     {
         $middleware = $this->middleware(new RateLimiter(new Repository(new ArrayStore())));
-        $request = Request::create('/api/wiki/wikis/ja', 'GET', server: ['REMOTE_ADDR' => '203.0.113.10']);
+        $request = Request::create('/api/v1/wiki/wikis/ja', 'GET', server: ['REMOTE_ADDR' => '203.0.113.10']);
 
         $response = $middleware->handle($request, static fn () => response('ok'), 'screen', 'query');
         $this->assertSame(200, $response->getStatusCode());
@@ -55,7 +55,7 @@ class EnforceApiRateLimitTest extends TestCase
     public function testAcceptedRequestRemainsCountedWhenTheActionFails(): void
     {
         $middleware = $this->middleware(new RateLimiter(new Repository(new ArrayStore())));
-        $request = Request::create('/api/site-management/contact/submit/v1', 'POST', server: [
+        $request = Request::create('/api/v1/site-management/contact/submit', 'POST', server: [
             'REMOTE_ADDR' => '203.0.113.20',
         ]);
 
@@ -80,7 +80,7 @@ class EnforceApiRateLimitTest extends TestCase
         $rateLimiter->shouldReceive('tooManyAttempts')->andThrow(new RedisException('Connection refused'));
 
         $middleware = $this->middleware($rateLimiter);
-        $request = Request::create('/api/wiki/wikis/ja', 'GET');
+        $request = Request::create('/api/v1/wiki/wikis/ja', 'GET');
 
         $this->expectException(RedisException::class);
         $middleware->handle($request, static function (): never {

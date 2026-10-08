@@ -41,13 +41,13 @@ class CompleteInitialSetupApiTest extends TestCase
         $router->aliasMiddleware('session', StartSession::class);
 
         Route::middleware(['api', 'session'])
-            ->prefix('api/account')
-            ->group(__DIR__ . '/../../../../routes/account_api.php');
+            ->prefix('api/v1/account')
+            ->group(__DIR__ . '/../../../../routes/v1/account_api.php');
     }
 
     public function testLegacyAccountCreationEndpointIsUnavailable(): void
     {
-        $this->postJson('/api/account/accounts', [
+        $this->postJson('/api/v1/account/accounts', [
             'email' => 'new@example.com',
             'accountName' => 'New account',
         ])->assertNotFound();
@@ -57,7 +57,7 @@ class CompleteInitialSetupApiTest extends TestCase
     {
         $this->authenticatePendingAccount();
 
-        $this->postJson('/api/account/accounts/setup', ['accountType' => 'invalid'])
+        $this->postJson('/api/v1/account/accounts/setup', ['accountType' => 'invalid'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['accountType']);
     }
@@ -66,7 +66,7 @@ class CompleteInitialSetupApiTest extends TestCase
     {
         [$accountIdentifier] = $this->authenticatePendingAccount();
 
-        $this->postJson('/api/account/accounts/setup', ['accountType' => 'corporation'])
+        $this->postJson('/api/v1/account/accounts/setup', ['accountType' => 'corporation'])
             ->assertNoContent();
         $this->assertDatabaseHas('accounts', [
             'id' => (string) $accountIdentifier,
@@ -74,7 +74,7 @@ class CompleteInitialSetupApiTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->postJson('/api/account/accounts/setup', ['accountType' => 'individual'])
+        $this->postJson('/api/v1/account/accounts/setup', ['accountType' => 'individual'])
             ->assertUnprocessable()
             ->assertJsonPath('code', 'account_setup_unavailable');
         $this->assertDatabaseHas('accounts', [
@@ -88,7 +88,7 @@ class CompleteInitialSetupApiTest extends TestCase
     {
         [$accountIdentifier] = $this->authenticatePendingAccount(status: 'suspended', type: 'individual');
 
-        $this->postJson('/api/account/accounts/setup', ['accountType' => 'corporation'])
+        $this->postJson('/api/v1/account/accounts/setup', ['accountType' => 'corporation'])
             ->assertUnprocessable()
             ->assertJsonPath('code', 'account_setup_unavailable');
         $this->assertDatabaseHas('accounts', [
@@ -115,7 +115,7 @@ class CompleteInitialSetupApiTest extends TestCase
         );
         $this->app()->instance(CompleteInitialSetupInterface::class, $useCase);
 
-        $this->postJson('/api/account/accounts/setup', ['accountType' => 'corporation'])
+        $this->postJson('/api/v1/account/accounts/setup', ['accountType' => 'corporation'])
             ->assertInternalServerError();
         $this->assertDatabaseHas('accounts', [
             'id' => (string) $accountIdentifier,

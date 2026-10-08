@@ -1,7 +1,7 @@
 using TypeSpec.Http;
 using KPool.Common;
 
-namespace KPool.WikiPrivateApi;
+namespace KPool.WikiApi;
 
 @doc("Request body for uploading an image.")
 model UploadImageRequestBody {

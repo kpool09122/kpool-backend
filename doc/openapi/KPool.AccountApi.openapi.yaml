@@ -3044,6 +3044,6 @@ components:
           description: Optional reviewer detail.
       description: Verification rejection reason.
 servers:
-  - url: /api/account
+  - url: /api/v1/account
     description: Laravel route prefix from bootstrap/app.php.
     variables: {}

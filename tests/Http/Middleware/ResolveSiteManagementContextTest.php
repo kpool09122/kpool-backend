@@ -40,7 +40,7 @@ class ResolveSiteManagementContextTest extends TestCase
         Redis::shouldReceive('setex')->never();
 
         $response = $this->app()->make(ResolveSiteManagementContext::class)->handle(
-            Request::create('/api/site-management/contacts'),
+            Request::create('/api/v1/site-management/contacts'),
             function () use ($principalId) {
                 $this->assertSame($principalId, (string) $this->app()->make(SiteManagementContext::class)->principalIdentifier);
 
@@ -64,7 +64,7 @@ class ResolveSiteManagementContextTest extends TestCase
         Redis::shouldReceive('setex')->once();
 
         $this->app()->make(ResolveSiteManagementContext::class)->handle(
-            Request::create('/api/site-management/contacts'),
+            Request::create('/api/v1/site-management/contacts'),
             function () use ($principalId) {
                 $this->assertSame($principalId, $this->app()->make(SiteManagementContext::class)->principalIdentifier);
 
@@ -87,7 +87,7 @@ class ResolveSiteManagementContextTest extends TestCase
         $this->expectException(ForbiddenHttpException::class);
 
         $this->app()->make(ResolveSiteManagementContext::class)->handle(
-            Request::create('/api/site-management/contacts'),
+            Request::create('/api/v1/site-management/contacts'),
             fn () => throw new RuntimeException('Next handler must not be called'),
         );
     }

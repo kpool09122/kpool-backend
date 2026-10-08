@@ -51,7 +51,7 @@ class ResolveWikiContextTest extends TestCase
         $accountResolver = app(AccountResolver::class);
 
         $middleware = new ResolveWikiContext(new PrincipalResolver($repository), $accountResolver);
-        $middleware->handle(Request::create('/api/wiki/test', 'GET'), fn () => response('ok'));
+        $middleware->handle(Request::create('/api/v1/wiki/test', 'GET'), fn () => response('ok'));
 
         $this->assertSame($wikiPrincipalId, app(WikiContext::class)->principalIdentifier);
         $this->assertSame($accountContext, app(AccountContext::class));

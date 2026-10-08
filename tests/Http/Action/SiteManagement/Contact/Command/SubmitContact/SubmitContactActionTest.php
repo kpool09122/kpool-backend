@@ -11,6 +11,7 @@ use Application\Http\Context\AccountResolver;
 use Application\Http\Context\SiteManagementPrincipalResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\NullLogger;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -25,6 +26,21 @@ use Tests\TestCase;
 
 class SubmitContactActionTest extends TestCase
 {
+    public function testInvalidContactSubmissionReturnsValidationErrorsWithoutInvokingUseCase(): void
+    {
+        $submitContact = $this->createMock(SubmitContactInterface::class);
+        $submitContact->expects($this->never())->method('process');
+        $this->app()->instance(SubmitContactInterface::class, $submitContact);
+        Route::post('/api/v1/site-management/contact/submit', SubmitContactAction::class);
+
+        $this->postJson('/api/v1/site-management/contact/submit', [
+            'category' => 0,
+            'name' => '',
+            'email' => 'not-an-email',
+            'content' => str_repeat('x', 513),
+        ])->assertUnprocessable()->assertJsonValidationErrors(['category', 'name', 'email', 'content']);
+    }
+
     /** @return array<string, array{bool}> */
     public static function authenticationCases(): array
     {
@@ -65,18 +81,19 @@ class SubmitContactActionTest extends TestCase
                 ));
             },
         );
-        $request = SubmitContactRequest::create('/api/site-management/contact/submit/v1', 'POST', [
+        $request = SubmitContactRequest::create('/api/v1/site-management/contact/submit', 'POST', [
             'category' => 1,
             'name' => 'User',
             'email' => 'user@example.com',
             'content' => 'Inquiry',
             'principalIdentifier' => StrTestHelper::generateUuid(),
         ]);
-        $response = (new SubmitContactAction($submitContact, new NullLogger(), $accountResolver, $siteManagementPrincipalResolver))($request);
-        $this->assertSame(201, $response->getStatusCode());
-        $body = $response->getData(true);
-        $this->assertIsArray($body);
-        $this->assertSame($principalIdentifier === null ? null : (string) $principalIdentifier, $body['principalIdentifier']);
-        $this->assertArrayNotHasKey('identityIdentifier', $body);
+        $action = new SubmitContactAction($submitContact, new NullLogger(), $accountResolver, $siteManagementPrincipalResolver);
+        $this->app()->instance(SubmitContactAction::class, $action);
+        Route::post('/api/v1/site-management/contact/submit', SubmitContactAction::class);
+        $this->postJson('/api/v1/site-management/contact/submit', $request->all())
+            ->assertCreated()
+            ->assertJsonPath('principalIdentifier', $principalIdentifier === null ? null : (string) $principalIdentifier)
+            ->assertJsonMissingPath('identityIdentifier');
     }
 }

@@ -1,7 +1,7 @@
 using TypeSpec.Http;
 using KPool.Common;
 
-namespace KPool.WikiPrivateApi;
+namespace KPool.WikiApi;
 
 @doc("Input payload for a single video link.")
 model VideoLinkInput {

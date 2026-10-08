@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 readonly class EnsureAccountActive
 {
     private const array EXEMPT_PATHS = [
-        'api/identity/auth/me',
-        'api/identity/auth/logout',
-        'api/account/accounts/setup',
+        'api/v1/identity/auth/me',
+        'api/v1/identity/auth/logout',
+        'api/v1/account/accounts/setup',
     ];
 
     public function __construct(
@@ -77,7 +77,7 @@ readonly class EnsureAccountActive
     private function isReturningToOriginalAccount(Request $request): bool
     {
         return $request->isMethod('POST')
-            && $request->path() === 'api/account/accounts/switch'
+            && $request->path() === 'api/v1/account/accounts/switch'
             && $request->input('delegationIdentifier') === null;
     }
 }

@@ -42,7 +42,7 @@ class StartApplicationSessionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once()->with('Failed to save session after committed identity withdrawal.', ['exception' => $failure]);
         $middleware = $this->middleware($failure, $logger);
-        $request = Request::create('/api/identity/identities/me', 'DELETE');
+        $request = Request::create('/api/v1/identity/identities/me', 'DELETE');
         /** @var WithdrawFromServiceInterface&MockInterface $withdraw */
         $withdraw = Mockery::mock(WithdrawFromServiceInterface::class);
         $withdraw->shouldReceive('process')->once()->with(Mockery::on(static fn (WithdrawFromServiceInputPort $input): bool => $input->identityIdentifier() === $identityIdentifier), Mockery::type(WithdrawFromServiceOutputPort::class))->andReturnUsing(static function () use ($identityIdentifier): void {
@@ -70,7 +70,7 @@ class StartApplicationSessionTest extends TestCase
     public function testOrdinaryRouteSessionSaveFailureStillThrows(): void
     {
         $failure = new RuntimeException('Ordinary route session storage failure');
-        $request = Request::create('/api/identity/auth/csrf-token', 'GET', server: ['HTTP_X_IDENTITY_WITHDRAWAL_COMMITTED' => 'true']);
+        $request = Request::create('/api/v1/identity/auth/csrf-token', 'GET', server: ['HTTP_X_IDENTITY_WITHDRAWAL_COMMITTED' => 'true']);
 
         try {
             (new Pipeline($this->app()))->send($request)->through([$this->middleware($failure, new NullLogger())])->then(static fn (): Response => response()->noContent());

@@ -30,7 +30,7 @@ declare -a GENERATION_TARGETS=(
   "KPool.IdentityApi.openapi.yaml:identity-api.ts:identityApi"
   "KPool.MonetizationApi.openapi.yaml:monetization-api.ts:monetizationApi"
   "KPool.WebhookApi.openapi.yaml:webhook-api.ts:webhookApi"
-  "KPool.WikiPrivateApi.openapi.yaml:wiki-private-api.ts:wikiPrivateApi"
+  "KPool.WikiApi.openapi.yaml:wiki-private-api.ts:wikiPrivateApi"
 )
 
 for target in "${GENERATION_TARGETS[@]}"; do

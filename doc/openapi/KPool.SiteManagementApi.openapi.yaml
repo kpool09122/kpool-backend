@@ -123,17 +123,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /contact/submit/v{version}:
+  /contact/submit:
     post:
       operationId: ContactOperations_submitContact
       description: Submit a contact inquiry.
-      parameters:
-        - name: version
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
+      parameters: []
       responses:
         '201':
           description: Response returned when a contact inquiry is created.
@@ -672,8 +666,8 @@ components:
       type: apiKey
       in: cookie
       name: k-pool_session
-      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/v1/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
 servers:
-  - url: /api/site-management
+  - url: /api/v1/site-management
     description: Laravel route prefix from bootstrap/app.php.
     variables: {}

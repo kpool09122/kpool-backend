@@ -23,7 +23,7 @@ class ListContactsRequestTest extends TestCase
     #[DataProvider('validHasReplyProvider')]
     public function testHasReplyAcceptsNumericQueryValues(string $value, bool $expected): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts?hasReply='.$value);
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts?hasReply='.$value);
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->passes());
         $this->assertSame($expected, $request->hasReply());
@@ -44,14 +44,14 @@ class ListContactsRequestTest extends TestCase
     #[DataProvider('invalidHasReplyProvider')]
     public function testHasReplyRejectsValuesOtherThanNumericQueryStrings(mixed $value): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts', 'GET', ['hasReply' => $value]);
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts', 'GET', ['hasReply' => $value]);
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->fails());
     }
 
     public function testHasReplyMayBeOmitted(): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts');
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts');
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->passes());
         $this->assertNull($request->hasReply());
@@ -59,7 +59,7 @@ class ListContactsRequestTest extends TestCase
 
     public function testPaginationValuesAreReadFromQuery(): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts?perPage=20&page=3');
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts?perPage=20&page=3');
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->passes());
         $this->assertSame(20, $request->perPage());
@@ -68,7 +68,7 @@ class ListContactsRequestTest extends TestCase
 
     public function testPaginationValuesAreOptional(): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts');
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts');
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->passes());
         $this->assertNull($request->perPage());
@@ -88,7 +88,7 @@ class ListContactsRequestTest extends TestCase
     #[DataProvider('invalidPaginationProvider')]
     public function testPaginationRejectsOutOfRangeQueryValues(string $perPage, string $page): void
     {
-        $request = ListContactsRequest::create('/api/site-management/contacts?perPage='.$perPage.'&page='.$page);
+        $request = ListContactsRequest::create('/api/v1/site-management/contacts?perPage='.$perPage.'&page='.$page);
 
         $this->assertTrue(Validator::make($request->query(), $request->rules())->fails());
     }

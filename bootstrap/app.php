@@ -39,22 +39,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         health: '/health',
         then: function () {
-            Route::middleware(['api', 'session'])
-                ->prefix('api/identity')
-                ->group(base_path('routes/identity_api.php'));
-            Route::middleware(['api', 'session', 'auth.api', 'resolve.actor'])
-                ->prefix('api/monetization')
-                ->group(base_path('routes/monetization_api.php'));
-            Route::middleware(['api', 'session'])
-                ->prefix('api/account')
-                ->group(base_path('routes/account_api.php'));
-            Route::middleware(['api', 'session'])
-                ->prefix('api/site-management')
-                ->group(base_path('routes/site_management_api.php'));
-            //            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
-            Route::middleware(['api', 'session'])
-                ->prefix('api/wiki')
-                ->group(base_path('routes/wiki_api.php'));
+            Route::prefix('api/v1')->middleware(['api', 'session'])->group(function () {
+                Route::prefix('identity')->group(base_path('routes/v1/identity_api.php'));
+                Route::prefix('monetization')->middleware(['auth.api', 'resolve.actor'])
+                    ->group(base_path('routes/v1/monetization_api.php'));
+                Route::prefix('account')->group(base_path('routes/v1/account_api.php'));
+                Route::prefix('site-management')->group(base_path('routes/v1/site_management_api.php'));
+                Route::prefix('wiki')->group(base_path('routes/v1/wiki_api.php'));
+            });
             Route::prefix('webhook')
                 ->group(base_path('routes/webhook.php'));
         },

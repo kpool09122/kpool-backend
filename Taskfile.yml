@@ -139,12 +139,12 @@ tasks:
       - docker-compose down -v --remove-orphans
 
   curl:
-    desc: "Call a Laravel API endpoint from the host network. Usage: task curl path=/api/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
+    desc: "Call a Laravel API endpoint from the host network. Usage: task curl path=/api/v1/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
     cmds:
       - 'curl -i -X {{.method | default "GET"}} "http://localhost:{{.APP_PORT | default "8080"}}{{.path}}"{{if .data}} -H "Content-Type: application/json" --data "{{.data}}"{{end}}'
 
   curl-from-docker:
-    desc: "Call the API from another container on the shared Docker network. Usage: task curl-from-docker path=/api/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
+    desc: "Call the API from another container on the shared Docker network. Usage: task curl-from-docker path=/api/v1/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
     cmds:
       - 'docker run --rm --network kpool-network curlimages/curl:8.13.0 -i -X {{.method | default "GET"}} "http://nginx{{.path}}"{{if .data}} -H "Content-Type: application/json" --data "{{.data}}"{{end}}'
 

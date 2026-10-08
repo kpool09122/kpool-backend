@@ -38,8 +38,8 @@ class EnsureAccountActiveTest extends TestCase
         $cache->shouldReceive('resolveAccount')->once()->andReturn($this->context($effectiveStatus, $originalStatus));
         $middleware = new EnsureAccountActive($cache, $this->accountResolver());
         $request = $returnToOriginal
-            ? Request::create('/api/account/accounts/switch', 'POST', ['delegationIdentifier' => null])
-            : Request::create('/api/wiki/images', 'GET');
+            ? Request::create('/api/v1/account/accounts/switch', 'POST', ['delegationIdentifier' => null])
+            : Request::create('/api/v1/wiki/images', 'GET');
         $nextCalled = false;
         $shouldProceed = $expectedError === null;
 
@@ -92,7 +92,7 @@ class EnsureAccountActiveTest extends TestCase
 
         $this->expectException(ForbiddenHttpException::class);
         $middleware->handle(
-            Request::create('/api/account/accounts/switch', 'POST', ['delegationIdentifier' => StrTestHelper::generateUuid()]),
+            Request::create('/api/v1/account/accounts/switch', 'POST', ['delegationIdentifier' => StrTestHelper::generateUuid()]),
             function () {
                 $this->fail('The request must not reach the action.');
             },
@@ -108,7 +108,7 @@ class EnsureAccountActiveTest extends TestCase
         $middleware = new EnsureAccountActive($cache, $this->accountResolver());
 
         $response = $middleware->handle(
-            Request::create('/api/wiki/wiki/create', 'POST'),
+            Request::create('/api/v1/wiki/wiki/create', 'POST'),
             fn () => response('ok'),
         );
 
@@ -126,7 +126,7 @@ class EnsureAccountActiveTest extends TestCase
         $middleware = new EnsureAccountActive($cache, $this->accountResolver());
 
         try {
-            $middleware->handle(Request::create('/api/account/accounts/switch', 'POST'), fn () => response('unexpected'));
+            $middleware->handle(Request::create('/api/v1/account/accounts/switch', 'POST'), fn () => response('unexpected'));
             $this->fail('ForbiddenHttpException was not thrown.');
         } catch (ForbiddenHttpException $exception) {
             $this->assertSame('account_setup_required', $exception->toProblemDetails()['code']);
@@ -142,7 +142,7 @@ class EnsureAccountActiveTest extends TestCase
         $middleware = new EnsureAccountActive($cache, $this->accountResolver());
 
         try {
-            $middleware->handle(Request::create('/api/wiki/images', 'GET'), fn () => response('unexpected'));
+            $middleware->handle(Request::create('/api/v1/wiki/images', 'GET'), fn () => response('unexpected'));
             $this->fail('ForbiddenHttpException was not thrown.');
         } catch (ForbiddenHttpException $exception) {
             $this->assertSame('account_suspended', $exception->toProblemDetails()['code']);
@@ -166,9 +166,9 @@ class EnsureAccountActiveTest extends TestCase
     public static function exemptPathProvider(): array
     {
         return [
-            'me' => ['/api/identity/auth/me'],
-            'setup' => ['/api/account/accounts/setup'],
-            'logout' => ['/api/identity/auth/logout'],
+            'me' => ['/api/v1/identity/auth/me'],
+            'setup' => ['/api/v1/account/accounts/setup'],
+            'logout' => ['/api/v1/identity/auth/logout'],
         ];
     }
 
