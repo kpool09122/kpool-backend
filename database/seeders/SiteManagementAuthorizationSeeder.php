@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
-use Source\SiteManagement\Principal\Domain\Entity\Role;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
@@ -16,8 +15,8 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 
 class SiteManagementAuthorizationSeeder extends Seeder
 {
-    public const string GENERAL_ROLE = Role::GENERAL;
-    public const string ADMIN_ROLE = Role::ADMINISTRATOR;
+    public const string GENERAL_ROLE = '69200000-0000-7000-8000-000000000001';
+    public const string ADMIN_ROLE = '69200000-0000-7000-8000-000000000002';
 
     public function run(): void
     {

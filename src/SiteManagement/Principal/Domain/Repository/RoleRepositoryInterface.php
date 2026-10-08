@@ -11,6 +11,8 @@ interface RoleRepositoryInterface
 {
     public function save(Role $role): void;
 
+    public function findSystemByName(string $name): ?Role;
+
     /** @param RoleIdentifier[] $identifiers
      * @return Role[] */
     public function findByIds(array $identifiers): array;

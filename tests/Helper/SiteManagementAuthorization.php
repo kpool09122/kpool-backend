@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Helper;
 
+use Database\Seeders\SiteManagementAuthorizationSeeder;
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
-use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
-use Source\SiteManagement\Principal\Domain\Entity\Role;
 use Source\SiteManagement\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -36,8 +35,8 @@ final class SiteManagementAuthorization
     public static function grantAdministrator(Principal $principal): void
     {
         $group = app(PrincipalGroupFactoryInterface::class)->create(
-            PrincipalGroup::ADMINISTRATOR,
-            [new RoleIdentifier(Role::ADMINISTRATOR)],
+            'administrator',
+            [new RoleIdentifier(SiteManagementAuthorizationSeeder::ADMIN_ROLE)],
             $principal->accountIdentifier(),
         );
         $group->addMember($principal->principalIdentifier());

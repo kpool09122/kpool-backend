@@ -23,20 +23,42 @@ class RoleRepository implements RoleRepositoryInterface
         }
     }
 
+    public function findSystemByName(string $name): ?Role
+    {
+        $model = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->whereNull('account_id')
+            ->where('name', $name)
+            ->first();
+
+        return $model === null ? null : $this->toDomainEntity($model);
+    }
+
     /** @param RoleIdentifier[] $identifiers
      * @return Role[] */
     public function findByIds(array $identifiers): array
     {
         if ($identifiers === []) {
             return [];
-        } $models = RoleEloquent::query()->whereIn("id", array_map(static fn (RoleIdentifier $id): string => (string) $id, $identifiers))->get();
-        $attachments = AttachmentEloquent::query()->whereIn('role_id', $models->pluck('id'))->get();
-        $result = [];
-        foreach ($models as $model) {
-            $entity = new Role(new RoleIdentifier($model->id), $model->name, $attachments->where('role_id', $model->id)->map(static fn (AttachmentEloquent $attachment): PolicyIdentifier => new PolicyIdentifier($attachment->policy_id))->all(), $model->account_id === null ? null : new AccountIdentifier($model->account_id));
-            $result[] = $entity;
         }
 
-        return $result;
+        return RoleEloquent::query()
+            ->with('policyAttachments')
+            ->whereIn('id', array_map(static fn (RoleIdentifier $id): string => (string) $id, $identifiers))
+            ->get()
+            ->map(fn (RoleEloquent $model): Role => $this->toDomainEntity($model))
+            ->all();
+    }
+
+    private function toDomainEntity(RoleEloquent $model): Role
+    {
+        return new Role(
+            new RoleIdentifier($model->id),
+            $model->name,
+            $model->policyAttachments
+                ->map(static fn (AttachmentEloquent $attachment): PolicyIdentifier => new PolicyIdentifier($attachment->policy_id))
+                ->all(),
+            $model->account_id === null ? null : new AccountIdentifier($model->account_id),
+        );
     }
 }

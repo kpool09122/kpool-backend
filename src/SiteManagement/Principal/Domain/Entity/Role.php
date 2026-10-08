@@ -10,9 +10,6 @@ use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
 
 class Role
 {
-    public const string GENERAL = '69200000-0000-7000-8000-000000000001';
-    public const string ADMINISTRATOR = '69200000-0000-7000-8000-000000000002';
-
     /** @param PolicyIdentifier[] $policies */
     public function __construct(
         private readonly RoleIdentifier $roleIdentifier,

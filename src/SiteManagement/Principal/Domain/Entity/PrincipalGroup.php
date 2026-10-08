@@ -11,9 +11,6 @@ use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
 
 class PrincipalGroup
 {
-    public const string GENERAL = 'general';
-    public const string ADMINISTRATOR = 'administrator';
-
     /** @var PrincipalIdentifier[] */
     private array $members = [];
 
