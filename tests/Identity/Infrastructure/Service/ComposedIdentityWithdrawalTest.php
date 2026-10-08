@@ -29,6 +29,9 @@ use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -39,6 +42,12 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ComposedIdentityWithdrawalTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+    }
+
     public function testRealListenersArchiveAndDeleteTheEntireSubjectAndPreserveAnotherSubject(): void
     {
         $subject = $this->createSubject();
@@ -53,6 +62,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
             $this->assertDatabaseHas($table, ['id' => $other[$table]]);
         }
         $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_id' => $subject['site_management_principals']]);
+        $this->assertDatabaseMissing('site_management_principal_groups', ['account_id' => $subject['accounts']]);
+        $this->assertDatabaseHas('site_management_principal_groups', ['account_id' => $other['accounts']]);
         $this->assertSiteHistory($subject, $history);
         $archive = DB::table('archived_identities')->where('identity_id', $subject['identities'])->first();
         $this->assertNotNull($archive);
@@ -109,7 +120,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
             foreach ($subject as $table => $id) {
                 $this->assertDatabaseHas($table, ['id' => $id]);
             }
-            $this->assertDatabaseHas('site_management_principal_group_memberships', ['principal_id' => $subject['site_management_principals'], 'principal_group_id' => SiteManagementAuthorizationSeeder::GENERAL_GROUP]);
+            $this->assertDatabaseHas('site_management_principal_group_memberships', ['principal_id' => $subject['site_management_principals']]);
+            $this->assertDatabaseHas('site_management_principal_groups', ['account_id' => $subject['accounts']]);
             $this->assertSiteHistory($subject, $history);
             foreach (['archived_identities', 'archived_accounts', 'archived_principals'] as $table) {
                 $this->assertDatabaseCount($table, 0);
@@ -131,7 +143,11 @@ class ComposedIdentityWithdrawalTest extends TestCase
         CreatePrincipal::create(new PrincipalIdentifier($ids['wiki_principals']), $identityIdentifier, new AccountIdentifier($ids['accounts']));
         DB::table('passkey_users')->insert(['id' => $ids['passkey_users'], 'identity_id' => $ids['identities']]);
         DB::table('passkey_credentials')->insert(['id' => $ids['passkey_credentials'], 'passkey_user_id' => $ids['passkey_users'], 'credential_id' => $ids['passkey_credentials'], 'credential_source' => '{"private":"credential"}', 'backup_eligible' => false, 'backup_state' => false, 'display_name' => 'Private device']);
-        DB::table('site_management_principals')->insert(['id' => $ids['site_management_principals'], 'identity_id' => $ids['identities']]);
+        $output = new ProvisionPrincipalOutput();
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identityIdentifier, new AccountIdentifier($ids['accounts'])), $output);
+        $principal = $output->principal();
+        $this->assertNotNull($principal);
+        $ids['site_management_principals'] = (string) $principal->principalIdentifier();
 
         return $ids;
     }
@@ -141,8 +157,6 @@ class ComposedIdentityWithdrawalTest extends TestCase
      */
     private function createSiteHistory(array $subject): array
     {
-        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
-        DB::table('site_management_principal_group_memberships')->insert(['principal_id' => $subject['site_management_principals'], 'principal_group_id' => SiteManagementAuthorizationSeeder::GENERAL_GROUP]);
         $contact = StrTestHelper::generateUuid();
         $reply = StrTestHelper::generateUuid();
         DB::table('contacts')->insert(['id' => $contact, 'identity_identifier' => $subject['identities'], 'category' => 1, 'name' => 'History', 'email' => 'encrypted', 'content' => 'contact history', 'language' => 'ja']);
@@ -161,7 +175,6 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $this->assertDatabaseCount('site_management_roles', 2);
         $this->assertDatabaseCount('site_management_policies', 2);
         $this->assertDatabaseCount('site_management_role_policy_attachments', 2);
-        $this->assertDatabaseCount('site_management_principal_group_role_attachments', 2);
     }
 
     private function action(string $identityId): WithdrawFromServiceAction

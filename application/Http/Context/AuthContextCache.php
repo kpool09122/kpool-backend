@@ -11,11 +11,13 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier as SiteManagementPrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
 use Throwable;
 
@@ -25,6 +27,7 @@ class AuthContextCache
     private const string ACTOR_KEY_PREFIX = 'auth-context:actor:';
     private const string ACCOUNT_KEY_PREFIX = 'auth-context:account:';
     private const string WIKI_KEY_PREFIX = 'auth-context:wiki:';
+    private const string SITE_MANAGEMENT_KEY_PREFIX = 'auth-context:site-management:';
 
     public function __construct(private readonly LoggerInterface $logger)
     {
@@ -106,6 +109,27 @@ class AuthContextCache
         ]);
 
         return $context;
+    }
+
+    /** @param callable(): SiteManagementContext $dbResolver */
+    public function resolveSiteManagement(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier, callable $dbResolver): SiteManagementContext
+    {
+        $cached = $this->read(self::SITE_MANAGEMENT_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier);
+        if ($cached !== null && is_string($cached['principalIdentifier'] ?? null) && UuidValidator::isValid($cached['principalIdentifier'])) {
+            return new SiteManagementContext(new SiteManagementPrincipalIdentifier($cached['principalIdentifier']));
+        }
+
+        $context = $dbResolver();
+        $this->write(self::SITE_MANAGEMENT_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier, [
+            'principalIdentifier' => (string) $context->principalIdentifier,
+        ]);
+
+        return $context;
+    }
+
+    public function forgetSiteManagement(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): void
+    {
+        $this->delete(self::SITE_MANAGEMENT_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier);
     }
 
     public function forgetActor(IdentityIdentifier $identityIdentifier): void

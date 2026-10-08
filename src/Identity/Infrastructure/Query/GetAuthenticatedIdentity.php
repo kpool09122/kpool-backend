@@ -150,7 +150,10 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             }
         }
 
-        $siteManagementPrincipal = SiteManagementPrincipalModel::query()->where('identity_id', (string) $input->identityIdentifier())->first();
+        $siteManagementPrincipal = $accountContext === null ? null : SiteManagementPrincipalModel::query()
+            ->where('identity_id', (string) $input->identityIdentifier())
+            ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+            ->first();
 
         return new AuthenticatedIdentityReadModel(
             siteManagementPrincipalIdentifier: $siteManagementPrincipal === null ? null : $siteManagementPrincipal->id,
@@ -184,10 +187,15 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             ->select('policy_id')
             ->join('site_management_principal_group_role_attachments as roles', 'roles.role_id', '=', 'site_management_role_policy_attachments.role_id')
             ->join('site_management_principal_group_memberships as memberships', 'memberships.principal_group_id', '=', 'roles.principal_group_id')
-            ->where('memberships.principal_id', $principal->id);
+            ->join('site_management_principal_groups as groups', 'groups.id', '=', 'memberships.principal_group_id')
+            ->join('site_management_roles as role_models', 'role_models.id', '=', 'roles.role_id')
+            ->where('memberships.principal_id', $principal->id)
+            ->where('groups.account_id', $principal->account_id)
+            ->where(static fn ($query) => $query->whereNull('role_models.account_id')->orWhere('role_models.account_id', $principal->account_id));
 
         return SiteManagementPolicyModel::query()
             ->whereIn('id', $policyIdentifiers)
+            ->where(static fn ($query) => $query->whereNull('account_id')->orWhere('account_id', $principal->account_id))
             ->orderBy('id')
             ->get()
             ->map(static fn (SiteManagementPolicyModel $policy): array => [

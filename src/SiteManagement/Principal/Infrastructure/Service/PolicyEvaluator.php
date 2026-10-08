@@ -54,6 +54,9 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         // 2. 全ての RoleIdentifier を収集
         $allRoleIdentifiers = [];
         foreach ($principalGroups as $principalGroup) {
+            if ((string) $principalGroup->accountIdentifier() !== (string) $principal->accountIdentifier()) {
+                continue;
+            }
             foreach ($principalGroup->roles() as $roleIdentifier) {
                 $allRoleIdentifiers[(string) $roleIdentifier] = $roleIdentifier;
             }
@@ -69,6 +72,9 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         // 4. 全ての PolicyIdentifier を収集
         $allPolicyIdentifiers = [];
         foreach ($roles as $role) {
+            if ($role->accountIdentifier() !== null && (string) $role->accountIdentifier() !== (string) $principal->accountIdentifier()) {
+                continue;
+            }
             foreach ($role->policies() as $policyIdentifier) {
                 $allPolicyIdentifiers[(string) $policyIdentifier] = $policyIdentifier;
             }
@@ -84,6 +90,9 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         // 6. Statement を収集
         $statements = [];
         foreach ($policies as $policy) {
+            if ($policy->accountIdentifier() !== null && (string) $policy->accountIdentifier() !== (string) $principal->accountIdentifier()) {
+                continue;
+            }
             array_push($statements, ...$policy->statements());
         }
 

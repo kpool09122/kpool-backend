@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
@@ -20,6 +21,7 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
@@ -161,10 +163,13 @@ class ListContactsTest extends TestCase
     #[Group('useDb')]
     public function testRealAdminPolicyWithOwnContactDenyRejectsWholePageButAllowsOtherAndAnonymous(): void
     {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
+        CreateAccount::create('00000000-0000-7000-8000-000000000009');
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identity);
         $provision = new ProvisionPrincipalOutput();
-        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity), $provision);
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $provision);
         $principal = $provision->principal();
         $this->assertNotNull($principal);
         $identifier = $principal->principalIdentifier();
@@ -175,7 +180,7 @@ class ListContactsTest extends TestCase
             $this->fail('General policy must reject the administrative list');
         } catch (UnauthorizedException) {
         }
-        DB::table('site_management_principal_group_memberships')->insert(['principal_id' => (string) $identifier, 'principal_group_id' => SiteManagementAuthorizationSeeder::ADMIN_GROUP]);
+        SiteManagementAuthorization::grantAdministrator($principal);
         $this->insertContact(StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), 'other@example.com', '2026-08-15 10:00:00');
         $this->insertContact(StrTestHelper::generateUuid(), null, 'anonymous@example.com', '2026-08-16 10:00:00');
         $own = StrTestHelper::generateUuid();
@@ -183,7 +188,7 @@ class ListContactsTest extends TestCase
         $allowed = new ListContactsOutput();
         $query->process(new ListContactsInput($identifier, null, null), $allowed);
         $this->assertCount(3, $allowed->toArray()['contacts']);
-        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_GROUP)->update(['statements' => json_encode([
+        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([
             ['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact'],
         ], JSON_THROW_ON_ERROR)]);
 

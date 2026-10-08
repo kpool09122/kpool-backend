@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\UpdateAn
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -222,6 +223,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier('00000000-0000-7000-8000-000000000009'),
         );
 
         $draftAnnouncement = new DraftAnnouncement(

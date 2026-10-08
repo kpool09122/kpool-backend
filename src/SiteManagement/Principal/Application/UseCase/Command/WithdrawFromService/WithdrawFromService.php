@@ -15,8 +15,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
 
     public function process(WithdrawFromServiceInputPort $input, WithdrawFromServiceOutputPort $output): void
     {
-        $principal = $this->principalRepository->findByIdentityId($input->identityIdentifier());
-        if ($principal !== null) {
+        foreach ($this->principalRepository->findAllByIdentityIdentifier($input->identityIdentifier()) as $principal) {
             $this->principalRepository->delete($principal);
         }
     }

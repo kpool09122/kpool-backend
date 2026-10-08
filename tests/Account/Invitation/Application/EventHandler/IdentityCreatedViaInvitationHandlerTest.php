@@ -61,6 +61,8 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
     #[DataProvider('invitationScenarios')]
     public function testRealInvitationListenersProvisionGeneralAndRollback(bool $existing, bool $rollback): void
     {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $inviter = new IdentityIdentifier(StrTestHelper::generateUuid());
         $account = StrTestHelper::generateUuid();
@@ -73,7 +75,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $existingId = null;
         if ($existing) {
             $output = new ProvisionPrincipalOutput();
-            $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity), $output);
+            $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, new AccountIdentifier($account)), $output);
             $existingId = (string) $output->principal()?->principalIdentifier();
         }
         if ($rollback) {
@@ -102,7 +104,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         if ($existing) {
             $this->assertSame($existingId, $principalId);
         }
-        $this->assertSame($rollback && ! $existing ? 0 : 1, DB::table('site_management_principal_group_memberships')->where('principal_id', $principalId)->where('principal_group_id', SiteManagementAuthorizationSeeder::GENERAL_GROUP)->count());
+        $this->assertSame($rollback && ! $existing ? 0 : 1, DB::table('site_management_principal_group_memberships')->where('principal_id', $principalId)->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.account_id', $account)->where('groups.is_default', true)->count());
     }
 
     /**

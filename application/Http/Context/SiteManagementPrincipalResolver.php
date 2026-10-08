@@ -14,9 +14,9 @@ readonly class SiteManagementPrincipalResolver
     {
     }
 
-    public function resolve(ActorContext $actorContext): PrincipalIdentifier
+    public function resolve(AccountContext $accountContext): PrincipalIdentifier
     {
-        $principal = $this->principalRepository->findByIdentityId($actorContext->identityIdentifier);
+        $principal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier($accountContext->principal()->identityIdentifier(), $accountContext->principal()->accountIdentifier());
         if ($principal === null) {
             throw new UnauthorizedException();
         }

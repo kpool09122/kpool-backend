@@ -1964,10 +1964,12 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
+          description: Site management principal for the authenticated identity in the current account.
         siteManagementPolicies:
           type: array
           items:
             $ref: '#/components/schemas/SiteManagementEffectivePolicySummary'
+          description: Effective site management policies for the authenticated identity in the current account.
         accountIdentifier:
           type: string
           allOf:

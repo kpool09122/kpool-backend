@@ -4,18 +4,27 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Principal\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
 
 class PrincipalGroup
 {
-    public const string GENERAL = '69200000-0000-7000-8000-000000000001';
-    public const string ADMINISTRATOR = '69200000-0000-7000-8000-000000000002';
+    public const string GENERAL = 'general';
+    public const string ADMINISTRATOR = 'administrator';
+
+    /** @var PrincipalIdentifier[] */
+    private array $members = [];
 
     /** @param RoleIdentifier[] $roles */
-    public function __construct(private readonly PrincipalGroupIdentifier $principalGroupIdentifier, private readonly string $name, private readonly array $roles)
-    {
+    public function __construct(
+        private readonly PrincipalGroupIdentifier $principalGroupIdentifier,
+        private readonly string $name,
+        private readonly array $roles,
+        private readonly AccountIdentifier $accountIdentifier,
+        private readonly bool $isDefault = false,
+    ) {
     }
 
     public function principalGroupIdentifier(): PrincipalGroupIdentifier
@@ -33,7 +42,6 @@ class PrincipalGroup
     {
         return $this->roles;
     }
-    /** @var PrincipalIdentifier[] */ private array $members = [];
 
     /** @return PrincipalIdentifier[] */
     public function members(): array
@@ -53,5 +61,15 @@ class PrincipalGroup
         foreach ($members as $member) {
             $this->addMember($member);
         }
+    }
+
+    public function isDefault(): bool
+    {
+        return $this->isDefault;
+    }
+
+    public function accountIdentifier(): AccountIdentifier
+    {
+        return $this->accountIdentifier;
     }
 }

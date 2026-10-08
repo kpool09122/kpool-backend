@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\PublishA
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -246,6 +247,7 @@ class PublishAnnouncementTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier('00000000-0000-7000-8000-000000000009'),
         );
 
         $jaTitle = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');

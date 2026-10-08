@@ -8,6 +8,7 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 
 use Illuminate\Database\Seeder;
@@ -217,9 +218,9 @@ class WikiEditorSampleSeeder extends Seeder
             $this->seedPublishedTalent($talent);
             $this->seedDraftTalent($talent);
         }
-        DB::table('identities')->orderBy('id')->each(static function (object $identity): void {
+        DB::table('account_principals')->orderBy('id')->each(static function (object $principal): void {
             app(ProvisionPrincipalInterface::class)->process(
-                new ProvisionPrincipalInput(new IdentityIdentifier($identity->id)),
+                new ProvisionPrincipalInput(new IdentityIdentifier($principal->identity_id), new AccountIdentifier($principal->account_id)),
                 new ProvisionPrincipalOutput(),
             );
         });

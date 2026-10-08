@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Principal\Infrastructure\Service;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Domain\Entity\Policy;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
@@ -26,6 +27,32 @@ use Source\SiteManagement\Principal\Infrastructure\Service\PolicyEvaluator;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    public function testOtherAccountsRolesAndPoliciesDoNotGrantPermissions(): void
+    {
+        $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
+        $otherAccount = new AccountIdentifier('00000000-0000-7000-8000-000000000010');
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), $account);
+        $roleId = new RoleIdentifier('00000000-0000-7000-8000-000000000003');
+        $policyId = new PolicyIdentifier('00000000-0000-7000-8000-000000000004');
+        foreach (['role', 'policy'] as $foreignOwner) {
+            $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
+            $groups->method('findByPrincipalId')->willReturn([
+                new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'any', [$roleId], $account),
+            ]);
+            $roles = $this->createMock(RoleRepositoryInterface::class);
+            $roles->method('findByIds')->willReturn([new Role($roleId, 'any', [$policyId], $foreignOwner === 'role' ? $otherAccount : $account)]);
+            $policies = $this->createMock(PolicyRepositoryInterface::class);
+            if ($foreignOwner === 'role') {
+                $policies->expects(self::never())->method('findByIds');
+            } else {
+                $policies->method('findByIds')->willReturn([
+                    new Policy($policyId, 'any', [new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::CONTACT])], $otherAccount),
+                ]);
+            }
+            self::assertFalse((new PolicyEvaluator($groups, $roles, $policies))->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT)), $foreignOwner);
+        }
+    }
+
     public function testAbsentGroupsDeny(): void
     {
         $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
@@ -34,18 +61,18 @@ class PolicyEvaluatorTest extends TestCase
         $roles->expects(self::never())->method('findByIds');
         $policies = $this->createMock(PolicyRepositoryInterface::class);
         $policies->expects(self::never())->method('findByIds');
-        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'));
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), new AccountIdentifier('00000000-0000-7000-8000-000000000009'));
         self::assertFalse((new PolicyEvaluator($groups, $roles, $policies))->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT)));
     }
 
     public function testBatchedReadsExplicitDenyAndMissingAttachments(): void
     {
-        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'));
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), new AccountIdentifier('00000000-0000-7000-8000-000000000009'));
         $roleId = new RoleIdentifier('00000000-0000-7000-8000-000000000003');
         $policyId = new PolicyIdentifier('00000000-0000-7000-8000-000000000004');
         foreach (['allow','deny','no_roles','missing_role','no_policies','missing_policy','no_allow'] as $scenario) {
             $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
-            $group = new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'any', $scenario === 'no_roles' ? [] : [$roleId,$roleId]);
+            $group = new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'any', $scenario === 'no_roles' ? [] : [$roleId,$roleId], new AccountIdentifier('00000000-0000-7000-8000-000000000009'));
             $groups->expects(self::once())->method('findByPrincipalId')->with($principal->principalIdentifier())->willReturn([$group,$group]);
             $roles = $this->createMock(RoleRepositoryInterface::class);
             if ($scenario === 'no_roles') {

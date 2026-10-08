@@ -138,7 +138,9 @@ model SiteManagementEffectivePolicySummary {
 
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
+  @doc("Site management principal for the authenticated identity in the current account.")
   siteManagementPrincipalIdentifier: Uuid | null;
+  @doc("Effective site management policies for the authenticated identity in the current account.")
   siteManagementPolicies: SiteManagementEffectivePolicySummary[];
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;

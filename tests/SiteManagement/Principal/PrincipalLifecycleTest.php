@@ -30,9 +30,9 @@ use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalRepository;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -43,6 +43,7 @@ class PrincipalLifecycleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
         $this->app()->make(AccountAuthorizationSeeder::class)->run();
     }
 
@@ -94,9 +95,9 @@ class PrincipalLifecycleTest extends TestCase
         $attachments = DB::table('site_management_principal_group_role_attachments')->orderBy('role_id')->get()->all();
         $principalGroupRepository = new PrincipalGroupRepository();
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $repository->shouldReceive('findById')->once()
-            ->with(Mockery::type(PrincipalGroupIdentifier::class))
-            ->andReturnUsing($principalGroupRepository->findById(...));
+        $repository->shouldReceive('findDefaultByAccountIdentifier')->once()
+            ->with(Mockery::type(AccountIdentifier::class))
+            ->andReturnUsing($principalGroupRepository->findDefaultByAccountIdentifier(...));
         $repository->shouldReceive('save')->once()
             ->with(Mockery::type(PrincipalGroup::class))
             ->andReturnUsing(function (PrincipalGroup $group) use ($principalGroupRepository): void {
@@ -106,10 +107,12 @@ class PrincipalLifecycleTest extends TestCase
                 throw new RuntimeException('group save failed');
             });
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
         $event = new PrincipalCreated(
             new AccountPrincipalIdentifier(StrTestHelper::generateUuid()),
             $identity,
-            new AccountIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
         );
 
         try {
@@ -128,16 +131,18 @@ class PrincipalLifecycleTest extends TestCase
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identity);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
         $this->app()->make(PrincipalCreatedHandler::class)->handle(new PrincipalCreated(
             new AccountPrincipalIdentifier(StrTestHelper::generateUuid()),
             $identity,
-            new AccountIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
         ));
         $principalRepository = new PrincipalRepository();
-        $principal = $principalRepository->findByIdentityId($identity);
+        $principal = $principalRepository->findByIdentityIdentifierAndAccountIdentifier($identity, $accountIdentifier);
         $this->assertNotNull($principal);
         $repository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $repository->shouldReceive('findByIdentityId')->once()->with($identity)->andReturn($principal);
+        $repository->shouldReceive('findAllByIdentityIdentifier')->once()->with($identity)->andReturn([$principal]);
         $repository->shouldReceive('delete')->once()->with($principal)
             ->andReturnUsing(function (Principal $principal) use ($principalRepository): void {
                 $principalRepository->delete($principal);
@@ -159,18 +164,18 @@ class PrincipalLifecycleTest extends TestCase
         $this->assertDatabaseHas('site_management_principal_group_memberships', ['principal_id' => (string) $principal->principalIdentifier()]);
     }
 
-    public function testSeedersProvisionEveryIdentityAsGeneralAndAreIdempotent(): void
+    public function testSeedersProvisionEveryAccountPrincipalAsGeneralAndAreIdempotent(): void
     {
         $seeder = $this->app()->make(DatabaseSeeder::class);
         $seeder->setContainer($this->app());
         $seeder->run();
-        $first = DB::table('site_management_principals')->orderBy('identity_id')->pluck('id', 'identity_id')->all();
+        $first = DB::table('site_management_principals')->orderBy('id')->pluck('id')->all();
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
         $this->app()->make(TestAccountSeeder::class)->run();
         $this->app()->make(WikiEditorSampleSeeder::class)->run();
-        $this->assertSame($first, DB::table('site_management_principals')->orderBy('identity_id')->pluck('id', 'identity_id')->all());
-        $this->assertSame(DB::table('identities')->count(), count($first));
-        $this->assertSame(count($first), DB::table('site_management_principal_group_memberships')->where('principal_group_id', SiteManagementAuthorizationSeeder::GENERAL_GROUP)->count());
-        $this->assertSame(0, DB::table('site_management_principal_group_memberships')->where('principal_group_id', SiteManagementAuthorizationSeeder::ADMIN_GROUP)->count());
+        $this->assertSame($first, DB::table('site_management_principals')->orderBy('id')->pluck('id')->all());
+        $this->assertSame(DB::table('account_principals')->count(), count($first));
+        $this->assertSame(count($first), DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
+        $this->assertSame(0, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'administrator')->count());
     }
 }

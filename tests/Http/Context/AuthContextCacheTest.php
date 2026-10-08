@@ -7,7 +7,9 @@ namespace Tests\Http\Context;
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
+use Application\Http\Context\SiteManagementContext;
 use Application\Http\Context\WikiContext;
+use ArrayObject;
 use Illuminate\Support\Facades\Redis;
 use Psr\Log\NullLogger;
 use RuntimeException;
@@ -20,12 +22,113 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier as SiteManagementPrincipalIdentifier;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AuthContextCacheTest extends TestCase
 {
+    public function testResolveSiteManagementUsesCacheWithoutDb(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalId = StrTestHelper::generateUuid();
+        Redis::shouldReceive('get')->once()->with('auth-context:site-management:' . $identity . ':' . $accountIdentifier)
+            ->andReturn(json_encode(['principalIdentifier' => $principalId]));
+        Redis::shouldReceive('setex')->never();
+
+        $context = (new AuthContextCache(new NullLogger()))->resolveSiteManagement(
+            $identity,
+            $accountIdentifier,
+            fn () => throw new RuntimeException('DB resolver must not be called'),
+        );
+
+        $this->assertSame($principalId, (string) $context->principalIdentifier);
+    }
+
+    public function testResolveSiteManagementStoresDbResultOnMiss(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $expected = new SiteManagementContext(new SiteManagementPrincipalIdentifier(StrTestHelper::generateUuid()));
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->once()->with(
+            'auth-context:site-management:' . $identity . ':' . $accountIdentifier,
+            3600,
+            json_encode(['principalIdentifier' => (string) $expected->principalIdentifier]),
+        );
+
+        $this->assertSame($expected, (new AuthContextCache(new NullLogger()))->resolveSiteManagement($identity, $accountIdentifier, fn () => $expected));
+    }
+
+    public function testResolveSiteManagementFallsBackForInvalidIdentifier(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $expected = new SiteManagementContext(new SiteManagementPrincipalIdentifier(StrTestHelper::generateUuid()));
+        Redis::shouldReceive('get')->once()->andReturn(json_encode(['principalIdentifier' => 'invalid']));
+        Redis::shouldReceive('setex')->once();
+
+        $this->assertSame($expected, (new AuthContextCache(new NullLogger()))->resolveSiteManagement($identity, $accountIdentifier, fn () => $expected));
+    }
+
+    public function testResolveSiteManagementContinuesWhenRedisIsUnavailable(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $expected = new SiteManagementContext(new SiteManagementPrincipalIdentifier(StrTestHelper::generateUuid()));
+        Redis::shouldReceive('get')->once()->andThrow(new RuntimeException('redis down'));
+        Redis::shouldReceive('setex')->once()->andThrow(new RuntimeException('redis down'));
+
+        $this->assertSame($expected, (new AuthContextCache(new NullLogger()))->resolveSiteManagement($identity, $accountIdentifier, fn () => $expected));
+    }
+
+    public function testResolveSiteManagementDoesNotCacheUnauthorizedIdentity(): void
+    {
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->never();
+        $this->expectException(UnauthorizedException::class);
+
+        (new AuthContextCache(new NullLogger()))->resolveSiteManagement(
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            fn () => throw new UnauthorizedException(),
+        );
+    }
+
+    public function testForgetSiteManagementDeletesOnlyIdentityKey(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        Redis::shouldReceive('del')->once()->with('auth-context:site-management:' . $identity . ':' . $accountIdentifier);
+
+        (new AuthContextCache(new NullLogger()))->forgetSiteManagement($identity, $accountIdentifier);
+    }
+
+    public function testSiteManagementCacheIsIsolatedBetweenAccounts(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $firstAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        $secondAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        $firstContext = new SiteManagementContext(new SiteManagementPrincipalIdentifier(StrTestHelper::generateUuid()));
+        $secondContext = new SiteManagementContext(new SiteManagementPrincipalIdentifier(StrTestHelper::generateUuid()));
+        /** @var ArrayObject<string, string> $payloads */
+        $payloads = new ArrayObject();
+        Redis::shouldReceive('get')->times(3)->andReturnUsing(static function (string $key) use (&$payloads): ?string {
+            return $payloads[$key] ?? null;
+        });
+        Redis::shouldReceive('setex')->twice()->andReturnUsing(static function (string $key, int $ttl, string $payload) use (&$payloads): void {
+            $payloads[$key] = $payload;
+        });
+        $cache = new AuthContextCache(new NullLogger());
+        $this->assertSame($firstContext, $cache->resolveSiteManagement($identity, $firstAccount, fn () => $firstContext));
+        $this->assertSame($secondContext, $cache->resolveSiteManagement($identity, $secondAccount, fn () => $secondContext));
+        $cached = $cache->resolveSiteManagement($identity, $firstAccount, fn () => throw new RuntimeException('First account must use its own cache'));
+        $this->assertSame((string) $firstContext->principalIdentifier, (string) $cached->principalIdentifier);
+    }
+
     public function testResolveActorReturnsCachedContextWithoutCallingDbResolver(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());

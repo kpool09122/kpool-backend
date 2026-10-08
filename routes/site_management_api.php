@@ -14,7 +14,7 @@ Route::middleware('rate-limit:screen,command')->group(function () {
     Route::post('/contact/submit/v{version}', SubmitContactAction::class)->whereNumber('version');
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.site-management'])->group(function () {
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.site-management'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         Route::get('/my/contact', ListMyContactsAction::class);
         Route::get('/my/contact/{contactIdentifier}', GetMyContactDetailAction::class);

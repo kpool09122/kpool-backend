@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class TestAccountSeeder extends Seeder
 {
@@ -65,9 +66,9 @@ class TestAccountSeeder extends Seeder
         foreach (self::ACCOUNTS as $account) {
             $this->createTestAccount($account, $ownerRoleId, $now);
         }
-        DB::table('identities')->orderBy('id')->each(static function (object $identity): void {
+        DB::table('account_principals')->orderBy('id')->each(static function (object $principal): void {
             app(ProvisionPrincipalInterface::class)->process(
-                new ProvisionPrincipalInput(new IdentityIdentifier($identity->id)),
+                new ProvisionPrincipalInput(new IdentityIdentifier($principal->identity_id), new AccountIdentifier($principal->account_id)),
                 new ProvisionPrincipalOutput(),
             );
         });

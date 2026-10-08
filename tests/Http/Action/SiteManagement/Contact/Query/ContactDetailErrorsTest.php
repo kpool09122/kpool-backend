@@ -20,12 +20,15 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\NullLogger;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
+use Tests\Helper\SiteManagementAuthorization;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -47,21 +50,25 @@ class ContactDetailErrorsTest extends TestCase
     #[DataProvider('cases')]
     public function testRealQueryErrorsRenderLocalizedHttpResponses(bool $mine, bool $exists, int $status, string $message): void
     {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $account);
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identity);
         $output = new ProvisionPrincipalOutput();
-        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity), $output);
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $output);
         $principal = $output->principal();
         $this->assertNotNull($principal);
         $this->app()->instance(ActorContext::class, new ActorContext($identity, Language::ENGLISH));
         $this->app()->instance(SiteManagementContext::class, new SiteManagementContext($principal->principalIdentifier()));
         if (! $mine && ! $exists) {
-            DB::table('site_management_principal_group_memberships')->insert(['principal_id' => (string) $principal->principalIdentifier(), 'principal_group_id' => SiteManagementAuthorizationSeeder::ADMIN_GROUP]);
+            SiteManagementAuthorization::grantAdministrator($principal);
         }
         $contact = StrTestHelper::generateUuid();
         $owner = $mine && $status === 403 ? (string) $identity : StrTestHelper::generateUuid();
         if ($mine && $status === 403) {
-            DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_GROUP)->update(['statements' => json_encode([['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact']], JSON_THROW_ON_ERROR)]);
+            DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact']], JSON_THROW_ON_ERROR)]);
         }
         if ($exists) {
             DB::table('contacts')->insert(['id' => $contact, 'identity_identifier' => $owner, 'category' => 1, 'name' => 'Other', 'email' => 'encrypted', 'content' => 'history', 'language' => 'ja']);

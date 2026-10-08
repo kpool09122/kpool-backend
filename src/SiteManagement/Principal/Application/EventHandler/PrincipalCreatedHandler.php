@@ -19,7 +19,7 @@ readonly class PrincipalCreatedHandler
     public function handle(PrincipalCreated $event): void
     {
         DB::transaction(function () use ($event): void {
-            $this->provisionPrincipal->process(new ProvisionPrincipalInput($event->identityIdentifier), new ProvisionPrincipalOutput());
+            $this->provisionPrincipal->process(new ProvisionPrincipalInput($event->identityIdentifier, $event->accountIdentifier), new ProvisionPrincipalOutput());
         });
     }
 }
