@@ -1504,6 +1504,6 @@ components:
         - failed
       description: Transfer execution status.
 servers:
-  - url: /api/monetization
+  - url: /api/v1/monetization
     description: Laravel route prefix from bootstrap/app.php.
     variables: {}

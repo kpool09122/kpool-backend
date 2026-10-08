@@ -22,7 +22,7 @@ class EmailSendingHttpTest extends TestCase
 {
     protected function defineRoutes($router): void
     {
-        $router->middleware([])->group(dirname(__DIR__, 6) . '/routes/identity_api.php');
+        $router->middleware([])->group(dirname(__DIR__, 6) . '/routes/v1/identity_api.php');
     }
 
     /** @param class-string $interface */

@@ -9,5 +9,5 @@ import "./account-api/affiliation.tsp";
 using TypeSpec.Http;
 
 @service(#{ title: "k-pool Account API" })
-@server("/api/account", "Laravel route prefix from bootstrap/app.php.")
+@server("/api/v1/account", "Laravel route prefix from bootstrap/app.php.")
 namespace KPool.AccountApi;

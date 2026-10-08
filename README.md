@@ -72,7 +72,7 @@ curl -i http://localhost:8080/
 
 4. Confirm an `/api/...` endpoint is reachable from the host:
 ```bash
-curl -i -X POST http://localhost:8080/api/identity/auth/send-auth-code \
+curl -i -X POST http://localhost:8080/api/v1/identity/auth/send-auth-code \
   -H 'Content-Type: application/json' \
   --data '{"email":"demo@example.com"}'
 ```
@@ -80,7 +80,7 @@ curl -i -X POST http://localhost:8080/api/identity/auth/send-auth-code \
 5. Confirm another container on the same Docker network can reach the backend:
 ```bash
 docker run --rm --network kpool-network curlimages/curl:8.13.0 \
-  -i http://nginx/api/identity/auth/send-auth-code \
+  -i http://nginx/api/v1/identity/auth/send-auth-code \
   -H 'Content-Type: application/json' \
   --data '{"email":"demo@example.com"}'
 ```
@@ -173,11 +173,11 @@ Dependencies are automatically reviewed by Renovate using the rules in `renovate
 
 TypeSpec definitions live under `typespec/` and are split by Laravel route file so later endpoint work can proceed in parallel.
 
-- `typespec/services/identity-api.tsp` -> `routes/identity_api.php`
-- `typespec/services/account-api.tsp` -> `routes/account_api.php`
-- `typespec/services/monetization-api.tsp` -> `routes/monetization_api.php`
-- `typespec/services/site-management-api.tsp` -> `routes/site_management_api.php`
-- `typespec/services/wiki-private-api.tsp` -> `routes/wiki_api.php`
+- `typespec/services/identity-api.tsp` -> `routes/v1/identity_api.php`
+- `typespec/services/account-api.tsp` -> `routes/v1/account_api.php`
+- `typespec/services/monetization-api.tsp` -> `routes/v1/monetization_api.php`
+- `typespec/services/site-management-api.tsp` -> `routes/v1/site_management_api.php`
+- `typespec/services/wiki-api.tsp` -> `routes/v1/wiki_api.php`
 - `typespec/services/webhook.tsp` -> `routes/webhook.php`
 - `typespec/common/` holds shared schema fragments such as Problem Details
 

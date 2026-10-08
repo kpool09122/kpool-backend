@@ -39,7 +39,7 @@ class WithdrawalCsrfTest extends TestCase
         $router->middlewareGroup('auth.api', [EnsureAuthenticated::class, EnsureAccountActive::class]);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
-        $router->middleware('session')->prefix('api/identity')->group(dirname(__DIR__, 4) . '/routes/identity_api.php');
+        $router->middleware('session')->prefix('api/v1/identity')->group(dirname(__DIR__, 4) . '/routes/v1/identity_api.php');
         $router->middleware('session')->post('/api/csrf-probe', static fn () => response()->noContent());
     }
 
@@ -69,7 +69,7 @@ class WithdrawalCsrfTest extends TestCase
 
     public function testAnonymousBrowserCanAcquireCsrfAndSessionCookies(): void
     {
-        $response = $this->get('/api/identity/auth/csrf-token');
+        $response = $this->get('/api/v1/identity/auth/csrf-token');
 
         $response->assertNoContent();
         $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
@@ -110,7 +110,7 @@ class WithdrawalCsrfTest extends TestCase
             $withdraw->shouldNotReceive('process');
         }
         $this->app()->instance(WithdrawFromServiceInterface::class, $withdraw);
-        $csrf = $this->get('/api/identity/auth/csrf-token');
+        $csrf = $this->get('/api/v1/identity/auth/csrf-token');
         $csrf->assertNoContent();
         $cookies = [];
         foreach ($csrf->headers->getCookies() as $cookie) {
@@ -124,7 +124,7 @@ class WithdrawalCsrfTest extends TestCase
         if ($token !== null) {
             $headers['HTTP_X_XSRF_TOKEN'] = $allowed ? $cookies['XSRF-TOKEN'] : $token;
         }
-        $response = $this->call($method, '/api/identity/identities/me', $parameters, $cookies, [], $headers);
+        $response = $this->call($method, '/api/v1/identity/identities/me', $parameters, $cookies, [], $headers);
         $response->assertStatus($allowed ? 204 : 419);
         if (! $allowed) {
             $response->assertJsonPath('code', 'csrf_token_mismatch');
@@ -133,7 +133,7 @@ class WithdrawalCsrfTest extends TestCase
 
     public function testCommonMiddlewareRejectsForgedMutationAndAcceptsMatchingToken(): void
     {
-        $csrf = $this->get('/api/identity/auth/csrf-token');
+        $csrf = $this->get('/api/v1/identity/auth/csrf-token');
         $cookies = [];
         foreach ($csrf->headers->getCookies() as $cookie) {
             $cookies[$cookie->getName()] = $cookie->getValue();
@@ -164,8 +164,8 @@ class WithdrawalCsrfTest extends TestCase
     public function testProtectionIsSharedWithOtherIdentityMutations(): void
     {
         $routes = $this->app()->make('router')->getRoutes();
-        $withdraw = $routes->match(Request::create('/api/identity/identities/me', 'DELETE'));
-        $update = $routes->match(Request::create('/api/identity/identities/me', 'PATCH'));
+        $withdraw = $routes->match(Request::create('/api/v1/identity/identities/me', 'DELETE'));
+        $update = $routes->match(Request::create('/api/v1/identity/identities/me', 'PATCH'));
         $this->assertContains(PreventRequestForgery::class, $this->app()->make('router')->gatherRouteMiddleware($withdraw));
         $this->assertContains(PreventRequestForgery::class, $this->app()->make('router')->gatherRouteMiddleware($update));
     }

@@ -2,7 +2,7 @@ using TypeSpec.Http;
 using KPool.Common;
 
 @service(#{ title: "k-pool Monetization API" })
-@server("/api/monetization", "Laravel route prefix from bootstrap/app.php.")
+@server("/api/v1/monetization", "Laravel route prefix from bootstrap/app.php.")
 namespace KPool.MonetizationApi;
 
 @doc("Supported currency codes used by monetization value objects.")

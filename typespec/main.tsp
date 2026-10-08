@@ -10,4 +10,4 @@ import "./services/identity-api.tsp";
 import "./services/monetization-api.tsp";
 import "./services/site-management-api.tsp";
 import "./services/webhook.tsp";
-import "./services/wiki-private-api.tsp";
+import "./services/wiki-api.tsp";

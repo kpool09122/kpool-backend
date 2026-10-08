@@ -36,7 +36,7 @@ class SocialLinkingHttpTest extends TestCase
 {
     protected function defineRoutes($router): void
     {
-        $router->middleware(StartSession::class)->group(dirname(__DIR__, 6) . '/routes/identity_api.php');
+        $router->middleware(StartSession::class)->group(dirname(__DIR__, 6) . '/routes/v1/identity_api.php');
     }
 
     public function testGetPendingReturnsOnlyPublicMetadata(): void

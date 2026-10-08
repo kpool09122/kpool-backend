@@ -1,7 +1,7 @@
 using TypeSpec.Http;
 using KPool.Common;
 
-namespace KPool.WikiPrivateApi;
+namespace KPool.WikiApi;
 
 @doc("SEO title text. Must be 40 characters or less.")
 @maxLength(40)

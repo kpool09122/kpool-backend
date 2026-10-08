@@ -40,28 +40,28 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router->aliasMiddleware('rate-limit', EnforceApiRateLimit::class);
         $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
 
-        $routePath = static fn (string $file): string => __DIR__ . '/../../../routes/' . $file;
+        $routePath = static fn (string $file): string => __DIR__ . '/../../../routes/v1/' . $file;
 
         RouteFacade::middleware(['api', 'session'])
-            ->prefix('api/identity')
+            ->prefix('api/v1/identity')
             ->group($routePath('identity_api.php'));
         RouteFacade::middleware(['api', 'session', 'auth.api', 'resolve.actor'])
-            ->prefix('api/monetization')
+            ->prefix('api/v1/monetization')
             ->group($routePath('monetization_api.php'));
         RouteFacade::middleware(['api', 'session'])
-            ->prefix('api/account')
+            ->prefix('api/v1/account')
             ->group($routePath('account_api.php'));
         RouteFacade::middleware(['api', 'session'])
-            ->prefix('api/site-management')
+            ->prefix('api/v1/site-management')
             ->group($routePath('site_management_api.php'));
         RouteFacade::middleware(['api', 'session'])
-            ->prefix('api/wiki')
+            ->prefix('api/v1/wiki')
             ->group($routePath('wiki_api.php'));
         RouteFacade::middleware(['api', 'session'])
-            ->prefix('api/site-management')
+            ->prefix('api/v1/site-management')
             ->group($routePath('site_management_api.php'));
         RouteFacade::prefix('webhook')
-            ->group($routePath('webhook.php'));
+            ->group(__DIR__ . '/../../../routes/webhook.php');
     }
 
     public function testSessionApisShareCsrfProtection(): void
@@ -129,7 +129,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         Auth::shouldReceive('check')->andReturn(false);
 
-        $request = Request::create('/api/wiki/principal/me', 'GET');
+        $request = Request::create('/api/v1/wiki/principal/me', 'GET');
         $request->headers->set('Accept-Language', 'en');
         /** @var AuthServiceInterface $authService */
         $authService = Mockery::mock(AuthServiceInterface::class);
@@ -142,7 +142,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
     public function testSiteManagementContactsRoutesAreRegistered(): void
     {
-        foreach (['api/site-management/contacts', 'api/site-management/contact/principals/{principalIdentifier}'] as $expectedUri) {
+        foreach (['api/v1/site-management/contacts', 'api/v1/site-management/contact/principals/{principalIdentifier}'] as $expectedUri) {
             foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
                 if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {
                     $this->assertContains('auth.api', $route->gatherMiddleware());
@@ -161,7 +161,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $actualPublicIdentityRouteUris = [];
 
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
-            if (! str_starts_with($route->uri(), 'api/identity/')) {
+            if (! str_starts_with($route->uri(), 'api/v1/identity/')) {
                 continue;
             }
 
@@ -174,23 +174,23 @@ class AuthenticatedRouteProtectionTest extends TestCase
         sort($actualPublicIdentityRouteUris);
 
         $expected = [
-            'api/identity/auth/csrf-token',
-            'api/identity/auth/passkeys/registration',
-            'api/identity/auth/passkeys/authentication',
-            'api/identity/auth/passkeys/authentication/options',
-            'api/identity/auth/passkeys/registration/options',
-            'api/identity/auth/passkeys/recovery',
-            'api/identity/auth/passkeys/recovery/email',
-            'api/identity/auth/passkeys/recovery/email/verification',
-            'api/identity/auth/passkeys/recovery/options',
-            'api/identity/auth/passkeys/recovery/social/{provider}/redirect',
-            'api/identity/auth/send-auth-code',
-            'api/identity/auth/social/link',
-            'api/identity/auth/social/link/email',
-            'api/identity/auth/social/link/email/verification',
-            'api/identity/auth/social/{provider}/callback',
-            'api/identity/auth/social/{provider}/redirect',
-            'api/identity/auth/verify-email',
+            'api/v1/identity/auth/csrf-token',
+            'api/v1/identity/auth/passkeys/registration',
+            'api/v1/identity/auth/passkeys/authentication',
+            'api/v1/identity/auth/passkeys/authentication/options',
+            'api/v1/identity/auth/passkeys/registration/options',
+            'api/v1/identity/auth/passkeys/recovery',
+            'api/v1/identity/auth/passkeys/recovery/email',
+            'api/v1/identity/auth/passkeys/recovery/email/verification',
+            'api/v1/identity/auth/passkeys/recovery/options',
+            'api/v1/identity/auth/passkeys/recovery/social/{provider}/redirect',
+            'api/v1/identity/auth/send-auth-code',
+            'api/v1/identity/auth/social/link',
+            'api/v1/identity/auth/social/link/email',
+            'api/v1/identity/auth/social/link/email/verification',
+            'api/v1/identity/auth/social/{provider}/callback',
+            'api/v1/identity/auth/social/{provider}/redirect',
+            'api/v1/identity/auth/verify-email',
         ];
         sort($expected);
 
@@ -202,7 +202,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $actualPublicWikiRouteUris = [];
 
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
-            if (! str_starts_with($route->uri(), 'api/wiki/')) {
+            if (! str_starts_with($route->uri(), 'api/v1/wiki/')) {
                 continue;
             }
 
@@ -255,56 +255,56 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             // Identity: 認証開始系以外の操作は認証必須
-            'identity: me' => ['GET', '/api/identity/auth/me'],
-            'identity: list passkeys' => ['GET', '/api/identity/auth/passkeys'],
-            'identity: logout' => ['POST', '/api/identity/auth/logout'],
-            'identity: add passkey options' => ['POST', '/api/identity/auth/passkeys/addition/options'],
-            'identity: add passkey' => ['POST', '/api/identity/auth/passkeys/addition'],
-            'identity: update passkey' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
-            'identity: delete passkey' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
-            'account: complete initial setup' => ['POST', '/api/account/accounts/setup'],
-            'account: switch account' => ['POST', '/api/account/accounts/switch'],
-            'identity: update me' => ['PATCH', '/api/identity/identities/me'],
+            'identity: me' => ['GET', '/api/v1/identity/auth/me'],
+            'identity: list passkeys' => ['GET', '/api/v1/identity/auth/passkeys'],
+            'identity: logout' => ['POST', '/api/v1/identity/auth/logout'],
+            'identity: add passkey options' => ['POST', '/api/v1/identity/auth/passkeys/addition/options'],
+            'identity: add passkey' => ['POST', '/api/v1/identity/auth/passkeys/addition'],
+            'identity: update passkey' => ['PATCH', '/api/v1/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
+            'identity: delete passkey' => ['DELETE', '/api/v1/identity/auth/passkeys/00000000-0000-0000-0000-000000000001'],
+            'account: complete initial setup' => ['POST', '/api/v1/account/accounts/setup'],
+            'account: switch account' => ['POST', '/api/v1/account/accounts/switch'],
+            'identity: update me' => ['PATCH', '/api/v1/identity/identities/me'],
 
             // Account: signup 用の POST /accounts 以外は認証必須
-            'account: get account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
-            'account: update account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
-            'account: list my account documents' => ['GET', '/api/account/my/documents'],
-            'account: view account document' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration'],
-            'account: list account category change requests' => ['GET', '/api/account/account-category-change-requests'],
-            'account: request delegation' => ['POST', '/api/account/delegations'],
-            'account: create invitation' => ['POST', '/api/account/invitations'],
-            'account: list members' => ['GET', '/api/account/members'],
-            'account: list principal groups' => ['GET', '/api/account/principal-groups'],
-            'account: update principal group members' => ['PATCH', '/api/account/principal-groups/members'],
+            'account: get account' => ['GET', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001'],
+            'account: update account' => ['PATCH', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001'],
+            'account: list my account documents' => ['GET', '/api/v1/account/my/documents'],
+            'account: view account document' => ['GET', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration'],
+            'account: list account category change requests' => ['GET', '/api/v1/account/account-category-change-requests'],
+            'account: request delegation' => ['POST', '/api/v1/account/delegations'],
+            'account: create invitation' => ['POST', '/api/v1/account/invitations'],
+            'account: list members' => ['GET', '/api/v1/account/members'],
+            'account: list principal groups' => ['GET', '/api/v1/account/principal-groups'],
+            'account: update principal group members' => ['PATCH', '/api/v1/account/principal-groups/members'],
 
             // Site management: 自身の問い合わせは認証必須
-            'site management: list my contacts' => ['GET', '/api/site-management/my/contact'],
+            'site management: list my contacts' => ['GET', '/api/v1/site-management/my/contact'],
 
             // Wiki command / review / draft / admin / auxiliary edit APIs
-            'wiki: create wiki' => ['POST', '/api/wiki/wiki/create'],
-            'wiki: master search' => ['GET', '/api/wiki/wikis/ja/masters'],
-            'wiki: version inconsistencies' => ['GET', '/api/wiki/wikis/version-inconsistencies'],
-            'wiki: agency draft' => ['GET', '/api/wiki/wiki/agency/00000000-0000-0000-0000-000000000003/draft'],
-            'wiki: group draft' => ['GET', '/api/wiki/wiki/group/00000000-0000-0000-0000-000000000004/draft'],
-            'wiki: song draft' => ['GET', '/api/wiki/wiki/song/00000000-0000-0000-0000-000000000005/draft'],
-            'wiki: talent draft' => ['GET', '/api/wiki/wiki/talent/00000000-0000-0000-0000-000000000006/draft'],
-            'wiki: my draft' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft'],
-            'wiki: my owned wikis' => ['GET', '/api/wiki/my/owned-wikis'],
-            'wiki: draft wikis' => ['GET', '/api/wiki/draft-wikis'],
-            'wiki: related wikis' => ['GET', '/api/wiki/wiki/agency/00000000-0000-0000-0000-000000000014/related-wikis'],
-            'wiki: draft images' => ['GET', '/api/wiki/draft-images'],
-            'wiki: image deletion requests' => ['GET', '/api/wiki/image-deletion-requests'],
-            'wiki: uploaded images' => ['GET', '/api/wiki/images'],
-            'wiki: image upload' => ['POST', '/api/wiki/image/upload'],
-            'wiki: current principal' => ['GET', '/api/wiki/principal/me'],
-            'wiki: create principal' => ['POST', '/api/wiki/principal/create'],
-            'wiki: official certifications list' => ['GET', '/api/wiki/official-certifications'],
-            'wiki: my official certifications list' => ['GET', '/api/wiki/my/official-certifications'],
-            'wiki: official certification request' => ['POST', '/api/wiki/official-certification/request'],
-            'wiki: official certification owned wikis sync' => ['PUT', '/api/wiki/official-certification/owned-wikis'],
-            'wiki: official certification approve' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000012/approve'],
-            'wiki: official certification reject' => ['POST', '/api/wiki/official-certification/00000000-0000-0000-0000-000000000013/reject'],
+            'wiki: create wiki' => ['POST', '/api/v1/wiki/wiki/create'],
+            'wiki: master search' => ['GET', '/api/v1/wiki/wikis/ja/masters'],
+            'wiki: version inconsistencies' => ['GET', '/api/v1/wiki/wikis/version-inconsistencies'],
+            'wiki: agency draft' => ['GET', '/api/v1/wiki/wiki/agency/00000000-0000-0000-0000-000000000003/draft'],
+            'wiki: group draft' => ['GET', '/api/v1/wiki/wiki/group/00000000-0000-0000-0000-000000000004/draft'],
+            'wiki: song draft' => ['GET', '/api/v1/wiki/wiki/song/00000000-0000-0000-0000-000000000005/draft'],
+            'wiki: talent draft' => ['GET', '/api/v1/wiki/wiki/talent/00000000-0000-0000-0000-000000000006/draft'],
+            'wiki: my draft' => ['GET', '/api/v1/wiki/wiki/ja/group/group-slug/my/draft'],
+            'wiki: my owned wikis' => ['GET', '/api/v1/wiki/my/owned-wikis'],
+            'wiki: draft wikis' => ['GET', '/api/v1/wiki/draft-wikis'],
+            'wiki: related wikis' => ['GET', '/api/v1/wiki/wiki/agency/00000000-0000-0000-0000-000000000014/related-wikis'],
+            'wiki: draft images' => ['GET', '/api/v1/wiki/draft-images'],
+            'wiki: image deletion requests' => ['GET', '/api/v1/wiki/image-deletion-requests'],
+            'wiki: uploaded images' => ['GET', '/api/v1/wiki/images'],
+            'wiki: image upload' => ['POST', '/api/v1/wiki/image/upload'],
+            'wiki: current principal' => ['GET', '/api/v1/wiki/principal/me'],
+            'wiki: create principal' => ['POST', '/api/v1/wiki/principal/create'],
+            'wiki: official certifications list' => ['GET', '/api/v1/wiki/official-certifications'],
+            'wiki: my official certifications list' => ['GET', '/api/v1/wiki/my/official-certifications'],
+            'wiki: official certification request' => ['POST', '/api/v1/wiki/official-certification/request'],
+            'wiki: official certification owned wikis sync' => ['PUT', '/api/v1/wiki/official-certification/owned-wikis'],
+            'wiki: official certification approve' => ['POST', '/api/v1/wiki/official-certification/00000000-0000-0000-0000-000000000012/approve'],
+            'wiki: official certification reject' => ['POST', '/api/v1/wiki/official-certification/00000000-0000-0000-0000-000000000013/reject'],
         ];
     }
 
@@ -314,34 +314,34 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function contextAwareAuthenticatedRouteProvider(): array
     {
         return [
-            'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
-            'identity add passkey options resolves actor' => ['POST', '/api/identity/auth/passkeys/addition/options', ['resolve.actor']],
-            'identity add passkey resolves actor' => ['POST', '/api/identity/auth/passkeys/addition', ['resolve.actor']],
-            'identity update passkey resolves actor' => ['PATCH', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
-            'identity delete passkey resolves actor' => ['DELETE', '/api/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
-            'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/identity/auth/passkeys', ['resolve.actor']],
-            'account initial setup resolves actor' => ['POST', '/api/account/accounts/setup', ['resolve.actor']],
-            'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
-            'account members resolve actor and account' => ['GET', '/api/account/members', ['resolve.actor', 'resolve.account']],
-            'account principal groups resolve actor and account' => ['GET', '/api/account/principal-groups', ['resolve.actor', 'resolve.account']],
-            'account update principal group members resolves actor and account' => ['PATCH', '/api/account/principal-groups/members', ['resolve.actor', 'resolve.account']],
-            'account get resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
-            'account list my documents resolves actor and account' => ['GET', '/api/account/my/documents', ['resolve.actor', 'resolve.account']],
-            'account view document resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
-            'account list account category change requests resolves actor and account' => ['GET', '/api/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
-            'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
-            'site management list my contacts resolves actor' => ['GET', '/api/site-management/my/contact', ['resolve.actor']],
-            'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
-            'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
-            'wiki my owned wikis resolves actor and account' => ['GET', '/api/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],
-            'wiki related wikis resolves actor, account and wiki' => ['GET', '/api/wiki/wiki/agency/00000000-0000-0000-0000-000000000014/related-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
-            'wiki current principal resolves actor and account' => ['GET', '/api/wiki/principal/me', ['resolve.actor', 'resolve.account']],
-            'wiki update principal group members resolves actor, account and wiki' => ['PATCH', '/api/wiki/principal-groups/members', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
-            'wiki image upload resolves actor and wiki' => ['POST', '/api/wiki/image/upload', ['resolve.actor', 'resolve.wiki']],
-            'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],
-            'wiki official certifications resolves actor and wiki' => ['GET', '/api/wiki/official-certifications', ['resolve.actor', 'resolve.wiki']],
-            'wiki my official certifications resolves actor, account and wiki' => ['GET', '/api/wiki/my/official-certifications', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
-            'wiki official certification owned sync resolves actor, account and wiki' => ['PUT', '/api/wiki/official-certification/owned-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
+            'identity authenticated routes resolve actor for me' => ['GET', '/api/v1/identity/auth/me', ['resolve.actor']],
+            'identity add passkey options resolves actor' => ['POST', '/api/v1/identity/auth/passkeys/addition/options', ['resolve.actor']],
+            'identity add passkey resolves actor' => ['POST', '/api/v1/identity/auth/passkeys/addition', ['resolve.actor']],
+            'identity update passkey resolves actor' => ['PATCH', '/api/v1/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
+            'identity delete passkey resolves actor' => ['DELETE', '/api/v1/identity/auth/passkeys/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
+            'identity authenticated routes resolve actor for passkeys' => ['GET', '/api/v1/identity/auth/passkeys', ['resolve.actor']],
+            'account initial setup resolves actor' => ['POST', '/api/v1/account/accounts/setup', ['resolve.actor']],
+            'account authenticated routes resolve actor and account' => ['POST', '/api/v1/account/delegations', ['resolve.actor', 'resolve.account']],
+            'account members resolve actor and account' => ['GET', '/api/v1/account/members', ['resolve.actor', 'resolve.account']],
+            'account principal groups resolve actor and account' => ['GET', '/api/v1/account/principal-groups', ['resolve.actor', 'resolve.account']],
+            'account update principal group members resolves actor and account' => ['PATCH', '/api/v1/account/principal-groups/members', ['resolve.actor', 'resolve.account']],
+            'account get resolves actor and account' => ['GET', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'account list my documents resolves actor and account' => ['GET', '/api/v1/account/my/documents', ['resolve.actor', 'resolve.account']],
+            'account view document resolves actor and account' => ['GET', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
+            'account list account category change requests resolves actor and account' => ['GET', '/api/v1/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
+            'account update resolves actor and account' => ['PATCH', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'site management list my contacts resolves actor' => ['GET', '/api/v1/site-management/my/contact', ['resolve.actor']],
+            'wiki commands resolve actor and wiki' => ['POST', '/api/v1/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
+            'wiki my draft resolves actor and wiki' => ['GET', '/api/v1/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
+            'wiki my owned wikis resolves actor and account' => ['GET', '/api/v1/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],
+            'wiki related wikis resolves actor, account and wiki' => ['GET', '/api/v1/wiki/wiki/agency/00000000-0000-0000-0000-000000000014/related-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
+            'wiki current principal resolves actor and account' => ['GET', '/api/v1/wiki/principal/me', ['resolve.actor', 'resolve.account']],
+            'wiki update principal group members resolves actor, account and wiki' => ['PATCH', '/api/v1/wiki/principal-groups/members', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
+            'wiki image upload resolves actor and wiki' => ['POST', '/api/v1/wiki/image/upload', ['resolve.actor', 'resolve.wiki']],
+            'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/v1/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],
+            'wiki official certifications resolves actor and wiki' => ['GET', '/api/v1/wiki/official-certifications', ['resolve.actor', 'resolve.wiki']],
+            'wiki my official certifications resolves actor, account and wiki' => ['GET', '/api/v1/wiki/my/official-certifications', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
+            'wiki official certification owned sync resolves actor, account and wiki' => ['PUT', '/api/v1/wiki/official-certification/owned-wikis', ['resolve.actor', 'resolve.account', 'resolve.wiki']],
         ];
     }
 
@@ -352,29 +352,29 @@ class AuthenticatedRouteProtectionTest extends TestCase
     {
         return [
             // Identity: 認証開始に必要な公開API
-            'identity: send auth code' => ['POST', '/api/identity/auth/send-auth-code'],
-            'identity: verify email' => ['POST', '/api/identity/auth/verify-email'],
-            'identity: complete passkey registration' => ['POST', '/api/identity/auth/passkeys/registration'],
-            'identity: passkey authentication options' => ['POST', '/api/identity/auth/passkeys/authentication/options'],
-            'identity: passkey registration options' => ['POST', '/api/identity/auth/passkeys/registration/options'],
-            'identity: social redirect' => ['GET', '/api/identity/auth/social/google/redirect'],
-            'identity: social callback' => ['GET', '/api/identity/auth/social/google/callback'],
-            'identity: send passkey recovery email' => ['POST', '/api/identity/auth/passkeys/recovery/email'],
-            'identity: verify passkey recovery email' => ['POST', '/api/identity/auth/passkeys/recovery/email/verification'],
-            'identity: passkey recovery social redirect' => ['GET', '/api/identity/auth/passkeys/recovery/social/google/redirect'],
-            'identity: passkey recovery options' => ['POST', '/api/identity/auth/passkeys/recovery/options'],
-            'identity: recover passkey' => ['POST', '/api/identity/auth/passkeys/recovery'],
+            'identity: send auth code' => ['POST', '/api/v1/identity/auth/send-auth-code'],
+            'identity: verify email' => ['POST', '/api/v1/identity/auth/verify-email'],
+            'identity: complete passkey registration' => ['POST', '/api/v1/identity/auth/passkeys/registration'],
+            'identity: passkey authentication options' => ['POST', '/api/v1/identity/auth/passkeys/authentication/options'],
+            'identity: passkey registration options' => ['POST', '/api/v1/identity/auth/passkeys/registration/options'],
+            'identity: social redirect' => ['GET', '/api/v1/identity/auth/social/google/redirect'],
+            'identity: social callback' => ['GET', '/api/v1/identity/auth/social/google/callback'],
+            'identity: send passkey recovery email' => ['POST', '/api/v1/identity/auth/passkeys/recovery/email'],
+            'identity: verify passkey recovery email' => ['POST', '/api/v1/identity/auth/passkeys/recovery/email/verification'],
+            'identity: passkey recovery social redirect' => ['GET', '/api/v1/identity/auth/passkeys/recovery/social/google/redirect'],
+            'identity: passkey recovery options' => ['POST', '/api/v1/identity/auth/passkeys/recovery/options'],
+            'identity: recover passkey' => ['POST', '/api/v1/identity/auth/passkeys/recovery'],
 
             // SiteManagement: kpool-frontend の問い合わせフォームで利用する公開API
-            'site management: submit contact' => ['POST', '/api/site-management/contact/submit/v1'],
+            'site management: submit contact' => ['POST', '/api/v1/site-management/contact/submit'],
 
             // Wiki: トップページ・Wiki一覧・Wiki詳細で必要な公開取得API
-            'wiki: list wikis' => ['GET', '/api/wiki/wikis/ja'],
-            'wiki: related profiles' => ['GET', '/api/wiki/wiki/ja/group-slug/related-profiles'],
-            'wiki: agency detail' => ['GET', '/api/wiki/wiki/ja/agency/agency-slug'],
-            'wiki: group detail' => ['GET', '/api/wiki/wiki/ja/group/group-slug'],
-            'wiki: song detail' => ['GET', '/api/wiki/wiki/ja/song/song-slug'],
-            'wiki: talent detail' => ['GET', '/api/wiki/wiki/ja/talent/talent-slug'],
+            'wiki: list wikis' => ['GET', '/api/v1/wiki/wikis/ja'],
+            'wiki: related profiles' => ['GET', '/api/v1/wiki/wiki/ja/group-slug/related-profiles'],
+            'wiki: agency detail' => ['GET', '/api/v1/wiki/wiki/ja/agency/agency-slug'],
+            'wiki: group detail' => ['GET', '/api/v1/wiki/wiki/ja/group/group-slug'],
+            'wiki: song detail' => ['GET', '/api/v1/wiki/wiki/ja/song/song-slug'],
+            'wiki: talent detail' => ['GET', '/api/v1/wiki/wiki/ja/talent/talent-slug'],
         ];
     }
 
@@ -384,46 +384,46 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function disabledRouteProvider(): array
     {
         return [
-            'identity: removed register route' => ['POST', 'api/identity/auth/register'],
-            'identity: removed login route' => ['POST', 'api/identity/auth/login'],
-            'identity: get identity profile' => ['GET', 'api/identity/auth/identities/{identityIdentifier}/profile'],
-            'account: removed create account route' => ['POST', 'api/account/accounts'],
-            'account: delete account' => ['DELETE', 'api/account/accounts/{accountId}'],
-            'account: create delegation permission' => ['POST', 'api/account/delegation-permissions'],
-            'account: delete delegation permission' => ['DELETE', 'api/account/delegation-permissions/{delegationPermissionId}'],
-            'account: create principal group' => ['POST', 'api/account/principal-groups'],
-            'account: add principal group member' => ['POST', 'api/account/principal-groups/{principalGroupId}/add-member'],
-            'account: remove principal group member' => ['POST', 'api/account/principal-groups/{principalGroupId}/remove-member'],
-            'account: delete principal group' => ['DELETE', 'api/account/principal-groups/{principalGroupId}'],
-            'account: terminate affiliation' => ['POST', 'api/account/affiliations/{affiliationId}/terminate'],
-            'wiki: merge' => ['POST', 'api/wiki/wiki/{wikiId}/merge'],
-            'wiki: rollback' => ['POST', 'api/wiki/wiki/{wikiId}/rollback'],
-            'wiki: delete image' => ['DELETE', 'api/wiki/image/{imageId}'],
-            'wiki: unhide image' => ['POST', 'api/wiki/image/{imageId}/unhide'],
-            'wiki: create principal group' => ['POST', 'api/wiki/principal-group/create'],
-            'wiki: add principal group member' => ['POST', 'api/wiki/principal-group/{principalGroupId}/add-member'],
-            'wiki: remove principal group member' => ['POST', 'api/wiki/principal-group/{principalGroupId}/remove-member'],
-            'wiki: delete principal group' => ['DELETE', 'api/wiki/principal-group/{principalGroupId}'],
-            'wiki: attach role' => ['POST', 'api/wiki/principal-group/{principalGroupId}/attach-role'],
-            'wiki: detach role' => ['POST', 'api/wiki/principal-group/{principalGroupId}/detach-role'],
-            'wiki: create role' => ['POST', 'api/wiki/role/create'],
-            'wiki: delete role' => ['DELETE', 'api/wiki/role/{roleId}'],
-            'wiki: attach policy' => ['POST', 'api/wiki/role/{roleId}/attach-policy'],
-            'wiki: detach policy' => ['POST', 'api/wiki/role/{roleId}/detach-policy'],
-            'wiki: create policy' => ['POST', 'api/wiki/policy/create'],
-            'wiki: delete policy' => ['DELETE', 'api/wiki/policy/{policyId}'],
-            'wiki: save video link' => ['POST', 'api/wiki/video-link/save'],
-            'monetization: provision account' => ['POST', 'api/monetization/accounts'],
-            'monetization: onboard seller' => ['POST', 'api/monetization/accounts/{monetizationAccountId}/onboard-seller'],
-            'monetization: register payment method' => ['POST', 'api/monetization/accounts/{monetizationAccountId}/register-payment-method'],
-            'monetization: sync payout account' => ['POST', 'api/monetization/accounts/sync-payout-account'],
-            'monetization: authorize payment' => ['POST', 'api/monetization/payments/authorize'],
-            'monetization: capture payment' => ['POST', 'api/monetization/payments/{paymentId}/capture'],
-            'monetization: refund payment' => ['POST', 'api/monetization/payments/{paymentId}/refund'],
-            'monetization: create invoice' => ['POST', 'api/monetization/invoices'],
-            'monetization: record payment' => ['POST', 'api/monetization/invoices/{invoiceId}/record-payment'],
-            'monetization: execute transfer' => ['POST', 'api/monetization/transfers/{transferId}/execute'],
-            'monetization: settle revenue' => ['POST', 'api/monetization/settlements/settle-revenue'],
+            'identity: removed register route' => ['POST', 'api/v1/identity/auth/register'],
+            'identity: removed login route' => ['POST', 'api/v1/identity/auth/login'],
+            'identity: get identity profile' => ['GET', 'api/v1/identity/auth/identities/{identityIdentifier}/profile'],
+            'account: removed create account route' => ['POST', 'api/v1/account/accounts'],
+            'account: delete account' => ['DELETE', 'api/v1/account/accounts/{accountId}'],
+            'account: create delegation permission' => ['POST', 'api/v1/account/delegation-permissions'],
+            'account: delete delegation permission' => ['DELETE', 'api/v1/account/delegation-permissions/{delegationPermissionId}'],
+            'account: create principal group' => ['POST', 'api/v1/account/principal-groups'],
+            'account: add principal group member' => ['POST', 'api/v1/account/principal-groups/{principalGroupId}/add-member'],
+            'account: remove principal group member' => ['POST', 'api/v1/account/principal-groups/{principalGroupId}/remove-member'],
+            'account: delete principal group' => ['DELETE', 'api/v1/account/principal-groups/{principalGroupId}'],
+            'account: terminate affiliation' => ['POST', 'api/v1/account/affiliations/{affiliationId}/terminate'],
+            'wiki: merge' => ['POST', 'api/v1/wiki/wiki/{wikiId}/merge'],
+            'wiki: rollback' => ['POST', 'api/v1/wiki/wiki/{wikiId}/rollback'],
+            'wiki: delete image' => ['DELETE', 'api/v1/wiki/image/{imageId}'],
+            'wiki: unhide image' => ['POST', 'api/v1/wiki/image/{imageId}/unhide'],
+            'wiki: create principal group' => ['POST', 'api/v1/wiki/principal-group/create'],
+            'wiki: add principal group member' => ['POST', 'api/v1/wiki/principal-group/{principalGroupId}/add-member'],
+            'wiki: remove principal group member' => ['POST', 'api/v1/wiki/principal-group/{principalGroupId}/remove-member'],
+            'wiki: delete principal group' => ['DELETE', 'api/v1/wiki/principal-group/{principalGroupId}'],
+            'wiki: attach role' => ['POST', 'api/v1/wiki/principal-group/{principalGroupId}/attach-role'],
+            'wiki: detach role' => ['POST', 'api/v1/wiki/principal-group/{principalGroupId}/detach-role'],
+            'wiki: create role' => ['POST', 'api/v1/wiki/role/create'],
+            'wiki: delete role' => ['DELETE', 'api/v1/wiki/role/{roleId}'],
+            'wiki: attach policy' => ['POST', 'api/v1/wiki/role/{roleId}/attach-policy'],
+            'wiki: detach policy' => ['POST', 'api/v1/wiki/role/{roleId}/detach-policy'],
+            'wiki: create policy' => ['POST', 'api/v1/wiki/policy/create'],
+            'wiki: delete policy' => ['DELETE', 'api/v1/wiki/policy/{policyId}'],
+            'wiki: save video link' => ['POST', 'api/v1/wiki/video-link/save'],
+            'monetization: provision account' => ['POST', 'api/v1/monetization/accounts'],
+            'monetization: onboard seller' => ['POST', 'api/v1/monetization/accounts/{monetizationAccountId}/onboard-seller'],
+            'monetization: register payment method' => ['POST', 'api/v1/monetization/accounts/{monetizationAccountId}/register-payment-method'],
+            'monetization: sync payout account' => ['POST', 'api/v1/monetization/accounts/sync-payout-account'],
+            'monetization: authorize payment' => ['POST', 'api/v1/monetization/payments/authorize'],
+            'monetization: capture payment' => ['POST', 'api/v1/monetization/payments/{paymentId}/capture'],
+            'monetization: refund payment' => ['POST', 'api/v1/monetization/payments/{paymentId}/refund'],
+            'monetization: create invoice' => ['POST', 'api/v1/monetization/invoices'],
+            'monetization: record payment' => ['POST', 'api/v1/monetization/invoices/{invoiceId}/record-payment'],
+            'monetization: execute transfer' => ['POST', 'api/v1/monetization/transfers/{transferId}/execute'],
+            'monetization: settle revenue' => ['POST', 'api/v1/monetization/settlements/settle-revenue'],
             'webhook: stripe' => ['POST', 'webhook/stripe'],
         ];
     }
@@ -434,12 +434,12 @@ class AuthenticatedRouteProtectionTest extends TestCase
     private static function publicWikiRouteUris(): array
     {
         return [
-            'api/wiki/wiki/{language}/{slug}/related-profiles',
-            'api/wiki/wiki/{language}/agency/{slug}',
-            'api/wiki/wiki/{language}/group/{slug}',
-            'api/wiki/wiki/{language}/song/{slug}',
-            'api/wiki/wiki/{language}/talent/{slug}',
-            'api/wiki/wikis/{language}',
+            'api/v1/wiki/wiki/{language}/{slug}/related-profiles',
+            'api/v1/wiki/wiki/{language}/agency/{slug}',
+            'api/v1/wiki/wiki/{language}/group/{slug}',
+            'api/v1/wiki/wiki/{language}/song/{slug}',
+            'api/v1/wiki/wiki/{language}/talent/{slug}',
+            'api/v1/wiki/wikis/{language}',
         ];
     }
 

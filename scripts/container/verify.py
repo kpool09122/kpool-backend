@@ -92,9 +92,9 @@ try:
     def request(path):
         return docker('exec', api, 'curl', '-sS', '-H', 'Accept: application/json', '-w', '\n%{http_code}', 'http://127.0.0.1:8080' + path, check=False)
     wait_for(lambda: request('/health').stdout.endswith('\n200'), 'Laravel health')
-    csrf = request('/api/identity/auth/csrf-token')
+    csrf = request('/api/v1/identity/auth/csrf-token')
     assert csrf.stdout == '\n204', csrf.stdout
-    denied = request('/api/identity/auth/me')
+    denied = request('/api/v1/identity/auth/me')
     assert denied.stdout.endswith('\n401'), denied.stdout
     assert request('/not-a-script.php').stdout.endswith('\n404')
     assert request('/.env').stdout.endswith('\n403')
@@ -120,7 +120,7 @@ try:
     docker('exec', PREFIX + '-redis', 'redis-cli', 'CLIENT', 'PAUSE', '5000', 'ALL')
     pending = subprocess.Popen(['docker', 'exec', api, 'curl', '-sS', '-H',
                                 'Accept: application/json', '-w', '\n%{http_code}',
-                                'http://127.0.0.1:8080/api/identity/auth/csrf-token'],
+                                'http://127.0.0.1:8080/api/v1/identity/auth/csrf-token'],
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     time.sleep(0.5)
     assert pending.poll() is None, 'request must still be in flight'

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: k-pool Wiki Private API
+  title: k-pool Wiki API
   version: 0.0.0
 tags: []
 paths:
@@ -7728,6 +7728,6 @@ components:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for withdrawing a wiki draft review request.
 servers:
-  - url: /api/wiki
+  - url: /api/v1/wiki
     description: Laravel route prefix from bootstrap/app.php.
     variables: {}

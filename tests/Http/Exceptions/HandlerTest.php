@@ -139,7 +139,7 @@ class HandlerTest extends TestCase
     private function jsonRequest(): Request
     {
         return Request::create(
-            '/api/wiki/drafts/01965bb2-bcc9-7c6f-8b90-89f7f217f002/approve',
+            '/api/v1/wiki/drafts/01965bb2-bcc9-7c6f-8b90-89f7f217f002/approve',
             'POST',
             server: [
                 'HTTP_ACCEPT' => 'application/json',

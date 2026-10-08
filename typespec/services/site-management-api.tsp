@@ -2,7 +2,7 @@ using TypeSpec.Http;
 using KPool.Common;
 
 @service(#{ title: "k-pool Site Management API" })
-@server("/api/site-management", "Laravel route prefix from bootstrap/app.php.")
+@server("/api/v1/site-management", "Laravel route prefix from bootstrap/app.php.")
 namespace KPool.SiteManagementApi;
 
 @doc("Contact category accepted by the submit-contact endpoint.")
@@ -181,10 +181,9 @@ interface ContactOperations {
   ): ListContactsByPrincipalResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
-  @route("/submit/v{version}")
+  @route("/submit")
   @doc("Submit a contact inquiry.")
   submitContact(
-    @path version: int32,
     @body body: SubmitContactRequestBody,
   ): SubmitContactResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }

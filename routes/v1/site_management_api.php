@@ -12,7 +12,7 @@ use Application\Http\Action\SiteManagement\Contact\Query\ListMyContacts\ListMyCo
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('rate-limit:screen,command')->group(function () {
-    Route::post('/contact/submit/v{version}', SubmitContactAction::class)->whereNumber('version');
+    Route::post('/contact/submit', SubmitContactAction::class);
 });
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.site-management'])->group(function () {
