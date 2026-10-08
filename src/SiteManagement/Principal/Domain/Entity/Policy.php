@@ -8,14 +8,14 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Statement;
 
-class Policy
+readonly class Policy
 {
     /** @param Statement[] $statements */
     public function __construct(
-        private readonly PolicyIdentifier $policyIdentifier,
-        private readonly string $name,
-        private readonly array $statements,
-        private readonly ?AccountIdentifier $accountIdentifier = null,
+        private PolicyIdentifier   $policyIdentifier,
+        private string             $name,
+        private array              $statements,
+        private ?AccountIdentifier $accountIdentifier = null,
     ) {
     }
 

@@ -156,8 +156,6 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             ->first();
 
         return new AuthenticatedIdentityReadModel(
-            siteManagementPrincipalIdentifier: $siteManagementPrincipal === null ? null : $siteManagementPrincipal->id,
-            siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
             identityIdentifier: $model->id,
             identityName: $model->identity_name,
             email: $model->email,
@@ -177,6 +175,8 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                 ? null
                 : (string) $accountContext->delegationIdentifier(),
             switchableAccounts: $switchableAccounts,
+            siteManagementPrincipalIdentifier: $siteManagementPrincipal?->id,
+            siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
         );
     }
 
