@@ -14,7 +14,7 @@ interface ListMyContactsOutputPort
     /**
      * @return array<int, array{
      *     contactIdentifier: string,
-     *     identityIdentifier: ?string,
+     *     principalIdentifier: ?string,
      *     category: int,
      *     name: string,
      *     replyIdentifiers: array<int, string>,

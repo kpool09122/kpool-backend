@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail;
+namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal;
 
-use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
-readonly class GetContactDetailInput implements GetContactDetailInputPort
+readonly class ListContactsByPrincipalInput implements ListContactsByPrincipalInputPort
 {
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
         private PrincipalIdentifier $targetPrincipalIdentifier,
-        private ContactIdentifier $contactIdentifier,
     ) {
     }
 
@@ -24,10 +22,5 @@ readonly class GetContactDetailInput implements GetContactDetailInputPort
     public function targetPrincipalIdentifier(): PrincipalIdentifier
     {
         return $this->targetPrincipalIdentifier;
-    }
-
-    public function contactIdentifier(): ContactIdentifier
-    {
-        return $this->contactIdentifier;
     }
 }

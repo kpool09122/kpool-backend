@@ -11,10 +11,10 @@ class ContactReadModelTest extends TestCase
 {
     public function testSerializesValues(): void
     {
-        $subject = new ContactReadModel('contactIdentifier-value', 'identityIdentifier-value', 7, 'name-value', ['reply-1', 'reply-2'], 'createdAt-value');
+        $subject = new ContactReadModel('contactIdentifier-value', 'principalIdentifier-value', 7, 'name-value', ['reply-1', 'reply-2'], 'createdAt-value');
         $this->assertSame([
             'contactIdentifier' => 'contactIdentifier-value',
-            'identityIdentifier' => 'identityIdentifier-value',
+            'principalIdentifier' => 'principalIdentifier-value',
             'category' => 7,
             'name' => 'name-value',
             'replyIdentifiers' => ['reply-1', 'reply-2'],
@@ -27,7 +27,7 @@ class ContactReadModelTest extends TestCase
         $subject = new ContactReadModel('contactIdentifier-value', null, 7, 'name-value', ['reply-1', 'reply-2'], 'createdAt-value');
         $this->assertSame([
             'contactIdentifier' => 'contactIdentifier-value',
-            'identityIdentifier' => null,
+            'principalIdentifier' => null,
             'category' => 7,
             'name' => 'name-value',
             'replyIdentifiers' => ['reply-1', 'reply-2'],

@@ -51,7 +51,7 @@ readonly class ReplyContact implements ReplyContactInterface
             throw new ContactNotFoundException();
         }
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT, $contact->identityIdentifier()))) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT, $contact->principalIdentifier()))) {
             throw new UnauthorizedException();
         }
 
@@ -59,7 +59,7 @@ readonly class ReplyContact implements ReplyContactInterface
 
         $reply = $this->replyContactFactory->create(
             $contact->contactIdentifier(),
-            $principal->identityIdentifier(),
+            $principal->principalIdentifier(),
             $contact->email(),
             $content,
             null,
@@ -78,7 +78,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $failed = new ReplyCotact(
                 $persisted->replyIdentifier(),
                 $persisted->contactIdentifier(),
-                $persisted->identityIdentifier(),
+                $persisted->principalIdentifier(),
                 $persisted->toEmail(),
                 $persisted->content(),
                 null,
@@ -97,7 +97,7 @@ readonly class ReplyContact implements ReplyContactInterface
         $sent = new ReplyCotact(
             $persisted->replyIdentifier(),
             $persisted->contactIdentifier(),
-            $persisted->identityIdentifier(),
+            $persisted->principalIdentifier(),
             $persisted->toEmail(),
             $persisted->content(),
             $sentAt,

@@ -6,11 +6,11 @@ namespace Tests\SiteManagement\Contact\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -23,7 +23,7 @@ class ReplyCotactTest extends TestCase
     {
         $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $contentText = 'お問い合わせありがとうございます。
 
@@ -39,7 +39,7 @@ class ReplyCotactTest extends TestCase
         $reply = new ReplyCotact(
             $replyIdentifier,
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $toEmail,
             $content,
             $sentAt,
@@ -49,7 +49,7 @@ class ReplyCotactTest extends TestCase
 
         $this->assertSame((string)$replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame((string)$contactIdentifier, (string)$reply->contactIdentifier());
-        $this->assertSame((string)$identityIdentifier, (string)$reply->identityIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$reply->principalIdentifier());
         $this->assertSame((string)$toEmail, (string)$reply->toEmail());
         $this->assertSame((string)$content, (string)$reply->content());
         $this->assertSame($sentAt, $reply->sentAt());
@@ -71,7 +71,7 @@ class ReplyCotactTest extends TestCase
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             new ContactIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new Email('john.doe@example.com'),
             new ReplyContent($contentText),
             null,

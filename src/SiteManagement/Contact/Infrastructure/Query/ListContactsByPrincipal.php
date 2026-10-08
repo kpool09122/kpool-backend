@@ -8,20 +8,20 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInputPort;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityOutputPort;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInputPort;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalOutputPort;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use UnexpectedValueException;
 
-readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
+readonly class ListContactsByPrincipal implements ListContactsByPrincipalInterface
 {
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
@@ -29,7 +29,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
     ) {
     }
 
-    public function process(ListContactsByIdentityInputPort $input, ListContactsByIdentityOutputPort $output): void
+    public function process(ListContactsByPrincipalInputPort $input, ListContactsByPrincipalOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null) {
@@ -37,8 +37,8 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
         }
 
         $contacts = ContactModel::query()
-            ->select(['id', 'identity_identifier', 'category', 'name', 'created_at'])
-            ->where('identity_identifier', (string) $input->targetIdentityIdentifier())
+            ->select(['id', 'principal_identifier', 'category', 'name', 'created_at'])
+            ->where('principal_identifier', (string) $input->targetPrincipalIdentifier())
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
@@ -56,7 +56,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
             ->all();
 
         foreach ($contacts as $contact) {
-            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier((string) $contact->identity_identifier);
+            $owner = $contact->principal_identifier === null ? null : new PrincipalIdentifier((string) $contact->principal_identifier);
             if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
                 throw new UnauthorizedException();
             }
@@ -65,7 +65,7 @@ readonly class ListContactsByIdentity implements ListContactsByIdentityInterface
         $contacts = $contacts
             ->map(fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
                 contactIdentifier: (string) $contact->id,
-                identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
+                principalIdentifier: $contact->principal_identifier === null ? null : (string) $contact->principal_identifier,
                 category: (int) $contact->category,
                 name: (string) $contact->name,
                 replyIdentifiers: $replyIdentifiersByContactIdentifier[(string) $contact->id] ?? [],

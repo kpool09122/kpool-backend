@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('contact_id')->comment('問い合わせID');
             $table->text('content')->comment('返信内容');
             $table->text('to_email')->comment('送信先メールアドレス');
-            $table->uuid('identity_identifier')->nullable()->comment('返信者アイデンティティID');
+            $table->uuid('principal_identifier')->nullable()->comment('返信者Principal ID');
             $table->dateTime('sent_at')->nullable()->comment('送信日時');
             $table->dateTime('failed_at')->nullable()->comment('送信失敗日時');
             $table->timestamps();

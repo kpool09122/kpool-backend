@@ -66,16 +66,16 @@ class ContactDetailErrorsTest extends TestCase
             SiteManagementAuthorization::grantAdministrator($principal);
         }
         $contact = StrTestHelper::generateUuid();
-        $owner = $mine && $status === 403 ? (string) $identity : StrTestHelper::generateUuid();
+        $owner = $mine && $status === 403 ? (string) $principal->principalIdentifier() : StrTestHelper::generateUuid();
         if ($mine && $status === 403) {
             DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact']], JSON_THROW_ON_ERROR)]);
         }
         if ($exists) {
-            DB::table('contacts')->insert(['id' => $contact, 'identity_identifier' => $owner, 'category' => 1, 'name' => 'Other', 'email' => 'encrypted', 'content' => 'history', 'language' => 'ja']);
+            DB::table('contacts')->insert(['id' => $contact, 'principal_identifier' => $owner, 'category' => 1, 'name' => 'Other', 'email' => 'encrypted', 'content' => 'history', 'language' => 'ja']);
         }
-        $uri = '/identities/'.$owner.'/contacts/'.$contact;
+        $uri = '/principals/'.$owner.'/contacts/'.$contact;
         $request = $mine ? GetMyContactDetailRequest::create($uri, 'GET') : GetContactDetailRequest::create($uri, 'GET');
-        $route = new Route('GET', '/identities/{identityIdentifier}/contacts/{contactIdentifier}', static fn () => null);
+        $route = new Route('GET', '/principals/{principalIdentifier}/contacts/{contactIdentifier}', static fn () => null);
         $route->bind($request);
         $request->setRouteResolver(static fn (): Route => $route);
         $action = $this->app()->make($mine ? GetMyContactDetailAction::class : GetContactDetailAction::class);

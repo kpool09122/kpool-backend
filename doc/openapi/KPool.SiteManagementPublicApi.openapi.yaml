@@ -4,19 +4,19 @@ info:
   version: 0.0.0
 tags: []
 paths:
-  /contact/identities/{identityIdentifier}:
+  /contact/principals/{principalIdentifier}:
     get:
-      operationId: ContactOperations_listContactsByIdentity
-      description: List contact inquiries for the specified identity. Requires a site-management administrator.
+      operationId: ContactOperations_listContactsByPrincipal
+      description: List contact inquiries for the specified principal. Requires a site-management administrator.
       parameters:
-        - name: identityIdentifier
+        - name: principalIdentifier
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
-          description: Response containing contact inquiries for an identity.
+          description: Response containing contact inquiries for an principal.
           content:
             application/json:
               schema:
@@ -59,12 +59,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /contact/identities/{identityIdentifier}/{contactIdentifier}:
+  /contact/principals/{principalIdentifier}/{contactIdentifier}:
     get:
       operationId: ContactOperations_getContactDetail
-      description: Get the specified contact inquiry for an identity. Requires a site-management administrator.
+      description: Get the specified contact inquiry for an principal. Requires a site-management administrator.
       parameters:
-        - name: identityIdentifier
+        - name: principalIdentifier
           in: path
           required: true
           schema:
@@ -186,9 +186,9 @@ paths:
   /contacts:
     get:
       operationId: ContactListOperations_listContacts
-      description: List all contact inquiries, optionally filtered by identity. Requires a site-management administrator.
+      description: List all contact inquiries, optionally filtered by principal. Requires a site-management administrator.
       parameters:
-        - name: identityIdentifier
+        - name: principalIdentifier
           in: query
           required: false
           schema:
@@ -275,11 +275,11 @@ paths:
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
-      description: List contact inquiries associated with the signed-in identity, newest first.
+      description: List contact inquiries associated with the signed-in principal, newest first.
       parameters: []
       responses:
         '200':
-          description: Response containing contact inquiries associated with the signed-in identity.
+          description: Response containing contact inquiries associated with the signed-in principal.
           content:
             application/json:
               schema:
@@ -319,7 +319,7 @@ paths:
   /my/contact/{contactIdentifier}:
     get:
       operationId: MyContactOperations_getMyContactDetail
-      description: Get a contact inquiry associated with the signed-in identity.
+      description: Get a contact inquiry associated with the signed-in principal.
       parameters:
         - name: contactIdentifier
           in: path
@@ -391,7 +391,7 @@ components:
       properties:
         contactIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
-        identityIdentifier:
+        principalIdentifier:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -437,12 +437,12 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Contact identifier.
-        identityIdentifier:
+        principalIdentifier:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
-          description: Identity identifier when the inquiry is associated with a signed-in user.
+          description: Site-management principal identifier when the inquiry is associated with a signed-in user.
         category:
           type: integer
           format: int32
@@ -531,12 +531,12 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Contact identifier.
-        identityIdentifier:
+        principalIdentifier:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
-          description: Identity identifier associated with the inquiry.
+          description: Site-management principal identifier associated with the inquiry.
         category:
           type: integer
           format: int32

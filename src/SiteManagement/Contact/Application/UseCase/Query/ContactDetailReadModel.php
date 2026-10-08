@@ -9,7 +9,7 @@ readonly class ContactDetailReadModel
     /** @param array<int, array{replyIdentifier: string, content: string, sentAt: string}> $replies */
     public function __construct(
         private string $contactIdentifier,
-        private ?string $identityIdentifier,
+        private ?string $principalIdentifier,
         private int $category,
         private string $name,
         private string $createdAt,
@@ -18,12 +18,12 @@ readonly class ContactDetailReadModel
     ) {
     }
 
-    /** @return array{contactIdentifier: string, identityIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, content: string, sentAt: string}>} */
+    /** @return array{contactIdentifier: string, principalIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, content: string, sentAt: string}>} */
     public function toArray(): array
     {
         return [
             'contactIdentifier' => $this->contactIdentifier,
-            'identityIdentifier' => $this->identityIdentifier,
+            'principalIdentifier' => $this->principalIdentifier,
             'category' => $this->category,
             'name' => $this->name,
             'createdAt' => $this->createdAt,

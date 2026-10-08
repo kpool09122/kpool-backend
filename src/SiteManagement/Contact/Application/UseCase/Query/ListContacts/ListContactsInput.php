@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts;
 
 use InvalidArgumentException;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ListContactsInput implements ListContactsInputPort
@@ -17,7 +16,7 @@ readonly class ListContactsInput implements ListContactsInputPort
 
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
-        private ?IdentityIdentifier $targetIdentityIdentifier,
+        private ?PrincipalIdentifier $targetPrincipalIdentifier,
         private ?bool $hasReply,
         ?int $perPage = null,
         private int $page = 1,
@@ -38,9 +37,9 @@ readonly class ListContactsInput implements ListContactsInputPort
         return $this->principalIdentifier;
     }
 
-    public function targetIdentityIdentifier(): ?IdentityIdentifier
+    public function targetPrincipalIdentifier(): ?PrincipalIdentifier
     {
-        return $this->targetIdentityIdentifier;
+        return $this->targetPrincipalIdentifier;
     }
 
     public function hasReply(): ?bool

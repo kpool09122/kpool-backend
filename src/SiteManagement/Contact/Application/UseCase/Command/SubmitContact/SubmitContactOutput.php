@@ -23,7 +23,7 @@ class SubmitContactOutput implements SubmitContactOutputPort
     /**
      * @return array{
      *     contactIdentifier: ?string,
-     *     identityIdentifier: ?string,
+     *     principalIdentifier: ?string,
      *     category: ?int,
      *     name: ?string,
      *     email: ?string,
@@ -35,7 +35,7 @@ class SubmitContactOutput implements SubmitContactOutputPort
         if ($this->contact === null) {
             return [
                 'contactIdentifier' => null,
-                'identityIdentifier' => null,
+                'principalIdentifier' => null,
                 'category' => null,
                 'name' => null,
                 'email' => null,
@@ -45,8 +45,8 @@ class SubmitContactOutput implements SubmitContactOutputPort
 
         return [
             'contactIdentifier' => (string) $this->contact->contactIdentifier(),
-            'identityIdentifier' => $this->contact->identityIdentifier() !== null
-                ? (string) $this->contact->identityIdentifier()
+            'principalIdentifier' => $this->contact->principalIdentifier() !== null
+                ? (string) $this->contact->principalIdentifier()
                 : null,
             'category' => $this->contact->category()->value,
             'name' => (string) $this->contact->name(),

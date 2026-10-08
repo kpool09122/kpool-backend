@@ -61,10 +61,10 @@ class ReplyContactTest extends TestCase
     public function testProcess(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
@@ -80,10 +80,10 @@ class ReplyContactTest extends TestCase
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            new PrincipalIdentifier((string) $identityIdentifier),
+            new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
         );
-        $this->bindAdminUser($identityIdentifier);
+        $this->bindAdminUser($principalIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -103,7 +103,7 @@ class ReplyContactTest extends TestCase
         $unsentReply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
             null,
@@ -115,14 +115,14 @@ class ReplyContactTest extends TestCase
             ->once()
             ->withArgs(function (
                 ContactIdentifier $ci,
-                ?IdentityIdentifier $ii,
+                ?PrincipalIdentifier $ii,
                 Email $toEmail,
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
-            ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
+            ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
-                    && $ii === $identityIdentifier
+                    && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
@@ -141,10 +141,10 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
-                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->principalIdentifier() === (string)$principalIdentifier
                     && (string)$saved->toEmail() === (string)$contact->email()
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() instanceof DateTimeImmutable
@@ -170,18 +170,18 @@ class ReplyContactTest extends TestCase
     public function testWhenUserIsNotAdmin(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $input = new ReplyContactInput(
             $contactIdentifier,
-            new PrincipalIdentifier((string) $identityIdentifier),
+            new PrincipalIdentifier((string) $principalIdentifier),
             '返信内容',
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $identityIdentifier))
-            ->andReturn(new Principal(new PrincipalIdentifier((string) $identityIdentifier), $identityIdentifier, new AccountIdentifier('00000000-0000-7000-8000-000000000009')));
+            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $principalIdentifier))
+            ->andReturn(new Principal(new PrincipalIdentifier((string) $principalIdentifier), new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier('00000000-0000-7000-8000-000000000009')));
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldNotReceive('findById');
@@ -217,17 +217,17 @@ class ReplyContactTest extends TestCase
     public function testWhenContactNotFound(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $expectedContent = 'お問い合わせありがとうございます。
 
 内容を確認のうえ、担当より折り返しご連絡いたします。
 今しばらくお待ちください。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            new PrincipalIdentifier((string) $identityIdentifier),
+            new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
         );
-        $this->bindAdminUser($identityIdentifier);
+        $this->bindAdminUser($principalIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -262,10 +262,10 @@ class ReplyContactTest extends TestCase
     public function testWhenFailedToSendEmail(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
@@ -279,10 +279,10 @@ class ReplyContactTest extends TestCase
 恐れ入りますが、回答まで今しばらくお時間をいただけますと幸いです。';
         $input = new ReplyContactInput(
             $contactIdentifier,
-            new PrincipalIdentifier((string) $identityIdentifier),
+            new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
         );
-        $this->bindAdminUser($identityIdentifier);
+        $this->bindAdminUser($principalIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -298,7 +298,7 @@ class ReplyContactTest extends TestCase
         $unsentReply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
             null,
@@ -310,14 +310,14 @@ class ReplyContactTest extends TestCase
             ->once()
             ->withArgs(function (
                 ContactIdentifier $ci,
-                ?IdentityIdentifier $ii,
+                ?PrincipalIdentifier $ii,
                 Email $toEmail,
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
-            ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
+            ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
-                    && $ii === $identityIdentifier
+                    && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
@@ -336,10 +336,10 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
-                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->principalIdentifier() === (string)$principalIdentifier
                     && (string)$saved->toEmail() === (string)$contact->email()
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() === null
@@ -358,14 +358,14 @@ class ReplyContactTest extends TestCase
         $useCase->process($input);
     }
 
-    private function bindAdminUser(IdentityIdentifier $identityIdentifier): void
+    private function bindAdminUser(PrincipalIdentifier $principalIdentifier): void
     {
-        $user = new Principal(new PrincipalIdentifier((string) $identityIdentifier), $identityIdentifier, new AccountIdentifier('00000000-0000-7000-8000-000000000009'));
+        $user = new Principal(new PrincipalIdentifier((string) $principalIdentifier), new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier('00000000-0000-7000-8000-000000000009'));
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $identityIdentifier))
+            ->with(Mockery::on(static fn (PrincipalIdentifier $id): bool => (string) $id === (string) $principalIdentifier))
             ->andReturn($user);
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);

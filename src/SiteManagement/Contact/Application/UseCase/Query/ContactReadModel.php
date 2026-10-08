@@ -8,7 +8,7 @@ readonly class ContactReadModel
 {
     public function __construct(
         private string $contactIdentifier,
-        private ?string $identityIdentifier,
+        private ?string $principalIdentifier,
         private int $category,
         private string $name,
         /** @var array<int, string> */
@@ -20,7 +20,7 @@ readonly class ContactReadModel
     /**
      * @return array{
      *     contactIdentifier: string,
-     *     identityIdentifier: ?string,
+     *     principalIdentifier: ?string,
      *     category: int,
      *     name: string,
      *     replyIdentifiers: array<int, string>,
@@ -31,7 +31,7 @@ readonly class ContactReadModel
     {
         return [
             'contactIdentifier' => $this->contactIdentifier,
-            'identityIdentifier' => $this->identityIdentifier,
+            'principalIdentifier' => $this->principalIdentifier,
             'category' => $this->category,
             'name' => $this->name,
             'replyIdentifiers' => $this->replyIdentifiers,

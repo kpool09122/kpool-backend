@@ -8,7 +8,6 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
@@ -16,6 +15,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListM
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -30,14 +30,14 @@ readonly class ListMyContacts implements ListMyContactsInterface
     public function process(ListMyContactsInputPort $input, ListMyContactsOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->identityIdentifier()))) {
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $principal->principalIdentifier()))) {
             throw new UnauthorizedException();
         }
 
         $contacts = ContactModel::query()
             ->select([
                 'id',
-                'identity_identifier',
+                'principal_identifier',
                 'category',
                 'name',
                 'created_at',
@@ -51,13 +51,13 @@ readonly class ListMyContacts implements ListMyContactsInterface
                         ->orderBy('id');
                 },
             ])
-            ->where('identity_identifier', (string) $principal->identityIdentifier())
+            ->where('principal_identifier', (string) $principal->principalIdentifier())
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
 
         foreach ($contacts as $contact) {
-            $owner = $contact->identity_identifier === null ? null : new IdentityIdentifier((string) $contact->identity_identifier);
+            $owner = $contact->principal_identifier === null ? null : new PrincipalIdentifier((string) $contact->principal_identifier);
             if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
                 throw new UnauthorizedException();
             }
@@ -66,7 +66,7 @@ readonly class ListMyContacts implements ListMyContactsInterface
         $contacts = $contacts
             ->map(static fn (ContactModel $contact): ContactReadModel => new ContactReadModel(
                 contactIdentifier: (string) $contact->id,
-                identityIdentifier: $contact->identity_identifier === null ? null : (string) $contact->identity_identifier,
+                principalIdentifier: $contact->principal_identifier === null ? null : (string) $contact->principal_identifier,
                 category: (int) $contact->category,
                 name: (string) $contact->name,
                 replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),

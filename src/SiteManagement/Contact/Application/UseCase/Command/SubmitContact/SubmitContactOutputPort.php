@@ -15,7 +15,7 @@ interface SubmitContactOutputPort
     /**
      * @return array{
      *     contactIdentifier: ?string,
-     *     identityIdentifier: ?string,
+     *     principalIdentifier: ?string,
      *     category: ?int,
      *     name: ?string,
      *     email: ?string,

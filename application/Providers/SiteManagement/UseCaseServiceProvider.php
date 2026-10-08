@@ -22,12 +22,12 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\Subm
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
 use Source\SiteManagement\Contact\Infrastructure\Query\GetContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
-use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByIdentity;
+use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByPrincipal;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipal;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
@@ -45,7 +45,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeleteAnnouncementInterface::class, DeleteAnnouncement::class);
         $this->app->singleton(SubmitContactInterface::class, SubmitContact::class);
         $this->app->singleton(ReplyContactInterface::class, ReplyContact::class);
-        $this->app->singleton(ListContactsByIdentityInterface::class, ListContactsByIdentity::class);
+        $this->app->singleton(ListContactsByPrincipalInterface::class, ListContactsByPrincipal::class);
         $this->app->singleton(ListContactsInterface::class, ListContacts::class);
         $this->app->singleton(ListMyContactsInterface::class, ListMyContacts::class);
         $this->app->singleton(GetMyContactDetailInterface::class, GetMyContactDetail::class);

@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateReplyContact;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -54,11 +54,11 @@ class ReplyContactRepositoryTest extends TestCase
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $sentAt = new DateTimeImmutable('2026-01-01 12:34:56');
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             $toEmail,
             new ReplyContent($contentText),
             $sentAt,
@@ -75,7 +75,7 @@ class ReplyContactRepositoryTest extends TestCase
 
         $this->assertNotNull($record);
         $this->assertSame((string)$reply->contactIdentifier(), $record->contact_id);
-        $this->assertSame((string)$identityIdentifier, $record->identity_identifier);
+        $this->assertSame((string)$principalIdentifier, $record->principal_identifier);
 
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$reply->toEmail(), $record->to_email);
@@ -124,7 +124,7 @@ class ReplyContactRepositoryTest extends TestCase
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $toEmail,
             new ReplyContent($contentText),
             null,
@@ -172,7 +172,7 @@ class ReplyContactRepositoryTest extends TestCase
         $reply = CreateReplyContact::create(
             $contactIdentifier,
             $toEmail,
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2026-01-02 12:34:56'),
             null,
             new DateTimeImmutable('2026-01-02 00:00:00'),
@@ -186,8 +186,8 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertNotNull($savedReply);
         $this->assertSame((string)$reply->replyIdentifier(), (string)$savedReply->replyIdentifier());
         $this->assertSame((string)$contactIdentifier, (string)$savedReply->contactIdentifier());
-        $this->assertNotNull($savedReply->identityIdentifier());
-        $this->assertSame((string)$reply->identityIdentifier(), (string)$savedReply->identityIdentifier());
+        $this->assertNotNull($savedReply->principalIdentifier());
+        $this->assertSame((string)$reply->principalIdentifier(), (string)$savedReply->principalIdentifier());
         $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
         $this->assertSame((string)$reply->content(), (string)$savedReply->content());
         $this->assertNotNull($savedReply->sentAt());
@@ -197,7 +197,7 @@ class ReplyContactRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：identity_identifier / sent_at が null かつ failed_at がある場合も取得できること
+     * 正常系：principal_identifier / sent_at が null かつ failed_at がある場合も取得できること
      *
      * @throws BindingResolutionException
      */
@@ -235,7 +235,7 @@ class ReplyContactRepositoryTest extends TestCase
         $savedReply = $repository->findById($reply->replyIdentifier());
 
         $this->assertNotNull($savedReply);
-        $this->assertNull($savedReply->identityIdentifier());
+        $this->assertNull($savedReply->principalIdentifier());
         $this->assertNull($savedReply->sentAt());
         $this->assertNotNull($savedReply->failedAt());
         $this->assertNotNull($reply->failedAt());

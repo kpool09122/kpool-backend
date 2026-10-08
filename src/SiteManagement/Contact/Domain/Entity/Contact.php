@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class Contact
 {
     public function __construct(
         private ContactIdentifier $contactIdentifier,
-        private ?IdentityIdentifier $identityIdentifier,
+        private ?PrincipalIdentifier $principalIdentifier,
         private Category $category,
         private ContactName $name,
         private Email $email,
@@ -30,9 +30,9 @@ readonly class Contact
         return $this->contactIdentifier;
     }
 
-    public function identityIdentifier(): ?IdentityIdentifier
+    public function principalIdentifier(): ?PrincipalIdentifier
     {
-        return $this->identityIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function category(): Category

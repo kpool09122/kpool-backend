@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\SiteManagement\Contact\Query\ListContactsByIdentity;
+namespace Application\Http\Action\SiteManagement\Contact\Query\ListContactsByPrincipal;
 
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\SiteManagementContext;
@@ -10,31 +10,31 @@ use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInput;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByIdentity\ListContactsByIdentityOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalOutput;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-readonly class ListContactsByIdentityAction
+readonly class ListContactsByPrincipalAction
 {
     public function __construct(
-        private ListContactsByIdentityInterface $listContactsByIdentity,
+        private ListContactsByPrincipalInterface $listContactsByPrincipal,
         private ActorContext $actorContext,
         private SiteManagementContext $siteManagementContext,
         private LoggerInterface $logger,
     ) {
     }
 
-    public function __invoke(ListContactsByIdentityRequest $request): JsonResponse
+    public function __invoke(ListContactsByPrincipalRequest $request): JsonResponse
     {
         try {
-            $output = new ListContactsByIdentityOutput();
-            $this->listContactsByIdentity->process(new ListContactsByIdentityInput(
+            $output = new ListContactsByPrincipalOutput();
+            $this->listContactsByPrincipal->process(new ListContactsByPrincipalInput(
                 $this->siteManagementContext->principalIdentifier,
-                new IdentityIdentifier($request->identityIdentifier()),
+                new PrincipalIdentifier($request->principalIdentifier()),
             ), $output);
         } catch (UnauthorizedException $e) {
             $this->logger->error((string) $e);

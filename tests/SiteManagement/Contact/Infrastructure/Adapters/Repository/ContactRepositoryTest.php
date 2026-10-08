@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
@@ -18,6 +17,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -32,10 +32,10 @@ class ContactRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             new ContactIdentifier(StrTestHelper::generateUuid()),
-            $identityIdentifier,
+            $principalIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
@@ -54,7 +54,7 @@ class ContactRepositoryTest extends TestCase
         self::assertIsInt($record->category);
         self::assertIsString($record->email);
         $this->assertSame($contact->category()->value, $record->category);
-        $this->assertSame((string)$identityIdentifier, $record->identity_identifier);
+        $this->assertSame((string)$principalIdentifier, $record->principal_identifier);
         $this->assertSame((string)$contact->name(), $record->name);
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$contact->email(), $record->email);

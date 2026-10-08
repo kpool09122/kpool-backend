@@ -6,7 +6,6 @@ namespace Tests\SiteManagement\Contact\Application\UseCase\Command\SubmitContact
 
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactOutput;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
@@ -14,6 +13,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class SubmitContactOutputTest extends TestCase
@@ -21,10 +21,10 @@ class SubmitContactOutputTest extends TestCase
     public function testToArrayWithContact(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
-            $identityIdentifier,
+            $principalIdentifier,
             Category::SUGGESTIONS,
             new ContactName('問い合わせ太郎'),
             new Email('john.doe@example.com'),
@@ -38,7 +38,7 @@ class SubmitContactOutputTest extends TestCase
         $this->assertSame($contact, $output->contact());
         $this->assertSame([
             'contactIdentifier' => (string) $contactIdentifier,
-            'identityIdentifier' => (string) $identityIdentifier,
+            'principalIdentifier' => (string) $principalIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => '問い合わせ太郎',
             'email' => 'john.doe@example.com',
@@ -53,7 +53,7 @@ class SubmitContactOutputTest extends TestCase
         $this->assertNull($output->contact());
         $this->assertSame([
             'contactIdentifier' => null,
-            'identityIdentifier' => null,
+            'principalIdentifier' => null,
             'category' => null,
             'name' => null,
             'email' => null,

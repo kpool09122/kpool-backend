@@ -142,7 +142,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
     public function testSiteManagementContactsRoutesAreRegistered(): void
     {
-        foreach (['api/site-management/contacts', 'api/site-management/contact/identities/{identityIdentifier}'] as $expectedUri) {
+        foreach (['api/site-management/contacts', 'api/site-management/contact/principals/{principalIdentifier}'] as $expectedUri) {
             foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
                 if ($route->uri() === $expectedUri && in_array('GET', $route->methods(), true)) {
                     $this->assertContains('auth.api', $route->gatherMiddleware());
