@@ -6,6 +6,10 @@ namespace KPool.Common;
 @doc("UUID identifier.")
 scalar Uuid extends string;
 
+@pattern("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
+@doc("UUIDv7 identifier.")
+scalar UuidV7 extends Uuid;
+
 @doc("Timestamp in ISO 8601 format.")
 scalar Timestamp extends string;
 

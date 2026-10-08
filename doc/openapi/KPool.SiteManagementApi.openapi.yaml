@@ -282,8 +282,7 @@ paths:
           required: true
           description: UUIDv7 contact identifier, matching the existing ContactIdentifier domain constraint.
           schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-            pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
       responses:
         '204':
           description: Response with no content.
@@ -564,6 +563,11 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    KPool.Common.UuidV7:
+      type: string
+      format: uuid
+      description: UUIDv7 identifier.
+      pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
     ListContactsPage:
       type: object
       required:

@@ -142,8 +142,7 @@ interface ContactListOperations {
   @doc("Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.")
   replyContact(
     @doc("UUIDv7 contact identifier, matching the existing ContactIdentifier domain constraint.")
-    @pattern("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
-    @path contactIdentifier: Uuid,
+    @path contactIdentifier: UuidV7,
     @body body: ReplyContactRequestBody,
   ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
