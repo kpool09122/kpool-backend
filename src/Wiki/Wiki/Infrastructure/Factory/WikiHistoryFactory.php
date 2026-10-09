@@ -36,7 +36,7 @@ readonly class WikiHistoryFactory implements WikiHistoryFactoryInterface
         ?Version             $fromVersion,
         ?Version             $toVersion,
         Name                 $subjectName,
-        VisitorLocation $visitorLocation = new VisitorLocation(),
+        VisitorLocation      $visitorLocation,
     ): WikiHistory {
         return new WikiHistory(
             new WikiHistoryIdentifier($this->generator->generate()),

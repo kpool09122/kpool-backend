@@ -31,7 +31,7 @@ readonly class WikiHistory
         private ?Version              $toVersion,
         private Name                  $subjectName,
         private DateTimeImmutable     $recordedAt,
-        private VisitorLocation $visitorLocation = new VisitorLocation(),
+        private VisitorLocation       $visitorLocation,
     ) {
         $this->validate($wikiIdentifier, $draftWikiIdentifier);
     }

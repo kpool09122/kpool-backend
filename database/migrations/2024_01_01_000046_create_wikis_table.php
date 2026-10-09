@@ -123,6 +123,8 @@ return new class extends Migration
             $table->unsignedInteger('to_version')->nullable()->comment('変更後バージョン');
             $table->string('subject_name', 64)->comment('対象名');
             $table->dateTime('recorded_at')->comment('記録日時');
+            $table->string('visitor_country', 2)->nullable()->comment('接続元の国コード');
+            $table->string('visitor_region', 13)->nullable()->comment('接続元の地域コード');
 
             $table->index('wiki_id');
             $table->index('draft_wiki_id');

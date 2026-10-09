@@ -709,6 +709,7 @@ class RollbackWikiTest extends TestCase
             new Version(2),
             new Name('Test Wiki'),
             new DateTimeImmutable(),
+            new VisitorLocation(),
         );
     }
 }

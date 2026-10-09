@@ -668,6 +668,7 @@ class ApproveWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable('now'),
+            new VisitorLocation(),
         );
 
         return new ApproveWikiTestData(

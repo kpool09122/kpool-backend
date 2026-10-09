@@ -416,6 +416,7 @@ class RejectWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable('now'),
+            new VisitorLocation(),
         );
 
         return new RejectWikiTestData(

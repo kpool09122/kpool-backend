@@ -407,6 +407,7 @@ class SubmitWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable('now'),
+            new VisitorLocation(),
         );
 
         return new SubmitWikiTestData(

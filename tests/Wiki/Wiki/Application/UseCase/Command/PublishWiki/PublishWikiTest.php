@@ -1312,6 +1312,7 @@ class PublishWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable(),
+            new VisitorLocation(),
         );
 
         // 公開済みWikiのスナップショット（更新時用）

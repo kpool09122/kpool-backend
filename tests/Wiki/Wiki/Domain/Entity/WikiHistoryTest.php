@@ -140,6 +140,7 @@ class WikiHistoryTest extends TestCase
             null,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
 
         $this->assertNull($wikiHistory->fromStatus());
@@ -237,6 +238,7 @@ class WikiHistoryTest extends TestCase
             null,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
     }
 
@@ -294,6 +296,7 @@ class WikiHistoryTest extends TestCase
             $toVersion,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
 
         return new WikiHistoryTestData(

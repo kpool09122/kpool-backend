@@ -65,6 +65,7 @@ class WikiHistoryFactoryTest extends TestCase
             null,
             null,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
@@ -108,6 +109,7 @@ class WikiHistoryFactoryTest extends TestCase
             null,
             null,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
@@ -151,6 +153,7 @@ class WikiHistoryFactoryTest extends TestCase
             $fromVersion,
             $toVersion,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));

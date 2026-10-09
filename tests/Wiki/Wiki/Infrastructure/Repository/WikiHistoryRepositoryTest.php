@@ -6,9 +6,6 @@ namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -118,6 +115,7 @@ class WikiHistoryRepositoryTest extends TestCase
             null,
             new Name('JYP Entertainment'),
             $recordedAt,
+            new VisitorLocation(),
         );
 
         $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
@@ -167,6 +165,7 @@ class WikiHistoryRepositoryTest extends TestCase
             new Version(2),
             new Name('채영'),
             $recordedAt,
+            new VisitorLocation(),
         );
 
         $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
@@ -181,34 +180,6 @@ class WikiHistoryRepositoryTest extends TestCase
             'from_version' => 3,
             'to_version' => 2,
             'subject_name' => '채영',
-        ]);
-    }
-
-    #[Group('useDb')]
-    public function testMigrationPreservesExistingHistoryWithNullLocation(): void
-    {
-        $migration = require __DIR__ . '/../../../../../database/migrations/2026_10_10_000000_add_visitor_location_to_wiki_histories.php';
-        self::assertInstanceOf(Migration::class, $migration);
-        self::assertTrue(method_exists($migration, 'up'));
-        self::assertTrue(method_exists($migration, 'down'));
-        $migration->down();
-        self::assertFalse(Schema::hasColumn('wiki_histories', 'visitor_country'));
-        self::assertFalse(Schema::hasColumn('wiki_histories', 'visitor_region'));
-        $historyId = StrTestHelper::generateUuid();
-        DB::table('wiki_histories')->insert([
-            'id' => $historyId,
-            'action_type' => HistoryActionType::Publish->value,
-            'actor_id' => StrTestHelper::generateUuid(),
-            'wiki_id' => StrTestHelper::generateUuid(),
-            'subject_name' => 'existing history',
-            'recorded_at' => new DateTimeImmutable(),
-        ]);
-        $migration->up();
-        $this->assertDatabaseHas('wiki_histories', [
-            'id' => $historyId,
-            'subject_name' => 'existing history',
-            'visitor_country' => null,
-            'visitor_region' => null,
         ]);
     }
 }

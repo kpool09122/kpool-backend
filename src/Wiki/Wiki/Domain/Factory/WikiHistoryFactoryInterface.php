@@ -27,6 +27,6 @@ interface WikiHistoryFactoryInterface
         ?Version             $fromVersion,
         ?Version             $toVersion,
         Name                 $subjectName,
-        VisitorLocation $visitorLocation = new VisitorLocation(),
+        VisitorLocation      $visitorLocation,
     ): WikiHistory;
 }

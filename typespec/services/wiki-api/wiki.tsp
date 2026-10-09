@@ -457,7 +457,7 @@ model ListDraftWikisResponse {
   @body body: ListDraftWikisResponseBody;
 }
 
-@doc("Optional Worker-signed visitor location. See docs/wiki/visitor-location-forwarding.md. Invalid or unsigned metadata is ignored; existing authentication remains required.")
+@doc("Optional Worker-signed visitor location. Invalid or unsigned metadata is ignored; existing authentication remains required.")
 model VisitorLocationHeaders {
   @header("X-Kpool-Visitor-Country") visitorCountry?: string | null;
   @header("X-Kpool-Visitor-Region") visitorRegion?: string | null;

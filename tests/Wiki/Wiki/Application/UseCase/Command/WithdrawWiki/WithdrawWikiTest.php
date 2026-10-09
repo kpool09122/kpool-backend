@@ -336,6 +336,7 @@ class WithdrawWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable(),
+            new VisitorLocation(),
         );
     }
 }
