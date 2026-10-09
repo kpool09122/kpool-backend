@@ -31,6 +31,21 @@ class BackendTests(unittest.TestCase):
         self.poll=patch('aws_backend.poll',fast_poll); self.poll.start(); self.addCleanup(self.poll.stop)
         self.http=patch('aws_backend.urllib.request.urlopen',return_value=HttpResponse()); self.http.start(); self.addCleanup(self.http.stop)
     def run_release(self): execute(self.backend,self.journal,'deploy')
+    def test_visitor_location_secret_is_injected_from_app_secret_into_api_and_worker(self):
+        self.config['app_secret_keys']=['WIKI_VISITOR_LOCATION_SECRET']
+        self.backend.preflight()
+        expected={'name':'WIKI_VISITOR_LOCATION_SECRET',
+                  'valueFrom':self.o['AppSecretArn']+':WIKI_VISITOR_LOCATION_SECRET::'}
+        for kind in ('Api','Worker'):
+            container=self.backend.definitions[kind]['containerDefinitions'][0]
+            self.assertIn(expected,container['secrets'])
+            self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in container['environment']})
+        migration=self.backend.definitions['Migration']['containerDefinitions'][0]
+        self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in migration['secrets']})
+    def test_visitor_location_secret_cannot_be_supplied_as_plain_runtime_configuration(self):
+        self.config['runtime_environment']['WIKI_VISITOR_LOCATION_SECRET']='test-only-secret'
+        with self.assertRaises(ValueError): self.backend.preflight()
+        self.assertFalse(any(op=='register-task-definition' for _,op,_ in self.aws.calls))
     def test_full_release_uses_one_digest_distinct_roles_and_native_deployment(self):
         self.run_release()
         definitions=[a for _,op,a in self.aws.calls if op=='register-task-definition']
