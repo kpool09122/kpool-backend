@@ -18,7 +18,7 @@ readonly class VisitorLocationVerifier
             return new VisitorLocation();
         }
 
-        if (array_any(['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature', 'Authorization', 'Cookie'], fn($header) => count($request->headers->all($header)) > 1)) {
+        if (array_any(['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature', 'Authorization', 'Cookie'], fn ($header) => count($request->headers->all($header)) > 1)) {
             return new VisitorLocation();
         }
 
