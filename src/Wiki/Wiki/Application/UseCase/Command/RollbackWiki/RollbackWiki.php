@@ -153,6 +153,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
                 fromVersion: $baseVersion,
                 toVersion: $targetVersion,
                 subjectName: $w->basic()->name(),
+                visitorLocation: $input->visitorLocation(),
             );
             $this->wikiHistoryRepository->save($history);
 

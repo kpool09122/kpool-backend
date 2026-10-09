@@ -21,6 +21,8 @@ use Override;
  * @property ?string $to_status
  * @property ?int $from_version
  * @property ?int $to_version
+ * @property ?string $visitor_country
+ * @property ?string $visitor_region
  * @property string $subject_name
  * @property ?Carbon $recorded_at
  */
@@ -37,6 +39,8 @@ use Override;
     'to_version',
     'subject_name',
     'recorded_at',
+    'visitor_country',
+    'visitor_region',
 ])]
 #[Table(name: 'wiki_histories', keyType: 'string')]
 class WikiHistory extends Model

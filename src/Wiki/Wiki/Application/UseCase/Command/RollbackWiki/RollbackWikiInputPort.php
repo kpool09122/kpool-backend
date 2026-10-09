@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface RollbackWikiInputPort
@@ -26,4 +27,6 @@ interface RollbackWikiInputPort
 
     /** @return WikiIdentifier[] */
     public function talentIdentifiers(): array;
+
+    public function visitorLocation(): VisitorLocation;
 }

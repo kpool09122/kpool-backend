@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -29,6 +30,7 @@ readonly class RejectWikiInput implements RejectWikiInputPort
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
+        private VisitorLocation $visitorLocation = new VisitorLocation(),
     ) {
     }
 
@@ -67,5 +69,10 @@ readonly class RejectWikiInput implements RejectWikiInputPort
     public function talentIdentifiers(): array
     {
         return $this->talentIdentifiers;
+    }
+
+    public function visitorLocation(): VisitorLocation
+    {
+        return $this->visitorLocation;
     }
 }

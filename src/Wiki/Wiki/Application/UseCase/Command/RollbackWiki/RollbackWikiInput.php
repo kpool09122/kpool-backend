@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class RollbackWikiInput implements RollbackWikiInputPort
@@ -28,6 +29,7 @@ readonly class RollbackWikiInput implements RollbackWikiInputPort
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
+        private VisitorLocation $visitorLocation = new VisitorLocation(),
     ) {
     }
 
@@ -66,5 +68,10 @@ readonly class RollbackWikiInput implements RollbackWikiInputPort
     public function talentIdentifiers(): array
     {
         return $this->talentIdentifiers;
+    }
+
+    public function visitorLocation(): VisitorLocation
+    {
+        return $this->visitorLocation;
     }
 }

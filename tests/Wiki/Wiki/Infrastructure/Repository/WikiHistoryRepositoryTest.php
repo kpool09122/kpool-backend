@@ -6,11 +6,16 @@ namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -19,6 +24,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class WikiHistoryRepositoryTest extends TestCase
@@ -40,7 +46,8 @@ class WikiHistoryRepositoryTest extends TestCase
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testSaveWithAllFields(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testSaveWithAllFields(VisitorLocation $visitorLocation): void
     {
         $historyId = StrTestHelper::generateUuid();
         $actorId = StrTestHelper::generateUuid();
@@ -62,6 +69,7 @@ class WikiHistoryRepositoryTest extends TestCase
             new Version(2),
             new Name('TWICE'),
             $recordedAt,
+            $visitorLocation,
         );
 
         $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
@@ -79,6 +87,8 @@ class WikiHistoryRepositoryTest extends TestCase
             'from_version' => 1,
             'to_version' => 2,
             'subject_name' => 'TWICE',
+            'visitor_country' => $visitorLocation->country(),
+            'visitor_region' => $visitorLocation->region(),
         ]);
     }
 
@@ -125,6 +135,8 @@ class WikiHistoryRepositoryTest extends TestCase
             'from_version' => null,
             'to_version' => null,
             'subject_name' => 'JYP Entertainment',
+            'visitor_country' => null,
+            'visitor_region' => null,
         ]);
     }
 
@@ -169,6 +181,34 @@ class WikiHistoryRepositoryTest extends TestCase
             'from_version' => 3,
             'to_version' => 2,
             'subject_name' => '채영',
+        ]);
+    }
+
+    #[Group('useDb')]
+    public function testMigrationPreservesExistingHistoryWithNullLocation(): void
+    {
+        $migration = require __DIR__ . '/../../../../../database/migrations/2026_10_10_000000_add_visitor_location_to_wiki_histories.php';
+        self::assertInstanceOf(Migration::class, $migration);
+        self::assertTrue(method_exists($migration, 'up'));
+        self::assertTrue(method_exists($migration, 'down'));
+        $migration->down();
+        self::assertFalse(Schema::hasColumn('wiki_histories', 'visitor_country'));
+        self::assertFalse(Schema::hasColumn('wiki_histories', 'visitor_region'));
+        $historyId = StrTestHelper::generateUuid();
+        DB::table('wiki_histories')->insert([
+            'id' => $historyId,
+            'action_type' => HistoryActionType::Publish->value,
+            'actor_id' => StrTestHelper::generateUuid(),
+            'wiki_id' => StrTestHelper::generateUuid(),
+            'subject_name' => 'existing history',
+            'recorded_at' => new DateTimeImmutable(),
+        ]);
+        $migration->up();
+        $this->assertDatabaseHas('wiki_histories', [
+            'id' => $historyId,
+            'subject_name' => 'existing history',
+            'visitor_country' => null,
+            'visitor_region' => null,
         ]);
     }
 }

@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -23,6 +24,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
@@ -56,6 +58,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class PublishWikiTest extends TestCase
@@ -98,7 +101,8 @@ class PublishWikiTest extends TestCase
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessWhenAlreadyPublished(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcessWhenAlreadyPublished(VisitorLocation $visitorLocation): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
@@ -112,6 +116,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: $visitorLocation,
         );
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Published profile for TWICE.');
@@ -154,6 +159,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 
@@ -221,6 +228,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -257,6 +265,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->with(
                 HistoryActionType::Publish,
@@ -269,6 +279,7 @@ class PublishWikiTest extends TestCase
                 null,
                 null,
                 $dummyPublishWiki->name,
+                $input->visitorLocation(),
             )
             ->andReturn($dummyPublishWiki->history);
 
@@ -317,7 +328,8 @@ class PublishWikiTest extends TestCase
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessForTheFirstTime(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcessForTheFirstTime(VisitorLocation $visitorLocation): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
@@ -331,6 +343,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: $visitorLocation,
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -376,6 +389,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 
@@ -426,6 +441,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -471,6 +487,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 
@@ -523,6 +541,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -572,6 +591,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -623,6 +643,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -674,6 +695,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -732,6 +754,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -794,6 +817,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -852,6 +876,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -897,6 +922,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 
@@ -948,6 +975,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -993,6 +1021,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 
@@ -1069,6 +1099,7 @@ class PublishWikiTest extends TestCase
             $dummyPublishWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -1105,6 +1136,8 @@ class PublishWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyPublishWiki->history);
 

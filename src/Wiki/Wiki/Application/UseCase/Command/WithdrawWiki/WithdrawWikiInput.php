@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -20,6 +21,7 @@ readonly class WithdrawWikiInput implements WithdrawWikiInputPort
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
+        private VisitorLocation $visitorLocation = new VisitorLocation(),
     ) {
     }
 
@@ -48,5 +50,10 @@ readonly class WithdrawWikiInput implements WithdrawWikiInputPort
     public function talentIdentifiers(): array
     {
         return $this->talentIdentifiers;
+    }
+
+    public function visitorLocation(): VisitorLocation
+    {
+        return $this->visitorLocation;
     }
 }

@@ -10,6 +10,7 @@ use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use Application\Http\Support\VisitorLocationVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -34,6 +35,7 @@ readonly class RejectWikiAction
         private RejectWikiInterface $rejectWiki,
         private WikiContext $wikiContext,
         private LoggerInterface $logger,
+        private VisitorLocationVerifier $visitorLocationVerifier,
     ) {
     }
 
@@ -54,6 +56,7 @@ readonly class RejectWikiAction
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
+                    visitorLocation: $this->visitorLocationVerifier->verify($request),
                 );
                 $output = new RejectWikiOutput();
             } catch (InvalidArgumentException $e) {

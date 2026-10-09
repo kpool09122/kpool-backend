@@ -457,6 +457,14 @@ model ListDraftWikisResponse {
   @body body: ListDraftWikisResponseBody;
 }
 
+@doc("Optional Worker-signed visitor location. See docs/wiki/visitor-location-forwarding.md. Invalid or unsigned metadata is ignored; existing authentication remains required.")
+model VisitorLocationHeaders {
+  @header("X-Kpool-Visitor-Country") visitorCountry?: string | null;
+  @header("X-Kpool-Visitor-Region") visitorRegion?: string | null;
+  @header("X-Kpool-Visitor-Timestamp") visitorTimestamp?: string | null;
+  @header("X-Kpool-Visitor-Signature") visitorSignature?: string | null;
+}
+
 @route("/wikis")
 interface WikiListOperations {
   @get
@@ -567,6 +575,7 @@ interface WikiOperations {
   @route("/{wikiId}/approve")
   @doc("Approve a wiki draft.")
   approveWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -591,6 +600,7 @@ interface WikiOperations {
   @route("/{wikiId}/publish")
   @doc("Publish a wiki draft.")
   publishWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
   ): CreatePublishedWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -599,6 +609,7 @@ interface WikiOperations {
   @route("/{wikiId}/reject")
   @doc("Reject a wiki draft.")
   rejectWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: RejectWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -607,6 +618,7 @@ interface WikiOperations {
   @route("/{wikiId}/rollback")
   @doc("Roll back a wiki to a previous published version.")
   rollbackWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: RollbackWikiRequestBody,
   ): RollbackWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -615,6 +627,7 @@ interface WikiOperations {
   @route("/{wikiId}/submit")
   @doc("Submit a wiki draft for review.")
   submitWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -623,6 +636,7 @@ interface WikiOperations {
   @route("/{wikiId}/withdraw")
   @doc("Withdraw a wiki draft review request.")
   withdrawWiki(
+    ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body?: WithdrawWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
