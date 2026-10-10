@@ -37,7 +37,8 @@ class ContactAcceptedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            text: 'emails.contact.accepted_' . $this->contact->language()->value,
+            view: 'emails.contact.accepted_' . $this->contact->language()->value,
+            text: 'emails.contact.text.accepted_' . $this->contact->language()->value,
         );
     }
 }

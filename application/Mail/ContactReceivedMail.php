@@ -22,6 +22,12 @@ class ContactReceivedMail extends Mailable
         'ko' => '새 문의가 도착했습니다',
     ];
 
+    private const array CATEGORY_LABELS = [
+        'ja' => [1 => 'ご意見・ご要望', 2 => '不具合のご報告', 3 => '掲載内容の修正依頼', 99 => 'その他'],
+        'en' => [1 => 'Feedback and suggestions', 2 => 'Bug report', 3 => 'Content correction', 99 => 'Other'],
+        'ko' => [1 => '의견 및 제안', 2 => '오류 신고', 3 => '게시 내용 수정 요청', 99 => '기타'],
+    ];
+
     public function __construct(
         public readonly Contact $contact,
     ) {
@@ -37,7 +43,9 @@ class ContactReceivedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            text: 'emails.contact.received_' . $this->contact->language()->value,
+            view: 'emails.contact.received_' . $this->contact->language()->value,
+            text: 'emails.contact.text.received_' . $this->contact->language()->value,
+            with: ['categoryLabel' => self::CATEGORY_LABELS[$this->contact->language()->value][$this->contact->category()->value]],
         );
     }
 }

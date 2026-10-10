@@ -39,7 +39,8 @@ class ContactReplyMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            text: 'emails.contact.reply_' . $this->language->value,
+            view: 'emails.contact.reply_' . $this->language->value,
+            text: 'emails.contact.text.reply_' . $this->language->value,
         );
     }
 }
