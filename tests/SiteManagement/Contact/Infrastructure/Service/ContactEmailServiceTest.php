@@ -96,8 +96,10 @@ class ContactEmailServiceTest extends TestCase
 
         $contact = $this->createContact($language);
         $view = 'emails.contact.accepted_' . $language->value;
-        $rendered = view($view, ['contact' => $contact])->render();
-        $this->assertStringContainsString($expectedBody, $rendered);
+        $textView = 'emails.contact.text.accepted_' . $language->value;
+        $mail = new ContactAcceptedMail($contact);
+        $mail->assertSeeInHtml($expectedBody);
+        $mail->assertSeeInText($expectedBody);
 
         $service = $this->app()->make(ContactEmailServiceInterface::class);
         $service->sendContactToUser($contact);
@@ -106,7 +108,8 @@ class ContactEmailServiceTest extends TestCase
             && $mail->contact === $contact
             && $mail->contact->language() === $language
             && $mail->envelope()->subject === $expectedSubject
-            && $mail->content()->text === $view);
+            && $mail->content()->view === $view
+            && $mail->content()->text === $textView);
     }
 
     /**
@@ -126,8 +129,10 @@ class ContactEmailServiceTest extends TestCase
         $administratorEmail = new Email('admin@example.com');
         $contact = $this->createContact($language);
         $view = 'emails.contact.received_' . $language->value;
-        $rendered = view($view, ['contact' => $contact])->render();
-        $this->assertStringContainsString($expectedBody, $rendered);
+        $textView = 'emails.contact.text.received_' . $language->value;
+        $mail = new ContactReceivedMail($contact);
+        $mail->assertSeeInHtml((string) $contact->name());
+        $mail->assertSeeInText($expectedBody);
         $service = new ContactEmailService($administratorEmail);
 
         $service->sendContactToAdministrator($contact);
@@ -136,7 +141,8 @@ class ContactEmailServiceTest extends TestCase
             && $mail->contact === $contact
             && $mail->contact->language() === $language
             && $mail->envelope()->subject === $expectedSubject
-            && $mail->content()->text === $view);
+            && $mail->content()->view === $view
+            && $mail->content()->text === $textView);
     }
 
     /**
@@ -156,8 +162,10 @@ class ContactEmailServiceTest extends TestCase
         $content = new ReplyContent('返信内容');
         $contact = $this->createContact($language);
         $view = 'emails.contact.reply_' . $language->value;
-        $rendered = view($view, ['content' => $content])->render();
-        $this->assertStringContainsString((string) $content, $rendered);
+        $textView = 'emails.contact.text.reply_' . $language->value;
+        $mail = new ContactReplyMail($content, $language);
+        $mail->assertSeeInHtml((string) $content);
+        $mail->assertSeeInText((string) $content);
 
         $service = $this->app()->make(ContactEmailServiceInterface::class);
         $service->sendReplyToUser($contact, $content);
@@ -166,7 +174,8 @@ class ContactEmailServiceTest extends TestCase
             && $mail->content === $content
             && $mail->language === $language
             && $mail->envelope()->subject === $expectedSubject
-            && $mail->content()->text === $view);
+            && $mail->content()->view === $view
+            && $mail->content()->text === $textView);
     }
 
     private function createContact(Language $language): Contact
