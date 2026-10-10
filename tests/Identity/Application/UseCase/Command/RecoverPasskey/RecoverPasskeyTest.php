@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\UseCase\Command\RecoverPasskey;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
-use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryNotificationServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySession;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\SecurityEventRecorderInterface;
@@ -56,7 +57,6 @@ use Tests\TestCase;
  *     factory: PasskeyCredentialFactoryInterface&MockInterface,
  *     webAuthn: WebAuthnServiceInterface&MockInterface,
  *     auth: AuthServiceInterface&MockInterface,
- *     notification: PasskeyRecoveryNotificationServiceInterface&MockInterface,
  *     events: SecurityEventRecorderInterface&MockInterface
  * }
  */
@@ -70,16 +70,17 @@ class RecoverPasskeyTest extends TestCase
         $context['passkeyCredentialRepository']->shouldNotReceive('deleteAllExcept');
         $context['sessions']->shouldNotReceive('consume');
         $context['auth']->shouldNotReceive('invalidateAllSessions');
-        $context['notification']->shouldNotReceive('notifyCompleted');
         $context['events']->shouldNotReceive('record');
 
         $this->expectException(WebAuthnVerificationException::class);
         $this->useCase($context)->process($context['input']);
     }
 
-    public function testSuccessSavesBeforeDeletingOthersAndCompletesEverySecuritySideEffect(): void
+    #[DataProvider('recoveryMethods')]
+    public function testSuccessSavesBeforeDeletingOthersAndCompletesEverySecuritySideEffectWithoutEmail(string $method): void
     {
-        $context = $this->context('sso');
+        Mail::fake();
+        $context = $this->context($method);
         $verified = new VerifiedPasskeyCredential(new WebAuthnCredentialId('Y3JlZGVudGlhbA'), new CredentialSource('{}'), 1, true, false, ['internal']);
         $newCredential = new PasskeyCredential(
             new PasskeyCredentialIdentifier('01994e3a-a15e-72d3-a456-426614174010'),
@@ -100,12 +101,17 @@ class RecoverPasskeyTest extends TestCase
         $context['passkeyCredentialRepository']->shouldReceive('deleteAllExcept')->once()->with($context['identityId'], $newCredential->identifier())->ordered();
         $context['sessions']->shouldReceive('consume')->once()->with($context['recoveryKey'], $context['identityId']);
         $context['auth']->shouldReceive('invalidateAllSessions')->once()->with($context['identityId']);
-        $context['events']->shouldReceive('record')->once()->with('passkey.recovery.completed', $context['identityId'], ['method' => 'sso'])->globally()->ordered();
-        $context['notification']->shouldReceive('notifyCompleted')->once()->with($context['identity']->email(), $context['identity']->language())->globally()->ordered();
+        $context['events']->shouldReceive('record')->once()->with('passkey.recovery.completed', $context['identityId'], ['method' => $method])->globally()->ordered();
         $context['identityRepository']->shouldNotReceive('save');
 
         $this->useCase($context)->process($context['input']);
-        $this->addToAssertionCount(1);
+        Mail::assertNothingOutgoing();
+    }
+
+    /** @return array<string, array{string}> */
+    public static function recoveryMethods(): array
+    {
+        return ['email' => ['email'], 'sso' => ['sso']];
     }
 
     /** @return RecoveryContext */
@@ -137,8 +143,6 @@ class RecoverPasskeyTest extends TestCase
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         /** @var MockInterface&AuthServiceInterface $auth */
         $auth = Mockery::mock(AuthServiceInterface::class);
-        /** @var MockInterface&PasskeyRecoveryNotificationServiceInterface $notification */
-        $notification = Mockery::mock(PasskeyRecoveryNotificationServiceInterface::class);
         /** @var MockInterface&SecurityEventRecorderInterface $events */
         $events = Mockery::mock(SecurityEventRecorderInterface::class);
 
@@ -147,13 +151,13 @@ class RecoverPasskeyTest extends TestCase
             'input' => new RecoverPasskeyInput($recoveryKey, $challengeKey, new PasskeyDisplayName('recovered'), '{"response":true}'),
             'sessions' => $sessions, 'challenges' => $challenges, 'identityRepository' => $identityRepository, 'passkeyUserRepository' => $passkeyUserRepository,
             'passkeyCredentialRepository' => $passkeyCredentialRepository, 'factory' => $factory, 'webAuthn' => $webAuthn, 'auth' => $auth,
-            'notification' => $notification, 'events' => $events,
+            'events' => $events,
         ];
     }
 
     /** @param RecoveryContext $context */
     private function useCase(array $context): RecoverPasskey
     {
-        return new RecoverPasskey($context['sessions'], $context['challenges'], $context['identityRepository'], $context['passkeyUserRepository'], $context['passkeyCredentialRepository'], $context['factory'], $context['webAuthn'], $context['auth'], $context['notification'], $context['events']);
+        return new RecoverPasskey($context['sessions'], $context['challenges'], $context['identityRepository'], $context['passkeyUserRepository'], $context['passkeyCredentialRepository'], $context['factory'], $context['webAuthn'], $context['auth'], $context['events']);
     }
 }
