@@ -29,8 +29,12 @@ use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByPrincipal;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
+use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementAdministrator\GrantSiteManagementAdministrator;
+use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementAdministrator\GrantSiteManagementAdministratorInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipal;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementAdministrator\RevokeSiteManagementAdministrator;
+use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementAdministrator\RevokeSiteManagementAdministratorInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 
@@ -38,6 +42,9 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(GrantSiteManagementAdministratorInterface::class, GrantSiteManagementAdministrator::class);
+        $this->app->singleton(RevokeSiteManagementAdministratorInterface::class, RevokeSiteManagementAdministrator::class);
+
         $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
 
         $this->app->singleton(CreateAnnouncementInterface::class, CreateAnnouncement::class);

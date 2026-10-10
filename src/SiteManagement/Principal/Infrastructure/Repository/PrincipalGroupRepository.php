@@ -36,6 +36,18 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         return $model === null ? null : $this->findById(new PrincipalGroupIdentifier($model->id));
     }
 
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?PrincipalGroup
+    {
+        $model = PrincipalGroupEloquent::query()->where('account_id', (string) $accountIdentifier)->where('name', $name)->first();
+
+        return $model === null ? null : $this->findById(new PrincipalGroupIdentifier($model->id));
+    }
+
+    public function delete(PrincipalGroup $principalGroup): void
+    {
+        PrincipalGroupEloquent::query()->where('id', (string) $principalGroup->principalGroupIdentifier())->delete();
+    }
+
     public function save(PrincipalGroup $principalGroup): void
     {
         PrincipalGroupEloquent::query()->updateOrCreate(['id' => (string) $principalGroup->principalGroupIdentifier()], ['name' => $principalGroup->name(), 'account_id' => (string) $principalGroup->accountIdentifier(), 'is_default' => $principalGroup->isDefault()]);
