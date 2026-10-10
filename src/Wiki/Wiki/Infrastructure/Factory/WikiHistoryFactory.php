@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -35,6 +36,7 @@ readonly class WikiHistoryFactory implements WikiHistoryFactoryInterface
         ?Version             $fromVersion,
         ?Version             $toVersion,
         Name                 $subjectName,
+        VisitorLocation      $visitorLocation,
     ): WikiHistory {
         return new WikiHistory(
             new WikiHistoryIdentifier($this->generator->generate()),
@@ -49,6 +51,7 @@ readonly class WikiHistoryFactory implements WikiHistoryFactoryInterface
             $toVersion,
             $subjectName,
             new DateTimeImmutable('now'),
+            $visitorLocation,
         );
     }
 }

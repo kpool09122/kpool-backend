@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
@@ -30,6 +31,7 @@ readonly class WikiHistory
         private ?Version              $toVersion,
         private Name                  $subjectName,
         private DateTimeImmutable     $recordedAt,
+        private VisitorLocation       $visitorLocation,
     ) {
         $this->validate($wikiIdentifier, $draftWikiIdentifier);
     }
@@ -99,5 +101,10 @@ readonly class WikiHistory
     public function recordedAt(): DateTimeImmutable
     {
         return $this->recordedAt;
+    }
+
+    public function visitorLocation(): VisitorLocation
+    {
+        return $this->visitorLocation;
     }
 }

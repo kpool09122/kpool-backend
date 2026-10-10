@@ -24,6 +24,8 @@ readonly class WikiHistoryRepository implements WikiHistoryRepositoryInterface
             'from_version' => $wikiHistory->fromVersion()?->value(),
             'to_version' => $wikiHistory->toVersion()?->value(),
             'subject_name' => (string) $wikiHistory->subjectName(),
+            'visitor_country' => $wikiHistory->visitorLocation()->country(),
+            'visitor_region' => $wikiHistory->visitorLocation()->region(),
             'recorded_at' => $wikiHistory->recordedAt(),
         ]);
     }

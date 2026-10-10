@@ -8,6 +8,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
@@ -26,5 +27,6 @@ interface WikiHistoryFactoryInterface
         ?Version             $fromVersion,
         ?Version             $toVersion,
         Name                 $subjectName,
+        VisitorLocation      $visitorLocation,
     ): WikiHistory;
 }

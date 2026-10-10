@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Mockery;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Factory\WikiHistoryFactory;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class WikiHistoryFactoryTest extends TestCase
@@ -60,6 +65,7 @@ class WikiHistoryFactoryTest extends TestCase
             null,
             null,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
@@ -103,6 +109,7 @@ class WikiHistoryFactoryTest extends TestCase
             null,
             null,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
@@ -146,6 +153,7 @@ class WikiHistoryFactoryTest extends TestCase
             $fromVersion,
             $toVersion,
             $subjectName,
+            new VisitorLocation(),
         );
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
@@ -164,5 +172,29 @@ class WikiHistoryFactoryTest extends TestCase
         $this->assertSame($toVersion->value(), $wikiHistory->toVersion()->value());
         $this->assertSame($subjectName, $wikiHistory->subjectName());
         $this->assertNotNull($wikiHistory->recordedAt());
+    }
+
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testVisitorLocationIsRetained(VisitorLocation $location): void
+    {
+        $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
+        $uuidGenerator->shouldReceive('generate')->once()->andReturn(StrTestHelper::generateUuid());
+        self::assertInstanceOf(UuidGeneratorInterface::class, $uuidGenerator);
+        $history = (new WikiHistoryFactory($uuidGenerator))->create(
+            HistoryActionType::Publish,
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            null,
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Name('TWICE'),
+            $location,
+        );
+        self::assertSame($location, $history->visitorLocation());
+        self::assertSame($location->country(), $history->visitorLocation()->country());
+        self::assertSame($location->region(), $history->visitorLocation()->region());
     }
 }

@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\ApproveWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -23,6 +24,7 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -48,6 +50,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class ApproveWikiTest extends TestCase
@@ -84,7 +87,8 @@ class ApproveWikiTest extends TestCase
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcess(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcess(VisitorLocation $visitorLocation): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
@@ -100,6 +104,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: $visitorLocation,
         );
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -140,6 +145,8 @@ class ApproveWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($dummyApproveWiki->history);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
@@ -183,6 +190,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -233,6 +241,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -286,6 +295,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -337,6 +347,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -398,6 +409,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -465,6 +477,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -536,6 +549,7 @@ class ApproveWikiTest extends TestCase
             $dummyApproveWiki->agencyIdentifier,
             $dummyApproveWiki->groupIdentifiers,
             $dummyApproveWiki->talentIdentifiers,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -654,6 +668,7 @@ class ApproveWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable('now'),
+            new VisitorLocation(),
         );
 
         return new ApproveWikiTestData(

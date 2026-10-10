@@ -3564,6 +3564,10 @@ paths:
       operationId: WikiOperations_approveWiki
       description: Approve a wiki draft.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -3795,6 +3799,10 @@ paths:
       operationId: WikiOperations_publishWiki
       description: Publish a wiki draft.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -3872,6 +3880,10 @@ paths:
       operationId: WikiOperations_rejectWiki
       description: Reject a wiki draft.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -3949,6 +3961,10 @@ paths:
       operationId: WikiOperations_rollbackWiki
       description: Roll back a wiki to a previous published version.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -4026,6 +4042,10 @@ paths:
       operationId: WikiOperations_submitWiki
       description: Submit a wiki draft for review.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -4180,6 +4200,10 @@ paths:
       operationId: WikiOperations_withdrawWiki
       description: Withdraw a wiki draft review request.
       parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
         - name: wikiId
           in: path
           required: true
@@ -4482,6 +4506,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
 components:
+  parameters:
+    VisitorLocationHeaders.visitorCountry:
+      name: X-Kpool-Visitor-Country
+      in: header
+      required: false
+      schema:
+        type: string
+        nullable: true
+    VisitorLocationHeaders.visitorRegion:
+      name: X-Kpool-Visitor-Region
+      in: header
+      required: false
+      schema:
+        type: string
+        nullable: true
+    VisitorLocationHeaders.visitorSignature:
+      name: X-Kpool-Visitor-Signature
+      in: header
+      required: false
+      schema:
+        type: string
+        nullable: true
+    VisitorLocationHeaders.visitorTimestamp:
+      name: X-Kpool-Visitor-Timestamp
+      in: header
+      required: false
+      schema:
+        type: string
+        nullable: true
   schemas:
     AgencyDraftWikiBasic:
       type: object

@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -27,4 +28,6 @@ interface RejectWikiInputPort
 
     /** @return WikiIdentifier[] */
     public function talentIdentifiers(): array;
+
+    public function visitorLocation(): VisitorLocation;
 }

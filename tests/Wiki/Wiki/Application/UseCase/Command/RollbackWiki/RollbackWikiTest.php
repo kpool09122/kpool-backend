@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\RollbackWiki;
 
 use DateTimeImmutable;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -22,6 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInput;
@@ -46,6 +48,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class RollbackWikiTest extends TestCase
@@ -76,7 +79,8 @@ class RollbackWikiTest extends TestCase
     /**
      * 正常系: Wikiをロールバックできること（単一言語）.
      */
-    public function testProcessWithSingleLanguage(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcessWithSingleLanguage(VisitorLocation $visitorLocation): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -99,6 +103,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: $visitorLocation,
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -140,6 +145,8 @@ class RollbackWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->once()
             ->andReturn($history);
 
@@ -168,7 +175,8 @@ class RollbackWikiTest extends TestCase
     /**
      * 正常系: 複数言語を同時にロールバックできること.
      */
-    public function testProcessWithMultipleLanguages(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcessWithMultipleLanguages(VisitorLocation $visitorLocation): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $wikiIdentifierKo = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -195,6 +203,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifierKo,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: $visitorLocation,
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -243,6 +252,8 @@ class RollbackWikiTest extends TestCase
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
+            ->withArgs(static fn (...$args) => $args[1] === $input->principalIdentifier()
+                && $args[10] === $input->visitorLocation())
             ->twice()
             ->andReturn($historyKo, $historyJa);
 
@@ -290,6 +301,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -337,6 +349,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -381,6 +394,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -437,6 +451,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -506,6 +521,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifierKo,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -566,6 +582,7 @@ class RollbackWikiTest extends TestCase
             $wikiIdentifier,
             $targetVersion,
             ResourceType::GROUP,
+            visitorLocation: new VisitorLocation('JP', '01'),
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -692,6 +709,7 @@ class RollbackWikiTest extends TestCase
             new Version(2),
             new Name('Test Wiki'),
             new DateTimeImmutable(),
+            new VisitorLocation(),
         );
     }
 }

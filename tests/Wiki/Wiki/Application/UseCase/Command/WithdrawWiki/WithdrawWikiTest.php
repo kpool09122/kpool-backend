@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -24,6 +25,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInput;
@@ -45,6 +47,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class WithdrawWikiTest extends TestCase
@@ -68,14 +71,15 @@ class WithdrawWikiTest extends TestCase
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessWithdrawsUnderReviewDraftWiki(): void
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testProcessWithdrawsUnderReviewDraftWiki(VisitorLocation $visitorLocation): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $draftWiki = $this->createDraftWiki(ApprovalStatus::UnderReview, $principalIdentifier);
         $history = $this->createHistory($draftWiki, $principalIdentifier, ApprovalStatus::UnderReview, ApprovalStatus::Pending);
-        $input = $this->createInput($draftWiki->wikiIdentifier(), $principalIdentifier);
+        $input = $this->createInput($draftWiki->wikiIdentifier(), $principalIdentifier, $visitorLocation);
 
-        $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true, true, $history);
+        $this->bindRepositoriesForPolicyResult($draftWiki, $principalIdentifier, true, true, $history, $visitorLocation);
 
         $output = new WithdrawWikiOutput();
         $this->app()->make(WithdrawWikiInterface::class)->process($input, $output);
@@ -212,6 +216,7 @@ class WithdrawWikiTest extends TestCase
         bool $isAllowed,
         bool $expectSave = false,
         ?WikiHistory $history = null,
+        VisitorLocation $visitorLocation = new VisitorLocation(),
     ): void {
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
 
@@ -253,6 +258,7 @@ class WithdrawWikiTest extends TestCase
                     null,
                     null,
                     $draftWiki->basic()->name(),
+                    $visitorLocation,
                 )
                 ->andReturn($history);
             $wikiHistoryRepository->shouldReceive('save')->once()->with($history)->andReturn(null);
@@ -268,7 +274,7 @@ class WithdrawWikiTest extends TestCase
         $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
     }
 
-    private function createInput(DraftWikiIdentifier $wikiIdentifier, PrincipalIdentifier $principalIdentifier): WithdrawWikiInput
+    private function createInput(DraftWikiIdentifier $wikiIdentifier, PrincipalIdentifier $principalIdentifier, VisitorLocation $visitorLocation = new VisitorLocation()): WithdrawWikiInput
     {
         return new WithdrawWikiInput(
             $wikiIdentifier,
@@ -276,6 +282,7 @@ class WithdrawWikiTest extends TestCase
             new WikiIdentifier(StrTestHelper::generateUuid()),
             [],
             [],
+            $visitorLocation,
         );
     }
 
@@ -329,6 +336,7 @@ class WithdrawWikiTest extends TestCase
             null,
             $draftWiki->basic()->name(),
             new DateTimeImmutable(),
+            new VisitorLocation(),
         );
     }
 }

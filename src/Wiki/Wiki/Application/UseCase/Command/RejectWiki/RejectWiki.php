@@ -91,6 +91,7 @@ readonly class RejectWiki implements RejectWikiInterface
             fromVersion: null,
             toVersion: null,
             subjectName: $wiki->basic()->name(),
+            visitorLocation: $input->visitorLocation(),
         );
         $this->wikiHistoryRepository->save($history);
 

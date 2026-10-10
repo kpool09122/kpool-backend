@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -24,4 +25,6 @@ interface PublishWikiInputPort
 
     /** @return WikiIdentifier[] */
     public function talentIdentifiers(): array;
+
+    public function visitorLocation(): VisitorLocation;
 }

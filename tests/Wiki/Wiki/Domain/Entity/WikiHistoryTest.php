@@ -6,17 +6,20 @@ namespace Tests\Wiki\Wiki\Domain\Entity;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
+use Tests\Helper\VisitorLocationTestHelper;
 
 class WikiHistoryTest extends TestCase
 {
@@ -137,6 +140,7 @@ class WikiHistoryTest extends TestCase
             null,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
 
         $this->assertNull($wikiHistory->fromStatus());
@@ -234,7 +238,31 @@ class WikiHistoryTest extends TestCase
             null,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
+    }
+
+    #[DataProviderExternal(VisitorLocationTestHelper::class, 'locations')]
+    public function testVisitorLocationIsRetained(VisitorLocation $location): void
+    {
+        $history = new WikiHistory(
+            new WikiHistoryIdentifier(StrTestHelper::generateUuid()),
+            HistoryActionType::Publish,
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            null,
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Name('TWICE'),
+            new DateTimeImmutable(),
+            $location,
+        );
+        self::assertSame($location, $history->visitorLocation());
+        self::assertSame($location->country(), $history->visitorLocation()->country());
+        self::assertSame($location->region(), $history->visitorLocation()->region());
     }
 
     /**
@@ -268,6 +296,7 @@ class WikiHistoryTest extends TestCase
             $toVersion,
             $subjectName,
             $recordedAt,
+            new VisitorLocation(),
         );
 
         return new WikiHistoryTestData(
@@ -309,4 +338,6 @@ readonly class WikiHistoryTestData
         public WikiHistory           $wikiHistory,
     ) {
     }
+
+
 }

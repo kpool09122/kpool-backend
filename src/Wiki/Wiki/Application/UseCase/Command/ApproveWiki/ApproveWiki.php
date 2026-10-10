@@ -119,6 +119,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
             fromVersion: null,
             toVersion: null,
             subjectName: $wiki->basic()->name(),
+            visitorLocation: $input->visitorLocation(),
         );
         $this->wikiHistoryRepository->save($history);
 

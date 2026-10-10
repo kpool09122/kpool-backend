@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -21,4 +22,6 @@ interface WithdrawWikiInputPort
 
     /** @return WikiIdentifier[] */
     public function talentIdentifiers(): array;
+
+    public function visitorLocation(): VisitorLocation;
 }
