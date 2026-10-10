@@ -1,0 +1,3 @@
+{{ (string) $content }}
+
+k-pool

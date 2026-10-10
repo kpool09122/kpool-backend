@@ -1,7 +1,20 @@
-お問い合わせが届きました。
+@extends('emails.contact.layout', ['locale' => 'ja', 'heading' => 'お問い合わせが届きました'])
 
-名前: {{ (string) $contact->name() }}
-メールアドレス: {{ (string) $contact->email() }}
-カテゴリ: {{ $contact->category()->value }}
-
-{{ (string) $contact->content() }}
+@section('body')
+    <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #555555;">お問い合わせが届きました。</p>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px; font-size: 14px; line-height: 1.6;">
+        <tr>
+            <td width="120" valign="top" style="padding: 8px 12px 8px 0; color: #777777;">名前</td>
+            <td style="padding: 8px 0; color: #333333; overflow-wrap: anywhere; word-break: break-word;">{{ (string) $contact->name() }}</td>
+        </tr>
+        <tr>
+            <td width="120" valign="top" style="padding: 8px 12px 8px 0; color: #777777;">メールアドレス</td>
+            <td style="padding: 8px 0; color: #333333; overflow-wrap: anywhere; word-break: break-word;">{{ (string) $contact->email() }}</td>
+        </tr>
+        <tr>
+            <td width="120" valign="top" style="padding: 8px 12px 8px 0; color: #777777;">カテゴリ</td>
+            <td style="padding: 8px 0; color: #333333; overflow-wrap: anywhere; word-break: break-word;">{{ $categoryLabel }}</td>
+        </tr>
+    </table>
+    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 24px; font-size: 16px; line-height: 1.8; color: #333333; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;">{{ (string) $contact->content() }}</div>
+@endsection
