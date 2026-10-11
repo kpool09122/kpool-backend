@@ -89,7 +89,28 @@ class AuthServiceTest extends TestCase
 
         $this->assertTrue(Auth::check());
 
-        $authService->logout();
+        $sessionId = $this->app()['session.store']->getId();
+        $cacheKey = 'auth-context:account:' . $identityIdentifier . ':' . $sessionId;
+        $currentKey = 'current-account:' . $identityIdentifier . ':' . $sessionId;
+        $otherKey = 'auth-context:account:' . $identityIdentifier . ':other-session';
+        Redis::set($cacheKey, 'cached delegated context');
+        Redis::set($currentKey, 'selected delegated account');
+        Redis::set($otherKey, 'other session context');
+
+
+        try {
+            $authService->logout();
+            $this->assertNull(Redis::get($cacheKey));
+            // This test keeps its DB transaction open; selection cleanup runs after commit.
+            $this->assertSame('selected delegated account', Redis::get($currentKey));
+            $this->assertSame('other session context', Redis::get($otherKey));
+            $this->assertNotSame($sessionId, $this->app()['session.store']->getId());
+            $authService->login($identity);
+            $this->assertNull(Redis::get('auth-context:account:' . $identityIdentifier . ':' . $this->app()['session.store']->getId()));
+            $authService->logout();
+        } finally {
+            Redis::del($cacheKey, $currentKey, $otherKey);
+        }
 
         $this->assertFalse(Auth::check());
     }

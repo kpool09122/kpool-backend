@@ -6,6 +6,7 @@ namespace Application\Http\Action\Account\Affiliation\Query\ListAffiliations;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ListAffiliationsRequest extends FormRequest
 {
@@ -19,6 +20,7 @@ class ListAffiliationsRequest extends FormRequest
             'viewerRole' => ['nullable', 'string'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
+            'onlyWithoutPendingOrApprovedDelegation' => ['sometimes', 'integer', Rule::in([0, 1])],
         ];
     }
 
@@ -35,6 +37,11 @@ class ListAffiliationsRequest extends FormRequest
     public function perPage(): ?int
     {
         return $this->query('perPage') !== null ? (int) $this->query('perPage') : null;
+    }
+
+    public function onlyWithoutPendingOrApprovedDelegation(): bool
+    {
+        return $this->boolean('onlyWithoutPendingOrApprovedDelegation');
     }
 
     public function page(): int

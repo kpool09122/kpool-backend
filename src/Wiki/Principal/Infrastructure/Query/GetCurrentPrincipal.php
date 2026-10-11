@@ -28,10 +28,14 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
             throw new PrincipalNotFoundException();
         }
 
-        return $this->toReadModel($principal);
+        $accountPrincipalCount = PrincipalModel::query()
+            ->where('account_id', $principal->account_id)
+            ->count();
+
+        return $this->toReadModel($principal, $accountPrincipalCount);
     }
 
-    private function toReadModel(PrincipalModel $principal): PrincipalReadModel
+    private function toReadModel(PrincipalModel $principal, int $accountPrincipalCount): PrincipalReadModel
     {
         return new PrincipalReadModel(
             principalIdentifier: $principal->id,
@@ -39,6 +43,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
             isDelegatedPrincipal: $principal->delegation_identifier !== null,
             isEnabled: $principal->enabled,
             policies: array_values($this->effectivePolicies($principal)),
+            accountPrincipalCount: $accountPrincipalCount,
         );
     }
 

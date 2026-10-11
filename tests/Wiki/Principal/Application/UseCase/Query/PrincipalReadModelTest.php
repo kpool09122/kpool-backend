@@ -16,6 +16,7 @@ class PrincipalReadModelTest extends TestCase
             identityIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
             isDelegatedPrincipal: true,
             isEnabled: false,
+            accountPrincipalCount: 1,
             policies: [
                 [
                     'policyIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f301',
@@ -38,6 +39,7 @@ class PrincipalReadModelTest extends TestCase
             'identityIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
             'isDelegatedPrincipal' => true,
             'isEnabled' => false,
+            'accountPrincipalCount' => 1,
             'policies' => [
                 [
                     'policyIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f301',

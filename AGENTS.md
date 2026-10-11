@@ -6,6 +6,10 @@
 - コード整形は `task cs-fix`、静的解析は `task phpstan`、テストは `task test` を使う。対象を絞る場合は `task test filter=TestClassName`、DB 不要のテストは `task test-no-db filter=TestClassName` を使う。
 - 一括検証は `task check`、依存のインストールは `task install`、その他の Composer 操作は `task composer -- <引数>` を使う。
 
+## テスト方針
+
+- HTTP の Action および Request を対象とするテストは作成しない。
+
 ## TypeSpec And OpenAPI
 
 - TypeSpec で OpenAPI の nullable を表現する場合は、`field?: string` だけにせず `field?: string | null` のように `| null` を明示する。

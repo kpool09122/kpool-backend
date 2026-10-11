@@ -1953,6 +1953,7 @@ components:
         - accountIdentifier
         - accountPrincipalIdentifier
         - accountType
+        - accountIdentityCount
         - accountPolicies
         - originalAccount
         - delegationIdentifier
@@ -1986,6 +1987,11 @@ components:
           type: string
           nullable: true
           description: Account type associated with the authenticated identity.
+        accountIdentityCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of distinct identities belonging to the current effective account, including the current identity when it is a member. Pending invitations are excluded. Zero when there is no account.
         accountPolicies:
           type: array
           items:

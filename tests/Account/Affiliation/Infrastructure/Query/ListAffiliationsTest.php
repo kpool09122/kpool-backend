@@ -158,6 +158,52 @@ class ListAffiliationsTest extends TestCase
         (new ListAffiliations($policyEvaluator))->process(new ListAffiliationsInput($operator), new ListAffiliationsOutput());
     }
 
+    #[Group('useDb')]
+    public function testExcludesOpenDelegationsBeforePaginationInBothDirections(): void
+    {
+        $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
+        $agency = $operator->accountIdentifier();
+        CreateAccount::create((string) $agency, ['category' => 'agency']);
+        $eligibleIds = [];
+        foreach ([null, 'pending', 'approved', 'rejected', 'pending'] as $index => $status) {
+            $talent = new AccountIdentifier(StrTestHelper::generateUuid());
+            CreateAccount::create((string) $talent, ['category' => 'talent']);
+            $affiliationId = StrTestHelper::generateUuid();
+            $this->insertAffiliation($affiliationId, $agency, $talent, $agency, 'active', '2026-08-11 10:00:00', activatedAt: '2026-08-12 10:00:00');
+            if ($status === null || $status === 'rejected') {
+                $eligibleIds[] = $affiliationId;
+            }
+            if ($status !== null) {
+                $reverse = $index === 4;
+                DB::table('account_delegations')->insert([
+                    'id' => StrTestHelper::generateUuid(),
+                    'affiliation_id' => $affiliationId,
+                    'delegate_account_id' => (string) ($reverse ? $talent : $agency),
+                    'delegator_account_id' => (string) ($reverse ? $agency : $talent),
+                    'requested_by_account_id' => (string) ($reverse ? $talent : $agency),
+                    'status' => $status,
+                    'direction' => $reverse ? 'from_talent' : 'from_agency',
+                    'requested_at' => '2026-08-13 10:00:00',
+                ]);
+            }
+        }
+        $query = new ListAffiliations($this->allowingPolicyEvaluator($operator));
+        $output = new ListAffiliationsOutput();
+        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, onlyWithoutPendingOrApprovedDelegation: true), $output);
+        $payload = $output->toArray();
+        $this->assertSame(2, $payload['total']);
+        $this->assertSame(2, $payload['last_page']);
+        $this->assertCount(1, $payload['affiliations']);
+        $this->assertContains($payload['affiliations'][0]['affiliationIdentifier'], $eligibleIds);
+        $second = new ListAffiliationsOutput();
+        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, page: 2, onlyWithoutPendingOrApprovedDelegation: true), $second);
+        $this->assertContains($second->toArray()['affiliations'][0]['affiliationIdentifier'], $eligibleIds);
+        $this->assertNotSame($payload['affiliations'][0]['affiliationIdentifier'], $second->toArray()['affiliations'][0]['affiliationIdentifier']);
+        $unfiltered = new ListAffiliationsOutput();
+        $query->process(new ListAffiliationsInput($operator, status: 'active'), $unfiltered);
+        $this->assertSame(5, $unfiltered->toArray()['total']);
+    }
+
     private function allowingPolicyEvaluator(Principal $principal): PolicyEvaluatorInterface
     {
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */

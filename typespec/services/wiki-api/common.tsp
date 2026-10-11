@@ -706,6 +706,9 @@ model PrincipalSummary {
   isEnabled: boolean;
   @doc("Effective policies granted to the principal through principal groups and roles.")
   policies: EffectivePolicySummary[];
+  @doc("Number of Wiki principals belonging to the current account, including the current principal.")
+  @minValue(1)
+  accountPrincipalCount: int32;
 }
 
 @doc("Summary of a newly created principal.")

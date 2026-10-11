@@ -905,6 +905,16 @@ paths:
             type: string
             nullable: true
           explode: false
+        - name: onlyWithoutPendingOrApprovedDelegation
+          in: query
+          required: false
+          description: Set to 1 to return only affiliations without a pending or approved delegation, regardless of the requesting account or delegation direction. Set to 0 or omit to disable this filter.
+          schema:
+            type: number
+            enum:
+              - 0
+              - 1
+          explode: false
         - name: perPage
           in: query
           required: false

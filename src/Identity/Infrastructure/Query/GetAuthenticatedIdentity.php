@@ -8,6 +8,7 @@ use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
 use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\Delegation as DelegationModel;
+use Application\Models\Account\Principal as AccountPrincipalModel;
 use Application\Models\Identity\Identity as IdentityModel;
 use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnectionModel;
 use Application\Models\SiteManagement\Policy as SiteManagementPolicyModel;
@@ -164,6 +165,11 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
             accountType: $accountContext?->nullableAccountType()?->value,
+            accountIdentityCount: $accountContext === null ? 0 : AccountPrincipalModel::query()
+                ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+                ->whereHas('identity')
+                ->distinct()
+                ->count('identity_id'),
             authenticationMethods: new AuthenticationMethodsReadModel(
                 passkeyCount: $model->passkey_credentials_count,
                 linkedSocialProviders: $model->linked_social_providers,

@@ -12,7 +12,6 @@ use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Condition;
@@ -32,7 +31,6 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
         private PolicyRepositoryInterface $policyRepository,
         private RoleFactoryInterface $roleFactory,
         private RoleRepositoryInterface $roleRepository,
-        private PrincipalRepositoryInterface $principalRepository,
         private AccountRepositoryInterface $accountRepository,
     ) {
     }
@@ -88,9 +86,6 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
             $delegation->delegationIdentifier(),
         );
         $principalGroup->addRole($role);
-        foreach ($this->principalRepository->findByAccountId($sourceAccountIdentifier) as $principal) {
-            $principalGroup->addMember($principal->principalIdentifier());
-        }
         $this->principalGroupRepository->save($principalGroup);
     }
 }

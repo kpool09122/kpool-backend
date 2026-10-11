@@ -52,15 +52,27 @@ readonly class RequestAccountCategoryChangeAction
             } catch (AccountNotFoundException $e) {
                 DB::rollBack();
 
-                throw new NotFoundHttpException(detail: $e->getMessage(), previous: $e);
+                throw new NotFoundHttpException(detail: error_message('account_not_found', $language), previous: $e);
             } catch (AccountCategoryChangeRequestForbiddenException $e) {
                 DB::rollBack();
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
-            } catch (SameAccountCategoryChangeRequestException|AccountCategoryChangeRequestAlreadyPendingException|IncompleteAccountContactForCategoryChangeException|InvalidDocumentsForVerificationException $e) {
+            } catch (SameAccountCategoryChangeRequestException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
+                throw new UnprocessableEntityHttpException(detail: error_message('same_account_category_change_request', $language), previous: $e);
+            } catch (AccountCategoryChangeRequestAlreadyPendingException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('account_category_change_request_already_pending', $language), previous: $e);
+            } catch (IncompleteAccountContactForCategoryChangeException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('incomplete_account_contact_for_category_change', $language), previous: $e);
+            } catch (InvalidDocumentsForVerificationException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_documents_for_category_change', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
