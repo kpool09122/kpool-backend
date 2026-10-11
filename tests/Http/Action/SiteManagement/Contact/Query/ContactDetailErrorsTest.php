@@ -63,7 +63,7 @@ class ContactDetailErrorsTest extends TestCase
         $this->app()->instance(ActorContext::class, new ActorContext($identity, Language::ENGLISH));
         $this->app()->instance(SiteManagementContext::class, new SiteManagementContext($principal->principalIdentifier()));
         if (! $mine && ! $exists) {
-            SiteManagementAuthorization::grantAdministrator($principal);
+            SiteManagementAuthorization::grantOperator($principal);
         }
         $contact = StrTestHelper::generateUuid();
         $owner = $mine && $status === 403 ? (string) $principal->principalIdentifier() : StrTestHelper::generateUuid();

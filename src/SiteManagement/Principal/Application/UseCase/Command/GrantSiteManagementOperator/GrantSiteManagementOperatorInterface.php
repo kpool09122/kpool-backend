@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementOperator;
+
+interface GrantSiteManagementOperatorInterface
+{
+    public function process(GrantSiteManagementOperatorInputPort $input, GrantSiteManagementOperatorOutputPort $output): void;
+}

@@ -132,7 +132,7 @@ class AccountAuthorizationSeeder extends Seeder
         ];
 
         $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
-        $this->saveRole(Role::ADMIN, $adminPolicyIdentifiers);
+        $this->saveRole(Role::ADMINISTRATOR, $adminPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
         ]);

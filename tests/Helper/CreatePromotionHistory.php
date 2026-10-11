@@ -28,7 +28,7 @@ class CreatePromotionHistory
             'id' => (string) $id,
             'principal_id' => (string) $principalIdentifier,
             'from_role' => $overrides['from_role'] ?? 'GENERAL',
-            'to_role' => $overrides['to_role'] ?? 'COLLABORATOR',
+            'to_role' => $overrides['to_role'] ?? 'Collaborator',
             'reason' => $overrides['reason'] ?? null,
             'processed_at' => $overrides['processed_at'] ?? now(),
         ]);

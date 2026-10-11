@@ -424,7 +424,7 @@ class RoleRepositoryTest extends TestCase
     public function testFindByName(): void
     {
         $roleId = StrTestHelper::generateUuid();
-        $roleName = 'AGENCY_ACTOR';
+        $roleName = 'AgencyActor';
 
         CreateRole::create(
             new RoleIdentifier($roleId),
@@ -466,7 +466,7 @@ class RoleRepositoryTest extends TestCase
     public function testFindByNameWithPolicies(): void
     {
         $roleId = StrTestHelper::generateUuid();
-        $roleName = 'TALENT_ACTOR';
+        $roleName = 'TalentActor';
         $policyId1 = StrTestHelper::generateUuid();
         $policyId2 = StrTestHelper::generateUuid();
 

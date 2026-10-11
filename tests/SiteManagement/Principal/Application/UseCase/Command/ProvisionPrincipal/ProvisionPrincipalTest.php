@@ -48,8 +48,8 @@ class ProvisionPrincipalTest extends TestCase
         $identity = new IdentityIdentifier('69200000-0000-7000-8000-000000000098');
         $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
         $principal = new Principal(new PrincipalIdentifier('69200000-0000-7000-8000-000000000099'), $identity, $account);
-        $role = new Role(new RoleIdentifier('69200000-0000-7000-8000-000000000096'), 'general', []);
-        $group = new PrincipalGroup(new PrincipalGroupIdentifier('69200000-0000-7000-8000-000000000097'), 'general', [$role->roleIdentifier()], $account, true);
+        $role = new Role(new RoleIdentifier('69200000-0000-7000-8000-000000000096'), 'General', []);
+        $group = new PrincipalGroup(new PrincipalGroupIdentifier('69200000-0000-7000-8000-000000000097'), 'General', [$role->roleIdentifier()], $account, true);
         $principalRepository = $this->createMock(PrincipalRepositoryInterface::class);
         $principalRepository->expects(self::once())->method('save')->with($principal);
         $principalFactory = $this->createMock(PrincipalFactoryInterface::class);
@@ -58,9 +58,9 @@ class ProvisionPrincipalTest extends TestCase
         $principalGroupRepository->expects(self::once())->method('save')->with($group);
         $principalGroupFactory = $this->createMock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->expects(self::once())->method('create')
-            ->with('general', [$role->roleIdentifier()], $account, true)->willReturn($group);
+            ->with('General', [$role->roleIdentifier()], $account, true)->willReturn($group);
         $roleRepository = $this->createMock(RoleRepositoryInterface::class);
-        $roleRepository->expects(self::once())->method('findSystemByName')->with('general')->willReturn($role);
+        $roleRepository->expects(self::once())->method('findSystemByName')->with('General')->willReturn($role);
         $output = new ProvisionPrincipalOutput();
         (new ProvisionPrincipal($principalRepository, $principalFactory, $principalGroupRepository, $principalGroupFactory, $roleRepository))
             ->process(new ProvisionPrincipalInput($identity, $account), $output);

@@ -12,7 +12,7 @@ use Source\SiteManagement\Principal\Domain\Entity\Role;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
-use Tests\Helper\SiteManagementAdministratorTestData;
+use Tests\Helper\SiteManagementOperatorTestData;
 
 class PrincipalGroupTest extends TestCase
 {
@@ -27,15 +27,15 @@ class PrincipalGroupTest extends TestCase
 
     public function testAddingRolesAndMembersIsIdempotentAndPreservesExistingValues(): void
     {
-        $data = SiteManagementAdministratorTestData::create();
-        $group = $data->administratorGroup;
-        self::assertFalse($group->hasRole($data->administratorRole->roleIdentifier()));
+        $data = SiteManagementOperatorTestData::create();
+        $group = $data->operatorGroup;
+        self::assertFalse($group->hasRole($data->operatorRole->roleIdentifier()));
         self::assertFalse($group->hasMember($data->siteManagementPrincipal->principalIdentifier()));
-        $group->addRole($data->administratorRole);
-        $group->addRole($data->administratorRole);
+        $group->addRole($data->operatorRole);
+        $group->addRole($data->operatorRole);
         $group->addMember($data->siteManagementPrincipal->principalIdentifier());
         $group->addMember($data->siteManagementPrincipal->principalIdentifier());
-        self::assertTrue($group->hasRole(new RoleIdentifier((string) $data->administratorRole->roleIdentifier())));
+        self::assertTrue($group->hasRole(new RoleIdentifier((string) $data->operatorRole->roleIdentifier())));
         self::assertTrue($group->hasMember(new PrincipalIdentifier((string) $data->siteManagementPrincipal->principalIdentifier())));
         self::assertCount(1, $group->roles());
         self::assertCount(1, $group->members());
@@ -43,9 +43,9 @@ class PrincipalGroupTest extends TestCase
 
     public function testRejectsRolesOwnedByAnotherAccount(): void
     {
-        $data = SiteManagementAdministratorTestData::create();
-        $role = new Role($data->administratorRole->roleIdentifier(), 'other', [], new AccountIdentifier('00000000-0000-7000-8000-000000000010'));
+        $data = SiteManagementOperatorTestData::create();
+        $role = new Role($data->operatorRole->roleIdentifier(), 'other', [], new AccountIdentifier('00000000-0000-7000-8000-000000000010'));
         $this->expectException(InvalidArgumentException::class);
-        $data->administratorGroup->addRole($role);
+        $data->operatorGroup->addRole($role);
     }
 }

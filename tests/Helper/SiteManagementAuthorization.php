@@ -32,11 +32,11 @@ final class SiteManagementAuthorization
         return $identifier;
     }
 
-    public static function grantAdministrator(Principal $principal): void
+    public static function grantOperator(Principal $principal): void
     {
         $group = app(PrincipalGroupFactoryInterface::class)->create(
-            'administrator',
-            [new RoleIdentifier(SiteManagementAuthorizationSeeder::ADMIN_ROLE)],
+            'Operator',
+            [new RoleIdentifier(SiteManagementAuthorizationSeeder::OPERATOR_ROLE)],
             $principal->accountIdentifier(),
         );
         $group->addMember($principal->principalIdentifier());

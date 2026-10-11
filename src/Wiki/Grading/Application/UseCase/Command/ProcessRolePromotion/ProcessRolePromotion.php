@@ -29,8 +29,8 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
 {
-    private const string COLLABORATOR_ROLE = 'COLLABORATOR';
-    private const string SENIOR_COLLABORATOR_ROLE = 'SENIOR_COLLABORATOR';
+    private const string COLLABORATOR_ROLE = 'Collaborator';
+    private const string SENIOR_COLLABORATOR_ROLE = 'SeniorCollaborator';
     private const string SENIOR_COLLABORATOR_GROUP_NAME = 'Senior Collaborator';
 
     public function __construct(

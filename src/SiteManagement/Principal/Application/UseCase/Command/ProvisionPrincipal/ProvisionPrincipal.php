@@ -13,8 +13,8 @@ use Source\SiteManagement\Principal\Domain\Repository\RoleRepositoryInterface;
 
 readonly class ProvisionPrincipal implements ProvisionPrincipalInterface
 {
-    private const string DEFAULT_PRINCIPAL_GROUP_NAME = 'general';
-    private const string GENERAL_ROLE_NAME = 'general';
+    private const string DEFAULT_PRINCIPAL_GROUP_NAME = 'General';
+    private const string GENERAL_ROLE_NAME = 'General';
 
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,

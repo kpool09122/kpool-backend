@@ -91,7 +91,7 @@ class DeleteAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
@@ -109,7 +109,7 @@ class DeleteAnnouncementTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcessThrowsUnauthorizedExceptionForNonAdmin(): void
+    public function testProcessThrowsUnauthorizedExceptionForNonOperator(): void
     {
         $this->expectException(UnauthorizedException::class);
 
@@ -130,7 +130,7 @@ class DeleteAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);
@@ -167,7 +167,7 @@ class DeleteAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_DELETE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $deleteAnnouncement = $this->app()->make(DeleteAnnouncementInterface::class);

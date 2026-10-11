@@ -836,7 +836,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier($accountId),
-            'Operations Wiki Administrators',
+            'Operations Wiki Operators',
             false,
             new DateTimeImmutable(),
         );
@@ -866,11 +866,11 @@ class PrincipalGroupRepositoryTest extends TestCase
             new IdentityIdentifier($identityId),
             new AccountIdentifier($accountId),
         );
-        CreateRole::create(new RoleIdentifier($roleId), ['name' => 'ADMINISTRATOR']);
+        CreateRole::create(new RoleIdentifier($roleId), ['name' => 'Operator']);
         CreatePrincipalGroup::create(
             new PrincipalGroupIdentifier($principalGroupId),
             new AccountIdentifier($accountId),
-            ['name' => 'Operations Wiki Administrators'],
+            ['name' => 'Operations Wiki Operators'],
         );
         CreatePrincipalGroupMembership::create($principalGroupId, $principalId);
         DB::table('wiki_principal_group_role_attachments')->insert([
