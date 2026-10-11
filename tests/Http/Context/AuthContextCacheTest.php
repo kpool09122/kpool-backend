@@ -239,7 +239,7 @@ class AuthContextCacheTest extends TestCase
         $session->setId(str_repeat('a', 40));
         $cached = $cache->resolveAccount($identity, fn () => throw new RuntimeException('Must use first session cache'));
         $this->assertSame((string) $firstContext->principal()->accountIdentifier(), (string) $cached->principal()->accountIdentifier());
-        $cache->forgetCurrentAccountSession($identity);
+        $cache->forgetCurrentAccount($identity);
         $this->assertSame($secondContext, $cache->resolveAccount($identity, fn () => $secondContext));
         $session->setId(str_repeat('b', 40));
         $cached = $cache->resolveAccount($identity, fn () => throw new RuntimeException('Other session must remain cached'));

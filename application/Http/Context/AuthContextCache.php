@@ -145,7 +145,7 @@ class AuthContextCache
         }
     }
 
-    public function forgetCurrentAccountSession(IdentityIdentifier $identityIdentifier): void
+    public function forgetCurrentAccount(IdentityIdentifier $identityIdentifier): void
     {
         $this->delete($this->accountKey($identityIdentifier));
     }

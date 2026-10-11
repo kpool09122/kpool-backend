@@ -43,7 +43,7 @@ readonly class AuthService implements AuthServiceInterface
         $identityId = Auth::id();
         if (is_string($identityId)) {
             $identityIdentifier = new IdentityIdentifier($identityId);
-            $this->authContextCache->forgetCurrentAccountSession($identityIdentifier);
+            $this->authContextCache->forgetCurrentAccount($identityIdentifier);
             $this->currentAccountService->forget($identityIdentifier);
         }
 
