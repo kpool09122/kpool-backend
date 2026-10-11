@@ -36,14 +36,14 @@ class RoleRepositoryTest extends TestCase
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $account);
         $repository = new RoleRepository();
-        $repository->save(new Role(new RoleIdentifier(StrTestHelper::generateUuid()), 'general', [], $account));
-        self::assertNull($repository->findSystemByName('general'));
+        $repository->save(new Role(new RoleIdentifier(StrTestHelper::generateUuid()), 'General', [], $account));
+        self::assertNull($repository->findSystemByName('General'));
 
         $policyIdentifier = new PolicyIdentifier(StrTestHelper::generateUuid());
         (new PolicyRepository())->save(new Policy($policyIdentifier, 'general-policy', []));
         $identifier = new RoleIdentifier(StrTestHelper::generateUuid());
-        $repository->save(new Role($identifier, 'general', [$policyIdentifier]));
-        $role = $repository->findSystemByName('general');
+        $repository->save(new Role($identifier, 'General', [$policyIdentifier]));
+        $role = $repository->findSystemByName('General');
         self::assertNotNull($role);
         self::assertSame((string) $identifier, (string) $role->roleIdentifier());
         self::assertTrue($role->isSystemRole());

@@ -176,6 +176,6 @@ class PrincipalLifecycleTest extends TestCase
         $this->assertSame($first, DB::table('site_management_principals')->orderBy('id')->pluck('id')->all());
         $this->assertSame(DB::table('account_principals')->count(), count($first));
         $this->assertSame(count($first), DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
-        $this->assertSame(0, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'administrator')->count());
+        $this->assertSame(0, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'Operator')->count());
     }
 }

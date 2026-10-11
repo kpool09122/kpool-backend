@@ -33,8 +33,8 @@ class PromotionHistoryFactoryTest extends TestCase
     public function testCreateWithReason(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $fromRole = 'COLLABORATOR';
-        $toRole = 'SENIOR_COLLABORATOR';
+        $fromRole = 'Collaborator';
+        $toRole = 'SeniorCollaborator';
         $reason = 'Promoted for being in top 10% with 125 points';
 
         $factory = $this->app()->make(PromotionHistoryFactoryInterface::class);
@@ -61,8 +61,8 @@ class PromotionHistoryFactoryTest extends TestCase
     public function testCreateWithoutReason(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $fromRole = 'SENIOR_COLLABORATOR';
-        $toRole = 'COLLABORATOR';
+        $fromRole = 'SeniorCollaborator';
+        $toRole = 'Collaborator';
         $reason = null;
 
         $factory = $this->app()->make(PromotionHistoryFactoryInterface::class);

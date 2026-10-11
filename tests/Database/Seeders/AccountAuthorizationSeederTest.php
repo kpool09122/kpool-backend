@@ -18,7 +18,7 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
 
         $ownerPolicies = $this->policyNames(Role::OWNER);
-        $adminPolicies = $this->policyNames(Role::ADMIN);
+        $adminPolicies = $this->policyNames(Role::ADMINISTRATOR);
 
         $this->assertContains('AFFILIATION_REQUEST_CREATE', $ownerPolicies);
         $this->assertContains('DELEGATION_REQUEST_CREATE', $ownerPolicies);
@@ -29,7 +29,7 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->assertContains('AFFILIATION_REJECT', $adminPolicies);
 
         $affiliationRequestPolicyId = DB::table('account_policies')->where('name', 'AFFILIATION_REQUEST_CREATE')->value('id');
-        $adminRoleId = DB::table('account_roles')->where('name', Role::ADMIN)->value('id');
+        $adminRoleId = DB::table('account_roles')->where('name', Role::ADMINISTRATOR)->value('id');
         DB::table('account_role_policy_attachments')->insert([
             'role_id' => $adminRoleId,
             'policy_id' => $affiliationRequestPolicyId,
@@ -37,7 +37,7 @@ class AccountAuthorizationSeederTest extends TestCase
 
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
 
-        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMIN));
+        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMINISTRATOR));
     }
 
     /** @return array<array-key, string> */

@@ -22,8 +22,8 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 {
     private const string DEFAULT_PRINCIPAL_GROUP_NAME = 'Default';
     private const string WIKI_ADMINISTRATOR_PRINCIPAL_GROUP_NAME = 'Wiki Administrator';
-    private const string COLLABORATOR_ROLE = 'COLLABORATOR';
-    private const string WIKI_ADMINISTRATOR_ROLE = 'WIKI_ADMINISTRATOR';
+    private const string COLLABORATOR_ROLE = 'Collaborator';
+    private const string WIKI_ADMINISTRATOR_ROLE = 'Administrator';
 
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,

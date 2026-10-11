@@ -27,11 +27,11 @@ class SystemRoleSeeder extends Seeder
     {
         $this->loadPolicies();
 
-        $this->createAdministratorRole();
+        $this->createOperatorRole();
         $this->createSeniorCollaboratorRole();
         $this->createAgencyActorRole();
         $this->createTalentActorRole();
-        $this->createWikiAdministratorRole();
+        $this->createAdministratorRole();
         $this->createCollaboratorRole();
         $this->createNoneRole();
     }
@@ -64,10 +64,10 @@ class SystemRoleSeeder extends Seeder
         return $identifiers;
     }
 
-    private function createAdministratorRole(): void
+    private function createOperatorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'ADMINISTRATOR',
+            name: 'Operator',
             policies: $this->getPolicyIdentifiers([
                 ...$this->globalPolicyNames(),
                 'GLOBAL_OFFICIAL_CERTIFICATION_READ',
@@ -81,7 +81,7 @@ class SystemRoleSeeder extends Seeder
     private function createSeniorCollaboratorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'SENIOR_COLLABORATOR',
+            name: 'SeniorCollaborator',
             policies: $this->getPolicyIdentifiers([...$this->globalPolicyNames(), 'DENY_ROLLBACK']),
             accountIdentifier: null,
         );
@@ -92,7 +92,7 @@ class SystemRoleSeeder extends Seeder
     private function createAgencyActorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'AGENCY_ACTOR',
+            name: 'AgencyActor',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->agencyManagementPolicyNames()]),
             accountIdentifier: null,
         );
@@ -103,7 +103,7 @@ class SystemRoleSeeder extends Seeder
     private function createTalentActorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'TALENT_ACTOR',
+            name: 'TalentActor',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
             accountIdentifier: null,
         );
@@ -111,10 +111,10 @@ class SystemRoleSeeder extends Seeder
         $this->roleRepository->save($role);
     }
 
-    private function createWikiAdministratorRole(): void
+    private function createAdministratorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'WIKI_ADMINISTRATOR',
+            name: 'Administrator',
             policies: $this->getPolicyIdentifiers(['GLOBAL_PRINCIPAL_GROUP_MANAGE']),
             accountIdentifier: null,
         );
@@ -125,7 +125,7 @@ class SystemRoleSeeder extends Seeder
     private function createCollaboratorRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'COLLABORATOR',
+            name: 'Collaborator',
             policies: $this->getPolicyIdentifiers($this->basicEditingPolicyNames()),
             accountIdentifier: null,
         );
@@ -136,7 +136,7 @@ class SystemRoleSeeder extends Seeder
     private function createNoneRole(): void
     {
         $role = $this->roleFactory->create(
-            name: 'NONE',
+            name: 'None',
             policies: [],
             accountIdentifier: null,
         );

@@ -36,7 +36,7 @@ class ListContactsByPrincipalTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsOnlySpecifiedPrincipalContactsForAdmin(): void
+    public function testProcessReturnsOnlySpecifiedPrincipalContactsForOperator(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         $target = new PrincipalIdentifier(StrTestHelper::generateUuid());

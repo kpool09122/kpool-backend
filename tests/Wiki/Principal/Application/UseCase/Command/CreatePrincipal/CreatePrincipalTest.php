@@ -40,7 +40,7 @@ use Tests\TestCase;
 class CreatePrincipalTest extends TestCase
 {
     /**
-     * 正常系: Default PrincipalGroup が存在しない場合、COLLABORATORロールを持つDefaultグループを作成してPrincipalを追加すること.
+     * 正常系: Default PrincipalGroup が存在しない場合、Collaboratorロールを持つDefaultグループを作成してPrincipalを追加すること.
      *
      * @throws BindingResolutionException
      * @throws PrincipalAlreadyExistsException
@@ -63,7 +63,7 @@ class CreatePrincipalTest extends TestCase
         );
         $collaboratorRole = new Role(
             $roleIdentifier,
-            'COLLABORATOR',
+            'Collaborator',
             [],
             null,
             new DateTimeImmutable(),
@@ -101,7 +101,7 @@ class CreatePrincipalTest extends TestCase
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findSystemByName')
-            ->with('COLLABORATOR')
+            ->with('Collaborator')
             ->once()
             ->andReturn($collaboratorRole);
 
@@ -157,14 +157,14 @@ class CreatePrincipalTest extends TestCase
         );
         $wikiAdministratorRole = new Role(
             $wikiAdministratorRoleIdentifier,
-            'WIKI_ADMINISTRATOR',
+            'Administrator',
             [],
             null,
             new DateTimeImmutable(),
         );
         $collaboratorRole = new Role(
             $collaboratorRoleIdentifier,
-            'COLLABORATOR',
+            'Collaborator',
             [],
             null,
             new DateTimeImmutable(),
@@ -191,8 +191,8 @@ class CreatePrincipalTest extends TestCase
             ->andReturn($wikiAdministratorPrincipalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('COLLABORATOR')->andReturn($collaboratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Collaborator')->andReturn($collaboratorRole);
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
@@ -272,7 +272,7 @@ class CreatePrincipalTest extends TestCase
         $principalGroupFactory->shouldReceive('create')->once()->andReturn($principalGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturnNull();
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturn($accountPrincipal);
@@ -293,7 +293,7 @@ class CreatePrincipalTest extends TestCase
         $this->app()->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
 
         $this->expectException(SystemRoleNotFoundException::class);
-        $this->expectExceptionMessage('WIKI_ADMINISTRATOR system role is not found.');
+        $this->expectExceptionMessage('Administrator system role is not found.');
 
         $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),
@@ -345,14 +345,14 @@ class CreatePrincipalTest extends TestCase
 
         $wikiAdministratorRole = new Role(
             $wikiAdministratorRoleIdentifier,
-            'WIKI_ADMINISTRATOR',
+            'Administrator',
             [],
             null,
             new DateTimeImmutable(),
         );
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('WIKI_ADMINISTRATOR')->andReturn($wikiAdministratorRole);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('COLLABORATOR')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Collaborator')->andReturnNull();
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->andReturn($accountPrincipal);
@@ -373,7 +373,7 @@ class CreatePrincipalTest extends TestCase
         $this->app()->instance(AccountRoleRepositoryInterface::class, $accountRoleRepository);
 
         $this->expectException(SystemRoleNotFoundException::class);
-        $this->expectExceptionMessage('COLLABORATOR system role is not found.');
+        $this->expectExceptionMessage('Collaborator system role is not found.');
 
         $this->app()->make(CreatePrincipalInterface::class)->process(
             new CreatePrincipalInput($identityIdentifier, $accountIdentifier),

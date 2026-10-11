@@ -16,14 +16,15 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 class SiteManagementAuthorizationSeeder extends Seeder
 {
     public const string GENERAL_ROLE = '69200000-0000-7000-8000-000000000001';
-    public const string ADMIN_ROLE = '69200000-0000-7000-8000-000000000002';
+    public const string OPERATOR_ROLE = '69200000-0000-7000-8000-000000000002';
 
     public function run(): void
     {
-        foreach ([self::GENERAL_ROLE => 'general', self::ADMIN_ROLE => 'administrator'] as $id => $name) {
-            $admin = $id === self::ADMIN_ROLE;
-            $statements = $admin ? [['effect' => 'allow', 'actions' => array_map(static fn (Action $a): string => $a->value, Action::cases()), 'resource_types' => ['announcement','contact'], 'condition' => null]] : [['effect' => 'allow','actions' => ['contact:view'],'resource_types' => ['contact'],'condition' => 'own_contact']];
-            DB::table('site_management_policies')->updateOrInsert(['id' => $id], ['account_id' => null, 'name' => $name,'statements' => json_encode($statements, JSON_THROW_ON_ERROR),'created_at' => now(),'updated_at' => now()]);
+        foreach ([self::GENERAL_ROLE => 'General', self::OPERATOR_ROLE => 'Operator'] as $id => $name) {
+            $operator = $id === self::OPERATOR_ROLE;
+            $policyName = $operator ? 'administrator' : 'general';
+            $statements = $operator ? [['effect' => 'allow', 'actions' => array_map(static fn (Action $a): string => $a->value, Action::cases()), 'resource_types' => ['announcement','contact'], 'condition' => null]] : [['effect' => 'allow','actions' => ['contact:view'],'resource_types' => ['contact'],'condition' => 'own_contact']];
+            DB::table('site_management_policies')->updateOrInsert(['id' => $id], ['account_id' => null, 'name' => $policyName,'statements' => json_encode($statements, JSON_THROW_ON_ERROR),'created_at' => now(),'updated_at' => now()]);
             DB::table('site_management_roles')->updateOrInsert(['id' => $id], ['account_id' => null, 'name' => $name,'created_at' => now(),'updated_at' => now()]);
             DB::table('site_management_role_policy_attachments')->updateOrInsert(['role_id' => $id,'policy_id' => $id], []);
         }

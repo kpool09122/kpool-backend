@@ -17,8 +17,8 @@ readonly class AccountCategoryChangedHandler
 {
     private const string AGENCY_ACTOR_GROUP_NAME = 'Agency Actor';
     private const string TALENT_ACTOR_GROUP_NAME = 'Talent Actor';
-    private const string AGENCY_ACTOR_ROLE = 'AGENCY_ACTOR';
-    private const string TALENT_ACTOR_ROLE = 'TALENT_ACTOR';
+    private const string AGENCY_ACTOR_ROLE = 'AgencyActor';
+    private const string TALENT_ACTOR_ROLE = 'TalentActor';
 
     public function __construct(
         private PrincipalGroupFactoryInterface $principalGroupFactory,

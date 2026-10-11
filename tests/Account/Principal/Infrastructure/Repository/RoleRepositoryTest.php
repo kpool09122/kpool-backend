@@ -31,11 +31,11 @@ class RoleRepositoryTest extends TestCase
         $repository = $this->app()->make(RoleRepositoryInterface::class);
         $this->createPolicy($policyIdentifier);
 
-        $repository->save(new Role($roleIdentifier, Role::ADMIN, [$policyIdentifier], null));
+        $repository->save(new Role($roleIdentifier, Role::ADMINISTRATOR, [$policyIdentifier], null));
 
         $this->assertDatabaseHas('account_roles', [
             'id' => (string) $roleIdentifier,
-            'name' => Role::ADMIN,
+            'name' => Role::ADMINISTRATOR,
             'account_id' => null,
         ]);
 
@@ -47,7 +47,7 @@ class RoleRepositoryTest extends TestCase
         $roles = $repository->findByIds([$roleIdentifier]);
 
         $this->assertArrayHasKey((string) $roleIdentifier, $roles);
-        $this->assertSame(Role::ADMIN, $roles[(string) $roleIdentifier]->name());
+        $this->assertSame(Role::ADMINISTRATOR, $roles[(string) $roleIdentifier]->name());
         $this->assertTrue($roles[(string) $roleIdentifier]->hasPolicy($policyIdentifier));
     }
 

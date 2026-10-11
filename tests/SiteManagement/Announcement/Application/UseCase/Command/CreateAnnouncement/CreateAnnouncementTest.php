@@ -99,7 +99,7 @@ class CreateAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
@@ -124,7 +124,7 @@ class CreateAnnouncementTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcessThrowsUnauthorizedExceptionForNonAdmin(): void
+    public function testProcessThrowsUnauthorizedExceptionForNonOperator(): void
     {
         $this->expectException(UnauthorizedException::class);
 
@@ -151,7 +151,7 @@ class CreateAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_CREATE && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
