@@ -68,7 +68,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
+        $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(SendSocialLinkingEmailInterface::class, SendSocialLinkingEmail::class);
         $this->app->singleton(VerifySocialLinkingEmailInterface::class, VerifySocialLinkingEmail::class);
         $this->app->singleton(AddPasskeyInterface::class, AddPasskey::class);
