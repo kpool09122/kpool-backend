@@ -23,7 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMembersInterface
 {
-    private const string WIKI_ADMINISTRATOR_ROLE = 'WIKI_ADMINISTRATOR';
+    private const string WIKI_ADMINISTRATOR_ROLE = 'Administrator';
 
     public function __construct(
         private PrincipalGroupRepositoryInterface $principalGroupRepository,

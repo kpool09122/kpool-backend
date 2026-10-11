@@ -7,7 +7,7 @@ paths:
   /contact/principals/{principalIdentifier}:
     get:
       operationId: ContactOperations_listContactsByPrincipal
-      description: List contact inquiries for the specified principal. Requires a site-management administrator.
+      description: List contact inquiries for the specified principal. Requires a site-management Operator.
       parameters:
         - name: principalIdentifier
           in: path
@@ -62,7 +62,7 @@ paths:
   /contact/principals/{principalIdentifier}/{contactIdentifier}:
     get:
       operationId: ContactOperations_getContactDetail
-      description: Get the specified contact inquiry for an principal. Requires a site-management administrator.
+      description: Get the specified contact inquiry for an principal. Requires a site-management Operator.
       parameters:
         - name: principalIdentifier
           in: path
@@ -180,7 +180,7 @@ paths:
   /contacts:
     get:
       operationId: ContactListOperations_listContacts
-      description: List all contact inquiries, optionally filtered by principal. Requires a site-management administrator.
+      description: List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.
       parameters:
         - name: principalIdentifier
           in: query
@@ -269,7 +269,7 @@ paths:
   /contacts/{contactIdentifier}/replies:
     post:
       operationId: ContactListOperations_replyContact
-      description: Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.
+      description: Send a reply to a contact inquiry. Requires a site-management Operator. Returns no payload; mail delivery failures retain failed reply history and return 500.
       parameters:
         - name: contactIdentifier
           in: path

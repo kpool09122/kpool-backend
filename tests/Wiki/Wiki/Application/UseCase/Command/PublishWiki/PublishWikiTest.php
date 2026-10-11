@@ -854,7 +854,7 @@ class PublishWikiTest extends TestCase
     }
 
     /**
-     * 正常系：ADMINISTRATORがWikiを公開できること.
+     * 正常系：OperatorがWikiを公開できること.
      *
      * @return void
      * @throws BindingResolutionException

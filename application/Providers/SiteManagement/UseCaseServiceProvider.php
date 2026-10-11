@@ -29,12 +29,12 @@ use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByPrincipal;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListMyContacts;
-use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementAdministrator\GrantSiteManagementAdministrator;
-use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementAdministrator\GrantSiteManagementAdministratorInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementOperator\GrantSiteManagementOperator;
+use Source\SiteManagement\Principal\Application\UseCase\Command\GrantSiteManagementOperator\GrantSiteManagementOperatorInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipal;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
-use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementAdministrator\RevokeSiteManagementAdministrator;
-use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementAdministrator\RevokeSiteManagementAdministratorInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementOperator\RevokeSiteManagementOperator;
+use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementOperator\RevokeSiteManagementOperatorInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 
@@ -42,8 +42,8 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(GrantSiteManagementAdministratorInterface::class, GrantSiteManagementAdministrator::class);
-        $this->app->singleton(RevokeSiteManagementAdministratorInterface::class, RevokeSiteManagementAdministrator::class);
+        $this->app->singleton(GrantSiteManagementOperatorInterface::class, GrantSiteManagementOperator::class);
+        $this->app->singleton(RevokeSiteManagementOperatorInterface::class, RevokeSiteManagementOperator::class);
 
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
 

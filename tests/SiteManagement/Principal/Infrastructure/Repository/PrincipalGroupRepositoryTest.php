@@ -30,7 +30,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         CreateAccount::create((string) $otherAccount);
         $target = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'administrators', [], $account);
         $other = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'administrators', [], $otherAccount);
-        $general = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'general', [], $account, true);
+        $general = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'General', [], $account, true);
         foreach ([$other, $general, $target] as $group) {
             $repository->save($group);
         }
@@ -48,7 +48,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = new PrincipalGroupRepository();
         $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
         $target = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'administrators', [], $account);
-        $general = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'general', [], $account, true);
+        $general = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'General', [], $account, true);
         $repository->save($target);
         $repository->save($general);
         $repository->delete($target);

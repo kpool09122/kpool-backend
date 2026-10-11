@@ -36,7 +36,7 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsOnlySpecifiedPrincipalContactsForAdmin(): void
+    public function testProcessReturnsOnlySpecifiedPrincipalContactsForOperator(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         $target = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -76,7 +76,7 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsAllContactsIncludingAnonymousContactsForAdminWhenTargetIdentityIsNotSpecified(): void
+    public function testProcessReturnsAllContactsIncludingAnonymousContactsForOperatorWhenTargetIdentityIsNotSpecified(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
@@ -195,7 +195,7 @@ class ListContactsTest extends TestCase
             $this->fail('General policy must reject a page containing other owners');
         } catch (UnauthorizedException) {
         }
-        SiteManagementAuthorization::grantAdministrator($principal);
+        SiteManagementAuthorization::grantOperator($principal);
         $allowed = new ListContactsOutput();
         $query->process(new ListContactsInput($identifier, null, null), $allowed);
         $this->assertCount(3, $allowed->toArray()['contacts']);

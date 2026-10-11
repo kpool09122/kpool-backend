@@ -139,7 +139,7 @@ interface ContactListOperations {
   @useAuth(SessionCookieAuth)
   @post
   @route("/{contactIdentifier}/replies")
-  @doc("Send a reply to a contact inquiry. Requires a site-management administrator. Returns no payload; mail delivery failures retain failed reply history and return 500.")
+  @doc("Send a reply to a contact inquiry. Requires a site-management Operator. Returns no payload; mail delivery failures retain failed reply history and return 500.")
   replyContact(
     @doc("UUIDv7 contact identifier, matching the existing ContactIdentifier domain constraint.")
     @path contactIdentifier: UuidV7,
@@ -147,7 +147,7 @@ interface ContactListOperations {
   ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get
-  @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management administrator.")
+  @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.")
   listContacts(
     @query principalIdentifier?: Uuid | null,
     @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
@@ -166,7 +166,7 @@ interface ContactListOperations {
 interface ContactOperations {
   @get
   @route("/principals/{principalIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for an principal. Requires a site-management administrator.")
+  @doc("Get the specified contact inquiry for an principal. Requires a site-management Operator.")
   getContactDetail(
     @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,
@@ -175,7 +175,7 @@ interface ContactOperations {
 
   @get
   @route("/principals/{principalIdentifier}")
-  @doc("List contact inquiries for the specified principal. Requires a site-management administrator.")
+  @doc("List contact inquiries for the specified principal. Requires a site-management Operator.")
   listContactsByPrincipal(
     @path principalIdentifier: Uuid,
   ): ListContactsByPrincipalResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;

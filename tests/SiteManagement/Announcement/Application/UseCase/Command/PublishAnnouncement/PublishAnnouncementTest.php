@@ -142,7 +142,7 @@ class PublishAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
@@ -161,7 +161,7 @@ class PublishAnnouncementTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcessThrowsUnauthorizedExceptionForNonAdmin(): void
+    public function testProcessThrowsUnauthorizedExceptionForNonOperator(): void
     {
         $this->expectException(UnauthorizedException::class);
 
@@ -183,7 +183,7 @@ class PublishAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);
@@ -223,7 +223,7 @@ class PublishAnnouncementTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonAdmin'));
+        $policyEvaluator->shouldReceive('evaluate')->withArgs(static fn (Principal $principal, Action $action, Resource $resource): bool => $action === Action::ANNOUNCEMENT_PUBLISH && $resource->type() === ResourceType::ANNOUNCEMENT)->andReturn(! str_contains($this->name(), 'NonOperator'));
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $this->app()->instance(AnnouncementFactoryInterface::class, $announcementFactory);

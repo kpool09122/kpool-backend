@@ -53,7 +53,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertNotNull($principal);
         $this->assertSame((string) $principal->principalIdentifier(), $general->siteManagementPrincipalIdentifier());
         $this->assertSame('own_contact', $general->siteManagementPolicies()[0]['statements'][0]['condition']);
-        SiteManagementAuthorization::grantAdministrator($principal);
+        SiteManagementAuthorization::grantOperator($principal);
         $admin = $query->process($input);
         $this->assertCount(2, $admin->siteManagementPolicies());
         // Change an attached policy to Deny; the response must retain the effect.
@@ -401,7 +401,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         $originalSitePrincipal = $siteOutput->principal();
         $this->assertNotNull($originalSitePrincipal);
-        SiteManagementAuthorization::grantAdministrator($originalSitePrincipal);
+        SiteManagementAuthorization::grantOperator($originalSitePrincipal);
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identityIdentifier, $effectiveAccountIdentifier), new ProvisionPrincipalOutput());
 
         Redis::shouldReceive('get')->twice()->andReturn(null, json_encode([
