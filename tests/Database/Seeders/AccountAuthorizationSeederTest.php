@@ -40,6 +40,25 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMINISTRATOR));
     }
 
+    #[Group('useDb')]
+    public function testPrincipalGroupManagementIsGrantedWithoutAccountTypeCondition(): void
+    {
+        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
+        $this->assertContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::OWNER));
+        $this->assertContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::ADMINISTRATOR));
+        $statementsJson = DB::table('account_policies')
+            ->where('name', 'ACCOUNT_PRINCIPAL_GROUP_MANAGE')->value('statements');
+        $this->assertIsString($statementsJson);
+        $statements = json_decode($statementsJson, true, flags: JSON_THROW_ON_ERROR);
+        $this->assertIsArray($statements);
+        $this->assertArrayHasKey(0, $statements);
+        $statement = $statements[0];
+        $this->assertIsArray($statement);
+        $this->assertSame('allow', $statement['effect']);
+        $this->assertSame(['account:principal-group:manage'], $statement['actions']);
+        $this->assertNull($statement['condition']);
+    }
+
     /** @return array<array-key, string> */
     private function policyNames(string $roleName): array
     {

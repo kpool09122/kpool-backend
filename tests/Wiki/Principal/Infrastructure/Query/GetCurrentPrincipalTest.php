@@ -54,12 +54,41 @@ class GetCurrentPrincipalTest extends TestCase
         $this->assertFalse($result['isDelegatedPrincipal']);
         $this->assertTrue($result['isEnabled']);
         $this->assertSame([], $result['policies']);
+        $this->assertSame(1, $result['accountPrincipalCount']);
     }
 
     /**
      * @throws BindingResolutionException
      * @throws JsonException
      */
+    #[Group('useDb')]
+    public function testCountsOnlyWikiPrincipalsInTheCurrentAccount(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $member = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $notActivated = new IdentityIdentifier(StrTestHelper::generateUuid());
+        foreach ([$identity, $member, $notActivated] as $identifier) {
+            CreateIdentity::create($identifier, ['email' => (string) $identifier.'@example.com']);
+        }
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        $otherAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $account);
+        CreateAccount::create((string) $otherAccount);
+        foreach ([$identity, $member, $notActivated] as $identifier) {
+            DB::table('account_principals')->insert([
+                'id' => StrTestHelper::generateUuid(),
+                'identity_id' => (string) $identifier,
+                'account_id' => (string) $account,
+            ]);
+        }
+        CreatePrincipal::create(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identity, $account);
+        CreatePrincipal::create(new PrincipalIdentifier(StrTestHelper::generateUuid()), $member, $account);
+        CreatePrincipal::create(new PrincipalIdentifier(StrTestHelper::generateUuid()), $member, $otherAccount);
+        $result = $this->app()->make(GetCurrentPrincipalInterface::class)
+            ->process(new GetCurrentPrincipalInput($identity, $account))->toArray();
+        $this->assertSame(2, $result['accountPrincipalCount']);
+    }
+
     #[Group('useDb')]
     public function testProcessReturnsEffectivePoliciesThroughPrincipalGroupAndRole(): void
     {
@@ -199,6 +228,7 @@ class GetCurrentPrincipalTest extends TestCase
 
         $result = $readModel->toArray();
         $this->assertSame([], $result['policies']);
+        $this->assertSame(1, $result['accountPrincipalCount']);
     }
 
     /**

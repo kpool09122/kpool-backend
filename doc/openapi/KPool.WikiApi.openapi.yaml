@@ -6164,6 +6164,7 @@ components:
         - isDelegatedPrincipal
         - isEnabled
         - policies
+        - accountPrincipalCount
       properties:
         principalIdentifier:
           allOf:
@@ -6184,6 +6185,11 @@ components:
           items:
             $ref: '#/components/schemas/EffectivePolicySummary'
           description: Effective policies granted to the principal through principal groups and roles.
+        accountPrincipalCount:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Number of Wiki principals belonging to the current account, including the current principal.
       description: Summary of a principal.
     PublishedWikiSummary:
       type: object

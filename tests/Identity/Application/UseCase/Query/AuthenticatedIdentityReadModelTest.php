@@ -82,6 +82,7 @@ class AuthenticatedIdentityReadModelTest extends TestCase
             'accountIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5aa',
             'accountPrincipalIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5cc',
             'accountType' => 'corporation',
+            'accountIdentityCount' => 0,
             'accountPolicies' => [
                 [
                     'policyIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5ab',

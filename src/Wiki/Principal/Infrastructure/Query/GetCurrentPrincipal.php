@@ -39,6 +39,9 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
             isDelegatedPrincipal: $principal->delegation_identifier !== null,
             isEnabled: $principal->enabled,
             policies: array_values($this->effectivePolicies($principal)),
+            accountPrincipalCount: PrincipalModel::query()
+                ->where('account_id', $principal->account_id)
+                ->count(),
         );
     }
 

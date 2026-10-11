@@ -42,6 +42,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $input = new GetAuthenticatedIdentityInput($identity);
         $empty = $query->process($input);
         $this->assertNull($empty->siteManagementPrincipalIdentifier());
+        $this->assertSame(0, $empty->accountIdentityCount());
         $this->assertSame([], $empty->siteManagementPolicies());
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $account);
@@ -116,6 +117,8 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5cc', $readModel->accountPrincipalIdentifier());
         $this->assertSame('corporation', $readModel->accountType());
+        $this->assertSame(1, $readModel->accountIdentityCount());
+        $this->assertSame(1, $readModel->toArray()['accountIdentityCount']);
         $this->assertGreaterThanOrEqual(4, count($readModel->accountPolicies()));
         $statements = [];
         $actions = [];
@@ -132,6 +135,8 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertContains('account:update', $actions);
         $updateStatement = $this->statementForAction($statements, 'account:update');
         $this->assertNull($updateStatement['condition']);
+        $manageStatement = $this->statementForAction($statements, 'account:principal-group:manage');
+        $this->assertNull($manageStatement['condition']);
         $inviteStatement = $this->statementForAction($statements, 'account:member:invite');
         $this->assertSame([
             'clauses' => [
@@ -152,6 +157,34 @@ class GetAuthenticatedIdentityTest extends TestCase
             'passkeyCount' => 0,
             'linkedSocialProviders' => [],
         ], $readModel->authenticationMethods()->toArray());
+    }
+
+    #[Group('useDb')]
+    public function testCountsOnlyIdentitiesInTheCurrentAccount(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $member = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $outsider = new IdentityIdentifier(StrTestHelper::generateUuid());
+        foreach ([$identity, $member, $outsider] as $identifier) {
+            CreateIdentity::create($identifier, ['email' => (string) $identifier.'@example.com']);
+        }
+        $account = StrTestHelper::generateUuid();
+        $otherAccount = StrTestHelper::generateUuid();
+        CreateAccount::create($account, ['type' => 'individual']);
+        CreateAccount::create($otherAccount);
+        foreach ([[$identity, $account], [$member, $account], [$outsider, $otherAccount]] as [$identifier, $accountId]) {
+            DB::table('account_principals')->insert([
+                'id' => StrTestHelper::generateUuid(),
+                'identity_id' => (string) $identifier,
+                'account_id' => $accountId,
+            ]);
+        }
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('set')->andReturn(true);
+        $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
+            ->process(new GetAuthenticatedIdentityInput($identity));
+        $this->assertSame(2, $readModel->accountIdentityCount());
+        $this->assertSame(2, $readModel->toArray()['accountIdentityCount']);
     }
 
     #[Group('useDb')]

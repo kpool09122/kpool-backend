@@ -52,11 +52,10 @@ class AccountAuthorizationSeeder extends Seeder
             'ACCOUNT_UPDATE',
             Action::UPDATE,
         );
-        $corporationAccountPrincipalGroupManagePolicy = $this->createPolicy(
+        $accountPrincipalGroupManagePolicy = $this->createPolicy(
             '01982020-0456-7000-8000-000000000004',
-            'CORPORATION_ACCOUNT_PRINCIPAL_GROUP_MANAGE',
+            'ACCOUNT_PRINCIPAL_GROUP_MANAGE',
             Action::PRINCIPAL_GROUP_MANAGE,
-            $this->corporationAccountCondition(),
         );
         $accountCategoryChangeRequestManagePolicy = $this->createPolicy(
             '01982020-0456-7000-8000-000000000005',
@@ -109,7 +108,7 @@ class AccountAuthorizationSeeder extends Seeder
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
             $accountUpdatePolicy->policyIdentifier(),
-            $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
+            $accountPrincipalGroupManagePolicy->policyIdentifier(),
             $affiliationRequestCreatePolicy->policyIdentifier(),
             $affiliationRequestReceivePolicy->policyIdentifier(),
             $affiliationApprovePolicy->policyIdentifier(),
@@ -123,7 +122,7 @@ class AccountAuthorizationSeeder extends Seeder
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
             $accountUpdatePolicy->policyIdentifier(),
-            $corporationAccountPrincipalGroupManagePolicy->policyIdentifier(),
+            $accountPrincipalGroupManagePolicy->policyIdentifier(),
             $affiliationRequestReceivePolicy->policyIdentifier(),
             $affiliationApprovePolicy->policyIdentifier(),
             $affiliationRejectPolicy->policyIdentifier(),

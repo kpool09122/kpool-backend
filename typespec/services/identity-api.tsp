@@ -148,6 +148,9 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountPrincipalIdentifier: Uuid | null;
   @doc("Account type associated with the authenticated identity.")
   accountType: string | null;
+  @doc("Number of distinct identities belonging to the current effective account, including the current identity when it is a member. Pending invitations are excluded. Zero when there is no account.")
+  @minValue(0)
+  accountIdentityCount: int32;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
   @doc("Detailed information for the currently effective account.")
