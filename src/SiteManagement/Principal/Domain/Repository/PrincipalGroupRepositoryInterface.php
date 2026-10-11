@@ -15,6 +15,10 @@ interface PrincipalGroupRepositoryInterface
 
     public function findDefaultByAccountIdentifier(AccountIdentifier $accountIdentifier): ?PrincipalGroup;
 
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?PrincipalGroup;
+
+    public function delete(PrincipalGroup $principalGroup): void;
+
     public function save(PrincipalGroup $principalGroup): void;
 
     /** @return PrincipalGroup[] */
