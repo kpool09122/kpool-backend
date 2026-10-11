@@ -129,4 +129,10 @@ return [
     'certification_not_pending_for_rejection' => 'Only pending certifications can be rejected.',
     'official_certification_already_requested' => 'An official certification has already been requested.',
     'official_certification_invalid_status' => 'The certification status is invalid for this operation.',
+
+    // Account category change requests
+    'incomplete_account_contact_for_category_change' => 'Contact information required for this request is missing. Enter and save your phone number and all required address fields in Profile, then try again.',
+    'invalid_documents_for_category_change' => 'The required documents are missing or do not match your account type. Check and upload the required documents in Document upload, then try again.',
+    'same_account_category_change_request' => 'You cannot request a change to your current category. Select a different category.',
+    'account_category_change_request_already_pending' => 'A category change request has already been submitted. Please wait for the review result.',
 ];

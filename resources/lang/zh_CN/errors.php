@@ -129,4 +129,10 @@ return [
     'certification_not_pending_for_rejection' => '只能拒绝待处理的官方认证。',
     'official_certification_already_requested' => '官方认证已被申请。',
     'official_certification_invalid_status' => '官方认证的状态对此操作无效。',
+
+    // Account category change requests
+    'incomplete_account_contact_for_category_change' => '申请所需的联系信息不完整。请在个人资料中填写并保存电话号码和地址的所有必填项，然后重新申请。',
+    'invalid_documents_for_category_change' => '所需文件不足或与账号类型不符。请在文件上传页面确认并上传所需文件，然后重新申请。',
+    'same_account_category_change_request' => '无法申请更改为当前类别。请选择其他类别。',
+    'account_category_change_request_already_pending' => '类别更改申请已提交。请等待审核结果。',
 ];

@@ -60,7 +60,14 @@ readonly class RequestAccountCategoryChangeAction
             } catch (SameAccountCategoryChangeRequestException|AccountCategoryChangeRequestAlreadyPendingException|IncompleteAccountContactForCategoryChangeException|InvalidDocumentsForVerificationException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
+                $errorKey = match (true) {
+                    $e instanceof SameAccountCategoryChangeRequestException => 'same_account_category_change_request',
+                    $e instanceof AccountCategoryChangeRequestAlreadyPendingException => 'account_category_change_request_already_pending',
+                    $e instanceof IncompleteAccountContactForCategoryChangeException => 'incomplete_account_contact_for_category_change',
+                    default => 'invalid_documents_for_category_change',
+                };
+
+                throw new UnprocessableEntityHttpException(detail: error_message($errorKey, $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

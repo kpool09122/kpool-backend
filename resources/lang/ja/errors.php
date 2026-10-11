@@ -129,4 +129,10 @@ return [
     'certification_not_pending_for_rejection' => '保留中の公式認定のみ却下できます。',
     'official_certification_already_requested' => '公式認定は既に申請されています。',
     'official_certification_invalid_status' => '公式認定のステータスがこの操作に対して無効です。',
+
+    // Account category change requests
+    'incomplete_account_contact_for_category_change' => '申請に必要な連絡先情報が不足しています。プロフィールで電話番号と住所の必須項目を入力・保存してから、もう一度申請してください。',
+    'invalid_documents_for_category_change' => '申請に必要な書類が不足しているか、アカウント区分に合っていません。書類アップロードで必要書類を確認・登録してから、もう一度申請してください。',
+    'same_account_category_change_request' => '現在と同じカテゴリへの変更は申請できません。別のカテゴリを選択してください。',
+    'account_category_change_request_already_pending' => 'カテゴリ変更申請はすでに送信されています。審査結果をお待ちください。',
 ];
