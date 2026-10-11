@@ -905,6 +905,13 @@ paths:
             type: string
             nullable: true
           explode: false
+        - name: excludeOpenDelegations
+          in: query
+          required: false
+          description: Exclude affiliations with a pending or approved delegation, regardless of the requesting account or delegation direction.
+          schema:
+            type: boolean
+          explode: false
         - name: perPage
           in: query
           required: false

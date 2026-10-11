@@ -40,6 +40,7 @@ readonly class ListAffiliationsAction
                     viewerRole: $request->viewerRole(),
                     perPage: $request->perPage(),
                     page: $request->page(),
+                    excludeOpenDelegations: $request->excludeOpenDelegations(),
                 );
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

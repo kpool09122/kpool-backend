@@ -42,6 +42,8 @@ interface AffiliationOperations {
   listAffiliations(
     @query status?: string | null,
     @query viewerRole?: string | null,
+    @doc("Exclude affiliations with a pending or approved delegation, regardless of the requesting account or delegation direction.")
+    @query excludeOpenDelegations?: boolean,
     @query perPage?: int32 | null,
     @query page?: int32 | null,
   ): ListAffiliationsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;

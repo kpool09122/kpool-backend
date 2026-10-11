@@ -8,6 +8,7 @@ use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\Affiliation as AffiliationModel;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Query\Builder;
 use RuntimeException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Query\AffiliationReadModel;
@@ -15,6 +16,7 @@ use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAf
 use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAffiliationsInputPort;
 use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAffiliationsInterface;
 use Source\Account\Affiliation\Application\UseCase\Query\ListAffiliations\ListAffiliationsOutputPort;
+use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -53,6 +55,15 @@ readonly class ListAffiliations implements ListAffiliationsInterface
 
         if ($input->status() !== null) {
             $query->where('account_affiliations.status', $input->status());
+        }
+
+        if ($input->excludeOpenDelegations()) {
+            $query->whereNotExists(static function (Builder $query): void {
+                $query->selectRaw('1')
+                    ->from('account_delegations')
+                    ->whereColumn('account_delegations.affiliation_id', 'account_affiliations.id')
+                    ->whereIn('account_delegations.status', [DelegationStatus::PENDING->value, DelegationStatus::APPROVED->value]);
+            });
         }
 
         if ($input->viewerRole() === ListAffiliationsInput::VIEWER_ROLE_REQUESTER) {

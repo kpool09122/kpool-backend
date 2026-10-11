@@ -19,7 +19,16 @@ class ListAffiliationsRequest extends FormRequest
             'viewerRole' => ['nullable', 'string'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
+            'excludeOpenDelegations' => ['sometimes', 'boolean'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $value = $this->query('excludeOpenDelegations');
+        if ($value === 'true' || $value === 'false') {
+            $this->merge(['excludeOpenDelegations' => $value === 'true']);
+        }
     }
 
     public function status(): ?string
@@ -35,6 +44,11 @@ class ListAffiliationsRequest extends FormRequest
     public function perPage(): ?int
     {
         return $this->query('perPage') !== null ? (int) $this->query('perPage') : null;
+    }
+
+    public function excludeOpenDelegations(): bool
+    {
+        return $this->boolean('excludeOpenDelegations');
     }
 
     public function page(): int
