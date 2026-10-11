@@ -55,7 +55,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PromotionHistoryIdentifier($historyId),
             new PrincipalIdentifier($principalId),
             'GENERAL',
-            'COLLABORATOR',
+            'Collaborator',
             'Promotion due to high contribution points',
             $processedAt,
         );
@@ -67,7 +67,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             'id' => $historyId,
             'principal_id' => $principalId,
             'from_role' => 'GENERAL',
-            'to_role' => 'COLLABORATOR',
+            'to_role' => 'Collaborator',
             'reason' => 'Promotion due to high contribution points',
         ]);
     }
@@ -93,7 +93,7 @@ class PromotionHistoryRepositoryTest extends TestCase
         $history = new PromotionHistory(
             new PromotionHistoryIdentifier($historyId),
             new PrincipalIdentifier($principalId),
-            'COLLABORATOR',
+            'Collaborator',
             'GENERAL',
             null,
             new DateTimeImmutable(),
@@ -105,7 +105,7 @@ class PromotionHistoryRepositoryTest extends TestCase
         $this->assertDatabaseHas('promotion_histories', [
             'id' => $historyId,
             'principal_id' => $principalId,
-            'from_role' => 'COLLABORATOR',
+            'from_role' => 'Collaborator',
             'to_role' => 'GENERAL',
             'reason' => null,
         ]);
@@ -134,7 +134,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PrincipalIdentifier($principalId),
             [
                 'from_role' => 'GENERAL',
-                'to_role' => 'COLLABORATOR',
+                'to_role' => 'Collaborator',
                 'reason' => 'Promotion reason',
                 'processed_at' => $processedAt,
             ]
@@ -147,7 +147,7 @@ class PromotionHistoryRepositoryTest extends TestCase
         $this->assertSame($historyId, (string) $results[0]->id());
         $this->assertSame($principalId, (string) $results[0]->principalIdentifier());
         $this->assertSame('GENERAL', $results[0]->fromRole());
-        $this->assertSame('COLLABORATOR', $results[0]->toRole());
+        $this->assertSame('Collaborator', $results[0]->toRole());
         $this->assertSame('Promotion reason', $results[0]->reason());
         $this->assertSame('2024-01-15', $results[0]->processedAt()->format('Y-m-d'));
     }
@@ -175,7 +175,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PrincipalIdentifier($principalId),
             [
                 'from_role' => 'GENERAL',
-                'to_role' => 'COLLABORATOR',
+                'to_role' => 'Collaborator',
                 'reason' => 'First promotion',
                 'processed_at' => new DateTimeImmutable('2024-01-01 10:00:00'),
             ]
@@ -184,7 +184,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PromotionHistoryIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier($principalId),
             [
-                'from_role' => 'COLLABORATOR',
+                'from_role' => 'Collaborator',
                 'to_role' => 'GENERAL',
                 'reason' => 'Demotion',
                 'processed_at' => new DateTimeImmutable('2024-02-01 10:00:00'),
@@ -195,7 +195,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PrincipalIdentifier($principalId),
             [
                 'from_role' => 'GENERAL',
-                'to_role' => 'COLLABORATOR',
+                'to_role' => 'Collaborator',
                 'reason' => 'Second promotion',
                 'processed_at' => new DateTimeImmutable('2024-03-01 10:00:00'),
             ]
@@ -258,7 +258,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PrincipalIdentifier($principalId1),
             [
                 'from_role' => 'GENERAL',
-                'to_role' => 'COLLABORATOR',
+                'to_role' => 'Collaborator',
                 'reason' => 'Principal 1 promotion',
             ]
         );
@@ -267,7 +267,7 @@ class PromotionHistoryRepositoryTest extends TestCase
             new PrincipalIdentifier($principalId2),
             [
                 'from_role' => 'GENERAL',
-                'to_role' => 'COLLABORATOR',
+                'to_role' => 'Collaborator',
                 'reason' => 'Principal 2 promotion',
             ]
         );

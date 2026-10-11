@@ -31,7 +31,7 @@ use Tests\TestCase;
 class GetContactDetailTest extends TestCase
 {
     #[Group('useDb')]
-    public function testProcessReturnsSpecifiedPrincipalContactForAdmin(): void
+    public function testProcessReturnsSpecifiedPrincipalContactForOperator(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         $target = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -50,7 +50,7 @@ class GetContactDetailTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessRejectsNonAdmin(): void
+    public function testProcessRejectsNonOperator(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
@@ -85,14 +85,14 @@ class GetContactDetailTest extends TestCase
         return [
             'general can view own contact' => [true, false, false, true],
             'general cannot view another contact' => [false, false, false, false],
-            'own contact deny overrides administrator allow' => [true, true, true, false],
+            'own contact deny overrides Operator allow' => [true, true, true, false],
             'own contact deny does not affect another contact' => [false, true, true, true],
         ];
     }
 
     #[Group('useDb')]
     #[DataProvider('policyScenarios')]
-    public function testProcessEvaluatesPoliciesForTheTargetContact(bool $ownContact, bool $administrator, bool $denyOwnContact, bool $allowed): void
+    public function testProcessEvaluatesPoliciesForTheTargetContact(bool $ownContact, bool $operator, bool $denyOwnContact, bool $allowed): void
     {
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -103,8 +103,8 @@ class GetContactDetailTest extends TestCase
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $provision);
         $principal = $provision->principal();
         $this->assertNotNull($principal);
-        if ($administrator) {
-            SiteManagementAuthorization::grantAdministrator($principal);
+        if ($operator) {
+            SiteManagementAuthorization::grantOperator($principal);
         }
         if ($denyOwnContact) {
             DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update([

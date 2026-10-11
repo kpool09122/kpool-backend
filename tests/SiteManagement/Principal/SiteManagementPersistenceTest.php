@@ -44,7 +44,7 @@ class SiteManagementPersistenceTest extends TestCase
         $this->assertSame((string) $first->principalIdentifier(), (string) $again->principalIdentifier());
         $this->assertNotSame((string) $first->principalIdentifier(), (string) $second->principalIdentifier());
         $this->assertDatabaseCount('site_management_principal_groups', 2);
-        SiteManagementAuthorization::grantAdministrator($first);
+        SiteManagementAuthorization::grantOperator($first);
 
         $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
         $resource = new Resource(ResourceType::CONTACT, $first->principalIdentifier());
@@ -55,7 +55,7 @@ class SiteManagementPersistenceTest extends TestCase
         $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, new PrincipalIdentifier(StrTestHelper::generateUuid()))));
 
         // Even an invalid cross-account membership must not grant the other Account's permissions.
-        $adminGroupId = DB::table('site_management_principal_groups')->where('account_id', (string) $firstAccount)->where('name', 'administrator')->value('id');
+        $adminGroupId = DB::table('site_management_principal_groups')->where('account_id', (string) $firstAccount)->where('name', 'Operator')->value('id');
         DB::table('site_management_principal_group_memberships')->insert(['principal_id' => (string) $second->principalIdentifier(), 'principal_group_id' => $adminGroupId]);
         $this->assertFalse($evaluator->evaluate($second, Action::CONTACT_REPLY, $resource));
 

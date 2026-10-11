@@ -213,49 +213,49 @@ tasks:
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan operations:revoke "$OPERATIONS_EMAIL"'
 
-  wiki:administrator:grant:
-    desc: "Grant Wiki Administrator permissions. Usage: task wiki:administrator:grant email=admin@example.com"
+  wiki:operator:grant:
+    desc: "Grant Wiki Operator permissions. Usage: task wiki:operator:grant email=admin@example.com"
     requires:
       vars: [email]
     env:
-      WIKI_ADMINISTRATOR_EMAIL: '{{.email}}'
+      WIKI_OPERATOR_EMAIL: '{{.email}}'
     cmds:
       - docker-compose up -d db redis
       - task: wait-for-db
-      - '{{.PHP_RUN}} php artisan wiki:administrator:grant "$WIKI_ADMINISTRATOR_EMAIL"'
+      - '{{.PHP_RUN}} php artisan wiki:operator:grant "$WIKI_OPERATOR_EMAIL"'
 
-  wiki:administrator:revoke:
-    desc: "Revoke Wiki Administrator permissions. Usage: task wiki:administrator:revoke email=admin@example.com"
+  wiki:operator:revoke:
+    desc: "Revoke Wiki Operator permissions. Usage: task wiki:operator:revoke email=admin@example.com"
     requires:
       vars: [email]
     env:
-      WIKI_ADMINISTRATOR_EMAIL: '{{.email}}'
+      WIKI_OPERATOR_EMAIL: '{{.email}}'
     cmds:
       - docker-compose up -d db redis
       - task: wait-for-db
-      - '{{.PHP_RUN}} php artisan wiki:administrator:revoke "$WIKI_ADMINISTRATOR_EMAIL"'
+      - '{{.PHP_RUN}} php artisan wiki:operator:revoke "$WIKI_OPERATOR_EMAIL"'
 
-  site-management:administrator:grant:
-    desc: "Grant SiteManagement Administrator permissions. Usage: task site-management:administrator:grant email=admin@example.com"
+  site-management:operator:grant:
+    desc: "Grant SiteManagement Operator permissions. Usage: task site-management:operator:grant email=admin@example.com"
     requires:
       vars: [email]
     env:
-      SITE_MANAGEMENT_ADMINISTRATOR_EMAIL: '{{.email}}'
+      SITE_MANAGEMENT_OPERATOR_EMAIL: '{{.email}}'
     cmds:
       - docker-compose up -d db redis
       - task: wait-for-db
-      - '{{.PHP_RUN}} php artisan site-management:administrator:grant "$SITE_MANAGEMENT_ADMINISTRATOR_EMAIL"'
+      - '{{.PHP_RUN}} php artisan site-management:operator:grant "$SITE_MANAGEMENT_OPERATOR_EMAIL"'
 
-  site-management:administrator:revoke:
-    desc: "Revoke SiteManagement Administrator permissions. Usage: task site-management:administrator:revoke email=admin@example.com"
+  site-management:operator:revoke:
+    desc: "Revoke SiteManagement Operator permissions. Usage: task site-management:operator:revoke email=admin@example.com"
     requires:
       vars: [email]
     env:
-      SITE_MANAGEMENT_ADMINISTRATOR_EMAIL: '{{.email}}'
+      SITE_MANAGEMENT_OPERATOR_EMAIL: '{{.email}}'
     cmds:
       - docker-compose up -d db redis
       - task: wait-for-db
-      - '{{.PHP_RUN}} php artisan site-management:administrator:revoke "$SITE_MANAGEMENT_ADMINISTRATOR_EMAIL"'
+      - '{{.PHP_RUN}} php artisan site-management:operator:revoke "$SITE_MANAGEMENT_OPERATOR_EMAIL"'
 
   migrate:
     desc: "Run database migrations on db. Usage: task migrate"

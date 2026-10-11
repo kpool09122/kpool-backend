@@ -167,7 +167,7 @@ class ReplyContactTest extends TestCase
      *
      * @throws BindingResolutionException
      */
-    public function testWhenUserIsNotAdmin(): void
+    public function testWhenUserIsNotOperator(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -197,7 +197,7 @@ class ReplyContactTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotAdmin');
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotOperator');
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
@@ -370,7 +370,7 @@ class ReplyContactTest extends TestCase
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotAdmin');
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($this->name() !== 'testWhenUserIsNotOperator');
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }
