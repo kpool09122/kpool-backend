@@ -12,16 +12,7 @@ use Source\Shared\Domain\ValueObject\AccountCategory;
 
 class RequestAccountCategoryChangeRequest extends FormRequest
 {
-    use ResolvesLanguage {
-        language as private actorLanguage;
-    }
-
-    public function language(): string
-    {
-        $acceptLanguage = $this->header('Accept-Language');
-
-        return $acceptLanguage === null ? $this->actorLanguage() : $this->resolveAcceptLanguage($acceptLanguage);
-    }
+    use ResolvesLanguage;
 
     /** @return array<string, mixed> */
     public function rules(): array
