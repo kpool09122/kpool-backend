@@ -80,7 +80,7 @@ readonly class SwitchAccountAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        $this->cache->forgetAccount($this->actorContext->identityIdentifier);
+        $this->cache->forgetCurrentAccountSession($this->actorContext->identityIdentifier);
         $this->cache->forgetWiki($this->actorContext->identityIdentifier);
 
         return response()->json($output->toArray(), Response::HTTP_OK);

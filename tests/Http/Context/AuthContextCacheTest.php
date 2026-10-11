@@ -205,6 +205,58 @@ class AuthContextCacheTest extends TestCase
         $this->assertSame(Language::ENGLISH, $context->language);
     }
 
+    public function testAccountCacheIsIsolatedBetweenSessionsAndLogoutClearsOnlyCurrentSession(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $session = $this->app()['session.store'];
+        $this->app()['request']->setLaravelSession($session);
+        $firstContext = new AccountContext(
+            new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
+            null,
+            AccountStatus::PENDING,
+            AccountCategory::GENERAL,
+        );
+        $secondContext = new AccountContext(
+            new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid())),
+            null,
+            AccountStatus::PENDING,
+            AccountCategory::GENERAL,
+        );
+        /** @var ArrayObject<string, string> $payloads */
+        $payloads = new ArrayObject();
+        Redis::shouldReceive('get')->times(5)->andReturnUsing(static fn (string $key): ?string => $payloads[$key] ?? null);
+        Redis::shouldReceive('setex')->times(3)->andReturnUsing(static function (string $key, int $ttl, string $payload) use ($payloads): void {
+            $payloads[$key] = $payload;
+        });
+        Redis::shouldReceive('del')->once()->andReturnUsing(static function (string $key) use ($payloads): void {
+            unset($payloads[$key]);
+        });
+        $cache = new AuthContextCache(new NullLogger());
+        $session->setId(str_repeat('a', 40));
+        $cache->resolveAccount($identity, fn () => $firstContext);
+        $session->setId(str_repeat('b', 40));
+        $cache->resolveAccount($identity, fn () => $secondContext);
+        $session->setId(str_repeat('a', 40));
+        $cached = $cache->resolveAccount($identity, fn () => throw new RuntimeException('Must use first session cache'));
+        $this->assertSame((string) $firstContext->principal()->accountIdentifier(), (string) $cached->principal()->accountIdentifier());
+        $cache->forgetCurrentAccountSession($identity);
+        $this->assertSame($secondContext, $cache->resolveAccount($identity, fn () => $secondContext));
+        $session->setId(str_repeat('b', 40));
+        $cached = $cache->resolveAccount($identity, fn () => throw new RuntimeException('Other session must remain cached'));
+        $this->assertSame((string) $secondContext->principal()->accountIdentifier(), (string) $cached->principal()->accountIdentifier());
+    }
+
+    public function testAccountPermissionInvalidationClearsAllSessions(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $prefix = 'auth-context:account:' . $identity;
+        Redis::shouldReceive('keys')->once()->with($prefix . ':*')->andReturn([$prefix . ':first', $prefix . ':second']);
+        Redis::shouldReceive('del')->once()->with($prefix);
+        Redis::shouldReceive('del')->once()->with($prefix . ':first');
+        Redis::shouldReceive('del')->once()->with($prefix . ':second');
+        (new AuthContextCache(new NullLogger()))->forgetAccount($identity);
+    }
+
     public function testResolveAccountSerializesAndDeserializes(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -270,7 +322,7 @@ class AuthContextCacheTest extends TestCase
                 self::assertIsArray($decoded['accountPolicies']);
                 self::assertIsArray($decoded['accountPolicies'][0]);
 
-                return $key === 'auth-context:account:' . $identityIdentifier
+                return $key === 'auth-context:account:' . $identityIdentifier . ':stateless'
                     && $ttl === 3600
                     && $decoded['principalIdentifier'] === (string) $principalIdentifier
                     && $decoded['identityIdentifier'] === (string) $identityIdentifier

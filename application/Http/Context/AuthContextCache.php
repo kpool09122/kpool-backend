@@ -139,6 +139,14 @@ class AuthContextCache
 
     public function forgetAccount(IdentityIdentifier $identityIdentifier): void
     {
+        $this->delete(self::ACCOUNT_KEY_PREFIX . $identityIdentifier);
+        foreach ($this->keys(self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':*') as $key) {
+            $this->delete($key);
+        }
+    }
+
+    public function forgetCurrentAccountSession(IdentityIdentifier $identityIdentifier): void
+    {
         $this->delete($this->accountKey($identityIdentifier));
     }
 
@@ -179,7 +187,10 @@ class AuthContextCache
 
     private function accountKey(IdentityIdentifier $identityIdentifier): string
     {
-        return self::ACCOUNT_KEY_PREFIX . $identityIdentifier;
+        $request = request();
+        $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
+
+        return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':' . $sessionId;
     }
 
     private function wikiKey(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): string

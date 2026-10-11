@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Service;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Identity\Identity as IdentityEloquent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -18,6 +20,8 @@ readonly class AuthService implements AuthServiceInterface
 {
     public function __construct(
         private Request $request,
+        private AuthContextCache $authContextCache,
+        private CurrentAccountServiceInterface $currentAccountService,
     ) {
     }
 
@@ -36,6 +40,13 @@ readonly class AuthService implements AuthServiceInterface
 
     public function logout(): void
     {
+        $identityId = Auth::id();
+        if (is_string($identityId)) {
+            $identityIdentifier = new IdentityIdentifier($identityId);
+            $this->authContextCache->forgetCurrentAccountSession($identityIdentifier);
+            $this->currentAccountService->forget($identityIdentifier);
+        }
+
         Auth::logout();
 
         $this->request->session()->invalidate();

@@ -66,8 +66,11 @@ class CurrentAccountServiceTest extends TestCase
     public function testDefersDeletionUntilCommit(): void
     {
         $identityIdentifier = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000001');
+        $session = $this->app()['session.store'];
+        $this->app()['request']->setLaravelSession($session);
+        $session->setId(str_repeat('a', 40));
         $state = (object) ['called' => false];
-        Redis::shouldReceive('del')->once()->andReturnUsing(static function () use ($state): void {
+        Redis::shouldReceive('del')->once()->with('current-account:' . $identityIdentifier . ':' . str_repeat('a', 40))->andReturnUsing(static function () use ($state): void {
             $state->called = true;
         });
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
@@ -78,6 +81,7 @@ class CurrentAccountServiceTest extends TestCase
         (new CurrentAccountService(new NullLogger()))->forget($identityIdentifier);
         $this->assertFalse($state->called);
         $this->assertIsCallable($callback);
+        $session->setId(str_repeat('b', 40));
         $callback();
         $this->assertTrue($state->called);
     }
