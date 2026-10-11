@@ -9,6 +9,7 @@ use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromSer
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
+use Database\Seeders\AccountAuthorizationSeeder;
 use Database\Seeders\SiteManagementAuthorizationSeeder;
 use DateTimeImmutable;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
     }
 
@@ -172,9 +174,9 @@ class ComposedIdentityWithdrawalTest extends TestCase
     {
         $this->assertDatabaseHas('contacts', ['id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'contact history']);
         $this->assertDatabaseHas('contact_replies', ['id' => $history['reply'], 'contact_id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history']);
-        $this->assertDatabaseCount('site_management_roles', 2);
-        $this->assertDatabaseCount('site_management_policies', 2);
-        $this->assertDatabaseCount('site_management_role_policy_attachments', 2);
+        $this->assertDatabaseCount('site_management_roles', 3);
+        $this->assertDatabaseCount('site_management_policies', 3);
+        $this->assertDatabaseCount('site_management_role_policy_attachments', 3);
     }
 
     private function action(string $identityId): WithdrawFromServiceAction

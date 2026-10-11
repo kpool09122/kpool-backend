@@ -24,6 +24,9 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
 
     public function evaluate(Principal $principal, Action $action, Resource $resource): bool
     {
+        if ($resource->type() === ResourceType::PRINCIPAL_GROUP && ($resource->accountIdentifier() === null || (string) $resource->accountIdentifier() !== (string) $principal->accountIdentifier())) {
+            return false;
+        }
         $allowed = false;
         foreach ($this->collectStatements($principal) as $statement) {
             if (! in_array($action, $statement->actions(), true) || ! in_array($resource->type(), $statement->resourceTypes(), true)) {

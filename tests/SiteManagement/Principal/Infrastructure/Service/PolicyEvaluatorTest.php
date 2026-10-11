@@ -27,6 +27,31 @@ use Source\SiteManagement\Principal\Infrastructure\Service\PolicyEvaluator;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    public function testGroupManagementRequiresSameAccountAndHonorsDenyAndAttachmentBoundaries(): void
+    {
+        $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
+        $otherAccount = new AccountIdentifier('00000000-0000-7000-8000-000000000010');
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), $account);
+        $roleId = new RoleIdentifier('00000000-0000-7000-8000-000000000003');
+        $policyId = new PolicyIdentifier('00000000-0000-7000-8000-000000000004');
+        foreach (['allow', 'deny', 'resource', 'missing_account', 'group', 'role', 'policy'] as $scenario) {
+            $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
+            $groups->method('findByPrincipalId')->willReturn([
+                new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'Administrator', [$roleId], $scenario === 'group' ? $otherAccount : $account),
+            ]);
+            $roles = $this->createMock(RoleRepositoryInterface::class);
+            $roles->method('findByIds')->willReturn([new Role($roleId, 'Administrator', [$policyId], $scenario === 'role' ? $otherAccount : null)]);
+            $statements = [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP])];
+            if ($scenario === 'deny') {
+                $statements[] = new Statement(Effect::DENY, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP]);
+            }
+            $policies = $this->createMock(PolicyRepositoryInterface::class);
+            $policies->method('findByIds')->willReturn([new Policy($policyId, 'principal_group_management', $statements, $scenario === 'policy' ? $otherAccount : null)]);
+            $resource = new Resource(ResourceType::PRINCIPAL_GROUP, accountIdentifier: $scenario === 'missing_account' ? null : ($scenario === 'resource' ? $otherAccount : $account));
+            self::assertSame($scenario === 'allow', (new PolicyEvaluator($groups, $roles, $policies))->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, $resource), $scenario);
+        }
+    }
+
     public function testOtherAccountsRolesAndPoliciesDoNotGrantPermissions(): void
     {
         $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
