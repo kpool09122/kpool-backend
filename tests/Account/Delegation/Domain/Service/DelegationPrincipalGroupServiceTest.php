@@ -25,7 +25,6 @@ use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
-use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\ConditionKey;
@@ -48,7 +47,7 @@ use Tests\TestCase;
 
 class DelegationPrincipalGroupServiceTest extends TestCase
 {
-    public function testCreatesScopedPolicyRoleAndGroupIdempotently(): void
+    public function testCreatesEmptyScopedGroupAndPreservesExplicitMembershipIdempotently(): void
     {
         $delegation = $this->delegation();
         $source = $delegation->delegateAccountIdentifier();
@@ -106,15 +105,16 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('save')->once()->with($role);
-        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findByAccountId')->once()->with($source)->andReturn([$principal]);
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         $accountRepository->shouldReceive('findById')->once()->with($target)->andReturn($this->account($target));
 
-        $service = new DelegationPrincipalGroupService($groupFactory, $principalGroupRepository, $policyFactory, $policyRepository, $roleFactory, $roleRepository, $principalRepository, $accountRepository);
+        $service = new DelegationPrincipalGroupService($groupFactory, $principalGroupRepository, $policyFactory, $policyRepository, $roleFactory, $roleRepository, $accountRepository);
         $service->createFor($delegation);
+        $this->assertSame([], $group->members());
+        $this->assertFalse($group->hasMember($principal->principalIdentifier()));
+
+        $group->addMember($principal->principalIdentifier());
         $service->createFor($delegation);
 
         $this->assertTrue($role->hasPolicy($policy->policyIdentifier()));
