@@ -57,7 +57,7 @@ readonly class ListAffiliations implements ListAffiliationsInterface
             $query->where('account_affiliations.status', $input->status());
         }
 
-        if ($input->excludeOpenDelegations()) {
+        if ($input->onlyWithoutPendingOrApprovedDelegation()) {
             $query->whereNotExists(static function (Builder $query): void {
                 $query->selectRaw('1')
                     ->from('account_delegations')

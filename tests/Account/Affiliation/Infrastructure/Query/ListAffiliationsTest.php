@@ -189,14 +189,14 @@ class ListAffiliationsTest extends TestCase
         }
         $query = new ListAffiliations($this->allowingPolicyEvaluator($operator));
         $output = new ListAffiliationsOutput();
-        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, excludeOpenDelegations: true), $output);
+        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, onlyWithoutPendingOrApprovedDelegation: true), $output);
         $payload = $output->toArray();
         $this->assertSame(2, $payload['total']);
         $this->assertSame(2, $payload['last_page']);
         $this->assertCount(1, $payload['affiliations']);
         $this->assertContains($payload['affiliations'][0]['affiliationIdentifier'], $eligibleIds);
         $second = new ListAffiliationsOutput();
-        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, page: 2, excludeOpenDelegations: true), $second);
+        $query->process(new ListAffiliationsInput($operator, status: 'active', perPage: 1, page: 2, onlyWithoutPendingOrApprovedDelegation: true), $second);
         $this->assertContains($second->toArray()['affiliations'][0]['affiliationIdentifier'], $eligibleIds);
         $this->assertNotSame($payload['affiliations'][0]['affiliationIdentifier'], $second->toArray()['affiliations'][0]['affiliationIdentifier']);
         $unfiltered = new ListAffiliationsOutput();

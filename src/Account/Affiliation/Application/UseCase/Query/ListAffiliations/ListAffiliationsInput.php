@@ -23,7 +23,7 @@ readonly class ListAffiliationsInput implements ListAffiliationsInputPort
         private ?string $viewerRole = null,
         ?int $perPage = null,
         private int $page = 1,
-        private bool $excludeOpenDelegations = false,
+        private bool $onlyWithoutPendingOrApprovedDelegation = false,
     ) {
         if ($this->status !== null && AffiliationStatus::tryFrom($this->status) === null) {
             throw new InvalidArgumentException('Invalid affiliation status.');
@@ -64,9 +64,9 @@ readonly class ListAffiliationsInput implements ListAffiliationsInputPort
         return $this->perPage;
     }
 
-    public function excludeOpenDelegations(): bool
+    public function onlyWithoutPendingOrApprovedDelegation(): bool
     {
-        return $this->excludeOpenDelegations;
+        return $this->onlyWithoutPendingOrApprovedDelegation;
     }
 
     public function page(): int

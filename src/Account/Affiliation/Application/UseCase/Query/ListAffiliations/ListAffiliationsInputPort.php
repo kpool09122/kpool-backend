@@ -18,5 +18,5 @@ interface ListAffiliationsInputPort
 
     public function page(): int;
 
-    public function excludeOpenDelegations(): bool;
+    public function onlyWithoutPendingOrApprovedDelegation(): bool;
 }
