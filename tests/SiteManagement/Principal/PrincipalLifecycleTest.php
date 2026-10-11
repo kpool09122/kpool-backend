@@ -74,7 +74,7 @@ class PrincipalLifecycleTest extends TestCase
         $this->assertSame(1, DB::table('site_management_principal_group_memberships')->where('principal_id', $id)->count());
         $principal = $this->app()->make(PrincipalRepositoryInterface::class)->findAllByIdentityIdentifier($identity)[0];
         $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
-        $this->assertTrue($evaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP, accountIdentifier: $principal->accountIdentifier())));
+        $this->assertTrue($evaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP)));
         $contactId = StrTestHelper::generateUuid();
         DB::table('contacts')->insert(['id' => $contactId, 'principal_identifier' => $id, 'category' => 1, 'name' => 'Owner inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
         DB::table('contacts')->insert(['id' => StrTestHelper::generateUuid(), 'principal_identifier' => StrTestHelper::generateUuid(), 'category' => 1, 'name' => 'Other inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
