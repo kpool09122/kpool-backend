@@ -45,7 +45,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GrantSiteManagementAdministratorInterface::class, GrantSiteManagementAdministrator::class);
         $this->app->singleton(RevokeSiteManagementAdministratorInterface::class, RevokeSiteManagementAdministrator::class);
 
-        $this->app->bind(WithdrawFromServiceInterface::class, WithdrawFromService::class);
+        $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
 
         $this->app->singleton(CreateAnnouncementInterface::class, CreateAnnouncement::class);
         $this->app->singleton(UpdateAnnouncementInterface::class, UpdateAnnouncement::class);
