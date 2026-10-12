@@ -11,6 +11,7 @@ use Application\Http\Context\SiteManagementContext;
 use Application\Http\Context\WikiContext;
 use ArrayObject;
 use Illuminate\Support\Facades\Redis;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
@@ -246,15 +247,39 @@ class AuthContextCacheTest extends TestCase
         $this->assertSame((string) $secondContext->principal()->accountIdentifier(), (string) $cached->principal()->accountIdentifier());
     }
 
-    public function testAccountPermissionInvalidationClearsAllSessions(): void
+    /** @return array<string, array{string}> */
+    public static function redisPrefixes(): array
+    {
+        return ['without prefix' => [''], 'with prefix' => ['kpool-database-']];
+    }
+
+    #[DataProvider('redisPrefixes')]
+    public function testAccountPermissionInvalidationClearsAllSessions(string $redisPrefix): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $prefix = 'auth-context:account:' . $identity;
-        Redis::shouldReceive('keys')->once()->with($prefix . ':*')->andReturn([$prefix . ':first', $prefix . ':second']);
+        Redis::shouldReceive('keys')->once()->with($prefix . ':*')->andReturn([$redisPrefix . $prefix . ':first', $redisPrefix . $prefix . ':second']);
+        Redis::shouldReceive('command')->once()->with('_prefix', [''])->andReturn($redisPrefix);
         Redis::shouldReceive('del')->once()->with($prefix);
         Redis::shouldReceive('del')->once()->with($prefix . ':first');
         Redis::shouldReceive('del')->once()->with($prefix . ':second');
         (new AuthContextCache(new NullLogger()))->forgetAccount($identity);
+    }
+
+    #[DataProvider('redisPrefixes')]
+    public function testWikiInvalidationClearsAllAccounts(string $redisPrefix): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $prefix = 'auth-context:wiki:' . $identity;
+        $firstKey = $prefix . ':' . StrTestHelper::generateUuid();
+        $secondKey = $prefix . ':' . StrTestHelper::generateUuid();
+        Redis::shouldReceive('keys')->once()->with($prefix . ':*')->andReturn([$redisPrefix . $firstKey, $redisPrefix . $secondKey]);
+        Redis::shouldReceive('command')->once()->with('_prefix', [''])->andReturn($redisPrefix);
+        Redis::shouldReceive('del')->once()->with($prefix);
+        Redis::shouldReceive('del')->once()->with($firstKey);
+        Redis::shouldReceive('del')->once()->with($secondKey);
+
+        (new AuthContextCache(new NullLogger()))->forgetWiki($identity);
     }
 
     public function testResolveAccountSerializesAndDeserializes(): void

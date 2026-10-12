@@ -246,13 +246,24 @@ class AuthContextCache
     {
         try {
             $keys = Redis::keys($pattern);
+            $prefix = Redis::command('_prefix', ['']);
         } catch (Throwable $exception) {
             $this->logger->warning('Authentication context cache enumeration failed.', ['exception' => $exception]);
 
             return [];
         }
 
-        return is_array($keys) ? array_values(array_filter($keys, 'is_string')) : [];
+        if (! is_array($keys)) {
+            return [];
+        }
+
+        // KEYS returns physical names; DEL adds the connection prefix again.
+        return array_map(
+            static fn (string $key): string => is_string($prefix) && $prefix !== '' && str_starts_with($key, $prefix)
+                ? substr($key, strlen($prefix))
+                : $key,
+            array_values(array_filter($keys, 'is_string')),
+        );
     }
 
     /** @param array<string, mixed> $payload */
