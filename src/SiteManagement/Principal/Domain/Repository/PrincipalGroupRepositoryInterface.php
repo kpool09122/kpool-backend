@@ -11,6 +11,9 @@ use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface PrincipalGroupRepositoryInterface
 {
+    /** @return PrincipalGroup[] */
+    public function findByAccountId(AccountIdentifier $accountIdentifier): array;
+
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup;
 
     public function findDefaultByAccountIdentifier(AccountIdentifier $accountIdentifier): ?PrincipalGroup;

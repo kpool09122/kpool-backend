@@ -53,6 +53,10 @@ class PrincipalGroupRepositoryTest extends TestCase
             $repository->save($group);
         }
 
+        self::assertCount(2, $repository->findByAccountId($account));
+        self::assertCount(1, $repository->findByAccountId($otherAccount));
+        self::assertSame([], $repository->findByAccountId(new AccountIdentifier(StrTestHelper::generateUuid())));
+
         $loaded = $repository->findByAccountIdAndName($account, 'administrators');
         self::assertNotNull($loaded);
         self::assertSame((string) $target->principalGroupIdentifier(), (string) $loaded->principalGroupIdentifier());

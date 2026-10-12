@@ -83,4 +83,28 @@ class ListPrincipalGroupsTest extends TestCase
             ]],
         ], $groups[0]->toArray());
     }
+
+    #[Group('useDb')]
+    public function testSystemOperatorRoleProtectsMixedGroupsButNotAccountRolesWithSameName(): void
+    {
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $account);
+        $systemOperator = new RoleIdentifier(StrTestHelper::generateUuid());
+        $administrator = new RoleIdentifier(StrTestHelper::generateUuid());
+        $customOperator = new RoleIdentifier(StrTestHelper::generateUuid());
+        CreateRole::create($systemOperator, ['name' => 'Operator']);
+        CreateRole::create($administrator, ['name' => 'Administrator']);
+        CreateRole::create($customOperator, ['name' => 'Operator', 'account_id' => (string) $account]);
+        $visible = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        foreach ([[$systemOperator], [$systemOperator, $administrator], [$customOperator]] as $index => $roles) {
+            $id = $index === 2 ? $visible : new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+            CreatePrincipalGroup::create($id, $account);
+            foreach ($roles as $role) {
+                DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $id, 'role_id' => (string) $role]);
+            }
+        }
+        $groups = (new ListPrincipalGroups())->process(new ListPrincipalGroupsInput($account));
+        self::assertCount(1, $groups);
+        self::assertSame((string) $visible, $groups[0]->principalGroupIdentifier());
+    }
 }

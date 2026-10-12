@@ -55,12 +55,18 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             $principalGroupsById[(string) $principalGroup->principalGroupIdentifier()] = $principalGroup;
         }
 
+        $operatorRole = $this->roleRepository->findSystemByName('Operator');
+
         $requestedPrincipalIdentifiers = [];
         $requestedGroupIds = [];
         foreach ($input->principalGroups() as $principalGroupInput) {
             $principalGroupId = (string) $principalGroupInput->principalGroupIdentifier();
             if (! isset($principalGroupsById[$principalGroupId])) {
                 throw new PrincipalGroupNotFoundException();
+            }
+
+            if ($operatorRole !== null && $principalGroupsById[$principalGroupId]->hasRole($operatorRole->roleIdentifier())) {
+                throw new AccountUpdateForbiddenException();
             }
 
             $principalGroupsById[$principalGroupId]->replaceMembers($principalGroupInput->principalIdentifiers());

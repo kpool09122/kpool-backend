@@ -65,6 +65,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturnNull();
         $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -134,7 +135,8 @@ class UpdatePrincipalGroupMembersTest extends TestCase
 
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findSystemByName')->once()->andReturn($wikiAdministratorRole);
+        $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
@@ -153,6 +155,47 @@ class UpdatePrincipalGroupMembersTest extends TestCase
             ),
             new UpdatePrincipalGroupMembersOutput(),
         );
+    }
+
+    public function testOperatorAndMixedGroupsRejectEveryMembershipReplacementBeforeSave(): void
+    {
+        foreach ([false, true] as $mixed) {
+            foreach ([[], [new PrincipalIdentifier(StrTestHelper::generateUuid())]] as $members) {
+                $account = new AccountIdentifier(StrTestHelper::generateUuid());
+                $operator = $this->principal($account);
+                $operatorRole = $this->role('Operator');
+                $group = $this->principalGroup($account, 'Arbitrary name');
+                $group->addRole($operatorRole);
+                if ($mixed) {
+                    $group->addRole($this->role('Administrator'));
+                }
+                $allowed = $this->principalGroup($account, 'Allowed');
+                /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
+                $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+                $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$allowed, $group]);
+                $principalGroupRepository->shouldNotReceive('save');
+                /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+                $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+                $principalRepository->shouldReceive('findById')->once()->andReturn($operator);
+                $principalRepository->shouldNotReceive('findByIds');
+                /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
+                $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+                $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturn($operatorRole);
+                /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+                $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+                $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
+
+                try {
+                    (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator, $this->accountPrincipalRepositoryMock($account, $operator)))->process(
+                        new UpdatePrincipalGroupMembersInput($account, $operator->principalIdentifier(), [new PrincipalGroupMembers($allowed->principalGroupIdentifier(), []), new PrincipalGroupMembers($group->principalGroupIdentifier(), $members)], AccountType::CORPORATION),
+                        new UpdatePrincipalGroupMembersOutput(),
+                    );
+                    self::fail('Expected Operator protection.');
+                } catch (AccountUpdateForbiddenException) {
+                    self::assertTrue(true);
+                }
+            }
+        }
     }
 
     private static function principalGroupRepositoryMock(): PrincipalGroupRepositoryInterface

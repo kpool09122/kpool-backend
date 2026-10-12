@@ -107,7 +107,10 @@ model ListPrincipalGroupsResponse {
 @doc("Response returned when multiple Wiki principal group memberships are updated.")
 model UpdatePrincipalGroupMembersResponse {
   @statusCode statusCode: 200;
-  @body body: ListPrincipalGroupsResponseBody;
+  @body body: {
+    @doc("Updated groups only, matching the existing Wiki PATCH output.")
+    principalGroups: PrincipalGroupSummary[];
+  };
 }
 
 @doc("Response returned when a role is created.")
@@ -138,7 +141,7 @@ interface PrincipalOperations {
 
   @get
   @route("/principal-groups")
-  @doc("List Wiki principal groups for management.")
+  @doc("List Wiki principal groups for management. Excludes every group containing the system Operator role, including mixed-role groups.")
   listPrincipalGroups(
     @query accountIdentifier: Uuid,
   ): ListPrincipalGroupsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -168,7 +171,7 @@ interface PrincipalOperations {
 
   @patch
   @route("/principal-groups/members")
-  @doc("Update members for multiple Wiki principal groups.")
+  @doc("Update members for multiple Wiki principal groups. Groups containing the system Operator role, including mixed-role groups, cannot be updated and return 403 even when specified directly.")
   updatePrincipalGroupMembers(
     @body body: UpdatePrincipalGroupMembersRequestBody,
   ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;

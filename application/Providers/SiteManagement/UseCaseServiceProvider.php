@@ -35,13 +35,19 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementOperator\RevokeSiteManagementOperator;
 use Source\SiteManagement\Principal\Application\UseCase\Command\RevokeSiteManagementOperator\RevokeSiteManagementOperatorInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
+use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\SiteManagement\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
+use Source\SiteManagement\Principal\Infrastructure\Query\ListPrincipalGroups;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
+        $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(GrantSiteManagementOperatorInterface::class, GrantSiteManagementOperator::class);
         $this->app->singleton(RevokeSiteManagementOperatorInterface::class, RevokeSiteManagementOperator::class);
 

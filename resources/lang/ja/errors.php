@@ -67,6 +67,8 @@ return [
     'identity_not_member' => 'このアイデンティティはこのグループのメンバーではありません。',
     'cannot_remove_last_owner' => 'アカウントから最後のオーナーを削除することはできません。',
     'cannot_remove_last_wiki_administrator' => 'Wiki Administrator が少なくとも1人必要です。',
+    'invalid_principal_group_members' => 'PrincipalGroup のメンバー指定が不正です。',
+    'cannot_remove_last_site_management_administrator' => 'SiteManagement Administrator が少なくとも1人必要です。',
     'cannot_remove_last_principal_group_manager' => 'PrincipalGroup を管理できる Principal が少なくとも1人必要です。',
 
     'cannot_delete_default_identity_group' => 'デフォルトのアイデンティティグループは削除できません。',

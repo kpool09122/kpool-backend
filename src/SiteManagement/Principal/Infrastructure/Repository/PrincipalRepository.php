@@ -25,6 +25,19 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         }
     }
 
+    /** @param PrincipalIdentifier[] $principalIdentifiers
+     * @return array<string, Principal> */
+    public function findByIds(array $principalIdentifiers): array
+    {
+        $models = PrincipalEloquent::query()->whereIn('id', array_map(static fn (PrincipalIdentifier $id): string => (string) $id, $principalIdentifiers))->get();
+        $result = [];
+        foreach ($models as $model) {
+            $result[$model->id] = new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id));
+        }
+
+        return $result;
+    }
+
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal
     {
         $model = PrincipalEloquent::query()->find((string) $principalIdentifier);

@@ -17,6 +17,26 @@ use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
+    /** @return PrincipalGroup[] */
+    public function findByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        $models = PrincipalGroupEloquent::query()->with(['roleAttachments', 'memberships'])->where('account_id', (string) $accountIdentifier)->orderBy('created_at')->orderBy('id')->get();
+        $result = [];
+        foreach ($models as $model) {
+            $group = new PrincipalGroup(
+                new PrincipalGroupIdentifier($model->id),
+                $model->name,
+                $model->roleAttachments->map(static fn (AttachmentEloquent $attachment): RoleIdentifier => new RoleIdentifier($attachment->role_id))->all(),
+                new AccountIdentifier($model->account_id),
+                $model->is_default
+            );
+            $group->replaceMembers($model->memberships->map(static fn (MembershipEloquent $membership): PrincipalIdentifier => new PrincipalIdentifier($membership->principal_id))->all());
+            $result[] = $group;
+        }
+
+        return $result;
+    }
+
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
     {
         $model = PrincipalGroupEloquent::query()->find((string) $principalGroupIdentifier);

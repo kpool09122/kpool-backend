@@ -67,6 +67,8 @@ return [
     'identity_not_member' => '해당 아이덴티티는 이 그룹의 멤버가 아닙니다.',
     'cannot_remove_last_owner' => '계정에서 마지막 소유자를 제거할 수 없습니다.',
     'cannot_remove_last_wiki_administrator' => 'Wiki Administrator가 최소 1명 필요합니다.',
+    'invalid_principal_group_members' => 'PrincipalGroup 구성원 입력이 올바르지 않습니다.',
+    'cannot_remove_last_site_management_administrator' => 'SiteManagement Administrator가 최소 1명 필요합니다.',
     'cannot_remove_last_principal_group_manager' => 'PrincipalGroup 관리 권한을 가진 Principal이 최소 1명 필요합니다.',
 
     'cannot_delete_default_identity_group' => '기본 아이덴티티 그룹은 삭제할 수 없습니다.',

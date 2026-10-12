@@ -67,6 +67,8 @@ return [
     'identity_not_member' => '该身份不是此组的成员。',
     'cannot_remove_last_owner' => '无法移除账户的最后一个所有者。',
     'cannot_remove_last_wiki_administrator' => '至少需要一个 Wiki Administrator。',
+    'invalid_principal_group_members' => 'PrincipalGroup 成员输入无效。',
+    'cannot_remove_last_site_management_administrator' => '至少需要一个 SiteManagement Administrator。',
     'cannot_remove_last_principal_group_manager' => '至少需要一个拥有 PrincipalGroup 管理权限的 Principal。',
 
     'cannot_delete_default_identity_group' => '无法删除默认身份组。',
