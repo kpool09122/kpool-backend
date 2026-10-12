@@ -6,9 +6,9 @@ namespace Tests\Account\Account\Application\UseCase\Command\RequestAccountCatego
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
+use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
@@ -30,6 +30,8 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
+use Source\Account\Account\Domain\ValueObject\RejectionReason;
+use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -81,6 +83,7 @@ class RequestAccountCategoryChangeTest extends TestCase
 
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), $output);
 
+        $this->assertSame(1, $repository->findCalls);
         $this->assertNotNull($repository->saved);
         $this->assertSame(AccountCategoryChangeRequestStatus::PENDING, $repository->saved->status());
         $this->assertSame(AccountCategory::GENERAL, $repository->saved->currentAccountCategory());
@@ -265,9 +268,50 @@ class RequestAccountCategoryChangeTest extends TestCase
             new AccountDocumentRequirementValidator(),
         );
 
-        $this->expectException(AccountCategoryChangeRequestAlreadyPendingException::class);
+        $this->expectException(InvalidAccountCategoryChangeRequestException::class);
 
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    public function testApprovedHistoryPreventsNewRequestEvenWithLaterRejection(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $repository = new FakeRequestRepository();
+        $approved = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY);
+        $approved->approve($accountId);
+        $rejected = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT);
+        $rejected->reject($accountId, new RejectionReason(RejectionReasonCode::OTHER, 'reason'));
+        $repository->history = [$approved, $rejected];
+        $repository->pendingRequest = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT);
+        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::AGENCY, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator());
+        $this->expectException(InvalidAccountCategoryChangeRequestException::class);
+
+        try {
+            $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::TALENT), new RequestAccountCategoryChangeOutput());
+        } finally {
+            $this->assertNull($repository->saved);
+        }
+    }
+
+    public function testRejectedAndWithdrawnHistoryAllowsNewIdentifierAndPreservesHistory(): void
+    {
+        foreach (['rejected', 'withdrawn'] as $status) {
+            $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+            $repository = new FakeRequestRepository();
+            $previous = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY);
+            if ($status === 'withdrawn') {
+                $previous->withdraw();
+            } else {
+                $previous->reject($accountId, new RejectionReason(RejectionReasonCode::OTHER, 'reason'));
+            }
+            $repository->history = [$previous];
+            $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator());
+            $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+            $this->assertNotNull($repository->saved);
+            $this->assertNotSame((string) $previous->requestIdentifier(), (string) $repository->saved->requestIdentifier());
+            $this->assertSame($status, $previous->status()->value);
+            $this->assertSame([$previous], $repository->history);
+        }
     }
 
     /** @param DocumentType[] $documentTypes */
@@ -353,7 +397,11 @@ class FakeAccountRepository implements AccountRepositoryInterface
 class FakeRequestRepository implements AccountCategoryChangeRequestRepositoryInterface
 {
     public ?AccountCategoryChangeRequest $pendingRequest = null;
+    /** @var AccountCategoryChangeRequest[] */
+    public array $history = [];
+
     public ?AccountCategoryChangeRequest $saved = null;
+    public int $findCalls = 0;
 
     public function save(AccountCategoryChangeRequest $request): void
     {
@@ -365,9 +413,21 @@ class FakeRequestRepository implements AccountCategoryChangeRequestRepositoryInt
         return null;
     }
 
-    public function findPendingByAccountId(AccountIdentifier $accountId): ?AccountCategoryChangeRequest
+    /**
+     * @param AccountCategoryChangeRequestStatus[] $statuses
+     * @return AccountCategoryChangeRequest[]
+     */
+    public function findByAccountIdAndStatuses(AccountIdentifier $accountId, array $statuses): array
     {
-        return $this->pendingRequest;
+        ++$this->findCalls;
+        $requests = [];
+        foreach ([$this->pendingRequest, ...$this->history] as $request) {
+            if ($request !== null && in_array($request->status(), $statuses, true) && (string) $request->accountIdentifier() === (string) $accountId) {
+                $requests[] = $request;
+            }
+        }
+
+        return $requests;
     }
 }
 

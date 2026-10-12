@@ -12,10 +12,10 @@ use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
+use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInput;
@@ -61,10 +61,10 @@ readonly class RequestAccountCategoryChangeAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('same_account_category_change_request', $language), previous: $e);
-            } catch (AccountCategoryChangeRequestAlreadyPendingException $e) {
+            } catch (InvalidAccountCategoryChangeRequestException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: error_message('account_category_change_request_already_pending', $language), previous: $e);
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_account_category_change_request', $language), previous: $e);
             } catch (IncompleteAccountContactForCategoryChangeException $e) {
                 DB::rollBack();
 

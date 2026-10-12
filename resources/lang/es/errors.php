@@ -136,5 +136,7 @@ return [
     'incomplete_account_contact_for_category_change' => 'Falta información de contacto necesaria para la solicitud. Introduce y guarda tu teléfono y todos los campos obligatorios de la dirección en Perfil, y vuelve a intentarlo.',
     'invalid_documents_for_category_change' => 'Faltan documentos obligatorios o no corresponden al tipo de cuenta. Revisa y carga los documentos necesarios en Carga de documentos, y vuelve a intentarlo.',
     'same_account_category_change_request' => 'No puedes solicitar un cambio a tu categoría actual. Selecciona otra categoría.',
-    'account_category_change_request_already_pending' => 'Ya se ha enviado una solicitud de cambio de categoría. Espera el resultado de la revisión.',
+    'invalid_account_category_change_request' => 'No se puede enviar la solicitud de cambio de categoría de cuenta. Comprueba el estado de tu solicitud.',
+    'invalid_account_category_change_request_withdrawal' => 'Solo se pueden retirar solicitudes de cambio de categoría pendientes.',
+    'account_category_change_request_not_found' => 'No se encontró la solicitud de cambio de categoría.',
 ];

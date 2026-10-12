@@ -136,5 +136,7 @@ return [
     'incomplete_account_contact_for_category_change' => '申請に必要な連絡先情報が不足しています。プロフィールで電話番号と住所の必須項目を入力・保存してから、もう一度申請してください。',
     'invalid_documents_for_category_change' => '申請に必要な書類が不足しているか、アカウント区分に合っていません。書類アップロードで必要書類を確認・登録してから、もう一度申請してください。',
     'same_account_category_change_request' => '現在と同じカテゴリへの変更は申請できません。別のカテゴリを選択してください。',
-    'account_category_change_request_already_pending' => 'カテゴリ変更申請はすでに送信されています。審査結果をお待ちください。',
+    'invalid_account_category_change_request' => 'カテゴリ変更申請を送信できません。申請状況を確認してください。',
+    'invalid_account_category_change_request_withdrawal' => '審査待ちのカテゴリ変更申請のみ取り下げできます。',
+    'account_category_change_request_not_found' => 'カテゴリ変更申請が見つかりません。',
 ];

@@ -9,8 +9,10 @@ use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange
 use Application\Http\Action\Account\Account\Command\SwitchAccount\SwitchAccountAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocumentsAction;
+use Application\Http\Action\Account\Account\Command\WithdrawAccountCategoryChangeRequest\WithdrawAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
 use Application\Http\Action\Account\Account\Query\ViewAccountDocument\ViewAccountDocumentAction;
@@ -52,6 +54,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
         Route::get('/principal-groups', ListPrincipalGroupsAction::class);
 
         // AccountCategoryChangeRequest
+        Route::get('/accounts/{accountIdentifier}/category-change-requests/latest', GetLatestAccountCategoryChangeRequestAction::class);
         Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
         Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
 
@@ -82,6 +85,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
         Route::post('/invitations', InviteMemberAction::class);
 
         // AccountCategoryChangeRequest
+        Route::post('/accounts/{accountIdentifier}/category-change-requests/{requestId}/withdraw', WithdrawAccountCategoryChangeRequestAction::class);
         Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
         Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
         Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);

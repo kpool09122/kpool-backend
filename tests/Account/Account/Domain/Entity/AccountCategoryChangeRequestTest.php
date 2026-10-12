@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestRejectionException;
+use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestWithdrawalException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
@@ -92,6 +93,46 @@ class AccountCategoryChangeRequestTest extends TestCase
         $this->expectException(InvalidAccountCategoryChangeRequestRejectionException::class);
 
         $request->reject(new AccountIdentifier(StrTestHelper::generateUuid()), new RejectionReason(RejectionReasonCode::OTHER, 'missing information'));
+    }
+
+    public function testWithdrawPreservesCategoriesAndRequestTimeWithoutReview(): void
+    {
+        $request = $this->createRequest(AccountCategoryChangeRequestStatus::PENDING);
+        $requestedAt = $request->requestedAt();
+        $request->withdraw();
+        $this->assertSame(AccountCategoryChangeRequestStatus::WITHDRAWN, $request->status());
+        $this->assertSame(AccountCategory::GENERAL, $request->currentAccountCategory());
+        $this->assertSame(AccountCategory::AGENCY, $request->requestedAccountCategory());
+        $this->assertSame($requestedAt, $request->requestedAt());
+        $this->assertNull($request->reviewedBy());
+        $this->assertNull($request->reviewedAt());
+        $this->assertNull($request->rejectionReason());
+    }
+
+    public function testAllTerminalStatesRejectAllOperationsWithoutChangingHistory(): void
+    {
+        foreach ([AccountCategoryChangeRequestStatus::APPROVED, AccountCategoryChangeRequestStatus::REJECTED, AccountCategoryChangeRequestStatus::WITHDRAWN] as $status) {
+            foreach (['approve', 'reject', 'withdraw'] as $operation) {
+                $reviewer = new AccountIdentifier(StrTestHelper::generateUuid());
+                $reason = new RejectionReason(RejectionReasonCode::OTHER, 'original reason');
+                $reviewedAt = new DateTimeImmutable('2026-08-12');
+                $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable('2026-08-11'), $reviewer, $reviewedAt, $reason);
+
+                try {
+                    match ($operation) {
+                        'approve' => $request->approve($reviewer),
+                        'reject' => $request->reject($reviewer, $reason),
+                        'withdraw' => $request->withdraw(),
+                    };
+                    $this->fail('Terminal state must reject operation');
+                } catch (InvalidAccountCategoryChangeRequestApprovalException|InvalidAccountCategoryChangeRequestRejectionException|InvalidAccountCategoryChangeRequestWithdrawalException) {
+                    $this->assertSame($status, $request->status());
+                    $this->assertSame($reviewer, $request->reviewedBy());
+                    $this->assertSame($reviewedAt, $request->reviewedAt());
+                    $this->assertSame($reason, $request->rejectionReason());
+                }
+            }
+        }
     }
 
     private function createRequest(AccountCategoryChangeRequestStatus $status): AccountCategoryChangeRequest

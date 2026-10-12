@@ -136,5 +136,7 @@ return [
     'incomplete_account_contact_for_category_change' => '申請所需的聯絡資訊不完整。請在個人資料中填寫並儲存電話號碼和地址的所有必填欄位，然後重新申請。',
     'invalid_documents_for_category_change' => '所需文件不足或與帳號類型不符。請在文件上傳頁面確認並上傳所需文件，然後重新申請。',
     'same_account_category_change_request' => '無法申請變更為目前的類別。請選擇其他類別。',
-    'account_category_change_request_already_pending' => '類別變更申請已提交。請等待審核結果。',
+    'invalid_account_category_change_request' => '無法提交帳戶類別變更申請。請確認申請狀態。',
+    'invalid_account_category_change_request_withdrawal' => '僅可撤回待審核的類別變更申請。',
+    'account_category_change_request_not_found' => '找不到類別變更申請。',
 ];

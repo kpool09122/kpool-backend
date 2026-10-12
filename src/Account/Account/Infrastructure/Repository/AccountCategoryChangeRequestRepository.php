@@ -39,14 +39,18 @@ class AccountCategoryChangeRequestRepository implements AccountCategoryChangeReq
         return $model === null ? null : $this->toEntity($model);
     }
 
-    public function findPendingByAccountId(AccountIdentifier $accountId): ?AccountCategoryChangeRequest
+    /**
+     * @param AccountCategoryChangeRequestStatus[] $statuses
+     * @return AccountCategoryChangeRequest[]
+     */
+    public function findByAccountIdAndStatuses(AccountIdentifier $accountId, array $statuses): array
     {
-        $model = AccountCategoryChangeRequestModel::query()
+        return AccountCategoryChangeRequestModel::query()
             ->where('account_id', (string) $accountId)
-            ->where('status', AccountCategoryChangeRequestStatus::PENDING->value)
-            ->first();
-
-        return $model === null ? null : $this->toEntity($model);
+            ->whereIn('status', array_map(static fn (AccountCategoryChangeRequestStatus $status): string => $status->value, $statuses))
+            ->get()
+            ->map(fn (AccountCategoryChangeRequestModel $model): AccountCategoryChangeRequest => $this->toEntity($model))
+            ->all();
     }
 
     private function toEntity(AccountCategoryChangeRequestModel $model): AccountCategoryChangeRequest

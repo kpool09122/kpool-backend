@@ -125,6 +125,21 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         (new ListAccountCategoryChangeRequests($policyEvaluator))->process(new ListAccountCategoryChangeRequestsInput($operator), new ListAccountCategoryChangeRequestsOutput());
     }
 
+    #[Group('useDb')]
+    public function testWithdrawnHistoryRemainsVisibleToManagementAndCanBeFiltered(): void
+    {
+        $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountId);
+        $withdrawnId = StrTestHelper::generateUuid();
+        $this->insertRequest($withdrawnId, $accountId, 'withdrawn', 'agency', '2026-08-11 10:00:00');
+        $this->insertRequest(StrTestHelper::generateUuid(), $accountId, 'pending', 'agency', '2026-08-12 10:00:00');
+        $output = new ListAccountCategoryChangeRequestsOutput();
+        (new ListAccountCategoryChangeRequests($this->allowingPolicyEvaluator($operator)))->process(new ListAccountCategoryChangeRequestsInput($operator, status: 'withdrawn'), $output);
+        $this->assertSame([$withdrawnId], array_column($output->toArray()['requests'], 'requestIdentifier'));
+        $this->assertSame('withdrawn', $output->toArray()['requests'][0]['status']);
+    }
+
     private function allowingPolicyEvaluator(Principal $principal): PolicyEvaluatorInterface
     {
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */

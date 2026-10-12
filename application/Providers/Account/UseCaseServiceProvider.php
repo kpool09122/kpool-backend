@@ -27,16 +27,20 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocuments;
 use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDocumentsInterface;
+use Source\Account\Account\Application\UseCase\Command\WithdrawAccountCategoryChangeRequest\WithdrawAccountCategoryChangeRequest;
+use Source\Account\Account\Application\UseCase\Command\WithdrawAccountCategoryChangeRequest\WithdrawAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountDocument\GetAccountDocumentInterface;
+use Source\Account\Account\Application\UseCase\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
 use Source\Account\Account\Infrastructure\Query\GetAccountCategoryChangeRequest;
 use Source\Account\Account\Infrastructure\Query\GetAccountDocument;
+use Source\Account\Account\Infrastructure\Query\GetLatestAccountCategoryChangeRequest;
 use Source\Account\Account\Infrastructure\Query\ListAccountCategoryChangeRequests;
 use Source\Account\Account\Infrastructure\Query\ListAccountDocuments;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
@@ -113,6 +117,9 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestAccountCategoryChangeInterface::class, RequestAccountCategoryChange::class);
         $this->app->singleton(ApproveAccountCategoryChangeRequestInterface::class, ApproveAccountCategoryChangeRequest::class);
         $this->app->singleton(RejectAccountCategoryChangeRequestInterface::class, RejectAccountCategoryChangeRequest::class);
+
+        $this->app->singleton(WithdrawAccountCategoryChangeRequestInterface::class, WithdrawAccountCategoryChangeRequest::class);
+        $this->app->singleton(GetLatestAccountCategoryChangeRequestInterface::class, GetLatestAccountCategoryChangeRequest::class);
 
         // Invitation
         $this->app->singleton(InviteMemberInterface::class, InviteMember::class);

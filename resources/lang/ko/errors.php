@@ -136,5 +136,7 @@ return [
     'incomplete_account_contact_for_category_change' => '신청에 필요한 연락처 정보가 부족합니다. 프로필에서 전화번호와 주소의 필수 항목을 입력하고 저장한 뒤 다시 신청해 주세요.',
     'invalid_documents_for_category_change' => '필수 서류가 부족하거나 계정 유형에 맞지 않습니다. 서류 업로드에서 필요한 서류를 확인하고 등록한 뒤 다시 신청해 주세요.',
     'same_account_category_change_request' => '현재와 같은 카테고리로는 변경을 신청할 수 없습니다. 다른 카테고리를 선택해 주세요.',
-    'account_category_change_request_already_pending' => '카테고리 변경 신청이 이미 제출되었습니다. 심사 결과를 기다려 주세요.',
+    'invalid_account_category_change_request' => '계정 카테고리 변경 신청을 제출할 수 없습니다. 신청 상태를 확인해 주세요.',
+    'invalid_account_category_change_request_withdrawal' => '심사 대기 중인 카테고리 변경 신청만 철회할 수 있습니다.',
+    'account_category_change_request_not_found' => '카테고리 변경 신청을 찾을 수 없습니다.',
 ];

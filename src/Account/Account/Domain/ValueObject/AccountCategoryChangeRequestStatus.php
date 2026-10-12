@@ -9,6 +9,7 @@ enum AccountCategoryChangeRequestStatus: string
     case PENDING = 'pending';
     case APPROVED = 'approved';
     case REJECTED = 'rejected';
+    case WITHDRAWN = 'withdrawn';
 
     public function isPending(): bool
     {

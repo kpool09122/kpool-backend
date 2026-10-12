@@ -42,4 +42,15 @@ class AccountCategoryChangeRequestStatusTest extends TestCase
         $this->assertFalse($status->canTransitionTo(AccountCategoryChangeRequestStatus::APPROVED));
         $this->assertFalse($status->canTransitionTo(AccountCategoryChangeRequestStatus::REJECTED));
     }
+
+    public function testCompleteTransitionMatrix(): void
+    {
+        foreach (AccountCategoryChangeRequestStatus::cases() as $from) {
+            foreach (AccountCategoryChangeRequestStatus::cases() as $to) {
+                $this->assertSame($from === AccountCategoryChangeRequestStatus::PENDING && $to !== AccountCategoryChangeRequestStatus::PENDING, $from->canTransitionTo($to));
+            }
+        }
+        $this->assertFalse(AccountCategoryChangeRequestStatus::WITHDRAWN->isPending());
+        $this->assertTrue(AccountCategoryChangeRequestStatus::PENDING->canTransitionTo(AccountCategoryChangeRequestStatus::WITHDRAWN));
+    }
 }
