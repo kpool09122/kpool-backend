@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Application\EventHandler;
 
 use DateTimeImmutable;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -37,7 +38,14 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $this->assertInstanceOf(AccountCategoryChangedHandler::class, $this->app()->make(AccountCategoryChangedHandler::class));
     }
 
-    public function testHandleCreatesAgencyActorGroupAndAttachesRole(): void
+    /** @return array<string, array{AccountType}> */
+    public static function accountTypes(): array
+    {
+        return ['individual' => [AccountType::INDIVIDUAL], 'corporation' => [AccountType::CORPORATION]];
+    }
+
+    #[DataProvider('accountTypes')]
+    public function testHandleCreatesAgencyActorGroupAndAttachesRole(AccountType $accountType): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $reviewerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -45,8 +53,10 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalGroup = $this->principalGroup($accountIdentifier, 'Agency Actor');
         $defaultPrincipalGroup = $this->principalGroup($accountIdentifier, 'Default', true);
         $defaultPrincipalGroup->addMember($principal->principalIdentifier());
+        $nonOwner = $this->principal($accountIdentifier);
+        $defaultPrincipalGroup->addMember($nonOwner->principalIdentifier());
         $role = $this->role('AgencyActor');
-        $event = $this->event($accountIdentifier, AccountCategory::AGENCY, $reviewerAccountIdentifier, AccountType::INDIVIDUAL);
+        $event = $this->event($accountIdentifier, AccountCategory::AGENCY, $reviewerAccountIdentifier, $accountType);
 
         $principalGroupFactory = self::principalGroupFactoryMock();
         $principalGroupFactory->shouldReceive('create')
@@ -66,15 +76,17 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => $saved->isDefault()
-                && ! $saved->hasMember($principal->principalIdentifier())));
+                && ! $saved->hasMember($principal->principalIdentifier())
+                && $saved->hasMember($nonOwner->principalIdentifier())));
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => $saved->hasRole($role->roleIdentifier())
                 && $saved->hasMember($principal->principalIdentifier())
+                && ! $saved->hasMember($nonOwner->principalIdentifier())
                 && ! $saved->isDefault()));
 
         $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
 
         $roleRepository = self::roleRepositoryMock();
         $roleRepository->shouldReceive('findSystemByName')->once()->with('AgencyActor')->andReturn($role);
@@ -109,46 +121,10 @@ class AccountCategoryChangedHandlerTest extends TestCase
                 && ! $saved->isDefault()));
 
         $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([]);
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($accountIdentifier)->andReturn([]);
 
         $roleRepository = self::roleRepositoryMock();
         $roleRepository->shouldReceive('findSystemByName')->once()->with('TalentActor')->andReturn($role);
-
-        (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
-            ->handle($event);
-    }
-
-    public function testHandleDoesNotAttachMembersForCorporationAccount(): void
-    {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $reviewerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalGroup = $this->principalGroup($accountIdentifier, 'Agency Actor');
-        $role = $this->role('AgencyActor');
-        $event = $this->event($accountIdentifier, AccountCategory::AGENCY, $reviewerAccountIdentifier, AccountType::CORPORATION);
-
-        $principalGroupFactory = self::principalGroupFactoryMock();
-        $principalGroupFactory->shouldReceive('create')
-            ->once()
-            ->with($accountIdentifier, 'Agency Actor', false)
-            ->andReturn($principalGroup);
-
-        $principalGroupRepository = self::principalGroupRepositoryMock();
-        $principalGroupRepository->shouldReceive('findByAccountIdAndName')
-            ->once()
-            ->with($accountIdentifier, 'Agency Actor')
-            ->andReturnNull();
-        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
-        $principalGroupRepository->shouldReceive('save')
-            ->once()
-            ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => $saved->hasRole($role->roleIdentifier())
-                && $saved->memberCount() === 0
-                && ! $saved->isDefault()));
-
-        $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldNotReceive('findByAccountId');
-
-        $roleRepository = self::roleRepositoryMock();
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('AgencyActor')->andReturn($role);
 
         (new AccountCategoryChangedHandler($principalGroupFactory, $principalGroupRepository, $principalRepository, $roleRepository))
             ->handle($event);
@@ -180,7 +156,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
             ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => count($saved->roles()) === 1 && count($saved->members()) === 1));
 
         $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($accountIdentifier)->andReturn([$principal]);
 
         $roleRepository = self::roleRepositoryMock();
         $roleRepository->shouldReceive('findSystemByName')->once()->with('AgencyActor')->andReturn($role);
@@ -206,7 +182,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
             ->with(Mockery::on(static fn (PrincipalGroup $saved): bool => $saved->hasRole($role->roleIdentifier()) && $saved->memberCount() === 0));
 
         $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldReceive('findByAccountId')->once()->with($accountIdentifier)->andReturn([]);
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($accountIdentifier)->andReturn([]);
 
         $roleRepository = self::roleRepositoryMock();
         $roleRepository->shouldReceive('findSystemByName')->once()->with('AgencyActor')->andReturn($role);
@@ -223,7 +199,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         $principalGroupRepository->shouldNotReceive('findByAccountIdAndName');
         $principalGroupRepository->shouldNotReceive('save');
         $principalRepository = self::principalRepositoryMock();
-        $principalRepository->shouldNotReceive('findByAccountId');
+        $principalRepository->shouldNotReceive('findAccountOwnersByAccountId');
         $roleRepository = self::roleRepositoryMock();
         $roleRepository->shouldNotReceive('findSystemByName');
 
@@ -292,7 +268,7 @@ class AccountCategoryChangedHandlerTest extends TestCase
         return new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new AccountIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
         );
     }
 

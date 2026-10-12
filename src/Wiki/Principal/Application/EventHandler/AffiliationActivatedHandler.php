@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\EventHandler;
 
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
@@ -69,14 +68,10 @@ readonly class AffiliationActivatedHandler
         $principalGroup->setDescription(new PrincipalGroupDescription('Grants Wiki permissions associated with the approved agency-talent affiliation.'));
         $this->principalGroupRepository->save($principalGroup);
 
-        if ($event->talentAccountType() === AccountType::INDIVIDUAL) {
-            // Talent の全 Principal を新グループに追加
-            $principals = $this->principalRepository->findByAccountId($event->talentAccountIdentifier());
-            foreach ($principals as $principal) {
-                $principalGroup->addMember($principal->principalIdentifier());
-            }
-            $this->principalGroupRepository->save($principalGroup);
+        foreach ($this->principalRepository->findAccountOwnersByAccountId($event->talentAccountIdentifier()) as $owner) {
+            $principalGroup->addMember($owner->principalIdentifier());
         }
+        $this->principalGroupRepository->save($principalGroup);
 
         // Policy 作成（Agency の GROUP/SONG に対する権限）
         $agencyId = (string) $event->agencyAccountIdentifier();
@@ -122,7 +117,7 @@ readonly class AffiliationActivatedHandler
             return;
         }
 
-        // 専用 PrincipalGroup を新規作成（Principal は追加しない - UI 経由で後から追加）
+        // 専用 PrincipalGroup を新規作成
         $principalGroup = $this->principalGroupFactory->create(
             $event->agencyAccountIdentifier(),
             "Affiliation - Talent {$event->talentAccountName()}",
@@ -150,11 +145,8 @@ readonly class AffiliationActivatedHandler
 
         // PrincipalGroup に Role をアタッチ
         $principalGroup->addRole($role);
-        if ($event->agencyAccountType() === AccountType::INDIVIDUAL) {
-            $principals = $this->principalRepository->findByAccountId($event->agencyAccountIdentifier());
-            foreach ($principals as $principal) {
-                $principalGroup->addMember($principal->principalIdentifier());
-            }
+        foreach ($this->principalRepository->findAccountOwnersByAccountId($event->agencyAccountIdentifier()) as $owner) {
+            $principalGroup->addMember($owner->principalIdentifier());
         }
         $this->principalGroupRepository->save($principalGroup);
 

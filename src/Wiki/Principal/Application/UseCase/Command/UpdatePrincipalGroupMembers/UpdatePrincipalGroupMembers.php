@@ -6,7 +6,6 @@ namespace Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroup
 
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
-use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministratorException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
@@ -36,10 +35,6 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
 
     public function process(UpdatePrincipalGroupMembersInputPort $input, UpdatePrincipalGroupMembersOutputPort $output): void
     {
-        if ($input->accountType() !== AccountType::CORPORATION) {
-            throw new AccountUpdateForbiddenException();
-        }
-
         $operator = $this->principalRepository->findById($input->operatorPrincipalIdentifier());
         if ($operator === null || ! $this->belongsToAccount($operator, $input)) {
             throw new AccountUpdateForbiddenException();

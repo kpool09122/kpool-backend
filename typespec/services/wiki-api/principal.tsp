@@ -171,7 +171,7 @@ interface PrincipalOperations {
 
   @patch
   @route("/principal-groups/members")
-  @doc("Update members for multiple Wiki principal groups. Groups containing the system Operator role, including mixed-role groups, cannot be updated and return 403 even when specified directly.")
+  @doc("Update members for multiple Wiki principal groups for both individual and corporate accounts. Requires Wiki principal group management permission and at least one remaining Wiki Administrator. Groups containing the system Operator role, including mixed-role groups, cannot be updated and return 403 even when specified directly.")
   updatePrincipalGroupMembers(
     @body body: UpdatePrincipalGroupMembersRequestBody,
   ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;

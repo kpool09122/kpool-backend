@@ -6,6 +6,8 @@ namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -16,6 +18,23 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
 {
+    public function __construct(private AccountPrincipalRepositoryInterface $accountPrincipalRepository)
+    {
+    }
+
+    /** @return Principal[] */
+    public function findAccountOwnersByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        $owners = $this->accountPrincipalRepository->findOwnersByAccountId($accountIdentifier);
+
+        return PrincipalEloquent::query()
+            ->where('account_id', (string) $accountIdentifier)
+            ->whereIn('identity_id', array_map(static fn (AccountPrincipal $owner): string => (string) $owner->identityIdentifier(), $owners))
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
     {
         PrincipalEloquent::query()->where('identity_id', (string) $identityIdentifier)->delete();

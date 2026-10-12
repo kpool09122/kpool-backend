@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupM
 
 use DateTimeImmutable;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
@@ -36,7 +37,14 @@ use Tests\TestCase;
 
 class UpdatePrincipalGroupMembersTest extends TestCase
 {
-    public function testProcessAllowsCorporationWikiAdministratorToUpdateMultipleGroupMemberships(): void
+    /** @return array<string, array{AccountType}> */
+    public static function accountTypes(): array
+    {
+        return ['individual' => [AccountType::INDIVIDUAL], 'corporation' => [AccountType::CORPORATION]];
+    }
+
+    #[DataProvider('accountTypes')]
+    public function testProcessAllowsWikiAdministratorToUpdateMultipleGroupMemberships(AccountType $accountType): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $operator = $this->principal($accountIdentifier);
@@ -85,7 +93,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
                 $accountIdentifier,
                 $operator->principalIdentifier(),
                 [new PrincipalGroupMembers($targetGroup->principalGroupIdentifier(), [$member->principalIdentifier()])],
-                AccountType::CORPORATION,
+                $accountType,
             ),
             $output,
         );
@@ -93,13 +101,16 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $this->assertSame((string) $targetGroup->principalGroupIdentifier(), $output->toArray()['principalGroups'][0]['principalGroupIdentifier']);
     }
 
-    public function testProcessRejectsIndividualAccount(): void
+    public function testProcessRejectsUnknownOperatorForIndividualAccount(): void
     {
+        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+        $principalRepository = self::principalRepositoryMock();
+        $principalRepository->shouldReceive('findById')->once()->andReturnNull();
         $this->expectException(AccountUpdateForbiddenException::class);
 
         (new UpdatePrincipalGroupMembers(
             self::principalGroupRepositoryMock(),
-            self::principalRepositoryMock(),
+            $principalRepository,
             self::roleRepositoryMock(),
             self::policyEvaluatorMock(),
             self::accountPrincipalRepositoryEmptyMock(),

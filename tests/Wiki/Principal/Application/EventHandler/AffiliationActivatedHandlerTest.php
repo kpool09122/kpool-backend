@@ -104,6 +104,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
         // Talent側のPrincipal
         $talentPrincipal = $this->createPrincipal($talentAccountIdentifier);
+        $agencyPrincipal = $this->createPrincipal($agencyAccountIdentifier);
 
         // 作成されるエンティティ
         $talentSidePrincipalGroup = $this->createPrincipalGroup($talentAccountIdentifier);
@@ -134,10 +135,12 @@ class AffiliationActivatedHandlerTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository
-            ->shouldReceive('findByAccountId')
+            ->shouldReceive('findAccountOwnersByAccountId')
             ->with($talentAccountIdentifier)
             ->once()
             ->andReturn([$talentPrincipal]);
+
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($agencyAccountIdentifier)->andReturn([$agencyPrincipal]);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory
@@ -229,6 +232,8 @@ class AffiliationActivatedHandlerTest extends TestCase
         $handler = $this->app()->make(AffiliationActivatedHandler::class);
 
         $handler->handle($event);
+        $this->assertSame([$talentPrincipal->principalIdentifier()], array_values($talentSidePrincipalGroup->members()));
+        $this->assertSame([$agencyPrincipal->principalIdentifier()], array_values($agencySidePrincipalGroup->members()));
     }
 
     /**
@@ -278,7 +283,7 @@ class AffiliationActivatedHandlerTest extends TestCase
             ->once();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldNotReceive('findByAccountId');
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($agencyAccountIdentifier)->andReturn([]);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory
@@ -388,7 +393,7 @@ class AffiliationActivatedHandlerTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository
-            ->shouldReceive('findByAccountId')
+            ->shouldReceive('findAccountOwnersByAccountId')
             ->with($talentAccountIdentifier)
             ->once()
             ->andReturn([$talentPrincipal]);
@@ -503,10 +508,12 @@ class AffiliationActivatedHandlerTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository
-            ->shouldReceive('findByAccountId')
+            ->shouldReceive('findAccountOwnersByAccountId')
             ->with($talentAccountIdentifier)
             ->once()
             ->andReturn([$talentPrincipal]);
+
+        $principalRepository->shouldReceive('findAccountOwnersByAccountId')->once()->with($agencyAccountIdentifier)->andReturn([]);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory
