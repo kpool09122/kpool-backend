@@ -140,6 +140,9 @@ model SiteManagementEffectivePolicySummary {
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Site management principal for the authenticated identity in the current account.")
   siteManagementPrincipalIdentifier: Uuid | null;
+  @doc("Number of site management principals with an existing identity belonging to the current effective account. Pending invitations and principals from other accounts are excluded. Zero when there is no account.")
+  @minValue(0)
+  siteManagementPrincipalCount: int32;
   @doc("Effective site management policies for the authenticated identity in the current account.")
   siteManagementPolicies: SiteManagementEffectivePolicySummary[];
   @doc("Account identifier associated with the authenticated identity.")
