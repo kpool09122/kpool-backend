@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\RejectAccountCategor
 
 use DateTimeImmutable;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
@@ -107,10 +108,17 @@ class RejectAccountCategoryChangeRequestTest extends TestCase
             ->process(new RejectAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid())), new RejectionReason(RejectionReasonCode::OTHER, 'missing information')), new RejectAccountCategoryChangeRequestOutput());
     }
 
-    public function testCannotRejectNonPendingRequest(): void
+    /** @return array<string, array{AccountCategoryChangeRequestStatus}> */
+    public static function terminalStates(): array
+    {
+        return ['approved' => [AccountCategoryChangeRequestStatus::APPROVED], 'rejected' => [AccountCategoryChangeRequestStatus::REJECTED], 'withdrawn' => [AccountCategoryChangeRequestStatus::WITHDRAWN]];
+    }
+
+    #[DataProvider('terminalStates')]
+    public function testCannotRejectNonPendingRequest(AccountCategoryChangeRequestStatus $status): void
     {
         $requestId = new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid());
-        $request = $this->request($requestId, new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategoryChangeRequestStatus::APPROVED);
+        $request = $this->request($requestId, new AccountIdentifier(StrTestHelper::generateUuid()), $status);
 
         /** @var AccountCategoryChangeRequestRepositoryInterface&Mockery\MockInterface $requestRepository */
         $requestRepository = Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class);

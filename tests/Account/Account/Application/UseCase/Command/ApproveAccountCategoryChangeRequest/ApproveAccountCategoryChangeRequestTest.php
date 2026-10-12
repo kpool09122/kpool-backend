@@ -6,6 +6,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\ApproveAccountCatego
 
 use DateTimeImmutable;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
@@ -187,11 +188,18 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         ))->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
     }
 
-    public function testCannotApproveNonPendingRequest(): void
+    /** @return array<string, array{AccountCategoryChangeRequestStatus}> */
+    public static function terminalStates(): array
+    {
+        return ['approved' => [AccountCategoryChangeRequestStatus::APPROVED], 'rejected' => [AccountCategoryChangeRequestStatus::REJECTED], 'withdrawn' => [AccountCategoryChangeRequestStatus::WITHDRAWN]];
+    }
+
+    #[DataProvider('terminalStates')]
+    public function testCannotApproveNonPendingRequest(AccountCategoryChangeRequestStatus $status): void
     {
         $requestId = new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid());
         $targetAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
-        $request = $this->request($requestId, $targetAccountId, AccountCategoryChangeRequestStatus::APPROVED);
+        $request = $this->request($requestId, $targetAccountId, $status);
 
         /** @var AccountCategoryChangeRequestRepositoryInterface&Mockery\MockInterface $requestRepository */
         $requestRepository = Mockery::mock(AccountCategoryChangeRequestRepositoryInterface::class);
@@ -200,7 +208,8 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
 
         /** @var AccountRepositoryInterface&Mockery\MockInterface $accountRepository */
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
-        $accountRepository->shouldReceive('findById')->once()->with($targetAccountId)->andReturn($this->account($targetAccountId, AccountType::INDIVIDUAL));
+        $account = $this->account($targetAccountId, AccountType::INDIVIDUAL);
+        $accountRepository->shouldReceive('findById')->once()->with($targetAccountId)->andReturn($account);
         $accountRepository->shouldNotReceive('save');
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -208,8 +217,14 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
 
         $this->expectException(InvalidAccountCategoryChangeRequestApprovalException::class);
-        (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock(), self::accountContextServiceMock()))
-            ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
+
+        try {
+            (new ApproveAccountCategoryChangeRequest($requestRepository, $accountRepository, $policyEvaluator, self::eventDispatcherMock(), self::accountContextServiceMock()))
+                ->process(new ApproveAccountCategoryChangeRequestInput($requestId, $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()))), new ApproveAccountCategoryChangeRequestOutput());
+        } finally {
+            $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());
+            $this->assertSame($status, $request->status());
+        }
     }
 
     /**

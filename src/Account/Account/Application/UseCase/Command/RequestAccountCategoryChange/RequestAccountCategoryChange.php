@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange;
 
-use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestAlreadyPendingException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
+use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 
 readonly class RequestAccountCategoryChange implements RequestAccountCategoryChangeInterface
 {
@@ -34,6 +35,13 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         if ((string) $input->principal()->accountIdentifier() !== (string) $account->accountIdentifier()) {
             throw new AccountCategoryChangeRequestForbiddenException();
         }
+        $requests = $this->accountCategoryChangeRequestRepository->findByAccountIdAndStatuses(
+            $input->accountIdentifier(),
+            [AccountCategoryChangeRequestStatus::APPROVED, AccountCategoryChangeRequestStatus::PENDING],
+        );
+        if ($requests !== []) {
+            throw new InvalidAccountCategoryChangeRequestException();
+        }
         if ($account->accountCategory() === $input->requestedAccountCategory()) {
             throw new SameAccountCategoryChangeRequestException();
         }
@@ -43,9 +51,6 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
 
         $this->documentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
-        if ($this->accountCategoryChangeRequestRepository->findPendingByAccountId($input->accountIdentifier()) !== null) {
-            throw new AccountCategoryChangeRequestAlreadyPendingException();
-        }
         $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory());
         $this->accountCategoryChangeRequestRepository->save($request);
         $output->setRequest($request);

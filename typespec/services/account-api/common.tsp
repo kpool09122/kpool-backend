@@ -264,7 +264,7 @@ model AccountCategoryChangeRequestSummary {
   @doc("Requested account category.")
   requestedAccountCategory: string;
   @doc("Request status.")
-  status: string;
+  status: "pending" | "approved" | "rejected" | "withdrawn";
   @doc("Timestamp when the request was created.")
   requestedAt: Timestamp;
   @doc("Reviewer account identifier.")

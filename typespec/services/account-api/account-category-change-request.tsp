@@ -48,12 +48,39 @@ model ListAccountCategoryChangeRequestsResponse {
   @body body: ListAccountCategoryChangeRequestsResponseBody;
 }
 
+@doc("Latest non-withdrawn request for the authenticated account, or null when none exists.")
+model GetLatestAccountCategoryChangeRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: { request: AccountCategoryChangeRequestSummary | null; };
+}
+
+@doc("Updated request after withdrawal. Review fields and the current account category are preserved.")
+model WithdrawAccountCategoryChangeRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: AccountCategoryChangeRequestSummary;
+}
+
 interface AccountCategoryChangeRequestOperations {
+  @get
+  @route("/accounts/{accountIdentifier}/category-change-requests/latest")
+  @doc("Get the authenticated account's latest non-withdrawn request, ordered by requestedAt descending and then identifier descending. No management permission is required.")
+  getLatestAccountCategoryChangeRequest(
+    @path accountIdentifier: Uuid,
+  ): GetLatestAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @post
+  @route("/accounts/{accountIdentifier}/category-change-requests/{requestId}/withdraw")
+  @doc("Withdraw a pending request belonging to the authenticated account. Terminal requests cannot be withdrawn. No management permission is required.")
+  withdrawAccountCategoryChangeRequest(
+    @path accountIdentifier: Uuid,
+    @path requestId: Uuid,
+  ): WithdrawAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @route("/account-category-change-requests")
   @doc("List account category change requests for operations review.")
   listAccountCategoryChangeRequests(
-    @query status?: "pending" | "approved" | "rejected" | null,
+    @query status?: "pending" | "approved" | "rejected" | "withdrawn" | null,
     @query requestedAccountCategory?: "agency" | "talent" | "general" | null,
     @query perPage?: int32 | null,
     @query page?: int32 | null,
@@ -68,7 +95,7 @@ interface AccountCategoryChangeRequestOperations {
 
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
-  @doc("Request account category change.")
+  @doc("Request account category change. Accounts with any approved request history cannot apply again; rejected or withdrawn history permits a new request when the remaining requirements are met.")
   requestAccountCategoryChange(
     @path accountIdentifier: Uuid,
     @body body: RequestAccountCategoryChangeRequestBody,

@@ -7,6 +7,7 @@ namespace Source\Account\Account\Domain\Entity;
 use DateTimeImmutable;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestRejectionException;
+use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestWithdrawalException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
@@ -93,5 +94,13 @@ class AccountCategoryChangeRequest
         $this->reviewedBy = $reviewerAccountIdentifier;
         $this->reviewedAt = new DateTimeImmutable();
         $this->rejectionReason = $rejectionReason;
+    }
+
+    public function withdraw(): void
+    {
+        if (! $this->status->canTransitionTo(AccountCategoryChangeRequestStatus::WITHDRAWN)) {
+            throw new InvalidAccountCategoryChangeRequestWithdrawalException();
+        }
+        $this->status = AccountCategoryChangeRequestStatus::WITHDRAWN;
     }
 }

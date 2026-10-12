@@ -136,5 +136,7 @@ return [
     'incomplete_account_contact_for_category_change' => 'Contact information required for this request is missing. Enter and save your phone number and all required address fields in Profile, then try again.',
     'invalid_documents_for_category_change' => 'The required documents are missing or do not match your account type. Check and upload the required documents in Document upload, then try again.',
     'same_account_category_change_request' => 'You cannot request a change to your current category. Select a different category.',
-    'account_category_change_request_already_pending' => 'A category change request has already been submitted. Please wait for the review result.',
+    'invalid_account_category_change_request' => 'The account category change request cannot be submitted. Please check your request status.',
+    'invalid_account_category_change_request_withdrawal' => 'Only pending category change requests can be withdrawn.',
+    'account_category_change_request_not_found' => 'The category change request was not found.',
 ];
