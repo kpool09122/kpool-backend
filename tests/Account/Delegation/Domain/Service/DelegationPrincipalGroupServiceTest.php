@@ -25,6 +25,7 @@ use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\ConditionKey;
@@ -47,7 +48,7 @@ use Tests\TestCase;
 
 class DelegationPrincipalGroupServiceTest extends TestCase
 {
-    public function testCreatesEmptyScopedGroupAndPreservesExplicitMembershipIdempotently(): void
+    public function testAddsSourceAccountOwnersAndPreservesExplicitMembershipIdempotently(): void
     {
         $delegation = $this->delegation();
         $source = $delegation->delegateAccountIdentifier();
@@ -109,9 +110,14 @@ class DelegationPrincipalGroupServiceTest extends TestCase
         $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
         $accountRepository->shouldReceive('findById')->once()->with($target)->andReturn($this->account($target));
 
-        $service = new DelegationPrincipalGroupService($groupFactory, $principalGroupRepository, $policyFactory, $policyRepository, $roleFactory, $roleRepository, $accountRepository);
+        $owner = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), new IdentityIdentifier(StrTestHelper::generateUuid()), $source);
+        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findOwnersByAccountId')->once()->with($source)->andReturn([$owner]);
+
+        $service = new DelegationPrincipalGroupService($groupFactory, $principalGroupRepository, $policyFactory, $policyRepository, $roleFactory, $roleRepository, $accountRepository, $principalRepository);
         $service->createFor($delegation);
-        $this->assertSame([], $group->members());
+        $this->assertSame([$owner->principalIdentifier()], array_values($group->members()));
         $this->assertFalse($group->hasMember($principal->principalIdentifier()));
 
         $group->addMember($principal->principalIdentifier());

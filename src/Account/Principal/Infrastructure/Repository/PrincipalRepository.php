@@ -7,6 +7,7 @@ namespace Source\Account\Principal\Infrastructure\Repository;
 use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Principal as PrincipalEloquent;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -57,6 +58,25 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     {
         return PrincipalEloquent::query()
             ->where('account_id', (string) $accountIdentifier)
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
+    /** @return Principal[] */
+    public function findOwnersByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        return PrincipalEloquent::query()
+            ->join('account_principal_group_memberships as memberships', 'memberships.principal_id', '=', 'account_principals.id')
+            ->join('account_principal_groups as groups', 'groups.id', '=', 'memberships.principal_group_id')
+            ->join('account_principal_group_role_attachments as attachments', 'attachments.principal_group_id', '=', 'groups.id')
+            ->join('account_roles as roles', 'roles.id', '=', 'attachments.role_id')
+            ->where('account_principals.account_id', (string) $accountIdentifier)
+            ->where('groups.account_id', (string) $accountIdentifier)
+            ->where('roles.name', Role::OWNER)
+            ->whereNull('roles.account_id')
+            ->select('account_principals.*')
+            ->distinct()
             ->get()
             ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
             ->all();

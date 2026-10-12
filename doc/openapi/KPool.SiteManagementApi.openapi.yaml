@@ -765,6 +765,7 @@ components:
         - principalGroupIdentifier
         - accountIdentifier
         - name
+        - description
         - roleIdentifiers
         - isDefault
         - members
@@ -775,6 +776,9 @@ components:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         name:
           type: string
+        description:
+          type: string
+          nullable: true
         roleIdentifiers:
           type: array
           items:

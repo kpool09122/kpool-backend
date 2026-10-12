@@ -24,6 +24,9 @@ interface PrincipalGroupRepositoryInterface
     /**
      * @return array<PrincipalGroup>
      */
+    public function findInitialOwnerGroupsByAccountId(AccountIdentifier $accountIdentifier): array;
+
+    /** @return PrincipalGroup[] */
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array;
 
     /**

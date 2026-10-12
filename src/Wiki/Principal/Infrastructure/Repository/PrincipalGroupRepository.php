@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Http\Context\AuthContextCache;
+use Application\Models\Wiki\AffiliationGrant as AffiliationGrantEloquent;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
@@ -78,6 +79,27 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     /**
      * @return array<PrincipalGroup>
      */
+    public function findInitialOwnerGroupsByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        return PrincipalGroupEloquent::query()
+            ->with(['memberships', 'roleAttachments'])
+            ->where('account_id', (string) $accountIdentifier)
+            ->where('is_default', false)
+            ->whereDoesntHave('roleAttachments.role', function ($roleQuery): void {
+                $roleQuery->whereNull('account_id')->whereIn('name', ['Operator', 'SeniorCollaborator']);
+            })
+            ->where(function ($query): void {
+                $query->whereIn('id', AffiliationGrantEloquent::query()->select('principal_group_id'))
+                    ->orWhereHas('roleAttachments.role', function ($roleQuery): void {
+                        $roleQuery->whereNull('account_id')->whereIn('name', ['AgencyActor', 'TalentActor']);
+                    });
+            })
+            ->get()
+            ->map(fn (PrincipalGroupEloquent $eloquent): PrincipalGroup => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
+    /** @return PrincipalGroup[] */
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
     {
         $eloquentModels = PrincipalGroupEloquent::query()

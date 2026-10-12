@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 
-use RuntimeException;
-use Source\Account\Principal\Domain\Entity\Role as AccountRole;
-use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface as AccountPrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
-use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
 use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
@@ -33,8 +30,6 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private RoleRepositoryInterface $roleRepository,
         private AccountPrincipalRepositoryInterface $accountPrincipalRepository,
-        private AccountPrincipalGroupRepositoryInterface $accountPrincipalGroupRepository,
-        private AccountRoleRepositoryInterface $accountRoleRepository,
     ) {
     }
 
@@ -65,6 +60,10 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             $administratorGroup = $this->findOrCreateWikiAdministratorPrincipalGroup($input);
             $administratorGroup->addMember($principal->principalIdentifier());
             $this->principalGroupRepository->save($administratorGroup);
+            foreach ($this->principalGroupRepository->findInitialOwnerGroupsByAccountId($input->accountIdentifier()) as $principalGroup) {
+                $principalGroup->addMember($principal->principalIdentifier());
+                $this->principalGroupRepository->save($principalGroup);
+            }
         }
 
         $defaultGroup = $this->findOrCreateDefaultPrincipalGroup($input);
@@ -128,24 +127,9 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
     private function isAccountOwner(CreatePrincipalInputPort $input): bool
     {
-        $accountPrincipal = $this->accountPrincipalRepository->findByIdentityIdentifierAndAccountIdentifier(
-            $input->identityIdentifier(),
-            $input->accountIdentifier(),
+        return array_any(
+            $this->accountPrincipalRepository->findOwnersByAccountId($input->accountIdentifier()),
+            static fn (AccountPrincipal $owner): bool => (string) $owner->identityIdentifier() === (string) $input->identityIdentifier(),
         );
-        if ($accountPrincipal === null) {
-            return false;
-        }
-
-        $ownerRole = $this->accountRoleRepository->findSystemByName(AccountRole::OWNER);
-        if ($ownerRole === null) {
-            throw new RuntimeException('Owner account role is not found.');
-        }
-
-        $ownerGroup = $this->accountPrincipalGroupRepository->findByAccountIdAndRole(
-            $input->accountIdentifier(),
-            $ownerRole->roleIdentifier(),
-        );
-
-        return $ownerGroup?->hasMember($accountPrincipal->principalIdentifier()) ?? false;
     }
 }

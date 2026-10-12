@@ -37,6 +37,19 @@ class ListPrincipalGroupsTest extends TestCase
         }
     }
 
+    public function testSnapshotReturnsStoredDescriptionAndExplicitNull(): void
+    {
+        $f = new SiteManagementPrincipalGroupsFixture();
+        $description = 'Manages site management user groups and their memberships.';
+        DB::table('site_management_principal_groups')->where('id', (string) $f->administrators->principalGroupIdentifier())->update(['description' => $description]);
+        $result = $this->app()->make(ListPrincipalGroupsInterface::class)->process(new ListPrincipalGroupsInput($f->account, $f->administrator->principalIdentifier()));
+        $groups = array_column($result->toArray()['principalGroups'], null, 'principalGroupIdentifier');
+
+        self::assertSame($description, $groups[(string) $f->administrators->principalGroupIdentifier()]['description']);
+        self::assertArrayHasKey('description', $groups[(string) $f->general->principalGroupIdentifier()]);
+        self::assertNull($groups[(string) $f->general->principalGroupIdentifier()]['description']);
+    }
+
     public function testSnapshotUsesIdentifiersToBreakEqualCreationTimes(): void
     {
         $f = new SiteManagementPrincipalGroupsFixture();

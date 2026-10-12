@@ -37,9 +37,10 @@ interface PrincipalRepositoryInterface
      */
     public function findByDelegation(DelegationIdentifier $delegationIdentifier): array;
 
-    /**
-     * @return Principal[]
-     */
+    /** @return Principal[] */
+    public function findAccountOwnersByAccountId(AccountIdentifier $accountIdentifier): array;
+
+    /** @return Principal[] */
     public function findByAccountId(AccountIdentifier $accountIdentifier): array;
 
     public function save(Principal $principal): void;
