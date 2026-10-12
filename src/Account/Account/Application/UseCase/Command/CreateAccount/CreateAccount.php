@@ -83,6 +83,7 @@ readonly class CreateAccount implements CreateAccountInterface
             );
             $this->principalRepository->save($principal);
             $ownerPrincipalGroup->addMember($principal->principalIdentifier());
+            $defaultPrincipalGroup->addMember($principal->principalIdentifier());
         }
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);

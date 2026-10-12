@@ -60,12 +60,15 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
         $this->principalRepository->save($principal);
 
-        $initialPrincipalGroup = $this->isAccountOwner($input)
-            ? $this->findOrCreateWikiAdministratorPrincipalGroup($input)
-            : $this->findOrCreateDefaultPrincipalGroup($input);
+        if ($this->isAccountOwner($input)) {
+            $administratorGroup = $this->findOrCreateWikiAdministratorPrincipalGroup($input);
+            $administratorGroup->addMember($principal->principalIdentifier());
+            $this->principalGroupRepository->save($administratorGroup);
+        }
 
-        $initialPrincipalGroup->addMember($principal->principalIdentifier());
-        $this->principalGroupRepository->save($initialPrincipalGroup);
+        $defaultGroup = $this->findOrCreateDefaultPrincipalGroup($input);
+        $defaultGroup->addMember($principal->principalIdentifier());
+        $this->principalGroupRepository->save($defaultGroup);
 
         $output->setPrincipal($principal);
     }
@@ -83,10 +86,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             true,
         );
 
-        $role = $this->roleRepository->findSystemByName(self::COLLABORATOR_ROLE);
-        if ($role !== null) {
-            $defaultPrincipalGroup->addRole($role);
-        }
+        $this->addRequiredRole($defaultPrincipalGroup, self::COLLABORATOR_ROLE);
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);
 
@@ -108,7 +108,6 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
         }
 
         $this->addRequiredRole($wikiAdministratorPrincipalGroup, self::WIKI_ADMINISTRATOR_ROLE);
-        $this->addRequiredRole($wikiAdministratorPrincipalGroup, self::COLLABORATOR_ROLE);
         $this->principalGroupRepository->save($wikiAdministratorPrincipalGroup);
 
         return $wikiAdministratorPrincipalGroup;

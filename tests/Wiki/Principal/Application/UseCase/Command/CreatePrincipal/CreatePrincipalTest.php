@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup as AccountPrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role as AccountRole;
@@ -127,7 +128,8 @@ class CreatePrincipalTest extends TestCase
         $this->assertTrue($defaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
-    public function testProcessCreatesWikiAdministratorPrincipalGroupWithCollaboratorRoleForAccountOwner(): void
+    #[DataProvider('defaultGroupStates')]
+    public function testProcessSeparatesAdministratorAndDefaultRolesForAccountOwner(bool $hasDefaultGroup): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -170,6 +172,17 @@ class CreatePrincipalTest extends TestCase
             new DateTimeImmutable(),
         );
 
+        $defaultGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
+            'Default',
+            true,
+            new DateTimeImmutable(),
+        );
+        if ($hasDefaultGroup) {
+            $defaultGroup->addRole($collaboratorRole);
+        }
+
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')->once()->with($identityIdentifier, $accountIdentifier)->andReturnNull();
         $principalRepository->shouldReceive('save')->once()->with($principal);
@@ -183,16 +196,24 @@ class CreatePrincipalTest extends TestCase
             ->with($accountIdentifier, 'Wiki Administrator')
             ->andReturnNull();
         $principalGroupRepository->shouldReceive('save')->twice()->with($wikiAdministratorPrincipalGroup);
+        $principalGroupRepository->shouldReceive('findDefaultByAccountId')->once()->with($accountIdentifier)
+            ->andReturn($hasDefaultGroup ? $defaultGroup : null);
+        $principalGroupRepository->shouldReceive('save')->times($hasDefaultGroup ? 1 : 2)->with($defaultGroup);
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
             ->with($accountIdentifier, 'Wiki Administrator', false)
             ->andReturn($wikiAdministratorPrincipalGroup);
+        if (! $hasDefaultGroup) {
+            $principalGroupFactory->shouldReceive('create')->once()->with($accountIdentifier, 'Default', true)->andReturn($defaultGroup);
+        }
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
-        $roleRepository->shouldReceive('findSystemByName')->once()->with('Collaborator')->andReturn($collaboratorRole);
+        if (! $hasDefaultGroup) {
+            $roleRepository->shouldReceive('findSystemByName')->once()->with('Collaborator')->andReturn($collaboratorRole);
+        }
 
         $accountPrincipalRepository = Mockery::mock(AccountPrincipalRepositoryInterface::class);
         $accountPrincipalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
@@ -226,8 +247,16 @@ class CreatePrincipalTest extends TestCase
 
         $this->assertSame((string) $principalIdentifier, $output->toArray()['principalIdentifier']);
         $this->assertTrue($wikiAdministratorPrincipalGroup->hasRole($wikiAdministratorRoleIdentifier));
-        $this->assertTrue($wikiAdministratorPrincipalGroup->hasRole($collaboratorRoleIdentifier));
+        $this->assertFalse($wikiAdministratorPrincipalGroup->hasRole($collaboratorRoleIdentifier));
+        $this->assertTrue($defaultGroup->hasRole($collaboratorRoleIdentifier));
+        $this->assertTrue($defaultGroup->hasMember($principalIdentifier));
         $this->assertTrue($wikiAdministratorPrincipalGroup->hasMember($principalIdentifier));
+    }
+
+    /** @return array<string, array{bool}> */
+    public static function defaultGroupStates(): array
+    {
+        return ['new default group' => [false], 'existing default group' => [true]];
     }
 
     public function testProcessThrowsSystemRoleNotFoundWhenWikiAdministratorRoleDoesNotExist(): void
@@ -338,10 +367,13 @@ class CreatePrincipalTest extends TestCase
         );
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndName')->once()->andReturnNull();
-        $principalGroupRepository->shouldNotReceive('save');
+        $principalGroupRepository->shouldReceive('save')->twice()->with($principalGroup);
+        $principalGroupRepository->shouldReceive('findDefaultByAccountId')->once()->with($accountIdentifier)->andReturnNull();
 
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')->once()->andReturn($principalGroup);
+        $principalGroupFactory->shouldReceive('create')->once()->with($accountIdentifier, 'Wiki Administrator', false)->andReturn($principalGroup);
+        $defaultGroup = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $accountIdentifier, 'Default', true, new DateTimeImmutable());
+        $principalGroupFactory->shouldReceive('create')->once()->with($accountIdentifier, 'Default', true)->andReturn($defaultGroup);
 
         $wikiAdministratorRole = new Role(
             $wikiAdministratorRoleIdentifier,

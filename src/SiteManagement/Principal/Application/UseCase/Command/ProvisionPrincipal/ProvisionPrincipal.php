@@ -41,12 +41,15 @@ readonly class ProvisionPrincipal implements ProvisionPrincipalInterface
         $principal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier($inputPort->identityIdentifier(), $inputPort->accountIdentifier());
         if ($principal === null) {
             $principal = $this->principalFactory->create($inputPort->identityIdentifier(), $inputPort->accountIdentifier());
-            $group = $this->isAccountOwner($inputPort)
-                ? $this->administratorGroup($inputPort)
-                : $this->defaultGroup($inputPort);
+            $principalGroups = [$this->defaultGroup($inputPort)];
+            if ($this->isAccountOwner($inputPort)) {
+                $principalGroups[] = $this->administratorGroup($inputPort);
+            }
             $this->principalRepository->save($principal);
-            $group->addMember($principal->principalIdentifier());
-            $this->principalGroupRepository->save($group);
+            foreach ($principalGroups as $principalGroup) {
+                $principalGroup->addMember($principal->principalIdentifier());
+                $this->principalGroupRepository->save($principalGroup);
+            }
         }
         $output->setPrincipal($principal);
     }
@@ -80,11 +83,9 @@ readonly class ProvisionPrincipal implements ProvisionPrincipalInterface
     {
         $group = $this->principalGroupRepository->findByAccountIdAndName($input->accountIdentifier(), self::ADMINISTRATOR_GROUP_NAME)
             ?? $this->principalGroupFactory->create(self::ADMINISTRATOR_GROUP_NAME, [], $input->accountIdentifier(), false);
-        foreach ([self::ADMINISTRATOR_ROLE_NAME, self::GENERAL_ROLE_NAME] as $roleName) {
-            $role = $this->roleRepository->findSystemByName($roleName)
-                ?? throw new SystemRoleNotFoundException($roleName);
-            $group->addRole($role);
-        }
+        $role = $this->roleRepository->findSystemByName(self::ADMINISTRATOR_ROLE_NAME)
+            ?? throw new SystemRoleNotFoundException(self::ADMINISTRATOR_ROLE_NAME);
+        $group->addRole($role);
 
         return $group;
     }

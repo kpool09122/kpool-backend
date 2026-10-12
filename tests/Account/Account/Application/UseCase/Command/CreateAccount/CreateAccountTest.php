@@ -142,6 +142,7 @@ class CreateAccountTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')->once()->globally()->ordered()
             ->with(Mockery::on(static fn (PrincipalCreated $event): bool => $testData->ownerPrincipalGroup->hasMember($event->principalIdentifier)
+                && $testData->defaultPrincipalGroup->hasMember($event->principalIdentifier)
                 && (string) $event->accountIdentifier === (string) $testData->identifier));
         $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
@@ -164,7 +165,7 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->email, $result['email']);
         $this->assertSame($testData->accountType->value, $result['type']);
         $this->assertSame((string) $testData->accountName, $result['name']);
-        $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
+        $this->assertTrue($testData->defaultPrincipalGroup->hasMember($testData->principalIdentifier));
         $this->assertTrue($testData->ownerPrincipalGroup->hasMember($testData->principalIdentifier));
         $this->assertTrue($testData->ownerPrincipalGroup->hasRole($testData->ownerRole->roleIdentifier()));
     }
