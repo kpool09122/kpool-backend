@@ -96,6 +96,9 @@ class PrincipalRepositoryTest extends TestCase
         $repository->save(new Principal($id, $identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')));
         $repository->save(new Principal($id, $identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')));
         self::assertSame((string) $identity, (string) $repository->findById($id)?->identityIdentifier());
+        self::assertSame([], $repository->findByIds([]));
+        self::assertCount(1, $repository->findByIds([$id, new PrincipalIdentifier(StrTestHelper::generateUuid())]));
+        self::assertSame((string) $identity, (string) $repository->findByIds([$id])[(string) $id]->identityIdentifier());
         $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_id' => (string) $id]);
         $repository->delete(new Principal($id, $identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')));
         self::assertNull($repository->findById($id));

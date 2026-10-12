@@ -187,3 +187,62 @@ interface ContactOperations {
     @body body: SubmitContactRequestBody,
   ): SubmitContactResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
+
+
+@doc("User information for a principal in the current Account, including users with no group memberships.")
+model PrincipalGroupMember {
+  principalIdentifier: Uuid;
+  identityIdentifier: Uuid;
+  identityName: string;
+  email: string;
+}
+
+@doc("Editable group. Groups containing the system Operator role, including mixed-role groups, are excluded.")
+model PrincipalGroup {
+  principalGroupIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  name: string;
+  roleIdentifiers: Uuid[];
+  isDefault: boolean;
+  members: PrincipalGroupMember[];
+}
+
+model PrincipalGroupList {
+  principalGroups: PrincipalGroup[];
+  principals: PrincipalGroupMember[];
+}
+
+model UpdatedPrincipalGroup {
+  principalGroupIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  name: string;
+  description: string | null;
+  isDefault: boolean;
+  memberCount: int32;
+}
+
+model UpdatePrincipalGroupMembersResponse {
+  principalGroups: UpdatedPrincipalGroup[];
+}
+
+model UpdatePrincipalGroupMembersItem {
+  principalGroupIdentifier: Uuid;
+  principalIdentifiers: Uuid[];
+}
+
+model UpdatePrincipalGroupMembersRequestBody {
+  principalGroups: UpdatePrincipalGroupMembersItem[];
+}
+
+@route("/principal-groups")
+@useAuth(SessionCookieAuth)
+interface PrincipalGroupOperations {
+  @get
+  @doc("List all editable groups and all principals of the server-resolved current Account. Requires principal-group:manage on principal_group. No accountIdentifier query. Missing Principal or insufficient permission returns 403. Existing identity/auth/me provides the current Principal and policies.")
+  listPrincipalGroups(): PrincipalGroupList | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @patch
+  @route("/members")
+  @doc("Replace membership of specified groups and retain omitted groups. Empty member arrays remove all members. Duplicate group IDs and duplicate members within one group return 422; multiple group membership is allowed. Requires principal-group:manage on principal_group. System Operator groups, including mixed-role groups, return 403. Missing or other-Account groups/principals return 404. Removing the last real same-Account Administrator across editable groups returns 422. Returns summaries of the updated groups only; clients fetch the list separately. Self-removal succeeds when another Administrator remains, without reauthorization until the next request.")
+  updatePrincipalGroupMembers(@body body: UpdatePrincipalGroupMembersRequestBody): UpdatePrincipalGroupMembersResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+}

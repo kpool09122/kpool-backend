@@ -439,6 +439,136 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /principal-groups:
+    get:
+      operationId: PrincipalGroupOperations_listPrincipalGroups
+      description: List all editable groups and all principals of the server-resolved current Account. Requires principal-group:manage on principal_group. No accountIdentifier query. Missing Principal or insufficient permission returns 403. Existing identity/auth/me provides the current Principal and policies.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupList'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /principal-groups/members:
+    patch:
+      operationId: PrincipalGroupOperations_updatePrincipalGroupMembers
+      description: Replace membership of specified groups and retain omitted groups. Empty member arrays remove all members. Duplicate group IDs and duplicate members within one group return 422; multiple group membership is allowed. Requires principal-group:manage on principal_group. System Operator groups, including mixed-role groups, return 403. Missing or other-Account groups/principals return 404. Removing the last real same-Account Administrator across editable groups returns 422. Returns summaries of the updated groups only; clients fetch the list separately. Self-removal succeeds when another Administrator remains, without reauthorization until the next request.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePrincipalGroupMembersResponse'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrincipalGroupMembersRequestBody'
+      security:
+        - SessionCookieAuth: []
 components:
   schemas:
     ContactCategory:
@@ -629,6 +759,64 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the inquiry was created.
       description: Contact inquiry summary returned to its submitter.
+    PrincipalGroup:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - roleIdentifiers
+        - isDefault
+        - members
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        roleIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        isDefault:
+          type: boolean
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroupMember'
+      description: Editable group. Groups containing the system Operator role, including mixed-role groups, are excluded.
+    PrincipalGroupList:
+      type: object
+      required:
+        - principalGroups
+        - principals
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroup'
+        principals:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroupMember'
+    PrincipalGroupMember:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - identityName
+        - email
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityName:
+          type: string
+        email:
+          type: string
+      description: User information for a principal in the current Account, including users with no group memberships.
     ReplyContactRequestBody:
       type: object
       required:
@@ -661,6 +849,60 @@ components:
           type: string
           description: Inquiry details.
       description: Request body for submitting a contact inquiry.
+    UpdatePrincipalGroupMembersItem:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - principalIdentifiers
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        principalIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+    UpdatePrincipalGroupMembersRequestBody:
+      type: object
+      required:
+        - principalGroups
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatePrincipalGroupMembersItem'
+    UpdatePrincipalGroupMembersResponse:
+      type: object
+      required:
+        - principalGroups
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatedPrincipalGroup'
+    UpdatedPrincipalGroup:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - description
+        - isDefault
+        - memberCount
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isDefault:
+          type: boolean
+        memberCount:
+          type: integer
+          format: int32
   securitySchemes:
     SessionCookieAuth:
       type: apiKey

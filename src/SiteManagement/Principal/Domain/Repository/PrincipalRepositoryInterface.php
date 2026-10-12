@@ -11,6 +11,10 @@ use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface PrincipalRepositoryInterface
 {
+    /** @param PrincipalIdentifier[] $principalIdentifiers
+     * @return array<string, Principal> */
+    public function findByIds(array $principalIdentifiers): array;
+
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal;
 
     public function save(Principal $principal): void;
