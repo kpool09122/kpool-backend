@@ -29,7 +29,13 @@ readonly class AuthenticatedIdentityReadModel
         private ?string $siteManagementPrincipalIdentifier = null,
         private array $siteManagementPolicies = [],
         private int $accountIdentityCount = 0,
+        private int $siteManagementPrincipalCount = 0,
     ) {
+    }
+
+    public function siteManagementPrincipalCount(): int
+    {
+        return $this->siteManagementPrincipalCount;
     }
 
     public function siteManagementPrincipalIdentifier(): ?string
@@ -123,11 +129,12 @@ readonly class AuthenticatedIdentityReadModel
     }
 
     /**
-     * @return array{siteManagementPrincipalIdentifier: string|null, siteManagementPolicies: array<int, array<string, mixed>>, identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountIdentityCount: int, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
+     * @return array{siteManagementPrincipalCount: int, siteManagementPrincipalIdentifier: string|null, siteManagementPolicies: array<int, array<string, mixed>>, identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountIdentityCount: int, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
      */
     public function toArray(): array
     {
         return [
+            'siteManagementPrincipalCount' => $this->siteManagementPrincipalCount,
             'siteManagementPrincipalIdentifier' => $this->siteManagementPrincipalIdentifier,
             'siteManagementPolicies' => $this->siteManagementPolicies,
             'identityIdentifier' => $this->identityIdentifier,

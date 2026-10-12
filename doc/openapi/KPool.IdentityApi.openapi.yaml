@@ -1949,6 +1949,7 @@ components:
       type: object
       required:
         - siteManagementPrincipalIdentifier
+        - siteManagementPrincipalCount
         - siteManagementPolicies
         - accountIdentifier
         - accountPrincipalIdentifier
@@ -1966,6 +1967,11 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Site management principal for the authenticated identity in the current account.
+        siteManagementPrincipalCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of site management principals with an existing identity belonging to the current effective account. Pending invitations and principals from other accounts are excluded. Zero when there is no account.
         siteManagementPolicies:
           type: array
           items:

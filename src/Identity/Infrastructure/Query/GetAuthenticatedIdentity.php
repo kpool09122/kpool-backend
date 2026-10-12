@@ -165,11 +165,6 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
             accountPrincipalIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->principalIdentifier(),
             accountType: $accountContext?->nullableAccountType()?->value,
-            accountIdentityCount: $accountContext === null ? 0 : AccountPrincipalModel::query()
-                ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
-                ->whereHas('identity')
-                ->distinct()
-                ->count('identity_id'),
             authenticationMethods: new AuthenticationMethodsReadModel(
                 passkeyCount: $model->passkey_credentials_count,
                 linkedSocialProviders: $model->linked_social_providers,
@@ -183,6 +178,15 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             switchableAccounts: $switchableAccounts,
             siteManagementPrincipalIdentifier: $siteManagementPrincipal?->id,
             siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
+            accountIdentityCount: $accountContext === null ? 0 : AccountPrincipalModel::query()
+                ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+                ->whereHas('identity')
+                ->distinct()
+                ->count('identity_id'),
+            siteManagementPrincipalCount: $accountContext === null ? 0 : SiteManagementPrincipalModel::query()
+                ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+                ->whereHas('identity')
+                ->count(),
         );
     }
 

@@ -44,6 +44,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $empty = $query->process($input);
         $this->assertNull($empty->siteManagementPrincipalIdentifier());
         $this->assertSame(0, $empty->accountIdentityCount());
+        $this->assertSame(0, $empty->siteManagementPrincipalCount());
         $this->assertSame([], $empty->siteManagementPolicies());
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $account);
@@ -55,6 +56,20 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertNotNull($principal);
         $this->assertSame((string) $principal->principalIdentifier(), $general->siteManagementPrincipalIdentifier());
         $this->assertSame('own_contact', $general->siteManagementPolicies()[0]['statements'][0]['condition']);
+        $this->assertSame(1, $general->siteManagementPrincipalCount());
+        $secondIdentity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($secondIdentity, ['email' => 'second@example.com']);
+        DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'identity_id' => (string) $secondIdentity, 'account_id' => (string) $account]);
+        $accountOnly = $query->process($input);
+        $this->assertSame(2, $accountOnly->accountIdentityCount());
+        $this->assertSame(1, $accountOnly->siteManagementPrincipalCount());
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($secondIdentity, $account), new ProvisionPrincipalOutput());
+        $otherAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $otherAccount, ['email' => 'other-account@example.com']);
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($secondIdentity, $otherAccount), new ProvisionPrincipalOutput());
+        $multiple = $query->process($input);
+        $this->assertSame(2, $multiple->siteManagementPrincipalCount());
+        $this->assertSame(2, $multiple->toArray()['siteManagementPrincipalCount']);
         SiteManagementAuthorization::grantOperator($principal);
         $admin = $query->process($input);
         $this->assertCount(2, $admin->siteManagementPolicies());
