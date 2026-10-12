@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Application\EventHandler;
 
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -65,6 +66,7 @@ readonly class AffiliationActivatedHandler
             "Affiliation - Agency {$event->agencyAccountName()}",
             false,
         );
+        $principalGroup->setDescription(new PrincipalGroupDescription('Grants Wiki permissions associated with the approved agency-talent affiliation.'));
         $this->principalGroupRepository->save($principalGroup);
 
         if ($event->talentAccountType() === AccountType::INDIVIDUAL) {
@@ -126,6 +128,7 @@ readonly class AffiliationActivatedHandler
             "Affiliation - Talent {$event->talentAccountName()}",
             false,
         );
+        $principalGroup->setDescription(new PrincipalGroupDescription('Grants Wiki permissions associated with the approved agency-talent affiliation.'));
         $this->principalGroupRepository->save($principalGroup);
 
         // Policy 作成（Talent に対する権限）

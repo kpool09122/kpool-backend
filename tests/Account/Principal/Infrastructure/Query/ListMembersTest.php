@@ -81,6 +81,7 @@ class ListMembersTest extends TestCase
             [
                 'principalGroupIdentifier' => $principalGroupId,
                 'name' => 'Owners',
+                'description' => null,
                 'isDefault' => true,
             ],
         ], $members[0]->toArray()['principalGroups']);

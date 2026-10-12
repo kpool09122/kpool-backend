@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Principal\Domain\Entity;
 
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
@@ -22,12 +23,23 @@ class PrincipalGroup
         private array $roles,
         private readonly AccountIdentifier $accountIdentifier,
         private readonly bool $isDefault = false,
+        private ?PrincipalGroupDescription $description = null,
     ) {
     }
 
     public function principalGroupIdentifier(): PrincipalGroupIdentifier
     {
         return $this->principalGroupIdentifier;
+    }
+
+    public function description(): ?PrincipalGroupDescription
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?PrincipalGroupDescription $description): void
+    {
+        $this->description = $description;
     }
 
     public function name(): string

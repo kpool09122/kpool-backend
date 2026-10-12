@@ -33,6 +33,7 @@ return new class extends Migration
             $table->uuid('account_id')->index()->comment('アカウントID');
             $table->uuid('delegation_id')->nullable()->unique()->comment('委譲ID');
             $table->string('name', 100)->comment('グループ名');
+            $table->string('description', 256)->nullable();
             $table->boolean('is_default')->default(false)->comment('デフォルトグループかどうか');
             $table->timestamps();
 

@@ -36,6 +36,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             principalGroupIdentifier: $group->id,
             accountIdentifier: $group->account_id,
             name: $group->name,
+            description: $group->description,
             roleIdentifiers: $group->roleAttachments->map(static fn ($attachment): string => $attachment->role_id)->values()->all(),
             isDefault: $group->is_default,
             members: $group->members

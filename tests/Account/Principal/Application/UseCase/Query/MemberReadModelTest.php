@@ -65,6 +65,7 @@ class MemberReadModelTest extends TestCase
                 [
                     'principalGroupIdentifier' => $principalGroupIdentifier,
                     'name' => 'Administrators',
+                    'description' => null,
                     'isDefault' => true,
                 ],
             ],

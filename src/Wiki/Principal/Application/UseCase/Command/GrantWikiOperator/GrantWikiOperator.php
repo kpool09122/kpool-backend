@@ -15,6 +15,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as A
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Application\Exception\OperationsPermissionRequiredException;
 use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
@@ -100,6 +101,7 @@ readonly class GrantWikiOperator implements GrantWikiOperatorInterface
                 self::OPERATOR_GROUP_NAME,
                 false,
             );
+            $principalGroup->setDescription(new PrincipalGroupDescription('Operates Wiki content, reviews official certifications, and manages media.'));
         }
 
         $principalGroup->addRole($operatorRole);

@@ -6,6 +6,7 @@ namespace Tests\SiteManagement\Principal\Infrastructure\Repository;
 
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalGroupRepository;
@@ -16,6 +17,23 @@ use Tests\TestCase;
 #[Group('useDb')]
 class PrincipalGroupRepositoryTest extends TestCase
 {
+    public function testDescriptionSurvivesSaveAndReloadAndCanBeCleared(): void
+    {
+        $accountIdentifier = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
+        $principalGroup = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), 'Description Test', [], $accountIdentifier);
+        $principalGroupRepository = new PrincipalGroupRepository();
+        $principalGroup->setDescription(new PrincipalGroupDescription('Manages group memberships.'));
+        $principalGroupRepository->save($principalGroup);
+        $restored = $principalGroupRepository->findById($principalGroup->principalGroupIdentifier());
+        self::assertNotNull($restored);
+        self::assertSame('Manages group memberships.', (string) $restored->description());
+        $principalGroupRepository->save($restored);
+        self::assertSame('Manages group memberships.', (string) $principalGroupRepository->findById($principalGroup->principalGroupIdentifier())?->description());
+        $restored->setDescription(null);
+        $principalGroupRepository->save($restored);
+        self::assertNull($principalGroupRepository->findById($principalGroup->principalGroupIdentifier())?->description());
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

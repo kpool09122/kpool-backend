@@ -7,6 +7,7 @@ namespace Source\Wiki\Principal\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -31,6 +32,7 @@ class PrincipalGroup
         private readonly bool $isDefault,
         private readonly DateTimeImmutable $createdAt,
         array $roles = [],
+        private ?PrincipalGroupDescription $description = null,
     ) {
         $this->roles = $roles;
     }
@@ -43,6 +45,16 @@ class PrincipalGroup
     public function accountIdentifier(): AccountIdentifier
     {
         return $this->accountIdentifier;
+    }
+
+    public function description(): ?PrincipalGroupDescription
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?PrincipalGroupDescription $description): void
+    {
+        $this->description = $description;
     }
 
     public function name(): string

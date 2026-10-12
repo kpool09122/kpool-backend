@@ -20,6 +20,7 @@ class CreatePrincipalGroupRequest extends FormRequest
         return [
             'accountIdentifier' => ['required', 'uuid'],
             'name' => ['required', 'string'],
+            'description' => ['nullable', 'string', 'max:256'],
         ];
     }
 
@@ -31,5 +32,12 @@ class CreatePrincipalGroupRequest extends FormRequest
     public function name(): string
     {
         return RequestValue::string($this->input('name'));
+    }
+
+    public function description(): ?string
+    {
+        $description = $this->input('description');
+
+        return $description === null ? null : RequestValue::string($description);
     }
 }

@@ -24,6 +24,7 @@ class PrincipalGroupReadModelTest extends TestCase
             principalGroupIdentifier: $principalGroupIdentifier,
             accountIdentifier: $accountIdentifier,
             name: 'Administrators',
+            description: 'Manages group memberships.',
             roleIdentifiers: [$roleIdentifier],
             isDefault: false,
             members: $members,
@@ -39,6 +40,7 @@ class PrincipalGroupReadModelTest extends TestCase
             'principalGroupIdentifier' => $principalGroupIdentifier,
             'accountIdentifier' => $accountIdentifier,
             'name' => 'Administrators',
+            'description' => 'Manages group memberships.',
             'roleIdentifiers' => [$roleIdentifier],
             'isDefault' => false,
             'members' => [[

@@ -22,6 +22,7 @@ class MemberPrincipalGroupReadModelTest extends TestCase
         $this->assertSame([
             'principalGroupIdentifier' => $principalGroupIdentifier,
             'name' => 'Administrators',
+            'description' => null,
             'isDefault' => true,
         ], $readModel->toArray());
     }

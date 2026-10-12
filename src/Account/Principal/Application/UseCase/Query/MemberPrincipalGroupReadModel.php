@@ -10,15 +10,17 @@ readonly class MemberPrincipalGroupReadModel
         private string $principalGroupIdentifier,
         private string $name,
         private bool $isDefault,
+        private ?string $description = null,
     ) {
     }
 
-    /** @return array{principalGroupIdentifier: string, name: string, isDefault: bool} */
+    /** @return array{principalGroupIdentifier: string, name: string, description: string|null, isDefault: bool} */
     public function toArray(): array
     {
         return [
             'principalGroupIdentifier' => $this->principalGroupIdentifier,
             'name' => $this->name,
+            'description' => $this->description,
             'isDefault' => $this->isDefault,
         ];
     }

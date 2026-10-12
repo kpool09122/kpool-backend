@@ -17,6 +17,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\ContactAddress;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 
 readonly class CreateAccount implements CreateAccountInterface
 {
@@ -62,12 +63,14 @@ readonly class CreateAccount implements CreateAccountInterface
             self::DEFAULT_GROUP_NAME,
             true,
         );
+        $defaultPrincipalGroup->setDescription(new PrincipalGroupDescription('Default group for account users. No special operations are permitted by default.'));
 
         $ownerPrincipalGroup = $this->principalGroupFactory->create(
             $account->accountIdentifier(),
             self::OWNER_GROUP_NAME,
             false,
         );
+        $ownerPrincipalGroup->setDescription(new PrincipalGroupDescription('Owns this account and manages account settings, members, permissions, affiliations, and delegations.'));
 
         $ownerRole = $this->roleRepository->findSystemByName(Role::OWNER);
         if ($ownerRole === null) {
@@ -83,6 +86,7 @@ readonly class CreateAccount implements CreateAccountInterface
             );
             $this->principalRepository->save($principal);
             $ownerPrincipalGroup->addMember($principal->principalIdentifier());
+            $defaultPrincipalGroup->addMember($principal->principalIdentifier());
         }
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);

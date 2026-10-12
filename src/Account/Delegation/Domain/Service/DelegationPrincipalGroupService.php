@@ -21,6 +21,7 @@ use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 
 readonly class DelegationPrincipalGroupService implements DelegationPrincipalGroupServiceInterface
 {
@@ -85,6 +86,7 @@ readonly class DelegationPrincipalGroupService implements DelegationPrincipalGro
             false,
             $delegation->delegationIdentifier(),
         );
+        $principalGroup->setDescription(new PrincipalGroupDescription('Acts on behalf of this account within the permissions granted by its delegation.'));
         $principalGroup->addRole($role);
         $this->principalGroupRepository->save($principalGroup);
     }

@@ -72,6 +72,7 @@ class ListPrincipalGroupsTest extends TestCase
             'principalGroupIdentifier' => (string) $firstGroupIdentifier,
             'accountIdentifier' => (string) $accountIdentifier,
             'name' => 'Admins',
+            'description' => null,
             'roleIdentifiers' => [(string) $roleIdentifier],
             'isDefault' => true,
             'members' => [[

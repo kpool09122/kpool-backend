@@ -2508,6 +2508,11 @@ components:
         name:
           type: string
           description: Principal group name.
+        description:
+          type: string
+          nullable: true
+          maxLength: 256
+          description: Description of the permissions granted by this group.
       description: Request body for creating an principal group.
     CreatedPrincipalGroupSummary:
       type: object
@@ -2805,6 +2810,11 @@ components:
         name:
           type: string
           description: Principal group name.
+        description:
+          type: string
+          nullable: true
+          maxLength: 256
+          description: Description of the permissions granted by this group.
         isDefault:
           type: boolean
           description: Whether this is the default principal group.
@@ -2862,6 +2872,11 @@ components:
         name:
           type: string
           description: Principal group name.
+        description:
+          type: string
+          nullable: true
+          maxLength: 256
+          description: Description of the permissions granted by this group.
         roleIdentifiers:
           type: array
           items:

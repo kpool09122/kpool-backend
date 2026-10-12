@@ -17,7 +17,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
     }
 
     /**
-     * @return array{}|array{principalGroupIdentifier: string, accountIdentifier: string, name: string, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}
+     * @return array{}|array{principalGroupIdentifier: string, accountIdentifier: string, name: string, description: string|null, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}
      */
     public function toArray(): array
     {
@@ -31,6 +31,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
             'principalGroupIdentifier' => (string) $ig->principalGroupIdentifier(),
             'accountIdentifier' => (string) $ig->accountIdentifier(),
             'name' => $ig->name(),
+            'description' => $ig->description() !== null ? (string) $ig->description() : null,
             'roleIdentifiers' => array_map(static fn ($roleIdentifier): string => (string) $roleIdentifier, $ig->roles()),
             'isDefault' => $ig->isDefault(),
             'members' => array_map(

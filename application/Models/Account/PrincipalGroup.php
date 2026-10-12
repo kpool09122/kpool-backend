@@ -16,6 +16,7 @@ use Override;
  * @property string $id
  * @property string $account_id
  * @property string|null $delegation_id
+ * @property string|null $description
  * @property string $name
  * @property bool $is_default
  * @property Carbon $created_at
@@ -28,6 +29,7 @@ use Override;
     'account_id',
     'delegation_id',
     'name',
+    'description',
     'is_default',
 ])]
 #[Table(name: 'account_principal_groups', keyType: 'string')]

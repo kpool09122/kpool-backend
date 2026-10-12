@@ -9,6 +9,9 @@ model CreatePrincipalGroupRequestBody {
   accountIdentifier: Uuid;
   @doc("Principal group name.")
   name: string;
+  @doc("Description of the permissions granted by this group.")
+  @maxLength(256)
+  description?: string | null;
 }
 
 @doc("Request body for mutating principal group membership.")

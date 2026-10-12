@@ -9,6 +9,7 @@ use Source\Account\Principal\Domain\Entity\Role as AccountRole;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface as AccountPrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyExistsException;
@@ -60,12 +61,15 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
         $this->principalRepository->save($principal);
 
-        $initialPrincipalGroup = $this->isAccountOwner($input)
-            ? $this->findOrCreateWikiAdministratorPrincipalGroup($input)
-            : $this->findOrCreateDefaultPrincipalGroup($input);
+        if ($this->isAccountOwner($input)) {
+            $administratorGroup = $this->findOrCreateWikiAdministratorPrincipalGroup($input);
+            $administratorGroup->addMember($principal->principalIdentifier());
+            $this->principalGroupRepository->save($administratorGroup);
+        }
 
-        $initialPrincipalGroup->addMember($principal->principalIdentifier());
-        $this->principalGroupRepository->save($initialPrincipalGroup);
+        $defaultGroup = $this->findOrCreateDefaultPrincipalGroup($input);
+        $defaultGroup->addMember($principal->principalIdentifier());
+        $this->principalGroupRepository->save($defaultGroup);
 
         $output->setPrincipal($principal);
     }
@@ -82,11 +86,9 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             self::DEFAULT_PRINCIPAL_GROUP_NAME,
             true,
         );
+        $defaultPrincipalGroup->setDescription(new PrincipalGroupDescription('Creates and edits Wiki drafts, submits them for review, and deletes or withdraws their own drafts.'));
 
-        $role = $this->roleRepository->findSystemByName(self::COLLABORATOR_ROLE);
-        if ($role !== null) {
-            $defaultPrincipalGroup->addRole($role);
-        }
+        $this->addRequiredRole($defaultPrincipalGroup, self::COLLABORATOR_ROLE);
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);
 
@@ -105,10 +107,10 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
                 self::WIKI_ADMINISTRATOR_PRINCIPAL_GROUP_NAME,
                 false,
             );
+            $wikiAdministratorPrincipalGroup->setDescription(new PrincipalGroupDescription('Manages Wiki user groups and their memberships.'));
         }
 
         $this->addRequiredRole($wikiAdministratorPrincipalGroup, self::WIKI_ADMINISTRATOR_ROLE);
-        $this->addRequiredRole($wikiAdministratorPrincipalGroup, self::COLLABORATOR_ROLE);
         $this->principalGroupRepository->save($wikiAdministratorPrincipalGroup);
 
         return $wikiAdministratorPrincipalGroup;

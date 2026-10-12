@@ -19,6 +19,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Symfony\Component\Uid\Uuid;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
@@ -37,7 +38,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
                 'delegation_id' => $principalGroup->delegationIdentifier() !== null
                     ? (string) $principalGroup->delegationIdentifier()
                     : null,
-                'name' => $principalGroup->name(),
+                'name' => $principalGroup->name(), 'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null,
                 'is_default' => $principalGroup->isDefault(),
             ]
         );
@@ -254,6 +255,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
             $roles,
             $eloquent->delegation_id !== null ? new DelegationIdentifier($eloquent->delegation_id) : null,
+            description: $eloquent->description === null ? null : new PrincipalGroupDescription($eloquent->description),
         );
 
         foreach ($eloquent->members as $member) {
