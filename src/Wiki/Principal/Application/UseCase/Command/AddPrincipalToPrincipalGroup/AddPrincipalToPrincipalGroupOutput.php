@@ -17,7 +17,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
     }
 
     /**
-     * @return array{principalGroupIdentifier: ?string, accountIdentifier: ?string, name: ?string, isDefault: ?bool, memberCount: ?int, createdAt: ?string}
+     * @return array{principalGroupIdentifier: ?string, accountIdentifier: ?string, name: ?string, description: ?string, isDefault: ?bool, memberCount: ?int, createdAt: ?string}
      */
     public function toArray(): array
     {
@@ -26,6 +26,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
                 'principalGroupIdentifier' => null,
                 'accountIdentifier' => null,
                 'name' => null,
+                'description' => null,
                 'isDefault' => null,
                 'memberCount' => null,
                 'createdAt' => null,
@@ -36,6 +37,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
             'principalGroupIdentifier' => (string) $this->principalGroup->principalGroupIdentifier(),
             'accountIdentifier' => (string) $this->principalGroup->accountIdentifier(),
             'name' => $this->principalGroup->name(),
+            'description' => $this->principalGroup->description() !== null ? (string) $this->principalGroup->description() : null,
             'isDefault' => $this->principalGroup->isDefault(),
             'memberCount' => $this->principalGroup->memberCount(),
             'createdAt' => $this->principalGroup->createdAt()->format(DateTimeInterface::ATOM),

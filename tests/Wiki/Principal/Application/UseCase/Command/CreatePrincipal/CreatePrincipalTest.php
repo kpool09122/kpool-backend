@@ -248,6 +248,10 @@ class CreatePrincipalTest extends TestCase
         $this->assertSame((string) $principalIdentifier, $output->toArray()['principalIdentifier']);
         $this->assertTrue($wikiAdministratorPrincipalGroup->hasRole($wikiAdministratorRoleIdentifier));
         $this->assertFalse($wikiAdministratorPrincipalGroup->hasRole($collaboratorRoleIdentifier));
+        $this->assertNotEmpty((string) $wikiAdministratorPrincipalGroup->description());
+        if (! $hasDefaultGroup) {
+            $this->assertNotEmpty((string) $defaultGroup->description());
+        }
         $this->assertTrue($defaultGroup->hasRole($collaboratorRoleIdentifier));
         $this->assertTrue($defaultGroup->hasMember($principalIdentifier));
         $this->assertTrue($wikiAdministratorPrincipalGroup->hasMember($principalIdentifier));

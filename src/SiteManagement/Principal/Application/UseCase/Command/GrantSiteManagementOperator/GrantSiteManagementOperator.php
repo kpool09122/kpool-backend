@@ -15,6 +15,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as A
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\SiteManagement\Principal\Application\Exception\OperationsPermissionRequiredException;
 use Source\SiteManagement\Principal\Application\Exception\OperatorGroupIsDefaultException;
 use Source\SiteManagement\Principal\Application\Exception\PrincipalNotFoundException;
@@ -102,6 +103,7 @@ readonly class GrantSiteManagementOperator implements GrantSiteManagementOperato
                 $account->accountIdentifier(),
                 false,
             );
+            $principalGroup->setDescription(new PrincipalGroupDescription('Creates and publishes announcements, and views and replies to inquiries.'));
         }
 
         if ($principalGroup->isDefault()) {

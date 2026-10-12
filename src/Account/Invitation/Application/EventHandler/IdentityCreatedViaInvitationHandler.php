@@ -17,6 +17,7 @@ use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Exception\MissingLifecycleTimestampException;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 
 readonly class IdentityCreatedViaInvitationHandler
 {
@@ -56,6 +57,7 @@ readonly class IdentityCreatedViaInvitationHandler
                 self::DEFAULT_GROUP_NAME,
                 true,
             );
+            $defaultGroup->setDescription(new PrincipalGroupDescription('Default group for account users. No special operations are permitted by default.'));
         }
 
         $principal = $this->principalFactory->create(

@@ -15,6 +15,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 
 readonly class GrantOperations implements GrantOperationsInterface
 {
@@ -64,6 +65,7 @@ readonly class GrantOperations implements GrantOperationsInterface
                 self::OPERATIONS_GROUP_NAME,
                 false,
             );
+            $principalGroup->setDescription(new PrincipalGroupDescription('Reviews and manages account category change requests.'));
         }
         $principalGroup->addRole($operationsRole);
 

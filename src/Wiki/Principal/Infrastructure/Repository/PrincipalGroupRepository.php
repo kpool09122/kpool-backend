@@ -13,6 +13,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -34,7 +35,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ['id' => (string) $principalGroup->principalGroupIdentifier()],
             [
                 'account_id' => (string) $principalGroup->accountIdentifier(),
-                'name' => $principalGroup->name(),
+                'name' => $principalGroup->name(), 'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null,
                 'is_default' => $principalGroup->isDefault(),
             ]
         );
@@ -240,6 +241,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             $eloquent->is_default,
             new DateTimeImmutable(($eloquent->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeString()),
             $roles,
+            description: $eloquent->description === null ? null : new PrincipalGroupDescription($eloquent->description),
         );
 
         foreach ($eloquent->memberships as $membership) {

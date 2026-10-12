@@ -18,6 +18,7 @@ use Override;
  * @property string $id
  * @property string $account_id
  * @property bool $is_default
+ * @property string|null $description
  * @property string $name
  * @property-read Account|null $account
  * @property ?Carbon $created_at
@@ -29,6 +30,7 @@ use Override;
     'id',
     'account_id',
     'name',
+    'description',
     'is_default',
 ])]
 #[Table(name: 'site_management_principal_groups', keyType: 'string')]

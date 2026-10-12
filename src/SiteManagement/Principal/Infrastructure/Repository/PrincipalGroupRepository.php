@@ -8,6 +8,7 @@ use Application\Models\SiteManagement\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\SiteManagement\PrincipalGroupMembership as MembershipEloquent;
 use Application\Models\SiteManagement\PrincipalGroupRoleAttachment as AttachmentEloquent;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -23,7 +24,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             return null;
         }
         $roles = AttachmentEloquent::query()->where('principal_group_id', $model->id)->get()->map(static fn (AttachmentEloquent $attachment): RoleIdentifier => new RoleIdentifier($attachment->role_id))->all();
-        $group = new PrincipalGroup($principalGroupIdentifier, $model->name, $roles, new AccountIdentifier($model->account_id), $model->is_default);
+        $group = new PrincipalGroup($principalGroupIdentifier, $model->name, $roles, new AccountIdentifier($model->account_id), $model->is_default, $model->description === null ? null : new PrincipalGroupDescription($model->description));
         $group->replaceMembers(MembershipEloquent::query()->where('principal_group_id', $model->id)->get()->map(static fn (MembershipEloquent $membership): PrincipalIdentifier => new PrincipalIdentifier($membership->principal_id))->all());
 
         return $group;
@@ -50,7 +51,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     public function save(PrincipalGroup $principalGroup): void
     {
-        PrincipalGroupEloquent::query()->updateOrCreate(['id' => (string) $principalGroup->principalGroupIdentifier()], ['name' => $principalGroup->name(), 'account_id' => (string) $principalGroup->accountIdentifier(), 'is_default' => $principalGroup->isDefault()]);
+        PrincipalGroupEloquent::query()->updateOrCreate(['id' => (string) $principalGroup->principalGroupIdentifier()], ['name' => $principalGroup->name(), 'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null, 'account_id' => (string) $principalGroup->accountIdentifier(), 'is_default' => $principalGroup->isDefault()]);
         AttachmentEloquent::query()->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())->delete();
         foreach ($principalGroup->roles() as $identifier) {
             AttachmentEloquent::query()->insert(['principal_group_id' => (string) $principalGroup->principalGroupIdentifier(), 'role_id' => (string) $identifier]);

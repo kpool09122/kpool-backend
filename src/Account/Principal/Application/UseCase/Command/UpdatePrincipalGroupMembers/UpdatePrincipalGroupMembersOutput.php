@@ -18,7 +18,7 @@ class UpdatePrincipalGroupMembersOutput implements UpdatePrincipalGroupMembersOu
         $this->principalGroups = $principalGroups;
     }
 
-    /** @return array{principalGroups: array<int, array{principalGroupIdentifier: string, accountIdentifier: string, name: string, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}>} */
+    /** @return array{principalGroups: array<int, array{principalGroupIdentifier: string, accountIdentifier: string, name: string, description: string|null, roleIdentifiers: array<string>, isDefault: bool, members: list<string>}>} */
     public function toArray(): array
     {
         return [
@@ -26,6 +26,7 @@ class UpdatePrincipalGroupMembersOutput implements UpdatePrincipalGroupMembersOu
                 'principalGroupIdentifier' => (string) $principalGroup->principalGroupIdentifier(),
                 'accountIdentifier' => (string) $principalGroup->accountIdentifier(),
                 'name' => $principalGroup->name(),
+                'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null,
                 'roleIdentifiers' => array_map(static fn ($roleIdentifier): string => (string) $roleIdentifier, $principalGroup->roles()),
                 'isDefault' => $principalGroup->isDefault(),
                 'members' => array_map(

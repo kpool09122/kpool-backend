@@ -12,6 +12,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -29,6 +30,25 @@ use Tests\TestCase;
 
 class PrincipalGroupRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testDescriptionSurvivesSaveAndReloadAndCanBeCleared(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
+        $principalGroup = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $accountIdentifier, 'Description Test', false, new DateTimeImmutable());
+        $principalGroupRepository = $this->app()->make(PrincipalGroupRepositoryInterface::class);
+        $principalGroup->setDescription(new PrincipalGroupDescription('Manages group memberships.'));
+        $principalGroupRepository->save($principalGroup);
+        $restored = $principalGroupRepository->findById($principalGroup->principalGroupIdentifier());
+        self::assertNotNull($restored);
+        self::assertSame('Manages group memberships.', (string) $restored->description());
+        $principalGroupRepository->save($restored);
+        self::assertSame('Manages group memberships.', (string) $principalGroupRepository->findById($principalGroup->principalGroupIdentifier())?->description());
+        $restored->setDescription(null);
+        $principalGroupRepository->save($restored);
+        self::assertNull($principalGroupRepository->findById($principalGroup->principalGroupIdentifier())?->description());
+    }
+
     /**
      * 正常系: DIが正しく動作すること.
      *

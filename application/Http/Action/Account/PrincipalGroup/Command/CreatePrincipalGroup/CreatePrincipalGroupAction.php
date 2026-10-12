@@ -14,6 +14,7 @@ use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\Cr
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupOutput;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
@@ -38,6 +39,7 @@ readonly class CreatePrincipalGroupAction
                 $input = new CreatePrincipalGroupInput(
                     accountIdentifier: new AccountIdentifier($request->accountIdentifier()),
                     name: $request->name(),
+                    description: $request->description() === null ? null : new PrincipalGroupDescription($request->description()),
                 );
                 $output = new CreatePrincipalGroupOutput();
             } catch (InvalidArgumentException|ValueError $e) {

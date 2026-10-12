@@ -46,7 +46,7 @@ readonly class ListMembers implements ListMembersInterface
                         return null;
                     }
 
-                    return new MemberPrincipalGroupReadModel($principalGroup->id, $principalGroup->name, $principalGroup->is_default);
+                    return new MemberPrincipalGroupReadModel($principalGroup->id, $principalGroup->name, $principalGroup->is_default, $principalGroup->description);
                 })
                 ->filter()
                 ->values()

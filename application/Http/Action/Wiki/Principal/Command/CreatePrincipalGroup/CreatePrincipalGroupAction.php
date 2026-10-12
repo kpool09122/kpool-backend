@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupOutput;
@@ -35,6 +36,7 @@ readonly class CreatePrincipalGroupAction
                 $input = new CreatePrincipalGroupInput(
                     new AccountIdentifier($request->accountIdentifier()),
                     $request->name(),
+                    $request->description() === null ? null : new PrincipalGroupDescription($request->description()),
                 );
                 $output = new CreatePrincipalGroupOutput();
             } catch (InvalidArgumentException $e) {

@@ -13,6 +13,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 
 class PrincipalGroup
 {
@@ -33,6 +34,7 @@ class PrincipalGroup
         private readonly DateTimeImmutable $createdAt,
         array $roles = [],
         private readonly ?DelegationIdentifier $delegationIdentifier = null,
+        private ?PrincipalGroupDescription $description = null,
     ) {
         $this->roles = $roles;
     }
@@ -50,6 +52,16 @@ class PrincipalGroup
     public function accountIdentifier(): AccountIdentifier
     {
         return $this->accountIdentifier;
+    }
+
+    public function description(): ?PrincipalGroupDescription
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?PrincipalGroupDescription $description): void
+    {
+        $this->description = $description;
     }
 
     public function name(): string

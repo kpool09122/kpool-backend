@@ -25,6 +25,7 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
             'principalGroupIdentifier' => '019c9b4c-0000-7000-8000-000000000001',
             'accountIdentifier' => '019c9b4c-0000-7000-8000-000000000002',
             'name' => 'Editors',
+            'description' => null,
             'isDefault' => false,
             'memberCount' => 1,
             'createdAt' => '2026-10-03T01:02:03+00:00',

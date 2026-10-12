@@ -9,6 +9,7 @@ use Source\Account\Principal\Domain\Entity\Role as AccountRole;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface as AccountPrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\SiteManagement\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -76,13 +77,19 @@ readonly class ProvisionPrincipal implements ProvisionPrincipalInterface
         $role = $this->roleRepository->findSystemByName(self::GENERAL_ROLE_NAME)
             ?? throw new SystemRoleNotFoundException(self::GENERAL_ROLE_NAME);
 
-        return $this->principalGroupFactory->create(self::DEFAULT_PRINCIPAL_GROUP_NAME, [$role->roleIdentifier()], $input->accountIdentifier(), true);
+        $group = $this->principalGroupFactory->create(self::DEFAULT_PRINCIPAL_GROUP_NAME, [$role->roleIdentifier()], $input->accountIdentifier(), true);
+        $group->setDescription(new PrincipalGroupDescription('Views their own inquiries.'));
+
+        return $group;
     }
 
     private function administratorGroup(ProvisionPrincipalInputPort $input): PrincipalGroup
     {
-        $group = $this->principalGroupRepository->findByAccountIdAndName($input->accountIdentifier(), self::ADMINISTRATOR_GROUP_NAME)
-            ?? $this->principalGroupFactory->create(self::ADMINISTRATOR_GROUP_NAME, [], $input->accountIdentifier(), false);
+        $group = $this->principalGroupRepository->findByAccountIdAndName($input->accountIdentifier(), self::ADMINISTRATOR_GROUP_NAME);
+        if ($group === null) {
+            $group = $this->principalGroupFactory->create(self::ADMINISTRATOR_GROUP_NAME, [], $input->accountIdentifier(), false);
+            $group->setDescription(new PrincipalGroupDescription('Manages site management user groups and their memberships.'));
+        }
         $role = $this->roleRepository->findSystemByName(self::ADMINISTRATOR_ROLE_NAME)
             ?? throw new SystemRoleNotFoundException(self::ADMINISTRATOR_ROLE_NAME);
         $group->addRole($role);

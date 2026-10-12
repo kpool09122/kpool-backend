@@ -23,6 +23,7 @@ readonly class CreatePrincipalGroup implements CreatePrincipalGroupInterface
             false,
         );
 
+        $principalGroup->setDescription($input->description());
         $this->principalGroupRepository->save($principalGroup);
 
         $output->setPrincipalGroup($principalGroup);

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('PrincipalGroup ID');
             $table->uuid('account_id')->comment('Account ID');
             $table->string('name', 255)->comment('グループ名');
+            $table->string('description', 256)->nullable();
             $table->boolean('is_default')->default(false)->comment('Default PrincipalGroup かどうか');
             $table->timestamps();
 

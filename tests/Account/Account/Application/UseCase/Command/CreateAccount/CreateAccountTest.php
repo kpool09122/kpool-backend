@@ -166,6 +166,8 @@ class CreateAccountTest extends TestCase
         $this->assertSame($testData->accountType->value, $result['type']);
         $this->assertSame((string) $testData->accountName, $result['name']);
         $this->assertTrue($testData->defaultPrincipalGroup->hasMember($testData->principalIdentifier));
+        $this->assertNotEmpty((string) $testData->defaultPrincipalGroup->description());
+        $this->assertNotEmpty((string) $testData->ownerPrincipalGroup->description());
         $this->assertTrue($testData->ownerPrincipalGroup->hasMember($testData->principalIdentifier));
         $this->assertTrue($testData->ownerPrincipalGroup->hasRole($testData->ownerRole->roleIdentifier()));
     }

@@ -130,6 +130,10 @@ class ProvisionPrincipalTest extends TestCase
         self::assertTrue($administratorGroup->hasMember($principal->principalIdentifier()));
         self::assertSame([$generalRole->roleIdentifier()], $generalGroup->roles());
         self::assertSame([$administratorRole->roleIdentifier()], $administratorGroup->roles());
+        self::assertNotEmpty((string) $administratorGroup->description());
+        if (! $hasDefaultGroup) {
+            self::assertNotEmpty((string) $generalGroup->description());
+        }
     }
 
     /** @return array<string, array{bool}> */

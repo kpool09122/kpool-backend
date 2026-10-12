@@ -155,6 +155,9 @@ model MemberPrincipalGroupSummary {
   principalGroupIdentifier: Uuid;
   @doc("Principal group name.")
   name: string;
+  @doc("Description of the permissions granted by this group.")
+  @maxLength(256)
+  description?: string | null;
   @doc("Whether this is the default principal group.")
   isDefault: boolean;
 }
@@ -205,6 +208,9 @@ model PrincipalGroupSummary {
   accountIdentifier: Uuid;
   @doc("Principal group name.")
   name: string;
+  @doc("Description of the permissions granted by this group.")
+  @maxLength(256)
+  description?: string | null;
   @doc("Role identifiers attached to the principal group.")
   roleIdentifiers: Uuid[];
   @doc("Whether this is the default principal group.")

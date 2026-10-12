@@ -24,6 +24,7 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->uuid('account_id');
             $table->string('name');
+            $table->string('description', 256)->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamps();
             $table->unique(['account_id', 'name']);

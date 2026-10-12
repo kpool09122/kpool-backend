@@ -9,6 +9,7 @@ use Source\Account\Principal\Domain\Entity\Role as AccountRole;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface as AccountPrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Application\Exception\SystemRoleNotFoundException;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyExistsException;
@@ -85,6 +86,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
             self::DEFAULT_PRINCIPAL_GROUP_NAME,
             true,
         );
+        $defaultPrincipalGroup->setDescription(new PrincipalGroupDescription('Creates and edits Wiki drafts, submits them for review, and deletes or withdraws their own drafts.'));
 
         $this->addRequiredRole($defaultPrincipalGroup, self::COLLABORATOR_ROLE);
 
@@ -105,6 +107,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
                 self::WIKI_ADMINISTRATOR_PRINCIPAL_GROUP_NAME,
                 false,
             );
+            $wikiAdministratorPrincipalGroup->setDescription(new PrincipalGroupDescription('Manages Wiki user groups and their memberships.'));
         }
 
         $this->addRequiredRole($wikiAdministratorPrincipalGroup, self::WIKI_ADMINISTRATOR_ROLE);

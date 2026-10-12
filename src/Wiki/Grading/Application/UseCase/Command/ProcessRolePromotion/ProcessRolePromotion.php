@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Grading\Domain\Entity\DemotionWarning;
 use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
 use Source\Wiki\Grading\Domain\Facotory\DemotionWarningFactoryInterface;
@@ -328,6 +329,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                         self::SENIOR_COLLABORATOR_GROUP_NAME,
                         false,
                     );
+                    $seniorCollaboratorGroup->setDescription(new PrincipalGroupDescription('Reviews, translates, and publishes Wiki content. Rollback is not permitted.'));
                     $seniorCollaboratorGroup->addRole($seniorCollaboratorRole);
                 }
 

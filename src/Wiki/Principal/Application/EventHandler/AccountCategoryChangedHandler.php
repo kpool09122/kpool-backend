@@ -8,6 +8,7 @@ use RuntimeException;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -53,6 +54,7 @@ readonly class AccountCategoryChangedHandler
                 $groupName,
                 false,
             );
+            $principalGroup->setDescription(new PrincipalGroupDescription($event->newAccountCategory() === AccountCategory::AGENCY ? 'Manages agency Wiki content, media reviews, and official certifications for this agency account.' : 'Manages talent Wiki content, media reviews, and official certifications for this talent account.'));
         }
 
         $principalGroup->addRole($role);

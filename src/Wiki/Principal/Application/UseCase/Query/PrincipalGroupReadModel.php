@@ -17,6 +17,7 @@ readonly class PrincipalGroupReadModel
         private array $roleIdentifiers,
         private bool $isDefault,
         private array $members,
+        private ?string $description = null,
     ) {
     }
 
@@ -28,6 +29,11 @@ readonly class PrincipalGroupReadModel
     public function accountIdentifier(): string
     {
         return $this->accountIdentifier;
+    }
+
+    public function description(): ?string
+    {
+        return $this->description;
     }
 
     public function name(): string
@@ -59,6 +65,7 @@ readonly class PrincipalGroupReadModel
             'principalGroupIdentifier' => $this->principalGroupIdentifier,
             'accountIdentifier' => $this->accountIdentifier,
             'name' => $this->name,
+            'description' => $this->description,
             'roleIdentifiers' => $this->roleIdentifiers,
             'isDefault' => $this->isDefault,
             'members' => array_map(static fn (PrincipalGroupMemberReadModel $member): array => $member->toArray(), $this->members),

@@ -18,7 +18,7 @@ class UpdatePrincipalGroupMembersOutput implements UpdatePrincipalGroupMembersOu
         $this->principalGroups = $principalGroups;
     }
 
-    /** @return array{principalGroups: array<int, array{principalGroupIdentifier: string, accountIdentifier: string, name: string, isDefault: bool, memberCount: int, createdAt: string}>} */
+    /** @return array{principalGroups: array<int, array{principalGroupIdentifier: string, accountIdentifier: string, name: string, description: string|null, isDefault: bool, memberCount: int, createdAt: string}>} */
     public function toArray(): array
     {
         return [
@@ -26,6 +26,7 @@ class UpdatePrincipalGroupMembersOutput implements UpdatePrincipalGroupMembersOu
                 'principalGroupIdentifier' => (string) $principalGroup->principalGroupIdentifier(),
                 'accountIdentifier' => (string) $principalGroup->accountIdentifier(),
                 'name' => $principalGroup->name(),
+                'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null,
                 'isDefault' => $principalGroup->isDefault(),
                 'memberCount' => $principalGroup->memberCount(),
                 'createdAt' => $principalGroup->createdAt()->format(DateTimeInterface::ATOM),
