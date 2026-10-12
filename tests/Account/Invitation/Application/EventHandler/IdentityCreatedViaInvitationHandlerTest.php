@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Account\Invitation\Application\EventHandler;
 
+use Database\Seeders\AccountAuthorizationSeeder;
 use Database\Seeders\SiteManagementAuthorizationSeeder;
 use DateTimeImmutable;
 use DomainException;
@@ -61,6 +62,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
     #[DataProvider('invitationScenarios')]
     public function testRealInvitationListenersProvisionGeneralAndRollback(bool $existing, bool $rollback): void
     {
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
 
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());

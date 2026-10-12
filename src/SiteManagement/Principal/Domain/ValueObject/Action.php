@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Principal\Domain\ValueObject;
 
 enum Action: string
 {
+    case PRINCIPAL_GROUP_MANAGE = 'principal-group:manage';
     case ANNOUNCEMENT_CREATE = 'announcement:create';
     case ANNOUNCEMENT_UPDATE = 'announcement:update';
     case ANNOUNCEMENT_PUBLISH = 'announcement:publish';

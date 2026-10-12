@@ -7,6 +7,7 @@ namespace Tests\Account\Principal\Infrastructure\Service;
 use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
@@ -38,6 +39,56 @@ use Tests\TestCase;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    /** @param Statement[] $statements */
+    #[DataProvider('conditionalPolicyDecisions')]
+    public function testConditionalPolicyDecision(array $statements, ?AccountType $accountType, bool $expected): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = $this->createPrincipal($accountIdentifier);
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), $roleIdentifier);
+        $policy = new Policy(new PolicyIdentifier(StrTestHelper::generateUuid()), 'CONDITIONAL_POLICY', $statements, null, new DateTimeImmutable());
+        $principalGroupRepository = $this->createStub(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->method('findByAccountIdAndPrincipal')->willReturn([$principalGroup]);
+        $roleRepository = $this->createStub(RoleRepositoryInterface::class);
+        $roleRepository->method('findByIds')->willReturn([new Role($roleIdentifier, Role::OWNER, [$policy->policyIdentifier()], null)]);
+        $policyRepository = $this->createStub(PolicyRepositoryInterface::class);
+        $policyRepository->method('findByIds')->willReturn([$policy]);
+
+        self::assertSame($expected, $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository)->evaluate(
+            $principal,
+            Action::INVITE_MEMBER,
+            Resource::account($accountIdentifier, $accountType),
+        ));
+    }
+
+    /** @return iterable<string, array{Statement[], AccountType|null, bool}> */
+    public static function conditionalPolicyDecisions(): iterable
+    {
+        $condition = new Condition([new ConditionClause(ConditionKey::RESOURCE_ACCOUNT_TYPE, ConditionOperator::EQUALS, AccountType::CORPORATION->value)]);
+        $allow = new Statement(Effect::ALLOW, [Action::INVITE_MEMBER], [ResourceType::ACCOUNT]);
+        $deny = new Statement(Effect::DENY, [Action::INVITE_MEMBER], [ResourceType::ACCOUNT]);
+        $conditionalAllow = new Statement(Effect::ALLOW, [Action::INVITE_MEMBER], [ResourceType::ACCOUNT], $condition);
+        $conditionalDeny = new Statement(Effect::DENY, [Action::INVITE_MEMBER], [ResourceType::ACCOUNT], $condition);
+
+        yield 'no allow implicitly denies' => [[], AccountType::CORPORATION, false];
+        yield 'conditional deny after allow takes priority' => [[$allow, $conditionalDeny], AccountType::CORPORATION, false];
+        yield 'conditional deny before allow takes priority' => [[$conditionalDeny, $allow], AccountType::CORPORATION, false];
+        yield 'unmatched deny does not block allow' => [[$conditionalDeny, $allow], AccountType::INDIVIDUAL, true];
+        yield 'deny with missing condition value does not block allow' => [[$allow, $conditionalDeny], null, true];
+        yield 'unconditional deny blocks conditional allow' => [[$conditionalAllow, $deny], AccountType::CORPORATION, false];
+        yield 'unmatched conditional deny alone implicitly denies' => [[$conditionalDeny], AccountType::INDIVIDUAL, false];
+        yield 'deny for another action does not block allow' => [[$allow, new Statement(Effect::DENY, [Action::READ], [ResourceType::ACCOUNT], $condition)], AccountType::CORPORATION, true];
+        foreach ([ConditionOperator::NOT_EQUALS, ConditionOperator::IN, ConditionOperator::NOT_IN] as $operator) {
+            $value = $operator === ConditionOperator::NOT_EQUALS ? AccountType::INDIVIDUAL->value : [AccountType::CORPORATION->value];
+            $statement = new Statement(Effect::ALLOW, [Action::INVITE_MEMBER], [ResourceType::ACCOUNT], new Condition([
+                new ConditionClause(ConditionKey::RESOURCE_ACCOUNT_TYPE, $operator, $value),
+            ]));
+            yield $operator->value . ' evaluates resource value' => [[$statement], AccountType::CORPORATION, $operator !== ConditionOperator::NOT_IN];
+            yield $operator->value . ' rejects missing resource value' => [[$statement], null, false];
+        }
+    }
+
     public function testEvaluateAllowsWhenRolePolicyHasAllowStatement(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());

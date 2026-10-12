@@ -75,18 +75,22 @@ readonly class CreateAccount implements CreateAccountInterface
         }
         $ownerPrincipalGroup->addRole($ownerRole);
 
+        $principal = null;
         if ($input->identityIdentifier() !== null) {
             $principal = $this->principalFactory->create(
                 $input->identityIdentifier(),
                 $account->accountIdentifier(),
             );
             $this->principalRepository->save($principal);
-            $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
             $ownerPrincipalGroup->addMember($principal->principalIdentifier());
         }
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);
         $this->principalGroupRepository->save($ownerPrincipalGroup);
+
+        if ($principal !== null) {
+            $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
+        }
 
         $output->setAccount($account);
     }

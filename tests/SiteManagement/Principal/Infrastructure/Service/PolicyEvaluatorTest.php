@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Principal\Infrastructure\Service;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -15,6 +16,7 @@ use Source\SiteManagement\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Condition;
 use Source\SiteManagement\Principal\Domain\ValueObject\Effect;
 use Source\SiteManagement\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -27,6 +29,81 @@ use Source\SiteManagement\Principal\Infrastructure\Service\PolicyEvaluator;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    /** @param Statement[] $statements */
+    #[DataProvider('policyDecisions')]
+    public function testPolicyDecision(array $statements, Resource $resource, bool $expected): void
+    {
+        $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), $account);
+        $roleId = new RoleIdentifier('00000000-0000-7000-8000-000000000003');
+        $policyId = new PolicyIdentifier('00000000-0000-7000-8000-000000000004');
+        $groups = $this->createStub(PrincipalGroupRepositoryInterface::class);
+        $groups->method('findByPrincipalId')->willReturn([
+            new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'General', [$roleId], $account),
+        ]);
+        $roles = $this->createStub(RoleRepositoryInterface::class);
+        $roles->method('findByIds')->willReturn([new Role($roleId, 'General', [$policyId])]);
+        $policies = $this->createStub(PolicyRepositoryInterface::class);
+        $policies->method('findByIds')->willReturn([new Policy($policyId, 'contact', $statements)]);
+
+        self::assertSame($expected, (new PolicyEvaluator($groups, $roles, $policies))->evaluate($principal, Action::CONTACT_VIEW, $resource));
+    }
+
+    /** @return iterable<string, array{Statement[], Resource, bool}> */
+    public static function policyDecisions(): iterable
+    {
+        $ownContact = new Resource(ResourceType::CONTACT, new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'));
+        $otherContact = new Resource(ResourceType::CONTACT, new PrincipalIdentifier('00000000-0000-7000-8000-000000000002'));
+        $allow = new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::CONTACT]);
+        $deny = new Statement(Effect::DENY, [Action::CONTACT_VIEW], [ResourceType::CONTACT]);
+        $allowOwn = new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::CONTACT], Condition::OWN_CONTACT);
+        $denyOwn = new Statement(Effect::DENY, [Action::CONTACT_VIEW], [ResourceType::CONTACT], Condition::OWN_CONTACT);
+        $denyOtherAction = new Statement(Effect::DENY, [Action::CONTACT_REPLY], [ResourceType::CONTACT]);
+        $denyOtherResource = new Statement(Effect::DENY, [Action::CONTACT_VIEW], [ResourceType::ANNOUNCEMENT]);
+
+        yield 'no statements implicitly deny' => [[], $ownContact, false];
+        yield 'unconditional allow' => [[$allow], $ownContact, true];
+        yield 'deny without allow' => [[$deny], $ownContact, false];
+        yield 'deny after allow takes priority' => [[$allow, $deny], $ownContact, false];
+        yield 'deny before allow takes priority' => [[$deny, $allow], $ownContact, false];
+        yield 'allow own contact' => [[$allowOwn], $ownContact, true];
+        yield 'other contact implicitly denied' => [[$allowOwn], $otherContact, false];
+        yield 'missing owner implicitly denied' => [[$allowOwn], new Resource(ResourceType::CONTACT), false];
+        yield 'matching conditional deny takes priority' => [[$allow, $denyOwn], $ownContact, false];
+        yield 'unmatched conditional deny does not block allow' => [[$allow, $denyOwn], $otherContact, true];
+        yield 'unmatched conditional deny alone implicitly denies' => [[$denyOwn], $otherContact, false];
+        yield 'deny for another action does not block allow' => [[$allow, $denyOtherAction], $ownContact, true];
+        yield 'deny for another resource does not block allow' => [[$allow, $denyOtherResource], $ownContact, true];
+        yield 'allow for another action implicitly denies' => [[new Statement(Effect::ALLOW, [Action::CONTACT_REPLY], [ResourceType::CONTACT])], $ownContact, false];
+        yield 'allow for another resource implicitly denies' => [[new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::ANNOUNCEMENT])], $ownContact, false];
+        yield 'own contact condition requires contact resource' => [[new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::ANNOUNCEMENT], Condition::OWN_CONTACT)], new Resource(ResourceType::ANNOUNCEMENT, $ownContact->ownerPrincipalIdentifier()), false];
+    }
+
+    public function testGroupManagementHonorsDenyAndAttachmentBoundaries(): void
+    {
+        $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');
+        $otherAccount = new AccountIdentifier('00000000-0000-7000-8000-000000000010');
+        $principal = new Principal(new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'), new IdentityIdentifier('00000000-0000-7000-8000-000000000002'), $account);
+        $roleId = new RoleIdentifier('00000000-0000-7000-8000-000000000003');
+        $policyId = new PolicyIdentifier('00000000-0000-7000-8000-000000000004');
+        foreach (['allow', 'deny', 'group', 'role', 'policy'] as $scenario) {
+            $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
+            $groups->method('findByPrincipalId')->willReturn([
+                new PrincipalGroup(new PrincipalGroupIdentifier('00000000-0000-7000-8000-000000000005'), 'Administrator', [$roleId], $scenario === 'group' ? $otherAccount : $account),
+            ]);
+            $roles = $this->createMock(RoleRepositoryInterface::class);
+            $roles->method('findByIds')->willReturn([new Role($roleId, 'Administrator', [$policyId], $scenario === 'role' ? $otherAccount : null)]);
+            $statements = [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP])];
+            if ($scenario === 'deny') {
+                $statements[] = new Statement(Effect::DENY, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP]);
+            }
+            $policies = $this->createMock(PolicyRepositoryInterface::class);
+            $policies->method('findByIds')->willReturn([new Policy($policyId, 'principal_group_management', $statements, $scenario === 'policy' ? $otherAccount : null)]);
+            $resource = new Resource(ResourceType::PRINCIPAL_GROUP);
+            self::assertSame($scenario === 'allow', (new PolicyEvaluator($groups, $roles, $policies))->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, $resource), $scenario);
+        }
+    }
+
     public function testOtherAccountsRolesAndPoliciesDoNotGrantPermissions(): void
     {
         $account = new AccountIdentifier('00000000-0000-7000-8000-000000000009');

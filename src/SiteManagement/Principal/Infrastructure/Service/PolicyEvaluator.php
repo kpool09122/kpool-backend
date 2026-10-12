@@ -18,27 +18,37 @@ use Source\SiteManagement\Principal\Domain\ValueObject\Statement;
 
 readonly class PolicyEvaluator implements PolicyEvaluatorInterface
 {
-    public function __construct(private PrincipalGroupRepositoryInterface $principalGroupRepository, private RoleRepositoryInterface $roleRepository, private PolicyRepositoryInterface $policyRepository)
-    {
+    public function __construct(
+        private PrincipalGroupRepositoryInterface $principalGroupRepository,
+        private RoleRepositoryInterface $roleRepository,
+        private PolicyRepositoryInterface $policyRepository,
+    ) {
     }
 
     public function evaluate(Principal $principal, Action $action, Resource $resource): bool
     {
-        $allowed = false;
-        foreach ($this->collectStatements($principal) as $statement) {
-            if (! in_array($action, $statement->actions(), true) || ! in_array($resource->type(), $statement->resourceTypes(), true)) {
-                continue;
-            }
-            if ($statement->condition() === Condition::OWN_CONTACT && ($resource->type() !== ResourceType::CONTACT || $resource->ownerPrincipalIdentifier() === null || (string) $resource->ownerPrincipalIdentifier() !== (string) $principal->principalIdentifier())) {
-                continue;
-            }
+        $statements = $this->collectStatements($principal);
+        $applicableStatements = $this->filterApplicable($statements, $action, $resource->type());
+
+        // 条件に一致する明示的 Deny を優先する。
+        foreach ($applicableStatements as $statement) {
             if ($statement->effect() === Effect::DENY) {
-                return false;
+                if ($this->matchesCondition($statement->condition(), $resource, $principal)) {
+                    return false;
+                }
             }
-            $allowed = true;
         }
 
-        return $allowed;
+        // 条件に一致する明示的 Allow がある場合のみ許可する。
+        foreach ($applicableStatements as $statement) {
+            if ($statement->effect() === Effect::ALLOW) {
+                if ($this->matchesCondition($statement->condition(), $resource, $principal)) {
+                    return true;
+                }
+            }
+        }
+
+        return false; // 暗黙的 Deny
     }
 
     /** @return Statement[] */
@@ -97,5 +107,32 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         }
 
         return $statements;
+    }
+
+    /**
+     * @param Statement[] $statements
+     * @return Statement[]
+     */
+    private function filterApplicable(array $statements, Action $action, ResourceType $resourceType): array
+    {
+        return array_filter($statements, static function (Statement $statement) use ($action, $resourceType): bool {
+            $actionMatches = in_array($action, $statement->actions(), true);
+            $resourceMatches = in_array($resourceType, $statement->resourceTypes(), true);
+
+            return $actionMatches && $resourceMatches;
+        });
+    }
+
+    private function matchesCondition(?Condition $condition, Resource $resource, Principal $principal): bool
+    {
+        if ($condition === null) {
+            return true;
+        }
+
+        return match ($condition) {
+            Condition::OWN_CONTACT => $resource->type() === ResourceType::CONTACT
+                && $resource->ownerPrincipalIdentifier() !== null
+                && (string) $resource->ownerPrincipalIdentifier() === (string) $principal->principalIdentifier(),
+        };
     }
 }

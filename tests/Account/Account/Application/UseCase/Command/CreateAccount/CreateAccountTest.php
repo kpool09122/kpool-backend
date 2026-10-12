@@ -22,6 +22,7 @@ use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Event\PrincipalCreated;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -135,7 +136,14 @@ class CreateAccountTest extends TestCase
         $principalGroupRepository->shouldReceive('save')
             ->once()
             ->with($testData->ownerPrincipalGroup)
+            ->globally()->ordered()
             ->andReturnNull();
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->globally()->ordered()
+            ->with(Mockery::on(static fn (PrincipalCreated $event): bool => $testData->ownerPrincipalGroup->hasMember($event->principalIdentifier)
+                && (string) $event->accountIdentifier === (string) $testData->identifier));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(AccountFactoryInterface::class, $factory);

@@ -24,12 +24,19 @@ use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsOutput;
 use Source\SiteManagement\Principal\Application\EventHandler\IdentityWithdrawingHandler;
 use Source\SiteManagement\Principal\Application\EventHandler\PrincipalCreatedHandler;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
+use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalRepository;
 use Tests\Helper\CreateAccount;
@@ -47,7 +54,7 @@ class PrincipalLifecycleTest extends TestCase
         $this->app()->make(AccountAuthorizationSeeder::class)->run();
     }
 
-    public function testRegistrationSynchronouslyProvisionsGeneralAndWithdrawalDeletesMemberships(): void
+    public function testRegistrationSynchronouslyProvisionsAdministratorAndGeneralAndWithdrawalDeletesMemberships(): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email((string) $identity.'@example.com');
@@ -55,14 +62,31 @@ class PrincipalLifecycleTest extends TestCase
         DB::transaction(function () use ($identity, $email): void {
             $this->app()->make(CreateAccountInterface::class)->process(new CreateAccountInput($email, new AccountName('Registration'), $identity), new CreateAccountOutput());
             $this->assertDatabaseHas('site_management_principals', ['identity_id' => (string) $identity]);
+            $roles = DB::table('site_management_roles as roles')
+                ->join('site_management_principal_group_role_attachments as attachments', 'attachments.role_id', '=', 'roles.id')
+                ->join('site_management_principal_groups as groups', 'groups.id', '=', 'attachments.principal_group_id')
+                ->join('site_management_principal_group_memberships as memberships', 'memberships.principal_group_id', '=', 'groups.id')
+                ->join('site_management_principals as principals', 'principals.id', '=', 'memberships.principal_id')
+                ->where('principals.identity_id', (string) $identity)->where('groups.is_default', false)->pluck('roles.name')->all();
+            $this->assertEqualsCanonicalizing(['Administrator', 'General'], $roles);
         });
         $id = DB::table('site_management_principals')->where('identity_id', (string) $identity)->value('id');
         $this->assertSame(1, DB::table('site_management_principal_group_memberships')->where('principal_id', $id)->count());
+        $principal = $this->app()->make(PrincipalRepositoryInterface::class)->findAllByIdentityIdentifier($identity)[0];
+        $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
+        $this->assertTrue($evaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP)));
+        $contactId = StrTestHelper::generateUuid();
+        DB::table('contacts')->insert(['id' => $contactId, 'principal_identifier' => $id, 'category' => 1, 'name' => 'Owner inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
+        DB::table('contacts')->insert(['id' => StrTestHelper::generateUuid(), 'principal_identifier' => StrTestHelper::generateUuid(), 'category' => 1, 'name' => 'Other inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
+        $contacts = new ListMyContactsOutput();
+        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($principal->principalIdentifier()), $contacts);
+        $this->assertCount(1, $contacts->toArray());
+        $this->assertSame($contactId, $contacts->toArray()[0]['contactIdentifier']);
         $this->app()->make(IdentityWithdrawingHandler::class)->handle(new IdentityWithdrawing($identity));
         $this->assertDatabaseMissing('site_management_principals', ['id' => $id]);
         $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_id' => $id]);
-        $this->assertDatabaseCount('site_management_roles', 2);
-        $this->assertDatabaseCount('site_management_policies', 2);
+        $this->assertDatabaseCount('site_management_roles', 3);
+        $this->assertDatabaseCount('site_management_policies', 3);
     }
 
     public function testRegistrationListenerFailureRollsBackBothPrincipalsAndAccount(): void
@@ -164,18 +188,27 @@ class PrincipalLifecycleTest extends TestCase
         $this->assertDatabaseHas('site_management_principal_group_memberships', ['principal_id' => (string) $principal->principalIdentifier()]);
     }
 
-    public function testSeedersProvisionEveryAccountPrincipalAsGeneralAndAreIdempotent(): void
+    public function testSeedersProvisionOwnersAsAdministratorsAndPreserveExistingMemberships(): void
     {
         $seeder = $this->app()->make(DatabaseSeeder::class);
         $seeder->setContainer($this->app());
         $seeder->run();
         $first = DB::table('site_management_principals')->orderBy('id')->pluck('id')->all();
+        $memberships = DB::table('site_management_principal_group_memberships')->orderBy('principal_id')->get()->all();
+        $attachments = DB::table('site_management_principal_group_role_attachments')->orderBy('role_id')->get()->all();
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
         $this->app()->make(TestAccountSeeder::class)->run();
         $this->app()->make(WikiEditorSampleSeeder::class)->run();
         $this->assertSame($first, DB::table('site_management_principals')->orderBy('id')->pluck('id')->all());
         $this->assertSame(DB::table('account_principals')->count(), count($first));
-        $this->assertSame(count($first), DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
+        $this->assertEquals($memberships, DB::table('site_management_principal_group_memberships')->orderBy('principal_id')->get()->all());
+        $this->assertEquals($attachments, DB::table('site_management_principal_group_role_attachments')->orderBy('role_id')->get()->all());
+        $ownerCount = DB::table('account_principal_group_memberships as memberships')
+            ->join('account_principal_group_role_attachments as attachments', 'attachments.principal_group_id', '=', 'memberships.principal_group_id')
+            ->join('account_roles as roles', 'roles.id', '=', 'attachments.role_id')->where('roles.name', 'Owner')->count();
+        $this->assertGreaterThan(0, $ownerCount);
+        $this->assertSame($ownerCount, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'SiteManagement Administrator')->where('groups.is_default', false)->count());
+        $this->assertSame(count($first) - $ownerCount, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
         $this->assertSame(0, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'Operator')->count());
     }
 }

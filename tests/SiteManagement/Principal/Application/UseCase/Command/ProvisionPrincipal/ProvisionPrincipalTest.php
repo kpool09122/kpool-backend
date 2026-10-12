@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal;
 
 use PHPUnit\Framework\TestCase;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface as AccountPrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface as AccountRoleRepositoryInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipal;
@@ -38,7 +41,7 @@ class ProvisionPrincipalTest extends TestCase
         $groups->method('findDefaultByAccountIdentifier')->willReturn($group);
         $groups->expects(self::once())->method('save')->with($group);
         $output = new ProvisionPrincipalOutput();
-        (new ProvisionPrincipal($repository, $factory, $groups, $this->createMock(PrincipalGroupFactoryInterface::class), $this->createMock(RoleRepositoryInterface::class)))->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $output);
+        (new ProvisionPrincipal($repository, $factory, $groups, $this->createMock(PrincipalGroupFactoryInterface::class), $this->createMock(RoleRepositoryInterface::class), $this->createMock(AccountPrincipalRepositoryInterface::class), $this->createMock(AccountPrincipalGroupRepositoryInterface::class), $this->createMock(AccountRoleRepositoryInterface::class)))->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $output);
         self::assertSame($principal, $output->principal());
         self::assertSame([$principal->principalIdentifier()], array_values($group->members()));
     }
@@ -62,7 +65,7 @@ class ProvisionPrincipalTest extends TestCase
         $roleRepository = $this->createMock(RoleRepositoryInterface::class);
         $roleRepository->expects(self::once())->method('findSystemByName')->with('General')->willReturn($role);
         $output = new ProvisionPrincipalOutput();
-        (new ProvisionPrincipal($principalRepository, $principalFactory, $principalGroupRepository, $principalGroupFactory, $roleRepository))
+        (new ProvisionPrincipal($principalRepository, $principalFactory, $principalGroupRepository, $principalGroupFactory, $roleRepository, $this->createMock(AccountPrincipalRepositoryInterface::class), $this->createMock(AccountPrincipalGroupRepositoryInterface::class), $this->createMock(AccountRoleRepositoryInterface::class)))
             ->process(new ProvisionPrincipalInput($identity, $account), $output);
 
         self::assertSame($principal, $output->principal());
@@ -81,7 +84,7 @@ class ProvisionPrincipalTest extends TestCase
         $groups = $this->createMock(PrincipalGroupRepositoryInterface::class);
         $groups->expects(self::never())->method('save');
         $output = new ProvisionPrincipalOutput();
-        (new ProvisionPrincipal($repository, $factory, $groups, $this->createMock(PrincipalGroupFactoryInterface::class), $this->createMock(RoleRepositoryInterface::class)))->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $output);
+        (new ProvisionPrincipal($repository, $factory, $groups, $this->createMock(PrincipalGroupFactoryInterface::class), $this->createMock(RoleRepositoryInterface::class), $this->createMock(AccountPrincipalRepositoryInterface::class), $this->createMock(AccountPrincipalGroupRepositoryInterface::class), $this->createMock(AccountRoleRepositoryInterface::class)))->process(new ProvisionPrincipalInput($identity, new AccountIdentifier('00000000-0000-7000-8000-000000000009')), $output);
         self::assertSame($principal, $output->principal());
     }
 }

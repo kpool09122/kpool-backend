@@ -31,6 +31,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     #[Group('useDb')]
     public function testSitePoliciesUseCurrentAccountAndReturnGeneralAdminAndDeny(): void
     {
+        $this->app()->make(AccountAuthorizationSeeder::class)->run();
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
 
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -458,7 +459,8 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertNotNull($before->siteManagementPrincipalIdentifier());
         $this->assertNotSame($before->siteManagementPrincipalIdentifier(), $readModel->siteManagementPrincipalIdentifier());
         $this->assertNotSame($before->siteManagementPolicies(), $readModel->siteManagementPolicies());
-        $this->assertCount(1, $readModel->siteManagementPolicies());
+        $this->assertCount(2, $readModel->siteManagementPolicies());
+        $this->assertEqualsCanonicalizing(['general', 'principal_group_management'], array_column($readModel->siteManagementPolicies(), 'name'));
         $this->assertSame('own_contact', $readModel->siteManagementPolicies()[0]['statements'][0]['condition']);
 
         $this->assertSame((string) $effectiveAccountIdentifier, $readModel->accountIdentifier());
