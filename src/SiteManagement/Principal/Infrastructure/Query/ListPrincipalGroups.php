@@ -67,6 +67,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
                 $group->id,
                 $group->account_id,
                 $group->name,
+                $group->description,
                 $roleIdentifiers,
                 $group->is_default,
                 $members

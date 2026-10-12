@@ -202,6 +202,7 @@ model PrincipalGroup {
   principalGroupIdentifier: Uuid;
   accountIdentifier: Uuid;
   name: string;
+  description: string | null;
   roleIdentifiers: Uuid[];
   isDefault: boolean;
   members: PrincipalGroupMember[];
