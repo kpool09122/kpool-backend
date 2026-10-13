@@ -731,6 +731,7 @@ components:
         - name
         - replyIdentifiers
         - createdAt
+        - content
       properties:
         contactIdentifier:
           allOf:
@@ -758,6 +759,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the inquiry was created.
+        content:
+          type: string
+          description: Full inquiry content.
       description: Contact inquiry summary returned to its submitter.
     PrincipalGroup:
       type: object

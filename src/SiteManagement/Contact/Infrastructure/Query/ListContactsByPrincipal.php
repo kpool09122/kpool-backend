@@ -37,7 +37,7 @@ readonly class ListContactsByPrincipal implements ListContactsByPrincipalInterfa
         }
 
         $contacts = ContactModel::query()
-            ->select(['id', 'principal_identifier', 'category', 'name', 'created_at'])
+            ->select(['id', 'principal_identifier', 'category', 'name', 'created_at', 'content'])
             ->where('principal_identifier', (string) $input->targetPrincipalIdentifier())
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -70,6 +70,7 @@ readonly class ListContactsByPrincipal implements ListContactsByPrincipalInterfa
                 name: (string) $contact->name,
                 replyIdentifiers: $replyIdentifiersByContactIdentifier[(string) $contact->id] ?? [],
                 createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
+                content: (string) $contact->content,
             ))
             ->all();
 

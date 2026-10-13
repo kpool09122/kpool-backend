@@ -14,6 +14,7 @@ readonly class ContactReadModel
         /** @var array<int, string> */
         private array $replyIdentifiers,
         private string $createdAt,
+        private string $content,
     ) {
     }
 
@@ -24,7 +25,8 @@ readonly class ContactReadModel
      *     category: int,
      *     name: string,
      *     replyIdentifiers: array<int, string>,
-     *     createdAt: string
+     *     createdAt: string,
+     *     content: string
      * }
      */
     public function toArray(): array
@@ -36,6 +38,7 @@ readonly class ContactReadModel
             'name' => $this->name,
             'replyIdentifiers' => $this->replyIdentifiers,
             'createdAt' => $this->createdAt,
+            'content' => $this->content,
         ];
     }
 }

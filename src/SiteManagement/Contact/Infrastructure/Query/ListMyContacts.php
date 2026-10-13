@@ -41,6 +41,7 @@ readonly class ListMyContacts implements ListMyContactsInterface
                 'category',
                 'name',
                 'created_at',
+                'content',
             ])
             ->with([
                 'replies' => static function (Relation $query): void {
@@ -71,6 +72,7 @@ readonly class ListMyContacts implements ListMyContactsInterface
                 name: (string) $contact->name,
                 replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
                 createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
+                content: (string) $contact->content,
             ))
             ->all();
 

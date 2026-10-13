@@ -122,6 +122,7 @@ class ListMyContactsTest extends TestCase
                 'name' => '新しい問い合わせ',
                 'replyIdentifiers' => [(string) $sentReply->replyIdentifier()],
                 'createdAt' => (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
+                'content' => '新しい内容',
             ],
             [
                 'contactIdentifier' => $olderContactIdentifier,
@@ -130,6 +131,7 @@ class ListMyContactsTest extends TestCase
                 'name' => '古い問い合わせ',
                 'replyIdentifiers' => [],
                 'createdAt' => (new DateTimeImmutable('2026-08-15 10:00:00'))->format(DateTimeInterface::ATOM),
+                'content' => '古い内容',
             ],
         ], $output->toArray());
     }
@@ -146,6 +148,27 @@ class ListMyContactsTest extends TestCase
         );
 
         $this->assertSame([], $output->toArray());
+    }
+
+    #[Group('useDb')]
+    public function testListIncludesFullContentWithoutTruncation(): void
+    {
+        $principalIdentifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $contents = ['短い本文', str_repeat('あ', 19), str_repeat('あ', 20), str_repeat('あ', 20) . '続き', str_repeat('😀', 20) . '続き'];
+        $expected = [];
+        foreach ($contents as $content) {
+            $id = StrTestHelper::generateUuid();
+            $this->insertContact($id, (string) $principalIdentifier, Category::SUGGESTIONS, '問い合わせ', 'user@example.com', $content, '2026-08-15 10:00:00');
+            $expected[$id] = $content;
+        }
+
+        $output = new ListMyContactsOutput();
+        $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($principalIdentifier), $output);
+
+        $this->assertCount(count($contents), $output->toArray());
+        foreach ($output->toArray() as $contact) {
+            $this->assertSame($expected[$contact['contactIdentifier']], $contact['content']);
+        }
     }
 
     public function testPolicyDenialRejectsOwnListBeforeReadingContacts(): void
