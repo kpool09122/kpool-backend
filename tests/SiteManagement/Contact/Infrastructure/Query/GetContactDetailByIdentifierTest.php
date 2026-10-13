@@ -1,0 +1,284 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\SiteManagement\Contact\Infrastructure\Query;
+
+use Database\Seeders\SiteManagementAuthorizationSeeder;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Illuminate\Support\Facades\DB;
+use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutput;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
+use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateIdentity;
+use Tests\Helper\CreateReplyContact;
+use Tests\Helper\SiteManagementAuthorization;
+use Tests\Helper\StrTestHelper;
+use Tests\TestCase;
+
+class GetContactDetailByIdentifierTest extends TestCase
+{
+    /** @return array<string, array{bool}> */
+    public static function owners(): array
+    {
+        return ['signed-in submitter' => [true], 'anonymous submitter' => [false]];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('owners')]
+    public function testReturnsExistingDetailContractWithOnlySuccessfullySentReplies(bool $signedIn): void
+    {
+        $principal = $this->provisionPrincipal();
+        SiteManagementAuthorization::grantOperator($principal);
+        $owner = $signedIn ? StrTestHelper::generateUuid() : null;
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, $owner);
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
+        $replies = [];
+        // Insert out of order, including a tied creation time, to exercise both sort keys.
+        foreach ([['2026-08-18 09:00:00', true, false], ['2026-08-17 09:00:00', true, false], ['2026-08-17 09:00:00', true, false], ['2026-08-19 09:00:00', false, true], ['2026-08-20 09:00:00', false, false], ['2026-08-21 09:00:00', true, true]] as [$createdAt, $sent, $failed]) {
+            $reply = CreateReplyContact::create(
+                new ContactIdentifier($id),
+                new Email('contact@example.com'),
+                $principal->principalIdentifier(),
+                $sent ? new DateTimeImmutable($createdAt) : null,
+                $failed ? new DateTimeImmutable($createdAt) : null,
+                new DateTimeImmutable($createdAt),
+                '返信内容',
+                $encryptionService,
+            );
+            if ($sent && ! $failed) {
+                $replies[] = $reply;
+            }
+        }
+        usort($replies, static fn ($a, $b): int => $a->createdAt() <=> $b->createdAt() ?: strcmp((string) $a->replyIdentifier(), (string) $b->replyIdentifier()));
+        $otherId = StrTestHelper::generateUuid();
+        $this->insertContact($otherId, null);
+        CreateReplyContact::create(new ContactIdentifier($otherId), new Email('contact@example.com'), null, new DateTimeImmutable('2026-08-17 09:00:00'), null, new DateTimeImmutable('2026-08-17 09:00:00'), '別の問い合わせへの返信', $encryptionService);
+
+        DB::enableQueryLog();
+        $output = $this->process($principal->principalIdentifier(), $id);
+        $contactQueries = array_values(array_filter(DB::getQueryLog(), static fn (array $query): bool => str_contains($query['query'], 'from "contacts"') || str_contains($query['query'], 'from "contact_replies"')));
+        DB::disableQueryLog();
+        $this->assertCount(2, $contactQueries);
+        foreach ($contactQueries as $query) {
+            $this->assertStringNotContainsString('email', $query['query']);
+        }
+        $this->assertStringContainsString('limit 1', $contactQueries[0]['query']);
+
+        $this->assertSame([
+            'contactIdentifier' => $id,
+            'principalIdentifier' => $owner,
+            'category' => Category::SUGGESTIONS->value,
+            'name' => '問い合わせ者',
+            'createdAt' => (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
+            'content' => 'お問い合わせ内容',
+            'replies' => array_map(static fn ($reply): array => [
+                'replyIdentifier' => (string) $reply->replyIdentifier(),
+                'content' => (string) $reply->content(),
+                'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
+            ], $replies),
+        ], $output->toArray());
+    }
+
+    /** @return array<string, array{string, bool, ?string, bool}> */
+    public static function policies(): array
+    {
+        return [
+            'Operator own' => ['own', true, null, true],
+            'Operator another' => ['another', true, null, true],
+            'Operator anonymous' => ['anonymous', true, null, true],
+            'General own is not Operator' => ['own', false, null, false],
+            'General another' => ['another', false, null, false],
+            'General anonymous' => ['anonymous', false, null, false],
+            'non-Operator with unconditional view permission' => ['own', false, 'allow', false],
+            'explicit own deny overrides Operator allow' => ['own', true, 'deny-own', false],
+            'own deny does not affect another owner' => ['another', true, 'deny-own', true],
+            'own deny does not match null owner' => ['anonymous', true, 'deny-own', true],
+            'unconditional deny blocks anonymous' => ['anonymous', true, 'deny', false],
+        ];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('policies')]
+    public function testRequiresOperatorAndEvaluatesPoliciesAgainstPersistedOwner(string $ownerKind, bool $operator, ?string $policy, bool $allowed): void
+    {
+        $principal = $this->provisionPrincipal();
+        if ($operator) {
+            SiteManagementAuthorization::grantOperator($principal);
+        }
+        if ($policy !== null) {
+            $this->setGeneralPolicy($policy);
+        }
+        $owner = match ($ownerKind) {
+            'own' => (string) $principal->principalIdentifier(),
+            'another' => StrTestHelper::generateUuid(),
+            default => null,
+        };
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, $owner);
+        if (! $allowed) {
+            $this->expectException(UnauthorizedException::class);
+        }
+
+        $output = $this->process($principal->principalIdentifier(), $id);
+        if ($allowed) {
+            $this->assertSame($owner, $output->toArray()['principalIdentifier']);
+        }
+    }
+
+    /** @return array<string, array{string, bool}> */
+    public static function conditionalAllows(): array
+    {
+        return ['own contact' => ['own', true], 'another owner' => ['another', false], 'anonymous owner' => ['anonymous', false], 'missing contact' => ['missing', false]];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('conditionalAllows')]
+    public function testOperatorWithOnlyOwnContactAllowIsEvaluatedAgainstActualOwner(string $ownerKind, bool $allowed): void
+    {
+        $principal = $this->provisionPrincipal();
+        SiteManagementAuthorization::grantOperator($principal);
+        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => '[]']);
+        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::OPERATOR_ROLE)->update([
+            'statements' => json_encode([[
+                'effect' => 'allow',
+                'actions' => ['contact:view'],
+                'resource_types' => ['contact'],
+                'condition' => 'own_contact',
+            ]], JSON_THROW_ON_ERROR),
+        ]);
+        $id = StrTestHelper::generateUuid();
+        if ($ownerKind !== 'missing') {
+            $this->insertContact($id, match ($ownerKind) {
+                'own' => (string) $principal->principalIdentifier(),
+                'another' => StrTestHelper::generateUuid(),
+                default => null,
+            });
+        }
+        if (! $allowed) {
+            $this->expectException(UnauthorizedException::class);
+        }
+        $output = $this->process($principal->principalIdentifier(), $id);
+        if ($allowed) {
+            $this->assertSame((string) $principal->principalIdentifier(), $output->toArray()['principalIdentifier']);
+        }
+    }
+
+    #[Group('useDb')]
+    public function testMissingContactReturnsNotFoundForAuthorizedOperator(): void
+    {
+        $principal = $this->provisionPrincipal();
+        SiteManagementAuthorization::grantOperator($principal);
+        $this->expectException(ContactNotFoundException::class);
+        $this->process($principal->principalIdentifier(), StrTestHelper::generateUuid());
+    }
+
+    #[Group('useDb')]
+    public function testMissingContactDoesNotBypassPermissionDenial(): void
+    {
+        $principal = $this->provisionPrincipal();
+        SiteManagementAuthorization::grantOperator($principal);
+        $this->setGeneralPolicy('deny');
+        $this->expectException(UnauthorizedException::class);
+        $this->process($principal->principalIdentifier(), StrTestHelper::generateUuid());
+    }
+
+    #[Group('useDb')]
+    public function testOperatorRoleFromAnotherAccountDoesNotQualify(): void
+    {
+        $principal = $this->provisionPrincipal();
+        $otherAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $otherAccount);
+        $group = $this->app()->make(PrincipalGroupFactoryInterface::class)->create('Operator', [new RoleIdentifier(SiteManagementAuthorizationSeeder::OPERATOR_ROLE)], $otherAccount);
+        $group->addMember($principal->principalIdentifier());
+        $this->app()->make(PrincipalGroupRepositoryInterface::class)->save($group);
+        $this->setGeneralPolicy('allow');
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, null);
+        $this->expectException(UnauthorizedException::class);
+        $this->process($principal->principalIdentifier(), $id);
+    }
+
+    public function testMissingRequesterPrincipalIsUnauthorizedBeforeContactLookup(): void
+    {
+        $identifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($identifier)->andReturnNull();
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->expectException(UnauthorizedException::class);
+        $this->process($identifier, StrTestHelper::generateUuid());
+    }
+
+    private function process(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailByIdentifierOutput
+    {
+        $output = new GetContactDetailByIdentifierOutput();
+        $this->app()->make(GetContactDetailByIdentifierInterface::class)->process(new GetContactDetailByIdentifierInput($principalIdentifier, new ContactIdentifier($id)), $output);
+
+        return $output;
+    }
+
+    private function provisionPrincipal(): Principal
+    {
+        $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identity);
+        CreateAccount::create((string) $account);
+        $output = new ProvisionPrincipalOutput();
+        $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $output);
+        $principal = $output->principal();
+        $this->assertNotNull($principal);
+
+        return $principal;
+    }
+
+    private function setGeneralPolicy(string $policy): void
+    {
+        DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update([
+            'statements' => json_encode([[
+                'effect' => $policy === 'allow' ? 'allow' : 'deny',
+                'actions' => ['contact:view'],
+                'resource_types' => ['contact'],
+                'condition' => $policy === 'deny-own' ? 'own_contact' : null,
+            ]], JSON_THROW_ON_ERROR),
+        ]);
+    }
+
+    private function insertContact(string $id, ?string $owner): void
+    {
+        DB::table('contacts')->insert([
+            'id' => $id,
+            'principal_identifier' => $owner,
+            'category' => Category::SUGGESTIONS->value,
+            'name' => '問い合わせ者',
+            'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'),
+            'content' => 'お問い合わせ内容',
+            'language' => 'ja',
+            'created_at' => '2026-08-16 10:00:00',
+            'updated_at' => '2026-08-16 10:00:00',
+        ]);
+    }
+}
