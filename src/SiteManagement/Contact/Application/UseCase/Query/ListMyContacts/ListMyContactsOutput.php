@@ -24,7 +24,8 @@ class ListMyContactsOutput implements ListMyContactsOutputPort
      *     category: int,
      *     name: string,
      *     replyIdentifiers: array<int, string>,
-     *     createdAt: string
+     *     createdAt: string,
+     *     content: string
      * }>
      */
     public function toArray(): array

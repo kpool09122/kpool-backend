@@ -61,6 +61,8 @@ model MyContactSummary {
   replyIdentifiers: Uuid[];
   @doc("Timestamp when the inquiry was created.")
   createdAt: Timestamp;
+  @doc("Full inquiry content.")
+  content: string;
 }
 
 @doc("A successfully sent reply to a contact inquiry.")

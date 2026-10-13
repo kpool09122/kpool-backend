@@ -20,6 +20,7 @@ class ListContactsOutputTest extends TestCase
             name: '問い合わせ太郎',
             replyIdentifiers: [],
             createdAt: '2026-08-27T12:00:00+00:00',
+            content: '本文',
         )], 2, 5, 41, 10);
 
         $this->assertSame([
@@ -30,6 +31,7 @@ class ListContactsOutputTest extends TestCase
                 'name' => '問い合わせ太郎',
                 'replyIdentifiers' => [],
                 'createdAt' => '2026-08-27T12:00:00+00:00',
+                'content' => '本文',
             ]],
             'current_page' => 2,
             'last_page' => 5,
