@@ -11,7 +11,7 @@ readonly class GetContactDetailInput implements GetContactDetailInputPort
 {
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
-        private PrincipalIdentifier $targetPrincipalIdentifier,
+        private ?PrincipalIdentifier $targetPrincipalIdentifier,
         private ContactIdentifier $contactIdentifier,
     ) {
     }
@@ -21,7 +21,7 @@ readonly class GetContactDetailInput implements GetContactDetailInputPort
         return $this->principalIdentifier;
     }
 
-    public function targetPrincipalIdentifier(): PrincipalIdentifier
+    public function targetPrincipalIdentifier(): ?PrincipalIdentifier
     {
         return $this->targetPrincipalIdentifier;
     }
