@@ -16,6 +16,6 @@ readonly class AffiliationRequestedHandler
 
     public function handle(AffiliationRequested $event): void
     {
-        $this->affiliationRequestNotificationService->sendAffiliationRequestNotification($event->targetEmail);
+        $this->affiliationRequestNotificationService->sendAffiliationRequestNotification($event->targetAccountIdentifier);
     }
 }

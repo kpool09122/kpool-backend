@@ -63,6 +63,12 @@ use Source\Account\Delegation\Application\UseCase\Query\ListDelegations\ListDele
 use Source\Account\Delegation\Infrastructure\Query\ListDelegations;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
+use Source\Account\Notification\Application\UseCase\Command\UpdateNotificationSettings\UpdateNotificationSettings;
+use Source\Account\Notification\Application\UseCase\Command\UpdateNotificationSettings\UpdateNotificationSettingsInterface;
+use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettings\GetNotificationSettingsInterface;
+use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettingsAccess\GetNotificationSettingsAccessInterface;
+use Source\Account\Notification\Infrastructure\Query\GetNotificationSettings;
+use Source\Account\Notification\Infrastructure\Query\GetNotificationSettingsAccess;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
@@ -82,6 +88,10 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(UpdateNotificationSettingsInterface::class, UpdateNotificationSettings::class);
+        $this->app->singleton(GetNotificationSettingsInterface::class, GetNotificationSettings::class);
+        $this->app->singleton(GetNotificationSettingsAccessInterface::class, GetNotificationSettingsAccess::class);
+
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
         $this->app->singleton(GrantOperationsInterface::class, GrantOperations::class);

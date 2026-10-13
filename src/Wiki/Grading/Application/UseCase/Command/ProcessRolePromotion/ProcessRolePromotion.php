@@ -7,7 +7,6 @@ namespace Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
 use Source\Wiki\Grading\Domain\Entity\DemotionWarning;
 use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
@@ -112,19 +111,19 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         // Step 7: Dispatch batch events
         if (! empty($promoted)) {
             $this->eventDispatcher->dispatch(new PrincipalsBatchPromoted(
-                $this->toIdentityIdentifiers($promoted),
+                $this->toAccountIdentifiers($promoted),
             ));
         }
 
         if (! empty($demoted)) {
             $this->eventDispatcher->dispatch(new PrincipalsBatchDemoted(
-                $this->toIdentityIdentifiers($demoted),
+                $this->toAccountIdentifiers($demoted),
             ));
         }
 
         if (! empty($warned)) {
             $this->eventDispatcher->dispatch(new DemotionWarningsBatchIssued(
-                $this->toIdentityIdentifiers($warned),
+                $this->toAccountIdentifiers($warned),
             ));
         }
     }
@@ -428,15 +427,17 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
 
     /**
      * @param PrincipalIdentifier[] $principalIdentifiers
-     * @return IdentityIdentifier[]
+     * @return AccountIdentifier[]
      */
-    private function toIdentityIdentifiers(array $principalIdentifiers): array
+    private function toAccountIdentifiers(array $principalIdentifiers): array
     {
         $principals = $this->principalRepository->findByIds(array_values($principalIdentifiers));
 
-        return array_map(
-            static fn ($principal) => $principal->identityIdentifier(),
-            $principals
-        );
+        $accounts = [];
+        foreach ($principals as $principal) {
+            $accounts[(string) $principal->accountIdentifier()] = $principal->accountIdentifier();
+        }
+
+        return array_values($accounts);
     }
 }

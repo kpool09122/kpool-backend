@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\Service;
 
-use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface AffiliationRequestNotificationServiceInterface
 {
-    public function sendAffiliationRequestNotification(Email $targetEmail): void;
+    public function sendAffiliationRequestNotification(AccountIdentifier $targetAccountIdentifier): void;
 }

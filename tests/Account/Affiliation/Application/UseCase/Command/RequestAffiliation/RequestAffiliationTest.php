@@ -208,7 +208,7 @@ class RequestAffiliationTest extends TestCase
             $eventDispatcher->shouldReceive('dispatch')
                 ->once()
                 ->with(Mockery::on(static fn (AffiliationRequested $event): bool => $event->affiliationIdentifier === $data->affiliationIdentifier
-                    && $event->targetEmail === $data->targetEmail
+                    && $event->targetAccountIdentifier === $data->targetAccountIdentifier
                     && $event->agencyAccountIdentifier === $data->agencyAccountIdentifier
                     && $event->talentAccountIdentifier === $data->talentAccountIdentifier
                     && $event->requestedBy === $data->requestingAccountIdentifier));

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_notification_settings' => '通知先の指定が不正です。',
     'recent_authentication_required' => '再認証が必要です。',
     'identity_name_confirmation_mismatch' => '入力されたユーザー名が現在のユーザー名と一致しません。',
     'identity_withdrawal_not_allowed' => 'この利用者は通常の退会手続きを利用できません。',

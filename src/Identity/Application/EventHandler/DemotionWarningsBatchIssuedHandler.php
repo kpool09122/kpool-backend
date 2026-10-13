@@ -5,26 +5,21 @@ declare(strict_types=1);
 namespace Source\Identity\Application\EventHandler;
 
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
-use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
 
 readonly class DemotionWarningsBatchIssuedHandler
 {
     public function __construct(
-        private IdentityRepositoryInterface $identityRepository,
+        private AccountNotificationRecipientServiceInterface $accountNotificationRecipientService,
         private CollaboratorNotificationServiceInterface $collaboratorNotificationService,
     ) {
     }
 
     public function handle(DemotionWarningsBatchIssued $event): void
     {
-        $identities = $this->identityRepository->findByIds($event->warnedIdentities());
-
-        foreach ($identities as $identity) {
-            $this->collaboratorNotificationService->sendDemotionWarning(
-                $identity->email(),
-                $identity->language(),
-            );
+        foreach ($this->accountNotificationRecipientService->resolve($event->accountIdentifiers()) as $recipient) {
+            $this->collaboratorNotificationService->sendDemotionWarning($recipient->email(), $recipient->language());
         }
     }
 }

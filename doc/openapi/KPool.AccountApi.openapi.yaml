@@ -1030,6 +1030,201 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountId}/notification-settings:
+    get:
+      operationId: AccountNotificationOperations_getNotificationSettings
+      description: 'Owners-group members only: get current email recipients and candidate Identities. Unconfigured accounts have no recipients; no fallback address is used.'
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountNotificationSettings'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+    put:
+      operationId: AccountNotificationOperations_updateNotificationSettings
+      description: 'Owners-group members only: replace all recipients. Accepts 0..min(member count,5) unique current account Identities. Only email is accepted. Empty recipients disables account-authorized email notifications.'
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountNotificationSettingsBody'
+  /accounts/{accountId}/notification-settings/access:
+    get:
+      operationId: AccountNotificationOperations_getNotificationSettingsAccess
+      description: Get whether the current Principal belongs to the account's Owners group. Owner role or generic update permissions alone do not suffice. Other accounts are forbidden. No recipient or candidate data is exposed here.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canManage:
+                    type: boolean
+                required:
+                  - canManage
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /affiliations:
     get:
       operationId: AffiliationOperations_listAffiliations
@@ -2472,6 +2667,60 @@ components:
             $ref: '#/components/schemas/MemberPrincipalGroupSummary'
           description: Principal groups assigned to the member.
       description: Account member summary.
+    AccountNotificationCandidate:
+      type: object
+      required:
+        - identityIdentifier
+        - name
+        - email
+        - language
+      properties:
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        email:
+          type: string
+        language:
+          type: string
+    AccountNotificationRecipient:
+      type: object
+      required:
+        - identityIdentifier
+        - channel
+      properties:
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        channel:
+          type: string
+          enum:
+            - email
+      description: An account email notification recipient. Other channels are not currently supported.
+    AccountNotificationSettings:
+      type: object
+      required:
+        - recipients
+        - candidates
+        - maxRecipients
+        - canManage
+      properties:
+        recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountNotificationRecipient'
+          description: Selected recipients still belonging to the account, ordered by Identity UUID.
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountNotificationCandidate'
+          description: Current account members, ordered by Identity UUID. Owners membership is not required for recipients.
+        maxRecipients:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 5
+        canManage:
+          type: boolean
     AccountSummary:
       type: object
       required:
@@ -3141,6 +3390,16 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Terminator account identifier.
       description: Request body for terminating an affiliation.
+    UpdateAccountNotificationSettingsBody:
+      type: object
+      required:
+        - recipients
+      properties:
+        recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountNotificationRecipient'
+          maxItems: 5
     UpdateAccountRequestBody:
       type: object
       required:

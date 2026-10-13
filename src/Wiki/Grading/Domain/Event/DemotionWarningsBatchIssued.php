@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Grading\Domain\Event;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class DemotionWarningsBatchIssued
 {
     /**
-     * @param IdentityIdentifier[] $warnedIdentities
+     * @param AccountIdentifier[] $accountIdentifiers
      */
     public function __construct(
-        private array $warnedIdentities,
+        private array $accountIdentifiers,
     ) {
     }
 
     /**
-     * @return IdentityIdentifier[]
+     * @return AccountIdentifier[]
      */
-    public function warnedIdentities(): array
+    public function accountIdentifiers(): array
     {
-        return $this->warnedIdentities;
+        return $this->accountIdentifiers;
     }
 }
