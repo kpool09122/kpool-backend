@@ -12,9 +12,9 @@ use Application\Http\Exceptions\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInput;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +23,7 @@ use Throwable;
 readonly class GetContactDetailByIdentifierAction
 {
     public function __construct(
-        private GetContactDetailByIdentifierInterface $getContactDetailByIdentifier,
+        private GetContactDetailInterface $getContactDetail,
         private SiteManagementContext $siteManagementContext,
         private ActorContext $actorContext,
         private LoggerInterface $logger,
@@ -38,10 +38,11 @@ readonly class GetContactDetailByIdentifierAction
     public function __invoke(GetContactDetailByIdentifierRequest $request): JsonResponse
     {
         try {
-            $output = new GetContactDetailByIdentifierOutput();
-            $this->getContactDetailByIdentifier->process(
-                new GetContactDetailByIdentifierInput(
+            $output = new GetContactDetailOutput();
+            $this->getContactDetail->process(
+                new GetContactDetailInput(
                     $this->siteManagementContext->principalIdentifier,
+                    null,
                     new ContactIdentifier($request->contactIdentifier()),
                 ),
                 $output,

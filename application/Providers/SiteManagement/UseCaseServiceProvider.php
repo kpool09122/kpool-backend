@@ -28,13 +28,11 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\Reply
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContactsByPrincipal\ListContactsByPrincipalInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListMyContacts\ListMyContactsInterface;
 use Source\SiteManagement\Contact\Infrastructure\Query\GetContactDetail;
-use Source\SiteManagement\Contact\Infrastructure\Query\GetContactDetailByIdentifier;
 use Source\SiteManagement\Contact\Infrastructure\Query\GetMyContactDetail;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContacts;
 use Source\SiteManagement\Contact\Infrastructure\Query\ListContactsByPrincipal;
@@ -77,7 +75,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListMyContactsInterface::class, ListMyContacts::class);
         $this->app->singleton(GetMyContactDetailInterface::class, GetMyContactDetail::class);
         $this->app->singleton(GetContactDetailInterface::class, GetContactDetail::class);
-        $this->app->singleton(GetContactDetailByIdentifierInterface::class, GetContactDetailByIdentifier::class);
         $this->app->singleton(TranslateAnnouncementInterface::class, TranslateAnnouncement::class);
         $this->app->singleton(PublishAnnouncementInterface::class, PublishAnnouncement::class);
         $this->app->singleton(ProvisionPrincipalInterface::class, ProvisionPrincipal::class);
