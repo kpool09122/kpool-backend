@@ -13,7 +13,6 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -107,7 +106,7 @@ readonly class ListWikis implements ListWikisInterface
             throw new InvalidArgumentException('Invalid sort order.');
         }
         if ($sort === 'name') {
-            $query->orderBy(DB::raw($this->nameSortExpression()), $order)
+            $query->orderByRaw($this->nameSortExpression() . ' ' . $order)
                 ->orderBy('wikis.updated_at', 'desc')
                 ->orderBy('wikis.id');
 

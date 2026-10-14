@@ -6,7 +6,7 @@ namespace Source\Wiki\Principal\Infrastructure\Service;
 
 use Application\Models\Account\Principal as AccountPrincipalEloquent;
 use Application\Models\Wiki\Wiki as WikiEloquent;
-use Illuminate\Support\Facades\DB;
+use Application\Models\Wiki\WikiTalentBasic as WikiTalentBasicEloquent;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Shared\Domain\Support\TypedValue;
@@ -44,9 +44,10 @@ readonly class PrincipalWikiScopeResolver implements PrincipalWikiScopeResolverI
             return [];
         }
 
-        return DB::table('wiki_talent_basic_groups')
-            ->whereIn('wiki_id', $talentWikiIdentifiers)
-            ->pluck('group_identifier')
+        return WikiTalentBasicEloquent::query()
+            ->join('wiki_talent_basic_groups as groups', 'groups.wiki_id', '=', 'wiki_talent_basics.wiki_id')
+            ->whereIn('groups.wiki_id', $talentWikiIdentifiers)
+            ->pluck('groups.group_identifier')
             ->map(static fn (mixed $id): string => TypedValue::string($id))
             ->unique()
             ->values()
