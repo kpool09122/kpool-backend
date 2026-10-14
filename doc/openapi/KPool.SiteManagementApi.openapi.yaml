@@ -275,7 +275,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/KPool.Common.UuidV7'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: The request has succeeded.
