@@ -17,6 +17,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
@@ -235,6 +236,7 @@ class UpdateAccountTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
     }
 

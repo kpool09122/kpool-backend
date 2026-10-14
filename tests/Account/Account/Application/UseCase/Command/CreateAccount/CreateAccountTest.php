@@ -19,6 +19,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role;
@@ -170,83 +171,6 @@ class CreateAccountTest extends TestCase
         $this->assertNotEmpty((string) $testData->ownerPrincipalGroup->description());
         $this->assertTrue($testData->ownerPrincipalGroup->hasMember($testData->principalIdentifier));
         $this->assertTrue($testData->ownerPrincipalGroup->hasRole($testData->ownerRole->roleIdentifier()));
-    }
-
-    /**
-     * 正常系: identityIdentifierがnullの場合もアカウントとデフォルトPrincipalGroupが作成されること.
-     *
-     * @throws BindingResolutionException
-     */
-    public function testProcessWithoutIdentityIdentifier(): void
-    {
-        $testData = $this->createDummyAccountTestData(includeIdentityIdentifier: false);
-        $repository = Mockery::mock(AccountRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
-            ->with($testData->email)
-            ->once()
-            ->andReturnNull();
-        $repository->shouldReceive('save')
-            ->once()
-            ->with($testData->account)
-            ->andReturnNull();
-
-        $factory = Mockery::mock(AccountFactoryInterface::class);
-        $factory->shouldReceive('create')
-            ->once()
-            ->with($testData->email, $testData->accountName)
-            ->andReturn($testData->account);
-
-        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
-        $principalFactory->shouldNotReceive('create');
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldNotReceive('save');
-
-        $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
-        $principalGroupFactory->shouldReceive('create')
-            ->once()
-            ->with($testData->identifier, 'Default', true)
-            ->andReturn($testData->defaultPrincipalGroup);
-        $principalGroupFactory->shouldReceive('create')
-            ->once()
-            ->with($testData->identifier, 'Owners', false)
-            ->andReturn($testData->ownerPrincipalGroup);
-
-        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        $roleRepository->shouldReceive('findSystemByName')
-            ->once()
-            ->with(Role::OWNER)
-            ->andReturn($testData->ownerRole);
-
-        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        $principalGroupRepository->shouldReceive('save')
-            ->once()
-            ->with($testData->defaultPrincipalGroup)
-            ->andReturnNull();
-        $principalGroupRepository->shouldReceive('save')
-            ->once()
-            ->with($testData->ownerPrincipalGroup)
-            ->andReturnNull();
-
-        $this->app()->instance(AccountRepositoryInterface::class, $repository);
-        $this->app()->instance(AccountFactoryInterface::class, $factory);
-        $this->app()->instance(PrincipalFactoryInterface::class, $principalFactory);
-        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app()->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
-        $this->app()->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
-        $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
-
-        $useCase = $this->app()->make(CreateAccountInterface::class);
-
-        $output = new CreateAccountOutput();
-        $useCase->process($testData->input, $output);
-
-        $result = $output->toArray();
-        self::assertTrue(array_key_exists('accountIdentifier', $result));
-        $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
-        $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
-        $this->assertSame(0, $testData->ownerPrincipalGroup->memberCount());
-        $this->assertSame([], $testData->account->notificationSettings()->identityIdentifiers());
     }
 
     /**
@@ -447,7 +371,7 @@ class CreateAccountTest extends TestCase
         $useCase->process($testData->input, $output);
     }
 
-    private function createDummyAccountTestData(bool $includeIdentityIdentifier = true): CreateAccountTestData
+    private function createDummyAccountTestData(): CreateAccountTestData
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
@@ -467,6 +391,7 @@ class CreateAccountTest extends TestCase
             $accountCategory,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
 
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -499,7 +424,7 @@ class CreateAccountTest extends TestCase
         $input = new CreateAccountInput(
             $email,
             $accountName,
-            $includeIdentityIdentifier ? $identityIdentifier : null,
+            $identityIdentifier,
             $language,
         );
 

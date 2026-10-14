@@ -14,6 +14,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
@@ -251,7 +252,7 @@ class ApproveAffiliationTest extends TestCase
 
     private function account(AccountIdentifier $identifier, AccountCategory $category, string $name, ?AccountType $type): Account
     {
-        return new Account($identifier, new Email('account@example.com'), $type, new AccountName($name), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
+        return new Account($identifier, new Email('account@example.com'), $type, new AccountName($name), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments(), new NotificationSettings([]));
     }
 }
 

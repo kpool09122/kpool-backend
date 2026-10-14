@@ -10,6 +10,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup as AccountPrincipalGroup;
 use Source\Account\Principal\Domain\Entity\Role as AccountRole;
@@ -111,6 +112,7 @@ readonly class WikiOperatorTestData
                 AccountCategory::GENERAL,
                 DeletionReadinessChecklist::ready(),
                 new AccountDocuments(),
+                new NotificationSettings([]),
             ),
             $accountPrincipal,
             $operationsRole,

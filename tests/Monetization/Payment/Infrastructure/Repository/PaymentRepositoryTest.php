@@ -13,6 +13,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
@@ -53,6 +54,7 @@ class PaymentRepositoryTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
 
         $this->app()->make(AccountRepositoryInterface::class)->save($account);

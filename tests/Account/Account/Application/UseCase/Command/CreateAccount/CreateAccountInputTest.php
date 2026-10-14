@@ -15,7 +15,7 @@ use Tests\Helper\StrTestHelper;
 class CreateAccountInputTest extends TestCase
 {
     /**
-     * 正常系: インスタンスが正しく作成できること（identityIdentifierあり）.
+     * 正常系: インスタンスが正しく作成できること.
      *
      * @return void
      */
@@ -50,26 +50,27 @@ class CreateAccountInputTest extends TestCase
     }
 
     /**
-     * 正常系: identityIdentifierがnullでもインスタンスが正しく作成できること.
+     * 正常系: 言語を指定でき、省略した住所項目はnullになること.
      *
      * @return void
      */
-    public function test__constructWithoutIdentityIdentifier(): void
+    public function testConstructWithLanguageAndWithoutAddress(): void
     {
         $email = new Email('test@test.com');
         $accountName = new AccountName('test-account');
         $language = Language::KOREAN;
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateAccountInput(
             $email,
             $accountName,
-            null,
+            $identityIdentifier,
             $language,
         );
 
         $this->assertSame($email, $input->email());
         $this->assertSame($accountName, $input->accountName());
-        $this->assertNull($input->identityIdentifier());
+        $this->assertSame($identityIdentifier, $input->identityIdentifier());
         $this->assertSame($language, $input->language());
         $this->assertNull($input->addressCountryCode());
         $this->assertNull($input->addressAdministrativeAreaCode());

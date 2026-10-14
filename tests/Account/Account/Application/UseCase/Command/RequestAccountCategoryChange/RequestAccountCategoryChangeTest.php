@@ -30,6 +30,7 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -344,6 +345,7 @@ class RequestAccountCategoryChangeTest extends TestCase
                 static fn (DocumentType $documentType): AccountDocument => new AccountDocument($accountId, $documentType, new DocumentPath('/documents/test'), new DateTimeImmutable()),
                 $documentTypes,
             )),
+            new NotificationSettings([]),
             $phone,
             $address,
         );

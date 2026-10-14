@@ -153,11 +153,11 @@ class AccountRepository implements AccountRepositoryInterface
             AccountCategory::from($eloquent->category),
             DeletionReadinessChecklist::ready(),
             new AccountDocuments($documents),
-            $eloquent->phone !== null ? new Phone($eloquent->phone) : null,
-            self::contactAddress($eloquent),
             new NotificationSettings($eloquent->notificationRecipients->map(static function (NotificationRecipientEloquent $recipient): IdentityIdentifier {
                 return new IdentityIdentifier($recipient->identity_id);
             })->all()),
+            $eloquent->phone !== null ? new Phone($eloquent->phone) : null,
+            self::contactAddress($eloquent),
         );
     }
 

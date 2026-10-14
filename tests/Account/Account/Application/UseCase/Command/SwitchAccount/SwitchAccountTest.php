@@ -18,6 +18,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
 use Source\Account\Delegation\Domain\Entity\Delegation;
@@ -276,6 +277,7 @@ class SwitchAccountTest extends TestCase
             AccountCategory::AGENCY,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments([]),
+            new NotificationSettings([]),
         );
     }
 }

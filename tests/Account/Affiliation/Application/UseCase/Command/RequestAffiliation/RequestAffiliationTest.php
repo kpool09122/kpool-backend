@@ -12,6 +12,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliation;
@@ -289,7 +290,7 @@ class RequestAffiliationTest extends TestCase
 
     private function account(AccountIdentifier $identifier, AccountCategory $category, string $email): Account
     {
-        return new Account($identifier, new Email($email), AccountType::CORPORATION, new AccountName('Test Account'), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments());
+        return new Account($identifier, new Email($email), AccountType::CORPORATION, new AccountName('Test Account'), AccountStatus::ACTIVE, $category, DeletionReadinessChecklist::ready(), new AccountDocuments(), new NotificationSettings([]));
     }
 }
 

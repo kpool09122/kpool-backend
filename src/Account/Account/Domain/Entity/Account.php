@@ -31,9 +31,9 @@ class Account
         private AccountCategory $accountCategory,
         private readonly DeletionReadinessChecklist $deletionReadiness,
         private AccountDocuments $documents,
+        private NotificationSettings $notificationSettings,
         private ?Phone $phone = null,
         private ?ContactAddress $address = null,
-        private NotificationSettings $notificationSettings = new NotificationSettings([]),
     ) {
         if ($this->status === AccountStatus::ACTIVE && $this->type === null) {
             throw new AccountSetupUnavailableException('Active account must have an account type.');

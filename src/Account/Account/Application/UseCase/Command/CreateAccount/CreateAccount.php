@@ -57,9 +57,7 @@ readonly class CreateAccount implements CreateAccountInterface
         $account->changePhone($input->phone());
         $account->changeAddress(self::contactAddress($input));
 
-        if ($input->identityIdentifier() !== null) {
-            $account->changeNotificationSettings(new NotificationSettings([$input->identityIdentifier()]));
-        }
+        $account->changeNotificationSettings(new NotificationSettings([$input->identityIdentifier()]));
         $this->accountRepository->save($account);
 
         $defaultPrincipalGroup = $this->principalGroupFactory->create(
@@ -82,23 +80,18 @@ readonly class CreateAccount implements CreateAccountInterface
         }
         $ownerPrincipalGroup->addRole($ownerRole);
 
-        $principal = null;
-        if ($input->identityIdentifier() !== null) {
-            $principal = $this->principalFactory->create(
-                $input->identityIdentifier(),
-                $account->accountIdentifier(),
-            );
-            $this->principalRepository->save($principal);
-            $ownerPrincipalGroup->addMember($principal->principalIdentifier());
-            $defaultPrincipalGroup->addMember($principal->principalIdentifier());
-        }
+        $principal = $this->principalFactory->create(
+            $input->identityIdentifier(),
+            $account->accountIdentifier(),
+        );
+        $this->principalRepository->save($principal);
+        $ownerPrincipalGroup->addMember($principal->principalIdentifier());
+        $defaultPrincipalGroup->addMember($principal->principalIdentifier());
 
         $this->principalGroupRepository->save($defaultPrincipalGroup);
         $this->principalGroupRepository->save($ownerPrincipalGroup);
 
-        if ($principal !== null) {
-            $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
-        }
+        $this->eventDispatcher->dispatch(new PrincipalCreated($principal->principalIdentifier(), $principal->identityIdentifier(), $principal->accountIdentifier()));
 
         $output->setAccount($account);
     }

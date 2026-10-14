@@ -12,6 +12,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupService;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
@@ -157,6 +158,7 @@ class DelegationPrincipalGroupServiceTest extends TestCase
             AccountCategory::AGENCY,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments([]),
+            new NotificationSettings([]),
         );
     }
 }

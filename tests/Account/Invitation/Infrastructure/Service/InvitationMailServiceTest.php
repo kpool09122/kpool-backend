@@ -16,6 +16,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
@@ -217,6 +218,7 @@ class InvitationMailServiceTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
 
         return new InvitationMailServiceTestData(
