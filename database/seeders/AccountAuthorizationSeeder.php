@@ -131,7 +131,6 @@ class AccountAuthorizationSeeder extends Seeder
         ];
 
         $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
-        DB::table('account_roles')->whereNull('account_id')->where('name', 'Administrator')->delete();
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
         ]);

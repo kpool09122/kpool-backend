@@ -8,43 +8,10 @@ use Database\Seeders\AccountAuthorizationSeeder;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Principal\Domain\Entity\Role;
-use Tests\Helper\CreateAccount;
-use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountAuthorizationSeederTest extends TestCase
 {
-    #[Group('useDb')]
-    public function testReseedingDeletesLegacySystemAdministratorAndPreservesCustomRoles(): void
-    {
-        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-        $ownerPolicies = $this->policyNames(Role::OWNER);
-        $this->assertCount(13, $ownerPolicies);
-        $accountId = StrTestHelper::generateUuid();
-        CreateAccount::create($accountId);
-        $adminRoleId = StrTestHelper::generateUuid();
-        $customRoleId = StrTestHelper::generateUuid();
-        foreach ([$adminRoleId => null, $customRoleId => $accountId] as $roleId => $roleAccountId) {
-            DB::table('account_roles')->insert(['id' => $roleId, 'account_id' => $roleAccountId, 'name' => 'Administrator', 'created_at' => now(), 'updated_at' => now()]);
-        }
-        $groupId = StrTestHelper::generateUuid();
-        DB::table('account_principal_groups')->insert(['id' => $groupId, 'account_id' => $accountId, 'name' => 'Legacy group', 'is_default' => false, 'created_at' => now(), 'updated_at' => now()]);
-        DB::table('account_principal_group_role_attachments')->insert(['principal_group_id' => $groupId, 'role_id' => $adminRoleId]);
-        $policyId = DB::table('account_policies')->where('name', 'ACCOUNT_READ')->value('id');
-        DB::table('account_role_policy_attachments')->insert(['role_id' => $adminRoleId, 'policy_id' => $policyId]);
-
-        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-
-        $this->assertDatabaseMissing('account_roles', ['id' => $adminRoleId]);
-        $this->assertDatabaseMissing('account_role_policy_attachments', ['role_id' => $adminRoleId]);
-        $this->assertDatabaseMissing('account_principal_group_role_attachments', ['role_id' => $adminRoleId]);
-        $this->assertDatabaseHas('account_roles', ['id' => $customRoleId, 'account_id' => $accountId, 'name' => 'Administrator']);
-        $this->assertDatabaseHas('account_principal_groups', ['id' => $groupId]);
-        $this->assertEqualsCanonicalizing($ownerPolicies, $this->policyNames(Role::OWNER));
-        $this->assertContains('ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE', $this->policyNames(Role::OPERATIONS));
-    }
-
     #[Group('useDb')]
     public function testNotificationSettingsPoliciesMatchExistingAccountRoleAssignments(): void
     {
