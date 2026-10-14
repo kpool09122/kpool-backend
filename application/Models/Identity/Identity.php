@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Models\Identity;
 
+use Application\Models\Account\NotificationRecipient as AccountNotificationRecipient;
+use Application\Models\Account\Principal as AccountPrincipal;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,6 +25,8 @@ use Override;
  * @property ?Carbon $email_verified_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
+ * @property-read Collection<int, AccountPrincipal> $accountPrincipals
+ * @property-read Collection<int, AccountNotificationRecipient> $accountNotificationRecipients
  * @property-read Collection<int, IdentitySocialConnection> $socialConnections
  * @property-read ?PasskeyUser $passkeyUser
  * @property-read Collection<int, PasskeyCredential> $passkeyCredentials
@@ -51,6 +55,18 @@ class Identity extends Authenticatable
             'passkey_credentials_count' => 'integer',
             'linked_social_providers' => 'array',
         ];
+    }
+
+    /** @return HasMany<AccountPrincipal, $this> */
+    public function accountPrincipals(): HasMany
+    {
+        return $this->hasMany(AccountPrincipal::class, 'identity_id', 'id');
+    }
+
+    /** @return HasMany<AccountNotificationRecipient, $this> */
+    public function accountNotificationRecipients(): HasMany
+    {
+        return $this->hasMany(AccountNotificationRecipient::class, 'identity_id', 'id');
     }
 
     /**

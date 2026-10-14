@@ -19,6 +19,32 @@ use Tests\TestCase;
 #[Group('useDb')]
 class AccountNotificationRecipientServiceTest extends TestCase
 {
+    public function testMembershipInAnotherSelectedAccountDoesNotValidateAStaleRecipient(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identity);
+        $configuredAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        $memberAccount = new AccountIdentifier(StrTestHelper::generateUuid());
+        foreach ([$configuredAccount, $memberAccount] as $account) {
+            CreateAccount::create((string) $account);
+        }
+        $repository = new AccountRepository();
+        $aggregate = $repository->findById($configuredAccount);
+        self::assertNotNull($aggregate);
+        $aggregate->changeNotificationSettings(new NotificationSettings([$identity]));
+        $repository->save($aggregate);
+        DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $memberAccount, 'identity_id' => (string) $identity, 'created_at' => now(), 'updated_at' => now()]);
+
+        $service = new AccountNotificationRecipientService();
+        $this->assertSame([], $service->resolve([$configuredAccount, $memberAccount]));
+
+        $aggregate = $repository->findById($memberAccount);
+        self::assertNotNull($aggregate);
+        $aggregate->changeNotificationSettings(new NotificationSettings([$identity]));
+        $repository->save($aggregate);
+        $this->assertCount(1, $service->resolve([$configuredAccount, $memberAccount]));
+    }
+
     public function testDeduplicatesOnlySelectedAccountsAndDoesNotFollowIdentityToOtherAccounts(): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());

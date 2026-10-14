@@ -44,14 +44,18 @@ readonly class PrincipalWikiScopeResolver implements PrincipalWikiScopeResolverI
             return [];
         }
 
-        return WikiTalentBasicEloquent::query()
-            ->join('wiki_talent_basic_groups as groups', 'groups.wiki_id', '=', 'wiki_talent_basics.wiki_id')
-            ->whereIn('groups.wiki_id', $talentWikiIdentifiers)
-            ->pluck('groups.group_identifier')
-            ->map(static fn (mixed $id): string => TypedValue::string($id))
-            ->unique()
-            ->values()
-            ->all();
+        $basics = WikiTalentBasicEloquent::query()
+            ->with('groups:id')
+            ->whereIn('wiki_id', $talentWikiIdentifiers)
+            ->get();
+        $groupIdentifiers = [];
+        foreach ($basics as $basic) {
+            foreach ($basic->groups as $group) {
+                $groupIdentifiers[$group->id] = $group->id;
+            }
+        }
+
+        return array_values($groupIdentifiers);
     }
 
     /** @return string[] */

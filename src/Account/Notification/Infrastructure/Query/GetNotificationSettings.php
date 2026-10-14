@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Account\Notification\Infrastructure\Query;
 
-use Application\Models\Account\NotificationRecipient as NotificationRecipientEloquent;
 use Application\Models\Identity\Identity as IdentityEloquent;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettings\GetNotificationSettingsInputPort;
@@ -30,17 +31,21 @@ readonly class GetNotificationSettings implements GetNotificationSettingsInterfa
         }
         $accountId = (string) $input->accountIdentifier();
         $rows = IdentityEloquent::query()
-            ->join('account_principals as principals', 'principals.identity_id', '=', 'identities.id')
-            ->where('principals.account_id', $accountId)
-            ->select('identities.*')
-            ->distinct()->orderBy('identities.id')->get();
-        $selectedIdentityIds = NotificationRecipientEloquent::query()
-            ->where('account_id', $accountId)->pluck('identity_id')->all();
+            ->whereHas('accountPrincipals', static function (Builder $query) use ($accountId): void {
+                $query->where('account_id', $accountId);
+            })
+            ->with([
+                'accountNotificationRecipients' => /** @param Relation<*, *, *> $query */
+                    static function (Relation $query) use ($accountId): void {
+                        $query->where('account_id', $accountId);
+                    },
+            ])
+            ->orderBy('identities.id')->get();
         $candidates = [];
         $recipients = [];
         foreach ($rows as $row) {
             $candidates[] = ['identityIdentifier' => $row->id, 'name' => $row->identity_name, 'email' => $row->email, 'language' => $row->language];
-            if (in_array($row->id, $selectedIdentityIds, true)) {
+            if ($row->accountNotificationRecipients->isNotEmpty()) {
                 $recipients[] = ['identityIdentifier' => $row->id, 'channel' => 'email'];
             }
         }
