@@ -286,7 +286,7 @@ class PolicyEvaluatorTest extends TestCase
             ->andReturn([
                 (string) $roleIdentifier => new Role(
                     $roleIdentifier,
-                    Role::ADMINISTRATOR,
+                    Role::OWNER,
                     [$allowPolicy->policyIdentifier(), $denyPolicy->policyIdentifier()],
                     null,
                 ),

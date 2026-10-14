@@ -8,30 +8,41 @@ use Database\Seeders\AccountAuthorizationSeeder;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Principal\Domain\Entity\Role;
+use Tests\Helper\CreateAccount;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountAuthorizationSeederTest extends TestCase
 {
     #[Group('useDb')]
-    public function testOwnerRetainsPoliciesAndReseedingClearsAdministratorPolicies(): void
+    public function testReseedingDeletesLegacySystemAdministratorAndPreservesCustomRoles(): void
     {
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
         $ownerPolicies = $this->policyNames(Role::OWNER);
         $this->assertCount(13, $ownerPolicies);
-        $this->assertSame([], $this->policyNames(Role::ADMINISTRATOR));
-        $adminRoleId = DB::table('account_roles')->where('name', Role::ADMINISTRATOR)->value('id');
-        self::assertIsString($adminRoleId);
-        $this->assertContains('ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE', $this->policyNames(Role::OPERATIONS));
-
-        $ownerPolicyIds = DB::table('account_policies')->whereIn('name', $ownerPolicies)->pluck('id');
-        foreach ($ownerPolicyIds as $policyId) {
-            DB::table('account_role_policy_attachments')->insert(['role_id' => $adminRoleId, 'policy_id' => $policyId]);
+        $accountId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+        $adminRoleId = StrTestHelper::generateUuid();
+        $customRoleId = StrTestHelper::generateUuid();
+        foreach ([$adminRoleId => null, $customRoleId => $accountId] as $roleId => $roleAccountId) {
+            DB::table('account_roles')->insert(['id' => $roleId, 'account_id' => $roleAccountId, 'name' => 'Administrator', 'created_at' => now(), 'updated_at' => now()]);
         }
-        $this->assertEqualsCanonicalizing($ownerPolicies, $this->policyNames(Role::ADMINISTRATOR));
+        $groupId = StrTestHelper::generateUuid();
+        DB::table('account_principal_groups')->insert(['id' => $groupId, 'account_id' => $accountId, 'name' => 'Legacy group', 'is_default' => false, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('account_principal_group_role_attachments')->insert(['principal_group_id' => $groupId, 'role_id' => $adminRoleId]);
+        $policyId = DB::table('account_policies')->where('name', 'ACCOUNT_READ')->value('id');
+        DB::table('account_role_policy_attachments')->insert(['role_id' => $adminRoleId, 'policy_id' => $policyId]);
+
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-        $this->assertSame([], $this->policyNames(Role::ADMINISTRATOR));
+        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
+
+        $this->assertDatabaseMissing('account_roles', ['id' => $adminRoleId]);
+        $this->assertDatabaseMissing('account_role_policy_attachments', ['role_id' => $adminRoleId]);
+        $this->assertDatabaseMissing('account_principal_group_role_attachments', ['role_id' => $adminRoleId]);
+        $this->assertDatabaseHas('account_roles', ['id' => $customRoleId, 'account_id' => $accountId, 'name' => 'Administrator']);
+        $this->assertDatabaseHas('account_principal_groups', ['id' => $groupId]);
         $this->assertEqualsCanonicalizing($ownerPolicies, $this->policyNames(Role::OWNER));
-        $this->assertSame($adminRoleId, DB::table('account_roles')->where('name', Role::ADMINISTRATOR)->value('id'));
+        $this->assertContains('ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE', $this->policyNames(Role::OPERATIONS));
     }
 
     #[Group('useDb')]
@@ -40,7 +51,7 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
 
-        foreach ([Role::OWNER, Role::ADMINISTRATOR, Role::OPERATIONS] as $role) {
+        foreach ([Role::OWNER, Role::OPERATIONS] as $role) {
             $policies = $this->policyNames($role);
             $this->assertSame(in_array('ACCOUNT_READ', $policies, true), in_array('ACCOUNT_NOTIFICATION_SETTINGS_READ', $policies, true));
             $this->assertSame(in_array('ACCOUNT_UPDATE', $policies, true), in_array('ACCOUNT_NOTIFICATION_SETTINGS_UPDATE', $policies, true));
@@ -55,31 +66,12 @@ class AccountAuthorizationSeederTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testRequestCreationPoliciesAreOwnerOnlyAndReseedingRemovesAdminAttachment(): void
+    public function testRequestCreationPoliciesAreGrantedToOwner(): void
     {
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-
         $ownerPolicies = $this->policyNames(Role::OWNER);
-        $adminPolicies = $this->policyNames(Role::ADMINISTRATOR);
-
         $this->assertContains('AFFILIATION_REQUEST_CREATE', $ownerPolicies);
         $this->assertContains('DELEGATION_REQUEST_CREATE', $ownerPolicies);
-        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $adminPolicies);
-        $this->assertNotContains('DELEGATION_REQUEST_CREATE', $adminPolicies);
-        $this->assertNotContains('AFFILIATION_REQUEST_RECEIVE', $adminPolicies);
-        $this->assertNotContains('AFFILIATION_APPROVE', $adminPolicies);
-        $this->assertNotContains('AFFILIATION_REJECT', $adminPolicies);
-
-        $affiliationRequestPolicyId = DB::table('account_policies')->where('name', 'AFFILIATION_REQUEST_CREATE')->value('id');
-        $adminRoleId = DB::table('account_roles')->where('name', Role::ADMINISTRATOR)->value('id');
-        DB::table('account_role_policy_attachments')->insert([
-            'role_id' => $adminRoleId,
-            'policy_id' => $affiliationRequestPolicyId,
-        ]);
-
-        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-
-        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMINISTRATOR));
     }
 
     #[Group('useDb')]
@@ -87,7 +79,6 @@ class AccountAuthorizationSeederTest extends TestCase
     {
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
         $this->assertContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::OWNER));
-        $this->assertNotContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::ADMINISTRATOR));
         $statementsJson = DB::table('account_policies')
             ->where('name', 'ACCOUNT_PRINCIPAL_GROUP_MANAGE')->value('statements');
         $this->assertIsString($statementsJson);
