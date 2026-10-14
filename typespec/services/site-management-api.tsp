@@ -143,7 +143,7 @@ interface ContactListOperations {
   @route("/{contactIdentifier}")
   @doc("Get a contact inquiry by identifier, including anonymous submissions. Requires a site-management Operator and contact:view permission evaluated against the persisted nullable owner. Returns the existing detail without an email address.")
   getContactDetailByIdentifier(
-    @path contactIdentifier: UuidV7,
+    @path contactIdentifier: Uuid,
   ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @useAuth(SessionCookieAuth)

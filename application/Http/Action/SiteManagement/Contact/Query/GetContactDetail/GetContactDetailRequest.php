@@ -16,8 +16,8 @@ class GetContactDetailRequest extends FormRequest
         $requiresPrincipalIdentifier = $route instanceof Route && in_array('principalIdentifier', $route->parameterNames(), true);
 
         return [
-            'principalIdentifier' => [$requiresPrincipalIdentifier ? 'required' : 'nullable', 'uuid:7'],
-            'contactIdentifier' => ['required', 'uuid:7'],
+            'principalIdentifier' => [$requiresPrincipalIdentifier ? 'required' : 'nullable', 'uuid'],
+            'contactIdentifier' => ['required', 'uuid'],
         ];
     }
 
