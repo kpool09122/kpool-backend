@@ -19,11 +19,10 @@ model AccountNotificationCandidate {
 model AccountNotificationSettings {
   @doc("Selected recipients still belonging to the account, ordered by Identity UUID.")
   recipients: AccountNotificationRecipient[];
-  @doc("Current account members, ordered by Identity UUID. Owners membership is not required for recipients.")
+  @doc("Current account members, ordered by Identity UUID. Recipients do not need account management permissions.")
   candidates: AccountNotificationCandidate[];
   @minValue(0) @maxValue(5)
   maxRecipients: int32;
-  canManage: boolean;
 }
 
 model UpdateAccountNotificationSettingsBody {
@@ -36,11 +35,6 @@ model OkAccountNotificationSettingsResponse {
   @body body: AccountNotificationSettings;
 }
 
-model OkAccountNotificationSettingsAccessResponse {
-  @statusCode statusCode: 200;
-  @body body: { canManage: boolean; };
-}
-
 model UpdatedAccountNotificationSettingsResponse {
   @statusCode statusCode: 200;
   @maxItems(0) @body body: string[];
@@ -48,15 +42,11 @@ model UpdatedAccountNotificationSettingsResponse {
 
 interface AccountNotificationOperations {
   @get @route("/accounts/{accountId}/notification-settings")
-  @doc("Owners-group members only: get current email recipients and candidate Identities. Unconfigured accounts have no recipients; no fallback address is used.")
+  @doc("Requires account:notification-settings:read permission: get current email recipients and candidate Identities. New accounts select their creator by default. Empty recipients disables notifications.")
   getNotificationSettings(@path accountId: Uuid): OkAccountNotificationSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 
-  @get @route("/accounts/{accountId}/notification-settings/access")
-  @doc("Get whether the current Principal belongs to the account's Owners group. Owner role or generic update permissions alone do not suffice. Other accounts are forbidden. No recipient or candidate data is exposed here.")
-  getNotificationSettingsAccess(@path accountId: Uuid): OkAccountNotificationSettingsAccessResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
-
   @put @route("/accounts/{accountId}/notification-settings")
-  @doc("Owners-group members only: replace all recipients. Accepts 0..min(member count,5) unique current account Identities. Only email is accepted. Empty recipients disables account-authorized email notifications.")
+  @doc("Requires account:notification-settings:update permission: replace all recipients. Accepts 0..min(member count,5) unique current account Identities. Only email is accepted. Empty recipients disables account-authorized email notifications.")
   updateNotificationSettings(@path accountId: Uuid, @body body: UpdateAccountNotificationSettingsBody): UpdatedAccountNotificationSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 }
 

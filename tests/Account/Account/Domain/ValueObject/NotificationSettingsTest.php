@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Notification\Domain\Entity;
+namespace Tests\Account\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Notification\Domain\Entity\NotificationSettings;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -15,11 +14,9 @@ class NotificationSettingsTest extends TestCase
 {
     public function testAcceptsEmptyAndPreservesIdentifiers(): void
     {
-        $account = new AccountIdentifier(StrTestHelper::generateUuid());
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $this->assertSame([], (new NotificationSettings($account, []))->identityIdentifiers());
-        $settings = new NotificationSettings($account, [$identity]);
-        $this->assertSame($account, $settings->accountIdentifier());
+        $this->assertSame([], (new NotificationSettings([]))->identityIdentifiers());
+        $settings = new NotificationSettings([$identity]);
         $this->assertSame([$identity], $settings->identityIdentifiers());
     }
 
@@ -27,13 +24,13 @@ class NotificationSettingsTest extends TestCase
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $this->expectException(InvalidArgumentException::class);
-        new NotificationSettings(new AccountIdentifier(StrTestHelper::generateUuid()), [$identity, $identity]);
+        new NotificationSettings([$identity, $identity]);
     }
 
     public function testRejectsSixRecipients(): void
     {
         $ids = array_map(static fn (): IdentityIdentifier => new IdentityIdentifier(StrTestHelper::generateUuid()), range(1, 6));
         $this->expectException(InvalidArgumentException::class);
-        new NotificationSettings(new AccountIdentifier(StrTestHelper::generateUuid()), $ids);
+        new NotificationSettings($ids);
     }
 }

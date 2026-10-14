@@ -45,9 +45,6 @@ use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
-use Source\Account\Notification\Domain\Repository\NotificationSettingsRepositoryInterface;
-use Source\Account\Notification\Infrastructure\Repository\NotificationSettingsRepository;
-use Source\Account\Notification\Infrastructure\Service\AccountNotificationRecipientService;
 use Source\Account\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -67,15 +64,11 @@ use Source\Account\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator as PolicyEvaluator;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(NotificationSettingsRepositoryInterface::class, NotificationSettingsRepository::class);
-        $this->app->singleton(AccountNotificationRecipientServiceInterface::class, AccountNotificationRecipientService::class);
-
         $this->app->singleton(WithdrawalEligibilityServiceInterface::class, WithdrawalEligibilityService::class);
         $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);
         $this->app->singleton(ArchivedAccountRepositoryInterface::class, ArchivedAccountRepository::class);

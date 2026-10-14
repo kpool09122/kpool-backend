@@ -84,7 +84,6 @@ class CreateAccountTest extends TestCase
     public function testProcess(): void
     {
         $testData = $this->createDummyAccountTestData();
-
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findByEmail')
             ->with($testData->email)
@@ -92,7 +91,8 @@ class CreateAccountTest extends TestCase
             ->andReturnNull();
         $repository->shouldReceive('save')
             ->once()
-            ->with($testData->account)
+            ->with(Mockery::on(static fn (Account $account): bool => $account === $testData->account
+                && $account->notificationSettings()->identityIdentifiers() === [$testData->identityIdentifier]))
             ->andReturnNull();
 
         $factory = Mockery::mock(AccountFactoryInterface::class);
@@ -180,7 +180,6 @@ class CreateAccountTest extends TestCase
     public function testProcessWithoutIdentityIdentifier(): void
     {
         $testData = $this->createDummyAccountTestData(includeIdentityIdentifier: false);
-
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $repository->shouldReceive('findByEmail')
             ->with($testData->email)
@@ -247,6 +246,7 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
         $this->assertSame(0, $testData->defaultPrincipalGroup->memberCount());
         $this->assertSame(0, $testData->ownerPrincipalGroup->memberCount());
+        $this->assertSame([], $testData->account->notificationSettings()->identityIdentifiers());
     }
 
     /**

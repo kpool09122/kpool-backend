@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Notification\Domain\Entity;
+namespace Source\Account\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class NotificationSettings
@@ -14,7 +13,6 @@ readonly class NotificationSettings
 
     /** @param IdentityIdentifier[] $identityIdentifiers */
     public function __construct(
-        private AccountIdentifier $accountIdentifier,
         private array $identityIdentifiers,
     ) {
         if (count($identityIdentifiers) > self::MAX_RECIPIENTS) {
@@ -24,11 +22,6 @@ readonly class NotificationSettings
         if (count(array_unique($ids)) !== count($ids)) {
             throw new InvalidArgumentException('Notification recipients must be unique.');
         }
-    }
-
-    public function accountIdentifier(): AccountIdentifier
-    {
-        return $this->accountIdentifier;
     }
 
     /** @return IdentityIdentifier[] */

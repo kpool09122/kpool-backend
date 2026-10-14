@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Notification\Infrastructure\Service;
+namespace Tests\Shared\Infrastructure\Service;
 
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Notification\Domain\Entity\NotificationSettings;
-use Source\Account\Notification\Infrastructure\Repository\NotificationSettingsRepository;
-use Source\Account\Notification\Infrastructure\Service\AccountNotificationRecipientService;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
+use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Infrastructure\Service\AccountNotificationRecipientService;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
@@ -31,7 +31,11 @@ class AccountNotificationRecipientServiceTest extends TestCase
             CreateAccount::create((string) $account);
             $id = $i === 2 ? $other : $identity;
             DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $account, 'identity_id' => (string) $id, 'created_at' => now(), 'updated_at' => now()]);
-            (new NotificationSettingsRepository())->save(new NotificationSettings($account, [$id]));
+            $repository = new AccountRepository();
+            $aggregate = $repository->findById($account);
+            self::assertNotNull($aggregate);
+            $aggregate->changeNotificationSettings(new NotificationSettings([$id]));
+            $repository->save($aggregate);
             $accounts[] = $account;
         }
         $service = new AccountNotificationRecipientService();
@@ -39,7 +43,10 @@ class AccountNotificationRecipientServiceTest extends TestCase
         $recipients = $service->resolve(array_slice($accounts, 0, 2));
         $this->assertCount(1, $recipients);
         $this->assertSame('shared@example.com', (string) $recipients[0]->email());
-        (new NotificationSettingsRepository())->save(new NotificationSettings($accounts[0], []));
+        $aggregate = (new AccountRepository())->findById($accounts[0]);
+        self::assertNotNull($aggregate);
+        $aggregate->changeNotificationSettings(new NotificationSettings([]));
+        (new AccountRepository())->save($aggregate);
         $this->assertSame([], $service->resolve([$accounts[0]]));
         $this->assertCount(1, $service->resolve([$accounts[1]]));
     }

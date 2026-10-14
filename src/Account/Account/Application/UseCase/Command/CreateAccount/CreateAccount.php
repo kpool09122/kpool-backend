@@ -7,6 +7,7 @@ namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 use Source\Account\Account\Application\Exception\AccountEmailConflictException;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Event\PrincipalCreated;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
@@ -56,6 +57,9 @@ readonly class CreateAccount implements CreateAccountInterface
         $account->changePhone($input->phone());
         $account->changeAddress(self::contactAddress($input));
 
+        if ($input->identityIdentifier() !== null) {
+            $account->changeNotificationSettings(new NotificationSettings([$input->identityIdentifier()]));
+        }
         $this->accountRepository->save($account);
 
         $defaultPrincipalGroup = $this->principalGroupFactory->create(

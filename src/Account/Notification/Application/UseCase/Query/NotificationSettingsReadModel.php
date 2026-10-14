@@ -13,9 +13,9 @@ readonly class NotificationSettingsReadModel
     {
     }
 
-    /** @return array{recipients: list<array{identityIdentifier: string, channel: string}>, candidates: list<array{identityIdentifier: string, name: string, email: string, language: string}>, maxRecipients: int, canManage: bool} */
+    /** @return array{recipients: list<array{identityIdentifier: string, channel: string}>, candidates: list<array{identityIdentifier: string, name: string, email: string, language: string}>, maxRecipients: int} */
     public function toArray(): array
     {
-        return ['recipients' => $this->recipients, 'candidates' => $this->candidates, 'maxRecipients' => $this->maxRecipients, 'canManage' => true];
+        return ['recipients' => $this->recipients, 'candidates' => $this->candidates, 'maxRecipients' => $this->maxRecipients];
     }
 }

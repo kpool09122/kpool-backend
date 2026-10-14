@@ -4,22 +4,42 @@ declare(strict_types=1);
 
 namespace Tests\Account\Notification\Infrastructure;
 
+use Database\Seeders\AccountAuthorizationSeeder;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
+use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
+use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Notification\Application\UseCase\Command\UpdateNotificationSettings\UpdateNotificationSettingsInput;
 use Source\Account\Notification\Application\UseCase\Command\UpdateNotificationSettings\UpdateNotificationSettingsInterface;
 use Source\Account\Notification\Application\UseCase\Command\UpdateNotificationSettings\UpdateNotificationSettingsOutput;
 use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettings\GetNotificationSettingsInput;
 use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettings\GetNotificationSettingsInterface;
-use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettingsAccess\GetNotificationSettingsAccessInput;
-use Source\Account\Notification\Application\UseCase\Query\GetNotificationSettingsAccess\GetNotificationSettingsAccessInterface;
+use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Effect;
+use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Account\Principal\Domain\ValueObject\ResourceType;
+use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\CreateAccount;
@@ -30,6 +50,41 @@ use Tests\TestCase;
 #[Group('useDb')]
 class NotificationSettingsFlowTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(AccountAuthorizationSeeder::class);
+    }
+
+    public function testNewAccountDefaultsToCreatorAndCanDisableNotifications(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $email = new Email('creator@example.com');
+        CreateIdentity::create($identityIdentifier, ['email' => (string) $email, 'language' => 'ja']);
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::spy(EventDispatcherInterface::class));
+        $output = new CreateAccountOutput();
+        $this->app()->make(CreateAccountInterface::class)->process(
+            new CreateAccountInput($email, new AccountName('My Account'), $identityIdentifier),
+            $output,
+        );
+        $result = $output->toArray();
+        self::assertNotEmpty($result);
+        $account = new AccountIdentifier($result['accountIdentifier'] ?? '');
+        $owner = $this->app()->make(PrincipalRepositoryInterface::class)->findByIdentityIdentifierAndAccountIdentifier($identityIdentifier, $account);
+        self::assertNotNull($owner);
+
+        $this->assertSame([['identityIdentifier' => (string) $identityIdentifier, 'channel' => 'email']], $this->getSettings($account, $owner)['recipients']);
+        $service = $this->app()->make(AccountNotificationRecipientServiceInterface::class);
+        $recipients = $service->resolve([$account]);
+        $this->assertCount(1, $recipients);
+        $this->assertSame((string) $email, (string) $recipients[0]->email());
+        $this->assertSame(Language::JAPANESE, $recipients[0]->language());
+
+        $this->update($account, $owner, []);
+        $this->assertSame([], $this->getSettings($account, $owner)['recipients']);
+        $this->assertSame([], $service->resolve([$account]));
+    }
+
     public function testOwnerCanSaveNonOwnerAndResolveCurrentEmailAndLanguage(): void
     {
         [$account, $owner, $members] = $this->account(3);
@@ -97,39 +152,71 @@ class NotificationSettingsFlowTest extends TestCase
         }
     }
 
-    public function testAccessContractOnlyExposesOwnersMembership(): void
+    public function testPoliciesAllowCustomRolesAndDistinguishReadFromUpdate(): void
     {
         [$account, $owner, $members] = $this->account(2);
-        $query = $this->app()->make(GetNotificationSettingsAccessInterface::class);
-        $this->assertTrue($query->process(new GetNotificationSettingsAccessInput($account, $owner))->canManage());
-        $nonOwner = $this->app()->make(PrincipalRepositoryInterface::class)->findByIdentityIdentifierAndAccountIdentifier($members[1], $account);
-        assert($nonOwner !== null);
-        $this->assertFalse($query->process(new GetNotificationSettingsAccessInput($account, $nonOwner))->canManage());
+        $member = $this->app()->make(PrincipalRepositoryInterface::class)->findByIdentityIdentifierAndAccountIdentifier($members[1], $account);
+        self::assertNotNull($member);
+        $this->grant($member, [Action::NOTIFICATION_SETTINGS_READ]);
+        $this->assertCount(2, $this->getSettings($account, $member)['candidates']);
+
+        try {
+            $this->update($account, $member, [$members[1]]);
+            $this->fail('Read permission must not allow updates.');
+        } catch (AccountUpdateForbiddenException) {
+            $this->assertSame([], $this->getSettings($account, $owner)['recipients']);
+        }
+        $this->grant($member, [Action::NOTIFICATION_SETTINGS_UPDATE]);
+        $this->update($account, $member, [$members[1]]);
+        $this->assertSame((string) $members[1], $this->getSettings($account, $member)['recipients'][0]['identityIdentifier']);
     }
 
-    public function testOtherAccountCannotBeUpdatedOrReadForAccess(): void
+    public function testGenericAccountPermissionsDoNotGrantNotificationSettingsPermissions(): void
+    {
+        [$account, $owner, $members] = $this->account(2);
+        $member = $this->app()->make(PrincipalRepositoryInterface::class)->findByIdentityIdentifierAndAccountIdentifier($members[1], $account);
+        self::assertNotNull($member);
+        $this->grant($member, [Action::READ, Action::UPDATE]);
+        $denied = 0;
+        foreach (['read', 'update'] as $operation) {
+            try {
+                $operation === 'read' ? $this->getSettings($account, $member) : $this->update($account, $member, []);
+                $this->fail('Notification settings require their own permissions.');
+            } catch (AccountUpdateForbiddenException) {
+                $denied++;
+            }
+        }
+        $this->assertSame(2, $denied);
+    }
+
+    public function testGroupNameDoesNotDeterminePermissionAndExplicitDenyWins(): void
+    {
+        [$account, $owner, $members] = $this->account(2);
+        DB::table('account_principal_groups')->where('account_id', (string) $account)->update(['name' => 'Editors']);
+        $this->update($account, $owner, [$members[0]]);
+        $this->grant($owner, [Action::NOTIFICATION_SETTINGS_UPDATE], Effect::DENY);
+        $this->expectException(AccountUpdateForbiddenException::class);
+        $this->update($account, $owner, []);
+    }
+
+    public function testOtherAccountCannotBeReadOrUpdated(): void
     {
         [$account, $owner, $members] = $this->account(1);
         [$otherAccount] = $this->account(1);
         $denied = 0;
-
-        try {
-            $this->update($otherAccount, $owner, $members);
-        } catch (AccountUpdateForbiddenException) {
-            $denied++;
-        }
-        $query = $this->app()->make(GetNotificationSettingsAccessInterface::class);
-
-        try {
-            $query->process(new GetNotificationSettingsAccessInput($otherAccount, $owner));
-        } catch (AccountUpdateForbiddenException) {
-            $denied++;
+        foreach (['read', 'update'] as $operation) {
+            try {
+                $operation === 'read' ? $this->getSettings($otherAccount, $owner) : $this->update($otherAccount, $owner, $members);
+                $this->fail('Other account access must be rejected.');
+            } catch (AccountUpdateForbiddenException) {
+                $denied++;
+            }
         }
         $this->assertSame(2, $denied);
         $this->assertSame([], $this->getSettings($account, $owner)['recipients']);
     }
 
-    public function testNonOwnersCannotReadOrUpdate(): void
+    public function testMembersWithoutPoliciesCannotReadOrUpdate(): void
     {
         [$account, $owner, $members] = $this->account(2);
         $nonOwner = $this->app()->make(PrincipalRepositoryInterface::class)->findByIdentityIdentifierAndAccountIdentifier($members[1], $account);
@@ -150,6 +237,19 @@ class NotificationSettingsFlowTest extends TestCase
         $this->getSettings($otherAccount, $owner);
     }
 
+    /** @param Action[] $actions */
+    private function grant(Principal $principal, array $actions, Effect $effect = Effect::ALLOW): void
+    {
+        $policy = new Policy(new PolicyIdentifier(StrTestHelper::generateUuid()), 'Notification policy ' . StrTestHelper::generateUuid(), [new Statement($effect, $actions, [ResourceType::ACCOUNT])], $principal->accountIdentifier(), new DateTimeImmutable());
+        $this->app()->make(PolicyRepositoryInterface::class)->save($policy);
+        $role = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), 'Custom role ' . StrTestHelper::generateUuid(), [$policy->policyIdentifier()], $principal->accountIdentifier());
+        $this->app()->make(RoleRepositoryInterface::class)->save($role);
+        $group = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $principal->accountIdentifier(), 'Custom group ' . StrTestHelper::generateUuid(), false, new DateTimeImmutable());
+        $group->addRole($role);
+        $group->addMember($principal->principalIdentifier());
+        $this->app()->make(PrincipalGroupRepositoryInterface::class)->save($group);
+    }
+
     /** @return array{AccountIdentifier, Principal, list<IdentityIdentifier>} */
     private function account(int $count): array
     {
@@ -157,6 +257,9 @@ class NotificationSettingsFlowTest extends TestCase
         CreateAccount::create((string) $account);
         $group = StrTestHelper::generateUuid();
         DB::table('account_principal_groups')->insert(['id' => $group, 'account_id' => (string) $account, 'name' => 'Owners', 'is_default' => false, 'created_at' => now(), 'updated_at' => now()]);
+        $ownerRole = $this->app()->make(RoleRepositoryInterface::class)->findSystemByName(Role::OWNER);
+        self::assertNotNull($ownerRole);
+        DB::table('account_principal_group_role_attachments')->insert(['principal_group_id' => $group, 'role_id' => (string) $ownerRole->roleIdentifier()]);
         $members = [];
         $owner = null;
         for ($i = 0; $i < $count; $i++) {
@@ -187,7 +290,7 @@ class NotificationSettingsFlowTest extends TestCase
     }
 
     /**
-     * @return array{recipients: list<array{identityIdentifier: string, channel: string}>, candidates: list<array{identityIdentifier: string, name: string, email: string, language: string}>, maxRecipients: int, canManage: bool}
+     * @return array{recipients: list<array{identityIdentifier: string, channel: string}>, candidates: list<array{identityIdentifier: string, name: string, email: string, language: string}>, maxRecipients: int}
      * @throws AccountUpdateForbiddenException
      */
     private function getSettings(AccountIdentifier $account, Principal $principal): array

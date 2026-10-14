@@ -9,6 +9,8 @@ enum Action: string
     case READ = 'account:read';
     case INVITE_MEMBER = 'account:member:invite';
     case UPDATE = 'account:update';
+    case NOTIFICATION_SETTINGS_READ = 'account:notification-settings:read';
+    case NOTIFICATION_SETTINGS_UPDATE = 'account:notification-settings:update';
     case PRINCIPAL_GROUP_MANAGE = 'account:principal-group:manage';
     case ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE = 'account:category-change-request:manage';
     case AFFILIATION_REQUEST_CREATE = 'account:affiliation-request:create';

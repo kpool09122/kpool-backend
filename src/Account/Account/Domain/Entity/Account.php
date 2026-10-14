@@ -11,6 +11,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -32,6 +33,7 @@ class Account
         private AccountDocuments $documents,
         private ?Phone $phone = null,
         private ?ContactAddress $address = null,
+        private NotificationSettings $notificationSettings = new NotificationSettings([]),
     ) {
         if ($this->status === AccountStatus::ACTIVE && $this->type === null) {
             throw new AccountSetupUnavailableException('Active account must have an account type.');
@@ -41,6 +43,16 @@ class Account
     public function accountIdentifier(): AccountIdentifier
     {
         return $this->accountIdentifier;
+    }
+
+    public function notificationSettings(): NotificationSettings
+    {
+        return $this->notificationSettings;
+    }
+
+    public function changeNotificationSettings(NotificationSettings $notificationSettings): void
+    {
+        $this->notificationSettings = $notificationSettings;
     }
 
     public function email(): Email

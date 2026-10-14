@@ -43,6 +43,7 @@ readonly class GetNotificationSettingsAction
                 $input = new GetNotificationSettingsInput(
                     accountIdentifier: new AccountIdentifier($request->accountId()),
                     principal: $this->accountContext->principal(),
+                    accountType: $this->accountContext->accountType(),
                 );
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: error_message('invalid_notification_settings', $language), previous: $e);

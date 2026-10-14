@@ -78,7 +78,7 @@ class AccountRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testFindByIdsLoadsAccountAggregatesInTwoQueries(): void
+    public function testFindByIdsLoadsAccountAggregatesInThreeQueries(): void
     {
         $repository = $this->app()->make(AccountRepositoryInterface::class);
         $identifiers = [];
@@ -121,7 +121,7 @@ class AccountRepositoryTest extends TestCase
                 $this->assertSame((string) $account->accountIdentifier(), (string) $documents[0]->accountIdentifier());
                 $this->assertSame(DocumentType::BUSINESS_REGISTRATION, $documents[0]->documentType());
             }
-            $this->assertCount(2, DB::getQueryLog());
+            $this->assertCount(3, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();
