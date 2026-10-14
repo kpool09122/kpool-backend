@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_notification_settings' => '通知接收者设置无效。',
     'recent_authentication_required' => '需要重新验证身份。',
     'identity_name_confirmation_mismatch' => '输入的用户名与当前用户名不一致。',
     'identity_withdrawal_not_allowed' => '此用户无法通过常规流程注销。',

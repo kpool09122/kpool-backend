@@ -17,6 +17,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
@@ -406,6 +407,7 @@ class GrantOperationsTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
         $principal = new Principal(new PrincipalIdentifier(StrTestHelper::generateUuid()), $identityIdentifier, $accountIdentifier);
         $operationsRole = new Role(new RoleIdentifier(StrTestHelper::generateUuid()), Role::OPERATIONS, [], null);

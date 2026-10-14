@@ -70,6 +70,7 @@ use Source\Identity\Infrastructure\Service\StepUpAuthenticationStorageService;
 use Source\Identity\Infrastructure\Service\StepUpOAuthSessionStorageService;
 use Source\Identity\Infrastructure\Service\WebAuthnChallengeGenerator;
 use Source\Identity\Infrastructure\Service\WebAuthnService;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -98,7 +99,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AuthServiceInterface::class, AuthService::class);
         $this->app->singleton(AuthCodeServiceInterface::class, AuthCodeService::class);
         $this->app->singleton(AffiliationRequestNotificationServiceInterface::class, fn ($app) => new AffiliationRequestNotificationService(
-            $app->make(IdentityRepositoryInterface::class),
+            $app->make(AccountNotificationRecipientServiceInterface::class),
             config('app.frontend_url', 'http://localhost:3000'),
         ));
         $this->app->singleton(CollaboratorNotificationServiceInterface::class, CollaboratorNotificationService::class);

@@ -29,6 +29,10 @@ parameters:
     reportUnmatchedIgnoredErrors: true
 services:
     -
+        class: Kpool\PHPStan\Rules\ForbiddenDatabaseQueryBuilderRule
+        tags:
+            - phpstan.rules.rule
+    -
         class: Kpool\PHPStan\Rules\ExceptionConstructorRule
         arguments:
             targetClassNamePatterns:

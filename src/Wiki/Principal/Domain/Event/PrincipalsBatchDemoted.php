@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Event;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class PrincipalsBatchDemoted
 {
     /**
-     * @param IdentityIdentifier[] $demotedIdentities
+     * @param AccountIdentifier[] $accountIdentifiers
      */
     public function __construct(
-        private array $demotedIdentities,
+        private array $accountIdentifiers,
     ) {
     }
 
     /**
-     * @return IdentityIdentifier[]
+     * @return AccountIdentifier[]
      */
-    public function demotedIdentities(): array
+    public function accountIdentifiers(): array
     {
-        return $this->demotedIdentities;
+        return $this->accountIdentifiers;
     }
 }

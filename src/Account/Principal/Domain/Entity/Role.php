@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 class Role
 {
     public const string OWNER = 'Owner';
-    public const string ADMINISTRATOR = 'Administrator';
     public const string OPERATIONS = 'Operations';
 
     /**

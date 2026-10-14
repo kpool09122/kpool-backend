@@ -13,31 +13,32 @@ use Tests\TestCase;
 class AccountAuthorizationSeederTest extends TestCase
 {
     #[Group('useDb')]
-    public function testRequestCreationPoliciesAreOwnerOnlyAndReseedingRemovesAdminAttachment(): void
+    public function testNotificationSettingsPoliciesMatchExistingAccountRoleAssignments(): void
     {
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
-
-        $ownerPolicies = $this->policyNames(Role::OWNER);
-        $adminPolicies = $this->policyNames(Role::ADMINISTRATOR);
-
-        $this->assertContains('AFFILIATION_REQUEST_CREATE', $ownerPolicies);
-        $this->assertContains('DELEGATION_REQUEST_CREATE', $ownerPolicies);
-        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $adminPolicies);
-        $this->assertNotContains('DELEGATION_REQUEST_CREATE', $adminPolicies);
-        $this->assertContains('AFFILIATION_REQUEST_RECEIVE', $adminPolicies);
-        $this->assertContains('AFFILIATION_APPROVE', $adminPolicies);
-        $this->assertContains('AFFILIATION_REJECT', $adminPolicies);
-
-        $affiliationRequestPolicyId = DB::table('account_policies')->where('name', 'AFFILIATION_REQUEST_CREATE')->value('id');
-        $adminRoleId = DB::table('account_roles')->where('name', Role::ADMINISTRATOR)->value('id');
-        DB::table('account_role_policy_attachments')->insert([
-            'role_id' => $adminRoleId,
-            'policy_id' => $affiliationRequestPolicyId,
-        ]);
-
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
 
-        $this->assertNotContains('AFFILIATION_REQUEST_CREATE', $this->policyNames(Role::ADMINISTRATOR));
+        foreach ([Role::OWNER, Role::OPERATIONS] as $role) {
+            $policies = $this->policyNames($role);
+            $this->assertSame(in_array('ACCOUNT_READ', $policies, true), in_array('ACCOUNT_NOTIFICATION_SETTINGS_READ', $policies, true));
+            $this->assertSame(in_array('ACCOUNT_UPDATE', $policies, true), in_array('ACCOUNT_NOTIFICATION_SETTINGS_UPDATE', $policies, true));
+        }
+        foreach (['READ' => 'read', 'UPDATE' => 'update'] as $name => $action) {
+            $json = DB::table('account_policies')->where('name', 'ACCOUNT_NOTIFICATION_SETTINGS_' . $name)->value('statements');
+            self::assertIsString($json);
+            $this->assertSame([
+                ['effect' => 'allow', 'actions' => ['account:notification-settings:' . $action], 'resource_types' => ['account'], 'condition' => null],
+            ], json_decode($json, true, flags: JSON_THROW_ON_ERROR));
+        }
+    }
+
+    #[Group('useDb')]
+    public function testRequestCreationPoliciesAreGrantedToOwner(): void
+    {
+        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
+        $ownerPolicies = $this->policyNames(Role::OWNER);
+        $this->assertContains('AFFILIATION_REQUEST_CREATE', $ownerPolicies);
+        $this->assertContains('DELEGATION_REQUEST_CREATE', $ownerPolicies);
     }
 
     #[Group('useDb')]
@@ -45,7 +46,6 @@ class AccountAuthorizationSeederTest extends TestCase
     {
         $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
         $this->assertContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::OWNER));
-        $this->assertContains('ACCOUNT_PRINCIPAL_GROUP_MANAGE', $this->policyNames(Role::ADMINISTRATOR));
         $statementsJson = DB::table('account_policies')
             ->where('name', 'ACCOUNT_PRINCIPAL_GROUP_MANAGE')->value('statements');
         $this->assertIsString($statementsJson);

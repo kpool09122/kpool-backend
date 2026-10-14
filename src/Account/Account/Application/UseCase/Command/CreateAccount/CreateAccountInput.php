@@ -15,7 +15,7 @@ readonly class CreateAccountInput implements CreateAccountInputPort
     public function __construct(
         private Email $email,
         private AccountName $accountName,
-        private ?IdentityIdentifier $identityIdentifier = null,
+        private IdentityIdentifier $identityIdentifier,
         private Language $language = Language::ENGLISH,
         private ?Phone $phone = null,
         private ?string $addressCountryCode = null,
@@ -37,7 +37,7 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         return $this->accountName;
     }
 
-    public function identityIdentifier(): ?IdentityIdentifier
+    public function identityIdentifier(): IdentityIdentifier
     {
         return $this->identityIdentifier;
     }

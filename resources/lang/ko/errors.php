@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_notification_settings' => '알림 수신자 설정이 올바르지 않습니다.',
     'recent_authentication_required' => '최근 재인증이 필요합니다.',
     'identity_name_confirmation_mismatch' => '입력한 사용자 이름이 현재 사용자 이름과 일치하지 않습니다.',
     'identity_withdrawal_not_allowed' => '이 사용자는 일반 탈퇴 절차를 이용할 수 없습니다.',

@@ -16,6 +16,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
@@ -171,6 +172,6 @@ class AccountResolverTest extends TestCase
 
     private function account(AccountIdentifier $id): Account
     {
-        return new Account($id, new Email('account@example.com'), AccountType::CORPORATION, new AccountName('Account'), AccountStatus::ACTIVE, AccountCategory::AGENCY, DeletionReadinessChecklist::ready(), new AccountDocuments([]));
+        return new Account($id, new Email('account@example.com'), AccountType::CORPORATION, new AccountName('Account'), AccountStatus::ACTIVE, AccountCategory::AGENCY, DeletionReadinessChecklist::ready(), new AccountDocuments([]), new NotificationSettings([]));
     }
 }

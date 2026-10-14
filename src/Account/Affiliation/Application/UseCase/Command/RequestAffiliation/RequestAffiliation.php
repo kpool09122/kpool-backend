@@ -97,7 +97,7 @@ readonly class RequestAffiliation implements RequestAffiliationInterface
         $this->affiliationRepository->save($affiliation);
         $this->eventDispatcher->dispatch(new AffiliationRequested(
             $affiliation->affiliationIdentifier(),
-            $input->targetEmail(),
+            $targetAccount->accountIdentifier(),
             $agencyAccountIdentifier,
             $talentAccountIdentifier,
             $requestingAccount->accountIdentifier(),

@@ -14,7 +14,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
@@ -39,8 +38,8 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
         ListVersionInconsistentWikisInputPort $input,
         ListVersionInconsistentWikisOutputPort $output,
     ): void {
-        $inconsistentSets = DB::table('wikis')
-            ->select('translation_set_identifier', DB::raw('MAX(version) as latest_version'))
+        $inconsistentSets = WikiModel::query()
+            ->select('translation_set_identifier')->selectRaw('MAX(version) as latest_version')
             ->whereIn('resource_type', $this->targetResourceTypes($input->resourceType()))
             ->groupBy('translation_set_identifier')
             ->havingRaw(
@@ -107,7 +106,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
             throw new InvalidArgumentException('Invalid sort order.');
         }
         if ($sort === 'name') {
-            $query->orderBy(DB::raw($this->nameSortExpression()), $order)
+            $query->orderByRaw($this->nameSortExpression() . ' ' . $order)
                 ->orderBy('wikis.updated_at', 'desc');
 
             return;

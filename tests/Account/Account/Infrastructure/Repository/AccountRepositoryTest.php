@@ -17,6 +17,7 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -50,6 +51,7 @@ class AccountRepositoryTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             $documents ?? new AccountDocuments(),
+            new NotificationSettings([]),
         );
     }
 
@@ -78,7 +80,7 @@ class AccountRepositoryTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testFindByIdsLoadsAccountAggregatesInTwoQueries(): void
+    public function testFindByIdsLoadsAccountAggregatesInThreeQueries(): void
     {
         $repository = $this->app()->make(AccountRepositoryInterface::class);
         $identifiers = [];
@@ -121,7 +123,7 @@ class AccountRepositoryTest extends TestCase
                 $this->assertSame((string) $account->accountIdentifier(), (string) $documents[0]->accountIdentifier());
                 $this->assertSame(DocumentType::BUSINESS_REGISTRATION, $documents[0]->documentType());
             }
-            $this->assertCount(2, DB::getQueryLog());
+            $this->assertCount(3, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();

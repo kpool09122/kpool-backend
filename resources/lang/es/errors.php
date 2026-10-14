@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_notification_settings' => 'Los destinatarios de notificaciones no son válidos.',
     'recent_authentication_required' => 'Se requiere una autenticación reciente.',
     'identity_name_confirmation_mismatch' => 'El nombre de usuario introducido no coincide con tu nombre de usuario actual.',
     'identity_withdrawal_not_allowed' => 'Este usuario no puede darse de baja mediante el procedimiento habitual.',

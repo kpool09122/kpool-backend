@@ -3,6 +3,54 @@ using KPool.Common;
 
 namespace KPool.AccountApi;
 
+@doc("An account email notification recipient. Other channels are not currently supported.")
+model AccountNotificationRecipient {
+  identityIdentifier: Uuid;
+  channel: "email";
+}
+
+model AccountNotificationCandidate {
+  identityIdentifier: Uuid;
+  name: string;
+  email: string;
+  language: string;
+}
+
+model AccountNotificationSettings {
+  @doc("Selected recipients still belonging to the account, ordered by Identity UUID.")
+  recipients: AccountNotificationRecipient[];
+  @doc("Current account members, ordered by Identity UUID. Recipients do not need account management permissions.")
+  candidates: AccountNotificationCandidate[];
+  @minValue(0) @maxValue(5)
+  maxRecipients: int32;
+}
+
+model UpdateAccountNotificationSettingsBody {
+  @maxItems(5)
+  recipients: AccountNotificationRecipient[];
+}
+
+model OkAccountNotificationSettingsResponse {
+  @statusCode statusCode: 200;
+  @body body: AccountNotificationSettings;
+}
+
+model UpdatedAccountNotificationSettingsResponse {
+  @statusCode statusCode: 200;
+  @maxItems(0) @body body: string[];
+}
+
+interface AccountNotificationOperations {
+  @get @route("/accounts/{accountId}/notification-settings")
+  @doc("Requires account:notification-settings:read permission: get current email recipients and candidate Identities. New accounts select their creator by default. Empty recipients disables notifications.")
+  getNotificationSettings(@path accountId: Uuid): OkAccountNotificationSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @put @route("/accounts/{accountId}/notification-settings")
+  @doc("Requires account:notification-settings:update permission: replace all recipients. Accepts 0..min(member count,5) unique current account Identities. Only email is accepted. Empty recipients disables account-authorized email notifications.")
+  updateNotificationSettings(@path accountId: Uuid, @body body: UpdateAccountNotificationSettingsBody): UpdatedAccountNotificationSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+}
+
+
 @doc("Request body for updating account information.")
 model UpdateAccountRequestBody {
   @doc("Updated account display name.")

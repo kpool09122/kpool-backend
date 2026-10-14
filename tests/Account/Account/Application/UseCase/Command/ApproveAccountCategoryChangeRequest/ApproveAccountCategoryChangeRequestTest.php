@@ -27,6 +27,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
@@ -257,7 +258,7 @@ class ApproveAccountCategoryChangeRequestTest extends TestCase
 
     private function account(AccountIdentifier $accountId, ?AccountType $type): Account
     {
-        return new Account($accountId, new Email('account@example.com'), $type, new AccountName('Account'), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, AccountCategory::GENERAL, DeletionReadinessChecklist::ready(), new AccountDocuments([]));
+        return new Account($accountId, new Email('account@example.com'), $type, new AccountName('Account'), $type === null ? AccountStatus::PENDING : AccountStatus::ACTIVE, AccountCategory::GENERAL, DeletionReadinessChecklist::ready(), new AccountDocuments([]), new NotificationSettings([]));
     }
 
     private function principal(AccountIdentifier $accountId): Principal

@@ -19,7 +19,7 @@ class PrincipalRoleNamingTest extends TestCase
     {
         $this->seed([AccountAuthorizationSeeder::class, SystemPolicySeeder::class, SystemRoleSeeder::class, SiteManagementAuthorizationSeeder::class]);
 
-        $this->assertEqualsCanonicalizing(['Administrator', 'Owner', 'Operations'], DB::table('account_roles')->pluck('name')->all());
+        $this->assertEqualsCanonicalizing(['Owner', 'Operations'], DB::table('account_roles')->pluck('name')->all());
         $this->assertEqualsCanonicalizing(['Operator', 'Administrator', 'SeniorCollaborator', 'AgencyActor', 'TalentActor', 'Collaborator', 'None'], DB::table('wiki_roles')->pluck('name')->all());
         $this->assertEqualsCanonicalizing(['Operator', 'Administrator', 'General'], DB::table('site_management_roles')->pluck('name')->all());
 

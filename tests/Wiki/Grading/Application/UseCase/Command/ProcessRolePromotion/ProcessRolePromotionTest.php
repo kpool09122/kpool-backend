@@ -138,6 +138,8 @@ class ProcessRolePromotionTest extends TestCase
 
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $dispatcher->shouldReceive('dispatch')
+            ->with(Mockery::on(static fn (object $event): bool => method_exists($event, 'accountIdentifiers')
+                && $event->accountIdentifiers() === [$principal->accountIdentifier()]))
             ->once();
 
         $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
@@ -652,6 +654,8 @@ class ProcessRolePromotionTest extends TestCase
 
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $dispatcher->shouldReceive('dispatch')
+            ->with(Mockery::on(static fn (object $event): bool => method_exists($event, 'accountIdentifiers')
+                && $event->accountIdentifiers() === [$principal->accountIdentifier()]))
             ->once();
 
         $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
@@ -787,7 +791,7 @@ class ProcessRolePromotionTest extends TestCase
         $dispatcher = Mockery::mock(EventDispatcherInterface::class);
         // DemotionWarningsBatchIssuedが発行されることを確認
         $dispatcher->shouldReceive('dispatch')
-            ->with(Mockery::on(static fn ($event) => $event instanceof DemotionWarningsBatchIssued))
+            ->with(Mockery::on(static fn ($event) => $event instanceof DemotionWarningsBatchIssued && $event->accountIdentifiers() === [$principal->accountIdentifier()]))
             ->once();
 
         $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);

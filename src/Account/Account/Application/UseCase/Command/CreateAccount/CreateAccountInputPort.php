@@ -16,7 +16,7 @@ interface CreateAccountInputPort
 
     public function accountName(): AccountName;
 
-    public function identityIdentifier(): ?IdentityIdentifier;
+    public function identityIdentifier(): IdentityIdentifier;
 
     public function phone(): ?Phone;
 

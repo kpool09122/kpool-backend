@@ -104,10 +104,22 @@ class AccountAuthorizationSeeder extends Seeder
             Action::DELEGATION_REJECT,
             $this->affiliationRequestCreateCondition(),
         );
+        $notificationSettingsReadPolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000013',
+            'ACCOUNT_NOTIFICATION_SETTINGS_READ',
+            Action::NOTIFICATION_SETTINGS_READ,
+        );
+        $notificationSettingsUpdatePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000014',
+            'ACCOUNT_NOTIFICATION_SETTINGS_UPDATE',
+            Action::NOTIFICATION_SETTINGS_UPDATE,
+        );
         $ownerPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
             $accountUpdatePolicy->policyIdentifier(),
+            $notificationSettingsReadPolicy->policyIdentifier(),
+            $notificationSettingsUpdatePolicy->policyIdentifier(),
             $accountPrincipalGroupManagePolicy->policyIdentifier(),
             $affiliationRequestCreatePolicy->policyIdentifier(),
             $affiliationRequestReceivePolicy->policyIdentifier(),
@@ -118,20 +130,7 @@ class AccountAuthorizationSeeder extends Seeder
             $delegationRejectPolicy->policyIdentifier(),
         ];
 
-        $adminPolicyIdentifiers = [
-            $accountReadPolicy->policyIdentifier(),
-            $corporationAccountInviteMemberPolicy->policyIdentifier(),
-            $accountUpdatePolicy->policyIdentifier(),
-            $accountPrincipalGroupManagePolicy->policyIdentifier(),
-            $affiliationRequestReceivePolicy->policyIdentifier(),
-            $affiliationApprovePolicy->policyIdentifier(),
-            $affiliationRejectPolicy->policyIdentifier(),
-            $delegationApprovePolicy->policyIdentifier(),
-            $delegationRejectPolicy->policyIdentifier(),
-        ];
-
         $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
-        $this->saveRole(Role::ADMINISTRATOR, $adminPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
         ]);

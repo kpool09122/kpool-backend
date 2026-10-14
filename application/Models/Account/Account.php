@@ -57,6 +57,12 @@ class Account extends Model
         ];
     }
 
+    /** @return HasMany<NotificationRecipient, $this> */
+    public function notificationRecipients(): HasMany
+    {
+        return $this->hasMany(NotificationRecipient::class, 'account_id', 'id')->orderBy('identity_id');
+    }
+
     /** @return HasMany<AccountDocument, $this> */
     public function documents(): HasMany
     {

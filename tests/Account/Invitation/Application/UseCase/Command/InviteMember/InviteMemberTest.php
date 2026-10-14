@@ -13,6 +13,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
@@ -498,6 +499,7 @@ class InviteMemberTest extends TestCase
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
             new AccountDocuments(),
+            new NotificationSettings([]),
         );
     }
 

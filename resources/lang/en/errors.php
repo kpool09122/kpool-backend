@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_notification_settings' => 'The notification recipients are invalid.',
     'recent_authentication_required' => 'Recent authentication is required.',
     'identity_name_confirmation_mismatch' => 'The entered username does not match your current username.',
     'identity_withdrawal_not_allowed' => 'This identity is not eligible for self-service withdrawal.',

@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Identity|null $identity
+ * @property-read Account|null $account
  * @property-read Collection<int, PrincipalGroupMembership> $principalGroupMemberships
  */
 #[Fillable([
@@ -31,6 +32,12 @@ use Illuminate\Support\Carbon;
 class Principal extends Model
 {
     public $incrementing = false;
+
+    /** @return BelongsTo<Account, $this> */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'account_id', 'id');
+    }
 
     /** @return BelongsTo<Identity, $this> */
     public function identity(): BelongsTo

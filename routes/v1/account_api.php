@@ -27,6 +27,8 @@ use Application\Http\Action\Account\Delegation\Command\RequestDelegation\Request
 use Application\Http\Action\Account\Delegation\Query\ListDelegations\ListDelegationsAction;
 use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
 use Application\Http\Action\Account\Member\Query\ListMembers\ListMembersAction;
+use Application\Http\Action\Account\Notification\Command\UpdateNotificationSettings\UpdateNotificationSettingsAction;
+use Application\Http\Action\Account\Notification\Query\GetNotificationSettings\GetNotificationSettingsAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +44,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
         Route::get('/my/documents', ListMyAccountDocumentsAction::class);
         Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
         Route::get('/accounts/{accountId}', GetAccountAction::class);
+        Route::get('/accounts/{accountId}/notification-settings', GetNotificationSettingsAction::class);
         Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
 
         // Delegation
@@ -65,6 +68,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::middleware('rate-limit:screen,command')->group(function () {
         // Account
         Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
+        Route::put('/accounts/{accountId}/notification-settings', UpdateNotificationSettingsAction::class);
         // Disabled by #605: Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
         Route::post('/accounts/switch', SwitchAccountAction::class);
         Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);

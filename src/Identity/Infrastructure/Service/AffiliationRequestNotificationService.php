@@ -8,28 +8,27 @@ use Application\Mail\AffiliationRequestMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
-use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class AffiliationRequestNotificationService implements AffiliationRequestNotificationServiceInterface
 {
     public function __construct(
-        private IdentityRepositoryInterface $identityRepository,
+        private AccountNotificationRecipientServiceInterface $accountNotificationRecipientService,
         private string $frontendBaseUrl,
     ) {
     }
 
-    public function sendAffiliationRequestNotification(Email $targetEmail): void
+    public function sendAffiliationRequestNotification(AccountIdentifier $accountIdentifier): void
     {
-        $identity = $this->identityRepository->findByEmail($targetEmail);
-        if ($identity === null) {
-            return;
-        }
-
-        $send = fn (): mixed => Mail::to((string) $targetEmail)->send(new AffiliationRequestMail(
-            $this->buildAffiliationUrl(),
-            $identity->language(),
-        ));
+        $send = function () use ($accountIdentifier): void {
+            foreach ($this->accountNotificationRecipientService->resolve([$accountIdentifier]) as $recipient) {
+                Mail::to((string) $recipient->email())->send(new AffiliationRequestMail(
+                    $this->buildAffiliationUrl(),
+                    $recipient->language(),
+                ));
+            }
+        };
 
         if (DB::transactionLevel() > 0) {
             DB::afterCommit($send);

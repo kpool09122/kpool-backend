@@ -6,6 +6,7 @@ namespace Source\Account\Account\Infrastructure\Repository;
 
 use Application\Models\Account\Account as AccountEloquent;
 use Application\Models\Account\AccountDocument as AccountDocumentEloquent;
+use Application\Models\Account\NotificationRecipient as NotificationRecipientEloquent;
 use Application\Models\Account\Policy as PolicyEloquent;
 use Application\Models\Account\Role as RoleEloquent;
 use Source\Account\Account\Domain\Entity\Account;
@@ -17,11 +18,13 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
+use Source\Account\Account\Domain\ValueObject\NotificationSettings;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Phone;
 
 class AccountRepository implements AccountRepositoryInterface
@@ -42,6 +45,18 @@ class AccountRepository implements AccountRepositoryInterface
                 ...$addressColumns,
             ]
         );
+
+        NotificationRecipientEloquent::query()->where('account_id', (string) $account->accountIdentifier())->delete();
+        $recipientRows = [];
+        foreach ($account->notificationSettings()->identityIdentifiers() as $identityIdentifier) {
+            $recipientRows[] = [
+                'account_id' => (string) $account->accountIdentifier(),
+                'identity_id' => (string) $identityIdentifier,
+            ];
+        }
+        if ($recipientRows !== []) {
+            NotificationRecipientEloquent::query()->insert($recipientRows);
+        }
 
         $documentRows = [];
         foreach ($account->documents()->all() as $document) {
@@ -65,7 +80,7 @@ class AccountRepository implements AccountRepositoryInterface
     public function findById(AccountIdentifier $identifier): ?Account
     {
         $eloquent = AccountEloquent::query()
-            ->with('documents')
+            ->with(['documents', 'notificationRecipients'])
             ->where('id', (string) $identifier)
             ->first();
 
@@ -85,7 +100,7 @@ class AccountRepository implements AccountRepositoryInterface
         $ids = array_map(static fn (AccountIdentifier $identifier): string => (string) $identifier, $identifiers);
 
         return AccountEloquent::query()
-            ->with('documents')
+            ->with(['documents', 'notificationRecipients'])
             ->whereIn('id', $ids)
             ->get()
             ->map(fn (AccountEloquent $eloquent): Account => $this->toDomainEntity($eloquent))
@@ -95,7 +110,7 @@ class AccountRepository implements AccountRepositoryInterface
     public function findByEmail(Email $email): ?Account
     {
         $eloquent = AccountEloquent::query()
-            ->with('documents')
+            ->with(['documents', 'notificationRecipients'])
             ->where('email', (string) $email)
             ->first();
 
@@ -138,6 +153,9 @@ class AccountRepository implements AccountRepositoryInterface
             AccountCategory::from($eloquent->category),
             DeletionReadinessChecklist::ready(),
             new AccountDocuments($documents),
+            new NotificationSettings($eloquent->notificationRecipients->map(static function (NotificationRecipientEloquent $recipient): IdentityIdentifier {
+                return new IdentityIdentifier($recipient->identity_id);
+            })->all()),
             $eloquent->phone !== null ? new Phone($eloquent->phone) : null,
             self::contactAddress($eloquent),
         );
