@@ -16,6 +16,10 @@ use Source\Wiki\Principal\Application\EventHandler\AccountDeletingHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationActivatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\AffiliationTerminatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\IdentityWithdrawingHandler;
+use Source\Wiki\Wiki\Application\EventHandler\WikiWorkflowNotificationHandler;
+use Source\Wiki\Wiki\Domain\Event\WikiApproved;
+use Source\Wiki\Wiki\Domain\Event\WikiPublished;
+use Source\Wiki\Wiki\Domain\Event\WikiRejected;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -23,6 +27,9 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
+        $events->listen(WikiApproved::class, [WikiWorkflowNotificationHandler::class, 'handle']);
+        $events->listen(WikiRejected::class, [WikiWorkflowNotificationHandler::class, 'handle']);
+        $events->listen(WikiPublished::class, [WikiWorkflowNotificationHandler::class, 'handle']);
         $events->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
         $events->listen(AccountDeleting::class, [AccountDeletingHandler::class, 'handle']);
 

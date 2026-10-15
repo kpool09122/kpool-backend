@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -35,6 +36,7 @@ use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Entity\WikiSnapshot;
+use Source\Wiki\Wiki\Domain\Event\WikiPublished;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
@@ -63,6 +65,12 @@ use Tests\TestCase;
 
 class PublishWikiTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+    }
+
     /**
      * 正常系: インスタンスが生成されること
      *
@@ -191,6 +199,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -310,6 +322,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -416,6 +432,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -514,6 +534,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -941,6 +965,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
 
@@ -1063,6 +1091,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -1184,6 +1216,10 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiPublished
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);

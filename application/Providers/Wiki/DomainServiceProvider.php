@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotion;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummary;
@@ -96,6 +97,7 @@ use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Factory\VideoLinkCollecti
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Service\YouTubeSearchService;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface as WikiTranslationServiceInterface;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -117,6 +119,7 @@ use Source\Wiki\Wiki\Infrastructure\Repository\WikiRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiSnapshotRepository;
 use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
 use Source\Wiki\Wiki\Infrastructure\Service\TranslationService as WikiTranslationService;
+use Source\Wiki\Wiki\Infrastructure\Service\WikiWorkflowNotificationService;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -176,6 +179,12 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(WikiFactoryInterface::class, WikiFactory::class);
         $this->app->singleton(WikiHistoryFactoryInterface::class, WikiHistoryFactory::class);
         $this->app->singleton(WikiHistoryRepositoryInterface::class, WikiHistoryRepository::class);
+        $this->app->singleton(WikiWorkflowNotificationServiceInterface::class, fn ($app) => new WikiWorkflowNotificationService(
+            $app->make(WikiHistoryRepositoryInterface::class),
+            $app->make(PrincipalRepositoryInterface::class),
+            $app->make(IdentityRepositoryInterface::class),
+            config('app.frontend_url', 'http://localhost:3000'),
+        ));
         $this->app->singleton(WikiSnapshotFactoryInterface::class, WikiSnapshotFactory::class);
         $this->app->singleton(WikiTranslationServiceInterface::class, WikiTranslationService::class);
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki;
 
 use DateTimeImmutable;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
@@ -18,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Domain\Event\WikiApproved;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -36,6 +38,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
         private WikiHistoryFactoryInterface    $wikiHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -123,6 +126,11 @@ readonly class ApproveWiki implements ApproveWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
+        $this->eventDispatcher->dispatch(new WikiApproved(
+            $wiki->wikiIdentifier(),
+            (string) $wiki->basic()->name(),
+            $wiki->resourceType(),
+        ));
         $output->setDraftWiki($wiki);
     }
 }

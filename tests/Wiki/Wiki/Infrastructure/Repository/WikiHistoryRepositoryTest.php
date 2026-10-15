@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
+use Application\Models\Wiki\WikiHistory as WikiHistoryModel;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -181,5 +182,34 @@ class WikiHistoryRepositoryTest extends TestCase
             'to_version' => 2,
             'subject_name' => '채영',
         ]);
+    }
+
+    #[Group('useDb')]
+    public function testLatestSubmissionUsesActualActorInsteadOfEditorAndIgnoresOtherTransitions(): void
+    {
+        $draftId = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+        $firstActor = StrTestHelper::generateUuid();
+        $latestActor = StrTestHelper::generateUuid();
+        $editor = StrTestHelper::generateUuid();
+        foreach ([
+            [(string) $draftId, $firstActor, 'under_review', '2026-10-01 10:00:00'],
+            [(string) $draftId, $latestActor, 'under_review', '2026-10-02 10:00:00'],
+            [(string) $draftId, $editor, 'approved', '2026-10-03 10:00:00'],
+            [StrTestHelper::generateUuid(), $editor, 'under_review', '2026-10-04 10:00:00'],
+        ] as [$draft, $actor, $status, $recordedAt]) {
+            WikiHistoryModel::query()->create([
+                'id' => StrTestHelper::generateUuid(),
+                'draft_wiki_id' => $draft,
+                'actor_id' => $actor,
+                'submitter_id' => $editor,
+                'action_type' => HistoryActionType::DraftStatusChange->value,
+                'to_status' => $status,
+                'subject_name' => 'Example',
+                'recorded_at' => $recordedAt,
+            ]);
+        }
+        $repository = $this->app()->make(WikiHistoryRepositoryInterface::class);
+        $this->assertSame($latestActor, (string) $repository->findLatestSubmissionActor($draftId));
+        $this->assertNull($repository->findLatestSubmissionActor(new DraftWikiIdentifier(StrTestHelper::generateUuid())));
     }
 }

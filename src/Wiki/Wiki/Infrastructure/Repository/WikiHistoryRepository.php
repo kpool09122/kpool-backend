@@ -5,11 +5,28 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Infrastructure\Repository;
 
 use Application\Models\Wiki\WikiHistory as WikiHistoryModel;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class WikiHistoryRepository implements WikiHistoryRepositoryInterface
 {
+    public function findLatestSubmissionActor(DraftWikiIdentifier $draftWikiIdentifier): ?PrincipalIdentifier
+    {
+        $submission = WikiHistoryModel::query()
+            ->where('draft_wiki_id', (string) $draftWikiIdentifier)
+            ->where('action_type', HistoryActionType::DraftStatusChange->value)
+            ->where('to_status', ApprovalStatus::UnderReview->value)
+            ->orderByDesc('recorded_at')
+            ->orderByDesc('id')
+            ->first();
+
+        return $submission === null ? null : new PrincipalIdentifier($submission->actor_id);
+    }
+
     public function save(WikiHistory $wikiHistory): void
     {
         WikiHistoryModel::query()->create([

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -34,6 +35,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterfac
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
+use Source\Wiki\Wiki\Domain\Event\WikiApproved;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -55,6 +57,12 @@ use Tests\TestCase;
 
 class ApproveWikiTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+    }
+
     /**
      * 正常系: インスタンスが生成されること
      *
@@ -161,6 +169,10 @@ class ApproveWikiTest extends TestCase
         $this->app()->instance(WikiServiceInterface::class, $wikiService);
         $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiApproved
+            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()));
+        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
         $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $output = new ApproveWikiOutput();
         $approveWiki->process($input, $output);
