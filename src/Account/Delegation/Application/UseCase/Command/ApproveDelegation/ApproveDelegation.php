@@ -7,11 +7,13 @@ namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegatio
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
+use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveDelegation implements ApproveDelegationInterface
 {
@@ -20,6 +22,7 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
         private DelegationRepositoryInterface $delegationRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private DelegationPrincipalGroupServiceInterface $delegationPrincipalGroupService,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -46,6 +49,12 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
         $delegation->approve();
         $this->delegationPrincipalGroupService->createFor($delegation);
         $this->delegationRepository->save($delegation);
+        $this->eventDispatcher->dispatch(new DelegationApproved(
+            $delegation->delegationIdentifier(),
+            $delegation->requestedByAccountIdentifier(),
+            $delegation->approverAccountIdentifier(),
+            (string) $account->name(),
+        ));
         $output->setDelegation($delegation);
     }
 }

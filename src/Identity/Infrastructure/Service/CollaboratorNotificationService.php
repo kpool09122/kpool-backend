@@ -16,21 +16,21 @@ readonly class CollaboratorNotificationService implements CollaboratorNotificati
 {
     public function sendDemotionWarning(Email $email, Language $language): void
     {
-        Mail::to((string) $email)->send(
+        Mail::to((string) $email)->queue(
             new DemotionWarningMail($language),
         );
     }
 
     public function sendPromotionNotification(Email $email, Language $language): void
     {
-        Mail::to((string) $email)->send(
+        Mail::to((string) $email)->queue(
             new CollaboratorPromotedMail($language),
         );
     }
 
     public function sendDemotionNotification(Email $email, Language $language): void
     {
-        Mail::to((string) $email)->send(
+        Mail::to((string) $email)->queue(
             new CollaboratorDemotedMail($language),
         );
     }

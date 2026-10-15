@@ -27,6 +27,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInterface;
@@ -63,6 +64,12 @@ use Tests\TestCase;
 
 class PublishWikiTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, Mockery::mock(WikiWorkflowNotificationServiceInterface::class));
+    }
+
     /**
      * 正常系: インスタンスが生成されること
      *
@@ -191,6 +198,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -310,6 +320,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -416,6 +429,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -514,6 +530,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -941,6 +960,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
 
@@ -1063,6 +1085,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);
@@ -1184,6 +1209,9 @@ class PublishWikiTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyPublished')->once()->with($input->wikiIdentifier(), (string) $dummyPublishWiki->draftWiki->basic()->name(), $dummyPublishWiki->slug, $dummyPublishWiki->language);
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $publishWiki = $this->app()->make(PublishWikiInterface::class);
         $output = new PublishWikiOutput();
         $publishWiki->process($input, $output);

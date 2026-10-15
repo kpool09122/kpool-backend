@@ -23,6 +23,7 @@ use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\Ap
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationOutput;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
+use Source\Account\Affiliation\Domain\Event\AffiliationApproved;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -85,6 +86,14 @@ class ApproveAffiliationTest extends TestCase
         self::assertTrue(array_key_exists('status', $output->toArray()));
         $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
         $this->assertNotNull($output->toArray()['activatedAt']);
+    }
+
+    public function testApprovesTalentRequestAndEmitsNotificationForTalent(): void
+    {
+        $data = $this->data(AccountCategory::TALENT, AccountCategory::AGENCY);
+        $output = new ApproveAffiliationOutput();
+        $this->useCase($data)->process(new ApproveAffiliationInput($data->affiliationIdentifier, $data->principal), $output);
+        $this->assertSame(AffiliationStatus::ACTIVE, $data->affiliation->status());
     }
 
     public function testThrowsWhenAffiliationNotFound(): void
@@ -195,12 +204,17 @@ class ApproveAffiliationTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         if ($expectSave) {
-            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (AffiliationActivated $event): bool => $event->agencyAccountIdentifier() === $data->agencyAccountIdentifier
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof AffiliationActivated && $event->agencyAccountIdentifier() === $data->agencyAccountIdentifier
                 && $event->talentAccountIdentifier() === $data->talentAccountIdentifier
                 && $event->agencyAccountType() === $data->agencyAccount->type()
                 && $event->talentAccountType() === $data->talentAccount->type()
                 && $event->agencyAccountName() === (string) $data->agencyAccount->name()
                 && $event->talentAccountName() === (string) $data->talentAccount->name()));
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof AffiliationApproved
+                && $event->affiliationIdentifier === $data->affiliationIdentifier
+                && $event->requestedByAccountIdentifier === $data->affiliation->requestedBy()
+                && $event->approverAccountIdentifier === $data->approverAccountIdentifier
+                && $event->approverAccountName === (string) $approverAccount->name()));
         } else {
             $eventDispatcher->shouldNotReceive('dispatch');
         }

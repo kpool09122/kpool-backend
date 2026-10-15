@@ -6,11 +6,16 @@ namespace Application\Providers\Account;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Account\Application\EventHandler\AccountCategoryChangedNotificationHandler;
 use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\EventHandler\IdentityWithdrawingHandler;
+use Source\Account\Account\Domain\Event\AccountCategoryChanged;
+use Source\Account\Affiliation\Domain\Event\AffiliationApproved;
+use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Invitation\Application\EventHandler\IdentityCreatedViaInvitationHandler;
 use Source\Account\Invitation\Application\EventHandler\InvitationCreatedHandler;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
+use Source\Account\Notification\Application\EventHandler\AccountRequestApprovedHandler;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
@@ -21,6 +26,14 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
+
+        $events->listen(
+            AccountCategoryChanged::class,
+            [AccountCategoryChangedNotificationHandler::class, 'handle'],
+        );
+
+        $events->listen(AffiliationApproved::class, [AccountRequestApprovedHandler::class, 'handleAffiliation']);
+        $events->listen(DelegationApproved::class, [AccountRequestApprovedHandler::class, 'handleDelegation']);
 
         $events->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
 

@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -36,6 +37,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
         private WikiHistoryFactoryInterface    $wikiHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
+        private WikiWorkflowNotificationServiceInterface $wikiWorkflowNotificationService,
     ) {
     }
 
@@ -123,6 +125,10 @@ readonly class ApproveWiki implements ApproveWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
+        $this->wikiWorkflowNotificationService->notifyApproved(
+            $wiki->wikiIdentifier(),
+            (string) $wiki->basic()->name(),
+        );
         $output->setDraftWiki($wiki);
     }
 }

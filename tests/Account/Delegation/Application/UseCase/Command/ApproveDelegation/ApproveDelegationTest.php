@@ -8,11 +8,13 @@ use DateTimeImmutable;
 use Mockery;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationPrincipalGroupServiceInterface;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
@@ -23,6 +25,7 @@ use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -88,8 +91,20 @@ class ApproveDelegationTest extends TestCase
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
         /** @var DelegationPrincipalGroupServiceInterface&Mockery\MockInterface $groups */
         $groups = Mockery::mock(DelegationPrincipalGroupServiceInterface::class);
+        /** @var EventDispatcherInterface&Mockery\MockInterface $eventDispatcher */
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        if ($pending && $expectsAuthorization && $allowed) {
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof DelegationApproved
+                && $event->delegationIdentifier === $delegation->delegationIdentifier()
+                && $event->requestedByAccountIdentifier === $requestedBy
+                && $event->approverAccountIdentifier === $approver
+                && $event->approverAccountName === 'Approver'));
+        } else {
+            $eventDispatcher->shouldNotReceive('dispatch');
+        }
         if ($pending && $expectsAuthorization) {
             $account = Mockery::mock(Account::class);
+            $account->shouldReceive('name')->andReturn(new AccountName('Approver'));
             $account->shouldReceive('accountIdentifier')->andReturn($approver);
             $account->shouldReceive('type')->andReturn($requestedByAgency ? AccountType::INDIVIDUAL : AccountType::CORPORATION);
             $account->shouldReceive('accountCategory')->andReturn($requestedByAgency ? AccountCategory::TALENT : AccountCategory::AGENCY);
@@ -101,7 +116,7 @@ class ApproveDelegationTest extends TestCase
             }
         }
 
-        return [new ApproveDelegation($accountRepository, $repository, $policy, $groups), new ApproveDelegationInput($delegation->delegationIdentifier(), $principal), new ApproveDelegationOutput(), $delegation];
+        return [new ApproveDelegation($accountRepository, $repository, $policy, $groups, $eventDispatcher), new ApproveDelegationInput($delegation->delegationIdentifier(), $principal), new ApproveDelegationOutput(), $delegation];
     }
 
     private function principal(AccountIdentifier $account): Principal

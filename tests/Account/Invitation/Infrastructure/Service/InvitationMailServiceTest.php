@@ -81,7 +81,7 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
+        Mail::assertQueued(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
             && $mail->invitation === $data->invitation
             && $mail->accountName === (string) $data->account->name()
             && $mail->language === Language::JAPANESE
@@ -122,7 +122,7 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app()->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
+        Mail::assertQueued(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
             && $mail->invitation === $data->invitation
             && $mail->accountName === 'アカウント'
             && $mail->language === Language::JAPANESE
@@ -168,7 +168,7 @@ class InvitationMailServiceTest extends TestCase
             'email' => (string) $data->invitation->email(),
         ], '', '&', PHP_QUERY_RFC3986);
 
-        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->invitationUrl === 'http://localhost:3000/invitations/accept?' . $expectedQuery);
+        Mail::assertQueued(InvitationMail::class, static fn (InvitationMail $mail) => $mail->invitationUrl === 'http://localhost:3000/invitations/accept?' . $expectedQuery);
     }
 
     /**

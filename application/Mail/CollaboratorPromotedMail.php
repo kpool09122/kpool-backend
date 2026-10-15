@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Application\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Source\Shared\Domain\ValueObject\Language;
 
-class CollaboratorPromotedMail extends Mailable
+class CollaboratorPromotedMail extends Mailable implements ShouldQueueAfterCommit
 {
     use Queueable;
     use SerializesModels;

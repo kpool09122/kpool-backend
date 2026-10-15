@@ -17,6 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
@@ -42,6 +43,7 @@ readonly class PublishWiki implements PublishWikiInterface
         private PrincipalRepositoryInterface      $principalRepository,
         private PolicyEvaluatorInterface          $policyEvaluator,
         private ContributionPointServiceInterface $contributionPointService,
+        private WikiWorkflowNotificationServiceInterface $wikiWorkflowNotificationService,
     ) {
     }
 
@@ -164,6 +166,12 @@ readonly class PublishWiki implements PublishWikiInterface
 
         $this->draftWikiRepository->delete($wiki);
 
+        $this->wikiWorkflowNotificationService->notifyPublished(
+            $wiki->wikiIdentifier(),
+            (string) $wiki->basic()->name(),
+            $publishedWiki->slug(),
+            $publishedWiki->language(),
+        );
         $output->setWiki($publishedWiki);
     }
 }

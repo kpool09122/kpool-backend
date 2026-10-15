@@ -28,6 +28,7 @@ use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
@@ -55,6 +56,12 @@ use Tests\TestCase;
 
 class ApproveWikiTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, Mockery::mock(WikiWorkflowNotificationServiceInterface::class));
+    }
+
     /**
      * 正常系: インスタンスが生成されること
      *
@@ -161,6 +168,9 @@ class ApproveWikiTest extends TestCase
         $this->app()->instance(WikiServiceInterface::class, $wikiService);
         $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyApproved')->once()->with($input->wikiIdentifier(), (string) $dummyApproveWiki->draftWiki->basic()->name());
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $approveWiki = $this->app()->make(ApproveWikiInterface::class);
         $output = new ApproveWikiOutput();
         $approveWiki->process($input, $output);
