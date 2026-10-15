@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Account\Application\Service\AccountCategoryChangeNotificationServiceInterface;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
@@ -24,6 +25,7 @@ use Source\Account\Account\Infrastructure\Factory\ArchivedAccountFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
+use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeNotificationService;
 use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
@@ -45,6 +47,8 @@ use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
+use Source\Account\Notification\Application\Service\AccountApprovalNotificationServiceInterface;
+use Source\Account\Notification\Infrastructure\Service\AccountApprovalNotificationService;
 use Source\Account\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -64,6 +68,7 @@ use Source\Account\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator as PolicyEvaluator;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -87,10 +92,18 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
         $this->app->singleton(AccountContextServiceInterface::class, AccountContextService::class);
+        $this->app->singleton(AccountCategoryChangeNotificationServiceInterface::class, fn ($app) => new AccountCategoryChangeNotificationService(
+            $app->make(AccountNotificationRecipientServiceInterface::class),
+            config('app.frontend_url', 'http://localhost:3000'),
+        ));
         $this->app->bind(CurrentAccountServiceInterface::class, CurrentAccountService::class);
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(AccountDocumentFileTypeDetectorInterface::class, AccountDocumentFileTypeDetector::class);
         $this->app->singleton(AccountDocumentRequirementValidatorInterface::class, AccountDocumentRequirementValidator::class);
+        $this->app->singleton(AccountApprovalNotificationServiceInterface::class, fn ($app) => new AccountApprovalNotificationService(
+            $app->make(AccountNotificationRecipientServiceInterface::class),
+            config('app.frontend_url', 'http://localhost:3000'),
+        ));
         $this->app->singleton(AffiliationFactoryInterface::class, AffiliationFactory::class);
         $this->app->singleton(AffiliationRepositoryInterface::class, AffiliationRepository::class);
         $this->app->singleton(DelegationFactoryInterface::class, DelegationFactory::class);

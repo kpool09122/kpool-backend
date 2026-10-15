@@ -10,6 +10,7 @@ use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundExceptio
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
+use Source\Account\Affiliation\Domain\Event\AffiliationApproved;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
@@ -85,6 +86,12 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             (string) $talentAccount->name(),
             $agencyAccountType,
             $talentAccountType,
+        ));
+        $this->eventDispatcher->dispatch(new AffiliationApproved(
+            $affiliation->affiliationIdentifier(),
+            $affiliation->requestedBy(),
+            $affiliation->approverAccountIdentifier(),
+            (string) $approverAccount->name(),
         ));
         $output->setAffiliation($affiliation);
     }
