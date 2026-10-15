@@ -24,9 +24,6 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
-use Source\Wiki\Wiki\Domain\Event\WikiApproved;
-use Source\Wiki\Wiki\Domain\Event\WikiPublished;
-use Source\Wiki\Wiki\Domain\Event\WikiRejected;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
@@ -41,48 +38,49 @@ class WikiWorkflowNotificationServiceTest extends TestCase
         $this->assertInstanceOf(WikiWorkflowNotificationService::class, $this->app()->make(WikiWorkflowNotificationServiceInterface::class));
     }
 
-    public function testSendsEachOutcomeOnlyToSubmissionActorInTheirLanguage(): void
+    public function testQueuesEachOutcomeOnlyToSubmissionActorInTheirLanguage(): void
     {
         foreach (Language::cases() as $language) {
-            foreach ($this->events() as $event) {
+            foreach (WikiWorkflowMailType::cases() as $type) {
                 Mail::fake();
-                [$service, $submitter] = $this->service($event->draftWikiIdentifier, $language);
-                $service->notify($event);
-                $type = match (true) {
-                    $event instanceof WikiApproved => WikiWorkflowMailType::APPROVED,
-                    $event instanceof WikiRejected => WikiWorkflowMailType::REJECTED,
-                    $event instanceof WikiPublished => WikiWorkflowMailType::PUBLISHED,
+                $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+                [$service, $submitter] = $this->service($id, $language);
+                match ($type) {
+                    WikiWorkflowMailType::APPROVED => $service->notifyApproved($id, 'Example'),
+                    WikiWorkflowMailType::REJECTED => $service->notifyRejected($id, 'Example', ResourceType::GROUP, new DraftWikiRejectionReason('Please add sources.')),
+                    WikiWorkflowMailType::PUBLISHED => $service->notifyPublished($id, 'Example', new Slug('gr-example'), Language::KOREAN),
                 };
-                $url = match (true) {
-                    $event instanceof WikiApproved => null,
-                    $event instanceof WikiPublished => 'https://frontend.example.com/ko/wiki/gr-example',
-                    $event instanceof WikiRejected => 'https://frontend.example.com/wiki/' . $event->draftWikiIdentifier . '/edit?resourceType=group',
+                $url = match ($type) {
+                    WikiWorkflowMailType::APPROVED => null,
+                    WikiWorkflowMailType::PUBLISHED => 'https://frontend.example.com/ko/wiki/gr-example',
+                    WikiWorkflowMailType::REJECTED => 'https://frontend.example.com/wiki/' . $id . '/edit?resourceType=group',
                 };
-                Mail::assertSent(WikiWorkflowMail::class, static fn (WikiWorkflowMail $mail): bool => $mail->hasTo((string) $submitter->email())
-                    && $mail->language === $language && $mail->type === $type && $mail->wikiName === $event->wikiName
+                Mail::assertQueued(WikiWorkflowMail::class, static fn (WikiWorkflowMail $mail): bool => $mail->hasTo((string) $submitter->email())
+                    && $mail->language === $language && $mail->type === $type && $mail->wikiName === 'Example'
                     && $mail->wikiUrl === $url
-                    && $mail->rejectionReason === ($event instanceof WikiRejected ? (string) $event->rejectionReason : null));
-                Mail::assertSentCount(1);
+                    && $mail->rejectionReason === ($type === WikiWorkflowMailType::REJECTED ? 'Please add sources.' : null));
+                Mail::assertQueuedCount(1);
+                Mail::assertNothingSent();
             }
         }
     }
 
-    public function testDoesNotSendForMissingSubmissionPrincipalOrIdentity(): void
+    public function testDoesNotQueueForMissingSubmissionPrincipalOrIdentity(): void
     {
         foreach (['submission', 'principal', 'identity'] as $missing) {
             Mail::fake();
-            $event = $this->events()[0];
-            [$service] = $this->service($event->draftWikiIdentifier, Language::JAPANESE, $missing);
-            $service->notify($event);
-            Mail::assertNothingSent();
+            $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+            [$service] = $this->service($id, Language::JAPANESE, $missing);
+            $service->notifyApproved($id, 'Example');
+            Mail::assertNothingOutgoing();
         }
     }
 
-    public function testDefersRecipientLookupAndDeliveryUntilCommit(): void
+    public function testDefersRecipientLookupAndQueueingUntilCommit(): void
     {
         Mail::fake();
-        $event = $this->events()[1];
-        [$service] = $this->service($event->draftWikiIdentifier, Language::JAPANESE);
+        $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+        [$service] = $this->service($id, Language::JAPANESE);
         $afterCommit = null;
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
         DB::shouldReceive('afterCommit')->once()->with(Mockery::on(static function (Closure $callback) use (&$afterCommit): bool {
@@ -90,14 +88,14 @@ class WikiWorkflowNotificationServiceTest extends TestCase
 
             return true;
         }));
-        $service->notify($event);
-        Mail::assertNothingSent();
+        $service->notifyRejected($id, 'Example', ResourceType::GROUP, new DraftWikiRejectionReason('Please add sources.'));
+        Mail::assertNothingOutgoing();
         $this->assertInstanceOf(Closure::class, $afterCommit);
         $afterCommit();
-        Mail::assertSentCount(1);
+        Mail::assertQueuedCount(1);
     }
 
-    public function testUncommittedTransactionDoesNotLookUpOrSend(): void
+    public function testUncommittedTransactionDoesNotLookUpOrQueue(): void
     {
         Mail::fake();
         /** @var WikiHistoryRepositoryInterface&Mockery\MockInterface $wikiHistoryRepository */
@@ -109,20 +107,9 @@ class WikiWorkflowNotificationServiceTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
         DB::shouldReceive('afterCommit')->once()->with(Mockery::type(Closure::class));
-        (new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $identityRepository, 'https://frontend.example.com'))->notify($this->events()[2]);
-        Mail::assertNothingSent();
-    }
-
-    /** @return list<WikiApproved|WikiRejected|WikiPublished> */
-    private function events(): array
-    {
-        $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
-
-        return [
-            new WikiApproved($id, 'Example', ResourceType::GROUP),
-            new WikiRejected($id, 'Example', ResourceType::GROUP, new DraftWikiRejectionReason('Please add sources.')),
-            new WikiPublished($id, 'Example', ResourceType::GROUP, new Slug('gr-example'), Language::KOREAN),
-        ];
+        (new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $identityRepository, 'https://frontend.example.com'))
+            ->notifyPublished(new DraftWikiIdentifier(StrTestHelper::generateUuid()), 'Example', new Slug('gr-example'), Language::KOREAN);
+        Mail::assertNothingOutgoing();
     }
 
     /** @return array{WikiWorkflowNotificationService, Identity} */

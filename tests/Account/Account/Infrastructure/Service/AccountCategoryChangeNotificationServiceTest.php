@@ -42,12 +42,12 @@ class AccountCategoryChangeNotificationServiceTest extends TestCase
             ->sendApprovalNotification($accountIdentifier, AccountCategory::AGENCY);
 
         foreach (['japanese@example.com' => Language::JAPANESE, 'english@example.com' => Language::ENGLISH] as $email => $language) {
-            Mail::assertSent(AccountCategoryChangeApprovedMail::class, static fn (AccountCategoryChangeApprovedMail $mail): bool => $mail->hasTo($email)
+            Mail::assertQueued(AccountCategoryChangeApprovedMail::class, static fn (AccountCategoryChangeApprovedMail $mail): bool => $mail->hasTo($email)
                 && $mail->language === $language
                 && $mail->category === AccountCategory::AGENCY
                 && $mail->categoryChangeUrl === 'https://frontend.example.com/admin/account/category-change');
         }
-        Mail::assertSentCount(2);
+        Mail::assertQueuedCount(2);
     }
 
     public function testNoRecipientsMeansNoMail(): void
@@ -61,7 +61,7 @@ class AccountCategoryChangeNotificationServiceTest extends TestCase
         (new AccountCategoryChangeNotificationService($accountNotificationRecipientService, 'https://frontend.example.com'))
             ->sendApprovalNotification($accountIdentifier, AccountCategory::TALENT);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 
     public function testResolvesRecipientsAndSendsOnlyAfterCommit(): void
@@ -84,11 +84,11 @@ class AccountCategoryChangeNotificationServiceTest extends TestCase
         (new AccountCategoryChangeNotificationService($accountNotificationRecipientService, 'https://frontend.example.com'))
             ->sendApprovalNotification($accountIdentifier, AccountCategory::TALENT);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
         $this->assertInstanceOf(Closure::class, $afterCommit);
         $afterCommit();
-        Mail::assertSent(AccountCategoryChangeApprovedMail::class, static fn (AccountCategoryChangeApprovedMail $mail): bool => $mail->hasTo('selected@example.com') && $mail->category === AccountCategory::TALENT);
-        Mail::assertSentCount(1);
+        Mail::assertQueued(AccountCategoryChangeApprovedMail::class, static fn (AccountCategoryChangeApprovedMail $mail): bool => $mail->hasTo('selected@example.com') && $mail->category === AccountCategory::TALENT);
+        Mail::assertQueuedCount(1);
     }
 
     public function testDoesNotSendWhenTransactionIsNotCommitted(): void
@@ -103,6 +103,6 @@ class AccountCategoryChangeNotificationServiceTest extends TestCase
         (new AccountCategoryChangeNotificationService($accountNotificationRecipientService, 'https://frontend.example.com'))
             ->sendApprovalNotification(new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategory::AGENCY);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 }

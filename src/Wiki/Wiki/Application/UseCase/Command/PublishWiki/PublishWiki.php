@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -18,7 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Event\WikiPublished;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
@@ -44,7 +43,7 @@ readonly class PublishWiki implements PublishWikiInterface
         private PrincipalRepositoryInterface      $principalRepository,
         private PolicyEvaluatorInterface          $policyEvaluator,
         private ContributionPointServiceInterface $contributionPointService,
-        private EventDispatcherInterface $eventDispatcher,
+        private WikiWorkflowNotificationServiceInterface $wikiWorkflowNotificationService,
     ) {
     }
 
@@ -167,13 +166,12 @@ readonly class PublishWiki implements PublishWikiInterface
 
         $this->draftWikiRepository->delete($wiki);
 
-        $this->eventDispatcher->dispatch(new WikiPublished(
+        $this->wikiWorkflowNotificationService->notifyPublished(
             $wiki->wikiIdentifier(),
             (string) $wiki->basic()->name(),
-            $wiki->resourceType(),
             $publishedWiki->slug(),
             $publishedWiki->language(),
-        ));
+        );
         $output->setWiki($publishedWiki);
     }
 }

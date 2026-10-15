@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -26,13 +25,13 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
-use Source\Wiki\Wiki\Domain\Event\WikiRejected;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -56,7 +55,7 @@ class RejectWikiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->app()->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, Mockery::mock(WikiWorkflowNotificationServiceInterface::class));
     }
 
     /**
@@ -144,11 +143,9 @@ class RejectWikiTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app()->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof WikiRejected
-            && (string) $event->draftWikiIdentifier === (string) $input->wikiIdentifier()
-                && (string) $event->rejectionReason === (string) $input->rejectionReason()));
-        $this->app()->instance(EventDispatcherInterface::class, $eventDispatcher);
+        $wikiWorkflowNotificationService = Mockery::mock(WikiWorkflowNotificationServiceInterface::class);
+        $wikiWorkflowNotificationService->shouldReceive('notifyRejected')->once()->with($input->wikiIdentifier(), (string) $dummyRejectWiki->draftWiki->basic()->name(), $input->resourceType(), $input->rejectionReason());
+        $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, $wikiWorkflowNotificationService);
         $rejectWiki = $this->app()->make(RejectWikiInterface::class);
         $output = new RejectWikiOutput();
         $rejectWiki->process($input, $output);

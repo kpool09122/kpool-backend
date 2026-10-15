@@ -9,12 +9,14 @@ use Application\Mail\WikiWorkflowMailType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
-use Source\Wiki\Wiki\Domain\Event\WikiApproved;
-use Source\Wiki\Wiki\Domain\Event\WikiPublished;
-use Source\Wiki\Wiki\Domain\Event\WikiRejected;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 
 readonly class WikiWorkflowNotificationService implements WikiWorkflowNotificationServiceInterface
 {
@@ -26,10 +28,27 @@ readonly class WikiWorkflowNotificationService implements WikiWorkflowNotificati
     ) {
     }
 
-    public function notify(WikiApproved|WikiRejected|WikiPublished $event): void
+    public function notifyApproved(DraftWikiIdentifier $draftWikiIdentifier, string $wikiName): void
     {
-        $send = function () use ($event): void {
-            $submitterIdentifier = $this->wikiHistoryRepository->findLatestSubmissionActor($event->draftWikiIdentifier);
+        $this->queue($draftWikiIdentifier, $wikiName, WikiWorkflowMailType::APPROVED);
+    }
+
+    public function notifyRejected(DraftWikiIdentifier $draftWikiIdentifier, string $wikiName, ResourceType $resourceType, DraftWikiRejectionReason $rejectionReason): void
+    {
+        $path = '/wiki/' . rawurlencode((string) $draftWikiIdentifier) . '/edit?resourceType=' . rawurlencode($resourceType->value);
+        $this->queue($draftWikiIdentifier, $wikiName, WikiWorkflowMailType::REJECTED, $path, (string) $rejectionReason);
+    }
+
+    public function notifyPublished(DraftWikiIdentifier $draftWikiIdentifier, string $wikiName, Slug $slug, Language $wikiLanguage): void
+    {
+        $path = '/' . $wikiLanguage->value . '/wiki/' . rawurlencode((string) $slug);
+        $this->queue($draftWikiIdentifier, $wikiName, WikiWorkflowMailType::PUBLISHED, $path);
+    }
+
+    private function queue(DraftWikiIdentifier $draftWikiIdentifier, string $wikiName, WikiWorkflowMailType $type, ?string $path = null, ?string $rejectionReason = null): void
+    {
+        $enqueue = function () use ($draftWikiIdentifier, $wikiName, $type, $path, $rejectionReason): void {
+            $submitterIdentifier = $this->wikiHistoryRepository->findLatestSubmissionActor($draftWikiIdentifier);
             if ($submitterIdentifier === null) {
                 return;
             }
@@ -41,30 +60,20 @@ readonly class WikiWorkflowNotificationService implements WikiWorkflowNotificati
             if ($identity === null) {
                 return;
             }
-            $type = match (true) {
-                $event instanceof WikiApproved => WikiWorkflowMailType::APPROVED,
-                $event instanceof WikiRejected => WikiWorkflowMailType::REJECTED,
-                $event instanceof WikiPublished => WikiWorkflowMailType::PUBLISHED,
-            };
-            $path = match (true) {
-                $event instanceof WikiApproved => null,
-                $event instanceof WikiPublished => '/' . $event->wikiLanguage->value . '/wiki/' . rawurlencode((string) $event->slug),
-                $event instanceof WikiRejected => '/wiki/' . rawurlencode((string) $event->draftWikiIdentifier) . '/edit?resourceType=' . rawurlencode($event->resourceType->value),
-            };
-            Mail::to((string) $identity->email())->send(new WikiWorkflowMail(
+            Mail::to((string) $identity->email())->queue(new WikiWorkflowMail(
                 $type,
-                $event->wikiName,
+                $wikiName,
                 $path === null ? null : rtrim($this->frontendBaseUrl, '/') . $path,
                 $identity->language(),
-                $event instanceof WikiRejected ? (string) $event->rejectionReason : null,
+                $rejectionReason,
             ));
         };
 
         if (DB::transactionLevel() > 0) {
-            DB::afterCommit($send);
+            DB::afterCommit($enqueue);
 
             return;
         }
-        $send();
+        $enqueue();
     }
 }

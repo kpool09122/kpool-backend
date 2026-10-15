@@ -25,7 +25,7 @@ readonly class AccountApprovalNotificationService implements AccountApprovalNoti
 
     public function sendAffiliationApproval(AccountIdentifier $accountIdentifier, string $approverAccountName): void
     {
-        $this->send($accountIdentifier, fn (Language $language): Mailable => new AffiliationApprovedMail(
+        $this->queue($accountIdentifier, fn (Language $language): Mailable => new AffiliationApprovedMail(
             rtrim($this->frontendBaseUrl, '/') . '/admin/account/affiliations',
             $approverAccountName,
             $language,
@@ -34,7 +34,7 @@ readonly class AccountApprovalNotificationService implements AccountApprovalNoti
 
     public function sendDelegationApproval(AccountIdentifier $accountIdentifier, string $approverAccountName): void
     {
-        $this->send($accountIdentifier, fn (Language $language): Mailable => new DelegationApprovedMail(
+        $this->queue($accountIdentifier, fn (Language $language): Mailable => new DelegationApprovedMail(
             rtrim($this->frontendBaseUrl, '/') . '/admin/account/delegations',
             $approverAccountName,
             $language,
@@ -42,20 +42,20 @@ readonly class AccountApprovalNotificationService implements AccountApprovalNoti
     }
 
     /** @param Closure(Language): Mailable $createMail */
-    private function send(AccountIdentifier $accountIdentifier, Closure $createMail): void
+    private function queue(AccountIdentifier $accountIdentifier, Closure $createMail): void
     {
-        $send = function () use ($accountIdentifier, $createMail): void {
+        $enqueue = function () use ($accountIdentifier, $createMail): void {
             foreach ($this->accountNotificationRecipientService->resolve([$accountIdentifier]) as $recipient) {
-                Mail::to((string) $recipient->email())->send($createMail($recipient->language()));
+                Mail::to((string) $recipient->email())->queue($createMail($recipient->language()));
             }
         };
 
         if (DB::transactionLevel() > 0) {
-            DB::afterCommit($send);
+            DB::afterCommit($enqueue);
 
             return;
         }
 
-        $send();
+        $enqueue();
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 
-use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -15,7 +14,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Event\WikiRejected;
+use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -30,7 +29,7 @@ readonly class RejectWiki implements RejectWikiInterface
         private WikiHistoryFactoryInterface    $wikiHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
-        private EventDispatcherInterface $eventDispatcher,
+        private WikiWorkflowNotificationServiceInterface $wikiWorkflowNotificationService,
     ) {
     }
 
@@ -98,12 +97,12 @@ readonly class RejectWiki implements RejectWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
-        $this->eventDispatcher->dispatch(new WikiRejected(
+        $this->wikiWorkflowNotificationService->notifyRejected(
             $wiki->wikiIdentifier(),
             (string) $wiki->basic()->name(),
             $wiki->resourceType(),
             $input->rejectionReason(),
-        ));
+        );
         $output->setDraftWiki($wiki);
     }
 }

@@ -21,9 +21,9 @@ readonly class AffiliationRequestNotificationService implements AffiliationReque
 
     public function sendAffiliationRequestNotification(AccountIdentifier $accountIdentifier): void
     {
-        $send = function () use ($accountIdentifier): void {
+        $enqueue = function () use ($accountIdentifier): void {
             foreach ($this->accountNotificationRecipientService->resolve([$accountIdentifier]) as $recipient) {
-                Mail::to((string) $recipient->email())->send(new AffiliationRequestMail(
+                Mail::to((string) $recipient->email())->queue(new AffiliationRequestMail(
                     $this->buildAffiliationUrl(),
                     $recipient->language(),
                 ));
@@ -31,12 +31,12 @@ readonly class AffiliationRequestNotificationService implements AffiliationReque
         };
 
         if (DB::transactionLevel() > 0) {
-            DB::afterCommit($send);
+            DB::afterCommit($enqueue);
 
             return;
         }
 
-        $send();
+        $enqueue();
     }
 
     private function buildAffiliationUrl(): string

@@ -22,9 +22,9 @@ readonly class AccountCategoryChangeNotificationService implements AccountCatego
 
     public function sendApprovalNotification(AccountIdentifier $accountIdentifier, AccountCategory $category): void
     {
-        $send = function () use ($accountIdentifier, $category): void {
+        $enqueue = function () use ($accountIdentifier, $category): void {
             foreach ($this->accountNotificationRecipientService->resolve([$accountIdentifier]) as $recipient) {
-                Mail::to((string) $recipient->email())->send(new AccountCategoryChangeApprovedMail(
+                Mail::to((string) $recipient->email())->queue(new AccountCategoryChangeApprovedMail(
                     rtrim($this->frontendBaseUrl, '/') . '/admin/account/category-change',
                     $category,
                     $recipient->language(),
@@ -33,11 +33,11 @@ readonly class AccountCategoryChangeNotificationService implements AccountCatego
         };
 
         if (DB::transactionLevel() > 0) {
-            DB::afterCommit($send);
+            DB::afterCommit($enqueue);
 
             return;
         }
 
-        $send();
+        $enqueue();
     }
 }

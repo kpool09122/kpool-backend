@@ -28,8 +28,8 @@ class AffiliationRequestNotificationServiceTest extends TestCase
         $resolver = Mockery::mock(AccountNotificationRecipientServiceInterface::class);
         $resolver->shouldReceive('resolve')->once()->with([$account])->andReturn([new AccountNotificationRecipient(new Email('selected@example.com'), Language::ENGLISH)]);
         (new AffiliationRequestNotificationService($resolver, 'https://frontend.example.com'))->sendAffiliationRequestNotification($account);
-        Mail::assertSent(AffiliationRequestMail::class, static fn (AffiliationRequestMail $mail): bool => $mail->hasTo('selected@example.com') && $mail->language === Language::ENGLISH && $mail->affiliationUrl === 'https://frontend.example.com/admin/account/affiliations');
-        Mail::assertSentCount(1);
+        Mail::assertQueued(AffiliationRequestMail::class, static fn (AffiliationRequestMail $mail): bool => $mail->hasTo('selected@example.com') && $mail->language === Language::ENGLISH && $mail->affiliationUrl === 'https://frontend.example.com/admin/account/affiliations');
+        Mail::assertQueuedCount(1);
     }
 
     public function testUnsetRecipientsDoNotSendMail(): void
@@ -40,7 +40,7 @@ class AffiliationRequestNotificationServiceTest extends TestCase
         $resolver = Mockery::mock(AccountNotificationRecipientServiceInterface::class);
         $resolver->shouldReceive('resolve')->once()->with([$account])->andReturn([]);
         (new AffiliationRequestNotificationService($resolver, 'https://frontend.example.com'))->sendAffiliationRequestNotification($account);
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 
     public function testDefersResolutionAndSendingUntilAfterCommit(): void
@@ -53,6 +53,6 @@ class AffiliationRequestNotificationServiceTest extends TestCase
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
         DB::shouldReceive('afterCommit')->once()->with(Mockery::type(Closure::class));
         (new AffiliationRequestNotificationService($resolver, 'https://frontend.example.com'))->sendAffiliationRequestNotification($account);
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 }

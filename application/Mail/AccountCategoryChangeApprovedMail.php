@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\Language;
 
-class AccountCategoryChangeApprovedMail extends Mailable
+class AccountCategoryChangeApprovedMail extends Mailable implements ShouldQueueAfterCommit
 {
     use Queueable;
     use SerializesModels;

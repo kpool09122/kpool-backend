@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Shared\Domain\ValueObject\Language;
 
-class InvitationMail extends Mailable
+class InvitationMail extends Mailable implements ShouldQueueAfterCommit
 {
     use Queueable;
     use SerializesModels;

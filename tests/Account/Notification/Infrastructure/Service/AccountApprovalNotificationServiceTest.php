@@ -45,12 +45,12 @@ class AccountApprovalNotificationServiceTest extends TestCase
             $mailClass = $affiliation ? AffiliationApprovedMail::class : DelegationApprovedMail::class;
             $url = 'https://frontend.example.com/admin/account/' . ($affiliation ? 'affiliations' : 'delegations');
             foreach ($recipients as $recipient) {
-                Mail::assertSent($mailClass, static fn (AffiliationApprovedMail|DelegationApprovedMail $mail): bool => $mail->hasTo((string) $recipient->email())
+                Mail::assertQueued($mailClass, static fn (AffiliationApprovedMail|DelegationApprovedMail $mail): bool => $mail->hasTo((string) $recipient->email())
                     && $mail->language === $recipient->language()
                     && $mail->approvalUrl === $url
                     && $mail->approverAccountName === 'Approver');
             }
-            Mail::assertSentCount(count($recipients));
+            Mail::assertQueuedCount(count($recipients));
         }
     }
 
@@ -64,7 +64,7 @@ class AccountApprovalNotificationServiceTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $service->sendAffiliationApproval($accountIdentifier, 'Approver');
         $service->sendDelegationApproval($accountIdentifier, 'Approver');
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 
     public function testResolvesRecipientsAndSendsAfterCommit(): void
@@ -84,11 +84,11 @@ class AccountApprovalNotificationServiceTest extends TestCase
             return true;
         }));
         (new AccountApprovalNotificationService($accountNotificationRecipientService, 'https://frontend.example.com'))->sendAffiliationApproval($accountIdentifier, 'Approver');
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
         $this->assertInstanceOf(Closure::class, $afterCommit);
         $afterCommit();
-        Mail::assertSent(AffiliationApprovedMail::class, static fn (AffiliationApprovedMail $mail): bool => $mail->hasTo('selected@example.com'));
-        Mail::assertSentCount(1);
+        Mail::assertQueued(AffiliationApprovedMail::class, static fn (AffiliationApprovedMail $mail): bool => $mail->hasTo('selected@example.com'));
+        Mail::assertQueuedCount(1);
     }
 
     public function testDoesNotSendBeforeTransactionCommits(): void
@@ -100,6 +100,6 @@ class AccountApprovalNotificationServiceTest extends TestCase
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
         DB::shouldReceive('afterCommit')->once()->with(Mockery::type(Closure::class));
         (new AccountApprovalNotificationService($accountNotificationRecipientService, 'https://frontend.example.com'))->sendDelegationApproval(new AccountIdentifier(StrTestHelper::generateUuid()), 'Approver');
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 }

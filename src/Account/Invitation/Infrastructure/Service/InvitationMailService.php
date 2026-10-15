@@ -41,7 +41,7 @@ readonly class InvitationMailService implements InvitationMailServiceInterface
 
         $invitationUrl = $this->buildInvitationUrl($invitation);
 
-        Mail::to((string) $invitation->email())->send(
+        Mail::to((string) $invitation->email())->queue(
             new InvitationMail($invitation, $invitationUrl, $accountName, $language)
         );
     }

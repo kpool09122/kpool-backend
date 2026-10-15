@@ -8,14 +8,21 @@ use Application\Jobs\ExecuteTransferJob;
 use Application\Jobs\SyncPayoutAccountJob;
 use Application\Jobs\Wiki\CollectVideoLinksJob;
 use Application\Mail\PasskeyRecoveryCodeMail;
+use Application\Mail\WikiWorkflowMail;
+use Application\Mail\WikiWorkflowMailType;
 use Aws\CommandInterface;
 use Aws\MockHandler;
 use Aws\Result;
 use Aws\Sqs\SqsClient;
+use Illuminate\Contracts\Mail\Factory as MailFactory;
+use Illuminate\Mail\SendQueuedMailable;
+use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 use Illuminate\Queue\SqsQueue;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
+use PHPUnit\Framework\Attributes\Group;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
@@ -112,6 +119,64 @@ class SqsQueueBoundaryTest extends TestCase
         self::assertIsArray($payload);
         self::assertSame(3, $payload['maxTries']);
         self::assertSame('60', $payload['backoff']);
+    }
+
+    public function testNotificationJobPreservesRecipientAndContentAndWorkerSendsIt(): void
+    {
+        view()->addLocation(dirname(__DIR__, 2) . '/resources/views');
+        config([
+            'mail.default' => 'array',
+            'mail.mailers.array' => ['transport' => 'array'],
+            'mail.from' => ['address' => 'noreply@example.com', 'name' => 'k-pool'],
+        ]);
+        $this->sdkHandler()->append(new Result(['MessageId' => 'notification']));
+        Mail::to('submitter@example.com')->queue(new WikiWorkflowMail(
+            WikiWorkflowMailType::REJECTED,
+            'Example Wiki',
+            'https://frontend.example.com/wiki/draft/edit?resourceType=group',
+            Language::JAPANESE,
+            'Please add sources.',
+        ));
+        self::assertCount(1, $this->commands);
+        self::assertSame(self::URL, $this->commands[0]['QueueUrl']);
+        self::assertIsString($this->commands[0]['MessageBody']);
+        $payload = json_decode($this->commands[0]['MessageBody'], true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($payload);
+        self::assertIsArray($payload['data']);
+        self::assertSame(SendQueuedMailable::class, $payload['data']['commandName']);
+        self::assertIsString($payload['data']['command']);
+        $job = unserialize($payload['data']['command']);
+        self::assertInstanceOf(SendQueuedMailable::class, $job);
+        self::assertTrue($job->afterCommit);
+        self::assertInstanceOf(WikiWorkflowMail::class, $job->mailable);
+        self::assertTrue($job->mailable->hasTo('submitter@example.com'));
+        self::assertSame('Please add sources.', $job->mailable->rejectionReason);
+        self::assertSame(Language::JAPANESE, $job->mailable->language);
+        $transport = Mail::mailer()->getSymfonyTransport();
+        self::assertInstanceOf(ArrayTransport::class, $transport);
+        self::assertCount(0, $transport->messages());
+        $job->handle($this->app()->make(MailFactory::class));
+        self::assertCount(1, $transport->messages());
+        self::assertCount(1, $this->commands);
+    }
+
+    #[Group('useDb')]
+    public function testNotificationJobIsEnqueuedOnlyAfterCommit(): void
+    {
+        $this->sdkHandler()->append(new Result(['MessageId' => 'notification']));
+        Mail::to('submitter@example.com')->queue(new WikiWorkflowMail(WikiWorkflowMailType::APPROVED, 'Example', null, Language::JAPANESE));
+        self::assertCount(0, $this->commands);
+        DB::commit();
+        self::assertCount(1, $this->commands);
+        self::assertSame(self::URL, $this->commands[0]['QueueUrl']);
+    }
+
+    #[Group('useDb')]
+    public function testRolledBackNotificationDoesNotReachQueue(): void
+    {
+        Mail::to('submitter@example.com')->queue(new WikiWorkflowMail(WikiWorkflowMailType::APPROVED, 'Example', null, Language::JAPANESE));
+        DB::rollBack();
+        self::assertCount(0, $this->commands);
     }
 
     public function testReceiveDeleteAndReleaseUseSdkReceiptAndVisibility(): void
