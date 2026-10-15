@@ -30,5 +30,6 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.site
         Route::get('/contact/principals/{principalIdentifier}', ListContactsByPrincipalAction::class);
         Route::get('/contact/principals/{principalIdentifier}/{contactIdentifier}', GetContactDetailAction::class);
         Route::get('/contacts', ListContactsAction::class);
+        Route::get('/contacts/{contactIdentifier}', GetContactDetailAction::class);
     });
 });

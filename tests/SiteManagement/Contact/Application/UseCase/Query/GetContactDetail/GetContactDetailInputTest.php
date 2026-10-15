@@ -12,6 +12,17 @@ use Tests\Helper\StrTestHelper;
 
 class GetContactDetailInputTest extends TestCase
 {
+    public function testInputWithoutTargetPreservesConstructorArgumentOrder(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $input = new GetContactDetailInput($principalIdentifier, null, $contactIdentifier);
+
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
+        $this->assertNull($input->targetPrincipalIdentifier());
+        $this->assertSame($contactIdentifier, $input->contactIdentifier());
+    }
+
     public function test__construct(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
