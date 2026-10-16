@@ -48,16 +48,17 @@ readonly class GetContactDetail implements GetContactDetailInterface
             if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $targetPrincipalIdentifier))) {
                 throw new UnauthorizedException();
             }
-        } else {
-            $operatorRole = $this->roleRepository->findSystemByName('Operator');
-            if ($operatorRole === null || ! array_any(
-                $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier()),
-                static fn (PrincipalGroup $group): bool => (string) $group->accountIdentifier() === (string) $principal->accountIdentifier()
-                    && $group->hasMember($principal->principalIdentifier())
-                    && $group->hasRole($operatorRole->roleIdentifier()),
-            )) {
-                throw new UnauthorizedException();
-            }
+        }
+
+        $operatorRole = $this->roleRepository->findSystemByName('Operator');
+        $isOperator = $operatorRole !== null && array_any(
+            $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier()),
+            static fn (PrincipalGroup $group): bool => (string) $group->accountIdentifier() === (string) $principal->accountIdentifier()
+                && $group->hasMember($principal->principalIdentifier())
+                && $group->hasRole($operatorRole->roleIdentifier()),
+        );
+        if ($targetPrincipalIdentifier === null && ! $isOperator) {
+            throw new UnauthorizedException();
         }
 
         $contact = ContactModel::query()
@@ -76,12 +77,16 @@ readonly class GetContactDetail implements GetContactDetailInterface
         }
 
         $contact->load([
-            'replies' => static function (Relation $query): void {
+            'replies' => static function (Relation $query) use ($isOperator): void {
                 $query->select(['id', 'contact_id', 'content', 'sent_at'])
                     ->whereNotNull('sent_at')
                     ->whereNull('failed_at')
                     ->orderBy('created_at')
                     ->orderBy('id');
+                if ($isOperator) {
+                    $query->addSelect('principal_identifier')
+                        ->with(['principal:id,identity_id', 'principal.identity:id,identity_name']);
+                }
             },
         ]);
 
@@ -91,6 +96,10 @@ readonly class GetContactDetail implements GetContactDetailInterface
                 'content' => (string) $reply->content,
                 'sentAt' => ($reply->sent_at ?? throw new UnexpectedValueException('Sent reply timestamp is missing.'))
                     ->format(DateTimeInterface::ATOM),
+                ...($isOperator ? [
+                    'principalIdentifier' => $reply->principal_identifier,
+                    'name' => $reply->principal?->identity?->identity_name,
+                ] : []),
             ])
             ->all();
 
