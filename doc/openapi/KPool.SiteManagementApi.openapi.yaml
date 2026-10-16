@@ -62,7 +62,7 @@ paths:
   /contact/principals/{principalIdentifier}/{contactIdentifier}:
     get:
       operationId: ContactOperations_getContactDetail
-      description: Get the specified contact inquiry for an principal. Requires a site-management Operator.
+      description: Get the specified principal's contact inquiry under the existing contact:view policy. Operators receive reply author information; General users allowed to view their own contact receive the original three reply fields only.
       parameters:
         - name: principalIdentifier
           in: path
@@ -80,7 +80,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContactDetail'
+                anyOf:
+                  - $ref: '#/components/schemas/ContactDetail'
+                  - $ref: '#/components/schemas/OperatorContactDetail'
         '401':
           description: Access is unauthorized.
           content:
@@ -282,7 +284,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContactDetail'
+                $ref: '#/components/schemas/OperatorContactDetail'
         '401':
           description: Access is unauthorized.
           content:
@@ -826,6 +828,63 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the inquiry was created.
       description: Contact inquiry summary returned to its submitter.
+    OperatorContactDetail:
+      type: object
+      required:
+        - contactIdentifier
+        - category
+        - name
+        - createdAt
+        - content
+        - replies
+      properties:
+        contactIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        principalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        category:
+          type: integer
+          format: int32
+        name:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        content:
+          type: string
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorContactReplyDetail'
+      description: Contact detail returned to an Operator, with author information on each successfully sent reply. No email addresses are returned.
+    OperatorContactReplyDetail:
+      type: object
+      required:
+        - replyIdentifier
+        - content
+        - sentAt
+        - principalIdentifier
+        - name
+      properties:
+        replyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        content:
+          type: string
+        sentAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        principalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.
+        name:
+          type: string
+          nullable: true
+          description: Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.
+      description: A successfully sent reply including author information, returned only to a site-management Operator.
     PrincipalGroup:
       type: object
       required:
