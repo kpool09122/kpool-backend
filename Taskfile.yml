@@ -52,7 +52,7 @@ tasks:
       - bash scripts/cloudformation/run.sh check
 
   infra:operate:
-    desc: 'Infrastructure config-check/plan/execute; task infra:operate -- --help'
+    desc: 'Infrastructure config-check/plan/execute/configure; task infra:operate -- --help'
     cmds:
       - '"${CFN_VENV:-/tmp/kpool-cfn-tools}/bin/python" -B scripts/cloudformation/operations.py {{.CLI_ARGS}}'
 

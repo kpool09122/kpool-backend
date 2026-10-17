@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'ses' => [
+        'region' => env('AWS_DEFAULT_REGION', 'ap-northeast-1'),
+    ],
+
     'youtube' => [
         'api_key' => env('YOUTUBE_API_KEY', ''),
     ],

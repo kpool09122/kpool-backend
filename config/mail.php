@@ -6,6 +6,10 @@ return [
     'default' => env('MAIL_MAILER', 'smtp'),
 
     'mailers' => [
+        'ses' => [
+            'transport' => 'ses',
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'url' => env('MAIL_URL'),

@@ -84,7 +84,7 @@ production の Laravel Schedule は月次を登録しない。local/testing/stag
 ## 実環境検証の引渡し
 
 - 本番イメージ: API / worker / 単発コマンド、PID1/PCNTL、signal/exitのローカル検証は `task container:verify`。ECS上のSIGTERM→現在job完了→120秒内STOPPEDは実AWSで別途確認する。ローカルverifyはRedisを使い、SQS成功を証明しない。
-- #673/#157: work queue=QueueUrl、visibility=300、maxReceiveCount=5、StopTimeout=120、timeout=90/tries=3。Schedulerの2周期・初期DISABLED、delivery DLQと非0STOPPED検知は別設定として確認する。
+- #673/#157: work queue=QueueUrl、visibility=300、maxReceiveCount=5、StopTimeout=120、timeout=90/tries=3。Wiki Schedulerは月次1日03:00 JST・初期DISABLEDでconfigure後に有効化。送金scheduleは非公開のため作成しない。delivery DLQとEventBridgeによる起動失敗・非0STOPPED通知は実環境で確認する。
 - #157: real task roleで送信→受信→正常削除、例外→60秒release、tries超過→failed_jobs/delete、worker kill→visibility後再配送→DLQ、ローリング停止とqueue:restart。SENT再実行と外部成功/DB未保存境界を照合する。
 - #157: mail delivery、Google Translation/OAuth疎通、YouTube設定/skip、月次sync/async、dry-run/対象なし/一部enqueue失敗。Scheduler受理・ECS終了・job完了をそれぞれ観測してから有効化する。
 

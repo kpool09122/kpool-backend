@@ -5,7 +5,7 @@ import subprocess
 import urllib.request
 from contract import task_definition, runtime_environment, SECRET_KEYS, SECRET_REF
 from deployment import (poll, desired_count, migration_complete, api_complete,
-                        worker_complete, validate_api_service)
+                        worker_complete, validate_api_service, deployment_alarm_names)
 from records import write_json
 
 
@@ -65,7 +65,7 @@ class Backend:
         o = self.outputs
         if o['DeploymentRoleArn'] != c['deployment_role_arn']:
             raise ValueError('Deployment role does not match bootstrap output')
-        required = ('RepositoryUri ClusterArn ApiServiceName WorkerServiceName ApiReleaseFamily WorkerReleaseFamily MigrationReleaseFamily ApiBootstrapTaskDefinitionArn WorkerBootstrapTaskDefinitionArn MigrationBootstrapTaskDefinitionArn ApiTaskRoleArn WorkerTaskRoleArn MigrationTaskRoleArn AppExecutionRoleArn MigrationExecutionRoleArn LifecycleHookArn HookInvocationRoleArn ServerErrorAlarmName LatencyAlarmName ExternalCanaryAlarmName BlueTargetGroupArn GreenTargetGroupArn ProductionRuleArn TestRuleArn AlbInfrastructureRoleArn PublicSubnetIds MigrationSecurityGroupId RuntimeConfigParameterName AppSecretArn MigrationSecretArn CacheSecretArn ApiUrl QueueUrl').split()
+        required = ('RepositoryUri ClusterArn ApiServiceName WorkerServiceName ApiReleaseFamily WorkerReleaseFamily MigrationReleaseFamily ApiBootstrapTaskDefinitionArn WorkerBootstrapTaskDefinitionArn MigrationBootstrapTaskDefinitionArn ApiTaskRoleArn WorkerTaskRoleArn MigrationTaskRoleArn AppExecutionRoleArn MigrationExecutionRoleArn LifecycleHookArn HookInvocationRoleArn ServerErrorAlarmName LatencyAlarmName HookCodeSource BlueTargetGroupArn GreenTargetGroupArn ProductionRuleArn TestRuleArn AlbInfrastructureRoleArn PublicSubnetIds MigrationSecurityGroupId RuntimeConfigParameterName AppSecretArn MigrationSecretArn CacheSecretArn ApiUrl QueueUrl').split()
         if any(not o.get(key) for key in required):
             raise ValueError('Required infrastructure output is missing')
         registry = f'{account}.dkr.ecr.ap-northeast-1.amazonaws.com/'
@@ -90,13 +90,16 @@ class Backend:
         history=self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']
         if any(d.get('status') in ('PENDING','IN_PROGRESS','STOP_REQUESTED','ROLLBACK_REQUESTED','ROLLBACK_IN_PROGRESS') for d in history):
             raise ValueError('A native API deployment is still active; reconcile first')
-        alarm_names = [o[k] for k in ('ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName')]
+        alarm_names = deployment_alarm_names(o)
         alarms = self.aws('cloudwatch','describe-alarms',AlarmNames=alarm_names)['MetricAlarms']
         if set(a['AlarmName'] for a in alarms) != set(alarm_names) or any(a['StateValue'] != 'OK' or not a['ActionsEnabled'] for a in alarms):
             raise ValueError('Deployment alarm is missing, disabled or unhealthy')
         hook = self.aws('lambda','get-function-configuration',FunctionName=o['LifecycleHookArn'])
-        if (hook.get('State') != 'Active' or hook.get('LastUpdateStatus') != 'Successful'
-                or not c.get('hook_code_sha256') or hook['CodeSha256'] != c['hook_code_sha256']):
+        source = o.get('HookCodeSource')
+        if (source not in ('bundled', 'external')
+                or (source == 'external' and not c.get('hook_code_sha256'))
+                or hook.get('State') != 'Active' or hook.get('LastUpdateStatus') != 'Successful'
+                or (c.get('hook_code_sha256') and hook['CodeSha256'] != c['hook_code_sha256'])):
             raise ValueError('Hook artifact is missing or differs from approved artifact')
         parameter = self.aws('ssm','get-parameter',Name=o['RuntimeConfigParameterName'],WithDecryption=False)['Parameter']
         if parameter['Type'] != 'String':
@@ -249,14 +252,14 @@ class Backend:
         return attributes
 
     def smoke(self):
-        url=self.outputs['ApiUrl']+'/up'
+        url=self.outputs['ApiUrl']+'/health'
         with urllib.request.urlopen(url,timeout=20) as response:
             if response.status!=200 or response.geturl()!=url:
                 raise ValueError('API health check failed or redirected')
             response.read(4096)
         self.queue_attributes()
         # This read-only probe is useful, but does NOT prove a job was processed.
-        self.journal.event('smoke','observed',health='HTTP 200 /up',queue='identity/attributes verified',queue_processing='NOT_VERIFIED: approved canary job required')
+        self.journal.event('smoke','observed',health='HTTP 200 /health',queue='identity/attributes verified',queue_processing='NOT_VERIFIED: approved canary job required')
 
     def observe(self):
         if not self.outputs.get('ClusterArn'):

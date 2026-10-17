@@ -1,10 +1,12 @@
-# Backend リリース Pipeline
+# 本番リリース Pipeline
 
-実装入口は `.github/workflows/release.yml`。backend 単独で validation／production ARM64 build → ECR → VPC migration → ECS native BLUE_GREEN API → worker → HTTPS health／SQS 属性確認を実行する。frontend checkout は不要。基盤作成・CloudFormation 更新・DB rollback は実行しない。
+実装入口はbackendの `.github/workflows/release.yml`。`backend` はARM64 build → ECR → migration → ECS API → worker、`frontend` はフロントrepoの固定SHAからWorkers build → 配備、`all` は両方の検証・build後にbackend → frontendを配備する。基盤作成とCloudFormation更新はローカルの管理者操作で行う。
 
 コードの実装・ローカル検証と本番適用は別である。現時点で AWS／Workers への配備、hook の実動作、SQS canary job 処理は未確認。
 
 ## 初回設定
+
+基盤の作成からSecret/DB設定までの順序は [構築手順](first-deployment.md)。標準hookはCloudFormation同梱で、`hook_code_sha256` は外部ZIPを使う場合に設定する。外部URLの常時監視は任意。Container Insightsは既定無効。
 
 backend の production Environment に許可 branch `main` を設定する。途中承認待ちを設けない運用では required reviewers を設定しない。workflow 変更は branch protection／レビューで保護する。統合入口の production concurrency は cancel-in-progress=false。基盤の管理者操作との排他・drift 反映は既存 [operations.md](operations.md) に従う。
 
@@ -18,7 +20,9 @@ Environment Variables:
 | RDS_CA_PEM | 管理者が公式 RDS 東京 truststore から取得した公開 PEM（48KB以下）。秘密情報を入れない |
 | RDS_CA_SHA256 | 上記 PEM の UTF-8 bytes の SHA256。改行も一致させる |
 | BACKEND_RELEASE_CONFIGURATION | 以下の非秘密 JSON。stack 名は実環境の正本から登録 |
-| FRONTEND_RELEASE_CONTRACT | frontend seam 用。現時点では未接続なので登録しても all/frontend は変更前に FAIL |
+| FRONTEND_RELEASE_CONFIGURATION | 下記のWorkers設定・互換性承認JSON。all/frontendで必須 |
+| SOURCE_APP_ID | frontend repoへContents:readを持つGitHub AppのID |
+| LIVE_BACKEND_SHA | frontend単独配備で接続する稼働backendの完全40桁SHA |
 
 設定 JSON の形（括弧付きの文字は実値に置換する。ARN・account・SHA の実行時既定値はない）:
 
@@ -29,7 +33,6 @@ Environment Variables:
   "account_id": "<account>",
   "deployment_role_arn": "<bootstrap DeploymentRoleArn>",
   "stacks": {"bootstrap": "<stack>", "root": "<stack>", "integration": "<stack>", "runtime": "<stack>"},
-  "hook_code_sha256": "<approved Lambda CodeSha256>",
   "runtime_environment": {
     "APP_URL": "<runtime ApiUrl>",
     "FRONTEND_URL": "https://<live frontend origin>",
@@ -57,7 +60,7 @@ ECS は integration AppSecretArn／MigrationSecretArn の `APP_KEY`, `DATABASE_U
 
 DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool-rds-ca.pem` を含める。公開 CA は checksum／OpenSSL 構文を検証し BuildKit mount から既存 production target に同梱する。Secret 値は build に渡さない。通常のローカル container build は CA mount 省略可能。
 
-今回の基盤定義追加は既存 bootstrap role の scoped 読取（SSM String、project-prefix CloudWatch alarms、deployment-hook Lambda metadata、既存 work queue 属性）と runtime bootstrap task の writable volume のみ。API／worker／migration／scheduler の readonly root は維持する。runtime task 雛形と Dockerfile VOLUME により `/tmp`, `storage`, `bootstrap/cache` の所有者・mode を継承する。**管理者による既存 stack への反映が必要**。Pipeline 自身は反映しない。ExternalCanaryAlarmName は `${ProjectName}-` prefix 内で設定する（この scoped IAM の対象）。既存 ECS revision 読取／用途別 PassRole 制約は維持する。
+今回の基盤定義追加は既存 bootstrap role の scoped 読取（SSM String、project-prefix CloudWatch alarms、deployment-hook Lambda metadata、既存 work queue 属性）と runtime bootstrap task の writable volume のみ。API／worker／migration／scheduler の readonly root は維持する。runtime task 雛形と Dockerfile VOLUME により `/tmp`, `storage`, `bootstrap/cache` の所有者・mode を継承する。**管理者による既存 stack への反映が必要**。Pipeline 自身は反映しない。外部監視を任意導入する場合、ExternalCanaryAlarmName は `${ProjectName}-` prefix 内で設定する（この scoped IAM の対象）。既存 ECS revision 読取／用途別 PassRole 制約は維持する。
 
 ## 手動入力と配備
 
@@ -65,11 +68,11 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 - validation job は control checkout に `github.workflow_sha` を直接使い、source checkout 前に plan の SHA 一致と main の履歴への到達性を再確認する。main 外の SHA、GitHub API の確認失敗、固定 SHA の解決不一致ではアプリコードを実行せず停止する。
 - source checkout は固定の `main` と全履歴を取得する。信頼済み control の `select-source.sh` が取得済み `origin/main` への祖先関係を Git で確認してから、対象の固定 SHA に切り替える。入力 SHA を checkout action の ref に渡さず、検証とビルドはこの選択の成功後に同じ job で実行する。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
-- `paused=true`、unstable stack/service、未設定 hook/alarm/bake、CA／compatibility 未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
+- `paused=true`、unstable stack/service、未設定の配備hook/基本alarm/bake、CA／compatibility 未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
 - 検証は Taskfile の install、非破壊 cs-check、phpstan、test を使う。ARM runner で既存 production target を build し、archive SHA256 と platform を記録。公開 job は archive を検証して ECR へ公開し、ECR 応答の digest を以後の全用途へ渡す。
 - migration は既存 public subnet＋専用 SG、Fargate、public IP ENABLED で実行。DB は非公開。単一 task ARN／task definition／exitCode=0 が必要。停止コード欠落・起動失敗・10分 timeout は API を止める。
 - API は新 service deployment ARN を発見し、その target service revision の task definition を照合。SUCCESSFUL、5分以上の bake、target traffic weight=100、希望数／pending=0、source tasks=0、live task definition の一致が必要。旧 stable revision、rollback、wrong revision、25分 timeout は成功にならない。
-- API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に HTTPS `/up`（redirect 禁止）と SQS identity／attributes を読む。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
+- API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に HTTPS `/health`（redirect 禁止）と SQS identity／attributes を読む。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
 
 ## 記録・再実行・手動復旧
 
@@ -92,13 +95,66 @@ backend-record はアップロード時の `records/` 配下と従来のルー�
 
 過去 release の replay／rollback と GitHub Re-run all jobs でも、現在稼働する frontend の完全40桁 SHA を `LIVE_FRONTEND_SHA` に設定する。記録済み backend SHA と現在の frontend SHA に対応した compatibility 証跡を設定し、配備前の gate で照合する。frontend 失敗を理由に backend／DB を戻さない。ECR digest の保持と90日より長い記録の保管は運用側で管理する。
 
-## frontend seam（未接続）
+## backend Actionsからのfrontend配備
 
-`all`／`frontend` は現在明示 FAIL する。frontend AWS job の起動はなく、backend build／ECR／migration にも進まない。Workers アダプター／binding 等の #427 契約を未確認のまま完了扱いしない。
+frontendの既存 `workers:build` / `workers:deploy` をbackendのjobから呼ぶ。workflow制御コードはbackendの `github.workflow_sha`、アプリはfrontendのmain履歴に存在する完全SHAに固定する。別repoのworkflow呼出し設定は不要。
 
-接続契約は `repository=kpool09122/kpool-frontend`, `workflow_sha=<trusted full SHA>`, `source_sha=<full SHA>` と、検証済み artifact ID／checksum、Worker version、production environment を持つ。GitHub reusable workflow の `uses` は動的式を使えないので、workflow_sha を入力で自由に実行せず、レビュー済みの完全 SHA を入口 YAML の static uses に固定して接続する。全検証／build が成功するまで両配備を止め、backend→frontend 順、frontend-only では AWS job を不要にする。
+backendの `production` Environmentへ次を設定する。
 
-private frontend は対象限定 Contents:read の短命 GitHub App token で ref／checkout する。backend production の SOURCE_APP_ID／SOURCE_APP_PRIVATE_KEY から生成し、frontend へは必要な source token と CLOUDFLARE_API_TOKEN だけを明示渡しする（inherit 禁止、AWS secret／OIDCなし）。public repository であれば不要な App 認証を増やさない。Actions policy／private reusable access を確認する。現在その実装・外部 Secrets／Workers deployment はゲートとして残る。frontend-only retry は元 frontend SHA／artifact／Worker version の記録を使い、backend runner を呼ばない。
+- Variable `SOURCE_APP_ID`、Secret `SOURCE_APP_PRIVATE_KEY`。GitHub Appをfrontend repositoryにinstallし、Contents:readを許可する。jobが作るtokenはfrontendだけに限定する。
+- Secret `CLOUDFLARE_API_TOKEN`。対象accountのWorkers配備・metadata読取・R2 cache投入、custom domain設定に必要な権限を与える。権限と対象account/zoneは[frontend配備手順](https://github.com/kpool09122/kpool-frontend/blob/main/docs/cloudflare-workers.md)に従う。
+- Variable `FRONTEND_RELEASE_CONFIGURATION`。下記JSONを実値で設定する。`wrangler` はfrontendの `wrangler.json` を元にし、local名を本番のWorker/R2名へ変更し、account/domain/API URLを設定する。DO migration、IMAGES等のbindingを維持する。
+
+```json
+{
+  "paused": false,
+  "smoke_url": "https://k-pool.app/en",
+  "compatibility": {
+    "approved": true,
+    "backend_sha": "<配備するbackendの完全SHA、frontend単独ならLIVE_BACKEND_SHA>",
+    "frontend_sha": "<配備するfrontendの完全SHA>",
+    "evidence": "<API/認証/画像の互換性を確認した記録>"
+  },
+  "wrangler": {
+    "name": "<本番Worker名>",
+    "account_id": "<Cloudflare account ID 32桁>",
+    "main": ".open-next/worker.js",
+    "compatibility_date": "2026-08-20",
+    "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+    "workers_dev": false,
+    "preview_urls": false,
+    "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
+    "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "<本番Worker名>"}],
+    "r2_buckets": [{"binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "<本番R2 cache bucket名>"}],
+    "durable_objects": {"bindings": [{"name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler"}]},
+    "migrations": [{"tag": "v1", "new_sqlite_classes": ["DOQueueHandler"]}],
+    "images": {"binding": "IMAGES"},
+    "routes": [{"pattern": "k-pool.app", "custom_domain": true}],
+    "vars": {
+      "KPOOL_WIKI_PRIVATE_API_BASE_URL": "https://api.k-pool.app",
+      "KPOOL_IDENTITY_API_BASE_URL": "https://api.k-pool.app",
+      "KPOOL_ACCOUNT_API_BASE_URL": "https://api.k-pool.app",
+      "KPOOL_SITE_MANAGEMENT_API_BASE_URL": "https://api.k-pool.app"
+    }
+  }
+}
+```
+
+本番R2 bucketと対象Workerを準備し、Workerの `WIKI_VISITOR_LOCATION_SECRET` へbackendと同じ値を登録する。これはCloudflare runtime Secretとして管理し、JSON・buildには入れない。初回配備前にもWorker側のSecret名をmetadataで確認する。`smoke_url` は認証不要でredirectせず200を返すpathを選ぶ（ルートは言語redirectがあるため `/en` 等）。
+
+| 操作 | 入力と実行順 |
+| --- | --- |
+| 両方を配備 | `target=all`, `mode=deploy`, 両refをmainまたは承認した完全SHA。両build成功後にbackend → frontend。初回のみ `initial=true` |
+| frontendのみ配備 | `target=frontend`, `mode=deploy`, `frontend_ref`を指定。`LIVE_BACKEND_SHA`を稼働backendのSHAにする。AWS jobは動かない |
+| backendのみ配備 | 従来どおり `target=backend`。GitHub App/Cloudflare設定は不要 |
+
+build jobではESLint・unit testとOpenNextのproduction buildを実行し、Cloudflare tokenを渡さない。SHA・lockfile・設定・archiveのchecksum付き `.open-next` artifactを保存する。deploy jobは同じsourceと設定を照合し、artifactを復元して再buildせず既存配備スクリプトを実行する。直前にR2 bucketとruntime Secretを確認する。frontend jobにAWS OIDC/credentialsを付与しない。
+
+配備後はWranglerの構造化出力とCloudflareの稼働version IDを照合し、公開HTTPSの200を確認して、`frontend-record-<attempt>`へ前後のversionと結果を90日保存する。deploy失敗時も取得できた実状態を記録する。OpenNextのR2 cache投入がWorker公開より先に行われるため、失敗してもcache変更が残り得る。frontend失敗でbackend/DBを自動で戻さない。
+
+all/frontendのGitHub Re-runやsource_runによる自動replayは停止する。失敗したrunのplanに記録された完全frontend SHAを指定して新しい `target=frontend` deployを起動し、稼働backend SHAとの承認を更新する。backendのdigest replay/rollbackは従来どおり `target=backend` を使う。
+
+配備結果を確認して `LIVE_BACKEND_SHA` / `LIVE_FRONTEND_SHA` を更新する。allでfrontendが失敗した場合も、backendが成功していればbackendのSHAを更新する。backendのcompatibility設定は現在稼働frontendとの組、frontendのcompatibility設定は今回公開する組をそれぞれ確認する。
 
 ## ローカル確認
 

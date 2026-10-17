@@ -149,7 +149,7 @@ class FoundationTest(unittest.TestCase):
         user = self.resources('data', 'ElastiCache::User')['CacheUser']['Properties']
         self.assertEqual(user['AuthenticationMode']['Type'], 'password')
         self.assertEqual(user['AuthenticationMode']['Passwords'], [
-            {'Fn::Sub': '{{resolve:secretsmanager:${CacheSecret}:SecretString}}'},
+            {'Fn::Sub': '{{resolve:secretsmanager:${CacheSecret}:SecretString:password}}'},
         ])
         self.assertIn('GenerateSecretString', self.resources('data', 'SecretsManager::Secret')['CacheSecret']['Properties'])
 

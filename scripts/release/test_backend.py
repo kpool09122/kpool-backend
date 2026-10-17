@@ -18,7 +18,7 @@ class HttpResponse:
     status=200
     def __enter__(self): return self
     def __exit__(self,*args): pass
-    def geturl(self): return 'https://api.example.invalid/up'
+    def geturl(self): return 'https://api.example.invalid/health'
     def read(self,size): return b'healthy fixture'
 
 class BackendTests(unittest.TestCase):
@@ -59,6 +59,23 @@ class BackendTests(unittest.TestCase):
         record=json.loads((Path(self.directory.name)/'journal.json').read_text())
         self.assertNotIn('fixture-never-log',json.dumps(record))
         self.assertNotIn('fixture-never-log',''.join(p.read_text() for p in Path(self.directory.name).glob('*.json')))
+    def test_release_without_external_monitor_keeps_internal_alarms_and_hook(self):
+        self.o['ExternalCanaryAlarmName'] = ''
+        self.aws.outputs['ExternalCanaryAlarmName'] = ''
+        self.aws.services['Api']['deploymentConfiguration']['alarms']['alarmNames'] = [
+            self.o['ServerErrorAlarmName'], self.o['LatencyAlarmName']]
+        self.config.pop('hook_code_sha256')
+        self.run_release()
+        alarms = next(args['AlarmNames'] for _, op, args in self.aws.calls if op == 'describe-alarms')
+        self.assertEqual(alarms, [self.o['ServerErrorAlarmName'], self.o['LatencyAlarmName']])
+        self.assertTrue(any(op == 'get-function-configuration' for _, op, _ in self.aws.calls))
+        self.assertTrue(any(op == 'update-service' for _, op, _ in self.aws.calls))
+    def test_external_hook_requires_approved_checksum(self):
+        self.aws.outputs['HookCodeSource'] = 'external'
+        self.config.pop('hook_code_sha256')
+        with self.assertRaises(ValueError):
+            self.backend.preflight()
+        self.assertFalse(any(op == 'register-task-definition' for _, op, _ in self.aws.calls))
     def test_migration_nonzero_blocks_api(self):
         self.aws.migration_exit=1
         with self.assertRaises(ValueError): self.run_release()

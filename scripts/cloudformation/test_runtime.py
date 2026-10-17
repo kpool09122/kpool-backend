@@ -79,10 +79,7 @@ class RuntimeContracts(unittest.TestCase):
             {'Ref': 'ServerErrorAlarm'}, {'Ref': 'LatencyAlarm'},
             {'Fn::If': ['HasCanary', {'Ref': 'ExternalCanaryAlarmName'}, {'Ref': 'AWS::NoValue'}]},
         ])
-        hooks = configuration['LifecycleHooks']['Fn::If']
-        self.assertEqual(hooks[0], 'HasHook')
-        self.assertEqual(hooks[2], {'Ref': 'AWS::NoValue'})
-        self.assertEqual(hooks[1], [{
+        self.assertEqual(configuration['LifecycleHooks'], [{
             'HookTargetArn': {'Fn::GetAtt': ['LifecycleHook', 'Arn']},
             'RoleArn': {'Fn::GetAtt': ['HookInvocationRole', 'Arn']},
             'LifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
@@ -128,12 +125,12 @@ class RuntimeContracts(unittest.TestCase):
 
     def test_hook_artifact_timeout_and_separated_roles(self):
         hook = self.runtime['LifecycleHook']
-        self.assertEqual(hook['Condition'], 'HasHook')
+        self.assertNotIn('Condition', hook)
         properties = hook['Properties']
         self.assertEqual(properties['Timeout'], 120)
-        self.assertEqual(properties['Handler'], 'handler.handler')
+        self.assertEqual(properties['Handler'], {'Fn::If': ['HasHook', 'handler.handler', 'index.handler']})
         self.assertEqual(properties['Architectures'], ['arm64'])
-        self.assertEqual(properties['Code'], {
+        self.assertEqual(properties['Code']['Fn::If'][1], {
             'S3Bucket': {'Ref': 'HookArtifactBucket'}, 'S3Key': {'Ref': 'HookArtifactKey'},
             'S3ObjectVersion': {'Ref': 'HookArtifactVersion'},
         })
@@ -170,6 +167,33 @@ class RuntimeContracts(unittest.TestCase):
                                    ('Threshold', threshold), ('TreatMissingData', 'AlarmMissingData')):
                 self.assertEqual(alarm[key], {'Ref': parameter})
             self.assertEqual(alarm['ComparisonOperator'], 'GreaterThanOrEqualToThreshold')
+
+    def test_initial_monitoring_and_admin_secret_boundaries(self):
+        self.assertEqual(self.template['Parameters']['ContainerInsights']['Default'], 'disabled')
+        self.assertFalse(any(r['Type'] == 'AWS::Synthetics::Canary' for r in self.runtime.values()))
+        health = self.runtime['UnhealthyTargetsAlarm']['Properties']
+        self.assertEqual(health['Metrics'][0]['Expression'], 'MAX([blue,green])')
+        self.assertEqual({m['MetricStat']['Metric']['Dimensions'][1]['Value']['Fn::GetAtt'][0]
+                          for m in health['Metrics'][1:]}, {'BlueTargetGroup', 'GreenTargetGroup'})
+        for name in ('AppExecutionRole', 'MigrationExecutionRole', 'ApiTaskRole', 'WorkerTaskRole'):
+            self.assertNotIn('DatabaseSecretArn', str(self.runtime[name]))
+        setup = self.runtime['DatabaseSetupTaskDefinition']['Properties']['ContainerDefinitions'][0]
+        self.assertTrue(setup['ReadonlyRootFilesystem'])
+        self.assertIn('DatabaseSecretArn', str(setup['Secrets']))
+        self.assertIn('PGSSLMODE=verify-full', setup['Command'][0])
+        self.assertIn('ALTER DEFAULT PRIVILEGES FOR ROLE kpool_migration', setup['Command'][0])
+        self.assertIn('ON ALL TABLES', setup['Command'][0])
+        self.assertIn('DatabaseSecretArn', str(self.runtime['DatabaseSetupExecutionRole']))
+
+    def test_ses_is_limited_to_api_worker_sender_domain(self):
+        for name in ('ApiTaskRole', 'WorkerTaskRole'):
+            mail = [s['Fn::If'][1] for s in statements(self.runtime[name]) if s.get('Fn::If')]
+            self.assertEqual(mail[0]['Action'], ['ses:SendEmail', 'ses:SendRawEmail'])
+            self.assertIn('identity/${MailDomainName}', str(mail[0]['Resource']))
+        self.assertNotIn('ses:Send', str(self.runtime['MigrationTaskRole']))
+        for i in range(1, 4):
+            self.assertIn('MailDkimName' + str(i), self.template['Outputs'])
+            self.assertIn('MailDkimValue' + str(i), self.template['Outputs'])
 
     def test_worker_timeout_stop_and_visibility_contract(self):
         worker = self.runtime['WorkerBootstrapTaskDefinition']['Properties']['ContainerDefinitions'][0]
@@ -218,7 +242,7 @@ class RuntimeContracts(unittest.TestCase):
         ):
             self.assertEqual(self.template['Outputs'][output]['Value'], {'Ref': resource})
         for output in ('LifecycleHookArn', 'HookInvocationRoleArn', 'HookExecutionRoleArn'):
-            self.assertEqual(self.template['Outputs'][output]['Condition'], 'HasHook')
+            self.assertNotIn('Condition', self.template['Outputs'][output])
         self.assertEqual(self.template['Outputs']['ExternalCanaryAlarmName']['Value'],
                          {'Ref': 'ExternalCanaryAlarmName'})
 

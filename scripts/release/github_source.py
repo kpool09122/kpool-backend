@@ -7,8 +7,9 @@ import zipfile
 from contract import BACKEND, FRONTEND, SHA, validate_source
 
 
-def gh(path, binary=False):
-    result=subprocess.run(['gh','api',path],capture_output=True,timeout=60)
+def gh(path, binary=False, token=None):
+    environment = dict(os.environ, GH_TOKEN=token) if token else None
+    result=subprocess.run(['gh','api',path],capture_output=True,timeout=60,env=environment)
     if result.returncode:
         raise RuntimeError('GitHub read failed')
     return result.stdout if binary else json.loads(result.stdout)
@@ -17,9 +18,13 @@ def gh(path, binary=False):
 def resolve_source(repository, ref):
     if repository not in (BACKEND,FRONTEND) or not (ref=='main' or SHA.fullmatch(ref)):
         raise ValueError('Production source must be main or an approved full SHA')
-    sha=gh(f'repos/{repository}/commits/{ref}')['sha']
+    def lookup(path):
+        if repository == FRONTEND and os.environ.get('FRONTEND_GH_TOKEN'):
+            return gh(path, token=os.environ['FRONTEND_GH_TOKEN'])
+        return gh(path)
+    sha=lookup(f'repos/{repository}/commits/{ref}')['sha']
     validate_source(repository,sha)
-    comparison=gh(f'repos/{repository}/compare/{sha}...main')
+    comparison=lookup(f'repos/{repository}/compare/{sha}...main')
     if comparison['status'] not in ('ahead','identical'):
         raise ValueError('Production source is not reachable from main')
     return sha

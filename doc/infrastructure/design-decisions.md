@@ -8,7 +8,7 @@ Issue #682 で `bootstrap/root/network/data/storage/integration/runtime`、環�
 
 - 根拠はリポジトリのテンプレート、実装、オフライン検証。今回AWSの照会・適用、Cloudflareの照会・変更は行っていない。稼働環境の有無、drift、資源状態、実効権限、費用は**未確認**。
 - 過去のSTS応答/AccessDeniedや過去の演習結果は今回の実環境確認ではない。環境が無いとも配備可能とも推測しない。
-- #156 は評価時点で OPEN、リポジトリのCIは品質検証のみ。通常配備の記述はPipelineへの要求であり、動くrelease workflowの証拠ではない。
+- backend release workflowは実装済み。frontendはbackendのrelease jobから別repoの既存配備スクリプトを使う。AWS/Workers上の配備成功は未確認。
 
 ## 構成案の比較
 
@@ -25,7 +25,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 
 - 初期運用の費用を抑えるため、ALBとFargateはpublic subnetに配置し、taskのpublic IPを明示的に有効化する。外向きHTTPSはInternet Gateway経由とし、NATの時間/処理料金を追加しない。APIの受信はALB SGから8080のみ、worker/migrationには受信許可を設けない。DB/cacheとprivate hookはinternet既定経路のないdata subnetに置く。
 - public配置はSGの受信制限に依存する。受信元をInternetへ広げるとtaskへ直接到達できるため、template/testと実SGの照合でALB限定・用途別の受信制限を維持する。taskごとのpublic IPv4は課金対象。HTTPS egressは宛先allowlistではなく、侵害後の外部送信を防ぐものではない。private task + NATはSG誤設定時の直接到達を防ぐ追加の防御として、将来の要件・予算に応じて再評価する。AWS用endpointのみではGoogle/Stripe等の外部APIを代替できない。
-- private hookのEC2 interface endpointはALB ENI発見のため。ALBの8443はhook SGだけを許可し、hookのHost/SNI/TLS検証は外部コードの受入が必要。endpointの利用API/有効性を実hookで確かめるまで削除・拡張しない。
+- private hookのEC2 interface endpointはALB ENI発見のため。ALBの8443はhook SGだけを許可し、hookのHost/SNI/TLS検証は同梱コードで実施する。endpointの利用API/有効性を実hookで確かめるまで削除・拡張しない。
 - API native BLUE_GREENを維持し、切替前smokeと切替後rollbackを分離する。新旧taskの併存費用はdeployment/bake中に発生し、通常時にAPIを常時二重化する設定ではない。ALBとhook用EC2 interface endpointは配備の有無にかかわらず固定費が続き、hook/canaryの実行費用は別に扱う。workerはROLLINGを維持。
 - RDS Single-AZは費用を抑える初期選択で、自動failover/SLAの保証ではない。backupを高可用性と同一視しない。Multi-AZ/容量変更は復旧目標・実測に基づき管理者が選ぶ。Valkey Serverlessは容量管理を減らす一方、最小課金/処理費と復元検証が残る。
 - ALB、Fargate旧新task、public IPv4、Valkey、endpoint、canary、CloudFront転送、logs、S3 versions、Retain資源を費用台帳に含める。Budgetsはaccount全体の通知であり上限強制でもk-pool単体の原価でもない。Cloudflare/外部APIは別集計。見積金額・負荷実測なしに「最安」とは判断しない。
@@ -40,7 +40,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | 非公開書類のCDN公開 | 画像/書類を別bucket、BPA/暗号化/OAC、画像だけにCloudFront Allow。書類は認可API+private/no-store | APIのListBucketは書類bucket全キーを列挙可能。workerには与えない。S3/認可実動作はアプリ/実AWS検証が必要 |
 | 削除・置換/誤更新による消失 | RDS Snapshot/削除保護/backup/TLS、S3 versioning、永続資源のRetain/UpdateReplace、planの削除/置換拒否と終了保護 | Retainはbackup/復旧成功/無期限保存の保証ではない。SQS/log期限、version完全消去、復元/import、RPO/RTOは別検証 |
 | 稼働revisionやcapacityの巻戻し | ECS/ALB/Schedulerを独立して取得し、未安定・権限不足・state変化で中止 | 分散ロックではない。全配備入口のpause排出と基盤管理者の単独操作が必要。AWS実行直前との競合窓は残る |
-| 配備失敗や無通信障害の見逃し | hook、ECS alarm rollback、worker breaker、外部canary要求、SNS/Scheduler DLQ | `/health`はDB/外部API疎通を保証しない。疎なALB metricsの欠損を正常扱いするため外部canaryが必須。通知配送/非0 STOPPED監視は未検証・一部未実装 |
+| 配備失敗や無通信障害の見逃し | hook、ECS alarm rollback、worker breaker、異常target/work DLQ alarm、SNS/Scheduler DLQ、ECS STOPPED rule | `/health`はDB/外部API疎通を保証しない。初期費用を抑えるため外部canaryは任意で省略し、無通信時の公開DNS/HTTPS障害検知は保証しない。通知配送・STOPPED検知は実環境未検証 |
 
 管理者CF実行roleには資源生成のための広い権限が残る。全wildcardを「AWS制約だから安全」とは扱わない。特にGlobalDeliveryAndBudgetはCloudFront/Budgetsの変更を `*` に許可するため、account内の他資源への影響が残る。専用account/管理者の短期認証・監査とChange Setの人的レビューが前提。実効権限/SCP/permissions boundaryは今回未確認。
 
@@ -52,7 +52,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | contracts.json | 操作が実際に読むregion/deploymentOrder/親間linksだけを残す。未使用version/stacks/nestedStacks/serviceRoles/outputInventoryと子間linksを削除。nested接続/Output定義はroot/templateが正本で、消費者のない全Output一覧を複製しない |
 | environment.py | 手入力のOutputs/revisionやSecret拒否、live Outputsの必須接続、template制約の検査を維持。単なる転記をなくす利益が小さな専用resolverの保守を上回る。汎用schema/互換mapperは追加しない |
 | runtime_state.py | CF旧Parametersはrelease後の実状態を表さないため維持。primary/production/testを別に読む。CLIの単純なDescribeStacksだけでは安全に置換できない |
-| operations.py | native package/immutable Change Set/waiterを利用し、その前後のaccount・依存・state・置換検査だけを担当。手動AWS CLI案では検査漏れと再転記が増えるため採用しない。独自lock/自動復旧/Secret取得機能は追加しない |
+| operations.py | native package/immutable Change Set/waiterを利用し、その前後のaccount・依存・state・置換検査だけを担当。手動AWS CLI案では検査漏れと再転記が増えるため採用しない。独自lock/自動復旧は追加しない。作成・更新共通のconfigureでSecret補完・専用DB設定task・release設定生成・月次schedule反映を行う |
 | 検証入口 | `task infra:validate`→`run.sh check`、CIも`run.sh check`に統一。未使用の旧`cfn:check`/`validate.sh`を削除。install/lint/testは同じpinned環境を使う部分実行として残す |
 | 文書 | 入口=全体像/正本、operations=操作、handoff=担当/接続、本文=採否、検証票=実環境の記録。コンテナ/queue/S3はアプリ固有契約だけ。過去の未実装表現とconfig cacheの矛盾を修正 |
 
@@ -85,7 +85,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 
 - Pipeline #156: immutable image/用途別revision・writable volume初期化、SSM/Secret/TLS/CA注入、purpose deployment判定、全入口pause排出、Cloudflare接続の実装・試験。
 - 基盤管理者/実環境検証: 正しいaccountとinventory、engine/quota/資源実状態、hook ZIP/endpoint API/canary/SNS、DML/DDLユーザー、backup別資源復元/import、Valkey rotation、保持期限/RPO/RTO/費用。
-- Scheduler: 現在は汎用1scheduleでDISABLED。月次/動画の2周期、producerのSendMessage権限（現雛形のWorkerTaskRoleは受信だけ）、非0 STOPPED監視、業務の重複抑止を準備するまで有効化しない。これは独立した機能/監視設計であり本PRで汎用枠を完成済みに見せない。
+- Scheduler: Wiki権限更新を毎月1日03:00 JSTに同期実行する。初期DISABLEDからconfigureで稼働imageへ切り替える。WorkerTaskRoleに同一work queueへのSendMessageを許可し、起動失敗・非0 STOPPEDはEventBridgeから通知する。送金処理は非公開のためscheduleを作成せず、再開時の候補を毎日03:00 JSTとする。業務処理・通知の実動作はAWSで確認する。
 - 送金の外部成功/DB未保存境界は[queue契約](queue-operations.md)の運用開始阻害条件。インフラのstatic PASSやqueue timeoutでは解消しない。
 
 採用したオフライン検証の今回の実測はPR本文へ記載し、今後の実環境結果はアクセス制限した検証票へ記録する。fake成功や文書の手順を実配備の成功へ読み替えない。

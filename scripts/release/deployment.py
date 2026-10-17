@@ -62,10 +62,17 @@ def poll(check, timeout=1800, interval=15, clock=time.monotonic, sleep=time.slee
     raise TimeoutError('Deployment polling timed out; inspect recorded live state before retry')
 
 
+def deployment_alarm_names(outputs):
+    names = [outputs[k] for k in ('ServerErrorAlarmName', 'LatencyAlarmName')]
+    if outputs.get('ExternalCanaryAlarmName'):
+        names.append(outputs['ExternalCanaryAlarmName'])
+    return names
+
+
 def validate_api_service(service, outputs):
     configuration = service.get('deploymentConfiguration', {})
     alarms = configuration.get('alarms', {})
-    names = [outputs[k] for k in ('ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName')]
+    names = deployment_alarm_names(outputs)
     if (service.get('deploymentController', {}).get('type') != 'ECS'
             or configuration.get('strategy') != 'BLUE_GREEN'
             or configuration.get('bakeTimeInMinutes', 0) < 5

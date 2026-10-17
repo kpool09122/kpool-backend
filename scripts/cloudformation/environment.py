@@ -58,7 +58,7 @@ def validate_config(config, templates, contract):
     derived.update((stack, 'ProjectName') for stack in templates)
     derived.update({('root', 'ResourcePrefix'), ('bootstrap', 'FoundationStackName'),
                     ('bootstrap', 'FoundationTemplateBucketName'), ('bootstrap', 'FoundationWorkQueueName'),
-                    ('bootstrap', 'CertificateHostedZoneId'), ('bootstrap', 'HookArtifactObjectArn')})
+                    ('bootstrap', 'MailIdentityDomain'), ('bootstrap', 'CertificateHostedZoneId'), ('bootstrap', 'HookArtifactObjectArn')})
     for stack, template in templates.items():
         for name, definition in template['Parameters'].items():
             if ('Default' not in definition and (stack, name) not in derived
@@ -101,6 +101,8 @@ def parameters(config, stack, templates, contract, outputs, previous=None, previ
     values = {name: str(item['Default']) for name, item in definitions.items() if 'Default' in item}
     values.update({name: value for name, value in (previous or {}).items() if name in definitions})
     values.update(config['inputs'].get(stack, {}))
+    if stack == 'runtime' and bool(values.get('SlackWorkspaceId')) != bool(values.get('SlackChannelId')):
+        raise ValueError('SlackWorkspaceId and SlackChannelId must both be set or both empty')
     if 'ProjectName' in definitions:
         values['ProjectName'] = config['projectName']
     if stack == 'root':
@@ -114,7 +116,8 @@ def parameters(config, stack, templates, contract, outputs, previous=None, previ
         values.update(FoundationStackName=config['stacks']['root'],
                       FoundationTemplateBucketName=config['packageBucket'],
                       FoundationWorkQueueName=root_values['WorkQueueName'],
-                      CertificateHostedZoneId=runtime.get('HostedZoneId', ''))
+                      CertificateHostedZoneId=runtime.get('HostedZoneId', ''),
+                      MailIdentityDomain=runtime.get('MailDomainName', ''))
         bucket, key = runtime.get('HookArtifactBucket', ''), runtime.get('HookArtifactKey', '')
         values['HookArtifactObjectArn'] = f'arn:aws:s3:::{bucket}/{key}' if bucket and key else ''
     for link in contract['links']:

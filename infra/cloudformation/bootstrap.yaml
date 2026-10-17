@@ -13,6 +13,10 @@ Parameters:
     Type: String
     Default: production
     AllowedPattern: '[A-Za-z0-9_-]+'
+  MailIdentityDomain:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|[a-z0-9][a-z0-9.-]+\.[a-z]{2,}'
   ExistingOidcProviderArn:
     Type: String
     Default: ''
@@ -46,6 +50,9 @@ Rules:
         - ap-northeast-1
       AssertDescription: Deploy in ap-northeast-1 only.
 Conditions:
+  HasMailIdentity:
+    Fn::Not:
+    - Fn::Equals: [{Ref: MailIdentityDomain}, '']
   CreateOidcProvider:
     Fn::Equals:
     - Ref: ExistingOidcProviderArn
@@ -226,6 +233,21 @@ Resources:
         Version: '2012-10-17'
         Statement:
         - Fn::If:
+          - HasMailIdentity
+          - Sid: SenderIdentity
+            Effect: Allow
+            Action:
+            - ses:CreateEmailIdentity
+            - ses:DeleteEmailIdentity
+            - ses:GetEmailIdentity
+            - ses:PutEmailIdentityDkimAttributes
+            - ses:PutEmailIdentityDkimSigningAttributes
+            - ses:TagResource
+            - ses:UntagResource
+            - ses:ListTagsForResource
+            Resource: !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${MailIdentityDomain}'
+          - Ref: AWS::NoValue
+        - Fn::If:
           - HasHookArtifact
           - Sid: ReadHookArtifact
             Effect: Allow
@@ -399,6 +421,15 @@ Resources:
         - Sid: NamedRegionalResources
           Effect: Allow
           Action:
+          - events:PutRule
+          - events:DeleteRule
+          - events:DescribeRule
+          - events:PutTargets
+          - events:RemoveTargets
+          - events:ListTargetsByRule
+          - events:TagResource
+          - events:UntagResource
+          - events:ListTagsForResource
           - ecr:CreateRepository
           - ecr:DeleteRepository
           - ecr:DescribeRepositories
@@ -475,6 +506,7 @@ Resources:
           - lambda:UntagResource
           - lambda:ListTags
           Resource:
+          - Fn::Sub: arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/${ProjectName}-*
           - Fn::Sub: arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}
           - Fn::Sub: arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${ProjectName}-*
           - Fn::Sub: arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}/*
@@ -523,6 +555,40 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+        - Sid: CreateSlackNotifications
+          Effect: Allow
+          Action: chatbot:CreateSlackChannelConfiguration
+          Resource: '*'
+          Condition:
+            StringEquals:
+              aws:RequestTag/Project: {Ref: ProjectName}
+        - Sid: DescribeSlackNotifications
+          Effect: Allow
+          Action: chatbot:DescribeSlackChannelConfigurations
+          Resource: '*'
+        - Sid: ManageProjectSlackNotifications
+          Effect: Allow
+          Action:
+          - chatbot:UpdateSlackChannelConfiguration
+          - chatbot:DeleteSlackChannelConfiguration
+          - chatbot:TagResource
+          - chatbot:UntagResource
+          - chatbot:ListTagsForResource
+          Resource: !Sub 'arn:${AWS::Partition}:chatbot::${AWS::AccountId}:chat-configuration/slack-channel/${ProjectName}-alarms'
+        - Sid: PassSlackNotificationRole
+          Effect: Allow
+          Action: iam:PassRole
+          Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-slack-notifications'
+          Condition:
+            StringEquals:
+              iam:PassedToService: chatbot.amazonaws.com
+        - Sid: CreateSlackNotificationServiceRole
+          Effect: Allow
+          Action: iam:CreateServiceLinkedRole
+          Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/management.chatbot.amazonaws.com/AWSServiceRoleForAWSChatbot'
+          Condition:
+            StringEquals:
+              iam:AWSServiceName: management.chatbot.amazonaws.com
         - Sid: Buckets
           Effect: Allow
           Action:
@@ -586,10 +652,12 @@ Resources:
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-migration-task
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-app-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-migration-execution
+          - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-database-setup-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-alb-infrastructure
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-invocation
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-scheduler
+          - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-slack-notifications
         - Sid: PassRuntimeRoles
           Effect: Allow
           Action: iam:PassRole
@@ -599,6 +667,7 @@ Resources:
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-migration-task
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-app-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-migration-execution
+          - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-database-setup-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-alb-infrastructure
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-invocation
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-execution

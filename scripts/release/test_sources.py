@@ -6,7 +6,7 @@ import unittest
 import warnings
 import zipfile
 from unittest.mock import patch
-from contract import BACKEND
+from contract import BACKEND, FRONTEND
 from github_source import recorded_artifacts, resolve_source
 from cli import plan_release, validate_plan, validate_manifest
 from fixtures import fixture, FakeAws
@@ -61,6 +61,14 @@ class SourceAndRecordTests(unittest.TestCase):
             self.assertEqual(api.call_args_list[1].args[0],f'repos/{BACKEND}/compare/{sha}...main')
         with patch('github_source.gh',side_effect=[{'sha':sha},{'status':'diverged'}]):
             with self.assertRaises(ValueError): resolve_source(BACKEND,sha)
+    def test_frontend_token_is_scoped_to_frontend_source_queries(self):
+        sha = 'a' * 40
+        with patch.dict('os.environ', FRONTEND_GH_TOKEN='TEST ONLY installation token'), \
+                patch('github_source.gh', side_effect=[{'sha': sha}, {'status': 'ahead'}, {'sha': sha}, {'status': 'ahead'}]) as api:
+            resolve_source(FRONTEND, 'main')
+            resolve_source(BACKEND, 'main')
+        self.assertEqual([call.kwargs for call in api.call_args_list],
+                         [{'token': 'TEST ONLY installation token'}, {'token': 'TEST ONLY installation token'}, {}, {}])
     def test_injection_ref_never_calls_github(self):
         with patch('github_source.gh') as api:
             for ref in ('feature/test','main;echo secret','$(id)','a'*39):

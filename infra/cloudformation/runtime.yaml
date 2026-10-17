@@ -5,6 +5,19 @@ Parameters:
     Type: String
     AllowedPattern: '[a-z][a-z0-9-]{2,23}'
     Default: kpool-production
+  MailDomainName:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|[a-z0-9][a-z0-9.-]+\.[a-z]{2,}'
+    Description: SES sender domain; verify the output DKIM records and request production access.
+  DatabaseSecretArn:
+    Type: String
+  DatabaseEndpoint:
+    Type: String
+  DatabaseName:
+    Type: String
+  DatabaseIdentifier:
+    Type: String
   VpcId:
     Type: AWS::EC2::VPC::Id
   PublicSubnetIds:
@@ -20,6 +33,8 @@ Parameters:
   ImagesBucketArn:
     Type: String
   FilesBucketArn:
+    Type: String
+  DeadLetterQueueArn:
     Type: String
   QueueArn:
     Type: String
@@ -100,7 +115,7 @@ Parameters:
     Default: DISABLED
   ScheduleExpression:
     Type: String
-    Default: rate(1 minute)
+    Default: cron(0 3 1 * ? *)
   PrimaryTargetGroup:
     Type: String
     AllowedValues:
@@ -136,12 +151,46 @@ Parameters:
     Default: ''
   ExternalCanaryAlarmName:
     Type: String
-    Description: 'Existing ap-northeast-1 alarm: continuous HTTPS smoke test, 60s, missing data breaching. Required
-      before API activation.'
+    Description: Optional existing external HTTPS monitoring alarm in ap-northeast-1.
     Default: ''
+  ContainerInsights:
+    Type: String
+    AllowedValues: [enabled, disabled]
+    Default: disabled
+    Description: Optional paid ECS container metrics; basic ECS and ALB metrics remain available.
   NotificationEmail:
     Type: String
     AllowedPattern: '[^@]+@[^@]+'
+  SlackWorkspaceId:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|T[A-Z0-9]+'
+    Description: Authorized Slack workspace ID; set together with SlackChannelId to enable notifications.
+  SlackChannelId:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|[CG][A-Z0-9]+'
+  LoadAlarmEvaluationPeriods:
+    Type: Number
+    Default: 5
+    MinValue: 2
+    MaxValue: 15
+    Description: Consecutive one-minute periods for sustained DB/ECS load alarms.
+  CpuAlarmThresholdPercent:
+    Type: Number
+    Default: 80
+    MinValue: 1
+    MaxValue: 100
+  MemoryAlarmThresholdPercent:
+    Type: Number
+    Default: 85
+    MinValue: 1
+    MaxValue: 100
+  DatabaseFreeStorageAlarmThresholdBytes:
+    Type: Number
+    Default: 3221225472
+    MinValue: 1
+    Description: Alert below 3 GiB by default; review when changing DB storage capacity.
   LogRetentionDays:
     Type: Number
     AllowedValues:
@@ -178,7 +227,7 @@ Parameters:
     - notBreaching
     - breaching
     - missing
-    Description: ALB emits sparse metrics; external continuous canary must detect no-traffic failures.
+    Description: ALB emits sparse metrics; missing data alone does not prove an outage.
     Default: notBreaching
   AppSecretKmsKeyArn:
     Type: String
@@ -198,6 +247,15 @@ Parameters:
     Type: String
     Description: Foundation password secret ARN, injected by the app execution role; never a literal password.
 Conditions:
+  HasSlack:
+    Fn::And:
+    - Fn::Not:
+      - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+    - Fn::Not:
+      - Fn::Equals: [{Ref: SlackChannelId}, '']
+  HasMailDomain:
+    Fn::Not:
+    - Fn::Equals: [{Ref: MailDomainName}, '']
   HasApiRelease:
     Fn::Not:
     - Fn::Equals:
@@ -259,6 +317,19 @@ Conditions:
       - Ref: MigrationSecretKmsKeyArn
       - ''
 Rules:
+  SlackInputsTogether:
+    Assertions:
+    - Assert:
+        Fn::Or:
+        - Fn::And:
+          - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+          - Fn::Equals: [{Ref: SlackChannelId}, '']
+        - Fn::And:
+          - Fn::Not:
+            - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+          - Fn::Not:
+            - Fn::Equals: [{Ref: SlackChannelId}, '']
+      AssertDescription: SlackWorkspaceId and SlackChannelId must both be set or both empty.
   TokyoOnly:
     Assertions:
     - Assert:
@@ -286,27 +357,10 @@ Rules:
         - '0'
     Assertions:
     - Assert:
-        Fn::And:
-        - Fn::Not:
-          - Fn::Equals:
-            - Ref: ApiTaskDefinitionArn
-            - ''
-        - Fn::Not:
-          - Fn::Equals:
-            - Ref: HookArtifactBucket
-            - ''
-        - Fn::Not:
-          - Fn::Equals:
-            - Ref: HookArtifactKey
-            - ''
-        - Fn::Not:
-          - Fn::Equals:
-            - Ref: HookArtifactVersion
-            - ''
-        - Fn::Not:
-          - Fn::Equals:
-            - Ref: ExternalCanaryAlarmName
-            - ''
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: ApiTaskDefinitionArn
+          - ''
       AssertDescription: Positive desired count requires a release revision and API deployment verification contracts.
   WorkerActivation:
     RuleCondition:
@@ -409,7 +463,7 @@ Resources:
       ClusterName: {Ref: ProjectName}
       ClusterSettings:
       - Name: containerInsights
-        Value: enabled
+        Value: {Ref: ContainerInsights}
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -655,6 +709,15 @@ Resources:
             - sqs:GetQueueAttributes
             - sqs:GetQueueUrl
             Resource: {Ref: QueueArn}
+          - Fn::If:
+            - HasMailDomain
+            - Effect: Allow
+              Action: [ses:SendEmail, ses:SendRawEmail]
+              Resource: !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${MailDomainName}'
+              Condition:
+                StringLike:
+                  ses:FromAddress: !Sub '*@${MailDomainName}'
+            - Ref: AWS::NoValue
   WorkerTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -701,12 +764,22 @@ Resources:
                 s3:x-amz-acl: bucket-owner-full-control
           - Effect: Allow
             Action:
+            - sqs:SendMessage
             - sqs:ReceiveMessage
             - sqs:DeleteMessage
             - sqs:ChangeMessageVisibility
             - sqs:GetQueueAttributes
             - sqs:GetQueueUrl
             Resource: {Ref: QueueArn}
+          - Fn::If:
+            - HasMailDomain
+            - Effect: Allow
+              Action: [ses:SendEmail, ses:SendRawEmail]
+              Resource: !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${MailDomainName}'
+              Condition:
+                StringLike:
+                  ses:FromAddress: !Sub '*@${MailDomainName}'
+            - Ref: AWS::NoValue
   MigrationTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -726,6 +799,126 @@ Resources:
             ArnLike:
               aws:SourceArn:
                 Fn::Sub: arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*
+  DatabaseSetupLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/kpool/${ProjectName}/database-setup'
+      RetentionInDays: {Ref: LogRetentionDays}
+  DatabaseSetupExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-database-setup-execution'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: ecs-tasks.amazonaws.com}
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount: {Ref: AWS::AccountId}
+            ArnLike:
+              aws:SourceArn: !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*'
+      Policies:
+      - PolicyName: DatabaseInitializationOnly
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: [secretsmanager:GetSecretValue]
+            Resource: [{Ref: DatabaseSecretArn}, {Ref: AppSecretArn}, {Ref: MigrationSecretArn}]
+          - Effect: Allow
+            Action: [logs:CreateLogStream, logs:PutLogEvents]
+            Resource: !GetAtt DatabaseSetupLogGroup.Arn
+          - Fn::If:
+            - HasAppKms
+            - Effect: Allow
+              Action: kms:Decrypt
+              Resource: {Ref: AppSecretKmsKeyArn}
+            - Ref: AWS::NoValue
+          - Fn::If:
+            - HasMigrationKms
+            - Effect: Allow
+              Action: kms:Decrypt
+              Resource: {Ref: MigrationSecretKmsKeyArn}
+            - Ref: AWS::NoValue
+  DatabaseSetupTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub '${ProjectName}-database-setup'
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      RuntimePlatform: {CpuArchitecture: ARM64, OperatingSystemFamily: LINUX}
+      ExecutionRoleArn: !GetAtt DatabaseSetupExecutionRole.Arn
+      TaskRoleArn: !GetAtt MigrationTaskRole.Arn
+      Volumes: [{Name: setup-tmp}]
+      ContainerDefinitions:
+      - Name: database-setup
+        Image: public.ecr.aws/docker/library/postgres:18-alpine
+        User: postgres
+        Essential: true
+        ReadonlyRootFilesystem: true
+        StopTimeout: 120
+        MountPoints: [{SourceVolume: setup-tmp, ContainerPath: /tmp, ReadOnly: false}]
+        EntryPoint: [/bin/sh, -c]
+        Command:
+        - |
+            set -eu
+            wget -q -T 30 -O /tmp/rds-ca.pem https://truststore.pki.rds.amazonaws.com/ap-northeast-1/ap-northeast-1-bundle.pem || { echo 'CA download failed'; exit 1; }
+            export PGSSLMODE=verify-full PGSSLROOTCERT=/tmp/rds-ca.pem PGCONNECT_TIMEOUT=10
+            if ! psql --no-psqlrc --quiet --set=ON_ERROR_STOP=1 >/dev/null 2>/dev/null <<'SQL'
+            \getenv app_password APP_DB_PASSWORD
+            \getenv migration_password MIGRATION_DB_PASSWORD
+            BEGIN;
+            SELECT 'CREATE ROLE kpool_app LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname='kpool_app') \gexec
+            SELECT 'CREATE ROLE kpool_migration LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname='kpool_migration') \gexec
+            DO $$ BEGIN
+              IF EXISTS (SELECT FROM pg_roles WHERE rolname IN ('kpool_app', 'kpool_migration')
+                         AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)) THEN
+                RAISE EXCEPTION 'Existing database role has unexpected administrative privileges';
+              END IF;
+            END $$;
+            SELECT format('ALTER ROLE kpool_app PASSWORD %L', :'app_password') \gexec
+            SELECT format('ALTER ROLE kpool_migration PASSWORD %L', :'migration_password') \gexec
+            GRANT kpool_migration TO CURRENT_USER;
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
+            REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+            ALTER SCHEMA public OWNER TO kpool_migration;
+            SELECT format('GRANT CONNECT ON DATABASE %I TO kpool_app, kpool_migration', current_database()) \gexec
+            GRANT USAGE ON SCHEMA public TO kpool_app;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO kpool_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO kpool_app;
+            ALTER DEFAULT PRIVILEGES FOR ROLE kpool_migration IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO kpool_app;
+            ALTER DEFAULT PRIVILEGES FOR ROLE kpool_migration IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO kpool_app;
+            COMMIT;
+            SQL
+            then
+              echo 'Database setup failed; check database connectivity and role ownership'; exit 1
+            fi
+            echo 'Database roles and privileges initialized'
+        Environment:
+        - {Name: PGHOST, Value: {Ref: DatabaseEndpoint}}
+        - {Name: PGDATABASE, Value: {Ref: DatabaseName}}
+        Secrets:
+        - Name: PGUSER
+          ValueFrom: !Sub '${DatabaseSecretArn}:username::'
+        - Name: PGPASSWORD
+          ValueFrom: !Sub '${DatabaseSecretArn}:password::'
+        - Name: APP_DB_PASSWORD
+          ValueFrom: !Sub '${AppSecretArn}:DB_PASSWORD::'
+        - Name: MIGRATION_DB_PASSWORD
+          ValueFrom: !Sub '${MigrationSecretArn}:DB_PASSWORD::'
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: {Ref: DatabaseSetupLogGroup}
+            awslogs-region: {Ref: 'AWS::Region'}
+            awslogs-stream-prefix: setup
   ApiBootstrapTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -909,7 +1102,8 @@ Resources:
         Command:
         - php
         - artisan
-        - schedule:run
+        - wiki:process-role-promotion
+        - --sync
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Condition: CreateCertificate
@@ -1135,17 +1329,15 @@ Resources:
             - ec2:AssignPrivateIpAddresses
             - ec2:UnassignPrivateIpAddresses
             Resource: '*'
-    Condition: HasHook
   LifecycleHook:
     Type: AWS::Lambda::Function
-    Condition: HasHook
     Properties:
       FunctionName:
         Fn::Sub: ${ProjectName}-deployment-hook
       Runtime: python3.13
       Architectures:
       - arm64
-      Handler: handler.handler
+      Handler: !If [HasHook, handler.handler, index.handler]
       Role:
         Fn::GetAtt:
         - HookExecutionRole
@@ -1153,9 +1345,69 @@ Resources:
       Timeout: 120
       MemorySize: 256
       Code:
-        S3Bucket: {Ref: HookArtifactBucket}
-        S3Key: {Ref: HookArtifactKey}
-        S3ObjectVersion: {Ref: HookArtifactVersion}
+        Fn::If:
+        - HasHook
+        - S3Bucket: {Ref: HookArtifactBucket}
+          S3Key: {Ref: HookArtifactKey}
+          S3ObjectVersion: {Ref: HookArtifactVersion}
+        - ZipFile: |
+            import http.client
+            import os
+            import socket
+            import ssl
+            import boto3
+            from botocore.config import Config
+
+            class PrivateHttpsConnection(http.client.HTTPSConnection):
+                def __init__(self, host, address, port):
+                    super().__init__(host, port, timeout=5, context=ssl.create_default_context())
+                    self.address = address
+
+                def connect(self):
+                    transport = socket.create_connection((self.address, self.port), self.timeout)
+                    try:
+                        self.sock = self._context.wrap_socket(transport, server_hostname=self.host)
+                    except Exception:
+                        transport.close()
+                        raise
+
+            def handler(event, context):
+                # Trust deployment-owned environment, never a URL supplied in the event.
+                if event.get('lifecycleStage') != 'POST_TEST_TRAFFIC_SHIFT':
+                    return {'hookStatus': 'FAILED'}
+                try:
+                    host = os.environ['API_HOST']
+                    path = os.environ['HEALTH_PATH']
+                    port = int(os.environ['TEST_PORT'])
+                    if not path.startswith('/') or path.startswith('//') or '\r' in path or '\n' in path:
+                        return {'hookStatus': 'FAILED'}
+                    client = boto3.client('ec2', config=Config(
+                        connect_timeout=5, read_timeout=5, retries={'total_max_attempts': 2}))
+                    paginator = client.get_paginator('describe_network_interfaces')
+                    filters = [
+                        {'Name': 'vpc-id', 'Values': [os.environ['VPC_ID']]},
+                        {'Name': 'description', 'Values': ['ELB ' + os.environ['ALB_ARN'].split('loadbalancer/', 1)[1]]},
+                    ]
+                    addresses = sorted({eni['PrivateIpAddress']
+                        for page in paginator.paginate(Filters=filters)
+                        for eni in page['NetworkInterfaces']})
+                    if not addresses:
+                        return {'hookStatus': 'FAILED'}
+                    for address in addresses:
+                        connection = PrivateHttpsConnection(host, address, port)
+                        try:
+                            connection.request('GET', path, headers={'Host': host})
+                            response = connection.getresponse()
+                            if response.status != 200:
+                                return {'hookStatus': 'FAILED'}
+                            response.read(4096)
+                        finally:
+                            connection.close()
+                    return {'hookStatus': 'SUCCEEDED'}
+                except Exception:
+                    # Responses and exception text can contain application data.
+                    print('Deployment health verification failed')
+                    return {'hookStatus': 'FAILED'}
       VpcConfig:
         SubnetIds: {Ref: PrivateSubnetIds}
         SecurityGroupIds:
@@ -1197,7 +1449,6 @@ Resources:
               Fn::GetAtt:
               - LifecycleHook
               - Arn
-    Condition: HasHook
   AlarmTopic:
     Type: AWS::SNS::Topic
     Properties:
@@ -1206,10 +1457,134 @@ Resources:
       Subscription:
       - Protocol: email
         Endpoint: {Ref: NotificationEmail}
+  SlackNotificationRole:
+    Type: AWS::IAM::Role
+    Condition: HasSlack
+    Properties:
+      RoleName: !Sub '${ProjectName}-slack-notifications'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: chatbot.amazonaws.com}
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: NotificationMetadataOnly
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: cloudwatch:DescribeAlarms
+            Resource: !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-*'
+          - Effect: Allow
+            Action: [cloudwatch:GetMetricData, cloudwatch:GetMetricStatistics, cloudwatch:GetMetricWidgetImage, cloudwatch:ListMetrics]
+            Resource: '*'
+  SlackNotifications:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Condition: HasSlack
+    Properties:
+      ConfigurationName: !Sub '${ProjectName}-alarms'
+      SlackWorkspaceId: {Ref: SlackWorkspaceId}
+      SlackChannelId: {Ref: SlackChannelId}
+      SnsTopicArns: [{Ref: AlarmTopic}]
+      IamRoleArn: !GetAtt SlackNotificationRole.Arn
+      GuardrailPolicies:
+      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchReadOnlyAccess'
+      UserRoleRequired: true
+      LoggingLevel: NONE
+      Tags:
+      - {Key: Project, Value: {Ref: ProjectName}}
+  DatabaseCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-database-cpu'
+      AlarmDescription: Sustained RDS CPU load; review queries and database capacity.
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: DBInstanceIdentifier, Value: {Ref: DatabaseIdentifier}}
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  DatabaseFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-database-free-storage'
+      AlarmDescription: Low RDS free storage; check growth and the storage autoscaling limit.
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions:
+      - {Name: DBInstanceIdentifier, Value: {Ref: DatabaseIdentifier}}
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: DatabaseFreeStorageAlarmThresholdBytes}
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  UnhealthyTargetsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-unhealthy-targets'
+      AlarmDescription: Notify when either API target group has persistently unhealthy targets.
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      EvaluationPeriods: 2
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+      Metrics:
+      - Id: unhealthy
+        Expression: MAX([blue,green])
+        ReturnData: true
+      - Id: blue
+        ReturnData: false
+        MetricStat:
+          Period: 60
+          Stat: Maximum
+          Metric:
+            Namespace: AWS/ApplicationELB
+            MetricName: UnHealthyHostCount
+            Dimensions:
+            - Name: LoadBalancer
+              Value: !GetAtt LoadBalancer.LoadBalancerFullName
+            - Name: TargetGroup
+              Value: !GetAtt BlueTargetGroup.TargetGroupFullName
+      - Id: green
+        ReturnData: false
+        MetricStat:
+          Period: 60
+          Stat: Maximum
+          Metric:
+            Namespace: AWS/ApplicationELB
+            MetricName: UnHealthyHostCount
+            Dimensions:
+            - Name: LoadBalancer
+              Value: !GetAtt LoadBalancer.LoadBalancerFullName
+            - Name: TargetGroup
+              Value: !GetAtt GreenTargetGroup.TargetGroupFullName
+  MailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Condition: HasMailDomain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      EmailIdentity: {Ref: MailDomainName}
+      DkimAttributes:
+        SigningEnabled: true
+      DkimSigningAttributes:
+        NextSigningKeyLength: RSA_2048_BIT
   ServerErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      AlarmName: !Sub '${ProjectName}-api-5xx'
+      AlarmDescription: Sustained target 5xx errors; deployment rollback and operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: HTTPCode_Target_5XX_Count
       Dimensions:
@@ -1226,10 +1601,12 @@ Resources:
       TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   LatencyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      AlarmName: !Sub '${ProjectName}-api-latency'
+      AlarmDescription: Sustained average API response latency; deployment rollback and operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: TargetResponseTime
       Dimensions:
@@ -1246,6 +1623,7 @@ Resources:
       TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   ApiService:
     Type: AWS::ECS::Service
     Properties:
@@ -1274,24 +1652,14 @@ Resources:
             - Ref: ExternalCanaryAlarmName
             - Ref: AWS::NoValue
         LifecycleHooks:
-          Fn::If:
-          - HasHook
-          - - HookTargetArn:
-                Fn::GetAtt:
-                - LifecycleHook
-                - Arn
-              RoleArn:
-                Fn::GetAtt:
-                - HookInvocationRole
-                - Arn
-              LifecycleStages:
-              - POST_TEST_TRAFFIC_SHIFT
-              HookDetails:
-                contractVersion: '1'
-                expectedHost: {Ref: ApiDomainName}
-                testPort: 8443
-                healthPath: {Ref: HealthCheckPath}
-          - Ref: AWS::NoValue
+        - HookTargetArn: !GetAtt LifecycleHook.Arn
+          RoleArn: !GetAtt HookInvocationRole.Arn
+          LifecycleStages: [POST_TEST_TRAFFIC_SHIFT]
+          HookDetails:
+            contractVersion: '1'
+            expectedHost: {Ref: ApiDomainName}
+            testPort: 8443
+            healthPath: {Ref: HealthCheckPath}
       TaskDefinition:
         Fn::If:
         - HasApiRelease
@@ -1432,6 +1800,7 @@ Resources:
       GroupName: {Ref: ScheduleGroup}
       State: {Ref: SchedulerState}
       ScheduleExpression: {Ref: ScheduleExpression}
+      ScheduleExpressionTimezone: Asia/Tokyo
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -1466,9 +1835,149 @@ Resources:
             Fn::GetAtt:
             - SchedulerDlq
             - Arn
+  SchedulerFailureRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${ProjectName}-scheduler-failure'
+      Description: Notify on Wiki batch task start failures or nonzero exits.
+      EventPattern:
+        source: [aws.ecs]
+        detail-type: [ECS Task State Change]
+        detail:
+          clusterArn: [!GetAtt Cluster.Arn]
+          lastStatus: [STOPPED]
+          taskDefinitionArn:
+          - prefix: !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${ProjectName}-scheduler-release:'
+          '$or':
+          - stopCode: [TaskFailedToStart]
+          - containers:
+              exitCode:
+              - anything-but: 0
+      Targets:
+      - Id: NotifyOperator
+        Arn: {Ref: AlarmTopic}
+        InputTransformer:
+          InputPathsMap:
+            task: $.detail.taskArn
+          InputTemplate: '"Wiki batch failed; inspect ECS task <task> and scheduler logs."'
+  SchedulerFailureTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [{Ref: AlarmTopic}]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: cloudwatch.amazonaws.com}
+          Action: sns:Publish
+          Resource: {Ref: AlarmTopic}
+          Condition:
+            StringEquals:
+              aws:SourceAccount: {Ref: AWS::AccountId}
+            ArnLike:
+              aws:SourceArn: !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-*'
+        - Effect: Allow
+          Principal: {Service: events.amazonaws.com}
+          Action: sns:Publish
+          Resource: {Ref: AlarmTopic}
+  ApiCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-api-cpu'
+      AlarmDescription: Sustained api cpu utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt ApiService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  ApiMemoryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-api-memory'
+      AlarmDescription: Sustained api memory utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: MemoryUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt ApiService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: MemoryAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  WorkerCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-worker-cpu'
+      AlarmDescription: Sustained worker cpu utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt WorkerService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  WorkerMemoryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-worker-memory'
+      AlarmDescription: Sustained worker memory utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: MemoryUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt WorkerService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: MemoryAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  WorkQueueDlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-work-dlq'
+      AlarmDescription: Jobs exhausted their SQS receive attempts; inspect before replaying.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+      - Name: QueueName
+        Value: !Select [5, !Split [':', !Ref DeadLetterQueueArn]]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
   SchedulerDlqAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmName: !Sub '${ProjectName}-scheduler-dlq'
       Namespace: AWS/SQS
       MetricName: ApproximateNumberOfMessagesVisible
       Dimensions:
@@ -1485,6 +1994,7 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -1633,6 +2143,33 @@ Resources:
       ToPort: 443
       DestinationSecurityGroupId: {Ref: EndpointSecurityGroup}
 Outputs:
+  SlackNotificationConfigurationArn:
+    Condition: HasSlack
+    Value: !GetAtt SlackNotifications.Arn
+  DatabaseSetupTaskDefinitionArn:
+    Value: {Ref: DatabaseSetupTaskDefinition}
+  DatabaseSetupLogGroupName:
+    Value: {Ref: DatabaseSetupLogGroup}
+  UnhealthyTargetsAlarmName:
+    Value: {Ref: UnhealthyTargetsAlarm}
+  MailDkimName1:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenName1
+  MailDkimValue1:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenValue1
+  MailDkimName2:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenName2
+  MailDkimValue2:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenValue2
+  MailDkimName3:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenName3
+  MailDkimValue3:
+    Condition: HasMailDomain
+    Value: !GetAtt MailIdentity.DkimDNSTokenValue3
   RepositoryUri:
     Value:
       Fn::GetAtt:
@@ -1746,19 +2283,18 @@ Outputs:
       Fn::GetAtt:
       - HookInvocationRole
       - Arn
-    Condition: HasHook
   HookExecutionRoleArn:
     Value:
       Fn::GetAtt:
       - HookExecutionRole
       - Arn
-    Condition: HasHook
   LifecycleHookArn:
     Value:
       Fn::GetAtt:
       - LifecycleHook
       - Arn
-    Condition: HasHook
+  HookCodeSource:
+    Value: !If [HasHook, external, bundled]
   ApiBootstrapTaskDefinitionArn:
     Value: {Ref: ApiBootstrapTaskDefinition}
   WorkerBootstrapTaskDefinitionArn:
