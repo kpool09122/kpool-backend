@@ -65,6 +65,26 @@ class EnvironmentTests(unittest.TestCase):
         self.assertNotIn('IMAGE_BUCKET', env)
         self.assertNotIn('FILE_BUCKET', env)
 
+    def test_slack_pair_validates_effective_update_values_and_preserves_existing_ids(self):
+        templates, contract = environment.load_contract(ROOT)
+        outputs = {}
+        for link in contract['links']:
+            outputs.setdefault(link['from'], {})[link['output']] = 'live-' + link['output']
+        config = json.loads((ROOT / 'environment.example.json').read_text())
+        config['inputs']['runtime'].update(SlackWorkspaceId='TTEST123', SlackChannelId='CTEST456')
+        values = environment.parameters(config, 'runtime', templates, contract, outputs)
+        self.assertEqual(values['DatabaseIdentifier'], 'live-DatabaseIdentifier')
+        for key in ('SlackWorkspaceId', 'SlackChannelId'):
+            broken = copy.deepcopy(config)
+            broken['inputs']['runtime'][key] = ''
+            with self.assertRaisesRegex(ValueError, 'both be set'):
+                environment.parameters(broken, 'runtime', templates, contract, outputs)
+        config['inputs']['runtime'].pop('SlackWorkspaceId')
+        config['inputs']['runtime']['SlackChannelId'] = 'CNEW789'
+        updated = environment.parameters(config, 'runtime', templates, contract, outputs, values)
+        self.assertEqual(updated['SlackWorkspaceId'], 'TTEST123')
+        self.assertEqual(updated['SlackChannelId'], 'CNEW789')
+
     def test_missing_required_operator_input_is_rejected_offline(self):
         templates, contract = environment.load_contract(ROOT)
         for stack, name in [('runtime', 'ApiDomainName'), ('runtime', 'NotificationEmail'),

@@ -101,6 +101,8 @@ def parameters(config, stack, templates, contract, outputs, previous=None, previ
     values = {name: str(item['Default']) for name, item in definitions.items() if 'Default' in item}
     values.update({name: value for name, value in (previous or {}).items() if name in definitions})
     values.update(config['inputs'].get(stack, {}))
+    if stack == 'runtime' and bool(values.get('SlackWorkspaceId')) != bool(values.get('SlackChannelId')):
+        raise ValueError('SlackWorkspaceId and SlackChannelId must both be set or both empty')
     if 'ProjectName' in definitions:
         values['ProjectName'] = config['projectName']
     if stack == 'root':

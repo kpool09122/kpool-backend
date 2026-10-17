@@ -144,6 +144,12 @@
       "output": "DeadLetterQueueArn",
       "to": "runtime",
       "parameter": "DeadLetterQueueArn"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseIdentifier",
+      "to": "runtime",
+      "parameter": "DatabaseIdentifier"
     }
   ]
 }

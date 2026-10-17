@@ -555,6 +555,40 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+        - Sid: CreateSlackNotifications
+          Effect: Allow
+          Action: chatbot:CreateSlackChannelConfiguration
+          Resource: '*'
+          Condition:
+            StringEquals:
+              aws:RequestTag/Project: {Ref: ProjectName}
+        - Sid: DescribeSlackNotifications
+          Effect: Allow
+          Action: chatbot:DescribeSlackChannelConfigurations
+          Resource: '*'
+        - Sid: ManageProjectSlackNotifications
+          Effect: Allow
+          Action:
+          - chatbot:UpdateSlackChannelConfiguration
+          - chatbot:DeleteSlackChannelConfiguration
+          - chatbot:TagResource
+          - chatbot:UntagResource
+          - chatbot:ListTagsForResource
+          Resource: !Sub 'arn:${AWS::Partition}:chatbot::${AWS::AccountId}:chat-configuration/slack-channel/${ProjectName}-alarms'
+        - Sid: PassSlackNotificationRole
+          Effect: Allow
+          Action: iam:PassRole
+          Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-slack-notifications'
+          Condition:
+            StringEquals:
+              iam:PassedToService: chatbot.amazonaws.com
+        - Sid: CreateSlackNotificationServiceRole
+          Effect: Allow
+          Action: iam:CreateServiceLinkedRole
+          Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/management.chatbot.amazonaws.com/AWSServiceRoleForAWSChatbot'
+          Condition:
+            StringEquals:
+              iam:AWSServiceName: management.chatbot.amazonaws.com
         - Sid: Buckets
           Effect: Allow
           Action:
@@ -623,6 +657,7 @@ Resources:
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-invocation
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-execution
           - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-scheduler
+          - Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-slack-notifications
         - Sid: PassRuntimeRoles
           Effect: Allow
           Action: iam:PassRole

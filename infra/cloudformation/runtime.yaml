@@ -16,6 +16,8 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+  DatabaseIdentifier:
+    Type: String
   VpcId:
     Type: AWS::EC2::VPC::Id
   PublicSubnetIds:
@@ -159,6 +161,36 @@ Parameters:
   NotificationEmail:
     Type: String
     AllowedPattern: '[^@]+@[^@]+'
+  SlackWorkspaceId:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|T[A-Z0-9]+'
+    Description: Authorized Slack workspace ID; set together with SlackChannelId to enable notifications.
+  SlackChannelId:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|[CG][A-Z0-9]+'
+  LoadAlarmEvaluationPeriods:
+    Type: Number
+    Default: 5
+    MinValue: 2
+    MaxValue: 15
+    Description: Consecutive one-minute periods for sustained DB/ECS load alarms.
+  CpuAlarmThresholdPercent:
+    Type: Number
+    Default: 80
+    MinValue: 1
+    MaxValue: 100
+  MemoryAlarmThresholdPercent:
+    Type: Number
+    Default: 85
+    MinValue: 1
+    MaxValue: 100
+  DatabaseFreeStorageAlarmThresholdBytes:
+    Type: Number
+    Default: 3221225472
+    MinValue: 1
+    Description: Alert below 3 GiB by default; review when changing DB storage capacity.
   LogRetentionDays:
     Type: Number
     AllowedValues:
@@ -195,7 +227,7 @@ Parameters:
     - notBreaching
     - breaching
     - missing
-    Description: ALB emits sparse metrics; external continuous canary must detect no-traffic failures.
+    Description: ALB emits sparse metrics; missing data alone does not prove an outage.
     Default: notBreaching
   AppSecretKmsKeyArn:
     Type: String
@@ -215,6 +247,12 @@ Parameters:
     Type: String
     Description: Foundation password secret ARN, injected by the app execution role; never a literal password.
 Conditions:
+  HasSlack:
+    Fn::And:
+    - Fn::Not:
+      - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+    - Fn::Not:
+      - Fn::Equals: [{Ref: SlackChannelId}, '']
   HasMailDomain:
     Fn::Not:
     - Fn::Equals: [{Ref: MailDomainName}, '']
@@ -279,6 +317,19 @@ Conditions:
       - Ref: MigrationSecretKmsKeyArn
       - ''
 Rules:
+  SlackInputsTogether:
+    Assertions:
+    - Assert:
+        Fn::Or:
+        - Fn::And:
+          - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+          - Fn::Equals: [{Ref: SlackChannelId}, '']
+        - Fn::And:
+          - Fn::Not:
+            - Fn::Equals: [{Ref: SlackWorkspaceId}, '']
+          - Fn::Not:
+            - Fn::Equals: [{Ref: SlackChannelId}, '']
+      AssertDescription: SlackWorkspaceId and SlackChannelId must both be set or both empty.
   TokyoOnly:
     Assertions:
     - Assert:
@@ -1406,6 +1457,77 @@ Resources:
       Subscription:
       - Protocol: email
         Endpoint: {Ref: NotificationEmail}
+  SlackNotificationRole:
+    Type: AWS::IAM::Role
+    Condition: HasSlack
+    Properties:
+      RoleName: !Sub '${ProjectName}-slack-notifications'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: chatbot.amazonaws.com}
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: NotificationMetadataOnly
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: cloudwatch:DescribeAlarms
+            Resource: !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-*'
+          - Effect: Allow
+            Action: [cloudwatch:GetMetricData, cloudwatch:GetMetricStatistics, cloudwatch:GetMetricWidgetImage, cloudwatch:ListMetrics]
+            Resource: '*'
+  SlackNotifications:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Condition: HasSlack
+    Properties:
+      ConfigurationName: !Sub '${ProjectName}-alarms'
+      SlackWorkspaceId: {Ref: SlackWorkspaceId}
+      SlackChannelId: {Ref: SlackChannelId}
+      SnsTopicArns: [{Ref: AlarmTopic}]
+      IamRoleArn: !GetAtt SlackNotificationRole.Arn
+      GuardrailPolicies:
+      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchReadOnlyAccess'
+      UserRoleRequired: true
+      LoggingLevel: NONE
+      Tags:
+      - {Key: Project, Value: {Ref: ProjectName}}
+  DatabaseCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-database-cpu'
+      AlarmDescription: Sustained RDS CPU load; review queries and database capacity.
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: DBInstanceIdentifier, Value: {Ref: DatabaseIdentifier}}
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  DatabaseFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-database-free-storage'
+      AlarmDescription: Low RDS free storage; check growth and the storage autoscaling limit.
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions:
+      - {Name: DBInstanceIdentifier, Value: {Ref: DatabaseIdentifier}}
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: DatabaseFreeStorageAlarmThresholdBytes}
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
   UnhealthyTargetsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1416,6 +1538,7 @@ Resources:
       EvaluationPeriods: 2
       TreatMissingData: notBreaching
       AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
       Metrics:
       - Id: unhealthy
         Expression: MAX([blue,green])
@@ -1461,7 +1584,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${ProjectName}-api-5xx'
-      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      AlarmDescription: Sustained target 5xx errors; deployment rollback and operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: HTTPCode_Target_5XX_Count
       Dimensions:
@@ -1478,11 +1601,12 @@ Resources:
       TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   LatencyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${ProjectName}-api-latency'
-      AlarmDescription: Deployment rollback signal; external canary covers sparse/no traffic.
+      AlarmDescription: Sustained average API response latency; deployment rollback and operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: TargetResponseTime
       Dimensions:
@@ -1499,6 +1623,7 @@ Resources:
       TreatMissingData: {Ref: AlarmMissingData}
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   ApiService:
     Type: AWS::ECS::Service
     Properties:
@@ -1755,6 +1880,82 @@ Resources:
           Principal: {Service: events.amazonaws.com}
           Action: sns:Publish
           Resource: {Ref: AlarmTopic}
+  ApiCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-api-cpu'
+      AlarmDescription: Sustained api cpu utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt ApiService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  ApiMemoryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-api-memory'
+      AlarmDescription: Sustained api memory utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: MemoryUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt ApiService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: MemoryAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  WorkerCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-worker-cpu'
+      AlarmDescription: Sustained worker cpu utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: CPUUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt WorkerService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: CpuAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
+  WorkerMemoryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-worker-memory'
+      AlarmDescription: Sustained worker memory utilization; review service load and capacity.
+      Namespace: AWS/ECS
+      MetricName: MemoryUtilization
+      Dimensions:
+      - {Name: ClusterName, Value: {Ref: Cluster}}
+      - Name: ServiceName
+        Value: !GetAtt WorkerService.Name
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: {Ref: LoadAlarmEvaluationPeriods}
+      Threshold: {Ref: MemoryAlarmThresholdPercent}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
   WorkQueueDlqAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1772,6 +1973,7 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
       AlarmActions: [{Ref: AlarmTopic}]
+      OKActions: [{Ref: AlarmTopic}]
   SchedulerDlqAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1792,6 +1994,7 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
       - Ref: AlarmTopic
+      OKActions: [{Ref: AlarmTopic}]
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -1940,6 +2143,9 @@ Resources:
       ToPort: 443
       DestinationSecurityGroupId: {Ref: EndpointSecurityGroup}
 Outputs:
+  SlackNotificationConfigurationArn:
+    Condition: HasSlack
+    Value: !GetAtt SlackNotifications.Arn
   DatabaseSetupTaskDefinitionArn:
     Value: {Ref: DatabaseSetupTaskDefinition}
   DatabaseSetupLogGroupName:
