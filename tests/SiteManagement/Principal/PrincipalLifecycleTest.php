@@ -208,7 +208,8 @@ class PrincipalLifecycleTest extends TestCase
             ->join('account_roles as roles', 'roles.id', '=', 'attachments.role_id')->where('roles.name', 'Owner')->count();
         $this->assertGreaterThan(0, $ownerCount);
         $this->assertSame($ownerCount, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'SiteManagement Administrator')->where('groups.is_default', false)->count());
-        $this->assertSame(count($first) - $ownerCount, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
+        // Owners also belong to the default General group alongside their Administrator group.
+        $this->assertSame(count($first), DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.is_default', true)->count());
         $this->assertSame(0, DB::table('site_management_principal_group_memberships')->join('site_management_principal_groups as groups', 'groups.id', '=', 'site_management_principal_group_memberships.principal_group_id')->where('groups.name', 'Operator')->count());
     }
 }

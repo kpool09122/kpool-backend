@@ -79,6 +79,26 @@ API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+brea
 外部URLの常時監視は初期運用では省略する。`ExternalCanaryAlarmName` を設定した場合だけ、外部アラームを配備前検査とrollbackへ含める。配備時hookは標準コードをテンプレートに同梱し、VPC内からALBの8443へHost/SNIを保持して `/health` を確認する。外部ZIPを使う場合は承認したchecksumをrelease設定へ登録する。
 Wiki定期処理は毎月1日03:00 Asia/Tokyo、`wiki:process-role-promotion --sync`。初回はDISABLEDで作成し、API配備後に同じ `infra:operate configure` を実行すると現在のAPI image/env/Secret参照でtask revisionを登録して有効化する。以後は明示的な無効化を維持し、現在imageへ更新する。送金バッチは初回公開で作成・有効化しない。再開時の候補は毎日03:00 Asia/Tokyo。Scheduler DLQは起動要求の配送失敗、EventBridgeのSTOPPED通知はtask起動失敗・非0終了を扱う。
 
+### マスターデータの手動投入
+
+Seederはすべて手動実行する。通常デプロイはマイグレーションのみ自動実行し、Seederは呼ばない。
+マスターのみ投入する場合は、アプリcontainerで次を実行する。本番では[初回配備手順](first-deployment.md)のECS単発taskを使う。
+
+```sh
+php artisan db:seed --class='Database\Seeders\MasterDataSeeder' --force
+```
+
+`MasterDataSeeder` はWiki・Account・SiteManagementのロール/ポリシーと、既存アカウントの権限設定を整える。
+システムロール/ポリシーは既存IDを維持し、定義内容を更新するため、再実行できる。
+
+| 実行対象 | local / testing | production / staging / その他 |
+| --- | --- | --- |
+| `MasterDataSeeder` | マスターのみ | マスターのみ |
+| `DatabaseSeeder`（`db:seed`の既定） | マスターとサンプル | マスターのみ |
+| `TestAccountSeeder` / `WikiEditorSampleSeeder` を直接指定 | サンプルを投入 | 何も投入しない |
+
+`--force` は本番確認プロンプトの省略であり、サンプル投入を許可する設定ではない。
+
 ### Slack通知と負荷アラーム
 
 CloudWatchアラーム → runtimeの `AlarmTopic` → Amazon Q Developer in chat applications → Slackで通知する。既存メール通知も維持する。Slack連携設定・通知role・各アラームはCloudFormationで管理する。
