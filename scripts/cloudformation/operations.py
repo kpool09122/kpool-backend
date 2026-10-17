@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 import sys
 import uuid
+from urllib.parse import quote
 
 from environment import RUNTIME_STATE, load_contract, parameters, validate_config
 from runtime_state import resolve
@@ -136,9 +137,9 @@ def validate_bootstrap_permissions(config, stack, templates, contract, previous_
                       for prefix in ('ProjectName', 'FoundationStackName'))
         names = () if covered else ('FoundationWorkQueueName',)
     else:
-        names = ('CertificateHostedZoneId', 'HookArtifactObjectArn')
+        names = ('CertificateHostedZoneId', 'HookArtifactObjectArn', 'MailIdentityDomain')
     for name in names:
-        if live.get(name) != wanted[name]:
+        if live.get(name, '') != wanted[name]:
             raise ValueError(f'Bootstrap is stale ({name}); plan and apply bootstrap first')
 
 
@@ -175,9 +176,30 @@ def prepare(aws, config, stack, root, directory, paused):
         template = directory / 'root.packaged.yaml'
         aws('cloudformation', 'package', '--template-file', str(root / 'root.yaml'),
             '--s3-bucket', config['packageBucket'], '--s3-prefix', name, '--output-template-file', str(template))
+    else:
+        # Inline Lambda source may make the readable YAML exceed TemplateBody's
+        # byte limit. Submit the equivalent compact JSON, with the source intact.
+        template = directory / f'{stack}.rendered.json'
+        template.write_text(json.dumps(templates[stack], separators=(',', ':')))
     encoded = [{'ParameterKey': key, 'ParameterValue': value} for key, value in sorted(values.items())]
+    source = ['--template-body', 'file://' + str(template)]
+    if template.stat().st_size > 51200:
+        aws('s3api', 'head-bucket', '--bucket', config['packageBucket'], '--expected-bucket-owner', config['accountId'])
+        location = aws('s3api', 'get-bucket-location', '--bucket', config['packageBucket'],
+                       '--expected-bucket-owner', config['accountId'])
+        if location.get('LocationConstraint') != config['region']:
+            raise ValueError('Package bucket must be in the deployment region')
+        key = name + '/' + stack + '.json'
+        uploaded = aws('s3api', 'put-object', '--bucket', config['packageBucket'], '--key', key,
+                       '--body', str(template), '--expected-bucket-owner', config['accountId'])
+        version = uploaded.get('VersionId')
+        if not version or version == 'null':
+            raise ValueError('Package bucket versioning must be enabled')
+        url = (f"https://{config['packageBucket']}.s3.{config['region']}.amazonaws.com/{key}"
+               + '?versionId=' + quote(version, safe=''))
+        source = ['--template-url', url]
     args = ['--stack-name', config['stacks'][stack], '--change-set-name', name,
-            '--change-set-type', 'UPDATE' if existing else 'CREATE', '--template-body', 'file://' + str(template),
+            '--change-set-type', 'UPDATE' if existing else 'CREATE', *source,
             '--parameters', json.dumps(encoded), '--capabilities', 'CAPABILITY_NAMED_IAM']
     if stack != 'bootstrap':
         args.extend(['--role-arn', outputs['bootstrap']['CloudFormationExecutionRoleArn']])
@@ -285,6 +307,11 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     check = commands.add_parser('config-check', help='Offline validation of nonsecret input schema')
     check.add_argument('--environment', type=Path, required=True)
+    configure_parser = commands.add_parser('configure', help='Create/update app Secrets, DB roles and local release configuration')
+    configure_parser.add_argument('--environment', type=Path, required=True)
+    configure_parser.add_argument('--output', type=Path, required=True)
+    configure_parser.add_argument('--frontend-sha', help='Planned/live frontend full SHA; reused from output on updates')
+    configure_parser.add_argument('--release-paused', action='store_true')
     prepare_parser = commands.add_parser('plan', help='Create (not execute) a reviewed AWS change set')
     prepare_parser.add_argument('--environment', type=Path, required=True)
     prepare_parser.add_argument('--stack', choices=('bootstrap', 'root', 'integration', 'runtime'), required=True)
@@ -305,6 +332,11 @@ def main():
         config = json.loads(args.environment.read_text())
         templates, contract = load_contract(root)
         validate_config(config, templates, contract)
+        if args.command == 'configure':
+            from configuration import configure
+            capture(Aws(config['region']), config, args.release_paused)
+            configure(Aws(config['region']), config, args.output, args.frontend_sha)
+            return
         if args.command == 'config-check':
             parameters(config, 'bootstrap', templates, contract, {})
             parameters(config, 'root', templates, contract, {})

@@ -10,6 +10,7 @@ DIGEST='sha256:'+'b'*64
 
 def fixture():
     o={k:'fixture-'+k for k in ('ClusterArn ApiServiceName WorkerServiceName LifecycleHookArn HookInvocationRoleArn ServerErrorAlarmName LatencyAlarmName ExternalCanaryAlarmName BlueTargetGroupArn GreenTargetGroupArn ProductionRuleArn TestRuleArn AlbInfrastructureRoleArn PublicSubnetIds MigrationSecurityGroupId RuntimeConfigParameterName QueueUrl QueueArn').split()}
+    o['HookCodeSource']='bundled'
     o.update(RepositoryUri=ACCOUNT+'.dkr.ecr.ap-northeast-1.amazonaws.com/fixture',DeploymentRoleArn='fixture-deployment-role',ApiUrl='https://api.example.invalid')
     for key in ('AppSecretArn','MigrationSecretArn','CacheSecretArn'):
         o[key]=f'arn:aws:secretsmanager:ap-northeast-1:{ACCOUNT}:secret:fixture-{key}'

@@ -180,6 +180,8 @@ Outputs:
     Value: !GetAtt PrivateFilesBucket.Arn
   ImageDistributionId:
     Value: !Ref ImageDistribution
+  ImageDistributionDomainName:
+    Value: !GetAtt ImageDistribution.DomainName
   ImageBaseUrl:
     Value: !Sub 'https://${ImageDomainName}'
   QueueUrl:

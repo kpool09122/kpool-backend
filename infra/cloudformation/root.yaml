@@ -114,6 +114,8 @@ Outputs:
     Value: !GetAtt Storage.Outputs.PrivateFilesBucketArn
   ImageDistributionId:
     Value: !GetAtt Storage.Outputs.ImageDistributionId
+  ImageDistributionDomainName:
+    Value: !GetAtt Storage.Outputs.ImageDistributionDomainName
   ImageBaseUrl:
     Value: !GetAtt Storage.Outputs.ImageBaseUrl
   QueueUrl:

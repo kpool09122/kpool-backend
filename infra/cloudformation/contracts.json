@@ -120,6 +120,30 @@
       "output": "MigrationSecretArn",
       "to": "runtime",
       "parameter": "MigrationSecretArn"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseSecretArn",
+      "to": "runtime",
+      "parameter": "DatabaseSecretArn"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseEndpoint",
+      "to": "runtime",
+      "parameter": "DatabaseEndpoint"
+    },
+    {
+      "from": "root",
+      "output": "DatabaseName",
+      "to": "runtime",
+      "parameter": "DatabaseName"
+    },
+    {
+      "from": "root",
+      "output": "DeadLetterQueueArn",
+      "to": "runtime",
+      "parameter": "DeadLetterQueueArn"
     }
   ]
 }

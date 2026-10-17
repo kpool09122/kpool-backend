@@ -72,6 +72,8 @@ Resources:
     Properties:
       Description: Valkey application password; rotate together with the ElastiCache user
       GenerateSecretString:
+        SecretStringTemplate: '{}'
+        GenerateStringKey: password
         PasswordLength: 64
         ExcludePunctuation: true
   CacheUser:
@@ -85,7 +87,7 @@ Resources:
       AccessString: 'on ~* +@all -@dangerous'
       AuthenticationMode:
         Type: password
-        Passwords: [!Sub '{{resolve:secretsmanager:${CacheSecret}:SecretString}}']
+        Passwords: [!Sub '{{resolve:secretsmanager:${CacheSecret}:SecretString:password}}']
   CacheUserGroup:
     Type: AWS::ElastiCache::UserGroup
     DeletionPolicy: Retain

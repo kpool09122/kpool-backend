@@ -27,6 +27,10 @@ class FakeAws:
         self.calls.append((service, operation, args))
         if operation == 'get-caller-identity':
             return {'Account': self.account}
+        if operation == 'get-bucket-location':
+            return {'LocationConstraint': 'ap-northeast-1'}
+        if operation == 'put-object':
+            return {'VersionId': 'fixture-version'}
         if operation == 'describe-stacks':
             name = args[args.index('--stack-name') + 1]
             if name not in self.stacks:
@@ -328,6 +332,12 @@ class OperationsTests(unittest.TestCase):
             self.aws.after_wait = created
             with self.subTest(paused=paused), tempfile.TemporaryDirectory() as directory:
                 plan = operations.prepare(self.aws, self.config, 'runtime', ROOT, Path(directory), paused)
+                create = next(args for _, op, args in self.aws.calls if op == 'create-change-set')
+                self.assertIn('--template-url', create)
+                self.assertIn('?versionId=fixture-version', create[create.index('--template-url') + 1])
+                upload = next(args for _, op, args in self.aws.calls if op == 'put-object')
+                rendered = Path(upload[upload.index('--body') + 1])
+                self.assertEqual(json.loads(rendered.read_text()), templates['runtime'])
                 self.assertEqual(operations.execute(self.aws, plan, ROOT, paused)['status'], 'verified')
 
     def test_all_native_pages_are_read_before_certifying_snapshot(self):

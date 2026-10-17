@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2] / 'infra/cloudformation'
 class EnvironmentTests(unittest.TestCase):
     def test_resolves_outputs_without_transcription_and_preserves_update_settings(self):
         config = json.loads((ROOT / 'environment.example.json').read_text())
+        config['inputs']['integration'].pop('MonthlyBudgetUSD', None)
         templates, contract = environment.load_contract(ROOT)
         outputs = {'root': {link['output']: 'live-' + link['output']
                             for link in contract['links'] if link['from'] == 'root'}}

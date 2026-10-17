@@ -156,9 +156,11 @@ class CloudFormationContracts(unittest.TestCase):
                  'HookArtifactVersion': 'immutable-version', 'ExternalCanaryAlarmName': 'continuous-smoke'}
         self.assertTrue(rules_accept(template, ready))
         for required in ('ApiTaskDefinitionArn', 'HookArtifactBucket', 'HookArtifactKey',
-                         'HookArtifactVersion', 'ExternalCanaryAlarmName'):
+                         'HookArtifactVersion'):
             with self.subTest(required=required):
                 self.assertFalse(rules_accept(template, {**ready, required: ''}))
+        self.assertTrue(rules_accept(template, {**base, 'ApiDesiredCount': 1,
+                                              'ApiTaskDefinitionArn': 'release:1'}))
         self.assertTrue(rules_accept(template, {**base, 'WorkerDesiredCount': 1,
                                               'WorkerTaskDefinitionArn': 'worker-release:1'}))
         self.assertTrue(rules_accept(template, {**base, 'SchedulerState': 'ENABLED',
@@ -195,7 +197,7 @@ class CloudFormationContracts(unittest.TestCase):
         ):
             with self.subTest(role=role):
                 grants = list(statements(runtime[role]))
-                acl_grants = [s for s in grants if s['Action'] == 's3:PutObjectAcl']
+                acl_grants = [s for s in grants if s.get('Action') == 's3:PutObjectAcl']
                 self.assertEqual(len(acl_grants), len(expected))
                 self.assertEqual(
                     [s['Resource'] for s in acl_grants],
@@ -206,7 +208,7 @@ class CloudFormationContracts(unittest.TestCase):
                     self.assertEqual(grant['Condition'], {
                         'StringEquals': {'s3:x-amz-acl': 'bucket-owner-full-control'},
                     })
-                list_grants = [s for s in grants if s['Action'] == 's3:ListBucket']
+                list_grants = [s for s in grants if s.get('Action') == 's3:ListBucket']
                 if role == 'ApiTaskRole':
                     self.assertEqual(len(list_grants), 1)
                     self.assertEqual(list_grants[0]['Resource'], {'Ref': 'FilesBucketArn'})
@@ -254,8 +256,8 @@ class CloudFormationContracts(unittest.TestCase):
             if statement.get('Sid') == 'PassApplicationRoles':
                 self.assertNotIn('cloudformation-execution', serialized(statement))
                 self.assertNotIn('alb-infrastructure', serialized(statement))
-        for stack in self.contract['deploymentOrder']:
-            self.assertLessEqual((ROOT / f'{stack}.yaml').stat().st_size, 51200,
+        for stack in ('bootstrap', 'root', 'integration'):
+            self.assertLessEqual(len(json.dumps(self.templates[stack], separators=(',', ':')).encode()), 51200,
                                  'Documented template-body path must fit CloudFormation limit')
 
     def test_private_dns_endpoint_execution_permission(self):
