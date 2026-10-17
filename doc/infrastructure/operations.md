@@ -69,15 +69,15 @@ task infra:operate -- execute --record "$RECORD_DIR/$STACK.plan.json" --release-
 API/worker/Schedulerとmigration等のRunTaskは root `PublicSubnetIds` と用途別SGを使用し、`assignPublicIp=ENABLED` にする。public subnetは自動public IP割当を無効にしているため、task起動設定で明示する。外向きHTTPSはInternet Gateway経由。
 起動後はALB経由のAPI疎通とtaskの外向き接続を確認し、APIの8080がALB SGのみ、worker/migrationに受信許可がないことを実SGと照合する。DB/cacheの非公開設定と用途別SGも確認する。
 
-**release Pipeline（#156）は未実装。以下は実装・受入後の運用契約であり、現在実行できるworkflowではない。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
+**backend release Pipeline は `.github/workflows/release.yml` に実装済み。AWSでの動作確認は初回構築時に行う。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
 通常配備はCloudFormation更新なし、desiredは現在値を維持。初回0→1のみ起動時に変更する。
 API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+breaker。
 `services-stable`だけでは旧revisionへのrollbackを成功と誤認するため、目的revision/digest・deployment結果・転送先も確認する。
 詳細な引き渡し項目は接続台帳、API8080/health・read-only volumes・ARM64・signalは[コンテナ契約](container-runtime.md)。
 
-必要なリソース/Secret/hook/canaryが未準備なら起動しない。hookはprivate接続でALB ENIを発見し、API Host/SNI・TLS検証を保って8443の新revisionを検査する。
-外部canaryは毎分のHTTPS+アプリsmoke、60秒×2回失敗/欠損でALARM、通知配送も確認する。hook ZIPとcanaryは外部成果物で、空の成功stubを代用しない。
-Schedulerはアプリのcommand・周期・timezone・二重実行対策・終了コード監視を確認してから別途有効化する。汎用雛形のまま有効化しない。
+必要なリソース/Secret/配備時hookが未準備なら起動しない。hookはprivate接続でALB ENIを発見し、API Host/SNI・TLS検証を保って8443の新revisionを検査する。
+外部URLの常時監視は初期運用では省略する。`ExternalCanaryAlarmName` を設定した場合だけ、外部アラームを配備前検査とrollbackへ含める。配備時hookは標準コードをテンプレートに同梱し、VPC内からALBの8443へHost/SNIを保持して `/health` を確認する。外部ZIPを使う場合は承認したchecksumをrelease設定へ登録する。
+Wiki定期処理は毎月1日03:00 Asia/Tokyo、`wiki:process-role-promotion --sync`。初回はDISABLEDで作成し、API配備後に同じ `infra:operate configure` を実行すると現在のAPI image/env/Secret参照でtask revisionを登録して有効化する。以後は明示的な無効化を維持し、現在imageへ更新する。送金バッチは初回公開で作成・有効化しない。再開時の候補は毎日03:00 Asia/Tokyo。Scheduler DLQは起動要求の配送失敗、EventBridgeのSTOPPED通知はtask起動失敗・非0終了を扱う。
 
 ## 4. 設定・Secret・容量を変える
 
@@ -89,7 +89,7 @@ Schedulerはアプリのcommand・周期・timezone・二重実行対策・終�
 - API/workerの容量: runtime ApiCpu/ApiMemory等を変更し、planが保持するrevision/desiredを確認。release定義のCPU/memoryもPipeline側で更新しなければ既存revisionへは反映されない。
 - DB instance/Multi-AZ: root inputsを変更し、再起動/費用/提供versionを確認。自動minor upgrade後の実versionより古いEngineVersionを適用しない。
 - PostgreSQLの新規作成はメジャー18 / parameter group `postgres18` を使用し、RDSが選択したminorをDB情報で確認する。東京でのengine versionとinstance classの提供を確認する。既存DBが16等の場合は通常更新と分けて、復元環境でアプリ/拡張機能の互換性、対応upgrade経路、backup、停止時間、復旧条件を検証する。メジャー更新時は対応するparameter groupの変更と `AllowMajorVersionUpgrade` の明示的な有効化が必要で、通常テンプレートでは `false` を維持する。parameter groupの置換を含む計画は§2の専用移行計画として扱う。
-- Budgetsはaccount全体のUSD（既定100、実績80%/予測100%）。Cloudflare/外部APIは別。旧新task併存、public IPv4、ALB、private endpoint、canary、保存version・Retain課金も見積もる。
+- Budgetsはaccount全体のUSD（雛形200、テンプレート既定100、実績80%/予測100%）。Cloudflare/外部APIは別。旧新task併存、public IPv4、ALB、private endpoint、canary、保存version・Retain課金も見積もる。
 
 ## 5. 障害・復旧・切戻し
 
@@ -109,5 +109,5 @@ Schedulerはアプリのcommand・周期・timezone・二重実行対策・終�
 ARNのaccount/region/project/prefix・RequestedRegion・PassedToService・OIDC aud/Environmentを組み合わせる。
 Actionsに基盤変更・管理role PassRole・Secret値取得は与えない。ただしECS UpdateServiceはimage変更だけにIAM制限できず、侵害時はアプリ/DDL権限のコード実行が残る。用途別DB/role・監査・backupで影響を抑える。
 
-ALB5xx/latency、ECS失敗、SQS/Scheduler DLQ、継続canary、SNS購読と配送を確認する。Scheduler配信成功はtask/job成功ではない。
+ALB5xx/latency/異常target、ECS失敗、Scheduler DLQとtask失敗通知、SNS購読と配送を確認する。外部canaryは導入した環境のみ確認する。Scheduler配信成功はtask/job成功ではない。
 本変更の権限/保護維持・テスト削除の理由とAWS未検証事項は[設計判断](design-decisions.md)、実施結果は[検証票](validation-checklist.md)。

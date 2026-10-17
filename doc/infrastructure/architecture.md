@@ -1,6 +1,6 @@
 # インフラ構成図
 
-2026-10-05 時点のリポジトリ内の CloudFormation、接続台帳、Docker Compose に基づく図。Fargate は Public subnet＋public IP、受信は用途別 Security Group で制限する構成。AWS / Cloudflare の実環境は照会していないため、配備済み・稼働中であることを示すものではない。台数や接続先の実値は CloudFormation Outputs、ECS、ALB、Scheduler で確認する。
+2026-10-18 時点のリポジトリ内の CloudFormation、接続台帳、Docker Compose に基づく図。Fargate は Public subnet＋public IP、受信は用途別 Security Group で制限する構成。AWS / Cloudflare の実環境は照会していないため、配備済み・稼働中であることを示すものではない。台数や接続先の実値は CloudFormation Outputs、ECS、ALB、Scheduler で確認する。
 
 Mermaid 対応の Markdown ビューアで表示・編集できる。矢印は要求・操作の方向を表し、レスポンスの戻り方向は省略する。破線は図ごとのラベルに示す補助経路や予定の接続を表す。
 
@@ -78,11 +78,11 @@ flowchart TB
 
 ## 配備と運用の流れ
 
-実線はテンプレートにある接続、破線は接続台帳に記載された未実装の release Pipeline の操作を示す。Blue/Green の新旧 API task が併存するのは配備・bake 中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
+実線はテンプレートにある接続、破線は実装済み backend release Pipeline の操作と、別途実施する frontend 配備を示す。Blue/Green の新旧 API task が併存するのは配備・bake 中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
 
 ```mermaid
 flowchart LR
-    pipeline["GitHub Actions<br/>release Pipeline は未実装"]
+    pipeline["GitHub Actions<br/>backend release Pipeline"]
     role["用途を限定した配備 IAM Role"]
     ecr["ECR<br/>共通コンテナイメージ"]
     migration["Fargate migration<br/>単発 / DDL 用 DB ユーザー"]
@@ -91,7 +91,7 @@ flowchart LR
     frontend["Cloudflare Workers<br/>フロント配備"]
     db[("RDS PostgreSQL")]
     alb["ALB<br/>Blue / Green target group"]
-    hook["Lambda lifecycle hook<br/>artifact 指定時に作成<br/>Data subnet 内"]
+    hook["Lambda lifecycle hook<br/>テンプレート同梱コード<br/>Data subnet 内"]
     endpoint["EC2 Interface VPC Endpoint<br/>2 AZ / 常設<br/>ALB private IP の探索"]
     secrets["Secrets Manager<br/>app / migration / cache<br/>用途別権限で起動時注入"]
     ssm["SSM Parameter Store<br/>非秘密の接続メタデータ"]
@@ -134,7 +134,7 @@ flowchart LR
     alarms -->|API の配備失敗時 rollback 判定| api
 ```
 
-Scheduler の既定は毎分の汎用雛形だが、アプリが必要とする 2 用途の周期・送信権限・処理失敗監視は未達。運用文書では、これらを解消してから有効化する。Scheduler DLQ はジョブ処理の失敗や task の非 0 終了を捕捉するものではない。SNS の購読先、hook artifact、外部 canary alarm の実設定も実環境で確認が必要。
+Scheduler は月次Wiki権限更新用で、初期状態は無効。API配備後に `infra:operate configure` で稼働imageを反映して有効化する。送金処理は非公開のためscheduleを作成しない。Scheduler DLQは配送失敗、EventBridgeのECS STOPPED ruleは起動失敗・非0終了を通知する。SNS配送と実処理は実環境で確認する。外部canaryは任意とし、初期運用では追加しない。
 
 ## CloudFormation の管理単位
 

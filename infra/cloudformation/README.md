@@ -3,6 +3,7 @@
 k-pool の AWS（東京）と Cloudflare の構成・設定・運用をここからたどる。
 
 - サービス全体・配備フロー・管理単位・ローカル環境の図: [インフラ構成図](../../doc/infrastructure/architecture.md)
+- 初回構築・設定の作成/更新: [構築手順](../../doc/infrastructure/first-deployment.md)
 - 通常配備・基盤更新・Secret 更新・容量変更・障害復旧: [運用手順](../../doc/infrastructure/operations.md)
 - AWS / Cloudflare / GitHub / フロントとの接続: [接続台帳](../../doc/infrastructure/pipeline-handoff.md)
 - 変更の理由・既存環境への移行・未検証事項: [設計判断](../../doc/infrastructure/design-decisions.md)
@@ -23,7 +24,7 @@ k-pool の AWS（東京）と Cloudflare の構成・設定・運用をここか
     ↓ root + integration Outputs を自動取得
   runtime (ECR / ECS / ALB / 用途別IAM / hook / alarms / Scheduler)
     ↓ 読取専用Outputs
-  GitHub release Pipeline → migration → API BLUE_GREEN → worker → Cloudflare frontend
+  GitHub release Pipeline → migration → API BLUE_GREEN → worker（frontendは既存Workers配備手順）
 ```
 
 管理者は CloudFormation の基盤変更、Secret 登録、DNS・復元・容量を担当する。
