@@ -24,7 +24,7 @@ k-pool の AWS（東京）と Cloudflare の構成・設定・運用をここか
     ↓ root + integration Outputs を自動取得
   runtime (ECR / ECS / ALB / 用途別IAM / hook / alarms / Scheduler)
     ↓ 読取専用Outputs
-  GitHub release Pipeline → migration → API BLUE_GREEN → worker（frontendは既存Workers配備手順）
+  GitHub release Pipeline → migration → API BLUE_GREEN → worker → frontend Workers（target=all）
 ```
 
 管理者は CloudFormation の基盤変更、Secret 登録、DNS・復元・容量を担当する。

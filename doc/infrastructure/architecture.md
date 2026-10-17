@@ -9,7 +9,7 @@ Mermaid 対応の Markdown ビューアで表示・編集できる。矢印は�
 ```mermaid
 flowchart TB
     user["利用者 / ブラウザ"]
-    frontend["Cloudflare Workers<br/>フロントエンド・外部管理<br/>配備方式と bindings は未確定"]
+    frontend["Cloudflare Workers<br/>フロントエンド<br/>OpenNext / R2 / DO / IMAGES"]
     cdn["CloudFront<br/>画像専用 CDN / HTTPS"]
 
     subgraph aws["AWS 東京 ap-northeast-1"]
@@ -34,7 +34,7 @@ flowchart TB
     external["AWS サービス / 外部 API<br/>ECR・Secrets・S3・SQS・Google・Stripe 等"]
     user -->|画面 / HTTPS| frontend
     user -->|API / HTTPS| alb
-    frontend -.->|API 接続契約 / 実行方式は未確定| alb
+    frontend -.->|サーバー処理からのAPI接続| alb
     user -->|画像 / HTTPS| cdn
     alb -->|API SG の受信は ALB のみ| api
     api -->|外向き HTTPS / task の public IP| igw
@@ -65,7 +65,7 @@ flowchart TB
 - S3 / SQS などへの矢印はサービスの操作関係を表し、task からの通信は上記 Internet Gateway 経路を通る。task ごとの public IPv4 料金は発生する。
 - 2 AZ の subnet があることと、DB が Multi-AZ で稼働することは別。RDS の `DatabaseMultiAZ` の既定は `false`。
 - API / 画像 DNS は接続台帳で初期 **DNS-only** を指定。Cloudflare proxy の有効化は別判断。API 証明書は東京、CloudFront 画像証明書は **us-east-1**。
-- Cloudflare Worker の実際の配備方式・bindings は未確定。図の破線は API URL の接続契約を示し、すべてのブラウザ要求が Worker を経由すると断定しない。
+- Cloudflare Workerはbackend ActionsからOpenNextで配備する。実account・Worker/R2名・domainはproduction設定で管理する。図の破線はサーバー処理からのAPI接続を示し、ブラウザからAPIへの接続も存在する。
 
 ### subnet を 2 AZ に分ける理由
 
@@ -78,7 +78,7 @@ flowchart TB
 
 ## 配備と運用の流れ
 
-実線はテンプレートにある接続、破線は実装済み backend release Pipeline の操作と、別途実施する frontend 配備を示す。Blue/Green の新旧 API task が併存するのは配備・bake 中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
+実線はテンプレートにある接続、破線はbackend release Pipeline からのbackend/frontend配備操作を示す。Blue/Green の新旧 API task が併存するのは配備・bake 中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
 
 ```mermaid
 flowchart LR

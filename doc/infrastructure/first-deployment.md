@@ -116,13 +116,14 @@ API/workerの正常稼働確認後、同じ `configure` を再実行してWiki s
 
 ## 6. frontend配備と公開確認
 
-frontend repositoryにはOpenNext/Workersのbuild・deployスクリプトがある。
-初回はその既存入口を使い、backendの `target=all/frontend` は統合workflowが接続されるまで使わない。
+frontendのbuild/deployもbackendの `Production release` から実行する。
+[リリース手順](backend-release.md#backend-actionsからのfrontend配備)のGitHub App・Cloudflare token・`FRONTEND_RELEASE_CONFIGURATION` をbackendのproduction Environmentへ設定する。
 
 - 承認したWorker名・R2 cache bucket・account・custom domainをfrontendの配備JSONへ設定する。
 - 4つのKPOOL API base URLを本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
 - 署名用Workers Secretを登録する。本番画像hostをNextのremotePatternsで許可する。
-- frontend側の `docs/cloudflare-workers.md` に従い同じ設定でbuild/deployする。Cloudflare Workers等の料金はAWS見積もりと別。
+- backend配備後に `target=frontend`, `mode=deploy`, `frontend_ref=main` で起動する。`LIVE_BACKEND_SHA` は先ほど稼働したbackend SHAを設定する。設定を先に揃えた場合は手順5で `target=all` を選び、両方を一度に配備できる。
+- Cloudflare Workers等の料金はAWS見積もりと別。
 - `k-pool.app` とAPI/画像のHTTPS、認証メール、ログイン、Cookie/CSRF、画像アップロード・表示、SQS実ジョブ、SNS通知を確認する。
 
 AWS/Cloudflareへの実適用・SES承認・実メール配送・本番のcookie/queue/rollback確認は、ローカルテストで完了扱いにしない。

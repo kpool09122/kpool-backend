@@ -8,7 +8,7 @@ Issue #682 で `bootstrap/root/network/data/storage/integration/runtime`、環�
 
 - 根拠はリポジトリのテンプレート、実装、オフライン検証。今回AWSの照会・適用、Cloudflareの照会・変更は行っていない。稼働環境の有無、drift、資源状態、実効権限、費用は**未確認**。
 - 過去のSTS応答/AccessDeniedや過去の演習結果は今回の実環境確認ではない。環境が無いとも配備可能とも推測しない。
-- backend release workflowは実装済み。frontendは別repoの既存配備入口を使う。AWS上の配備成功とfrontend統合workflowは未確認。
+- backend release workflowは実装済み。frontendはbackendのrelease jobから別repoの既存配備スクリプトを使う。AWS/Workers上の配備成功は未確認。
 
 ## 構成案の比較
 
