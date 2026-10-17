@@ -79,6 +79,44 @@ API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+brea
 外部URLの常時監視は初期運用では省略する。`ExternalCanaryAlarmName` を設定した場合だけ、外部アラームを配備前検査とrollbackへ含める。配備時hookは標準コードをテンプレートに同梱し、VPC内からALBの8443へHost/SNIを保持して `/health` を確認する。外部ZIPを使う場合は承認したchecksumをrelease設定へ登録する。
 Wiki定期処理は毎月1日03:00 Asia/Tokyo、`wiki:process-role-promotion --sync`。初回はDISABLEDで作成し、API配備後に同じ `infra:operate configure` を実行すると現在のAPI image/env/Secret参照でtask revisionを登録して有効化する。以後は明示的な無効化を維持し、現在imageへ更新する。送金バッチは初回公開で作成・有効化しない。再開時の候補は毎日03:00 Asia/Tokyo。Scheduler DLQは起動要求の配送失敗、EventBridgeのSTOPPED通知はtask起動失敗・非0終了を扱う。
 
+### Slack通知と負荷アラーム
+
+CloudWatchアラーム → runtimeの `AlarmTopic` → Amazon Q Developer in chat applications → Slackで通知する。既存メール通知も維持する。Slack連携設定・通知role・各アラームはCloudFormationで管理する。
+
+| 対象 | 初期設定 |
+| --- | --- |
+| RDS CPU | 平均80%以上が5分継続 |
+| RDS空きストレージ | 3GiB未満が5分継続（初期20GBに対する値。容量変更時に見直す） |
+| API / worker CPU | 各serviceの平均80%以上が5分継続 |
+| API / workerメモリ | 各serviceの平均85%以上が5分継続 |
+| ALB異常target | blue/greenのいずれかで異常targetが1台以上、2分継続 |
+| API 5xx / 応答遅延 | 1分のtarget 5xxが5件以上 / 平均応答2秒以上、それぞれ2分継続。配備rollbackにも使う |
+| work / Scheduler DLQ | 取得可能なmessageが1件以上 |
+
+すべてのCloudWatchアラームで異常とOKへの遷移を同じSNSへ通知する。初回作成時のOK遷移でも通知が出ることがある。欠損は異常扱いにしないため、負荷アラームは停止そのものの検知ではない。標準RDS/ECS/ALB/SQS metricsを使い、Container InsightsやDatabase Insightsの有効化は不要。CloudWatchアラームとSNSの費用は見積もりへ反映する。
+
+Slackの接続手順:
+
+1. 管理者が[Amazon Q Developer in chat applications](https://console.aws.amazon.com/chatbot/)でSlack workspaceを承認する。[AWS公式手順](https://docs.aws.amazon.com/chatbot/latest/adminguide/slack-setup.html)に従って対象channelへアプリを招待する。
+2. 承認したworkspace IDと通知先channel IDをenvironment JSONの `inputs.runtime.SlackWorkspaceId` / `SlackChannelId` に設定する。新規構築時に両方空ならSlack資源を作成せず、既存メール経路を使う。片方だけの設定は拒否する。
+3. 今回追加した権限を先に反映するため `bootstrap`、次に `runtime` を通常のplan/review/executeで更新する。以後のchannel IDや閾値変更はruntime更新で行う。workspaceの変更や、作成済みSlack資源の削除は通常更新とは別に計画する。
+4. runtime Output `SlackNotificationConfigurationArn` を確認し、Amazon Qの「Send test message」で受信確認する。実アラームのALARM/OK通知も確認する。
+
+```json
+{
+  "SlackWorkspaceId": "TXXXXXXXX",
+  "SlackChannelId": "CXXXXXXXX",
+  "LoadAlarmEvaluationPeriods": "5",
+  "CpuAlarmThresholdPercent": "80",
+  "MemoryAlarmThresholdPercent": "85",
+  "DatabaseFreeStorageAlarmThresholdBytes": "3221225472"
+}
+```
+
+上記は `inputs.runtime` 内の設定例。IDは実値に置き換える。CPU/メモリ閾値は負荷実測を見て調整する。ALBの既存閾値は `AlarmPeriod` / `AlarmEvaluationPeriods` / `ErrorCountThreshold` / `LatencyThresholdSeconds` で変更する。
+
+通知roleはCloudWatchのアラーム・metric読取に限定する。guardrailもCloudWatch読取に制限し、AWSの変更・Secret取得・Lambda実行は許可しない。チャット連携のログ出力は `NONE`。定期処理のSTOPPEDイベントからSNSへ送る既存のテキスト通知はメール向けで、このCloudWatchアラームのSlack経路とはメッセージ形式が異なる。
+
 ## 4. 設定・Secret・容量を変える
 
 - 非秘密設定: environmentの該当inputsを変更し、関連親をplan/review/execute。integration SSMは実アプリ名の非秘密envを出力する。PipelineがSSMを読みECS envへ変換する。

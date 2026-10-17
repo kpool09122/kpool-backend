@@ -10,6 +10,7 @@ AWS操作は `task infra:operate`、アプリ配備は GitHub Actions `Productio
 - 画像はS3/OAC/CloudFront、API証明書は東京、画像証明書はus-east-1。
 - ALBは30秒ごとに `/health` を確認する。5xx/遅延のalarmは配備rollbackと通知、異常targetのalarmは通知に使う。
 - 外部URLの常時監視は省略。`ExternalCanaryAlarmName` は任意。Container Insightsは既定無効で、有効化する場合だけ `inputs.runtime.ContainerInsights=enabled` を設定する。
+- RDS/ECSの継続高負荷・DB空き容量、ALB異常/5xx/遅延、work/Scheduler DLQをメールへ通知する。Slackはworkspace承認後、任意のID設定で接続する。
 - アプリログは既定30日。RDSの自動出力ログの保持は別途確認する。
 - メールはSES API。長期AWSキーやSMTPパスワードをtaskへ追加せず、API/workerのtask roleで指定ドメインから送る。
 - Wiki権限更新は毎月1日03:00 Asia/Tokyoに同期実行。送金は非公開のため定期処理を作成しない。再開時の候補は毎日03:00 Asia/Tokyo。
@@ -73,6 +74,7 @@ runtime Outputsから次を設定する。
 ACM検証用CNAMEは更新に必要なので残す。SES domainの検証完了後、東京SESのsandbox解除（production access）を申請する。
 sandbox中は原則として検証済み宛先しか送れないため、一般利用者への認証メールを送る前に解除を確認する。
 SESの送信上限、バウンス/苦情の運用、送信テストも確認する。
+Slack通知は[監視設定](operations.md#slack通知と負荷アラーム)に従ってworkspaceを承認し、runtimeへworkspace/channel IDを設定する。空欄のまま構築後、同じ更新手順で後から接続してもよい。
 
 ## 4. 作成・更新共通の設定コマンド
 

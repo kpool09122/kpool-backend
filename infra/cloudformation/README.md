@@ -5,6 +5,7 @@ k-pool の AWS（東京）と Cloudflare の構成・設定・運用をここか
 - サービス全体・配備フロー・管理単位・ローカル環境の図: [インフラ構成図](../../doc/infrastructure/architecture.md)
 - 初回構築・設定の作成/更新: [構築手順](../../doc/infrastructure/first-deployment.md)
 - 通常配備・基盤更新・Secret 更新・容量変更・障害復旧: [運用手順](../../doc/infrastructure/operations.md)
+- Slack通知・負荷監視: [監視設定](../../doc/infrastructure/operations.md#slack通知と負荷アラーム)
 - AWS / Cloudflare / GitHub / フロントとの接続: [接続台帳](../../doc/infrastructure/pipeline-handoff.md)
 - 変更の理由・既存環境への移行・未検証事項: [設計判断](../../doc/infrastructure/design-decisions.md)
 - 変更リスクに応じた確認と記録: [検証票](../../doc/infrastructure/validation-checklist.md)
