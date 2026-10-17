@@ -64,7 +64,7 @@ class WorkflowTests(unittest.TestCase):
     def test_release_order_replay_graph_and_permissions(self):
         data=workflow('release.yml'); jobs=data['jobs']
         self.assertFalse(data['concurrency']['cancel-in-progress'])
-        self.assertEqual(jobs['publish']['needs'],['plan','validate-build'])
+        self.assertEqual(jobs['publish']['needs'],['plan','validate-build','frontend-build'])
         self.assertEqual(jobs['deploy']['needs'],['plan','validate-build','publish'])
         self.assertIn("needs.publish.result == 'success'",jobs['deploy']['if'])
         self.assertIn("needs.publish.result == 'skipped'",jobs['deploy']['if'])
@@ -83,3 +83,37 @@ class WorkflowTests(unittest.TestCase):
                 if job.get('permissions',{}).get('id-token')=='write':
                     if 'uses' not in job: self.assertEqual(job['environment'],'production')
                 self.assertNotEqual(job.get('secrets'),'inherit')
+
+    def test_frontend_build_gates_publication_and_deploy_has_only_cloudflare_credentials(self):
+        jobs = workflow('release.yml')['jobs']
+        self.assertEqual(jobs['frontend-build']['needs'], 'plan')
+        self.assertEqual(jobs['frontend-deploy']['needs'], ['plan', 'frontend-build', 'deploy'])
+        self.assertIn("needs.frontend-build.result == 'success'", jobs['publish']['if'])
+        self.assertIn("inputs.target == 'all' && needs.deploy.result == 'success'", jobs['frontend-deploy']['if'])
+        self.assertIn("inputs.target == 'frontend' && needs.deploy.result == 'skipped'", jobs['frontend-deploy']['if'])
+        self.assertIn("inputs.target != 'frontend'", jobs['deploy']['if'])
+        self.assertIn("inputs.target != 'frontend'", jobs['publish']['if'])
+        self.assertIn("inputs.target != 'frontend'", jobs['validate-build']['if'])
+        for name in ('publish', 'deploy', 'frontend-deploy'):
+            self.assertIn('!cancelled()', jobs[name]['if'])
+        for name in ('frontend-build', 'frontend-deploy'):
+            job = jobs[name]
+            self.assertEqual(job['environment'], 'production')
+            self.assertNotIn('id-token', job['permissions'])
+            self.assertNotIn('AWS_', json.dumps(job))
+            steps = job['steps']
+            guard = next(i for i, step in enumerate(steps) if 'resolve_source' in step.get('run', ''))
+            checkout = next(i for i, step in enumerate(steps) if step.get('with', {}).get('path') == 'source')
+            install = next(i for i, step in enumerate(steps) if step.get('run') == 'pnpm install --frozen-lockfile')
+            self.assertLess(guard, checkout)
+            self.assertLess(checkout, install)
+            self.assertFalse(steps[checkout]['with']['persist-credentials'])
+            self.assertEqual(steps[checkout]['with']['ref'], 'main')
+            self.assertEqual(steps[checkout]['with']['fetch-depth'], 0)
+            self.assertIn('SOURCE_APP_PRIVATE_KEY', json.dumps(job))
+        self.assertNotIn('CLOUDFLARE_API_TOKEN', json.dumps(jobs['frontend-build']))
+        steps = jobs['frontend-deploy']['steps']
+        self.assertFalse(any('workers:build' in step.get('run', '') for step in steps))
+        self.assertTrue(any(step.get('run', '').endswith('frontend.py restore') for step in steps))
+        observed = next(step for step in steps if step.get('run', '').endswith('frontend.py observe'))
+        self.assertIn('always()', observed['if'])

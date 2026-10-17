@@ -11,7 +11,7 @@ on:
         type: string
         default: main
       frontend_ref:
-        description: Frontend source seam (all/frontend currently fail closed)
+        description: Frontend main or full SHA reachable from main
         type: string
         default: main
       mode:
@@ -44,13 +44,30 @@ jobs:
       actions: read
     outputs:
       backend_sha: ${{ steps.plan.outputs.backend_sha }}
+      frontend_sha: ${{ steps.plan.outputs.frontend_sha }}
       mode: ${{ steps.plan.outputs.mode }}
       release_id: ${{ steps.plan.outputs.release_id }}
     steps:
+      - name: Require backend main before checkout or credentials
+        run: |
+          python3 - <<'PYCODE'
+          import os
+          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or os.environ['GITHUB_REF'] != 'refs/heads/main':
+              raise ValueError('Production control workflow must run from backend main')
+          PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
+      - if: inputs.target != 'backend'
+        id: frontend-source
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.SOURCE_APP_ID }}
+          private-key: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+          owner: kpool09122
+          repositories: kpool-frontend
+          permission-contents: read
       - id: plan
         env:
           GH_TOKEN: ${{ github.token }}
@@ -60,9 +77,12 @@ jobs:
           SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
           INITIAL_ACTIVATION: ${{ inputs.initial }}
           BACKEND_REF: ${{ inputs.backend_ref }}
+          FRONTEND_REF: ${{ inputs.frontend_ref }}
+          FRONTEND_GH_TOKEN: ${{ steps.frontend-source.outputs.token }}
           CONTROL_SHA: ${{ github.workflow_sha }}
           LIVE_FRONTEND_SHA: ${{ vars.LIVE_FRONTEND_SHA }}
-          FRONTEND_CONTRACT: ${{ vars.FRONTEND_RELEASE_CONTRACT }}
+          LIVE_BACKEND_SHA: ${{ vars.LIVE_BACKEND_SHA }}
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
         run: python3 -B scripts/release/cli.py plan
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -79,15 +99,19 @@ jobs:
         run: python3 -B scripts/release/cli.py summary
   validate-build:
     needs: plan
-    if: inputs.target == 'backend' && needs.plan.outputs.mode == 'deploy'
+    if: inputs.target != 'frontend' && needs.plan.outputs.mode == 'deploy'
     uses: ./.github/workflows/backend-validation.yml
     with:
       source_sha: ${{ needs.plan.outputs.backend_sha }}
       control_sha: ${{ github.workflow_sha }}
       plan_artifact: release-plan-${{ github.run_attempt }}
   publish:
-    needs: [plan, validate-build]
-    if: inputs.target == 'backend' && needs.plan.outputs.mode == 'deploy'
+    needs: [plan, validate-build, frontend-build]
+    if: >-
+      always() && !cancelled() && inputs.target != 'frontend' && needs.plan.result == 'success' &&
+      needs.plan.outputs.mode == 'deploy' && needs.validate-build.result == 'success' &&
+      ((inputs.target == 'all' && needs.frontend-build.result == 'success') ||
+      (inputs.target == 'backend' && needs.frontend-build.result == 'skipped'))
     permissions:
       contents: read
       actions: read
@@ -100,7 +124,7 @@ jobs:
   deploy:
     needs: [plan, validate-build, publish]
     if: >-
-      always() && inputs.target == 'backend' && needs.plan.result == 'success' &&
+      always() && !cancelled() && inputs.target != 'frontend' && needs.plan.result == 'success' &&
       ((needs.plan.outputs.mode == 'deploy' && needs.publish.result == 'success' && needs.validate-build.result == 'success') ||
       (needs.plan.outputs.mode != 'deploy' && needs.publish.result == 'skipped' && needs.validate-build.result == 'skipped'))
     permissions:
@@ -112,8 +136,247 @@ jobs:
       control_sha: ${{ github.workflow_sha }}
       plan_artifact: release-plan-${{ github.run_attempt }}
       image_artifact: ${{ needs.publish.outputs.artifact_name }}
+  frontend-build:
+    needs: plan
+    if: inputs.target != 'backend' && needs.plan.outputs.mode == 'deploy'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Reject untrusted workflow control before checkout or credentials
+        env:
+          CONTROL_SHA: ${{ github.workflow_sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import os, re
+          if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
+              or os.environ['GITHUB_REF'] != 'refs/heads/main'
+              or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
+              raise ValueError('Untrusted workflow control repository/ref/SHA')
+          PYCODE
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-plan-${{ github.run_attempt }}
+          path: release
+      - id: source-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.SOURCE_APP_ID }}
+          private-key: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+          owner: kpool09122
+          repositories: kpool-frontend
+          permission-contents: read
+      - name: Verify pinned source ancestry and workflow identity
+        env:
+          GH_TOKEN: ${{ steps.source-token.outputs.token }}
+          SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
+          CONTROL_SHA: ${{ github.workflow_sha }}
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: |
+          python3 - <<'PYCODE'
+          import json, os, sys
+          sys.path.insert(0, 'control/scripts/release')
+          from cli import validate_plan
+          from contract import FRONTEND
+          from frontend import validate_configuration
+          from github_source import resolve_source
+          plan = validate_plan(json.load(open('release/plan.json')))
+          if plan['frontend_sha'] != os.environ['SOURCE_SHA'] or plan['workflow_sha'] != os.environ['CONTROL_SHA']:
+              raise ValueError('Source/control SHA does not match immutable plan')
+          validate_configuration(json.loads(os.environ['FRONTEND_RELEASE_CONFIGURATION']), plan)
+          if resolve_source(FRONTEND, plan['frontend_sha']) != plan['frontend_sha']:
+              raise ValueError('Frontend source is not pinned to main history')
+          PYCODE
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: kpool09122/kpool-frontend
+          token: ${{ steps.source-token.outputs.token }}
+          ref: main
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - name: Select exact approved source
+        env:
+          SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
+        run: bash control/scripts/release/select-source.sh source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: source/package.json
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          package_json_file: source/package.json
+          run_install: false
+          cache: true
+          cache_dependency_path: source/pnpm-lock.yaml
+      - name: Install exact lockfile
+        working-directory: source
+        run: pnpm install --frozen-lockfile
+      - name: Prepare approved nonsecret Workers configuration
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: python3 -B control/scripts/release/frontend.py prepare
+      - name: Validate and build Workers without deployment credentials
+        working-directory: source
+        env:
+          CI: 'true'
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          pnpm lint
+          pnpm test:unit
+          pnpm workers:build --config wrangler.deploy.json
+      - name: Record deployable artifact and checksums
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: python3 -B control/scripts/release/frontend.py build-record
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: frontend-build-${{ github.run_attempt }}
+          path: |
+            release/frontend-build.tar.gz
+            release/frontend-build.json
+          if-no-files-found: error
+          retention-days: 14
+  frontend-deploy:
+    needs: [plan, frontend-build, deploy]
+    if: >-
+      always() && !cancelled() && needs.plan.result == 'success' && needs.frontend-build.result == 'success' &&
+      ((inputs.target == 'all' && needs.deploy.result == 'success') ||
+      (inputs.target == 'frontend' && needs.deploy.result == 'skipped'))
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Reject untrusted workflow control before checkout or credentials
+        env:
+          CONTROL_SHA: ${{ github.workflow_sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import os, re
+          if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
+              or os.environ['GITHUB_REF'] != 'refs/heads/main'
+              or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
+              raise ValueError('Untrusted workflow control repository/ref/SHA')
+          PYCODE
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-plan-${{ github.run_attempt }}
+          path: release
+      - id: source-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.SOURCE_APP_ID }}
+          private-key: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+          owner: kpool09122
+          repositories: kpool-frontend
+          permission-contents: read
+      - name: Verify pinned source ancestry and workflow identity
+        env:
+          GH_TOKEN: ${{ steps.source-token.outputs.token }}
+          SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
+          CONTROL_SHA: ${{ github.workflow_sha }}
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: |
+          python3 - <<'PYCODE'
+          import json, os, sys
+          sys.path.insert(0, 'control/scripts/release')
+          from cli import validate_plan
+          from contract import FRONTEND
+          from frontend import validate_configuration
+          from github_source import resolve_source
+          plan = validate_plan(json.load(open('release/plan.json')))
+          if plan['frontend_sha'] != os.environ['SOURCE_SHA'] or plan['workflow_sha'] != os.environ['CONTROL_SHA']:
+              raise ValueError('Source/control SHA does not match immutable plan')
+          validate_configuration(json.loads(os.environ['FRONTEND_RELEASE_CONFIGURATION']), plan)
+          if resolve_source(FRONTEND, plan['frontend_sha']) != plan['frontend_sha']:
+              raise ValueError('Frontend source is not pinned to main history')
+          PYCODE
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: kpool09122/kpool-frontend
+          token: ${{ steps.source-token.outputs.token }}
+          ref: main
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - name: Select exact approved source
+        env:
+          SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
+        run: bash control/scripts/release/select-source.sh source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: source/package.json
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          package_json_file: source/package.json
+          run_install: false
+          cache: true
+          cache_dependency_path: source/pnpm-lock.yaml
+      - name: Install exact lockfile
+        working-directory: source
+        run: pnpm install --frozen-lockfile
+      - name: Prepare approved nonsecret Workers configuration
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: python3 -B control/scripts/release/frontend.py prepare
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: frontend-build-${{ github.run_attempt }}
+          path: release
+      - name: Restore the verified build without rebuilding
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+        run: python3 -B control/scripts/release/frontend.py restore
+      - name: Verify pre-created Cloudflare resources and signing Secret
+        id: preflight
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python3 -B control/scripts/release/frontend.py preflight
+      - name: Deploy the verified Workers build
+        id: worker
+        working-directory: source
+        env:
+          CI: 'true'
+          WRANGLER_SEND_METRICS: 'false'
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          KPOOL_WORKERS_DEPLOY_CONFIG: wrangler.deploy.json
+          WRANGLER_OUTPUT_FILE_PATH: ${{ github.workspace }}/release/wrangler-output.jsonl
+        run: pnpm workers:deploy
+      - name: Observe Worker version and public HTTPS after deployment
+        if: always() && steps.preflight.outcome == 'success'
+        env:
+          FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FRONTEND_DEPLOY_OUTCOME: ${{ steps.worker.outcome }}
+        run: python3 -B control/scripts/release/frontend.py observe
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: frontend-record-${{ github.run_attempt }}
+          path: |
+            release/frontend-build.json
+            release/frontend-before.json
+            release/frontend-deployment.json
+          if-no-files-found: warn
+          retention-days: 90
   record:
-    needs: [plan, validate-build, publish, deploy]
+    needs: [plan, validate-build, frontend-build, publish, deploy, frontend-deploy]
     if: always()
     runs-on: ubuntu-24.04
     permissions:

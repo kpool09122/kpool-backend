@@ -34,6 +34,10 @@ def validate_plan(plan):
             or not isinstance(plan.get('initial'),bool)):
         raise ValueError('Release plan schema/environment is invalid')
     validate_source(BACKEND,plan['backend_sha'])
+    if plan['target'] != 'backend':
+        validate_source(FRONTEND, plan.get('frontend_sha', ''))
+        if plan['mode'] != 'deploy' or not DIGEST.fullmatch('sha256:' + plan.get('frontend_configuration_sha256', '')):
+            raise ValueError('Frontend targets support explicit deploys only')
     return plan
 
 
@@ -69,7 +73,7 @@ def plan_release():
         source=validate_plan(original['plan.json'])
         plan.update(backend_sha=source['backend_sha'],
                     source_run=str(recorded),source_release_id=source.get('source_release_id',source['release_id']),initial=False)
-        if target!='backend': raise ValueError('Frontend replay awaits the pinned frontend workflow contract')
+        if target!='backend': raise ValueError('Frontend replay requires a new deploy with the recorded full SHAs')
         manifest=record.get('deployment-manifest.json',record.get('manifest.json',image.get('manifest.json')))
         if not manifest: raise ValueError('Recorded image manifest is unavailable; do not rebuild latest source')
         if attempt>1 and mode=='deploy': plan['mode']='redeploy'
@@ -82,17 +86,19 @@ def plan_release():
         write_json(ROOT/'previous.json',previous,exclusive=True)
     else:
         if mode!='deploy': raise ValueError('Replay/rollback requires source_run')
-        plan['backend_sha']=resolve_source(BACKEND,os.environ['BACKEND_REF'])
+        if target == 'frontend':
+            plan['backend_sha'] = validate_source(BACKEND, os.environ.get('LIVE_BACKEND_SHA', ''))
+        else:
+            plan['backend_sha']=resolve_source(BACKEND,os.environ['BACKEND_REF'])
+        if target != 'backend':
+            plan['frontend_sha'] = resolve_source(FRONTEND, os.environ['FRONTEND_REF'])
+            from frontend import validate_configuration, configuration_digest
+            config = json.loads(os.environ.get('FRONTEND_RELEASE_CONFIGURATION') or '{}')
+            validate_configuration(config, plan)
+            plan['frontend_configuration_sha256'] = configuration_digest(config)
     validate_plan(plan)
     write_json(ROOT/'plan.json',plan,exclusive=True)
-    # Fail before build/publication/AWS when frontend integration is not installed.
-    if target!='backend':
-        contract=json.loads(os.environ.get('FRONTEND_CONTRACT') or '{}')
-        if (contract.get('repository')!=FRONTEND or not SHA.fullmatch(contract.get('workflow_sha',''))
-                or not SHA.fullmatch(contract.get('source_sha',''))):
-            raise ValueError('Frontend pinned reusable workflow/source contract is missing')
-        raise ValueError('Frontend reusable workflow is not connected: #427 contract is required')
-    output(backend_sha=plan['backend_sha'],mode=plan['mode'],release_id=plan['release_id'])
+    output(backend_sha=plan['backend_sha'],frontend_sha=plan.get('frontend_sha', ''),mode=plan['mode'],release_id=plan['release_id'])
 
 
 def prepare_ca():
@@ -173,8 +179,8 @@ def summary():
     # Only approved identity and enum status fields reach the job summary.
     plan=load(ROOT/'plan.json') if (ROOT/'plan.json').exists() else {}
     with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:
-        stream.write('## Backend release\n')
-        for key in ('release_id','environment','backend_sha','live_frontend_sha','workflow_sha','run_url'):
+        stream.write('## Production release\n')
+        for key in ('release_id','environment','backend_sha','frontend_sha','live_frontend_sha','workflow_sha','run_url'):
             value=plan.get(key,'unavailable')
             stream.write(f'- {key}: `{value}`\n')
         if (ROOT/'records'/'journal.json').exists():
