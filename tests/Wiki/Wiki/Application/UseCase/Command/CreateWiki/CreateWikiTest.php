@@ -283,7 +283,7 @@ class CreateWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $slug = new Slug('gr-twice');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];

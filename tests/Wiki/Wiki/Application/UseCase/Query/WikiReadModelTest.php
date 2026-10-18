@@ -19,7 +19,7 @@ class WikiReadModelTest extends TestCase
             language: 'ko',
             resourceType: 'group',
             version: 2,
-            themeColor: '#FE5F8F',
+            themeColor: '#fe5f8f',
             fontStyle: 'ja_pop',
             heroImage: [
                 'imageIdentifier' => null,
@@ -37,7 +37,7 @@ class WikiReadModelTest extends TestCase
                 'debutDate' => '2015-10-20',
                 'disbandDate' => null,
                 'fandomName' => 'ONCE',
-                'officialColors' => [['colorCode' => '#FE5F8F', 'label' => 'Apricot'], ['colorCode' => '#FEE500', 'label' => 'Yellow']],
+                'officialColors' => [['colorCode' => '#fe5f8f', 'label' => 'Apricot'], ['colorCode' => '#fee500', 'label' => 'Yellow']],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
             ],
@@ -62,7 +62,7 @@ class WikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(2, $readModel->version());
         $this->assertTrue($readModel->isOfficial());
-        $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('#fe5f8f', $readModel->themeColor());
         $this->assertSame('ja_pop', $readModel->fontStyle());
         $this->assertSame('TWICE Wiki', $readModel->title());
         $this->assertSame('Profile and history for TWICE.', $readModel->metaDescription());
@@ -79,7 +79,7 @@ class WikiReadModelTest extends TestCase
             'resourceType' => 'group',
             'version' => 2,
             'isOfficial' => true,
-            'themeColor' => '#FE5F8F',
+            'themeColor' => '#fe5f8f',
             'fontStyle' => 'ja_pop',
             'title' => 'TWICE Wiki',
             'metaDescription' => 'Profile and history for TWICE.',
@@ -100,7 +100,7 @@ class WikiReadModelTest extends TestCase
                 'debutDate' => '2015-10-20',
                 'disbandDate' => null,
                 'fandomName' => 'ONCE',
-                'officialColors' => [['colorCode' => '#FE5F8F', 'label' => 'Apricot'], ['colorCode' => '#FEE500', 'label' => 'Yellow']],
+                'officialColors' => [['colorCode' => '#fe5f8f', 'label' => 'Apricot'], ['colorCode' => '#fee500', 'label' => 'Yellow']],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
             ],

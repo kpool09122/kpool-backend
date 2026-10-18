@@ -25,9 +25,10 @@ class HexColorTest extends TestCase
     public static function validHexColorProvider(): array
     {
         return [
-            '大文字' => ['#FF5733'],
             '小文字' => ['#ff5733'],
-            '大文字小文字混在' => ['#Ff5733'],
+            '数字のみ' => ['#123456'],
+            '黒' => ['#000000'],
+            '白' => ['#ffffff'],
         ];
     }
 
@@ -43,7 +44,7 @@ class HexColorTest extends TestCase
     public function testThrowsInvalidArgumentExceptionWithInvalidColor(string $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Hex color must be a valid #RRGGBB color code (e.g., #FF5733).');
+        $this->expectExceptionMessage('Hex color must be a lowercase #rrggbb color code (e.g., #ff5733).');
 
         new HexColor($value);
     }
@@ -54,6 +55,10 @@ class HexColorTest extends TestCase
     public static function invalidHexColorProvider(): array
     {
         return [
+            '大文字' => ['#FF5733'],
+            '大文字小文字混在' => ['#Ff5733'],
+            '前後の空白' => [' #ff5733 '],
+            '末尾の改行' => ["#ff5733\n"],
             '色名' => ['red'],
             '#なし' => ['FF5733'],
             '3桁' => ['#F00'],

@@ -144,7 +144,7 @@ class DraftWikiTest extends TestCase
         $this->assertSame($data->themeColor, $draftWiki->themeColor());
 
         // 新しい色を設定
-        $newColor = new HexColor('#00FF00');
+        $newColor = new HexColor('#00ff00');
         $draftWiki->setThemeColor($newColor);
         $this->assertSame($newColor, $draftWiki->themeColor());
         $this->assertNotSame($data->themeColor, $draftWiki->themeColor());
@@ -389,7 +389,7 @@ class DraftWikiTest extends TestCase
             'social_links' => [],
         ]);
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $status = ApprovalStatus::Pending;
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

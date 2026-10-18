@@ -50,7 +50,7 @@ class MergeWikiInputTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $fontStyle = WikiFontStyle::JA_POP;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');

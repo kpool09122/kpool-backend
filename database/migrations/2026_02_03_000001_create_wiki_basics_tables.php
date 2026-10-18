@@ -63,7 +63,7 @@ return new class extends Migration
             $table->date('debut_date')->nullable()->comment('デビュー日');
             $table->date('disband_date')->nullable()->comment('解散日');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
+            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列 (color_code: #rrggbb, label: 色名)');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
             $table->timestamps();
@@ -197,7 +197,7 @@ return new class extends Migration
             $table->date('debut_date')->nullable()->comment('デビュー日');
             $table->date('disband_date')->nullable()->comment('解散日');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
+            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列 (color_code: #rrggbb, label: 色名)');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
             $table->timestamps();
@@ -323,7 +323,7 @@ return new class extends Migration
             $table->date('debut_date')->nullable()->comment('デビュー日');
             $table->date('disband_date')->nullable()->comment('解散日');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
+            $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列 (color_code: #rrggbb, label: 色名)');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
             $table->timestamps();

@@ -377,7 +377,7 @@ class SubmitWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
 
         $draftWiki = new DraftWiki(
             $wikiIdentifier,

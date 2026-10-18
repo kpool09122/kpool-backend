@@ -601,7 +601,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $version,
         );
     }
@@ -645,7 +645,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $status,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             translatedAt: $translatedAt,

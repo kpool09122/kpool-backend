@@ -329,7 +329,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('2015-10-20', $basic->debutDate()?->format('Y-m-d'));
         $this->assertNull($basic->disbandDate());
         $this->assertSame('ONCE', $basic->fandomName()->value());
-        $this->assertSame('#FF5FA2', (string) $basic->officialColors()[0]->colorCode());
+        $this->assertSame('#ff5fa2', (string) $basic->officialColors()[0]->colorCode());
         $this->assertSame('Apricot', $basic->officialColors()[0]->label());
         $this->assertSame('🍭', $basic->emoji()->value());
         $this->assertSame('Candy Bong', $basic->representativeSymbol()->value());

@@ -14,12 +14,12 @@ class ColorTest extends TestCase
 {
     public function test__constructWithColorCodeAndLabel(): void
     {
-        $color = new Color(new HexColor('#FF5733'), 'Apricot');
+        $color = new Color(new HexColor('#ff5733'), 'Apricot');
 
-        $this->assertSame('#FF5733', (string) $color->colorCode());
+        $this->assertSame('#ff5733', (string) $color->colorCode());
         $this->assertSame('Apricot', $color->label());
-        $this->assertSame('#FF5733', (string) $color);
-        $this->assertSame(['color_code' => '#FF5733', 'label' => 'Apricot'], $color->toArray());
+        $this->assertSame('#ff5733', (string) $color);
+        $this->assertSame(['color_code' => '#ff5733', 'label' => 'Apricot'], $color->toArray());
     }
 
     #[DataProvider('invalidLabelProvider')]
@@ -28,7 +28,7 @@ class ColorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($message);
 
-        new Color(new HexColor('#FF5733'), $label);
+        new Color(new HexColor('#ff5733'), $label);
     }
 
     /**

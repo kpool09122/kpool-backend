@@ -50,7 +50,7 @@ class WikiSnapshotTest extends TestCase
             socialLinks: [],
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $version = new Version(1);
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

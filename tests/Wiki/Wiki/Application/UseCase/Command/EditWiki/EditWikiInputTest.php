@@ -49,7 +49,7 @@ class EditWikiInputTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $fontStyle = WikiFontStyle::JA_POP;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());

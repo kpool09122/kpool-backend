@@ -18,7 +18,7 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
-  themeColor?: string | null;
+  themeColor?: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle?: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -61,7 +61,7 @@ model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
-  themeColor?: string | null;
+  themeColor?: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle?: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -200,7 +200,7 @@ model WikiListItem {
   @doc("Published version number.")
   version: int32;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -273,7 +273,7 @@ model DraftWikiListItem {
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the draft wiki.")

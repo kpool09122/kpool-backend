@@ -1264,7 +1264,7 @@ class PublishWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
 
         $draftWiki = new DraftWiki(
             $wikiIdentifier,
@@ -1308,7 +1308,7 @@ class PublishWikiTest extends TestCase
             $resourceType,
             $exBasic,
             $exSections,
-            new HexColor('#0000FF'),
+            new HexColor('#0000ff'),
             $publishedVersion,
         );
 

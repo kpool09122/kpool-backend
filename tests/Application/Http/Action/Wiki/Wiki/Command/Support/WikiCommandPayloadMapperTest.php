@@ -105,12 +105,12 @@ class WikiCommandPayloadMapperTest extends TestCase
         $basic = WikiCommandPayloadMapper::basic(ResourceType::GROUP, [
             'name' => 'TWICE',
             'officialColors' => [
-                ['colorCode' => '#FF5FA2', 'label' => 'Apricot'],
+                ['colorCode' => '#ff5fa2', 'label' => 'Apricot'],
             ],
         ]);
 
         $this->assertInstanceOf(GroupBasic::class, $basic);
-        $this->assertSame('#FF5FA2', (string) $basic->officialColors()[0]->colorCode());
+        $this->assertSame('#ff5fa2', (string) $basic->officialColors()[0]->colorCode());
         $this->assertSame('Apricot', $basic->officialColors()[0]->label());
     }
 

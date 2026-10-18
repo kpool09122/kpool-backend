@@ -29,7 +29,7 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
-        $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('#fe5f8f', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('Chaeyoung', $readModel->basic()['name']);
@@ -54,7 +54,7 @@ class GetTalentDraftWikiTest extends TestCase
                 'slug' => 'tl-momo',
                 'language' => 'ja',
                 'rejection_reason' => '人物プロフィールを補足してください',
-                'theme_color' => '#FE5F8F',
+                'theme_color' => '#fe5f8f',
             ],
             [
                 'name' => 'モモ',

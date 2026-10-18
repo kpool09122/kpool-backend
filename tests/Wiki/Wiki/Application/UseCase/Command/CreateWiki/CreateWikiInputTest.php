@@ -51,7 +51,7 @@ class CreateWikiInputTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $fontStyle = WikiFontStyle::JA_POP;
         $slug = new Slug('gr-twice');
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

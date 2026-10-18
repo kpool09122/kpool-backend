@@ -18,7 +18,7 @@ class DraftWikiReadModelTest extends TestCase
             slug: 'gr-twice',
             language: 'ko',
             resourceType: 'group',
-            themeColor: '#FE5F8F',
+            themeColor: '#fe5f8f',
             fontStyle: 'ja_pop',
             heroImage: [
                 'imageIdentifier' => null,
@@ -37,7 +37,7 @@ class DraftWikiReadModelTest extends TestCase
                 'debutDate' => '2015-10-20',
                 'disbandDate' => null,
                 'fandomName' => 'ONCE',
-                'officialColors' => [['colorCode' => '#FE5F8F', 'label' => 'Apricot'], ['colorCode' => '#FEE500', 'label' => 'Yellow']],
+                'officialColors' => [['colorCode' => '#fe5f8f', 'label' => 'Apricot'], ['colorCode' => '#fee500', 'label' => 'Yellow']],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
             ],
@@ -63,7 +63,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame('under_review', $readModel->status());
         $this->assertSame('内容が不十分です', $readModel->rejectionReason());
-        $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('#fe5f8f', $readModel->themeColor());
         $this->assertSame('ja_pop', $readModel->fontStyle());
         $this->assertSame('TWICE Draft Wiki', $readModel->title());
         $this->assertSame('Draft profile and history for TWICE.', $readModel->metaDescription());
@@ -80,7 +80,7 @@ class DraftWikiReadModelTest extends TestCase
             'resourceType' => 'group',
             'status' => 'under_review',
             'rejectionReason' => '内容が不十分です',
-            'themeColor' => '#FE5F8F',
+            'themeColor' => '#fe5f8f',
             'fontStyle' => 'ja_pop',
             'title' => 'TWICE Draft Wiki',
             'metaDescription' => 'Draft profile and history for TWICE.',
@@ -102,7 +102,7 @@ class DraftWikiReadModelTest extends TestCase
                 'debutDate' => '2015-10-20',
                 'disbandDate' => null,
                 'fandomName' => 'ONCE',
-                'officialColors' => [['colorCode' => '#FE5F8F', 'label' => 'Apricot'], ['colorCode' => '#FEE500', 'label' => 'Yellow']],
+                'officialColors' => [['colorCode' => '#fe5f8f', 'label' => 'Apricot'], ['colorCode' => '#fee500', 'label' => 'Yellow']],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
             ],

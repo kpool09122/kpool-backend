@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('resource_type', 50)->comment('リソースタイプ (agency, group, talent, song)');
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
-            $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#rrggbb)');
             $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
@@ -50,7 +50,7 @@ return new class extends Migration
             $table->string('resource_type', 50)->comment('リソースタイプ (agency, group, talent, song)');
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
-            $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#rrggbb)');
             $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
@@ -87,7 +87,7 @@ return new class extends Migration
             $table->string('resource_type', 50)->comment('リソースタイプ');
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
-            $table->string('theme_color', 7)->nullable()->comment('テーマカラー');
+            $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#rrggbb)');
             $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');

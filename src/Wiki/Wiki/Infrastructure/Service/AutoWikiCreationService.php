@@ -579,9 +579,14 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
      */
     private function validOfficialColors(array $values): array
     {
-        return array_values(array_filter(
+        $colors = array_map(
+            static fn (array $value) => [...$value, 'color_code' => strtolower($value['color_code'])],
             $values,
-            static fn (array $value) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value['color_code']) === 1
+        );
+
+        return array_values(array_filter(
+            $colors,
+            static fn (array $value) => preg_match('/\A#[0-9a-f]{6}\z/', $value['color_code']) === 1
                 && trim($value['label']) !== ''
                 && mb_strlen($value['label']) <= 16,
         ));
