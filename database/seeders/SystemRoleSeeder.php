@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use RuntimeException;
 use Source\Wiki\Principal\Domain\Entity\Policy;
+use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -38,9 +40,14 @@ class SystemRoleSeeder extends Seeder
 
     private function loadPolicies(): void
     {
+        $this->policyMap = [];
         $policies = $this->policyRepository->findAll();
 
         foreach ($policies as $policy) {
+            if (! $policy->isSystemPolicy()) {
+                continue;
+            }
+
             $this->policyMap[$policy->name()] = $policy;
         }
     }
@@ -55,7 +62,7 @@ class SystemRoleSeeder extends Seeder
 
         foreach ($policyNames as $name) {
             if (! isset($this->policyMap[$name])) {
-                throw new \RuntimeException("Policy '{$name}' not found. Please run SystemPolicySeeder first.");
+                throw new RuntimeException("Policy '{$name}' not found. Please run SystemPolicySeeder first.");
             }
 
             $identifiers[] = $this->policyMap[$name]->policyIdentifier();
@@ -66,80 +73,72 @@ class SystemRoleSeeder extends Seeder
 
     private function createOperatorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'Operator',
             policies: $this->getPolicyIdentifiers([
                 ...$this->globalPolicyNames(),
                 'GLOBAL_OFFICIAL_CERTIFICATION_READ',
             ]),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createSeniorCollaboratorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'SeniorCollaborator',
             policies: $this->getPolicyIdentifiers([...$this->globalPolicyNames(), 'DENY_ROLLBACK']),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createAgencyActorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'AgencyActor',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->agencyManagementPolicyNames()]),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createTalentActorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'TalentActor',
             policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createAdministratorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'Administrator',
             policies: $this->getPolicyIdentifiers(['GLOBAL_PRINCIPAL_GROUP_MANAGE']),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createCollaboratorRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'Collaborator',
             policies: $this->getPolicyIdentifiers($this->basicEditingPolicyNames()),
-            accountIdentifier: null,
         );
-
-        $this->roleRepository->save($role);
     }
 
     private function createNoneRole(): void
     {
-        $role = $this->roleFactory->create(
+        $this->saveRole(
             name: 'None',
             policies: [],
-            accountIdentifier: null,
         );
+    }
+
+    /**
+     * @param PolicyIdentifier[] $policies
+     */
+    private function saveRole(string $name, array $policies): void
+    {
+        $existing = $this->roleRepository->findSystemByName($name);
+        $role = $existing === null
+            ? $this->roleFactory->create($name, $policies, null)
+            : new Role($existing->roleIdentifier(), $name, $policies, null, $existing->createdAt());
 
         $this->roleRepository->save($role);
     }

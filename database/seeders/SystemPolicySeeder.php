@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Condition;
@@ -61,7 +62,7 @@ class SystemPolicySeeder extends Seeder
 
     private function createGlobalOfficialCertificationRequestPolicy(): void
     {
-        $policy = $this->policyFactory->create(
+        $this->savePolicy(
             name: 'GLOBAL_' . $this->policyActionName(Action::OFFICIAL_CERTIFICATION_REQUEST),
             statements: [
                 new Statement(
@@ -77,10 +78,7 @@ class SystemPolicySeeder extends Seeder
                     condition: $this->requesterAccountCategoryCondition(AccountCategory::TALENT),
                 ),
             ],
-            accountIdentifier: null,
         );
-
-        $this->policyRepository->save($policy);
     }
 
     private function createOwnWikiActionPolicies(): void
@@ -212,7 +210,7 @@ class SystemPolicySeeder extends Seeder
      */
     private function createPolicy(string $name, Effect $effect, Action $action, array $resourceTypes, ?Condition $condition = null): void
     {
-        $policy = $this->policyFactory->create(
+        $this->savePolicy(
             name: $name,
             statements: [
                 new Statement(
@@ -222,8 +220,18 @@ class SystemPolicySeeder extends Seeder
                     condition: $condition,
                 ),
             ],
-            accountIdentifier: null,
         );
+    }
+
+    /**
+     * @param Statement[] $statements
+     */
+    private function savePolicy(string $name, array $statements): void
+    {
+        $existing = $this->policyRepository->findSystemByName($name);
+        $policy = $existing === null
+            ? $this->policyFactory->create($name, $statements, null)
+            : new Policy($existing->policyIdentifier(), $name, $statements, null, $existing->createdAt());
 
         $this->policyRepository->save($policy);
     }

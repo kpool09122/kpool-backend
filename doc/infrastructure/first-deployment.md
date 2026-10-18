@@ -116,6 +116,16 @@ Actionsの `Production release` を `target=backend`, `mode=deploy`, `backend_re
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
 API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
 
+公開前にマスターを手動投入する。デプロイ処理は `migrate --force` のみで、Seederは自動実行しない。
+ECSで現在のAPI task definitionを使う単発taskを起動し、APIと同じsubnet・security group・public IP設定で、アプリcontainerのcommandを次へ上書きする。
+
+```json
+["php", "artisan", "db:seed", "--class=Database\\Seeders\\MasterDataSeeder", "--force"]
+```
+
+終了コード0とCloudWatch Logsを確認する。API taskのapp DB資格情報・Redis設定を使い、migration専用task definitionは使わない。
+ロール・ポリシーの再投入も同じ手順で実施する。[Seederの環境別動作](operations.md#マスターデータの手動投入)も参照する。
+
 ## 6. frontend配備と公開確認
 
 frontendのbuild/deployもbackendの `Production release` から実行する。

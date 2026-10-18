@@ -10,13 +10,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
-            SystemPolicySeeder::class,
-            SystemRoleSeeder::class,
-            AccountAuthorizationSeeder::class,
-            SiteManagementAuthorizationSeeder::class,
-            TestAccountSeeder::class,
-            WikiEditorSampleSeeder::class,
-        ]);
+        $this->call(MasterDataSeeder::class);
+
+        if (app()->environment(['local', 'testing'])) {
+            $this->call([
+                TestAccountSeeder::class,
+                WikiEditorSampleSeeder::class,
+            ]);
+        }
     }
 }
