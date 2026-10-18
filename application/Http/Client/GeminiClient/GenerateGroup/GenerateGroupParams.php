@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
+use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateGroupParams
@@ -32,6 +33,7 @@ final readonly class GenerateGroupParams
         private array $awards,
         private array $members,
         private array $sources,
+        private GeneratedWikiMetadata $metadata = new GeneratedWikiMetadata(),
     ) {
     }
 
@@ -58,6 +60,7 @@ final readonly class GenerateGroupParams
             awards: self::stringArray($data['awards'] ?? []),
             members: self::stringArray($data['members'] ?? []),
             sources: $sources,
+            metadata: GeneratedWikiMetadata::fromArray($data),
         );
     }
 
@@ -81,6 +84,11 @@ final readonly class GenerateGroupParams
             members: [],
             sources: [],
         );
+    }
+
+    public function metadata(): GeneratedWikiMetadata
+    {
+        return $this->metadata;
     }
 
     public function alphabetName(): ?string

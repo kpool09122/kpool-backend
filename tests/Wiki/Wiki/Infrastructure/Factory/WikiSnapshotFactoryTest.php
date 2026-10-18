@@ -72,7 +72,7 @@ class WikiSnapshotFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection([], allowBlocks: false);
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $version = new Version(3);
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

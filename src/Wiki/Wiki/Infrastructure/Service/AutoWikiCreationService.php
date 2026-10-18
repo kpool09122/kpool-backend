@@ -41,8 +41,11 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\ZodiacSign;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Throwable;
 
@@ -100,6 +103,9 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             basic: $basic,
             sections: $this->buildAgencySections($params, $payload->language()->value),
             sources: $params->sources(),
+            title: $this->seoTitle($params->metadata()->title()),
+            metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
+            keywords: $this->seoKeywords($params->metadata()->keywords()),
         );
     }
 
@@ -143,6 +149,9 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             basic: $basic,
             sections: $this->buildGroupSections($params, $payload->language()->value),
             sources: $params->sources(),
+            title: $this->seoTitle($params->metadata()->title()),
+            metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
+            keywords: $this->seoKeywords($params->metadata()->keywords()),
         );
     }
 
@@ -203,6 +212,9 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             basic: $basic,
             sections: $this->buildTalentSections($params, $payload->language()->value),
             sources: $params->sources(),
+            title: $this->seoTitle($params->metadata()->title()),
+            metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
+            keywords: $this->seoKeywords($params->metadata()->keywords()),
         );
     }
 
@@ -267,7 +279,36 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             basic: $basic,
             sections: $this->buildSongSections($params, $payload->language()->value),
             sources: $params->sources(),
+            title: $this->seoTitle($params->metadata()->title()),
+            metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
+            keywords: $this->seoKeywords($params->metadata()->keywords()),
         );
+    }
+
+    private function seoTitle(?string $value): ?SeoTitle
+    {
+        $value = trim($value ?? '');
+
+        return $value ? new SeoTitle(mb_substr($value, 0, SeoTitle::MAX_LENGTH)) : null;
+    }
+
+    private function metaDescription(?string $value): ?MetaDescription
+    {
+        $value = trim($value ?? '');
+
+        return $value !== '' ? new MetaDescription(mb_substr($value, 0, MetaDescription::MAX_LENGTH)) : null;
+    }
+
+    /** @param list<string> $values */
+    private function seoKeywords(array $values): ?SeoKeywords
+    {
+        $keywords = array_map(
+            static fn (string $value) => mb_substr(trim($value), 0, SeoKeywords::MAX_KEYWORD_LENGTH),
+            $values,
+        );
+        $keywords = array_values(array_unique(array_filter($keywords, static fn (string $value) => $value !== '')));
+
+        return $keywords !== [] ? new SeoKeywords(array_slice($keywords, 0, SeoKeywords::MAX_COUNT)) : null;
     }
 
     private function resolveAgencyName(?WikiIdentifier $agencyIdentifier): ?string
@@ -579,9 +620,14 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
      */
     private function validOfficialColors(array $values): array
     {
-        return array_values(array_filter(
+        $colors = array_map(
+            static fn (array $value) => [...$value, 'color_code' => strtolower($value['color_code'])],
             $values,
-            static fn (array $value) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value['color_code']) === 1
+        );
+
+        return array_values(array_filter(
+            $colors,
+            static fn (array $value) => preg_match('/\A#[0-9a-f]{6}\z/', $value['color_code']) === 1
                 && trim($value['label']) !== ''
                 && mb_strlen($value['label']) <= 16,
         ));

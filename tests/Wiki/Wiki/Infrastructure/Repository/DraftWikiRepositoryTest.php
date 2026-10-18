@@ -15,6 +15,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
@@ -38,6 +39,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
@@ -46,6 +48,30 @@ use Tests\TestCase;
 
 class DraftWikiRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testTranslationSourceSurvivesSavingAndReloading(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        CreateDraftWiki::create($wikiId, 'group');
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
+        $draftWiki = $repository->findById(new DraftWikiIdentifier($wikiId));
+        $this->assertNotNull($draftWiki);
+        $this->assertNull($draftWiki->translationSource());
+        $sourceId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $draftWiki->setTranslationSource(new TranslationSource($sourceId, new Version(2)));
+
+        $repository->save($draftWiki);
+        $reloaded = $repository->findById(new DraftWikiIdentifier($wikiId));
+        $this->assertNotNull($reloaded);
+        $this->assertSame((string) $sourceId, (string) $reloaded->translationSource()?->wikiIdentifier());
+        $this->assertSame(2, $reloaded->translationSource()?->version()->value());
+        $this->assertDatabaseHas('draft_wikis', [
+            'id' => $wikiId,
+            'translation_source_wiki_id' => (string) $sourceId,
+            'translation_source_version' => 2,
+        ]);
+    }
+
     /**
      * 正常系：指定したIDの下書きWiki情報が存在しない場合、nullが返却されること.
      *

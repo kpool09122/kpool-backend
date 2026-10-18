@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateSong;
 
+use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateSongParams
@@ -25,6 +26,7 @@ final readonly class GenerateSongParams
         private ?string $overview,
         private array $chartPerformance,
         private array $sources,
+        private GeneratedWikiMetadata $metadata = new GeneratedWikiMetadata(),
     ) {
     }
 
@@ -54,6 +56,7 @@ final readonly class GenerateSongParams
             overview: $overview,
             chartPerformance: self::stringArray($data['chart_performance'] ?? []),
             sources: $sources,
+            metadata: GeneratedWikiMetadata::fromArray($data),
         );
     }
 
@@ -72,6 +75,11 @@ final readonly class GenerateSongParams
             chartPerformance: [],
             sources: [],
         );
+    }
+
+    public function metadata(): GeneratedWikiMetadata
+    {
+        return $this->metadata;
     }
 
     public function alphabetName(): ?string

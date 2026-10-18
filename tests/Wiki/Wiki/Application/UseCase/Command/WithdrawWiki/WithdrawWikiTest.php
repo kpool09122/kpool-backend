@@ -310,7 +310,7 @@ class WithdrawWikiTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $status,
             $editorIdentifier,
             editedAt: new DateTimeImmutable(),

@@ -4641,6 +4641,8 @@ components:
           description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -4725,6 +4727,8 @@ components:
           description: Whether this published wiki is officially certified.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -4927,6 +4931,8 @@ components:
           description: Section content payloads.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -5120,6 +5126,8 @@ components:
           description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -5238,6 +5246,8 @@ components:
           description: Resource type that the wiki belongs to.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -5992,8 +6002,9 @@ components:
         - label
       properties:
         colorCode:
-          type: string
-          description: 'HEX color code in #RRGGBB format.'
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
+          description: 'Lowercase HEX color code in #rrggbb format.'
         label:
           type: string
           maxLength: 16
@@ -6579,6 +6590,8 @@ components:
           description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -6832,6 +6845,8 @@ components:
           description: Whether this published wiki is officially certified.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -7034,6 +7049,8 @@ components:
           description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -7196,6 +7213,8 @@ components:
           description: Whether this published wiki is officially certified.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -7338,6 +7357,8 @@ components:
           description: Section content payloads.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -7581,6 +7602,8 @@ components:
           description: Whether this published wiki is officially certified.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:
@@ -7666,6 +7689,12 @@ components:
           nullable: true
           description: Whether the hero image is hidden.
       description: Hero image payload for a published wiki.
+    WikiHexColor:
+      type: string
+      minLength: 7
+      maxLength: 7
+      pattern: ^#[0-9a-f]{6}$
+      description: 'Lowercase HEX color code in #rrggbb format.'
     WikiListItem:
       type: object
       required:
@@ -7712,6 +7741,8 @@ components:
           description: Published version number.
         themeColor:
           type: string
+          allOf:
+            - $ref: '#/components/schemas/WikiHexColor'
           nullable: true
           description: Theme color applied to the wiki.
         fontStyle:

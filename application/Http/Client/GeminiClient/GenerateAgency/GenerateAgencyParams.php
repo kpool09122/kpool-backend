@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateAgency;
 
+use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateAgencyParams
@@ -25,6 +26,7 @@ final readonly class GenerateAgencyParams
         private ?string $history,
         private array $artists,
         private array $sources,
+        private GeneratedWikiMetadata $metadata = new GeneratedWikiMetadata(),
     ) {
     }
 
@@ -46,6 +48,7 @@ final readonly class GenerateAgencyParams
             history: self::nullableString($data['history'] ?? null),
             artists: self::stringArray($data['artists'] ?? []),
             sources: $sources,
+            metadata: GeneratedWikiMetadata::fromArray($data),
         );
     }
 
@@ -64,6 +67,11 @@ final readonly class GenerateAgencyParams
             artists: [],
             sources: [],
         );
+    }
+
+    public function metadata(): GeneratedWikiMetadata
+    {
+        return $this->metadata;
     }
 
     public function alphabetName(): ?string

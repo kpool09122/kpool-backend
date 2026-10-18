@@ -644,7 +644,7 @@ class RollbackWikiTest extends TestCase
             ResourceType::GROUP,
             $basic,
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $version,
         );
     }
@@ -679,7 +679,7 @@ class RollbackWikiTest extends TestCase
             ResourceType::GROUP,
             $basic,
             new SectionContentCollection(),
-            new HexColor('#0000FF'),
+            new HexColor('#0000ff'),
             $version,
             null,
             null,

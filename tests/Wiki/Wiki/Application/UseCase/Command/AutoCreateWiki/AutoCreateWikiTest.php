@@ -33,7 +33,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -77,7 +80,10 @@ class AutoCreateWikiTest extends TestCase
         $repository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(static fn (DraftWiki $draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()
-                && (string) $draftWiki->editorIdentifier() === (string) $principalIdentifier))
+                && (string) $draftWiki->editorIdentifier() === (string) $principalIdentifier
+                && (string) $draftWiki->title() === 'TWICEのプロフィール'
+                && (string) $draftWiki->metaDescription() === 'TWICEの活動と歴史を紹介します。'
+                && $draftWiki->keywords()?->values() === ['TWICE', 'K-POP']))
             ->andReturn(null);
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
@@ -337,6 +343,9 @@ class AutoCreateWikiTest extends TestCase
             basic: $basic,
             sections: $sections,
             sources: [],
+            title: new SeoTitle('TWICEのプロフィール'),
+            metaDescription: new MetaDescription('TWICEの活動と歴史を紹介します。'),
+            keywords: new SeoKeywords(['TWICE', 'K-POP']),
         );
     }
 }

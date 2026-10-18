@@ -147,8 +147,8 @@ class GroupBasicTest extends TestCase
         $this->assertSame($testData->disbandDate->format('Y-m-d'), $array['disband_date']);
         $this->assertSame($testData->fandomName->value(), $array['fandom_name']);
         $this->assertSame([
-            ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
-            ['color_code' => '#FFC0CB', 'label' => 'Pink'],
+            ['color_code' => '#ff5fa2', 'label' => 'Apricot'],
+            ['color_code' => '#ffc0cb', 'label' => 'Pink'],
         ], $array['official_colors']);
         $this->assertSame($testData->emoji->value(), $array['emoji']);
         $this->assertSame($testData->representativeSymbol->value(), $array['representative_symbol']);
@@ -194,8 +194,8 @@ class GroupBasicTest extends TestCase
             'disband_date' => '2030-12-31',
             'fandom_name' => 'ONCE',
             'official_colors' => [
-                ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
-                ['color_code' => '#FFC0CB', 'label' => 'Pink'],
+                ['color_code' => '#ff5fa2', 'label' => 'Apricot'],
+                ['color_code' => '#ffc0cb', 'label' => 'Pink'],
             ],
             'emoji' => '🍭',
             'representative_symbol' => 'candy',
@@ -215,9 +215,9 @@ class GroupBasicTest extends TestCase
         $this->assertSame('2030-12-31', $groupBasic->disbandDate()->format('Y-m-d'));
         $this->assertSame('ONCE', $groupBasic->fandomName()->value());
         $this->assertCount(2, $groupBasic->officialColors());
-        $this->assertSame('#FF5FA2', (string) $groupBasic->officialColors()[0]->colorCode());
+        $this->assertSame('#ff5fa2', (string) $groupBasic->officialColors()[0]->colorCode());
         $this->assertSame('Apricot', $groupBasic->officialColors()[0]->label());
-        $this->assertSame('#FFC0CB', (string) $groupBasic->officialColors()[1]->colorCode());
+        $this->assertSame('#ffc0cb', (string) $groupBasic->officialColors()[1]->colorCode());
         $this->assertSame('Pink', $groupBasic->officialColors()[1]->label());
         $this->assertSame('🍭', $groupBasic->emoji()->value());
         $this->assertSame('candy', $groupBasic->representativeSymbol()->value());
@@ -267,8 +267,8 @@ class GroupBasicTest extends TestCase
             disbandDate: null,
             fandomName: new FandomName('ONCE'),
             officialColors: [
-                new Color(new HexColor('#FF5FA2'), 'Apricot'),
-                new Color(new HexColor('#FFC0CB'), 'Pink'),
+                new Color(new HexColor('#ff5fa2'), 'Apricot'),
+                new Color(new HexColor('#ffc0cb'), 'Pink'),
                 new Color(new HexColor('#000000'), 'Black'),
             ],
             emoji: new Emoji(''),
@@ -289,8 +289,8 @@ class GroupBasicTest extends TestCase
         $disbandDate = $withNullableValues ? new DisbandDate(new DateTimeImmutable('2030-12-31')) : null;
         $fandomName = new FandomName('ONCE');
         $officialColors = $withNullableValues ? [
-            new Color(new HexColor('#FF5FA2'), 'Apricot'),
-            new Color(new HexColor('#FFC0CB'), 'Pink'),
+            new Color(new HexColor('#ff5fa2'), 'Apricot'),
+            new Color(new HexColor('#ffc0cb'), 'Pink'),
         ] : [];
         $emoji = new Emoji('🍭');
         $representativeSymbol = new RepresentativeSymbol('candy');

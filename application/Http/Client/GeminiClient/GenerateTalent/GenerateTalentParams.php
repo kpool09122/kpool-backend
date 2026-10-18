@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateTalent;
 
+use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateTalentParams
@@ -31,6 +32,7 @@ final readonly class GenerateTalentParams
         private array $appearances,
         private array $awards,
         private array $sources,
+        private GeneratedWikiMetadata $metadata = new GeneratedWikiMetadata(),
     ) {
     }
 
@@ -58,6 +60,7 @@ final readonly class GenerateTalentParams
             appearances: self::stringArray($data['appearances'] ?? []),
             awards: self::stringArray($data['awards'] ?? []),
             sources: $sources,
+            metadata: GeneratedWikiMetadata::fromArray($data),
         );
     }
 
@@ -82,6 +85,11 @@ final readonly class GenerateTalentParams
             awards: [],
             sources: [],
         );
+    }
+
+    public function metadata(): GeneratedWikiMetadata
+    {
+        return $this->metadata;
     }
 
     public function alphabetName(): ?string

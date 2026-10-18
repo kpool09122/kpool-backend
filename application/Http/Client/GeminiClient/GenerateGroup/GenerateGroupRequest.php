@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
@@ -76,6 +77,8 @@ final readonly class GenerateGroupRequest
             ? " affiliated with {$this->agencyName}"
             : '';
 
+        $metadataInstructions = WikiMetadataPrompt::instructions();
+
         return <<<PROMPT
 You are an expert in the K-POP industry.
 Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuwiki, and official homepage, then collect information.
@@ -95,7 +98,7 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 5. debut_date: Debut date in YYYY-MM-DD format or null.
 6. disband_date: Disbandment date in YYYY-MM-DD format or null.
 7. fandom_name: Official name for the fan community (e.g., "ARMY" for BTS, "BLINK" for BLACKPINK, "Bunnies" for NewJeans). If unknown, set to null.
-8. official_colors: Array of official color objects. Each item must have color_code as a HEX color code and label as the color name (e.g., {"color_code":"#FF5733","label":"Apricot"}). If unknown, return [].
+8. official_colors: Array of official color objects. Each item must have color_code as a HEX color code and label as the color name (e.g., {"color_code":"#ff5733","label":"Apricot"}). If unknown, return [].
 9. emoji: Single representative emoji string or null.
 10. representative_symbol: Representative symbol text or null.
 11. overview: Overview of the group (concept, characteristics, agency, etc.) approximately 800 characters.
@@ -124,6 +127,8 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 - Dates must use YYYY-MM-DD.
 - Enum fields must use only the allowed values listed above.
 - sources must include only pages actually used for the generated information. Do not include search result URLs, proxy URLs, cache URLs, or vertexaisearch.cloud.google.com URLs.
+
+{$metadataInstructions}
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above, including sources.

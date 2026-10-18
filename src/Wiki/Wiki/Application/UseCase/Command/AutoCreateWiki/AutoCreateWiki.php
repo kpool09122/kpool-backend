@@ -82,6 +82,9 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         );
 
         $draftWiki->setSections($generatedData->sections());
+        $draftWiki->setTitle($generatedData->title());
+        $draftWiki->setMetaDescription($generatedData->metaDescription());
+        $draftWiki->setKeywords($generatedData->keywords());
 
         $this->draftWikiRepository->save($draftWiki);
 

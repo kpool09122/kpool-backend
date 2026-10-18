@@ -35,7 +35,7 @@ class GetSongWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
+                'official_colors' => json_encode([['color_code' => '#fe5f8f', 'label' => 'Apricot'], ['color_code' => '#fee500', 'label' => 'Yellow']], JSON_THROW_ON_ERROR),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
@@ -70,7 +70,7 @@ class GetSongWikiTest extends TestCase
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f203',
                 'version' => 5,
                 'owner_account_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f204',
-                'theme_color' => '#FE5F8F',
+                'theme_color' => '#fe5f8f',
                 'sections' => json_encode([
                     [
                         'id' => 'overview',
@@ -109,7 +109,7 @@ class GetSongWikiTest extends TestCase
         $this->assertSame('song', $readModel->resourceType());
         $this->assertSame(5, $readModel->version());
         $this->assertTrue($readModel->isOfficial());
-        $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('#fe5f8f', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(SongWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TT', $readModel->basic()['name']);

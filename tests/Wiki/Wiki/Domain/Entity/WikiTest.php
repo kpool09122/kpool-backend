@@ -119,7 +119,7 @@ class WikiTest extends TestCase
         $this->assertSame($data->themeColor, $wiki->themeColor());
 
         // 新しい色を設定
-        $newColor = new HexColor('#00FF00');
+        $newColor = new HexColor('#00ff00');
         $wiki->setThemeColor($newColor);
         $this->assertSame($newColor, $wiki->themeColor());
         $this->assertNotSame($data->themeColor, $wiki->themeColor());
@@ -489,7 +489,7 @@ class WikiTest extends TestCase
             'social_links' => [],
         ]);
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $version = new Version(1);
         $isOfficial ??= false;
         $ownerAccountIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;

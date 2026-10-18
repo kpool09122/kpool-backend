@@ -99,10 +99,16 @@ model WikiAgencySummary {
 }
 
 
+@doc("Lowercase HEX color code in #rrggbb format.")
+@pattern("^#[0-9a-f]{6}$")
+@minLength(7)
+@maxLength(7)
+scalar WikiHexColor extends string;
+
 @doc("Official color with a HEX color code and display label.")
 model OfficialColor {
-  @doc("HEX color code in #RRGGBB format.")
-  colorCode: string;
+  @doc("Lowercase HEX color code in #rrggbb format.")
+  colorCode: WikiHexColor;
   @doc("Human-readable color label.")
   @maxLength(16)
   label: string;
@@ -175,7 +181,7 @@ model DraftWikiDetail {
   @doc("Reason for the latest rejection of the draft wiki.")
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -210,7 +216,7 @@ model WikiDetail {
   @doc("Whether this published wiki is officially certified.")
   isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -317,7 +323,7 @@ model TalentDraftWikiDetail {
   @doc("Reason for the latest rejection of the draft wiki.")
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -352,7 +358,7 @@ model TalentWikiDetail {
   @doc("Whether this published wiki is officially certified.")
   isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -497,7 +503,7 @@ model SongDraftWikiDetail {
   @doc("Reason for the latest rejection of the draft wiki.")
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -532,7 +538,7 @@ model SongWikiDetail {
   @doc("Whether this published wiki is officially certified.")
   isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -589,7 +595,7 @@ model AgencyDraftWikiDetail {
   @doc("Reason for the latest rejection of the draft wiki.")
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
@@ -624,7 +630,7 @@ model AgencyWikiDetail {
   @doc("Whether this published wiki is officially certified.")
   isOfficial: boolean;
   @doc("Theme color applied to the wiki.")
-  themeColor: string | null;
+  themeColor: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
   fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")

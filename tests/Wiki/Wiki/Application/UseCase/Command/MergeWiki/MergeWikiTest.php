@@ -90,7 +90,7 @@ class MergeWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $updatedSections = new SectionContentCollection();
-        $updatedThemeColor = new HexColor('#00FF00');
+        $updatedThemeColor = new HexColor('#00ff00');
         $updatedTitle = new SeoTitle('ITZY Wiki');
         $updatedMetaDescription = new MetaDescription('Merged profile for ITZY.');
         $updatedKeywords = new SeoKeywords(['ITZY', 'merge']);
@@ -379,7 +379,7 @@ class MergeWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new HexColor('#FF5733');
+        $themeColor = new HexColor('#ff5733');
         $slug = new Slug('gr-twice');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];

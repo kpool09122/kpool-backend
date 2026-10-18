@@ -20,7 +20,7 @@ class ListMyDraftWikisOutputTest extends TestCase
             slug: 'tl-chaeyoung',
             language: 'ko',
             resourceType: 'talent',
-            themeColor: '#FE5F8F',
+            themeColor: '#fe5f8f',
             imageIdentifier: null,
             imageUrl: null,
             imageAltText: null,

@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Domain\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -28,6 +29,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -235,10 +237,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $result = $wikiService->existsApprovedDraftWiki(
-            $translationSetIdentifier,
-            $excludeWikiIdentifier,
-        );
+        $result = $wikiService->existsConflictingApprovedDraftWiki($excludeDraftWiki);
 
         $this->assertTrue($result);
     }
@@ -280,10 +279,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $result = $wikiService->existsApprovedDraftWiki(
-            $translationSetIdentifier,
-            $excludeWikiIdentifier,
-        );
+        $result = $wikiService->existsConflictingApprovedDraftWiki($excludeDraftWiki);
 
         $this->assertFalse($result);
     }
@@ -318,10 +314,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $result = $wikiService->existsApprovedDraftWiki(
-            $translationSetIdentifier,
-            $excludeWikiIdentifier,
-        );
+        $result = $wikiService->existsConflictingApprovedDraftWiki($selfDraftWiki);
 
         $this->assertFalse($result);
     }
@@ -348,10 +341,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $result = $wikiService->existsApprovedDraftWiki(
-            $translationSetIdentifier,
-            $excludeWikiIdentifier,
-        );
+        $result = $wikiService->existsConflictingApprovedDraftWiki($this->createDummyDraftWiki($translationSetIdentifier, Language::JAPANESE, ApprovalStatus::UnderReview, $excludeWikiIdentifier));
 
         $this->assertFalse($result);
     }
@@ -400,12 +390,72 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $result = $wikiService->existsApprovedDraftWiki(
-            $translationSetIdentifier,
-            $excludeWikiIdentifier,
-        );
+        $result = $wikiService->existsConflictingApprovedDraftWiki($japaneseDraftWiki);
 
         $this->assertTrue($result);
+    }
+
+    /** @return array<string, array{bool, bool, bool, bool}> */
+    public static function translationSourceConflicts(): array
+    {
+        return [
+            'same source and version, another language' => [true, true, true, false],
+            'different source Wiki' => [false, true, true, true],
+            'different source version' => [true, false, true, true],
+            'same language' => [true, true, false, true],
+        ];
+    }
+
+    #[DataProvider('translationSourceConflicts')]
+    public function testApprovedDraftConflictRequiresTheSameTranslationSource(
+        bool $sameWiki,
+        bool $sameVersion,
+        bool $differentLanguage,
+        bool $expectedConflict,
+    ): void {
+        $setId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $sourceId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $draft = $this->createDummyDraftWiki($setId, Language::JAPANESE, ApprovalStatus::UnderReview);
+        $draft->setTranslationSource(new TranslationSource($sourceId, new Version(2)));
+        $approved = $this->createDummyDraftWiki(
+            $setId,
+            $differentLanguage ? Language::ENGLISH : Language::JAPANESE,
+            ApprovalStatus::Approved,
+        );
+        $approved->setTranslationSource(new TranslationSource(
+            $sameWiki ? $sourceId : new WikiIdentifier(StrTestHelper::generateUuid()),
+            new Version($sameVersion ? 2 : 1),
+        ));
+        // 翻訳を実行した時刻が違っても、翻訳元が同じなら同じ内容の版として扱う。
+        $draft->setTranslatedAt(new DateTimeImmutable('2026-10-18 00:00:00'));
+        $approved->setTranslatedAt(new DateTimeImmutable('2026-10-17 00:00:00'));
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')->once()->with($setId)->andReturn([$draft, $approved]);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $service = $this->app()->make(WikiServiceInterface::class);
+
+        $this->assertSame($expectedConflict, $service->existsConflictingApprovedDraftWiki($draft));
+    }
+
+    public function testSameSourceDraftDoesNotHideAnotherConflictingApprovedDraft(): void
+    {
+        $setId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $source = new TranslationSource(new WikiIdentifier(StrTestHelper::generateUuid()), new Version(2));
+        $draft = $this->createDummyDraftWiki($setId, Language::JAPANESE, ApprovalStatus::UnderReview);
+        $draft->setTranslationSource($source);
+        $sameSourceDraft = $this->createDummyDraftWiki($setId, Language::ENGLISH, ApprovalStatus::Approved);
+        $sameSourceDraft->setTranslationSource($source);
+        $unknownSourceDraft = $this->createDummyDraftWiki($setId, Language::KOREAN, ApprovalStatus::Approved);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')->once()->with($setId)->andReturn([$sameSourceDraft, $unknownSourceDraft]);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $service = $this->app()->make(WikiServiceInterface::class);
+
+        $this->assertTrue($service->existsConflictingApprovedDraftWiki($draft));
     }
 
     public function testResolvePublishVersionAllowsTranslatedDraftToCatchUpExistingLanguage(): void
@@ -601,7 +651,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $version,
         );
     }
@@ -645,7 +695,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new HexColor('#FF5733'),
+            new HexColor('#ff5733'),
             $status,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             translatedAt: $translatedAt,

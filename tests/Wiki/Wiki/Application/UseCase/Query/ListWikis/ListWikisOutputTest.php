@@ -19,7 +19,7 @@ class ListWikisOutputTest extends TestCase
             language: 'ko',
             resourceType: 'talent',
             version: 2,
-            themeColor: '#FE5F8F',
+            themeColor: '#fe5f8f',
             imageIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f104',
             imageUrl: 'http://localhost/storage/wiki/example.jpg',
             imageAltText: 'Chaeyoung profile image',
