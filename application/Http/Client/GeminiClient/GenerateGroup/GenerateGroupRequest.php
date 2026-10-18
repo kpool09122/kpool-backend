@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
@@ -76,6 +77,8 @@ final readonly class GenerateGroupRequest
             ? " affiliated with {$this->agencyName}"
             : '';
 
+        $metadataInstructions = WikiMetadataPrompt::instructions();
+
         return <<<PROMPT
 You are an expert in the K-POP industry.
 Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuwiki, and official homepage, then collect information.
@@ -124,6 +127,8 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 - Dates must use YYYY-MM-DD.
 - Enum fields must use only the allowed values listed above.
 - sources must include only pages actually used for the generated information. Do not include search result URLs, proxy URLs, cache URLs, or vertexaisearch.cloud.google.com URLs.
+
+{$metadataInstructions}
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above, including sources.
