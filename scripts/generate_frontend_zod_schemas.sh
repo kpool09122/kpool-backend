@@ -29,6 +29,7 @@ declare -a GENERATION_TARGETS=(
   "KPool.AccountApi.openapi.yaml:account-api.ts:accountApi"
   "KPool.IdentityApi.openapi.yaml:identity-api.ts:identityApi"
   "KPool.MonetizationApi.openapi.yaml:monetization-api.ts:monetizationApi"
+  "KPool.SiteManagementApi.openapi.yaml:site-management-api.ts:siteManagementApi"
   "KPool.WebhookApi.openapi.yaml:webhook-api.ts:webhookApi"
   "KPool.WikiApi.openapi.yaml:wiki-private-api.ts:wikiPrivateApi"
 )
