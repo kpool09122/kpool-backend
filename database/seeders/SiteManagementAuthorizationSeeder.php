@@ -28,7 +28,7 @@ class SiteManagementAuthorizationSeeder extends Seeder
     {
         $rolePolicies = [
             self::GENERAL_ROLE => ['General', 'general', [new Statement(Effect::ALLOW, [Action::CONTACT_VIEW], [ResourceType::CONTACT], Condition::OWN_CONTACT)]],
-            self::OPERATOR_ROLE => ['Operator', 'administrator', [new Statement(Effect::ALLOW, [Action::ANNOUNCEMENT_CREATE, Action::ANNOUNCEMENT_UPDATE, Action::ANNOUNCEMENT_PUBLISH, Action::ANNOUNCEMENT_TRANSLATE, Action::ANNOUNCEMENT_DELETE, Action::CONTACT_VIEW, Action::CONTACT_REPLY], [ResourceType::ANNOUNCEMENT, ResourceType::CONTACT])]],
+            self::OPERATOR_ROLE => ['Operator', 'administrator', [new Statement(Effect::ALLOW, [Action::ANNOUNCEMENT_VIEW_DRAFT, Action::ANNOUNCEMENT_CREATE, Action::ANNOUNCEMENT_UPDATE, Action::ANNOUNCEMENT_PUBLISH, Action::ANNOUNCEMENT_TRANSLATE, Action::ANNOUNCEMENT_DELETE, Action::CONTACT_VIEW, Action::CONTACT_REPLY], [ResourceType::ANNOUNCEMENT, ResourceType::CONTACT])]],
             self::ADMINISTRATOR_ROLE => ['Administrator', 'principal_group_management', [new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP])]],
         ];
         foreach ($rolePolicies as $id => [$name, $policyName, $policyStatements]) {

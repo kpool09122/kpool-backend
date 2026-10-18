@@ -15,6 +15,14 @@ use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnno
 use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncement\GetAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Query\GetDraftAnnouncement\GetDraftAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements\ListAnnouncementsInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Query\ListDraftAnnouncements\ListDraftAnnouncementsInterface;
+use Source\SiteManagement\Announcement\Infrastructure\Query\GetAnnouncement;
+use Source\SiteManagement\Announcement\Infrastructure\Query\GetDraftAnnouncement;
+use Source\SiteManagement\Announcement\Infrastructure\Query\ListAnnouncements;
+use Source\SiteManagement\Announcement\Infrastructure\Query\ListDraftAnnouncements;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
@@ -46,6 +54,10 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(ListDraftAnnouncementsInterface::class, ListDraftAnnouncements::class);
+        $this->app->singleton(GetDraftAnnouncementInterface::class, GetDraftAnnouncement::class);
+        $this->app->singleton(GetAnnouncementInterface::class, GetAnnouncement::class);
+        $this->app->singleton(ListAnnouncementsInterface::class, ListAnnouncements::class);
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
         $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(GrantSiteManagementOperatorInterface::class, GrantSiteManagementOperator::class);

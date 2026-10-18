@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
+namespace Tests\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements;
 
 use DateTimeImmutable;
 use Source\SiteManagement\Announcement\Application\UseCase\Query\AnnouncementReadModel;
-use Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements\GetAnnouncementsOutput;
+use Source\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements\ListAnnouncementsOutput;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class GetAnnouncementsOutputTest extends TestCase
+class ListAnnouncementsOutputTest extends TestCase
 {
     /**
      * 正常系: Outputへも追加とtoArrayによる出力がうまく動作すること.
@@ -42,18 +42,20 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $currentPage = 1;
         $lastPage = 2;
         $total = 3;
-        $output = new GetAnnouncementsOutput();
+        $output = new ListAnnouncementsOutput();
         $output->output(
             $announcements,
             $currentPage,
             $lastPage,
             $total,
+            2,
         );
         $this->assertSame([
             'announcements' => [$readModel1->toArray(), $readModel2->toArray()],
             'current_page' => $currentPage,
             'last_page' => $lastPage,
             'total' => $total,
+            'per_page' => 2,
         ], $output->toArray());
     }
 }

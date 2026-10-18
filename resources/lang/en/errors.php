@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_announcement_not_found' => 'The specified announcement was not found.',
+    'announcement_not_found' => 'The specified announcement draft was not found.',
     'invalid_notification_settings' => 'The notification recipients are invalid.',
     'recent_authentication_required' => 'Recent authentication is required.',
     'identity_name_confirmation_mismatch' => 'The entered username does not match your current username.',

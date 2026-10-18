@@ -7,20 +7,21 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\Transla
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use UnexpectedValueException;
 
 readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
 {
     public function __construct(
-        private AnnouncementRepositoryInterface $announcementRepository,
-        private TranslationServiceInterface     $translationService,
-        private PrincipalRepositoryInterface         $principalRepository,
+        private DraftAnnouncementRepositoryInterface $draftAnnouncementRepository,
+        private TranslationServiceInterface $translationService,
+        private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
@@ -37,22 +38,34 @@ readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
             throw new UnauthorizedException();
         }
 
-        $announcement = $this->announcementRepository->findDraftById($input->announcementIdentifier());
+        $announcement = $this->draftAnnouncementRepository->findById($input->announcementIdentifier());
 
         if ($announcement === null) {
             throw new AnnouncementNotFoundException();
         }
 
-        $languages = Language::allExcept($announcement->translation());
-
-        $draftAnnouncements = [];
-        foreach ($languages as $language) {
-            // 外部翻訳サービスを使って翻訳
-            $draftAnnouncement = $this->translationService->translateAnnouncement($announcement, $language);
-            $draftAnnouncements[] = $draftAnnouncement;
-            $this->announcementRepository->saveDraft($draftAnnouncement);
+        $source = $announcement->localizedContent($announcement->sourceLanguage());
+        if ($source === null) {
+            throw new AnnouncementNotFoundException();
         }
-
-        $output->setAnnouncements($draftAnnouncements);
+        $contents = $announcement->contents();
+        foreach (Language::allExcept($announcement->sourceLanguage()) as $language) {
+            if ($contents->get($language) !== null) {
+                continue;
+            }
+            $translated = $this->translationService->translateAnnouncement($source, $language);
+            if ($translated->language !== $language) {
+                throw new UnexpectedValueException('Translation returned an unexpected language.');
+            }
+            $contents = $contents->with($translated);
+        }
+        foreach (Language::cases() as $language) {
+            $content = $contents->get($language);
+            if ($content !== null) {
+                $announcement->setLocalizedContent($content);
+            }
+        }
+        $this->draftAnnouncementRepository->save($announcement);
+        $output->setAnnouncements([$announcement]);
     }
 }

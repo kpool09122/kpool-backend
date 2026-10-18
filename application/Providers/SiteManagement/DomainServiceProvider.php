@@ -11,12 +11,16 @@ use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Infrastructure\Service\Encryption\EncryptionService;
+use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInterface;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
 use Source\SiteManagement\Announcement\Infrastructure\Adapters\Repository\AnnouncementRepository;
+use Source\SiteManagement\Announcement\Infrastructure\Adapters\Repository\DraftAnnouncementRepository;
 use Source\SiteManagement\Announcement\Infrastructure\Factory\AnnouncementFactory;
 use Source\SiteManagement\Announcement\Infrastructure\Factory\DraftAnnouncementFactory;
+use Source\SiteManagement\Announcement\Infrastructure\Service\TranslationService;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
@@ -52,6 +56,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(TranslationServiceInterface::class, TranslationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);
         $this->app->singleton(RoleFactoryInterface::class, RoleFactory::class);
@@ -66,6 +71,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->make(Dispatcher::class)->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
         $this->app->singleton(AnnouncementFactoryInterface::class, AnnouncementFactory::class);
         $this->app->singleton(AnnouncementRepositoryInterface::class, AnnouncementRepository::class);
+        $this->app->singleton(DraftAnnouncementRepositoryInterface::class, DraftAnnouncementRepository::class);
         $this->app->singleton(ContactFactoryInterface::class, ContactFactory::class);
         $this->app->singleton(ReplyContactFactoryInterface::class, ReplyContactFactory::class);
         $this->app->singleton(DraftAnnouncementFactoryInterface::class, DraftAnnouncementFactory::class);

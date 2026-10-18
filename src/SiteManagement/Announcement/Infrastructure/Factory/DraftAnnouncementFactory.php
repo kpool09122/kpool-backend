@@ -6,47 +6,24 @@ namespace Source\SiteManagement\Announcement\Infrastructure\Factory;
 
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
+use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementContents;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
+use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 
 readonly class DraftAnnouncementFactory implements DraftAnnouncementFactoryInterface
 {
-    public function __construct(
-        private UuidGeneratorInterface $generator,
-    ) {
+    public function __construct(private UuidGeneratorInterface $uuidGenerator)
+    {
     }
 
-    /**
-     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
-     * @param Language $language
-     * @param Category $category
-     * @param Title $title
-     * @param Content $content
-     * @param PublishedDate $publishedDate
-     * @return DraftAnnouncement
-     */
-    public function create(
-        ?TranslationSetIdentifier $translationSetIdentifier,
-        Language                  $language,
-        Category                  $category,
-        Title                     $title,
-        Content                   $content,
-        PublishedDate             $publishedDate,
-    ): DraftAnnouncement {
-        return new DraftAnnouncement(
-            new AnnouncementIdentifier($this->generator->generate()),
-            $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
-            $language,
-            $category,
-            $title,
-            $content,
-            $publishedDate,
-        );
+    public function create(Language $language, Category $category, Title $title, Content $content, PublishedDate $publishedDate): DraftAnnouncement
+    {
+        return new DraftAnnouncement(new AnnouncementIdentifier($this->uuidGenerator->generate()), $language, $category, new AnnouncementContents(new LocalizedAnnouncementContent($language, $title, $content)), $publishedDate);
     }
 }

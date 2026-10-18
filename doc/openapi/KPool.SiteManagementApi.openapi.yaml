@@ -4,6 +4,183 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /announcements:
+    get:
+      operationId: AnnouncementOperations_listAnnouncements
+      description: List published announcements without authentication. Filter by the requested language before pagination; drafts and unavailable translations are excluded. When language is omitted or null, resolve ja/ko/en from Accept-Language, falling back to English. Laravel resolves the page query automatically.
+      parameters:
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ja
+              - ko
+              - en
+            nullable: true
+          explode: false
+        - name: Accept-Language
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: perPage
+          in: query
+          required: false
+          description: Number per page; default 50.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
+        - name: order
+          in: query
+          required: false
+          description: Default desc.
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            nullable: true
+          explode: false
+        - name: sort
+          in: query
+          required: false
+          description: Default published_date.
+          schema:
+            type: string
+            enum:
+              - published_date
+              - title
+            nullable: true
+          explode: false
+        - name: searchWords
+          in: query
+          required: false
+          description: Literal substring of title or body in the selected language.
+          schema:
+            type: string
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAnnouncementsPage'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /announcements/{announcementIdentifier}:
+    get:
+      operationId: AnnouncementOperations_getAnnouncement
+      description: Get a published announcement without authentication in the selected language. When language is omitted or null, resolve Accept-Language with an English fallback. A missing announcement, a draft-only identifier or an unavailable translation returns 404.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ja
+              - ko
+              - en
+            nullable: true
+          explode: false
+        - name: Accept-Language
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedAnnouncementSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /contact/principals/{principalIdentifier}:
     get:
       operationId: ContactOperations_listContactsByPrincipal
@@ -342,6 +519,537 @@ paths:
               $ref: '#/components/schemas/ReplyContactRequestBody'
       security:
         - SessionCookieAuth: []
+  /draft-announcements:
+    get:
+      operationId: DraftAnnouncementOperations_listDraftAnnouncements
+      description: List draft announcements, including untranslated drafts, with all available language contents. Requires announcement:view-draft on announcement, granted to the system Operator role. General and Administrator alone are denied. The acting principal is resolved from the session; no principal or Account identifier is accepted as a selector. Search matches titles and bodies across available languages. Laravel resolves the page query automatically. Matching drafts are ordered by the selected field and then by identifier for stable pagination.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          description: Number of drafts per page; default 50.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
+          explode: false
+        - name: page
+          in: query
+          required: false
+          description: Laravel's standard current-page parameter; default 1.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
+        - name: order
+          in: query
+          required: false
+          description: Sort direction; default desc.
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            nullable: true
+          explode: false
+        - name: sort
+          in: query
+          required: false
+          description: Sort field; default published_date.
+          schema:
+            type: string
+            enum:
+              - published_date
+              - created_at
+            nullable: true
+          explode: false
+        - name: searchWords
+          in: query
+          required: false
+          description: Literal substring to find in any available language title or body. Empty or null disables filtering.
+          schema:
+            type: string
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDraftAnnouncementsPage'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+    post:
+      operationId: DraftAnnouncementCommandOperations_createAnnouncement
+      description: Create a draft. Requires announcement:create on announcement. Acting principal is resolved from the session. Returns one draft with its generated identifier.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftAnnouncement'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnnouncementRequestBody'
+      security:
+        - SessionCookieAuth: []
+  /draft-announcements/{announcementIdentifier}:
+    get:
+      operationId: DraftAnnouncementOperations_getDraftAnnouncement
+      description: Get a draft announcement with all available language contents. Requires announcement:view-draft on announcement, granted to the system Operator role. Authorization is checked before reading the draft. A missing or deleted draft, including an identifier that exists only as a published announcement, returns 404. Invalid identifiers return 422.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftAnnouncement'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+    put:
+      operationId: DraftAnnouncementCommandOperations_updateAnnouncement
+      description: Update an existing draft's common metadata and selected language content. Requires announcement:update on announcement. A missing draft returns 404.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftAnnouncement'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAnnouncementRequestBody'
+      security:
+        - SessionCookieAuth: []
+    delete:
+      operationId: DraftAnnouncementCommandOperations_deleteAnnouncement
+      description: Delete only the draft and all its language contents. Requires announcement:delete on announcement. Published contents are never deleted. Missing drafts succeed with an empty announcements array.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAnnouncementResponse'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /draft-announcements/{announcementIdentifier}/publish:
+    post:
+      operationId: DraftAnnouncementCommandOperations_publishAnnouncement
+      description: Publish a draft under the same identifier. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishAnnouncementResponse'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /draft-announcements/{announcementIdentifier}/translate:
+    post:
+      operationId: DraftAnnouncementCommandOperations_translateAnnouncement
+      description: Fill only missing ja/ko/en contents from the draft's source language. Requires announcement:translate on announcement. Retains the same identifier, existing translations and manual edits. Saves only after all requested translations succeed. Translation-provider failure returns 500 and leaves the draft unchanged.
+      parameters:
+        - name: announcementIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.UuidV7'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateAnnouncementResponse'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /my/contact:
     get:
       operationId: MyContactOperations_listMyContacts
@@ -571,6 +1279,37 @@ paths:
         - SessionCookieAuth: []
 components:
   schemas:
+    AnnouncementCategory:
+      type: number
+      enum:
+        - 1
+        - 2
+        - 3
+      description: Category shared by all language contents of an announcement.
+    AnnouncementContents:
+      type: object
+      properties:
+        ja:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+        ko:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+        en:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+      description: Available contents by language. Untranslated languages are omitted. The source language is always present.
+    AnnouncementLocalizedContent:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 64
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2048
     ContactCategory:
       type: number
       enum:
@@ -657,6 +1396,76 @@ components:
           type: string
           description: Inquiry details.
       description: Submitted contact snapshot returned after creation.
+    CreateAnnouncementRequestBody:
+      type: object
+      required:
+        - language
+        - category
+        - title
+        - content
+        - publishedDate
+      properties:
+        language:
+          type: string
+          enum:
+            - ja
+            - ko
+            - en
+        category:
+          $ref: '#/components/schemas/AnnouncementCategory'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 64
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2048
+        publishedDate:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          format: date
+      description: Create one draft with original content in language. sourceLanguage is set to this language.
+    DeleteAnnouncementResponse:
+      type: object
+      required:
+        - announcements
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftAnnouncement'
+          maxItems: 1
+      description: The deleted draft, or an empty array if no draft existed. Published announcements are retained.
+    DraftAnnouncement:
+      type: object
+      required:
+        - announcementIdentifier
+        - sourceLanguage
+        - category
+        - contents
+        - publishedDate
+      properties:
+        announcementIdentifier:
+          $ref: '#/components/schemas/KPool.Common.UuidV7'
+        sourceLanguage:
+          type: string
+          enum:
+            - ja
+            - ko
+            - en
+        category:
+          $ref: '#/components/schemas/AnnouncementCategory'
+        contents:
+          $ref: '#/components/schemas/AnnouncementContents'
+        publishedDate:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          format: date
+      description: One draft announcement with shared metadata and all available language contents. Incomplete translations are included for Operator review.
+    KPool.Common.DateString:
+      type: string
+      description: ISO 8601 date string.
     KPool.Common.ProblemDetails:
       type: object
       properties:
@@ -692,6 +1501,36 @@ components:
       format: uuid
       description: UUIDv7 identifier.
       pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+    ListAnnouncementsPage:
+      type: object
+      required:
+        - announcements
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedAnnouncementSummary'
+        current_page:
+          type: integer
+          format: int32
+          minimum: 1
+        last_page:
+          type: integer
+          format: int32
+          minimum: 1
+        total:
+          type: integer
+          format: int32
+          minimum: 0
+        per_page:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
     ListContactsPage:
       type: object
       required:
@@ -723,6 +1562,36 @@ components:
           format: int32
           description: Number of inquiries per page.
       description: Paginated contact inquiries and page metadata.
+    ListDraftAnnouncementsPage:
+      type: object
+      required:
+        - announcements
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftAnnouncement'
+        current_page:
+          type: integer
+          format: int32
+          minimum: 1
+        last_page:
+          type: integer
+          format: int32
+          minimum: 1
+        total:
+          type: integer
+          format: int32
+          minimum: 0
+        per_page:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
     MyContactSummary:
       type: object
       required:
@@ -825,6 +1694,81 @@ components:
         email:
           type: string
       description: User information for a principal in the current Account, including users with no group memberships.
+    PublishAnnouncementResponse:
+      type: object
+      required:
+        - announcements
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedAnnouncement'
+          minItems: 1
+          maxItems: 1
+    PublishedAnnouncement:
+      type: object
+      required:
+        - announcementIdentifier
+        - sourceLanguage
+        - category
+        - contents
+        - publishedDate
+      properties:
+        announcementIdentifier:
+          $ref: '#/components/schemas/KPool.Common.UuidV7'
+        sourceLanguage:
+          type: string
+          enum:
+            - ja
+            - ko
+            - en
+        category:
+          $ref: '#/components/schemas/AnnouncementCategory'
+        contents:
+          $ref: '#/components/schemas/PublishedAnnouncementContents'
+        publishedDate:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          format: date
+    PublishedAnnouncementContents:
+      type: object
+      required:
+        - ja
+        - ko
+        - en
+      properties:
+        ja:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+        ko:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+        en:
+          $ref: '#/components/schemas/AnnouncementLocalizedContent'
+    PublishedAnnouncementSummary:
+      type: object
+      required:
+        - announcement_id
+        - category_name
+        - title
+        - content
+        - published_date
+      properties:
+        announcement_id:
+          $ref: '#/components/schemas/KPool.Common.UuidV7'
+        category_name:
+          type: string
+          enum:
+            - NEWS
+            - UPDATES
+            - MAINTENANCE
+        title:
+          type: string
+        content:
+          type: string
+        published_date:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          format: date
+      description: One published announcement projected into the requested language. Missing translations are not substituted with another language.
     ReplyContactRequestBody:
       type: object
       required:
@@ -857,6 +1801,47 @@ components:
           type: string
           description: Inquiry details.
       description: Request body for submitting a contact inquiry.
+    TranslateAnnouncementResponse:
+      type: object
+      required:
+        - announcements
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftAnnouncement'
+          minItems: 1
+          maxItems: 1
+    UpdateAnnouncementRequestBody:
+      type: object
+      required:
+        - language
+        - category
+        - title
+        - content
+        - publishedDate
+      properties:
+        language:
+          type: string
+          enum:
+            - ja
+            - ko
+            - en
+        category:
+          $ref: '#/components/schemas/AnnouncementCategory'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 64
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2048
+        publishedDate:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          format: date
+      description: Replace common category/date and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.
     UpdatePrincipalGroupMembersItem:
       type: object
       required:

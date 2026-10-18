@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_announcement_not_found' => 'No se encontró el anuncio especificado.',
+    'announcement_not_found' => 'No se encontró el borrador del anuncio especificado.',
     'invalid_notification_settings' => 'Los destinatarios de notificaciones no son válidos.',
     'recent_authentication_required' => 'Se requiere una autenticación reciente.',
     'identity_name_confirmation_mismatch' => 'El nombre de usuario introducido no coincide con tu nombre de usuario actual.',

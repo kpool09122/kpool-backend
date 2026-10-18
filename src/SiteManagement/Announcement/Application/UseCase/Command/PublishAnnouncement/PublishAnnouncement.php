@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement;
 
+use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -17,6 +21,7 @@ readonly class PublishAnnouncement implements PublishAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
+        private DraftAnnouncementRepositoryInterface $draftAnnouncementRepository,
         private AnnouncementFactoryInterface $announcementFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
@@ -24,6 +29,8 @@ readonly class PublishAnnouncement implements PublishAnnouncementInterface
     }
 
     /**
+     * @throws AnnouncementNotFoundException
+     * @throws InvalidArgumentException
      * @throws UnauthorizedException
      */
     public function process(PublishAnnouncementInputPort $input, PublishAnnouncementOutputPort $output): void
@@ -33,24 +40,20 @@ readonly class PublishAnnouncement implements PublishAnnouncementInterface
             throw new UnauthorizedException();
         }
 
-        $announcements = $this->announcementRepository->findDraftsByTranslationSetIdentifier($input->translationSetIdentifier());
-
-        $publishedAnnouncements = [];
-        foreach ($announcements as $announcement) {
-            $publishedAnnouncement = $this->announcementFactory->create(
-                $announcement->translationSetIdentifier(),
-                $announcement->translation(),
-                $announcement->category(),
-                $announcement->title(),
-                $announcement->content(),
-                $announcement->publishedDate(),
-            );
-
-            $this->announcementRepository->save($publishedAnnouncement);
-            $publishedAnnouncements[] = $publishedAnnouncement;
-            $this->announcementRepository->deleteDraft($announcement);
+        $draftAnnouncement = $this->draftAnnouncementRepository->findById($input->announcementIdentifier());
+        if ($draftAnnouncement === null) {
+            throw new AnnouncementNotFoundException();
         }
 
-        $output->setAnnouncements($publishedAnnouncements);
+        foreach (Language::cases() as $language) {
+            if ($draftAnnouncement->localizedContent($language) === null) {
+                throw new InvalidArgumentException('All announcement languages require a non-empty title and content.');
+            }
+        }
+
+        $announcement = $this->announcementFactory->create($draftAnnouncement);
+        $this->announcementRepository->save($announcement);
+        $this->draftAnnouncementRepository->delete($draftAnnouncement);
+        $output->setAnnouncements([$announcement]);
     }
 }

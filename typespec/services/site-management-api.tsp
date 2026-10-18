@@ -249,3 +249,236 @@ interface PrincipalGroupOperations {
   @doc("Replace membership of specified groups and retain omitted groups. Empty member arrays remove all members. Duplicate group IDs and duplicate members within one group return 422; multiple group membership is allowed. Requires principal-group:manage on principal_group. System Operator groups, including mixed-role groups, return 403. Missing or other-Account groups/principals return 404. Removing the last real same-Account Administrator across editable groups returns 422. Returns summaries of the updated groups only; clients fetch the list separately. Self-removal succeeds when another Administrator remains, without reauthorization until the next request.")
   updatePrincipalGroupMembers(@body body: UpdatePrincipalGroupMembersRequestBody): UpdatePrincipalGroupMembersResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 }
+
+@doc("Category shared by all language contents of an announcement.")
+enum AnnouncementCategory {
+  news: 1,
+  updates: 2,
+  maintenance: 3,
+}
+
+model AnnouncementLocalizedContent {
+  @minLength(1)
+  @maxLength(64)
+  title: string;
+  @minLength(1)
+  @maxLength(2048)
+  content: string;
+}
+
+@doc("Available contents by language. Untranslated languages are omitted. The source language is always present.")
+model AnnouncementContents {
+  ja?: AnnouncementLocalizedContent;
+  ko?: AnnouncementLocalizedContent;
+  en?: AnnouncementLocalizedContent;
+}
+
+@doc("One draft announcement with shared metadata and all available language contents. Incomplete translations are included for Operator review.")
+model DraftAnnouncement {
+  announcementIdentifier: UuidV7;
+  sourceLanguage: "ja" | "ko" | "en";
+  category: AnnouncementCategory;
+  contents: AnnouncementContents;
+  @format("date")
+  publishedDate: DateString;
+}
+
+model ListDraftAnnouncementsPage {
+  announcements: DraftAnnouncement[];
+  @minValue(1)
+  current_page: int32;
+  @minValue(1)
+  last_page: int32;
+  @minValue(0)
+  total: int32;
+  @minValue(1)
+  @maxValue(100)
+  per_page: int32;
+}
+
+model ListDraftAnnouncementsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListDraftAnnouncementsPage;
+}
+
+@route("/draft-announcements")
+@useAuth(SessionCookieAuth)
+interface DraftAnnouncementOperations {
+  @get
+  @doc("List draft announcements, including untranslated drafts, with all available language contents. Requires announcement:view-draft on announcement, granted to the system Operator role. General and Administrator alone are denied. The acting principal is resolved from the session; no principal or Account identifier is accepted as a selector. Search matches titles and bodies across available languages. Laravel resolves the page query automatically. Matching drafts are ordered by the selected field and then by identifier for stable pagination.")
+  listDraftAnnouncements(
+    @doc("Number of drafts per page; default 50.")
+    @minValue(1)
+    @maxValue(100)
+    @query perPage?: int32 | null,
+    @doc("Laravel's standard current-page parameter; default 1.")
+    @minValue(1)
+    @query page?: int32 | null,
+    @doc("Sort direction; default desc.")
+    @query order?: "asc" | "desc" | null,
+    @doc("Sort field; default published_date.")
+    @query sort?: "published_date" | "created_at" | null,
+    @doc("Literal substring to find in any available language title or body. Empty or null disables filtering.")
+    @query searchWords?: string | null,
+  ): ListDraftAnnouncementsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @get
+  @route("/{announcementIdentifier}")
+  @doc("Get a draft announcement with all available language contents. Requires announcement:view-draft on announcement, granted to the system Operator role. Authorization is checked before reading the draft. A missing or deleted draft, including an identifier that exists only as a published announcement, returns 404. Invalid identifiers return 422.")
+  getDraftAnnouncement(
+    @path announcementIdentifier: UuidV7,
+  ): DraftAnnouncement | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+}
+
+@doc("One published announcement projected into the requested language. Missing translations are not substituted with another language.")
+model PublishedAnnouncementSummary {
+  announcement_id: UuidV7;
+  category_name: "NEWS" | "UPDATES" | "MAINTENANCE";
+  title: string;
+  content: string;
+  @format("date")
+  published_date: DateString;
+}
+
+model ListAnnouncementsPage {
+  announcements: PublishedAnnouncementSummary[];
+  @minValue(1)
+  current_page: int32;
+  @minValue(1)
+  last_page: int32;
+  @minValue(0)
+  total: int32;
+  @minValue(1)
+  @maxValue(100)
+  per_page: int32;
+}
+
+model ListAnnouncementsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListAnnouncementsPage;
+}
+
+@route("/announcements")
+interface AnnouncementOperations {
+  @get
+  @doc("List published announcements without authentication. Filter by the requested language before pagination; drafts and unavailable translations are excluded. When language is omitted or null, resolve ja/ko/en from Accept-Language, falling back to English. Laravel resolves the page query automatically.")
+  listAnnouncements(
+    @query language?: "ja" | "ko" | "en" | null,
+    @header("Accept-Language") acceptLanguage?: string,
+    @doc("Number per page; default 50.")
+    @minValue(1)
+    @maxValue(100)
+    @query perPage?: int32 | null,
+    @minValue(1)
+    @query page?: int32 | null,
+    @doc("Default desc.")
+    @query order?: "asc" | "desc" | null,
+    @doc("Default published_date.")
+    @query sort?: "published_date" | "title" | null,
+    @doc("Literal substring of title or body in the selected language.")
+    @query searchWords?: string | null,
+  ): ListAnnouncementsResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @get
+  @route("/{announcementIdentifier}")
+  @doc("Get a published announcement without authentication in the selected language. When language is omitted or null, resolve Accept-Language with an English fallback. A missing announcement, a draft-only identifier or an unavailable translation returns 404.")
+  getAnnouncement(
+    @path announcementIdentifier: UuidV7,
+    @query language?: "ja" | "ko" | "en" | null,
+    @header("Accept-Language") acceptLanguage?: string,
+  ): PublishedAnnouncementSummary | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+}
+
+@doc("Create one draft with original content in language. sourceLanguage is set to this language.")
+model CreateAnnouncementRequestBody {
+  language: "ja" | "ko" | "en";
+  category: AnnouncementCategory;
+  @minLength(1)
+  @maxLength(64)
+  title: string;
+  @minLength(1)
+  @maxLength(2048)
+  content: string;
+  @format("date")
+  publishedDate: DateString;
+}
+
+@doc("Replace common category/date and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.")
+model UpdateAnnouncementRequestBody {
+  language: "ja" | "ko" | "en";
+  category: AnnouncementCategory;
+  @minLength(1)
+  @maxLength(64)
+  title: string;
+  @minLength(1)
+  @maxLength(2048)
+  content: string;
+  @format("date")
+  publishedDate: DateString;
+}
+
+model CreateAnnouncementResponse {
+  @statusCode statusCode: 201;
+  @body body: DraftAnnouncement;
+}
+
+model TranslateAnnouncementResponse {
+  @minItems(1)
+  @maxItems(1)
+  announcements: DraftAnnouncement[];
+}
+
+model PublishedAnnouncementContents {
+  ja: AnnouncementLocalizedContent;
+  ko: AnnouncementLocalizedContent;
+  en: AnnouncementLocalizedContent;
+}
+
+model PublishedAnnouncement {
+  announcementIdentifier: UuidV7;
+  sourceLanguage: "ja" | "ko" | "en";
+  category: AnnouncementCategory;
+  contents: PublishedAnnouncementContents;
+  @format("date")
+  publishedDate: DateString;
+}
+
+model PublishAnnouncementResponse {
+  @minItems(1)
+  @maxItems(1)
+  announcements: PublishedAnnouncement[];
+}
+
+@doc("The deleted draft, or an empty array if no draft existed. Published announcements are retained.")
+model DeleteAnnouncementResponse {
+  @maxItems(1)
+  announcements: DraftAnnouncement[];
+}
+
+@route("/draft-announcements")
+@useAuth(SessionCookieAuth)
+interface DraftAnnouncementCommandOperations {
+  @post
+  @doc("Create a draft. Requires announcement:create on announcement. Acting principal is resolved from the session. Returns one draft with its generated identifier.")
+  createAnnouncement(@body body: CreateAnnouncementRequestBody): CreateAnnouncementResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @put
+  @route("/{announcementIdentifier}")
+  @doc("Update an existing draft's common metadata and selected language content. Requires announcement:update on announcement. A missing draft returns 404.")
+  updateAnnouncement(@path announcementIdentifier: UuidV7, @body body: UpdateAnnouncementRequestBody): DraftAnnouncement | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @post
+  @route("/{announcementIdentifier}/translate")
+  @doc("Fill only missing ja/ko/en contents from the draft's source language. Requires announcement:translate on announcement. Retains the same identifier, existing translations and manual edits. Saves only after all requested translations succeed. Translation-provider failure returns 500 and leaves the draft unchanged.")
+  translateAnnouncement(@path announcementIdentifier: UuidV7): TranslateAnnouncementResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @post
+  @route("/{announcementIdentifier}/publish")
+  @doc("Publish a draft under the same identifier. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.")
+  publishAnnouncement(@path announcementIdentifier: UuidV7): PublishAnnouncementResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+
+  @delete
+  @route("/{announcementIdentifier}")
+  @doc("Delete only the draft and all its language contents. Requires announcement:delete on announcement. Published contents are never deleted. Missing drafts succeed with an empty announcements array.")
+  deleteAnnouncement(@path announcementIdentifier: UuidV7): DeleteAnnouncementResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+}

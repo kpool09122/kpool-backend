@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
+namespace Source\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements;
 
 use Source\SiteManagement\Announcement\Application\UseCase\Query\AnnouncementReadModel;
 
-interface GetAnnouncementsOutputPort
+interface ListAnnouncementsOutputPort
 {
     /**
-     * @param AnnouncementReadModel[] $announcements
+     * @param list<AnnouncementReadModel> $announcements
      * @param int $currentPage
      * @param int $lastPage
      * @param int $total
+     * @param int $perPage
      * @return void
      */
     public function output(
@@ -20,10 +21,11 @@ interface GetAnnouncementsOutputPort
         int $currentPage,
         int $lastPage,
         int $total,
+        int $perPage,
     ): void;
 
     /**
-     * @return array<string, mixed>
+     * @return array{announcements: list<array<string, mixed>>, current_page: int, last_page: int, total: int, per_page: int}
      */
     public function toArray(): array;
 }

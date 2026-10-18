@@ -4,22 +4,10 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Factory;
 
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 
 interface AnnouncementFactoryInterface
 {
-    public function create(
-        TranslationSetIdentifier $translationSetIdentifier,
-        Language                 $language,
-        Category                 $category,
-        Title                    $title,
-        Content                  $content,
-        PublishedDate            $publishedDate,
-    ): Announcement;
+    public function create(DraftAnnouncement $draftAnnouncement): Announcement;
 }

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_announcement_not_found' => '找不到指定的公告。',
+    'announcement_not_found' => '找不到指定的公告草稿。',
     'invalid_notification_settings' => '通知接收者設定無效。',
     'recent_authentication_required' => '需要重新驗證身分。',
     'identity_name_confirmation_mismatch' => '輸入的使用者名稱與目前使用者名稱不一致。',

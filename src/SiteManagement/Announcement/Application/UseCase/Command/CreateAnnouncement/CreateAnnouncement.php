@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement;
 
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
-use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -17,8 +17,8 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
 {
     public function __construct(
         private DraftAnnouncementFactoryInterface $draftAnnouncementFactory,
-        private AnnouncementRepositoryInterface   $announcementRepository,
-        private PrincipalRepositoryInterface           $principalRepository,
+        private DraftAnnouncementRepositoryInterface $draftAnnouncementRepository,
+        private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
@@ -31,7 +31,6 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
         }
 
         $draftAnnouncement = $this->draftAnnouncementFactory->create(
-            $input->translationSetIdentifier(),
             $input->language(),
             $input->category(),
             $input->title(),
@@ -39,7 +38,7 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
             $input->publishedDate(),
         );
 
-        $this->announcementRepository->saveDraft($draftAnnouncement);
+        $this->draftAnnouncementRepository->save($draftAnnouncement);
 
         $output->setDraftAnnouncement($draftAnnouncement);
     }

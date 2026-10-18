@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
+use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 
 class DeleteAnnouncementOutput implements DeleteAnnouncementOutputPort
 {
-    /** @var Announcement[] */
+    /** @var DraftAnnouncement[] */
     private array $announcements = [];
 
-    /** @param Announcement[] $announcements */
+    /** @param DraftAnnouncement[] $announcements */
     public function setAnnouncements(array $announcements): void
     {
         $this->announcements = $announcements;
     }
 
-    /** @return Announcement[] */
+    /** @return DraftAnnouncement[] */
     public function announcements(): array
     {
         return $this->announcements;
@@ -26,17 +26,12 @@ class DeleteAnnouncementOutput implements DeleteAnnouncementOutputPort
     /** @return array<string, mixed> */
     public function toArray(): array
     {
-        return ['announcements' => array_map(
-            static fn (Announcement $announcement): array => [
-                'announcementIdentifier' => (string) $announcement->announcementIdentifier(),
-                'translationSetIdentifier' => (string) $announcement->translationSetIdentifier(),
-                'language' => $announcement->language()->value,
-                'category' => $announcement->category()->value,
-                'title' => (string) $announcement->title(),
-                'content' => (string) $announcement->content(),
-                'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
-            ],
-            $this->announcements,
-        )];
+        return ['announcements' => array_map(static fn (DraftAnnouncement $announcement): array => [
+            'announcementIdentifier' => (string) $announcement->announcementIdentifier(),
+            'sourceLanguage' => $announcement->sourceLanguage()->value,
+            'category' => $announcement->category()->value,
+            'contents' => $announcement->contents()->toArray(),
+            'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
+        ], $this->announcements)];
     }
 }
