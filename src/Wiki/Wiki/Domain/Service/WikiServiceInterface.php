@@ -7,7 +7,6 @@ namespace Source\Wiki\Wiki\Domain\Service;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 interface WikiServiceInterface
 {
@@ -22,15 +21,13 @@ interface WikiServiceInterface
     ): bool;
 
     /**
-     * 同じ翻訳セットの別版で、承認済み（Approved）だが公開されていないDraftWikiが存在するかチェック
+     * 同じ翻訳元の別言語版を除き、競合する承認済み下書きが存在するかチェック
      *
-     * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param DraftWikiIdentifier $excludeWikiIdentifier
+     * @param DraftWiki $draftWiki
      * @return bool
      */
-    public function existsApprovedDraftWiki(
-        TranslationSetIdentifier $translationSetIdentifier,
-        DraftWikiIdentifier $excludeWikiIdentifier,
+    public function existsConflictingApprovedDraftWiki(
+        DraftWiki $draftWiki,
     ): bool;
 
     public function canApproveDraftWiki(DraftWiki $draftWiki): bool;

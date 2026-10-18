@@ -20,6 +20,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -50,7 +51,27 @@ class DraftWiki
         private ?SeoKeywords $keywords = null,
         private ?DraftWikiRejectionReason $rejectionReason = null,
         private ?WikiFontStyle $fontStyle = null,
+        private ?TranslationSource $translationSource = null,
     ) {
+    }
+
+    public function translationSource(): ?TranslationSource
+    {
+        return $this->translationSource;
+    }
+
+    public function setTranslationSource(TranslationSource $translationSource): void
+    {
+        $this->translationSource = $translationSource;
+    }
+
+    public function sharesTranslationSourceWith(self $other): bool
+    {
+        return $this->language !== $other->language
+            && (string) $this->translationSetIdentifier === (string) $other->translationSetIdentifier
+            && $this->translationSource !== null
+            && $other->translationSource !== null
+            && $this->translationSource->equals($other->translationSource);
     }
 
     public function wikiIdentifier(): DraftWikiIdentifier

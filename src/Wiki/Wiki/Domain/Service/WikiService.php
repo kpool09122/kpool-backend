@@ -11,7 +11,6 @@ use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class WikiService implements WikiServiceInterface
 {
@@ -37,22 +36,20 @@ readonly class WikiService implements WikiServiceInterface
         return array_all($wikis, fn ($wiki) => $wiki->hasSameVersion($firstVersion));
     }
 
-    public function existsApprovedDraftWiki(
-        TranslationSetIdentifier $translationSetIdentifier,
-        DraftWikiIdentifier $excludeWikiIdentifier,
+    public function existsConflictingApprovedDraftWiki(
+        DraftWiki $draftWiki,
     ): bool {
         $draftWikis = $this->draftWikiRepository->findByTranslationSetIdentifier(
-            $translationSetIdentifier,
+            $draftWiki->translationSetIdentifier(),
         );
 
-        foreach ($draftWikis as $draftWiki) {
-            // 自分自身は除外
-            if ((string) $draftWiki->wikiIdentifier() === (string) $excludeWikiIdentifier) {
+        foreach ($draftWikis as $otherDraftWiki) {
+            if ((string) $otherDraftWiki->wikiIdentifier() === (string) $draftWiki->wikiIdentifier()) {
                 continue;
             }
 
-            // Approved状態のものが存在すればtrue
-            if ($draftWiki->status() === ApprovalStatus::Approved) {
+            if ($otherDraftWiki->status() === ApprovalStatus::Approved
+                && ! $draftWiki->sharesTranslationSourceWith($otherDraftWiki)) {
                 return true;
             }
         }

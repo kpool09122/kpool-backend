@@ -94,8 +94,8 @@ readonly class ApproveWiki implements ApproveWikiInterface
             throw new DuplicateSlugException();
         }
 
-        // 同じ翻訳セットの別版で、承認済みだが公開されていないDraftWikiが存在するかチェック
-        if ($this->wikiService->existsApprovedDraftWiki($wiki->translationSetIdentifier(), $wiki->wikiIdentifier())) {
+        // 同じ翻訳元の別言語版を除き、承認済み下書きとの競合を確認する
+        if ($this->wikiService->existsConflictingApprovedDraftWiki($wiki)) {
             throw new ExistsApprovedDraftWikiException();
         }
 

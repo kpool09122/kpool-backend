@@ -15,6 +15,8 @@ use Override;
 /**
  * @property string $id
  * @property ?string $published_wiki_id
+ * @property ?string $translation_source_wiki_id
+ * @property ?int $translation_source_version
  * @property string $translation_set_identifier
  * @property string $slug
  * @property string $language
@@ -48,6 +50,8 @@ use Override;
     'id',
     'published_wiki_id',
     'translation_set_identifier',
+    'translation_source_wiki_id',
+    'translation_source_version',
     'slug',
     'language',
     'resource_type',
@@ -78,6 +82,7 @@ class DraftWiki extends Model
     #[Override]
     protected $casts = [
         'sections' => 'array',
+        'translation_source_version' => 'integer',
         'keywords' => 'array',
         'edited_at' => 'datetime',
         'merged_at' => 'datetime',

@@ -17,6 +17,7 @@ use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class TranslateWiki implements TranslateWikiInterface
@@ -105,6 +106,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
             }
             $wikiDraft->setSourceEditorIdentifier($wiki->editorIdentifier());
             $wikiDraft->setTranslatedAt($translatedAt);
+            $wikiDraft->setTranslationSource(new TranslationSource($wiki->wikiIdentifier(), $wiki->version()));
 
             $wikiDrafts[] = $wikiDraft;
             $this->draftWikiRepository->save($wikiDraft);

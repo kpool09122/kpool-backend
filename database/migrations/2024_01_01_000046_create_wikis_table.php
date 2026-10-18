@@ -45,6 +45,8 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('Draft Wiki ID');
             $table->uuid('published_wiki_id')->nullable()->comment('公開済みWiki ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->uuid('translation_source_wiki_id')->nullable()->comment('翻訳元の公開Wiki ID');
+            $table->unsignedInteger('translation_source_version')->nullable()->comment('翻訳時点の翻訳元バージョン');
             $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('resource_type', 50)->comment('リソースタイプ (agency, group, talent, song)');

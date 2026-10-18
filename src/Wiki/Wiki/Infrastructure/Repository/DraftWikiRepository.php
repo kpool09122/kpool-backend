@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
@@ -31,6 +32,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -153,6 +155,9 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                     ? (string) $draftWiki->publishedWikiIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $draftWiki->translationSetIdentifier(),
+                'translation_source_wiki_id' => $draftWiki->translationSource() !== null
+                    ? (string) $draftWiki->translationSource()->wikiIdentifier() : null,
+                'translation_source_version' => $draftWiki->translationSource()?->version()->value(),
                 'slug' => (string) $draftWiki->slug(),
                 'language' => $draftWiki->language()->value,
                 'resource_type' => $draftWiki->resourceType()->value,
@@ -269,6 +274,9 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
             $model->rejection_reason !== null ? new DraftWikiRejectionReason($model->rejection_reason) : null,
             fontStyle: $model->font_style ? WikiFontStyle::from($model->font_style) : null,
+            translationSource: $model->translation_source_wiki_id !== null && $model->translation_source_version !== null
+                ? new TranslationSource(new WikiIdentifier($model->translation_source_wiki_id), new Version($model->translation_source_version))
+                : null,
         );
     }
 

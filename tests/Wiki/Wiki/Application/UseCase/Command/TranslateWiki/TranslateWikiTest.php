@@ -203,6 +203,10 @@ class TranslateWikiTest extends TestCase
         $this->assertSame($principalIdentifier, $enDraftWiki->editorIdentifier());
         $this->assertNull($jaDraftWiki->publishedWikiIdentifier());
         $this->assertSame($enPublishedWikiIdentifier, $enDraftWiki->publishedWikiIdentifier());
+        foreach ([$jaDraftWiki, $enDraftWiki] as $draftWiki) {
+            $this->assertSame((string) $testData->wikiIdentifier, (string) $draftWiki->translationSource()?->wikiIdentifier());
+            $this->assertSame($testData->wiki->version()->value(), $draftWiki->translationSource()?->version()->value());
+        }
     }
 
     /**

@@ -141,9 +141,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn(false);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('existsApprovedDraftWiki')
+        $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')
             ->once()
-            ->with($dummyApproveWiki->translationSetIdentifier, $dummyApproveWiki->wikiIdentifier)
+            ->with($dummyApproveWiki->draftWiki)
             ->andReturn(false);
         $wikiService->shouldReceive('canApproveDraftWiki')
             ->once()
@@ -513,9 +513,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn(false);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('existsApprovedDraftWiki')
+        $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')
             ->once()
-            ->with($dummyApproveWiki->translationSetIdentifier, $dummyApproveWiki->wikiIdentifier)
+            ->with($dummyApproveWiki->draftWiki)
             ->andReturn(true);
 
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
@@ -586,9 +586,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn(false);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('existsApprovedDraftWiki')
+        $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')
             ->once()
-            ->with($dummyApproveWiki->translationSetIdentifier, $dummyApproveWiki->wikiIdentifier)
+            ->with($dummyApproveWiki->draftWiki)
             ->andReturn(false);
         $wikiService->shouldReceive('canApproveDraftWiki')
             ->once()
