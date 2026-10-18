@@ -30,11 +30,9 @@ class CreateAnnouncementOutput implements CreateAnnouncementOutputPort
 
         return [
             'announcementIdentifier' => (string) $announcement->announcementIdentifier(),
-            'translationSetIdentifier' => (string) $announcement->translationSetIdentifier(),
-            'language' => $announcement->translation()->value,
+            'sourceLanguage' => $announcement->sourceLanguage()->value,
             'category' => $announcement->category()->value,
-            'title' => (string) $announcement->title(),
-            'content' => (string) $announcement->content(),
+            'contents' => $announcement->contents()->toArray(),
             'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
         ];
     }

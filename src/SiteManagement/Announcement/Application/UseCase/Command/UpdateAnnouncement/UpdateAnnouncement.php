@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement;
 
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -16,7 +17,7 @@ use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
 {
     public function __construct(
-        private AnnouncementRepositoryInterface $announcementRepository,
+        private DraftAnnouncementRepositoryInterface $draftAnnouncementRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
@@ -34,17 +35,16 @@ readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
             throw new UnauthorizedException();
         }
 
-        $announcement = $this->announcementRepository->findDraftById($input->announcementIdentifier());
+        $announcement = $this->draftAnnouncementRepository->findById($input->announcementIdentifier());
 
         if ($announcement === null) {
             throw new AnnouncementNotFoundException();
         }
 
         $announcement->setCategory($input->category());
-        $announcement->setTitle($input->title());
-        $announcement->setContent($input->content());
+        $announcement->setLocalizedContent(new LocalizedAnnouncementContent($input->language(), $input->title(), $input->content()));
         $announcement->setPublishedDate($input->publishedDate());
-        $this->announcementRepository->saveDraft($announcement);
+        $this->draftAnnouncementRepository->save($announcement);
 
         $output->setDraftAnnouncement($announcement);
     }

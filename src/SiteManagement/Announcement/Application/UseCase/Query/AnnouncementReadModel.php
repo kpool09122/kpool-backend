@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Application\UseCase\Query;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 
 readonly class AnnouncementReadModel
 {
@@ -22,6 +24,22 @@ readonly class AnnouncementReadModel
         private string $content,
         private DateTimeImmutable $publishedDate,
     ) {
+    }
+
+    public static function fromAnnouncement(Announcement $announcement, Language $language): ?self
+    {
+        $content = $announcement->localizedContent($language);
+        if ($content === null) {
+            return null;
+        }
+
+        return new self(
+            (string) $announcement->announcementIdentifier(),
+            $announcement->category()->name,
+            (string) $content->title,
+            (string) $content->content,
+            $announcement->publishedDate()->value(),
+        );
     }
 
     public function announcementId(): string

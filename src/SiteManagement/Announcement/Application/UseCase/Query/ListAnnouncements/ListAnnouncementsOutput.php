@@ -2,25 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
+namespace Source\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements;
 
 use Source\SiteManagement\Announcement\Application\UseCase\Query\AnnouncementReadModel;
 
-class GetAnnouncementsOutput implements GetAnnouncementsOutputPort
+class ListAnnouncementsOutput implements ListAnnouncementsOutputPort
 {
     /**
-     * @var AnnouncementReadModel[]
+     * @var list<AnnouncementReadModel>
      */
     private array $announcements = [];
-    private ?int $currentPage = null;
-    private ?int $lastPage = null;
-    private ?int $total = null;
+    private int $currentPage = 1;
+    private int $lastPage = 1;
+    private int $total = 0;
+    private int $perPage = 50;
 
     /**
-     * @param AnnouncementReadModel[] $announcements
+     * @param list<AnnouncementReadModel> $announcements
      * @param int $currentPage
      * @param int $lastPage
      * @param int $total
+     * @param int $perPage
      * @return void
      */
     public function output(
@@ -28,15 +30,17 @@ class GetAnnouncementsOutput implements GetAnnouncementsOutputPort
         int $currentPage,
         int $lastPage,
         int $total,
+        int $perPage,
     ): void {
         $this->announcements = $announcements;
         $this->currentPage = $currentPage;
         $this->lastPage = $lastPage;
         $this->total = $total;
+        $this->perPage = $perPage;
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{announcements: list<array<string, mixed>>, current_page: int, last_page: int, total: int, per_page: int}
      */
     public function toArray(): array
     {
@@ -45,6 +49,7 @@ class GetAnnouncementsOutput implements GetAnnouncementsOutputPort
             'current_page' => $this->currentPage,
             'last_page' => $this->lastPage,
             'total' => $this->total,
+            'per_page' => $this->perPage,
         ];
     }
 }

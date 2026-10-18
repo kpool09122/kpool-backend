@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Entity;
 
+use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementContents;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
+use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 
 readonly class Announcement
 {
     public function __construct(
-        private AnnouncementIdentifier   $announcementIdentifier,
-        private TranslationSetIdentifier $translationSetIdentifier,
-        private Language                 $language,
-        private Category                 $category,
-        private Title                    $title,
-        private Content                  $content,
-        private PublishedDate            $publishedDate,
+        private AnnouncementIdentifier $announcementIdentifier,
+        private Language $sourceLanguage,
+        private Category $category,
+        private AnnouncementContents $contents,
+        private PublishedDate $publishedDate,
     ) {
+        if ($contents->get($sourceLanguage) === null) {
+            throw new InvalidArgumentException('Source language content is required.');
+        }
     }
 
     public function announcementIdentifier(): AnnouncementIdentifier
@@ -30,14 +31,9 @@ readonly class Announcement
         return $this->announcementIdentifier;
     }
 
-    public function translationSetIdentifier(): TranslationSetIdentifier
+    public function sourceLanguage(): Language
     {
-        return $this->translationSetIdentifier;
-    }
-
-    public function language(): Language
-    {
-        return $this->language;
+        return $this->sourceLanguage;
     }
 
     public function category(): Category
@@ -45,14 +41,14 @@ readonly class Announcement
         return $this->category;
     }
 
-    public function title(): Title
+    public function contents(): AnnouncementContents
     {
-        return $this->title;
+        return $this->contents;
     }
 
-    public function content(): Content
+    public function localizedContent(Language $language): ?LocalizedAnnouncementContent
     {
-        return $this->content;
+        return $this->contents->get($language);
     }
 
     public function publishedDate(): PublishedDate

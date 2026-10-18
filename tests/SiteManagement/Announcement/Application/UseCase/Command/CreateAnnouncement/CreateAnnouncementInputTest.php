@@ -6,7 +6,6 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\CreateAn
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInput;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
@@ -26,7 +25,6 @@ class CreateAnnouncementInputTest extends TestCase
     public function test__construct(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -55,7 +53,6 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new CreateAnnouncementInput(
             $principalIdentifier,
-            $translationSetIdentifier,
             $language,
             $category,
             $title,
@@ -63,7 +60,6 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $publishedDate,
         );
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
-        $this->assertSame((string) $translationSetIdentifier, (string) $input->translationSetIdentifier());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string) $title, (string) $input->title());

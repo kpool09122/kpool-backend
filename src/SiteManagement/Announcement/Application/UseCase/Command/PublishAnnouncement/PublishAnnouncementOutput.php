@@ -26,17 +26,12 @@ class PublishAnnouncementOutput implements PublishAnnouncementOutputPort
     /** @return array<string, mixed> */
     public function toArray(): array
     {
-        return ['announcements' => array_map(
-            static fn (Announcement $announcement): array => [
-                'announcementIdentifier' => (string) $announcement->announcementIdentifier(),
-                'translationSetIdentifier' => (string) $announcement->translationSetIdentifier(),
-                'language' => $announcement->language()->value,
-                'category' => $announcement->category()->value,
-                'title' => (string) $announcement->title(),
-                'content' => (string) $announcement->content(),
-                'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
-            ],
-            $this->announcements,
-        )];
+        return ['announcements' => array_map(static fn (Announcement $announcement): array => [
+            'announcementIdentifier' => (string) $announcement->announcementIdentifier(),
+            'sourceLanguage' => $announcement->sourceLanguage()->value,
+            'category' => $announcement->category()->value,
+            'contents' => $announcement->contents()->toArray(),
+            'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
+        ], $this->announcements)];
     }
 }

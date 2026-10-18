@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
+namespace Source\SiteManagement\Announcement\Application\UseCase\Query\ListAnnouncements;
 
 use Source\Shared\Domain\ValueObject\Language;
 
-interface GetAnnouncementsInputPort
+interface ListAnnouncementsInputPort
 {
-    public function limit(): int;
+    public function perPage(): int;
 
     public function order(): string;
 

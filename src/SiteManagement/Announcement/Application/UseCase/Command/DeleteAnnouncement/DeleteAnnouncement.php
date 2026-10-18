@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Announcement\Domain\Repository\DraftAnnouncementRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -15,7 +15,7 @@ use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 class DeleteAnnouncement implements DeleteAnnouncementInterface
 {
     public function __construct(
-        private readonly AnnouncementRepositoryInterface $announcementRepository,
+        private readonly DraftAnnouncementRepositoryInterface $draftAnnouncementRepository,
         private readonly PrincipalRepositoryInterface $principalRepository,
         private readonly PolicyEvaluatorInterface $policyEvaluator,
     ) {
@@ -31,14 +31,14 @@ class DeleteAnnouncement implements DeleteAnnouncementInterface
             throw new UnauthorizedException();
         }
 
-        $announcements = $this->announcementRepository->findByTranslationSetIdentifier($input->translationSetIdentifier());
+        $draftAnnouncement = $this->draftAnnouncementRepository->findById($input->announcementIdentifier());
+        if ($draftAnnouncement === null) {
+            $output->setAnnouncements([]);
 
-        $deletedAnnouncements = [];
-        foreach ($announcements as $announcement) {
-            $this->announcementRepository->delete($announcement);
-            $deletedAnnouncements[] = $announcement;
+            return;
         }
 
-        $output->setAnnouncements($deletedAnnouncements);
+        $this->draftAnnouncementRepository->delete($draftAnnouncement);
+        $output->setAnnouncements([$draftAnnouncement]);
     }
 }

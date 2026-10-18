@@ -4,34 +4,26 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Entity;
 
+use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementContents;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
+use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
-use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 
 class DraftAnnouncement
 {
-    /**
-     * @param AnnouncementIdentifier $announcementIdentifier
-     * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Language $translation
-     * @param Category $category
-     * @param Title $title
-     * @param Content $content
-     * @param PublishedDate $publishedDate
-     */
     public function __construct(
-        private readonly AnnouncementIdentifier   $announcementIdentifier,
-        private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Language                 $translation,
-        private Category                          $category,
-        private Title                             $title,
-        private Content                           $content,
-        private PublishedDate                     $publishedDate,
+        private readonly AnnouncementIdentifier $announcementIdentifier,
+        private readonly Language $sourceLanguage,
+        private Category $category,
+        private AnnouncementContents $contents,
+        private PublishedDate $publishedDate,
     ) {
+        if ($contents->get($sourceLanguage) === null) {
+            throw new InvalidArgumentException('Source language content is required.');
+        }
     }
 
     public function announcementIdentifier(): AnnouncementIdentifier
@@ -39,14 +31,9 @@ class DraftAnnouncement
         return $this->announcementIdentifier;
     }
 
-    public function translationSetIdentifier(): TranslationSetIdentifier
+    public function sourceLanguage(): Language
     {
-        return $this->translationSetIdentifier;
-    }
-
-    public function translation(): Language
-    {
-        return $this->translation;
+        return $this->sourceLanguage;
     }
 
     public function category(): Category
@@ -54,29 +41,14 @@ class DraftAnnouncement
         return $this->category;
     }
 
-    public function setCategory(Category $category): void
+    public function contents(): AnnouncementContents
     {
-        $this->category = $category;
+        return $this->contents;
     }
 
-    public function title(): Title
+    public function localizedContent(Language $language): ?LocalizedAnnouncementContent
     {
-        return $this->title;
-    }
-
-    public function setTitle(Title $title): void
-    {
-        $this->title = $title;
-    }
-
-    public function content(): Content
-    {
-        return $this->content;
-    }
-
-    public function setContent(Content $content): void
-    {
-        $this->content = $content;
+        return $this->contents->get($language);
     }
 
     public function publishedDate(): PublishedDate
@@ -84,8 +56,18 @@ class DraftAnnouncement
         return $this->publishedDate;
     }
 
+    public function setCategory(Category $category): void
+    {
+        $this->category = $category;
+    }
+
     public function setPublishedDate(PublishedDate $publishedDate): void
     {
         $this->publishedDate = $publishedDate;
+    }
+
+    public function setLocalizedContent(LocalizedAnnouncementContent $content): void
+    {
+        $this->contents = $this->contents->with($content);
     }
 }

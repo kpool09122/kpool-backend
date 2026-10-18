@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInput;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -54,12 +55,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $input = new UpdateAnnouncementInput(
             $principalIdentifier,
             $announcementIdentifier,
+            Language::JAPANESE,
             $category,
             $title,
             $content,
             $publishedDate,
         );
         $this->assertSame((string)$announcementIdentifier, (string)$input->announcementIdentifier());
+        $this->assertSame(Language::JAPANESE, $input->language());
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string)$title, (string)$input->title());
         $this->assertSame((string)$content, (string)$input->content());
