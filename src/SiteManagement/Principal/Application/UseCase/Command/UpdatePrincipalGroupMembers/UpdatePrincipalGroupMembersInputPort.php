@@ -9,6 +9,9 @@ use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface UpdatePrincipalGroupMembersInputPort
 {
+    /** @return array<int, PrincipalStatusUpdate> */
+    public function principalStatuses(): array;
+
     public function accountIdentifier(): AccountIdentifier;
 
     public function operatorPrincipalIdentifier(): PrincipalIdentifier;

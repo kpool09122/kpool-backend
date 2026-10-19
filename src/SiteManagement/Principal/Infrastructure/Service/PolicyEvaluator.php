@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Principal\Infrastructure\Service;
 
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
+use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
 use Source\SiteManagement\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -12,6 +13,7 @@ use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\Condition;
 use Source\SiteManagement\Principal\Domain\ValueObject\Effect;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Principal\Domain\ValueObject\Statement;
@@ -25,9 +27,13 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     ) {
     }
 
-    public function evaluate(Principal $principal, Action $action, Resource $resource): bool
+    /** @param array<PrincipalGroup>|null $principalGroups */
+    public function evaluate(Principal $principal, Action $action, Resource $resource, ?array $principalGroups = null): bool
     {
-        $statements = $this->collectStatements($principal);
+        if ($principal->status() !== PrincipalStatus::ACTIVE) {
+            return false;
+        }
+        $statements = $this->collectStatements($principal, $principalGroups);
         $applicableStatements = $this->filterApplicable($statements, $action, $resource->type());
 
         // 条件に一致する明示的 Deny を優先する。
@@ -51,11 +57,14 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
         return false; // 暗黙的 Deny
     }
 
-    /** @return Statement[] */
-    private function collectStatements(Principal $principal): array
+    /** @param array<PrincipalGroup>|null $principalGroups
+     * @return Statement[] */
+    private function collectStatements(Principal $principal, ?array $principalGroups = null): array
     {
         // 1. Principal が所属する PrincipalGroup を取得
-        $principalGroups = $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier());
+        $principalGroups = $principalGroups === null
+            ? $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier())
+            : array_filter($principalGroups, static fn (PrincipalGroup $group): bool => $group->hasMember($principal->principalIdentifier()));
 
         if (empty($principalGroups)) {
             return [];

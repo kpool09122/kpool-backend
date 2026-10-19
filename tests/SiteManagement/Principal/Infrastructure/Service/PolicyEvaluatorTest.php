@@ -21,6 +21,7 @@ use Source\SiteManagement\Principal\Domain\ValueObject\Effect;
 use Source\SiteManagement\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Principal\Domain\ValueObject\RoleIdentifier;
@@ -29,6 +30,36 @@ use Source\SiteManagement\Principal\Infrastructure\Service\PolicyEvaluator;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    /** @return iterable<string, array{PrincipalStatus}> */
+    public static function stoppedStatuses(): iterable
+    {
+        yield 'suspended' => [PrincipalStatus::SUSPENDED];
+        yield 'forced_stop' => [PrincipalStatus::FORCED_STOP];
+    }
+
+    #[DataProvider('stoppedStatuses')]
+    public function testStoppedPrincipalIsRejectedBeforePolicyLookup(PrincipalStatus $status): void
+    {
+        $principal = new Principal(
+            new PrincipalIdentifier('00000000-0000-7000-8000-000000000001'),
+            new IdentityIdentifier('00000000-0000-7000-8000-000000000002'),
+            new AccountIdentifier('00000000-0000-7000-8000-000000000009'),
+            status: $status,
+        );
+        $principalGroupRepository = $this->createMock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->expects(self::never())->method('findByPrincipalId');
+        $roleRepository = $this->createMock(RoleRepositoryInterface::class);
+        $roleRepository->expects(self::never())->method('findByIds');
+        $policyRepository = $this->createMock(PolicyRepositoryInterface::class);
+        $policyRepository->expects(self::never())->method('findByIds');
+
+        self::assertFalse((new PolicyEvaluator(
+            $principalGroupRepository,
+            $roleRepository,
+            $policyRepository,
+        ))->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT)));
+    }
+
     /** @param Statement[] $statements */
     #[DataProvider('policyDecisions')]
     public function testPolicyDecision(array $statements, Resource $resource, bool $expected): void

@@ -16,6 +16,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 
 readonly class SwitchAccount implements SwitchAccountInterface
@@ -35,6 +36,7 @@ readonly class SwitchAccount implements SwitchAccountInterface
     {
         $originalPrincipal = $this->principalRepository->findById($input->originalPrincipalIdentifier());
         if ($originalPrincipal === null
+            || $originalPrincipal->status() !== PrincipalStatus::ACTIVE
             || (string) $originalPrincipal->identityIdentifier() !== (string) $input->identityIdentifier()) {
             throw new DisallowedDelegationOperationException('Original account principal is not valid.');
         }
@@ -99,6 +101,10 @@ readonly class SwitchAccount implements SwitchAccountInterface
                 $defaultGroup->addMember($effectivePrincipal->principalIdentifier());
                 $this->principalGroupRepository->save($defaultGroup);
             }
+        }
+
+        if ($effectivePrincipal->status() !== PrincipalStatus::ACTIVE) {
+            throw new DisallowedDelegationOperationException('The target principal is not active.');
         }
 
         $currentAccount = new CurrentAccount(

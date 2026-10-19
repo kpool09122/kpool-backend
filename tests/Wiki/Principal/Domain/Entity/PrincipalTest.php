@@ -4,109 +4,61 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Domain\Entity;
 
+use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\Exception\CannotChangeNonDelegatedPrincipalException;
+use Source\Wiki\Principal\Domain\Exception\PrincipalStatusChangeForbiddenException;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Tests\Helper\StrTestHelper;
-use Tests\TestCase;
 
 class PrincipalTest extends TestCase
 {
-    /**
-     * 正常系：正しくインスタンスが作成できること.
-     *
-     * @return void
-     */
-    public function test__construct(): void
+    public function testPreservesIdentifiersAndDefaultsToActive(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            $accountIdentifier,
-        );
-        $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
-        $this->assertSame((string)$identityIdentifier, (string)$principal->identityIdentifier());
-        $this->assertSame((string)$accountIdentifier, (string)$principal->accountIdentifier());
+        $principalIdentifier = new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000001');
+        $identityIdentifier = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000002');
+        $accountIdentifier = new AccountIdentifier('019c9b4c-0000-7000-8000-000000000003');
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $accountIdentifier);
+        self::assertSame($principalIdentifier, $principal->principalIdentifier());
+        self::assertSame($identityIdentifier, $principal->identityIdentifier());
+        self::assertSame($accountIdentifier, $principal->accountIdentifier());
+        self::assertNull($principal->delegationIdentifier());
+        self::assertFalse($principal->isDelegatedPrincipal());
+        self::assertSame(PrincipalStatus::ACTIVE, $principal->status());
     }
 
-    /**
-     * 正常系：通常のPrincipalはdelegationIdentifierがnullでenabledがtrueであること.
-     */
-    public function testNonDelegatedPrincipal(): void
+    public function testDelegationIsPreservedAcrossSuspensionAndResumption(): void
     {
+        $delegationIdentifier = new DelegationIdentifier('019c9b4c-0000-7000-8000-000000000004');
         $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new AccountIdentifier(StrTestHelper::generateUuid()),
-        );
-
-        $this->assertNull($principal->delegationIdentifier());
-        $this->assertFalse($principal->isDelegatedPrincipal());
-        $this->assertTrue($principal->isEnabled());
-    }
-
-    /**
-     * 正常系：代理用PrincipalはdelegationIdentifierを持ち、isDelegatedPrincipalがtrueになること.
-     */
-    public function testDelegatedPrincipal(): void
-    {
-        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000001'),
+            new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000002'),
+            new AccountIdentifier('019c9b4c-0000-7000-8000-000000000003'),
             $delegationIdentifier,
-            true,
         );
-
-        $this->assertSame($delegationIdentifier, $principal->delegationIdentifier());
-        $this->assertTrue($principal->isDelegatedPrincipal());
-        $this->assertTrue($principal->isEnabled());
+        self::assertTrue($principal->isDelegatedPrincipal());
+        self::assertSame(PrincipalStatus::ACTIVE, $principal->status());
+        $principal->changeStatus(PrincipalStatus::SUSPENDED);
+        self::assertSame(PrincipalStatus::SUSPENDED, $principal->status());
+        $principal->changeStatus(PrincipalStatus::ACTIVE);
+        self::assertSame(PrincipalStatus::ACTIVE, $principal->status());
+        self::assertSame($delegationIdentifier, $principal->delegationIdentifier());
     }
 
-    /**
-     * 正常系：代理用PrincipalのsetEnabledが正しく動作すること.
-     */
-    public function testSetEnabledOnDelegatedPrincipal(): void
-    {
-        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new AccountIdentifier(StrTestHelper::generateUuid()),
-            $delegationIdentifier,
-            true,
-        );
-
-        $this->assertTrue($principal->isEnabled());
-
-        $principal->setEnabled(false);
-        $this->assertFalse($principal->isEnabled());
-
-        $principal->setEnabled(true);
-        $this->assertTrue($principal->isEnabled());
-    }
-
-    /**
-     * 異常系：通常のPrincipalでsetEnabledを呼ぶと例外が発生すること.
-     */
-    public function testSetEnabledOnNonDelegatedPrincipalThrowsException(): void
+    public function testForcedStoppedDelegatedPrincipalCannotResume(): void
     {
         $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000001'),
+            new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000002'),
+            new AccountIdentifier('019c9b4c-0000-7000-8000-000000000003'),
+            new DelegationIdentifier('019c9b4c-0000-7000-8000-000000000004'),
+            PrincipalStatus::FORCED_STOP,
         );
-
-        $this->expectException(CannotChangeNonDelegatedPrincipalException::class);
-        $this->expectExceptionMessage('Cannot change enabled status of non-delegated principal.');
-
-        $principal->setEnabled(false);
+        $principal->changeStatus(PrincipalStatus::FORCED_STOP);
+        self::assertSame(PrincipalStatus::FORCED_STOP, $principal->status());
+        $this->expectException(PrincipalStatusChangeForbiddenException::class);
+        $principal->changeStatus(PrincipalStatus::ACTIVE);
     }
 }

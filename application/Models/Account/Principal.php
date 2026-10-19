@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $identity_id
  * @property string $account_id
+ * @property string $status
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Identity|null $identity
@@ -27,6 +28,7 @@ use Illuminate\Support\Carbon;
     'id',
     'identity_id',
     'account_id',
+    'status',
 ])]
 #[Table(name: 'account_principals', keyType: 'string')]
 class Principal extends Model

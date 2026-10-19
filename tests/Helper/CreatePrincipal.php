@@ -14,11 +14,11 @@ class CreatePrincipal
     /**
      * @param AccountIdentifier|array{
      *     delegation_identifier?: ?string,
-     *     enabled?: bool
+     *     status?: string
      * }|null $accountIdentifier
      * @param array{
      *     delegation_identifier?: ?string,
-     *     enabled?: bool
+     *     status?: string
      * } $overrides
      */
     public static function create(
@@ -42,7 +42,7 @@ class CreatePrincipal
             'identity_id' => (string) $identityIdentifier,
             'account_id' => (string) $accountIdentifier,
             'delegation_identifier' => $overrides['delegation_identifier'] ?? null,
-            'enabled' => $overrides['enabled'] ?? true,
+            'status' => $overrides['status'] ?? 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

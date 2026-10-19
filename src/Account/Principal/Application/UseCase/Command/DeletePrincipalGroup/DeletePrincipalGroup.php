@@ -7,6 +7,7 @@ namespace Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGr
 use Source\Account\Principal\Application\Exception\CannotDeleteDefaultPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\CannotDeleteLastOwnerGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Account\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -19,6 +20,7 @@ readonly class DeletePrincipalGroup implements DeletePrincipalGroupInterface
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyRepositoryInterface $policyRepository,
+        private PrincipalGroupChangeGuardInterface $principalGroupChangeGuard,
     ) {
     }
 
@@ -60,6 +62,11 @@ readonly class DeletePrincipalGroup implements DeletePrincipalGroupInterface
         }
 
         $delegationRoles = [];
+        $remainingGroups = array_values(array_filter(
+            $allPrincipalGroups ?? $this->principalGroupRepository->findByAccountId($principalGroup->accountIdentifier()),
+            static fn ($group): bool => (string) $group->principalGroupIdentifier() !== (string) $principalGroup->principalGroupIdentifier(),
+        ));
+        $this->principalGroupChangeGuard->assertPreserved($principalGroup->accountIdentifier(), $remainingGroups);
         $delegationPolicies = [];
         if ($principalGroup->delegationIdentifier() !== null) {
             $delegationRoles = $this->roleRepository->findByIds($principalGroup->roles());

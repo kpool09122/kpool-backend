@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Account\Principal\Infrastructure\Factory;
 
 use PHPUnit\Framework\TestCase;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Principal\Infrastructure\Factory\PrincipalFactory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -22,6 +23,7 @@ class PrincipalFactoryTest extends TestCase
         $accountIdentifier = new AccountIdentifier('019c9b4c-0000-7000-8000-000000000001');
         $entity = $factory->create($identityIdentifier, $accountIdentifier);
 
+        self::assertSame(PrincipalStatus::ACTIVE, $entity->status());
         $this->assertSame($uuid, (string) $entity->principalIdentifier());
         $this->assertSame($identityIdentifier, $entity->identityIdentifier());
         $this->assertSame($accountIdentifier, $entity->accountIdentifier());

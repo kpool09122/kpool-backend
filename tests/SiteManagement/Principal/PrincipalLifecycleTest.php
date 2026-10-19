@@ -68,10 +68,10 @@ class PrincipalLifecycleTest extends TestCase
                 ->join('site_management_principal_group_memberships as memberships', 'memberships.principal_group_id', '=', 'groups.id')
                 ->join('site_management_principals as principals', 'principals.id', '=', 'memberships.principal_id')
                 ->where('principals.identity_id', (string) $identity)->where('groups.is_default', false)->pluck('roles.name')->all();
-            $this->assertEqualsCanonicalizing(['Administrator', 'General'], $roles);
+            $this->assertEqualsCanonicalizing(['Administrator'], $roles);
         });
         $id = DB::table('site_management_principals')->where('identity_id', (string) $identity)->value('id');
-        $this->assertSame(1, DB::table('site_management_principal_group_memberships')->where('principal_id', $id)->count());
+        $this->assertSame(2, DB::table('site_management_principal_group_memberships')->where('principal_id', $id)->count());
         $principal = $this->app()->make(PrincipalRepositoryInterface::class)->findAllByIdentityIdentifier($identity)[0];
         $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
         $this->assertTrue($evaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP)));

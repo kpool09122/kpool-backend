@@ -140,7 +140,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $logger->shouldReceive('warning')->once()->with('Failed to clear current account context.', Mockery::type('array'));
         $this->app()->instance(LoggerInterface::class, $logger);
         $logger->shouldReceive('warning')->times(3)->with('Authentication context cache invalidation failed.', Mockery::type('array'));
-        $logger->shouldReceive('warning')->once()->with('Authentication context cache enumeration failed.', Mockery::type('array'));
+        $logger->shouldReceive('warning')->times(2)->with('Authentication context cache enumeration failed.', Mockery::type('array'));
         Redis::shouldReceive('del', 'keys')->andThrow(new RuntimeException('Cache backend unavailable'));
         $this->app()->instance(AuthServiceInterface::class, $auth);
         $action = new WithdrawFromServiceAction($this->app()->make(WithdrawFromServiceInterface::class), new ActorContext($identityIdentifier, Language::JAPANESE), $logger, $this->app()->make(Request::class));

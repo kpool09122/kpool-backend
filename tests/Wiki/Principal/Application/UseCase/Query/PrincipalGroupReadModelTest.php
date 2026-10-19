@@ -18,7 +18,7 @@ class PrincipalGroupReadModelTest extends TestCase
         $roleIdentifier = StrTestHelper::generateUuid();
         $principalIdentifier = StrTestHelper::generateUuid();
         $identityIdentifier = StrTestHelper::generateUuid();
-        $members = [new PrincipalGroupMemberReadModel($principalIdentifier, $identityIdentifier, 'alice', 'alice@example.com')];
+        $members = [new PrincipalGroupMemberReadModel($principalIdentifier, $identityIdentifier, 'alice', 'alice@example.com', 'suspended')];
 
         $readModel = new PrincipalGroupReadModel(
             principalGroupIdentifier: $principalGroupIdentifier,
@@ -44,6 +44,7 @@ class PrincipalGroupReadModelTest extends TestCase
             'roleIdentifiers' => [$roleIdentifier],
             'isDefault' => false,
             'members' => [[
+                'status' => 'suspended',
                 'principalIdentifier' => $principalIdentifier,
                 'identityIdentifier' => $identityIdentifier,
                 'identityName' => 'alice',

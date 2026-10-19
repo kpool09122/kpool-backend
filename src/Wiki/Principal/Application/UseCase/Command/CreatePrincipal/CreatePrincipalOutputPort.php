@@ -11,7 +11,7 @@ interface CreatePrincipalOutputPort
     public function setPrincipal(Principal $principal): void;
 
     /**
-     * @return array{principalIdentifier: ?string, identityIdentifier: ?string, isDelegatedPrincipal: ?bool, isEnabled: ?bool}
+     * @return array{principalIdentifier: ?string, identityIdentifier: ?string, isDelegatedPrincipal: ?bool, status: ?string}
      */
     public function toArray(): array;
 }

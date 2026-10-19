@@ -6,6 +6,7 @@ namespace Application\Http\Action\SiteManagement\Principal\Command\UpdatePrincip
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\SiteManagementContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -18,11 +19,14 @@ use Source\SiteManagement\Principal\Application\Exception\CannotRemoveLastAdmini
 use Source\SiteManagement\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\SiteManagement\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
+use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalStatusUpdate;
 use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersOutput;
+use Source\SiteManagement\Principal\Domain\Exception\PrincipalStatusChangeForbiddenException;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -51,6 +55,7 @@ readonly class UpdatePrincipalGroupMembersAction
                         new PrincipalGroupIdentifier($principalGroup['principalGroupIdentifier']),
                         array_map(static fn (string $principalIdentifier): PrincipalIdentifier => new PrincipalIdentifier($principalIdentifier), $principalGroup['principalIdentifiers']),
                     ), $request->principalGroups()),
+                    principalStatuses: array_map(static fn (array $update): PrincipalStatusUpdate => new PrincipalStatusUpdate(new PrincipalIdentifier($update['principalIdentifier']), PrincipalStatus::from($update['status'])), $request->principalStatuses()),
                 );
                 $output = new UpdatePrincipalGroupMembersOutput();
             } catch (InvalidArgumentException $e) {
@@ -78,13 +83,17 @@ readonly class UpdatePrincipalGroupMembersAction
             } catch (CannotRemoveLastAdministratorException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: error_message('cannot_remove_last_site_management_administrator', $language), previous: $e);
+                throw new ConflictHttpException(detail: error_message('cannot_remove_last_site_management_administrator', $language), extensions: ['code' => 'last_active_manager'], previous: $e);
+            } catch (PrincipalStatusChangeForbiddenException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('principal_status_change_forbidden', $language), extensions: ['code' => 'principal_status_change_forbidden'], previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

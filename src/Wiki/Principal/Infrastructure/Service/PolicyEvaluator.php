@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Service;
 
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -15,6 +16,7 @@ use Source\Wiki\Principal\Domain\ValueObject\ConditionClause;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionKey;
 use Source\Wiki\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
@@ -30,13 +32,18 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     ) {
     }
 
+    /** @param array<PrincipalGroup>|null $principalGroups */
     public function evaluate(
         Principal $principal,
         Action    $action,
         Resource  $resource,
+        ?array $principalGroups = null,
     ): bool {
+        if ($principal->status() !== PrincipalStatus::ACTIVE) {
+            return false;
+        }
         // PrincipalGroup → Role → Policy の階層を辿って Statement を収集
-        $statements = $this->collectStatements($principal);
+        $statements = $this->collectStatements($principal, $principalGroups);
 
         // 該当するStatementを抽出（action + resourceType一致）
         $applicableStatements = $this->filterApplicable($statements, $action, $resource->type());
@@ -69,10 +76,14 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
      *
      * @return Statement[]
      */
-    private function collectStatements(Principal $principal): array
+    /** @param array<PrincipalGroup>|null $principalGroups
+     * @return Statement[] */
+    private function collectStatements(Principal $principal, ?array $principalGroups = null): array
     {
         // 1. Principal が所属する PrincipalGroup を取得
-        $principalGroups = $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier());
+        $principalGroups = $principalGroups === null
+            ? $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier())
+            : array_filter($principalGroups, static fn (PrincipalGroup $group): bool => $group->hasMember($principal->principalIdentifier()));
 
         if (empty($principalGroups)) {
             return [];

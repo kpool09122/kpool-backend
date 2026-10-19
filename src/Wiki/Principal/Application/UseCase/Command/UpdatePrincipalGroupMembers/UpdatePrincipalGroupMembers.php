@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
+use InvalidArgumentException;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface as AccountPrincipalRepositoryInterface;
 use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministratorException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Principal\Domain\Service\PrincipalGroupManagerContinuity;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
@@ -22,14 +24,13 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMembersInterface
 {
-    private const string WIKI_ADMINISTRATOR_ROLE = 'Administrator';
-
     public function __construct(
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private AccountPrincipalRepositoryInterface $accountPrincipalRepository,
+        private PrincipalReachabilityInterface $principalReachability,
     ) {
     }
 
@@ -53,9 +54,21 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         $operatorRole = $this->roleRepository->findSystemByName('Operator');
 
         $requestedPrincipalIdentifiers = [];
+        $statusIdentifiers = [];
+        foreach ($input->principalStatuses() as $update) {
+            $id = (string) $update->principalIdentifier;
+            if (isset($statusIdentifiers[$id])) {
+                throw new InvalidArgumentException('Duplicate principal status identifier.');
+            }
+            $statusIdentifiers[$id] = $update->principalIdentifier;
+            $requestedPrincipalIdentifiers[$id] = $update->principalIdentifier;
+        }
         $requestedGroupIds = [];
         foreach ($input->principalGroups() as $principalGroupInput) {
             $principalGroupId = (string) $principalGroupInput->principalGroupIdentifier();
+            if (isset($requestedGroupIds[$principalGroupId])) {
+                throw new InvalidArgumentException('Duplicate principal group identifier.');
+            }
             if (! isset($principalGroupsById[$principalGroupId])) {
                 throw new PrincipalGroupNotFoundException();
             }
@@ -71,14 +84,33 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             }
         }
 
-        $principalsById = $this->principalRepository->findByIds(array_values($requestedPrincipalIdentifiers));
+        $allIdentifiers = $requestedPrincipalIdentifiers;
+        foreach ($principalGroups as $group) {
+            foreach ($group->members() as $identifier) {
+                $allIdentifiers[(string) $identifier] = $identifier;
+            }
+        }
+        $principalsById = $this->principalRepository->findByIds(array_values($allIdentifiers));
         $this->assertPrincipalsBelongToAccount(array_values($requestedPrincipalIdentifiers), $principalsById, $input);
-        $this->assertHasWikiAdministrator($principalGroups);
+        foreach ($input->principalStatuses() as $update) {
+            $principalsById[(string) $update->principalIdentifier]->changeStatus($update->status);
+        }
+        if (! (new PrincipalGroupManagerContinuity($this->roleRepository, $this->policyEvaluator))->hasManager(
+            $principalGroups,
+            $principalsById,
+            fn (Principal $principal): bool => $this->principalReachability->canAccess($principal->identityIdentifier(), $input->accountIdentifier()),
+        )) {
+            throw new CannotRemoveLastWikiAdministratorException();
+        }
 
         foreach (array_keys($requestedGroupIds) as $principalGroupId) {
             $this->principalGroupRepository->save($principalGroupsById[$principalGroupId]);
         }
 
+        foreach ($statusIdentifiers as $id => $identifier) {
+            $this->principalRepository->save($principalsById[$id]);
+        }
+        $output->setPrincipalStatuses(array_values(array_intersect_key($principalsById, $statusIdentifiers)));
         $output->setPrincipalGroups(array_values(array_intersect_key($principalGroupsById, $requestedGroupIds)));
     }
 
@@ -98,26 +130,10 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
 
     private function belongsToAccount(Principal $principal, UpdatePrincipalGroupMembersInputPort $input): bool
     {
-        return $this->accountPrincipalRepository->findByIdentityIdentifierAndAccountIdentifier(
-            $principal->identityIdentifier(),
-            $input->accountIdentifier(),
-        ) !== null;
-    }
-
-    /** @param array<PrincipalGroup> $principalGroups */
-    private function assertHasWikiAdministrator(array $principalGroups): void
-    {
-        $wikiAdministratorRole = $this->roleRepository->findSystemByName(self::WIKI_ADMINISTRATOR_ROLE);
-        if ($wikiAdministratorRole === null) {
-            throw new CannotRemoveLastWikiAdministratorException();
-        }
-
-        foreach ($principalGroups as $principalGroup) {
-            if ($principalGroup->hasRole($wikiAdministratorRole->roleIdentifier()) && $principalGroup->memberCount() > 0) {
-                return;
-            }
-        }
-
-        throw new CannotRemoveLastWikiAdministratorException();
+        return (string) $principal->accountIdentifier() === (string) $input->accountIdentifier()
+            && $this->accountPrincipalRepository->findByIdentityIdentifierAndAccountIdentifier(
+                $principal->identityIdentifier(),
+                $input->accountIdentifier(),
+            ) !== null;
     }
 }

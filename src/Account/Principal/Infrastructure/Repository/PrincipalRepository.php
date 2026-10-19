@@ -9,6 +9,7 @@ use Application\Models\Account\Principal as PrincipalEloquent;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -58,6 +59,32 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     {
         return PrincipalEloquent::query()
             ->where('account_id', (string) $accountIdentifier)
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
+    public function findByAccountIds(array $accountIdentifiers): array
+    {
+        if ($accountIdentifiers === []) {
+            return [];
+        }
+
+        return PrincipalEloquent::query()
+            ->whereIn('account_id', array_map(static fn (AccountIdentifier $identifier): string => (string) $identifier, $accountIdentifiers))
+            ->get()
+            ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
+    public function findAllByIdentityIdentifiers(array $identityIdentifiers): array
+    {
+        if ($identityIdentifiers === []) {
+            return [];
+        }
+
+        return PrincipalEloquent::query()
+            ->whereIn('identity_id', array_map(static fn (IdentityIdentifier $identifier): string => (string) $identifier, $identityIdentifiers))
             ->get()
             ->map(fn (PrincipalEloquent $eloquent): Principal => $this->toDomainEntity($eloquent))
             ->all();
@@ -148,6 +175,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
                 'account_id' => (string) $principal->accountIdentifier(),
+                'status' => $principal->status()->value,
             ],
         );
 
@@ -167,6 +195,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             new PrincipalIdentifier($eloquent->id),
             new IdentityIdentifier($eloquent->identity_id),
             new AccountIdentifier($eloquent->account_id),
+            PrincipalStatus::from($eloquent->status),
         );
     }
 }

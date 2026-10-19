@@ -18,6 +18,7 @@ use Override;
 /**
  * @property string $id
  * @property string $account_id
+ * @property string $status
  * @property string $identity_id
  * @property-read Account|null $account
  * @property ?Carbon $created_at
@@ -28,6 +29,7 @@ use Override;
 #[Fillable([
     'id',
     'account_id',
+    'status',
     'identity_id',
 ])]
 #[Table(name: 'site_management_principals', keyType: 'string')]

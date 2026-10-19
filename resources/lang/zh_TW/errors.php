@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'principal_inactive' => '此使用者已停止使用。',
+    'principal_status_change_forbidden' => '無法透過使用者權限管理變更強制停止狀態。',
     'published_announcement_not_found' => '找不到指定的公告。',
     'announcement_not_found' => '找不到指定的公告草稿。',
     'invalid_notification_settings' => '通知接收者設定無效。',

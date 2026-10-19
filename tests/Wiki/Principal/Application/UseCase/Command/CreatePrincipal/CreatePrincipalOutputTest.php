@@ -36,7 +36,8 @@ class CreatePrincipalOutputTest extends TestCase
         $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertFalse($result['isDelegatedPrincipal']);
-        $this->assertTrue($result['isEnabled']);
+        $this->assertSame('active', $result['status']);
+        $this->assertArrayNotHasKey('isEnabled', $result);
     }
 
     /**
@@ -51,6 +52,7 @@ class CreatePrincipalOutputTest extends TestCase
         $this->assertNull($result['principalIdentifier']);
         $this->assertNull($result['identityIdentifier']);
         $this->assertNull($result['isDelegatedPrincipal']);
-        $this->assertNull($result['isEnabled']);
+        $this->assertNull($result['status']);
+        $this->assertArrayNotHasKey('isEnabled', $result);
     }
 }

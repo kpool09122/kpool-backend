@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'principal_inactive' => 'Este usuario no está activo.',
+    'principal_status_change_forbidden' => 'No se puede cambiar el estado de suspensión forzada desde la gestión de permisos de usuario.',
     'published_announcement_not_found' => 'No se encontró el anuncio especificado.',
     'announcement_not_found' => 'No se encontró el borrador del anuncio especificado.',
     'invalid_notification_settings' => 'Los destinatarios de notificaciones no son válidos.',

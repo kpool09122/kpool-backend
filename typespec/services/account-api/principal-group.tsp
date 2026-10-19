@@ -32,6 +32,8 @@ model UpdatePrincipalGroupMembersItem {
 model UpdatePrincipalGroupMembersRequestBody {
   @doc("Principal groups and their updated member sets.")
   principalGroups: UpdatePrincipalGroupMembersItem[];
+  @doc("Statuses to save atomically with group memberships. Omission or an empty array makes no status changes; omitted Principals retain their status. All three values are accepted so unchanged forced_stop rows can be included.")
+  principalStatuses?: PrincipalStatusUpdate[];
 }
 
 @doc("Response returned when an principal group is created.")
@@ -61,7 +63,21 @@ model ListPrincipalGroupsResponse {
 @doc("Response returned when multiple principal group memberships are updated.")
 model UpdatePrincipalGroupMembersResponse {
   @statusCode statusCode: 200;
-  @body body: ListPrincipalGroupsResponseBody;
+  @body body: {
+    principalGroups: UpdatedPrincipalGroupSummary[];
+    principalStatuses: PrincipalStatusUpdate[];
+  };
+}
+
+@doc("Updated Account group snapshot. Members are identifiers, not the list endpoint's detailed member projections.")
+model UpdatedPrincipalGroupSummary {
+  principalGroupIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  name: string;
+  description: string | null;
+  roleIdentifiers: Uuid[];
+  isDefault: boolean;
+  members: Uuid[];
 }
 
 @route("/members")
@@ -101,10 +117,10 @@ interface PrincipalGroupOperations {
 
   @patch
   @route("/members")
-  @doc("Update members for multiple principal groups.")
+  @doc("Atomically save specified group memberships and Principal statuses while preserving omitted groups and statuses. The final combined state must retain a reachable active permission manager; an active replacement and suspension of the old manager can be saved together. Duplicate status identifiers return 422; missing or out-of-scope Principals return 404; insufficient permission or protected Operator groups return 403. An unchanged forced_stop is accepted. A forbidden status change returns 409 code principal_status_change_forbidden; losing the last active manager returns 409 code last_active_manager. Both roll back the entire save. Success returns only the submitted groups and Principal statuses; clients refetch management lists separately. Status restrictions take effect on the next request even for logged-in cached sessions.")
   updatePrincipalGroupMembers(
     @body body: UpdatePrincipalGroupMembersRequestBody,
-  ): UpdatePrincipalGroupMembersResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): UpdatePrincipalGroupMembersResponse | KPool.Common.PrincipalStatusConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @delete
   @route("/{principalGroupId}")

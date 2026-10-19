@@ -11,6 +11,7 @@ readonly class PrincipalGroupMemberReadModel
         private string $identityIdentifier,
         private string $identityName,
         private string $email,
+        private string $status,
     ) {
     }
 
@@ -38,6 +39,7 @@ readonly class PrincipalGroupMemberReadModel
     public function toArray(): array
     {
         return [
+            'status' => $this->status,
             'principalIdentifier' => $this->principalIdentifier,
             'identityIdentifier' => $this->identityIdentifier,
             'identityName' => $this->identityName,

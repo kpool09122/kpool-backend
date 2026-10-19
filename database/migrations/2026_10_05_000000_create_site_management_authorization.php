@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('site_management_principals', static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('identity_id');
+            $table->string('status')->default('active');
             $table->uuid('account_id');
             $table->timestamps();
             $table->unique(['identity_id', 'account_id']);

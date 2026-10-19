@@ -8,6 +8,7 @@ use Database\Seeders\AccountAuthorizationSeeder;
 use Database\Seeders\SiteManagementAuthorizationSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
@@ -23,11 +24,33 @@ use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateAccountPrincipalGroup;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\SiteManagementAuthorization;
+use Tests\Helper\SiteManagementPrincipalGroupsFixture;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class GetAuthenticatedIdentityTest extends TestCase
 {
+    /** @return iterable<string, array{string}> */
+    public static function principalStatuses(): iterable
+    {
+        foreach (['active', 'suspended', 'forced_stop'] as $status) {
+            yield $status => [$status];
+        }
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('principalStatuses')]
+    public function testReturnsActualPrincipalStatusesEvenWhenStopped(string $status): void
+    {
+        $f = new SiteManagementPrincipalGroupsFixture();
+        $identity = $f->administrator->identityIdentifier();
+        DB::table('account_principals')->where('identity_id', (string) $identity)->update(['status' => $status]);
+        DB::table('site_management_principals')->where('identity_id', (string) $identity)->update(['status' => $status]);
+        $result = $this->app()->make(GetAuthenticatedIdentityInterface::class)->process(new GetAuthenticatedIdentityInput($identity))->toArray();
+        self::assertSame($status, $result['accountPrincipalStatus']);
+        self::assertSame($status, $result['siteManagementPrincipalStatus']);
+    }
+
     #[Group('useDb')]
     public function testSitePoliciesUseCurrentAccountAndReturnGeneralAdminAndDeny(): void
     {
@@ -43,6 +66,8 @@ class GetAuthenticatedIdentityTest extends TestCase
         $input = new GetAuthenticatedIdentityInput($identity);
         $empty = $query->process($input);
         $this->assertNull($empty->siteManagementPrincipalIdentifier());
+        self::assertNull($empty->toArray()['accountPrincipalStatus']);
+        self::assertNull($empty->toArray()['siteManagementPrincipalStatus']);
         $this->assertSame(0, $empty->accountIdentityCount());
         $this->assertSame(0, $empty->siteManagementPrincipalCount());
         $this->assertSame([], $empty->siteManagementPolicies());

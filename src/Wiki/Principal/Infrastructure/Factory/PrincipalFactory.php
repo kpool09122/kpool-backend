@@ -28,7 +28,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
             $identityIdentifier,
             $accountIdentifier,
             null,
-            true,
         );
     }
 
@@ -42,7 +41,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
             $delegatedIdentityIdentifier,
             $originalPrincipal->accountIdentifier(),
             $delegationIdentifier,
-            true,
         );
     }
 }

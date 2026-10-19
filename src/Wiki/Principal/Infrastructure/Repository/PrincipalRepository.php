@@ -14,6 +14,7 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
@@ -143,7 +144,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
                 'delegation_identifier' => $principal->delegationIdentifier() !== null
                     ? (string) $principal->delegationIdentifier()
                     : null,
-                'enabled' => $principal->isEnabled(),
+                'status' => $principal->status()->value,
             ]
         );
 
@@ -178,7 +179,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             $eloquent->delegation_identifier !== null
                 ? new DelegationIdentifier($eloquent->delegation_identifier)
                 : null,
-            $eloquent->enabled,
+            PrincipalStatus::from($eloquent->status),
         );
     }
 }

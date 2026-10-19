@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Application\Http\Exceptions\Handler;
 use Application\Http\Middleware\EnforceApiRateLimit;
 use Application\Http\Middleware\EnsureAccountActive;
+use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
@@ -100,6 +101,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->group('auth.api', [
             EnsureAuthenticated::class,
             EnsureAccountActive::class,
+            EnsurePrincipalActive::class,
         ]);
         $middleware->alias([
             'resolve.actor' => ResolveActorContext::class,

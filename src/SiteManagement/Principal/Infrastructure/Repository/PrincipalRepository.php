@@ -12,13 +12,14 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalStatus;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
 {
     public function save(Principal $principal): void
     {
         $previousPrincipal = $this->findById($principal->principalIdentifier());
-        PrincipalEloquent::query()->updateOrCreate(['id' => (string) $principal->principalIdentifier()], ['identity_id' => (string) $principal->identityIdentifier(), 'account_id' => (string) $principal->accountIdentifier()]);
+        PrincipalEloquent::query()->updateOrCreate(['id' => (string) $principal->principalIdentifier()], ['identity_id' => (string) $principal->identityIdentifier(), 'account_id' => (string) $principal->accountIdentifier(), 'status' => $principal->status()->value]);
         $this->forgetContext($principal->identityIdentifier(), $principal->accountIdentifier());
         if ($previousPrincipal !== null && ((string) $previousPrincipal->identityIdentifier() !== (string) $principal->identityIdentifier() || (string) $previousPrincipal->accountIdentifier() !== (string) $principal->accountIdentifier())) {
             $this->forgetContext($previousPrincipal->identityIdentifier(), $previousPrincipal->accountIdentifier());
@@ -32,7 +33,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         $models = PrincipalEloquent::query()->whereIn('id', array_map(static fn (PrincipalIdentifier $id): string => (string) $id, $principalIdentifiers))->get();
         $result = [];
         foreach ($models as $model) {
-            $result[$model->id] = new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id));
+            $result[$model->id] = new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id), PrincipalStatus::from($model->status));
         }
 
         return $result;
@@ -42,14 +43,14 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     {
         $model = PrincipalEloquent::query()->find((string) $principalIdentifier);
 
-        return $model === null ? null : new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id));
+        return $model === null ? null : new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id), PrincipalStatus::from($model->status));
     }
 
     public function findByIdentityIdentifierAndAccountIdentifier(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): ?Principal
     {
         $model = PrincipalEloquent::query()->where('identity_id', (string) $identityIdentifier)->where('account_id', (string) $accountIdentifier)->first();
 
-        return $model === null ? null : new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id));
+        return $model === null ? null : new Principal(new PrincipalIdentifier($model->id), new IdentityIdentifier($model->identity_id), new AccountIdentifier($model->account_id), PrincipalStatus::from($model->status));
     }
 
     /** @return Principal[] */
@@ -60,6 +61,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
                 new PrincipalIdentifier($model->id),
                 new IdentityIdentifier($model->identity_id),
                 new AccountIdentifier($model->account_id),
+                PrincipalStatus::from($model->status),
             ))->all();
     }
 

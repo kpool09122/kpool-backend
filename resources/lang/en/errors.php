@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'principal_inactive' => 'This principal is not active.',
+    'principal_status_change_forbidden' => 'A forced-stop principal status cannot be changed through user permission management.',
     'published_announcement_not_found' => 'The specified announcement was not found.',
     'announcement_not_found' => 'The specified announcement draft was not found.',
     'invalid_notification_settings' => 'The notification recipients are invalid.',

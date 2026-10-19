@@ -19,9 +19,9 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
         $group = new PrincipalGroup(new PrincipalGroupIdentifier('019c9b4c-0000-7000-8000-000000000001'), new AccountIdentifier('019c9b4c-0000-7000-8000-000000000002'), 'Editors', false, new DateTimeImmutable('2026-10-03T01:02:03+00:00'));
         $group->addMember(new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000003'));
         $output = new UpdatePrincipalGroupMembersOutput();
-        $this->assertSame(['principalGroups' => []], $output->toArray());
+        self::assertSame(['principalStatuses' => [], 'principalGroups' => []], $output->toArray());
         $output->setPrincipalGroups([$group]);
-        $this->assertSame(['principalGroups' => [[
+        $this->assertSame(['principalStatuses' => [], 'principalGroups' => [[
             'principalGroupIdentifier' => '019c9b4c-0000-7000-8000-000000000001',
             'accountIdentifier' => '019c9b4c-0000-7000-8000-000000000002',
             'name' => 'Editors',

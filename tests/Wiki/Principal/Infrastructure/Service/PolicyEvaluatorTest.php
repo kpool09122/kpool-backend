@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -27,6 +28,7 @@ use Source\Wiki\Principal\Domain\ValueObject\ConditionValue;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
@@ -44,6 +46,39 @@ use Tests\TestCase;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    /** @return iterable<string, array{PrincipalStatus}> */
+    public static function stoppedStatuses(): iterable
+    {
+        yield 'suspended' => [PrincipalStatus::SUSPENDED];
+        yield 'forced_stop' => [PrincipalStatus::FORCED_STOP];
+    }
+
+    #[DataProvider('stoppedStatuses')]
+    public function testStoppedPrincipalIsRejectedBeforePolicyLookup(PrincipalStatus $status): void
+    {
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            status: $status,
+        );
+        $principalGroupRepository = $this->createMock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->expects(self::never())->method('findByPrincipalId');
+        $roleRepository = $this->createMock(RoleRepositoryInterface::class);
+        $roleRepository->expects(self::never())->method('findByIds');
+        $policyRepository = $this->createMock(PolicyRepositoryInterface::class);
+        $policyRepository->expects(self::never())->method('findByIds');
+        $conditionValueResolver = $this->createMock(ConditionValueResolverInterface::class);
+        $conditionValueResolver->expects(self::never())->method('resolve');
+
+        self::assertFalse((new PolicyEvaluator(
+            $principalGroupRepository,
+            $roleRepository,
+            $policyRepository,
+            $conditionValueResolver,
+        ))->evaluate($principal, Action::EDIT, new Resource(ResourceType::AGENCY)));
+    }
+
     /** @phpstan-ignore property.uninitialized (setUp で初期化) */
     private PolicyRepositoryInterface $policyRepository;
 

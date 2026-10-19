@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('identity_id')->comment('Identity ID');
             $table->uuid('account_id')->comment('Account ID');
             $table->uuid('delegation_identifier')->nullable()->comment('委譲ID (nullなら本人)');
-            $table->boolean('enabled')->default(true)->comment('有効フラグ');
+            $table->string('status')->default('active');
             $table->timestamps();
 
             $table->foreign('identity_id')->references('id')->on('identities')->onDelete('cascade');

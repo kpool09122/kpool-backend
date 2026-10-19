@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'principal_inactive' => '이 사용자는 이용이 중지되었습니다.',
+    'principal_status_change_forbidden' => '사용자 권한 관리에서 강제 중지 상태를 변경할 수 없습니다.',
     'published_announcement_not_found' => '지정된 공지사항을 찾을 수 없습니다.',
     'announcement_not_found' => '지정된 공지사항 초안을 찾을 수 없습니다.',
     'invalid_notification_settings' => '알림 수신자 설정이 올바르지 않습니다.',

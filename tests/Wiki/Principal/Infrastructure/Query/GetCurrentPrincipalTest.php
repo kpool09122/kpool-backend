@@ -52,7 +52,8 @@ class GetCurrentPrincipalTest extends TestCase
         $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertFalse($result['isDelegatedPrincipal']);
-        $this->assertTrue($result['isEnabled']);
+        $this->assertSame('active', $result['status']);
+        $this->assertArrayNotHasKey('isEnabled', $result);
         $this->assertSame([], $result['policies']);
         $this->assertSame(1, $result['accountPrincipalCount']);
     }
@@ -265,6 +266,25 @@ class GetCurrentPrincipalTest extends TestCase
         $readModel = $useCase->process(new GetCurrentPrincipalInput($identityIdentifier, $otherAccountIdentifier));
 
         $this->assertSame((string) $otherPrincipalIdentifier, $readModel->toArray()['principalIdentifier']);
+    }
+
+    #[Group('useDb')]
+    public function testReturnsSuspendedAndForcedStopWithoutHidingThePrincipal(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $accountIdentifier);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, $accountIdentifier);
+        foreach (['active', 'suspended', 'forced_stop'] as $status) {
+            DB::table('wiki_principals')->where('id', (string) $principalIdentifier)->update(['status' => $status]);
+            $result = $this->app()->make(GetCurrentPrincipalInterface::class)
+                ->process(new GetCurrentPrincipalInput($identityIdentifier, $accountIdentifier))->toArray();
+            self::assertSame($status, $result['status']);
+            self::assertSame((string) $principalIdentifier, $result['principalIdentifier']);
+            self::assertArrayNotHasKey('isEnabled', $result);
+        }
     }
 
     private function createPrincipalGroupWithMember(PrincipalIdentifier $principalIdentifier, AccountIdentifier $accountIdentifier): PrincipalGroupIdentifier

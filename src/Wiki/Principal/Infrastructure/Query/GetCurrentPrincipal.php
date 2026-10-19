@@ -41,7 +41,7 @@ readonly class GetCurrentPrincipal implements GetCurrentPrincipalInterface
             principalIdentifier: $principal->id,
             identityIdentifier: $principal->identity_id,
             isDelegatedPrincipal: $principal->delegation_identifier !== null,
-            isEnabled: $principal->enabled,
+            status: $principal->status,
             policies: array_values($this->effectivePolicies($principal)),
             accountPrincipalCount: $accountPrincipalCount,
         );

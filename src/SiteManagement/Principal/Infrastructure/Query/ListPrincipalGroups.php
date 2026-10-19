@@ -44,7 +44,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
         $principalsById = [];
         foreach ($principals as $principal) {
             $identity = $principal->identity ?? throw new UnexpectedValueException('Missing principal identity.');
-            $principalsById[$principal->id] = new PrincipalGroupMemberReadModel($principal->id, $principal->identity_id, $identity->identity_name, $identity->email);
+            $principalsById[$principal->id] = new PrincipalGroupMemberReadModel($principal->id, $principal->identity_id, $identity->identity_name, $identity->email, $principal->status);
         }
         $groupQuery = PrincipalGroupModel::query()->with(['memberships', 'roleAttachments'])->where('account_id', (string) $accountIdentifier);
         if ($operatorRole !== null) {

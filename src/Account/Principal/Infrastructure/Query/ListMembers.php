@@ -36,6 +36,7 @@ readonly class ListMembers implements ListMembersInterface
 
         return $principals->map(static fn (PrincipalModel $principal): MemberReadModel => new MemberReadModel(
             principalIdentifier: $principal->id,
+            status: $principal->status,
             identityIdentifier: $principal->identity_id,
             identityName: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->identity_name,
             email: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->email,

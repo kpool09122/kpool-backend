@@ -51,7 +51,9 @@ use Source\Wiki\OfficialCertification\Infrastructure\Service\OfficialResourceUpd
 use Source\Wiki\OfficialCertification\Infrastructure\Service\SyncableOwnedWikiResourceQueryService;
 use Source\Wiki\Principal\Application\Service\AffiliationQueryServiceInterface;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
+use Source\Wiki\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
+use Source\Wiki\Principal\Application\Service\ReachablePrincipalGroupManagerInterface;
 use Source\Wiki\Principal\Application\Service\WikiContextServiceInterface;
 use Source\Wiki\Principal\Domain\Factory\AffiliationGrantFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
@@ -78,7 +80,9 @@ use Source\Wiki\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationConditionValueResolver;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationQueryService;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\Wiki\Principal\Infrastructure\Service\PrincipalGroupChangeGuard;
 use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
+use Source\Wiki\Principal\Infrastructure\Service\ReachablePrincipalGroupManager;
 use Source\Wiki\Principal\Infrastructure\Service\WikiContextService;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
@@ -125,6 +129,8 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
+        $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WikiContextServiceInterface::class, WikiContextService::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
