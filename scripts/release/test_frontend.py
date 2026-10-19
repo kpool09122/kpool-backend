@@ -139,12 +139,12 @@ class FrontendReleaseTests(unittest.TestCase):
 
 
 class FrontendPlanTests(unittest.TestCase):
-    def test_branch_sources_are_frozen_once_without_live_sha_variables(self):
+    def test_tag_sources_are_frozen_once_without_live_sha_variables(self):
         for target in ('all', 'frontend', 'backend'):
-            for ref in ('', 'release/frontend-v2'):
+            for ref in ('', 'v1.0.1'):
                 with self.subTest(target=target, ref=ref), tempfile.TemporaryDirectory() as temporary:
                     _, config = fixture()
-                    environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/heads/release/v1.0.0',
+                    environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
                                        RELEASE_TARGET=target, RELEASE_MODE='deploy', CONTROL_SHA='c' * 40,
                                        FRONTEND_REF=ref, GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
                                        INITIAL_ACTIVATION='false', GITHUB_SERVER_URL='https://github.com',
@@ -158,20 +158,20 @@ class FrontendPlanTests(unittest.TestCase):
                     self.assertEqual(result['backend_sha'], None if target == 'frontend' else 'c' * 40)
                     self.assertNotIn('live_frontend_sha', result)
                     if target != 'backend':
-                        sources.assert_called_once_with(FRONTEND, ref or 'release/v1.0.0')
+                        sources.assert_called_once_with(FRONTEND, ref or 'v1.0.0')
                         self.assertEqual(result['frontend_sha'], 'a' * 40)
                     else:
                         sources.assert_not_called()
                     aws.assert_not_called()
 
     def test_frontend_main_and_raw_sha_are_rejected_before_source_lookup(self):
-        for ref in ('main', 'a' * 40, 'feature/testing'):
+        for ref in ('main', 'release/v1.0', 'a' * 40, 'feature/testing'):
             with self.subTest(ref=ref), tempfile.TemporaryDirectory() as temporary:
-                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/heads/release/v1.0.0',
+                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
                                    CONTROL_SHA='c' * 40, RELEASE_TARGET='all', RELEASE_MODE='deploy',
                                    FRONTEND_REF=ref, GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
                                    INITIAL_ACTIVATION='false', GITHUB_SERVER_URL='https://github.com')
                 with patch.dict(os.environ, environment, clear=True), \
                         patch.object(cli, 'ROOT', Path(temporary)/'release'), patch('cli.resolve_source') as sources:
-                    with self.assertRaisesRegex(ValueError, 'release/'): cli.plan_release()
+                    with self.assertRaisesRegex(ValueError, 'release tag'): cli.plan_release()
                     sources.assert_not_called()

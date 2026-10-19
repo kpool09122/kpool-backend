@@ -103,7 +103,7 @@ Wiki接続元情報の署名用 `WIKI_VISITOR_LOCATION_SECRET` はapp Secretへ�
 
 ## 5. GitHub設定とbackend配備
 
-backendの `production` Environmentでブランチ `release/*` の許可を確認し、次のVariablesを登録/更新する。
+backendの `production` Environmentでタグ `v*` の許可を確認し、次のVariablesを登録/更新する。
 
 | Variable | 取得元 |
 | --- | --- |
@@ -112,7 +112,7 @@ backendの `production` Environmentでブランチ `release/*` の許可を確�
 | RDS_CA_PEM | `rds-ca.pem` の公開PEM全文 |
 | RDS_CA_SHA256 | `github-variables.json` |
 
-バック・フロントに `release/v1.0.0` などのリリースブランチを用意する。Actionsの **Production release** でbackendのリリースブランチを実行元に選び、`target=all`, `mode=deploy` で起動する。frontendは同名なら `frontend_ref` を空欄にできる。別名ならそのリリースブランチを指定する。CLI例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
+バック・フロントにマイナーバージョンごとの `release/v1.0` などのブランチを用意し、公開対象コミットに `v1.0.0` などのタグを付ける。Actionsの **Production release** でbackendのタグを実行元に選び、`target=all`, `mode=deploy` で起動する。frontendは同名タグなら `frontend_ref` を空欄にできる。別のタグを使う場合だけ指定する。CLI例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
 初回のみ `initial=true`。migration成功 → APIのBLUE_GREENと5分bake → worker → 公開HTTPS `/health` の順に進む。
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
 API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
@@ -135,7 +135,7 @@ frontendのbuild/deployもbackendの `Production release` から実行する。
 - 承認したWorker名・R2 cache bucket・account・custom domainをfrontendの配備JSONへ設定する。
 - 4つのKPOOL API base URLを本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
 - 署名用Workers Secretを登録する。本番画像hostをNextのremotePatternsで許可する。
-- 個別に配備する場合は `target=frontend`, `mode=deploy` でfrontendのリリースブランチを指定する。通常は手順5の `target=all` で両方を配備する。
+- 個別に配備する場合は `target=frontend`, `mode=deploy` でfrontendのリリースタグを指定する。通常は手順5の `target=all` で両方を配備する。
 - Cloudflare Workers等の料金はAWS見積もりと別。
 - `k-pool.app` とAPI/画像のHTTPS、認証メール、ログイン、Cookie/CSRF、画像アップロード・表示、SQS実ジョブ、SNS通知を確認する。
 

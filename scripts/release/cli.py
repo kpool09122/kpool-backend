@@ -6,7 +6,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
-from contract import BACKEND, FRONTEND, RELEASE_BRANCH, SHA, DIGEST, validate_source, validate_ca
+from contract import BACKEND, FRONTEND, RELEASE_TAG, SHA, DIGEST, validate_source, validate_ca
 from github_source import resolve_source, recorded_artifacts, verify_control
 from aws_backend import Aws, Backend, stack_outputs
 from records import Journal, write_json
@@ -73,7 +73,7 @@ def plan_release():
         source=validate_plan(original['plan.json'])
         plan.update(backend_sha=source['backend_sha'],
                     source_run=str(recorded),source_release_id=source.get('source_release_id',source['release_id']),initial=False)
-        if target!='backend': raise ValueError('Frontend replay requires a new deploy from a release branch at the recorded commit')
+        if target!='backend': raise ValueError('Frontend replay requires a new deploy from a tag at the recorded commit')
         manifest=record.get('deployment-manifest.json',record.get('manifest.json',image.get('manifest.json')))
         if not manifest: raise ValueError('Recorded image manifest is unavailable; do not rebuild latest source')
         if attempt>1 and mode=='deploy': plan['mode']='redeploy'
@@ -87,11 +87,11 @@ def plan_release():
     else:
         if mode!='deploy': raise ValueError('Replay/rollback requires source_run')
         plan['backend_sha'] = None if target == 'frontend' else control
-        plan['backend_ref'] = os.environ['GITHUB_REF'].removeprefix('refs/heads/')
+        plan['backend_ref'] = os.environ['GITHUB_REF'].removeprefix('refs/tags/')
         if target != 'backend':
             ref = os.environ.get('FRONTEND_REF') or plan['backend_ref']
-            if not RELEASE_BRANCH.fullmatch(ref):
-                raise ValueError('Frontend source must be a release/* branch')
+            if not RELEASE_TAG.fullmatch(ref):
+                raise ValueError('Frontend source must be a v-prefixed release tag')
             plan['frontend_ref'] = ref
             plan['frontend_sha'] = resolve_source(FRONTEND, ref)
             from frontend import validate_configuration, configuration_digest

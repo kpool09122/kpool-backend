@@ -22,7 +22,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(steps[settings]['env']['HAS_' + key], "${{ secrets." + key + " != '' }}")
             self.assertNotIn(key, steps[settings]['env'])
 
-    def test_production_guards_accept_release_branches_and_reject_main_and_tags(self):
+    def test_production_guards_accept_release_tags_and_reject_branches(self):
         data = workflow('release.yml')
         inputs = data.get('on', data.get(True))['workflow_dispatch']['inputs']
         self.assertNotIn('backend_ref', inputs)
@@ -33,11 +33,11 @@ class WorkflowTests(unittest.TestCase):
         for job in jobs:
             guard = job['steps'][0]
             script = '\n'.join(guard['run'].splitlines()[1:-1])
-            for ref in ('refs/heads/release/v1.0.0', 'refs/heads/main', 'refs/heads/v1.0.0', 'refs/tags/v1.0.0'):
+            for ref in ('refs/tags/v1.0.0', 'refs/heads/main', 'refs/heads/release/v1.0', 'refs/heads/v1.0.0'):
                 environment = dict(GITHUB_REPOSITORY='kpool09122/kpool-backend', GITHUB_REF=ref,
                                    CONTROL_SHA='a' * 40, EXPECTED_CONTROL_SHA='a' * 40)
                 with self.subTest(job=job, ref=ref), patch.dict('os.environ', environment, clear=True):
-                    if ref == 'refs/heads/release/v1.0.0':
+                    if ref == 'refs/tags/v1.0.0':
                         exec(compile(script, '<tag-guard>', 'exec'), {})
                     else:
                         with self.assertRaises(ValueError):

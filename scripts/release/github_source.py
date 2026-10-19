@@ -16,22 +16,32 @@ def gh(path, binary=False):
 def resolve_source(repository, ref):
     if repository not in (BACKEND, FRONTEND):
         raise ValueError('Unknown source repository')
-    if RELEASE_BRANCH.fullmatch(ref):
-        # Fully qualified branch lookup cannot accidentally select a same-named tag.
-        sha = gh(f'repos/{repository}/git/ref/heads/{ref}')['object']['sha']
+    if RELEASE_TAG.fullmatch(ref):
+        # Fully qualified tag lookup distinguishes tags from same-named branches.
+        target = gh(f'repos/{repository}/git/ref/tags/{ref}')['object']
+        for _ in range(8):
+            validate_source(repository, target['sha'])
+            if target['type'] == 'commit':
+                sha = target['sha']
+                break
+            if target['type'] != 'tag':
+                raise ValueError('Release tag must point to a commit')
+            target = gh(f'repos/{repository}/git/tags/{target["sha"]}')['object']
+        else:
+            raise ValueError('Release tag nesting exceeds limit')
     elif SHA.fullmatch(ref):
         sha = gh(f'repos/{repository}/commits/{ref}')['sha']
         if sha != ref:
             raise ValueError('Pinned source SHA changed')
     else:
-        raise ValueError('Production source must be a release/* branch')
+        raise ValueError('Production source must be a v-prefixed release tag')
     return validate_source(repository, sha)
 
 
 def verify_control(ref, sha):
-    if not ref.startswith('refs/heads/') or not RELEASE_BRANCH.fullmatch(ref.removeprefix('refs/heads/')):
-        raise ValueError('Production workflow must run from a release/* branch')
-    # GitHub supplies workflow_sha for this invocation; do not reread a moving branch.
+    if not ref.startswith('refs/tags/') or not RELEASE_TAG.fullmatch(ref.removeprefix('refs/tags/')):
+        raise ValueError('Production workflow must run from a v-prefixed release tag')
+    # GitHub supplies workflow_sha for this invocation; do not reread a tag that may have moved.
     validate_source(BACKEND, sha)
 
 

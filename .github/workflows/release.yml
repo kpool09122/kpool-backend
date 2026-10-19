@@ -7,7 +7,7 @@ on:
         options: [backend, all, frontend]
         default: all
       frontend_ref:
-        description: Frontend release/* branch (empty uses the same branch name as backend)
+        description: Frontend release tag, e.g. v1.0.0 (empty uses the backend tag)
         type: string
         default: ''
       mode:
@@ -44,18 +44,18 @@ jobs:
       mode: ${{ steps.plan.outputs.mode }}
       release_id: ${{ steps.plan.outputs.release_id }}
     steps:
-      - name: Require backend release branch before checkout or credentials
+      - name: Require backend release tag before checkout or credentials
         run: |
           python3 - <<'PYCODE'
           import os, re
-          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF']):
-              raise ValueError('Production control workflow must run from a backend release branch')
+          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF']):
+              raise ValueError('Production control workflow must run from a backend release tag')
           PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
-      - name: Verify release branch workflow identity
+      - name: Verify release tag workflow identity
         env:
           GH_TOKEN: ${{ github.token }}
           CONTROL_SHA: ${{ github.workflow_sha }}
@@ -159,7 +159,7 @@ jobs:
           python3 - <<'PYCODE'
           import os, re
           if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
-              or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
+              or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
               or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
               raise ValueError('Untrusted workflow control repository/ref/SHA')
           PYCODE
@@ -262,7 +262,7 @@ jobs:
           python3 - <<'PYCODE'
           import os, re
           if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
-              or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
+              or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
               or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
               raise ValueError('Untrusted workflow control repository/ref/SHA')
           PYCODE
