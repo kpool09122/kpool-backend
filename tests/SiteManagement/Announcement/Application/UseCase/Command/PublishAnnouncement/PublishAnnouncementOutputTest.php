@@ -17,7 +17,7 @@ class PublishAnnouncementOutputTest extends AnnouncementTestCase
         $draft = $this->draft();
         $draft->setLocalizedContent($this->localized(Language::KOREAN));
         $output = new PublishAnnouncementOutput();
-        $entity = new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate());
+        $entity = new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate());
         $output->setAnnouncements([$entity]);
         $expected = [
             'announcementIdentifier' => (string) $draft->announcementIdentifier(),

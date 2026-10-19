@@ -559,11 +559,10 @@ paths:
         - name: sort
           in: query
           required: false
-          description: Sort field; default published_date.
+          description: Sort field; default created_at.
           schema:
             type: string
             enum:
-              - published_date
               - created_at
             nullable: true
           explode: false
@@ -907,7 +906,7 @@ paths:
   /draft-announcements/{announcementIdentifier}/publish:
     post:
       operationId: DraftAnnouncementCommandOperations_publishAnnouncement
-      description: Publish a draft under the same identifier. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.
+      description: Publish a draft under the same identifier. The server assigns the current date and time as the publication date on each publication. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.
       parameters:
         - name: announcementIdentifier
           in: path
@@ -1403,7 +1402,6 @@ components:
         - category
         - title
         - content
-        - publishedDate
       properties:
         language:
           type: string
@@ -1421,11 +1419,7 @@ components:
           type: string
           minLength: 1
           maxLength: 2048
-        publishedDate:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.DateString'
-          format: date
-      description: Create one draft with original content in language. sourceLanguage is set to this language.
+      description: Create one draft with original content in language. sourceLanguage is set to this language. Publication date is assigned by the server when published.
     DeleteAnnouncementResponse:
       type: object
       required:
@@ -1444,7 +1438,6 @@ components:
         - sourceLanguage
         - category
         - contents
-        - publishedDate
       properties:
         announcementIdentifier:
           $ref: '#/components/schemas/KPool.Common.UuidV7'
@@ -1458,10 +1451,6 @@ components:
           $ref: '#/components/schemas/AnnouncementCategory'
         contents:
           $ref: '#/components/schemas/AnnouncementContents'
-        publishedDate:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.DateString'
-          format: date
       description: One draft announcement with shared metadata and all available language contents. Incomplete translations are included for Operator review.
     KPool.Common.DateString:
       type: string
@@ -1819,7 +1808,6 @@ components:
         - category
         - title
         - content
-        - publishedDate
       properties:
         language:
           type: string
@@ -1837,11 +1825,7 @@ components:
           type: string
           minLength: 1
           maxLength: 2048
-        publishedDate:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.DateString'
-          format: date
-      description: Replace common category/date and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.
+      description: Replace common category and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.
     UpdatePrincipalGroupMembersItem:
       type: object
       required:

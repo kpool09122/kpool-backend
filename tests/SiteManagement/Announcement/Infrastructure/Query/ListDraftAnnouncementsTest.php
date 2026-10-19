@@ -31,7 +31,7 @@ class ListDraftAnnouncementsTest extends AnnouncementTestCase
             if ($index > 1) {
                 $draft->setLocalizedContent($this->localized(Language::KOREAN));
             }
-            $repository->save(new DraftAnnouncement(new AnnouncementIdentifier('019c9b4c-0000-7000-8000-00000000000' . $index), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
+            $repository->save(new DraftAnnouncement(new AnnouncementIdentifier('019c9b4c-0000-7000-8000-00000000000' . $index), $draft->sourceLanguage(), $draft->category(), $draft->contents()));
         }
         $query = $this->app()->make(ListDraftAnnouncementsInterface::class);
         $output = new ListDraftAnnouncementsOutput();
@@ -60,7 +60,7 @@ class ListDraftAnnouncementsTest extends AnnouncementTestCase
     {
         $principal = $this->authorize(Action::ANNOUNCEMENT_VIEW_DRAFT);
         $draft = $this->draft();
-        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
+        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate()));
         $repository = $this->app()->make(DraftAnnouncementRepositoryInterface::class);
         $repository->save($draft);
         $repository->delete($draft);

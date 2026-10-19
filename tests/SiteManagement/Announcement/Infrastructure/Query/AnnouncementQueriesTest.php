@@ -21,7 +21,7 @@ class AnnouncementQueriesTest extends AnnouncementTestCase
     {
         $draft = $this->draft();
         $draft->setLocalizedContent($this->localized(Language::KOREAN));
-        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
+        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate()));
         $query = $this->app()->make(GetAnnouncementInterface::class);
         $readModel = $query->process(new GetAnnouncementInput($draft->announcementIdentifier(), Language::KOREAN));
         $this->assertSame('ko title', $readModel->title());

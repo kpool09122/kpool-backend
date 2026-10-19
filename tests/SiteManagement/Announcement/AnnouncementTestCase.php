@@ -35,8 +35,12 @@ abstract class AnnouncementTestCase extends TestCase
             Language::JAPANESE,
             Category::NEWS,
             new AnnouncementContents($this->localized(Language::JAPANESE)),
-            new PublishedDate(new DateTimeImmutable('2026-10-01')),
         );
+    }
+
+    protected function publishedDate(): PublishedDate
+    {
+        return new PublishedDate(new DateTimeImmutable('2026-10-01'));
     }
 
     protected function localized(Language $language): LocalizedAnnouncementContent

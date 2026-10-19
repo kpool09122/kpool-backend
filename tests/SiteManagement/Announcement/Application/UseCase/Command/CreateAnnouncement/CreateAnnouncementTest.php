@@ -25,7 +25,7 @@ class CreateAnnouncementTest extends AnnouncementTestCase
     {
         $principal = $this->authorize(Action::ANNOUNCEMENT_CREATE);
         $output = new CreateAnnouncementOutput();
-        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body"), $this->draft()->publishedDate()), $output);
+        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body")), $output);
         $draft = $output->draftAnnouncement();
         $this->assertNotNull($draft);
         $this->assertSame('new title', (string) $draft->localizedContent(Language::JAPANESE)?->title);
@@ -45,13 +45,13 @@ class CreateAnnouncementTest extends AnnouncementTestCase
         $repository->shouldNotReceive('delete');
         $this->app()->instance(DraftAnnouncementRepositoryInterface::class, $repository);
         $this->expectException(UnauthorizedException::class);
-        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body"), $this->draft()->publishedDate()), new CreateAnnouncementOutput());
+        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body")), new CreateAnnouncementOutput());
     }
 
     public function testDeniesMissingPrincipal(): void
     {
         $principal = $this->authorize(Action::ANNOUNCEMENT_CREATE, true, false);
         $this->expectException(UnauthorizedException::class);
-        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body"), $this->draft()->publishedDate()), new CreateAnnouncementOutput());
+        $this->app()->make(CreateAnnouncementInterface::class)->process(new CreateAnnouncementInput($principal, Language::JAPANESE, Category::NEWS, new Title("new title"), new Content("new body")), new CreateAnnouncementOutput());
     }
 }

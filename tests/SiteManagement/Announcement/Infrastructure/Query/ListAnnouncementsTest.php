@@ -94,7 +94,7 @@ class ListAnnouncementsTest extends AnnouncementTestCase
                 $draft->sourceLanguage(),
                 $draft->category(),
                 $draft->contents(),
-                $draft->publishedDate(),
+                $this->publishedDate(),
             ));
         }
     }

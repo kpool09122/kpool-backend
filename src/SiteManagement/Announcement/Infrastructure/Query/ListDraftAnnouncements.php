@@ -20,7 +20,6 @@ use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use UnexpectedValueException;
 
 readonly class ListDraftAnnouncements implements ListDraftAnnouncementsInterface
 {
@@ -38,7 +37,7 @@ readonly class ListDraftAnnouncements implements ListDraftAnnouncementsInterface
         }
 
         $direction = strtolower($input->order());
-        if (! in_array($input->sort(), ['published_date', 'created_at'], true) || ! in_array($direction, ['asc', 'desc'], true) || $input->perPage() < 1 || $input->perPage() > 100) {
+        if (! in_array($input->sort(), ['created_at'], true) || ! in_array($direction, ['asc', 'desc'], true) || $input->perPage() < 1 || $input->perPage() > 100) {
             throw new InvalidArgumentException('Invalid draft announcement list options.');
         }
         $query = DraftAnnouncementModel::query()->whereNull('deleted_at');
@@ -57,7 +56,6 @@ readonly class ListDraftAnnouncements implements ListDraftAnnouncementsInterface
             $model->source_language,
             $model->category,
             $model->contents,
-            ($model->published_date ?? throw new UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable(),
         ), array_values($paginator->items()));
         $output->output($announcements, $paginator->currentPage(), $paginator->lastPage(), $paginator->total(), $paginator->perPage());
     }

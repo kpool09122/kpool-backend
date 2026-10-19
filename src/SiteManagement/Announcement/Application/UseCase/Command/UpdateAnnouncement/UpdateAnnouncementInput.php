@@ -8,7 +8,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
@@ -21,7 +20,6 @@ readonly class UpdateAnnouncementInput implements UpdateAnnouncementInputPort
         private Category               $category,
         private Title                  $title,
         private Content                $content,
-        private PublishedDate          $publishedDate,
     ) {
     }
 
@@ -53,10 +51,5 @@ readonly class UpdateAnnouncementInput implements UpdateAnnouncementInputPort
     public function content(): Content
     {
         return $this->content;
-    }
-
-    public function publishedDate(): PublishedDate
-    {
-        return $this->publishedDate;
     }
 }

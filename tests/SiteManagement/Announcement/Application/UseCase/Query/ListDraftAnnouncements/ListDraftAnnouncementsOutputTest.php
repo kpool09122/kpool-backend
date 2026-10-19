@@ -13,7 +13,7 @@ class ListDraftAnnouncementsOutputTest extends AnnouncementTestCase
     public function testSerializesDraftContentsAndPagination(): void
     {
         $draft = $this->draft();
-        $readModel = new DraftAnnouncementReadModel((string) $draft->announcementIdentifier(), $draft->sourceLanguage()->value, $draft->category()->value, $draft->contents()->toArray(), $draft->publishedDate()->value());
+        $readModel = new DraftAnnouncementReadModel((string) $draft->announcementIdentifier(), $draft->sourceLanguage()->value, $draft->category()->value, $draft->contents()->toArray());
         $output = new ListDraftAnnouncementsOutput();
         $output->output([$readModel], 2, 3, 5, 2);
         $this->assertSame(['announcements' => [$readModel->toArray()], 'current_page' => 2, 'last_page' => 3, 'total' => 5, 'per_page' => 2], $output->toArray());

@@ -18,7 +18,7 @@ readonly class ListDraftAnnouncementsInput implements ListDraftAnnouncementsInpu
         private PrincipalIdentifier $principalIdentifier,
         ?int $perPage = null,
         private string $order = 'desc',
-        private string $sort = 'published_date',
+        private string $sort = 'created_at',
         private string $searchWords = '',
     ) {
         if ($perPage !== null && ($perPage < 1 || $perPage > self::MAX_PER_PAGE)) {

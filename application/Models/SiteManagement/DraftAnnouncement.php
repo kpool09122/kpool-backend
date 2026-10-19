@@ -7,7 +7,6 @@ namespace Application\Models\SiteManagement;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -15,14 +14,12 @@ use Override;
  * @property string      $source_language
  * @property int         $category
  * @property array<string, array{title: string, content: string}> $contents
- * @property Carbon|null $published_date
  */
 #[Fillable([
     'id',
     'source_language',
     'category',
     'contents',
-    'published_date',
 ])]
 #[Table(name: 'draft_announcements', keyType: 'string')]
 class DraftAnnouncement extends Model
@@ -34,6 +31,5 @@ class DraftAnnouncement extends Model
     protected $casts = [
         'category' => 'integer',
         'contents' => 'array',
-        'published_date' => 'datetime',
     ];
 }

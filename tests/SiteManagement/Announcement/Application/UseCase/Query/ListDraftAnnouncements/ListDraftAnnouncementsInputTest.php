@@ -17,7 +17,7 @@ class ListDraftAnnouncementsInputTest extends TestCase
         $defaults = new ListDraftAnnouncementsInput(new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000009'));
         $this->assertSame(50, $defaults->perPage());
         $this->assertSame('desc', $defaults->order());
-        $this->assertSame('published_date', $defaults->sort());
+        $this->assertSame('created_at', $defaults->sort());
         $this->assertSame('', $defaults->searchWords());
         $input = new ListDraftAnnouncementsInput(new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000008'), 100, 'asc', 'created_at', 'query');
         $this->assertSame('019c9b4c-0000-7000-8000-000000000008', (string) $input->principalIdentifier());

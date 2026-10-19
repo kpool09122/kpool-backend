@@ -279,8 +279,6 @@ model DraftAnnouncement {
   sourceLanguage: "ja" | "ko" | "en";
   category: AnnouncementCategory;
   contents: AnnouncementContents;
-  @format("date")
-  publishedDate: DateString;
 }
 
 model ListDraftAnnouncementsPage {
@@ -316,8 +314,8 @@ interface DraftAnnouncementOperations {
     @query page?: int32 | null,
     @doc("Sort direction; default desc.")
     @query order?: "asc" | "desc" | null,
-    @doc("Sort field; default published_date.")
-    @query sort?: "published_date" | "created_at" | null,
+    @doc("Sort field; default created_at.")
+    @query sort?: "created_at" | null,
     @doc("Literal substring to find in any available language title or body. Empty or null disables filtering.")
     @query searchWords?: string | null,
   ): ListDraftAnnouncementsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
@@ -389,7 +387,7 @@ interface AnnouncementOperations {
   ): PublishedAnnouncementSummary | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 }
 
-@doc("Create one draft with original content in language. sourceLanguage is set to this language.")
+@doc("Create one draft with original content in language. sourceLanguage is set to this language. Publication date is assigned by the server when published.")
 model CreateAnnouncementRequestBody {
   language: "ja" | "ko" | "en";
   category: AnnouncementCategory;
@@ -399,11 +397,9 @@ model CreateAnnouncementRequestBody {
   @minLength(1)
   @maxLength(2048)
   content: string;
-  @format("date")
-  publishedDate: DateString;
 }
 
-@doc("Replace common category/date and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.")
+@doc("Replace common category and the selected language's content on an existing draft. Other language contents and sourceLanguage are retained. Titles and bodies must not be blank.")
 model UpdateAnnouncementRequestBody {
   language: "ja" | "ko" | "en";
   category: AnnouncementCategory;
@@ -413,8 +409,6 @@ model UpdateAnnouncementRequestBody {
   @minLength(1)
   @maxLength(2048)
   content: string;
-  @format("date")
-  publishedDate: DateString;
 }
 
 model CreateAnnouncementResponse {
@@ -474,7 +468,7 @@ interface DraftAnnouncementCommandOperations {
 
   @post
   @route("/{announcementIdentifier}/publish")
-  @doc("Publish a draft under the same identifier. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.")
+  @doc("Publish a draft under the same identifier. The server assigns the current date and time as the publication date on each publication. Requires announcement:publish on announcement. Non-blank titles and bodies in all ja/ko/en languages are required; incomplete contents return 422. A missing draft returns 404. Saving the published contents and deleting the draft occur in one transaction. Existing published contents are updated under the same identifier.")
   publishAnnouncement(@path announcementIdentifier: UuidV7): PublishAnnouncementResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 
   @delete

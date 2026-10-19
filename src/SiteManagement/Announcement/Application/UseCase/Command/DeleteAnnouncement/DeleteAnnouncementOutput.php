@@ -31,7 +31,6 @@ class DeleteAnnouncementOutput implements DeleteAnnouncementOutputPort
             'sourceLanguage' => $announcement->sourceLanguage()->value,
             'category' => $announcement->category()->value,
             'contents' => $announcement->contents()->toArray(),
-            'publishedDate' => $announcement->publishedDate()->value()->format('Y-m-d'),
         ], $this->announcements)];
     }
 }

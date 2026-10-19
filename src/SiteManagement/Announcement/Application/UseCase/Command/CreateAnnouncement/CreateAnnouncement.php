@@ -35,7 +35,6 @@ readonly class CreateAnnouncement implements CreateAnnouncementInterface
             $input->category(),
             $input->title(),
             $input->content(),
-            $input->publishedDate(),
         );
 
         $this->draftAnnouncementRepository->save($draftAnnouncement);

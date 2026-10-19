@@ -15,7 +15,7 @@ class ListDraftAnnouncementsRequest extends FormRequest
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'order' => ['nullable', 'string', 'in:asc,desc'],
-            'sort' => ['nullable', 'string', 'in:published_date,created_at'],
+            'sort' => ['nullable', 'string', 'in:created_at'],
             'searchWords' => ['nullable', 'string'],
         ];
     }
@@ -38,7 +38,7 @@ class ListDraftAnnouncementsRequest extends FormRequest
     {
         $sort = $this->query('sort');
 
-        return $sort === null ? 'published_date' : (string) $sort;
+        return $sort === null ? 'created_at' : (string) $sort;
     }
 
     public function searchWords(): string

@@ -25,7 +25,7 @@ interface ListDraftAnnouncementsOutputPort
     ): void;
 
     /**
-     * @return array{announcements: list<array{announcementIdentifier: string, sourceLanguage: string, category: int, contents: array<string, array{title: string, content: string}>, publishedDate: string}>, current_page: int, last_page: int, total: int, per_page: int}
+     * @return array{announcements: list<array{announcementIdentifier: string, sourceLanguage: string, category: int, contents: array<string, array{title: string, content: string}>}>, current_page: int, last_page: int, total: int, per_page: int}
      */
     public function toArray(): array;
 }

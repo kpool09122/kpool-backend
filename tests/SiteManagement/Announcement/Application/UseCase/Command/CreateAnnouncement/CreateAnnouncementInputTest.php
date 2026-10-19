@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement;
 
-use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInput;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -50,20 +48,17 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 この「グローバル投票」機能が、ファンの皆さまの熱い想いを一つにし、アーティストをさらに大きなステージへと押し上げるきっかけになることを願っています。
 今すぐ投票に参加して、あなたの愛を"推し"に届けましょう！
 これからもk-poolをよろしくお願いいたします。');
-        $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new CreateAnnouncementInput(
             $principalIdentifier,
             $language,
             $category,
             $title,
             $content,
-            $publishedDate,
         );
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string) $title, (string) $input->title());
         $this->assertSame((string) $content, (string) $input->content());
-        $this->assertSame($publishedDate->value(), $input->publishedDate()->value());
     }
 }

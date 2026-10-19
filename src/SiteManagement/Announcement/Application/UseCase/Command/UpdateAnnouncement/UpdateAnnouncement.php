@@ -43,7 +43,6 @@ readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
 
         $announcement->setCategory($input->category());
         $announcement->setLocalizedContent(new LocalizedAnnouncementContent($input->language(), $input->title(), $input->content()));
-        $announcement->setPublishedDate($input->publishedDate());
         $this->draftAnnouncementRepository->save($announcement);
 
         $output->setDraftAnnouncement($announcement);

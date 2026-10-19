@@ -17,7 +17,7 @@ class DraftAnnouncementFactoryTest extends AnnouncementTestCase
     public function testCreatesOneAnnouncementWithOriginalContent(): void
     {
         $factory = $this->app()->make(DraftAnnouncementFactoryInterface::class);
-        $announcement = $factory->create(Language::JAPANESE, Category::NEWS, new Title('title'), new Content('body'), $this->draft()->publishedDate());
+        $announcement = $factory->create(Language::JAPANESE, Category::NEWS, new Title('title'), new Content('body'));
         $this->assertTrue(UuidValidator::isValid((string) $announcement->announcementIdentifier()));
         $this->assertSame(Language::JAPANESE, $announcement->sourceLanguage());
         $this->assertSame('title', (string) $announcement->localizedContent(Language::JAPANESE)?->title);

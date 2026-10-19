@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('source_language', 8)->comment('翻訳元言語');
             $table->unsignedTinyInteger('category')->comment('カテゴリ');
             $table->jsonb('contents')->comment('言語別のタイトルと本文');
-            $table->dateTime('published_date')->comment('公開予定日時');
             $table->timestamps();
             $table->softDeletes();
         });
