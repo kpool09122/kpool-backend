@@ -30,6 +30,24 @@ class RuntimeContracts(unittest.TestCase):
             raise AssertionError(errors)
         cls.runtime = cls.template['Resources']
 
+    def test_nonroot_database_setup_waits_for_private_writable_volume(self):
+        containers = {item['Name']: item for item in self.runtime['DatabaseInitializationTaskDefinition']['Properties']['ContainerDefinitions']}
+        client = containers['database-setup']
+        initializer = containers['database-setup-volume-init']
+        self.assertEqual(client['User'], 'postgres')
+        self.assertTrue(client['ReadonlyRootFilesystem'])
+        self.assertEqual(client['DependsOn'], [{'ContainerName': initializer['Name'], 'Condition': 'SUCCESS'}])
+        self.assertEqual(initializer['User'], 'root')
+        self.assertFalse(initializer['Essential'])
+        self.assertTrue(initializer['ReadonlyRootFilesystem'])
+        self.assertNotIn('Secrets', initializer)
+        self.assertEqual(initializer['MountPoints'], client['MountPoints'])
+        self.assertEqual(initializer['Command'], ['chown postgres:postgres /tmp && chmod 0700 /tmp'])
+
+    def test_scheduler_output_uses_its_explicit_group(self):
+        self.assertEqual(self.template['Outputs']['SchedulerArn']['Value'], {'Fn::Sub':
+            'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${Schedule}'})
+
     def test_target_roles_and_rule_weights_follow_parameters(self):
         # Reconciliation reflects each live value independently, including a test
         # rule that still points to the current production target after a release.
@@ -79,12 +97,13 @@ class RuntimeContracts(unittest.TestCase):
             {'Ref': 'ServerErrorAlarm'}, {'Ref': 'LatencyAlarm'},
             {'Fn::If': ['HasCanary', {'Ref': 'ExternalCanaryAlarmName'}, {'Ref': 'AWS::NoValue'}]},
         ])
-        self.assertEqual(configuration['LifecycleHooks'], [{
+        hook_condition, release_hooks, bootstrap_hooks = configuration['LifecycleHooks']['Fn::If']
+        self.assertEqual(hook_condition, 'HasApiRelease')
+        self.assertEqual(bootstrap_hooks, {'Ref': 'AWS::NoValue'})
+        self.assertEqual(release_hooks, [{
             'HookTargetArn': {'Fn::GetAtt': ['LifecycleHook', 'Arn']},
             'RoleArn': {'Fn::GetAtt': ['HookInvocationRole', 'Arn']},
             'LifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
-            'HookDetails': {'contractVersion': '1', 'expectedHost': {'Ref': 'ApiDomainName'},
-                            'testPort': 8443, 'healthPath': {'Ref': 'HealthCheckPath'}},
         }])
         worker = self.runtime['WorkerService']['Properties']['DeploymentConfiguration']
         self.assertEqual(worker['Strategy'], 'ROLLING')
@@ -177,7 +196,7 @@ class RuntimeContracts(unittest.TestCase):
                           for m in health['Metrics'][1:]}, {'BlueTargetGroup', 'GreenTargetGroup'})
         for name in ('AppExecutionRole', 'MigrationExecutionRole', 'ApiTaskRole', 'WorkerTaskRole'):
             self.assertNotIn('DatabaseSecretArn', str(self.runtime[name]))
-        setup = self.runtime['DatabaseSetupTaskDefinition']['Properties']['ContainerDefinitions'][0]
+        setup = self.runtime['DatabaseInitializationTaskDefinition']['Properties']['ContainerDefinitions'][0]
         self.assertTrue(setup['ReadonlyRootFilesystem'])
         self.assertIn('DatabaseSecretArn', str(setup['Secrets']))
         self.assertIn('PGSSLMODE=verify-full', setup['Command'][0])

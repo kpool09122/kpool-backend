@@ -7,11 +7,40 @@ import warnings
 import zipfile
 from unittest.mock import patch
 from contract import BACKEND, FRONTEND
-from github_source import recorded_artifacts, resolve_source
+from github_source import recorded_artifacts, resolve_source, verify_control
 from cli import plan_release, validate_plan, validate_manifest
 from fixtures import fixture, FakeAws
 
 class SourceAndRecordTests(unittest.TestCase):
+    def test_control_requires_a_release_tag(self):
+        for ref in ('refs/heads/main', 'refs/heads/develop', 'refs/heads/release/v1.0',
+                    'refs/tags/feature', 'refs/tags/v1/nested'):
+            with self.subTest(ref=ref), self.assertRaises(ValueError):
+                verify_control(ref, 'a' * 40)
+        verify_control('refs/tags/v1.0.0', 'a' * 40)
+        with self.assertRaises(ValueError):
+            verify_control('refs/tags/v1.0.0', 'bad-sha')
+
+    def test_tag_and_legacy_branch_records_are_bound_to_immutable_run_metadata(self):
+        sha = 'a' * 40
+        for branch, ref in (('v1.0.0', 'refs/tags/v1.0.0'),
+                            ('release/v1.0', 'refs/heads/release/v1.0')):
+            run = dict(repository={'full_name': BACKEND}, event='workflow_dispatch', head_branch=branch,
+                       head_sha=sha, workflow_id=1, status='completed')
+            source = dict(workflow_ref=ref, workflow_sha=sha)
+            for change in ({}, {'workflow_ref': 'refs/heads/main'}, {'workflow_sha': 'b' * 40}):
+                with self.subTest(ref=ref, change=change):
+                    archive = self.record_zip([('plan.json', json.dumps(dict(source, **change)))])
+                    responses = [run, {'path': '.github/workflows/release.yml'},
+                                 {'artifacts': [{'id': 1, 'name': 'release-plan-1', 'expired': False}]}, archive]
+                    with patch('github_source.gh', side_effect=responses) as api:
+                        if change:
+                            with self.assertRaisesRegex(ValueError, 'ref/SHA'): recorded_artifacts('42')
+                        else:
+                            self.assertEqual(recorded_artifacts('42')[0]['plan.json'], source)
+                        # Replay never resolves a tag or branch that may have moved or been deleted.
+                        self.assertEqual(api.call_count, 4)
+
     def read_record_zip(self, archive):
         run={'repository':{'full_name':BACKEND},'event':'workflow_dispatch','head_branch':'main','workflow_id':1,'status':'completed'}
         artifacts=[{'id':1,'name':'backend-record-1','expired':False}]
@@ -54,24 +83,33 @@ class SourceAndRecordTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Record archive is too large'):
             self.read_record_zip(self.record_zip([('ignored.txt','x'*(10*1024*1024))]))
 
-    def test_source_is_frozen_and_must_be_reachable_from_main(self):
-        sha='a'*40
-        with patch('github_source.gh',side_effect=[{'sha':sha},{'status':'ahead'}]) as api:
-            self.assertEqual(resolve_source(BACKEND,'main'),sha)
-            self.assertEqual(api.call_args_list[1].args[0],f'repos/{BACKEND}/compare/{sha}...main')
-        with patch('github_source.gh',side_effect=[{'sha':sha},{'status':'diverged'}]):
-            with self.assertRaises(ValueError): resolve_source(BACKEND,sha)
-    def test_frontend_token_is_scoped_to_frontend_source_queries(self):
+    def test_release_tag_resolves_lightweight_and_annotated_tags_once(self):
+        sha, tag_sha = 'a' * 40, 'b' * 40
+        for objects in ([{'object': {'type': 'commit', 'sha': sha}}],
+                        [{'object': {'type': 'tag', 'sha': tag_sha}},
+                         {'object': {'type': 'commit', 'sha': sha}}]):
+            with self.subTest(objects=objects), patch('github_source.gh', side_effect=objects) as api:
+                self.assertEqual(resolve_source(BACKEND, 'v1.0.0'), sha)
+                self.assertEqual(api.call_args_list[0].args[0], f'repos/{BACKEND}/git/ref/tags/v1.0.0')
+        with patch('github_source.gh', return_value={'sha': sha}):
+            self.assertEqual(resolve_source(BACKEND, sha), sha)
+        with patch('github_source.gh', return_value={'sha': 'b' * 40}):
+            with self.assertRaises(ValueError): resolve_source(BACKEND, sha)
+
+    def test_tag_pointing_to_non_commit_or_excessive_nesting_is_rejected(self):
+        for kind in ('blob', 'tree', 'tag'):
+            with self.subTest(kind=kind), patch('github_source.gh', return_value={'object': {'type': kind, 'sha': 'a' * 40}}):
+                with self.assertRaises(ValueError): resolve_source(FRONTEND, 'v1.0.0')
+
+    def test_public_frontend_uses_standard_read_token_without_app_credentials(self):
         sha = 'a' * 40
-        with patch.dict('os.environ', FRONTEND_GH_TOKEN='TEST ONLY installation token'), \
-                patch('github_source.gh', side_effect=[{'sha': sha}, {'status': 'ahead'}, {'sha': sha}, {'status': 'ahead'}]) as api:
-            resolve_source(FRONTEND, 'main')
-            resolve_source(BACKEND, 'main')
-        self.assertEqual([call.kwargs for call in api.call_args_list],
-                         [{'token': 'TEST ONLY installation token'}, {'token': 'TEST ONLY installation token'}, {}, {}])
+        with patch('github_source.gh', return_value={'object': {'type': 'commit', 'sha': sha}}) as api:
+            self.assertEqual(resolve_source(FRONTEND, 'v1.0.0'), sha)
+            api.assert_called_once_with(f'repos/{FRONTEND}/git/ref/tags/v1.0.0')
+
     def test_injection_ref_never_calls_github(self):
         with patch('github_source.gh') as api:
-            for ref in ('feature/test','main;echo secret','$(id)','a'*39):
+            for ref in ('main','release/v1.0','feature/test','release/../main','main;echo secret','$(id)','a'*39):
                 with self.assertRaises(ValueError): resolve_source(BACKEND,ref)
             api.assert_not_called()
     def test_record_selection_is_exact_attempt_never_latest_attempt(self):
@@ -111,19 +149,19 @@ class ReplayPlanTests(unittest.TestCase):
         self.root=Path(self.directory.name)/'release'
         self.o,self.runtime_env,self.config,self.source,self.manifest=fixture()
         self.previous={'repository':BACKEND,'environment':'production','release_id':self.source['release_id'],'events':[]}
-        self.environment={'GITHUB_REPOSITORY':BACKEND,'GITHUB_REF':'refs/heads/main',
+        self.environment={'GITHUB_REPOSITORY':BACKEND,'GITHUB_REF':'refs/tags/v1.0.0',
                           'RELEASE_TARGET':'backend','RELEASE_MODE':'redeploy','CONTROL_SHA':'e'*40,
                           'SOURCE_RUN':'42','GITHUB_RUN_ATTEMPT':'1','GITHUB_RUN_ID':'43',
                           'INITIAL_ACTIVATION':'false','GITHUB_SERVER_URL':'https://github.com',
-                          'LIVE_FRONTEND_SHA':'f'*40,'GITHUB_OUTPUT':str(Path(self.directory.name)/'output')}
+                          'GITHUB_OUTPUT':str(Path(self.directory.name)/'output')}
 
     def create_plan(self, record=None, image=None):
         if record is None: record={'deployment-manifest.json':self.manifest,'journal.json':self.previous}
-        with patch('cli.ROOT',self.root),patch.dict('os.environ',self.environment,clear=True),patch('cli.recorded_artifacts',return_value=({'plan.json':self.source},image or {},record)):
+        with patch('cli.ROOT',self.root),patch.dict('os.environ',self.environment,clear=True),patch('cli.verify_control'),patch('cli.recorded_artifacts',return_value=({'plan.json':self.source},image or {},record)):
             plan_release()
         return json.loads((self.root/'plan.json').read_text())
 
-    def test_replay_uses_current_frontend_sha_and_preserves_source_digest(self):
+    def test_replay_preserves_source_digest_without_live_frontend_state(self):
         for mode in ('redeploy','resume-worker','rollback-api','rollback-worker','deploy'):
             with self.subTest(mode=mode):
                 self.root=Path(self.directory.name)/mode
@@ -131,31 +169,21 @@ class ReplayPlanTests(unittest.TestCase):
                 if mode=='deploy':
                     self.environment.update(GITHUB_RUN_ATTEMPT='2',GITHUB_RUN_ID='42',SOURCE_RUN='')
                 plan=self.create_plan()
-                self.assertEqual(plan['live_frontend_sha'],'f'*40)
+                self.assertNotIn('live_frontend_sha', plan)
                 self.assertEqual(plan['backend_sha'],self.source['backend_sha'])
                 self.assertEqual(json.loads((self.root/'manifest.json').read_text()),self.manifest)
                 if mode=='deploy': self.assertEqual(plan['mode'],'redeploy')
 
-    def test_replay_requires_valid_current_frontend_sha(self):
-        for index,value in enumerate((None,'','f'*39,'F'*40,'../historical')):
-            with self.subTest(value=value):
-                self.root=Path(self.directory.name)/str(index)
-                if value is None: self.environment.pop('LIVE_FRONTEND_SHA',None)
-                else: self.environment['LIVE_FRONTEND_SHA']=value
-                with self.assertRaises(ValueError): self.create_plan()
-
-    def test_replay_compatibility_gate_requires_current_frontend_approval(self):
+    def test_replay_does_not_require_live_sha_or_compatibility_variables(self):
         from aws_backend import Backend
         from records import Journal
-        plan=self.create_plan()
-        aws=FakeAws(self.o,self.runtime_env)
-        self.previous['events']=[{'stage':'migration','status':'success'}]
-        backend=Backend(aws,plan,self.manifest,Journal(Path(self.directory.name)/'records',plan),self.config,self.previous)
-        with self.assertRaisesRegex(ValueError,'compatibility'):
-            backend.preflight()
-        self.assertFalse(any(op in ('register-task-definition','run-task','update-service') for _,op,_ in aws.calls))
-        self.config['compatibility']['live_frontend_sha']='f'*40
+        plan = self.create_plan()
+        aws = FakeAws(self.o, self.runtime_env)
+        self.previous['events'] = [{'stage': 'migration', 'status': 'success'}]
+        backend = Backend(aws, plan, self.manifest, Journal(Path(self.directory.name)/'records', plan),
+                          self.config, self.previous)
         backend.preflight()
+        self.assertFalse(any(op in ('register-task-definition', 'run-task', 'update-service') for _,op,_ in aws.calls))
 
     def test_replay_from_resume_and_rollback_record_manifest_without_publication(self):
         for source_mode in ('resume-worker','rollback-api','rollback-worker'):

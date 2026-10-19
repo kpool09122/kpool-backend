@@ -3,6 +3,7 @@
 No AWS mutations happen on import. The CLI requires an explicit command and plan.
 """
 import argparse
+import copy
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import uuid
 from urllib.parse import quote
+from cfnlint.decode import decode
 
 from environment import RUNTIME_STATE, load_contract, parameters, validate_config
 from runtime_state import resolve
@@ -34,7 +36,7 @@ class Aws:
         if result.returncode:
             # Do not echo SDK errors or requests which could contain sensitive input.
             raise AwsError(service, operation, result.stderr)
-        if operation in {'package', 'wait'}:
+        if operation == 'wait':
             return {}
         return json.loads(result.stdout) if result.stdout.strip() else {}
 
@@ -54,6 +56,19 @@ def read_stack(aws, name):
 
 def output_values(stack):
     return {item['OutputKey']: item['OutputValue'] for item in (stack or {}).get('Outputs') or []}
+
+
+def runtime_parameters_for_update(live, outputs):
+    """Keep empty bootstrap inputs distinct from deployed release revisions."""
+    values = dict(live)
+    for kind, state, inactive in (('Api', 'ApiDesiredCount', '0'),
+                                   ('Worker', 'WorkerDesiredCount', '0'),
+                                   ('Scheduler', 'SchedulerState', 'DISABLED')):
+        name = kind + 'TaskDefinitionArn'
+        if (values.get(state) == inactive
+                and values.get(name) == outputs.get(kind + 'BootstrapTaskDefinitionArn')):
+            values[name] = ''
+    return values
 
 
 def service_deployment_history(aws, cluster, service):
@@ -143,6 +158,42 @@ def validate_bootstrap_permissions(config, stack, templates, contract, previous_
             raise ValueError(f'Bootstrap is stale ({name}); plan and apply bootstrap first')
 
 
+def upload_template(aws, config, path, key):
+    uploaded = aws('s3api', 'put-object', '--bucket', config['packageBucket'], '--key', key,
+                   '--body', str(path), '--content-type', 'application/json',
+                   '--expected-bucket-owner', config['accountId'])
+    version = uploaded.get('VersionId')
+    if not version or version == 'null':
+        raise ValueError('Package bucket versioning must be enabled')
+    return (f"https://{config['packageBucket']}.s3.{config['region']}.amazonaws.com/{key}"
+            + '?versionId=' + quote(version, safe=''))
+
+
+def package_nested_templates(aws, config, root, directory, prefix, template):
+    """Upload JSON children so YAML 1.2 -> 1.1 conversion cannot change scalars."""
+    packaged = copy.deepcopy(template)
+    for resource in packaged.get('Resources', {}).values():
+        if resource['Type'] != 'AWS::CloudFormation::Stack':
+            continue
+        reference = resource.get('Properties', {}).get('TemplateURL')
+        if not isinstance(reference, str) or reference.startswith('https://'):
+            continue
+        path = (root / reference).resolve()
+        # These foundation children are local files in this template directory.
+        if path.parent != root.resolve() or path.suffix != '.yaml' or not path.is_file():
+            raise ValueError('Nested foundation templates must be local YAML files in the template directory')
+        child, errors = decode(str(path))
+        if errors:
+            raise ValueError('Invalid nested template: ' + path.name)
+        if any(item['Type'] == 'AWS::CloudFormation::Stack' for item in child.get('Resources', {}).values()):
+            raise ValueError('Foundation children must not contain further nested stacks')
+        rendered = directory / (path.stem + '.rendered.json')
+        rendered.write_text(json.dumps(child, separators=(',', ':')))
+        resource['Properties']['TemplateURL'] = upload_template(
+            aws, config, rendered, prefix + '/' + path.stem + '.json')
+    return packaged
+
+
 def prepare(aws, config, stack, root, directory, paused):
     templates, contract = load_contract(root)
     validate_config(config, templates, contract)
@@ -164,23 +215,19 @@ def prepare(aws, config, stack, root, directory, paused):
         if name in previous and values.get(name) != previous[name]:
             raise ValueError('Immutable naming input changed; use an explicit migration instead')
     if stack == 'runtime' and before['runtime']:
-        values.update(before['runtime']['parameters'])
-    template = root / f'{stack}.yaml'
+        values.update(runtime_parameters_for_update(before['runtime']['parameters'], outputs['runtime']))
     name = 'infrastructure-' + uuid.uuid4().hex
+    rendered_template = templates[stack]
     if stack == 'root':
         aws('s3api', 'head-bucket', '--bucket', config['packageBucket'], '--expected-bucket-owner', config['accountId'])
         location = aws('s3api', 'get-bucket-location', '--bucket', config['packageBucket'],
                        '--expected-bucket-owner', config['accountId'])
         if location.get('LocationConstraint') != config['region']:
             raise ValueError('Package bucket must be in the deployment region')
-        template = directory / 'root.packaged.yaml'
-        aws('cloudformation', 'package', '--template-file', str(root / 'root.yaml'),
-            '--s3-bucket', config['packageBucket'], '--s3-prefix', name, '--output-template-file', str(template))
-    else:
-        # Inline Lambda source may make the readable YAML exceed TemplateBody's
-        # byte limit. Submit the equivalent compact JSON, with the source intact.
-        template = directory / f'{stack}.rendered.json'
-        template.write_text(json.dumps(templates[stack], separators=(',', ':')))
+        rendered_template = package_nested_templates(aws, config, root, directory, name, rendered_template)
+    # JSON preserves times, boolean-looking strings and inline source exactly.
+    template = directory / f'{stack}.rendered.json'
+    template.write_text(json.dumps(rendered_template, separators=(',', ':')))
     encoded = [{'ParameterKey': key, 'ParameterValue': value} for key, value in sorted(values.items())]
     source = ['--template-body', 'file://' + str(template)]
     if template.stat().st_size > 51200:
@@ -190,13 +237,7 @@ def prepare(aws, config, stack, root, directory, paused):
         if location.get('LocationConstraint') != config['region']:
             raise ValueError('Package bucket must be in the deployment region')
         key = name + '/' + stack + '.json'
-        uploaded = aws('s3api', 'put-object', '--bucket', config['packageBucket'], '--key', key,
-                       '--body', str(template), '--expected-bucket-owner', config['accountId'])
-        version = uploaded.get('VersionId')
-        if not version or version == 'null':
-            raise ValueError('Package bucket versioning must be enabled')
-        url = (f"https://{config['packageBucket']}.s3.{config['region']}.amazonaws.com/{key}"
-               + '?versionId=' + quote(version, safe=''))
+        url = upload_template(aws, config, template, key)
         source = ['--template-url', url]
     args = ['--stack-name', config['stacks'][stack], '--change-set-name', name,
             '--change-set-type', 'UPDATE' if existing else 'CREATE', *source,
@@ -231,6 +272,13 @@ def verify_initial_runtime(values, outputs, runtime):
         name = prefix + 'TaskDefinitionArn'
         if not expected[name]:
             expected[name] = outputs[prefix + 'BootstrapTaskDefinitionArn']
+    # ECS can finish the empty blue/green deployment on either known target.
+    # runtime_snapshot has already rejected split traffic and unknown groups.
+    for name in ('PrimaryTargetGroup', 'ProductionTargetGroup', 'TestTargetGroup'):
+        color = (runtime or {}).get('parameters', {}).get(name)
+        if color not in ('Blue', 'Green'):
+            raise ValueError('Initial runtime has unknown target groups')
+        expected[name] = color
     if runtime is None or runtime['parameters'] != expected:
         raise ValueError('Initial runtime differs from the reviewed zero-task bootstrap state')
 
@@ -273,7 +321,11 @@ def execute(aws, plan, root, paused):
     # The ARN is immutable; AWS state is rechecked immediately before execution.
     aws('cloudformation', 'update-termination-protection', '--stack-name', config['stacks'][plan['stack']],
         '--enable-termination-protection')
-    aws('cloudformation', 'execute-change-set', '--change-set-name', plan['changeSetArn'])
+    # Preserve successfully created data resources if an initial sibling fails.
+    # A failed CREATE remains blocked for operator repair instead of tearing down
+    # a still-creating protected database during automatic rollback.
+    options = ['--disable-rollback'] if plan['type'] == 'CREATE' else []
+    aws('cloudformation', 'execute-change-set', '--change-set-name', plan['changeSetArn'], *options)
     waiter = 'stack-update-complete' if plan['type'] == 'UPDATE' else 'stack-create-complete'
     aws('cloudformation', 'wait', waiter, '--stack-name', config['stacks'][plan['stack']])
     after = capture(aws, config, paused, allow_created_runtime=initial_runtime)
@@ -310,7 +362,6 @@ def main():
     configure_parser = commands.add_parser('configure', help='Create/update app Secrets, DB roles and local release configuration')
     configure_parser.add_argument('--environment', type=Path, required=True)
     configure_parser.add_argument('--output', type=Path, required=True)
-    configure_parser.add_argument('--frontend-sha', help='Planned/live frontend full SHA; reused from output on updates')
     configure_parser.add_argument('--release-paused', action='store_true')
     prepare_parser = commands.add_parser('plan', help='Create (not execute) a reviewed AWS change set')
     prepare_parser.add_argument('--environment', type=Path, required=True)
@@ -335,7 +386,7 @@ def main():
         if args.command == 'configure':
             from configuration import configure
             capture(Aws(config['region']), config, args.release_paused)
-            configure(Aws(config['region']), config, args.output, args.frontend_sha)
+            configure(Aws(config['region']), config, args.output)
             return
         if args.command == 'config-check':
             parameters(config, 'bootstrap', templates, contract, {})

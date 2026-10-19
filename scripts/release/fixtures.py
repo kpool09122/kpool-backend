@@ -20,9 +20,8 @@ def fixture():
     environment={'APP_ENV':'production','APP_DEBUG':'false','DB_CONNECTION':'pgsql','DB_HOST':'fixture-db','QUEUE_CONNECTION':'sqs','SESSION_DRIVER':'redis','CACHE_STORE':'redis','REDIS_DB':'0','REDIS_CACHE_DB':'0','SQS_QUEUE_URL':o['QueueUrl'],'APP_URL':o['ApiUrl'],'FRONTEND_URL':'https://front.example.invalid'}
     config={'paused':False,'region':'ap-northeast-1','account_id':ACCOUNT,'deployment_role_arn':o['DeploymentRoleArn'],
             'stacks':{k:'fixture-'+k for k in ('bootstrap','root','integration','runtime')},'hook_code_sha256':'fixture-approved-code',
-            'runtime_environment':{},'secret_contract':{'DATABASE_URL':'verify-full:/etc/ssl/certs/kpool-rds-ca.pem','REDIS_URL':'tls:db0'},
-            'compatibility':{'approved':True,'backend_sha':SHA,'live_frontend_sha':'c'*40,'migration_policy':'expand-contract','evidence':'fixture-reviewed-compatibility'}}
-    plan={'schema':1,'repository':BACKEND,'environment':'production','target':'backend','mode':'deploy','initial':False,'backend_sha':SHA,'live_frontend_sha':'c'*40,'workflow_sha':'d'*40,'release_id':'42-1'}
+            'runtime_environment':{},'secret_contract':{'DATABASE_URL':'verify-full:/etc/ssl/certs/kpool-rds-ca.pem','REDIS_URL':'tls:db0'}}
+    plan={'schema':1,'repository':BACKEND,'environment':'production','target':'backend','mode':'deploy','initial':False,'backend_sha':SHA,'workflow_sha':'d'*40,'release_id':'42-1'}
     manifest=dict(plan,repository_uri=o['RepositoryUri'],image_digest=DIGEST)
     return o,environment,config,plan,manifest
 
@@ -74,6 +73,8 @@ class FakeAws:
         if operation=='update-service':
             kind='Api' if arguments['service']==o['ApiServiceName'] else 'Worker'
             item=self.services[kind]; item['taskDefinition']=arguments['taskDefinition']; item['desiredCount']=arguments['desiredCount']; item['runningCount']=arguments['desiredCount']
+            if 'deploymentConfiguration' in arguments:
+                item['deploymentConfiguration'] = copy.deepcopy(arguments['deploymentConfiguration'])
             item['deployments']=[{'status':'PRIMARY','taskDefinition':arguments['taskDefinition'],'rolloutState':'FAILED' if kind=='Worker' and self.worker_failed else 'COMPLETED'}]
             if kind=='Api': self.api_updated=True
             return {'service':copy.deepcopy(item)}

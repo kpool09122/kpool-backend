@@ -18,10 +18,8 @@ from frontend import (API_KEYS, build_record, configuration_digest, deployed_ver
 def fixture():
     plan = dict(schema=1, repository=BACKEND, environment='production', target='all', mode='deploy',
                 workflow_sha='c' * 40, frontend_sha='a' * 40, backend_sha='b' * 40,
-                live_frontend_sha='d' * 40, release_id='42-1', initial=False)
+                release_id='42-1', initial=False)
     config = dict(paused=False, smoke_url='https://frontend.example.invalid/en',
-                  compatibility=dict(approved=True, frontend_sha=plan['frontend_sha'],
-                                     backend_sha=plan['backend_sha'], evidence='TEST ONLY compatibility review'),
                   wrangler=dict(name='fixture-frontend', account_id='e' * 32, main='.open-next/worker.js',
                                 workers_dev=False, preview_urls=False,
                                 assets=dict(directory='.open-next/assets', binding='ASSETS'),
@@ -45,14 +43,13 @@ class FrontendReleaseTests(unittest.TestCase):
         with patch('frontend.cloudflare', return_value={'deployments': [current]}):
             with self.assertRaisesRegex(ValueError, 'stable version'): deployed_version(config)
 
-    def test_configuration_must_pin_approved_pair_resources_and_nonsecret_values(self):
+    def test_configuration_pins_resources_and_nonsecret_values(self):
         plan, config = fixture()
         validate_configuration(config, plan)
         cases = []
         cases.append(dict(config, CLOUDFLARE_API_TOKEN='must remain in GitHub Secrets'))
         for key, value in [('paused', True), ('smoke_url', 'https://attacker.invalid/en')]:
             changed = copy.deepcopy(config); changed[key] = value; cases.append(changed)
-        changed = copy.deepcopy(config); changed['compatibility']['frontend_sha'] = 'f' * 40; cases.append(changed)
         for key, value in [('main', '../worker.js'), ('account_id', 'unknown'), ('name', 'frontend-local'),
                            ('build', {'command': 'echo injected'}), ('workers_dev', True)]:
             changed = copy.deepcopy(config); changed['wrangler'][key] = value; cases.append(changed)
@@ -142,26 +139,39 @@ class FrontendReleaseTests(unittest.TestCase):
 
 
 class FrontendPlanTests(unittest.TestCase):
-    def test_targets_resolve_once_and_frontend_only_uses_live_backend_without_aws(self):
-        plan, config = fixture()
-        for target in ('all', 'frontend'):
-            with self.subTest(target=target), tempfile.TemporaryDirectory() as temporary:
-                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/heads/main',
-                                   RELEASE_TARGET=target, RELEASE_MODE='deploy', CONTROL_SHA=plan['workflow_sha'],
-                                   LIVE_FRONTEND_SHA=plan['live_frontend_sha'], LIVE_BACKEND_SHA=plan['backend_sha'],
-                                   BACKEND_REF='main', FRONTEND_REF='main', GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
-                                   INITIAL_ACTIVATION='false', GITHUB_SERVER_URL='https://github.com',
-                                   FRONTEND_RELEASE_CONFIGURATION=json.dumps(config),
-                                   GITHUB_OUTPUT=str(Path(temporary) / 'output'))
-                def resolve(repository, ref):
-                    self.assertEqual(ref, 'main')
-                    return plan['backend_sha'] if repository == BACKEND else plan['frontend_sha']
-                with patch.dict(os.environ, environment, clear=True), patch.object(cli, 'ROOT', Path(temporary) / 'release'), \
-                        patch.object(cli, 'resolve_source', side_effect=resolve) as sources, patch('cli.Aws') as aws:
-                    cli.plan_release()
-                result = json.loads((Path(temporary) / 'release/plan.json').read_text())
-                self.assertEqual(result['frontend_sha'], plan['frontend_sha'])
-                self.assertEqual(result['frontend_configuration_sha256'], configuration_digest(config))
-                self.assertEqual(sources.call_count, 1 if target == 'frontend' else 2)
-                aws.assert_not_called()
+    def test_tag_sources_are_frozen_once_without_live_sha_variables(self):
+        for target in ('all', 'frontend', 'backend'):
+            for ref in ('', 'v1.0.1'):
+                with self.subTest(target=target, ref=ref), tempfile.TemporaryDirectory() as temporary:
+                    _, config = fixture()
+                    environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
+                                       RELEASE_TARGET=target, RELEASE_MODE='deploy', CONTROL_SHA='c' * 40,
+                                       FRONTEND_REF=ref, GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
+                                       INITIAL_ACTIVATION='false', GITHUB_SERVER_URL='https://github.com',
+                                       FRONTEND_RELEASE_CONFIGURATION=json.dumps(config),
+                                       GITHUB_OUTPUT=str(Path(temporary)/'output'))
+                    with patch.dict(os.environ, environment, clear=True), \
+                            patch.object(cli, 'ROOT', Path(temporary)/'release'), \
+                            patch('cli.resolve_source', return_value='a' * 40) as sources, patch('cli.Aws') as aws:
+                        cli.plan_release()
+                    result = json.loads((Path(temporary)/'release/plan.json').read_text())
+                    self.assertEqual(result['backend_sha'], None if target == 'frontend' else 'c' * 40)
+                    self.assertNotIn('live_frontend_sha', result)
+                    if target != 'backend':
+                        sources.assert_called_once_with(FRONTEND, ref or 'v1.0.0')
+                        self.assertEqual(result['frontend_sha'], 'a' * 40)
+                    else:
+                        sources.assert_not_called()
+                    aws.assert_not_called()
 
+    def test_frontend_main_and_raw_sha_are_rejected_before_source_lookup(self):
+        for ref in ('main', 'release/v1.0', 'a' * 40, 'feature/testing'):
+            with self.subTest(ref=ref), tempfile.TemporaryDirectory() as temporary:
+                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
+                                   CONTROL_SHA='c' * 40, RELEASE_TARGET='all', RELEASE_MODE='deploy',
+                                   FRONTEND_REF=ref, GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
+                                   INITIAL_ACTIVATION='false', GITHUB_SERVER_URL='https://github.com')
+                with patch.dict(os.environ, environment, clear=True), \
+                        patch.object(cli, 'ROOT', Path(temporary)/'release'), patch('cli.resolve_source') as sources:
+                    with self.assertRaisesRegex(ValueError, 'release tag'): cli.plan_release()
+                    sources.assert_not_called()

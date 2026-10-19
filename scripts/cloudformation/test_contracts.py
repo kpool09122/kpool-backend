@@ -174,6 +174,30 @@ class CloudFormationContracts(unittest.TestCase):
     def test_security_and_retention(self):
         self.assertEqual(security_errors(self.templates), [])
 
+    def test_sns_topic_policy_statements_have_unique_identifiers(self):
+        for stack, name, policy in resources(self.templates, 'AWS::SNS::TopicPolicy'):
+            with self.subTest(stack=stack, policy=name):
+                statements = policy['Properties']['PolicyDocument']['Statement']
+                identifiers = [statement.get('Sid') for statement in statements]
+                self.assertTrue(all(identifiers))
+                self.assertEqual(len(identifiers), len(set(identifiers)))
+
+    def test_each_queue_rejects_insecure_transport_with_a_single_resource_policy(self):
+        storage = self.templates['storage']['Resources']
+        queues = {name for name, resource in storage.items() if resource['Type'] == 'AWS::SQS::Queue'}
+        covered = set()
+        for _, _, policy in resources(self.templates, 'AWS::SQS::QueuePolicy'):
+            props = policy['Properties']
+            self.assertEqual(len(props['Queues']), 1)
+            queue = props['Queues'][0]['Ref']
+            for statement in props['PolicyDocument']['Statement']:
+                self.assertEqual(statement['Resource'], {'Fn::GetAtt': [queue, 'Arn']})
+                self.assertEqual(statement['Effect'], 'Deny')
+                self.assertEqual(statement['Action'], 'sqs:*')
+                self.assertEqual(statement['Condition'], {'Bool': {'aws:SecureTransport': 'false'}})
+            covered.add(queue)
+        self.assertEqual(covered, queues)
+
     def test_mutations_are_rejected(self):
         cases = [
             ('AWS::S3::Bucket', lambda r: r['Properties']['PublicAccessBlockConfiguration'].update(BlockPublicPolicy=False), 'public access'),
@@ -240,15 +264,34 @@ class CloudFormationContracts(unittest.TestCase):
         named = bootstrap['FoundationNamedPolicy']['Properties']['PolicyDocument']['Statement']
         global_policy = bootstrap['FoundationGlobalPolicy']['Properties']['PolicyDocument']['Statement']
         by_sid = {s.get('Sid'): s for s in regional + named + global_policy if 'Sid' in s}
+        self.assertIn('ec2:GetSecurityGroupsForVpc', by_sid['RegionalFoundation']['Action'])
+        self.assertEqual(by_sid['RegionalFoundation']['Condition'],
+                         {'StringEquals': {'aws:RequestedRegion': 'ap-northeast-1'}})
+        native = by_sid['ManageRuntimeDeployments']
+        self.assertEqual(set(native['Action']), {'ecs:ListServiceDeployments',
+                         'ecs:DescribeServiceDeployments', 'ecs:StopServiceDeployment'})
+        self.assertEqual(len(native['Resource']), 4)
+        for resource in native['Resource']:
+            self.assertIn('${ProjectName}/${ProjectName}-', serialized(resource))
         nested = by_sid['ManageNestedFoundation']
         self.assertIn('cloudformation:CreateStack', nested['Action'])
+        for action in ('CreateChangeSet', 'DescribeChangeSet', 'ExecuteChangeSet', 'DeleteChangeSet', 'ListChangeSets'):
+            self.assertIn('cloudformation:' + action, nested['Action'])
         self.assertIn('${FoundationStackName}-*', serialized(nested['Resource']))
+        nested_role = by_sid['PassNestedStackExecutionRole']
+        self.assertEqual(nested_role['Action'], 'iam:PassRole')
+        self.assertEqual(nested_role['Resource'], {'Fn::Sub':
+                         'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-cloudformation-execution'})
+        self.assertEqual(nested_role['Condition'], {'StringEquals':
+                         {'iam:PassedToService': 'cloudformation.amazonaws.com'}})
         self.assertEqual(by_sid['ReadPackagedFoundation']['Action'], ['s3:GetObject', 's3:GetObjectVersion'])
         self.assertIn('${FoundationTemplateBucketName}', serialized(by_sid['ReadPackagedFoundation']['Resource']))
         self.assertIn('${FoundationStackName}-*', serialized(by_sid['Buckets']['Resource']))
         self.assertIn('${FoundationWorkQueueName}', serialized(by_sid['NamedRegionalResources']['Resource']))
         self.assertEqual(by_sid['ResolveFoundationCachePassword']['Action'], ['secretsmanager:GetSecretValue'])
         self.assertNotEqual(by_sid['ResolveFoundationCachePassword']['Resource'], '*')
+        self.assertEqual(self.templates['data']['Resources']['CacheSecret']['Properties']['Name'],
+                         {'Fn::Sub': '${AWS::StackName}-cache'})
         trust = bootstrap['CloudFormationExecutionRole']['Properties']['AssumeRolePolicyDocument']
         self.assertEqual(trust['Statement'][0]['Principal'], {'Service': 'cloudformation.amazonaws.com'})
         for statement in statements(bootstrap['DeploymentRole']):

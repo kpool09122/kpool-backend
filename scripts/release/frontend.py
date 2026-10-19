@@ -1,4 +1,4 @@
-"""Pinned Workers build handoff and deployment records, controlled by backend main."""
+"""Pinned Workers build handoff and deployment records, controlled by backend release tags."""
 import hashlib
 import json
 import os
@@ -22,17 +22,10 @@ def configuration_digest(config):
 
 
 def validate_configuration(config, plan):
-    if not isinstance(config, dict) or set(config) != {'paused', 'smoke_url', 'compatibility', 'wrangler'}:
+    if not isinstance(config, dict) or set(config) != {'paused', 'smoke_url', 'wrangler'}:
         raise ValueError('Unexpected frontend release configuration keys')
     if config.get('paused') is not False:
         raise ValueError('Frontend release configuration is missing or paused')
-    compatible = config.get('compatibility', {})
-    if (not isinstance(compatible, dict)
-            or set(compatible) != {'approved', 'backend_sha', 'frontend_sha', 'evidence'}
-            or compatible.get('approved') is not True or not compatible.get('evidence')
-            or compatible.get('backend_sha') != plan['backend_sha']
-            or compatible.get('frontend_sha') != plan['frontend_sha']):
-        raise ValueError('Frontend/backend compatibility approval is missing')
     wrangler = config.get('wrangler', {})
     allowed = {'$schema', 'name', 'account_id', 'main', 'compatibility_date', 'compatibility_flags',
                'workers_dev', 'preview_urls', 'assets', 'services', 'r2_buckets',

@@ -47,14 +47,13 @@ Variables はバックエンド repository の Settings → Environments → pro
 | token更新 | 管理者パスワード保管庫・失効期限台帳 | 新tokenでEnvironment Secret更新→固定成果物の配備確認→旧token失効 | 実行中jobを排出し失効順序を管理。値をCLI引数／ログ／Issueへ出さない、基盤管理者／Pipeline担当 |
 | Cookie／CSRF／OAuth／passkey | backend実envとfrontend origin、OAuth provider設定 | SESSION_DOMAIN、Secure／SameSite、CSRF/CORS設定、OAuth callback、`WEBAUTHN_RP_ID`, `WEBAUTHN_ALLOWED_ORIGINS` | 親domainとAPI/frontendのsite関係、HTTPS exact origin、callback完全一致を検証。具体値は基盤管理者／実環境検証担当で確定し、認証成功・拒否の両方を記録 |
 
-## GitHub private repository 間連携
+## GitHub repository 間連携
 
-- 本番Environment、AWS OIDC、Cloudflare token、GitHub App Secretは **バックエンド側** で管理する。初期運用は Environment required reviewers を設けず、許可refと権限で保護する（Pipeline担当契約）。frontend側Secretsが自動で利用できると扱わない。
-- frontendの既存build/deployスクリプトをbackend jobから呼ぶ。workflowの管理はbackendに集約し、frontendのprivate reusable workflow共有設定は不要。GitHub Appによるsource読取とActions policyを確認する。
-- GitHub Appをfrontend repositoryへinstallし、ref解決・checkoutに **Contents: read** の短命installation tokenを使用する。backend Environment Variables `SOURCE_APP_ID`、Environment Secrets `SOURCE_APP_PRIVATE_KEY` を設定する。秘密鍵は管理者保管庫にも保管し、期限・ownerを台帳に記録する。GITHUB_TOKENだけで別private repoをcheckoutできると扱わない。
-- App鍵更新: 新鍵発行→Environment Secret更新→両repoのref解決／checkout試験→実行中jobがないことを確認→旧鍵失効。Contents以外のwrite権限を付与しない。token・鍵をartifactへ保存しない。
-- workflow制御はbackendの `github.workflow_sha`、frontend sourceはmain履歴の完全SHAへ固定し、checksum付きbuild artifactをdeployへ渡す。frontend jobにはsource取得用GitHub App認証、配備stepだけにCloudflare tokenを渡す。`id-token: write`はAWS操作jobだけへ。
-- Pipeline担当が確定する入力・Secret名、Environment、job権限、concurrency、初回起動フラグ、復旧／再実行入力をこの表と照合してから引き渡し完了とする。backend workflow は実装済み。frontend接続を実装済み。クラウドへの適用・workflow実動作は未確認。
+- 本番Environment、AWS OIDC、Cloudflare tokenは **バックエンド側** で管理する。初期運用は Environment required reviewers を設けず、許可タグ `v*` と用途別権限で保護する。
+- `kpool-frontend` は公開リポジトリ。ref解決・checkoutにはbackend jobの読取用 `GITHUB_TOKEN` を使う。
+- frontendの既存build/deployスクリプトをbackend jobから呼ぶ。workflowの管理はbackendに集約する。
+- workflow制御とbackend sourceは実行元リリースタグの `github.workflow_sha`、frontend sourceは指定リリースタグから一度だけ解決した完全SHAへ固定し、checksum付きbuild artifactをdeployへ渡す。Cloudflare tokenは配備stepだけに渡す。`id-token: write`はAWS操作jobだけへ。
+- 実行時の設定・concurrency・初回起動フラグ・復旧入力は [リリース手順](backend-release.md) を参照する。クラウド適用とworkflowの実動作は [検証票](validation-checklist.md) に記録する。
 
 ## 未達ゲート・担当
 

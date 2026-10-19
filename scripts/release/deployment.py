@@ -1,4 +1,5 @@
 """Finite deployment state machine, independent of AWS transport and workflow YAML."""
+import copy
 import time
 
 
@@ -69,7 +70,7 @@ def deployment_alarm_names(outputs):
     return names
 
 
-def validate_api_service(service, outputs):
+def validate_api_service(service, outputs, allow_bootstrap=False):
     configuration = service.get('deploymentConfiguration', {})
     alarms = configuration.get('alarms', {})
     names = deployment_alarm_names(outputs)
@@ -81,7 +82,11 @@ def validate_api_service(service, outputs):
             or configuration.get('earlySuccessCriteria', {}).get('enable')):
         raise ValueError('API controller/alarm/bake contract is incomplete')
     hooks = configuration.get('lifecycleHooks', [])
-    if not any(h.get('hookTargetArn') == outputs['LifecycleHookArn']
+    bootstrap = (allow_bootstrap and not hooks
+                 and all(service.get(key) == 0 for key in ('desiredCount', 'runningCount', 'pendingCount'))
+                 and service.get('taskDefinition') == outputs.get('ApiBootstrapTaskDefinitionArn')
+                 and bool(outputs.get('ApiBootstrapTaskDefinitionArn')))
+    if not bootstrap and not any(h.get('hookTargetArn') == outputs['LifecycleHookArn']
                and h.get('roleArn') == outputs['HookInvocationRoleArn']
                and 'POST_TEST_TRAFFIC_SHIFT' in h.get('lifecycleStages', []) for h in hooks):
         raise ValueError('Pretraffic lifecycle hook is missing')
@@ -98,3 +103,18 @@ def validate_api_service(service, outputs):
             or advanced.get('testListenerRule') != outputs['TestRuleArn']
             or advanced.get('roleArn') != outputs['AlbInfrastructureRoleArn']):
         raise ValueError('API target groups/rules/ALB role contract mismatch')
+
+
+def initial_api_configuration(service, outputs):
+    """Attach health gating atomically with the first positive desired count."""
+    validate_api_service(service, outputs, allow_bootstrap=True)
+    if any(service.get(key) != 0 for key in ('desiredCount', 'runningCount', 'pendingCount')):
+        raise ValueError('Initial API activation requires an inactive service')
+    configuration = copy.deepcopy(service['deploymentConfiguration'])
+    configuration['lifecycleHooks'] = [{
+        'hookTargetArn': outputs['LifecycleHookArn'],
+        'roleArn': outputs['HookInvocationRoleArn'],
+        'lifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
+    }]
+    validate_api_service(dict(service, deploymentConfiguration=configuration), outputs)
+    return configuration

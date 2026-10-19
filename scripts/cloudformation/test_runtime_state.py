@@ -29,6 +29,15 @@ def fixture():
 
 
 class RuntimeStateTests(unittest.TestCase):
+    def test_ecs_full_traffic_weights_are_equivalent_to_template_unit_weights(self):
+        for weight in (1, 100, 999):
+            with self.subTest(weight=weight):
+                values = fixture()
+                for rule in values[2]['Rules']:
+                    rule['Actions'][0]['ForwardConfig']['TargetGroups'][1]['Weight'] = weight
+                result = runtime_state.resolve(*values)
+                self.assertEqual(result['ProductionTargetGroup'], 'Green')
+                self.assertEqual(result['TestTargetGroup'], 'Green')
     def test_released_revision_capacity_and_independent_test_target_survive_update(self):
         outputs, services, rules, schedule = fixture()
         result = runtime_state.resolve(outputs, services, rules, schedule)
@@ -47,7 +56,8 @@ class RuntimeStateTests(unittest.TestCase):
             lambda o, s, r, q: s['services'][0]['deployments'].append({'status': 'ACTIVE'}),
             lambda o, s, r, q: s['services'][0]['loadBalancers'][0].update(targetGroupArn='unknown'),
             lambda o, s, r, q: r['Rules'][0]['Actions'][0]['ForwardConfig']['TargetGroups'][0].update(Weight=1),
-            lambda o, s, r, q: r['Rules'][0]['Actions'][0]['ForwardConfig']['TargetGroups'][1].update(Weight=100),
+            lambda o, s, r, q: r['Rules'][0]['Actions'][0]['ForwardConfig']['TargetGroups'][1].update(Weight=1000),
+            lambda o, s, r, q: r['Rules'][0]['Actions'][0]['ForwardConfig']['TargetGroups'][1].update(Weight=0),
             lambda o, s, r, q: r['Rules'][0]['Actions'][0]['ForwardConfig'].update(TargetGroupStickinessConfig={'Enabled': True}),
             lambda o, s, r, q: r['Rules'][0]['Actions'].append({'Type': 'authenticate-oidc'}),
         ]

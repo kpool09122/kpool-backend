@@ -47,6 +47,26 @@ class PollTests(unittest.TestCase):
         with self.assertRaises(ValueError): worker_complete(service,'fixture-new',2)
 
 class ServiceContractTests(unittest.TestCase):
+    def test_missing_hook_is_allowed_only_for_explicit_inactive_bootstrap(self):
+        import copy
+        from deployment import validate_api_service, initial_api_configuration
+        from fixtures import fixture, FakeAws
+        outputs, environment, _, _, _ = fixture()
+        service = FakeAws(outputs, environment).services['Api']
+        service.update(desiredCount=0, runningCount=0, pendingCount=0,
+                       taskDefinition=outputs['ApiBootstrapTaskDefinitionArn'])
+        service['deploymentConfiguration'].pop('lifecycleHooks')
+        validate_api_service(service, outputs, allow_bootstrap=True)
+        with self.assertRaises(ValueError): validate_api_service(service, outputs)
+        for key, value in (('desiredCount', 1), ('runningCount', 1), ('pendingCount', 1),
+                           ('taskDefinition', 'unapproved-release')):
+            changed = copy.deepcopy(service); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                validate_api_service(changed, outputs, allow_bootstrap=True)
+        config = initial_api_configuration(service, outputs)
+        self.assertNotIn('lifecycleHooks', service['deploymentConfiguration'])
+        validate_api_service(dict(service, deploymentConfiguration=config), outputs)
+
     def test_hooks_alarms_bake_and_target_group_role_swap_are_checked(self):
         from deployment import validate_api_service
         outputs = {k:'fixture-'+k for k in ('LifecycleHookArn','HookInvocationRoleArn','ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName','BlueTargetGroupArn','GreenTargetGroupArn','ProductionRuleArn','TestRuleArn','AlbInfrastructureRoleArn')}

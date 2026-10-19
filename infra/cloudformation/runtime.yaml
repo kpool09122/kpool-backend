@@ -844,7 +844,7 @@ Resources:
               Action: kms:Decrypt
               Resource: {Ref: MigrationSecretKmsKeyArn}
             - Ref: AWS::NoValue
-  DatabaseSetupTaskDefinition:
+  DatabaseInitializationTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub '${ProjectName}-database-setup'
@@ -860,6 +860,7 @@ Resources:
       - Name: database-setup
         Image: public.ecr.aws/docker/library/postgres:18-alpine
         User: postgres
+        DependsOn: [{ContainerName: database-setup-volume-init, Condition: SUCCESS}]
         Essential: true
         ReadonlyRootFilesystem: true
         StopTimeout: 120
@@ -919,6 +920,20 @@ Resources:
             awslogs-group: {Ref: DatabaseSetupLogGroup}
             awslogs-region: {Ref: 'AWS::Region'}
             awslogs-stream-prefix: setup
+      - Name: database-setup-volume-init
+        Image: public.ecr.aws/docker/library/postgres:18-alpine
+        User: root
+        Essential: false
+        ReadonlyRootFilesystem: true
+        EntryPoint: [/bin/sh, -c]
+        Command: ['chown postgres:postgres /tmp && chmod 0700 /tmp']
+        MountPoints: [{SourceVolume: setup-tmp, ContainerPath: /tmp, ReadOnly: false}]
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: {Ref: DatabaseSetupLogGroup}
+            awslogs-region: {Ref: 'AWS::Region'}
+            awslogs-stream-prefix: setup-init
   ApiBootstrapTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -1652,14 +1667,12 @@ Resources:
             - Ref: ExternalCanaryAlarmName
             - Ref: AWS::NoValue
         LifecycleHooks:
-        - HookTargetArn: !GetAtt LifecycleHook.Arn
-          RoleArn: !GetAtt HookInvocationRole.Arn
-          LifecycleStages: [POST_TEST_TRAFFIC_SHIFT]
-          HookDetails:
-            contractVersion: '1'
-            expectedHost: {Ref: ApiDomainName}
-            testPort: 8443
-            healthPath: {Ref: HealthCheckPath}
+          Fn::If:
+          - HasApiRelease
+          - - HookTargetArn: !GetAtt LifecycleHook.Arn
+              RoleArn: !GetAtt HookInvocationRole.Arn
+              LifecycleStages: [POST_TEST_TRAFFIC_SHIFT]
+          - Ref: AWS::NoValue
       TaskDefinition:
         Fn::If:
         - HasApiRelease
@@ -1867,7 +1880,8 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
+        - Sid: AllowProjectCloudWatchAlarms
+          Effect: Allow
           Principal: {Service: cloudwatch.amazonaws.com}
           Action: sns:Publish
           Resource: {Ref: AlarmTopic}
@@ -1876,7 +1890,8 @@ Resources:
               aws:SourceAccount: {Ref: AWS::AccountId}
             ArnLike:
               aws:SourceArn: !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-*'
-        - Effect: Allow
+        - Sid: AllowSchedulerFailureEvents
+          Effect: Allow
           Principal: {Service: events.amazonaws.com}
           Action: sns:Publish
           Resource: {Ref: AlarmTopic}
@@ -2147,7 +2162,7 @@ Outputs:
     Condition: HasSlack
     Value: !GetAtt SlackNotifications.Arn
   DatabaseSetupTaskDefinitionArn:
-    Value: {Ref: DatabaseSetupTaskDefinition}
+    Value: {Ref: DatabaseInitializationTaskDefinition}
   DatabaseSetupLogGroupName:
     Value: {Ref: DatabaseSetupLogGroup}
   UnhealthyTargetsAlarmName:
@@ -2237,10 +2252,8 @@ Outputs:
   AlarmTopicArn:
     Value: {Ref: AlarmTopic}
   SchedulerArn:
-    Value:
-      Fn::GetAtt:
-      - Schedule
-      - Arn
+    # The provider's Arn lookup can read the default group despite GroupName.
+    Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${Schedule}'
   SchedulerDlqUrl:
     Value: {Ref: SchedulerDlq}
   ApiTaskRoleArn:

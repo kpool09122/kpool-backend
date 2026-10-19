@@ -119,7 +119,7 @@ class InitializationTests(unittest.TestCase):
         configuration.initialize_secrets(self.aws, self.outputs)
         self.assertFalse(any(op == 'put-secret-value' for _, op, _ in self.aws.calls))
 
-    def test_configuration_updates_preserve_operator_settings_and_reset_changed_frontend_approval(self):
+    def test_configuration_updates_preserve_operator_settings_without_source_versions(self):
         config = dict(accountId='123456789012', region='ap-northeast-1', stacks={},
                       inputs={'runtime': {'MailDomainName': 'example.invalid'}})
         outputs = dict(ApiUrl='https://api.example.invalid', DeploymentRoleArn='deployment-role')
@@ -127,27 +127,47 @@ class InitializationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, patch('builtins.print'):
             path = Path(directory)
             with patch.object(configuration, 'urlopen', return_value=io.BytesIO(ca)):
-                configuration.write_release_configuration(config, outputs, path, 'a' * 40)
+                configuration.write_release_configuration(config, outputs, path)
             target = path / 'backend-release-configuration.json'
             old = json.loads(target.read_text())
             old.update(paused=True, app_secret_keys=['GOOGLE_CLIENT_SECRET'])
             old['runtime_environment']['LOG_LEVEL'] = 'warning'
-            old['compatibility']['approved'] = True
+            old['compatibility'] = {'approved': True, 'backend_sha': 'a' * 40}
             target.write_text(json.dumps(old))
             with patch.object(configuration, 'urlopen', return_value=io.BytesIO(ca)):
-                configuration.write_release_configuration(config, outputs, path, 'b' * 40)
+                configuration.write_release_configuration(config, outputs, path)
             updated = json.loads(target.read_text())
             self.assertTrue(updated['paused'])
             self.assertEqual(updated['runtime_environment']['LOG_LEVEL'], 'warning')
             self.assertIn('GOOGLE_CLIENT_SECRET', updated['app_secret_keys'])
-            self.assertFalse(updated['compatibility']['approved'])
-            self.assertEqual(updated['compatibility']['live_frontend_sha'], 'b' * 40)
+            self.assertNotIn('compatibility', updated)
+            self.assertNotIn('LIVE_FRONTEND_SHA', json.loads((path/'github-variables.json').read_text()))
             self.assertEqual(target.stat().st_mode & 0o777, 0o600)
 
     def test_missing_mail_domain_fails_before_any_aws_operation(self):
         with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(ValueError, 'MailDomainName'):
-            configuration.configure(self.aws, {'inputs': {}}, Path(directory), 'a' * 40)
+            configuration.configure(self.aws, {'inputs': {}}, Path(directory))
         self.assertEqual(self.aws.calls, [])
+
+    def test_dns_import_contains_fully_qualified_records_and_preserves_dns_only(self):
+        config = dict(accountId='123456789012', region='ap-northeast-1', stacks={},
+                      inputs={'runtime': {'MailDomainName': 'example.invalid'}})
+        outputs = dict(ApiUrl='https://api.example.invalid', DeploymentRoleArn='deployment-role',
+                       LoadBalancerDnsName='fixture.elb.amazonaws.com', ImageBaseUrl='https://images.example.invalid',
+                       ImageDistributionDomainName='fixture.cloudfront.net',
+                       MailDkimName1='fixture._domainkey.example.invalid.', MailDkimValue1='fixture.dkim.amazonses.com.')
+        ca = b'-----BEGIN CERTIFICATE-----\nTEST ONLY\n-----END CERTIFICATE-----\n'
+        with tempfile.TemporaryDirectory() as directory, patch('builtins.print'), \
+                patch.object(configuration, 'urlopen', return_value=io.BytesIO(ca)):
+            path = Path(directory)
+            configuration.write_release_configuration(config, outputs, path)
+            records = (path / 'dns-records.bind').read_text().splitlines()[1:]
+            self.assertEqual(records, [
+                'api.example.invalid. 300 IN CNAME fixture.elb.amazonaws.com. ; cf_tags=cf-proxied:false',
+                'images.example.invalid. 300 IN CNAME fixture.cloudfront.net. ; cf_tags=cf-proxied:false',
+                'fixture._domainkey.example.invalid. 300 IN CNAME fixture.dkim.amazonses.com. ; cf_tags=cf-proxied:false',
+            ])
+            self.assertEqual((path / 'dns-records.bind').stat().st_mode & 0o777, 0o600)
 
 
 class WikiScheduleTests(unittest.TestCase):
@@ -238,7 +258,7 @@ class DatabasePrivilegesTests(unittest.TestCase):
         self.assertEqual(bootstrap.returncode, 0, bootstrap.stderr)
         template, errors = decode(str(configuration.ROOT / 'runtime.yaml'))
         self.assertFalse(errors)
-        script = template['Resources']['DatabaseSetupTaskDefinition']['Properties']['ContainerDefinitions'][0]['Command'][0]
+        script = template['Resources']['DatabaseInitializationTaskDefinition']['Properties']['ContainerDefinitions'][0]['Command'][0]
         body = script.split("<<'SQL'\n", 1)[1].split('\nSQL', 1)[0]
         for _ in range(2):
             result = sql('kpooladmin', body)

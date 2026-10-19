@@ -31,6 +31,25 @@ class BackendTests(unittest.TestCase):
         self.poll=patch('aws_backend.poll',fast_poll); self.poll.start(); self.addCleanup(self.poll.stop)
         self.http=patch('aws_backend.urllib.request.urlopen',return_value=HttpResponse()); self.http.start(); self.addCleanup(self.http.stop)
     def run_release(self): execute(self.backend,self.journal,'deploy')
+    def test_initial_zero_task_scaffold_adds_health_hook_with_first_activation(self):
+        self.plan['initial'] = True
+        self.manifest['initial'] = True
+        for kind, service in self.aws.services.items():
+            service.update(desiredCount=0, runningCount=0, pendingCount=0,
+                           taskDefinition=self.o[kind + 'BootstrapTaskDefinitionArn'])
+            service['deployments'][0]['taskDefinition'] = service['taskDefinition']
+        self.aws.services['Api']['deploymentConfiguration'].pop('lifecycleHooks')
+        self.backend.preflight()
+        self.backend.register()
+        self.backend.api()
+        updates = [args for _, op, args in self.aws.calls if op == 'update-service']
+        self.assertEqual(len(updates), 1)
+        self.assertEqual(updates[0]['desiredCount'], 1)
+        self.assertEqual(updates[0]['deploymentConfiguration']['lifecycleHooks'], [{
+            'hookTargetArn': self.o['LifecycleHookArn'], 'roleArn': self.o['HookInvocationRoleArn'],
+            'lifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
+        }])
+
     def test_visitor_location_secret_is_injected_from_app_secret_into_api_and_worker(self):
         self.config['app_secret_keys']=['WIKI_VISITOR_LOCATION_SECRET']
         self.backend.preflight()
@@ -186,10 +205,11 @@ class BackendTests(unittest.TestCase):
                 for definition in definitions.values(): definition['taskRoleArn'] = 'foreign-role'
                 with self.assertRaisesRegex(ValueError, 'not owned'):
                     backend.preflight()
-    def test_compatibility_is_required_before_any_mutation(self):
-        self.config['compatibility']['approved']=False
-        with self.assertRaises(ValueError): self.run_release()
-        self.assertFalse(any(op=='register-task-definition' for _,op,_ in self.aws.calls))
+    def test_deploy_needs_no_per_release_approval_configuration(self):
+        self.assertNotIn('compatibility', self.config)
+        self.run_release()
+        self.assertTrue(any(op == 'update-service' for _, op, _ in self.aws.calls))
+
     def test_role_swap_fails_before_any_mutation(self):
         self.aws.template_overrides['taskRoleArn']='fixture-migration-role-swapped'
         with self.assertRaises(ValueError): self.run_release()

@@ -70,6 +70,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
+      Name: !Sub '${AWS::StackName}-cache'
       Description: Valkey application password; rotate together with the ElastiCache user
       GenerateSecretString:
         SecretStringTemplate: '{}'
