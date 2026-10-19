@@ -39,12 +39,13 @@ class SourceSelectionTests(unittest.TestCase):
     def test_pinned_checkout_accepts_release_commit_outside_main(self):
         for sha in (self.main, self.old, self.unmerged):
             with self.subTest(sha=sha):
-                self.git('checkout', '-q', '--detach', sha)
+                self.git('checkout', '-q', 'main')
                 self.assertEqual(self.select(sha).returncode, 0)
                 self.assertEqual(self.git('rev-parse', 'HEAD'), sha)
+                self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD'), 'HEAD')
 
     def test_wrong_missing_or_injected_sha_never_changes_checkout(self):
-        for sha in (self.unmerged, 'f'*40, 'main', self.old[:12], self.old.upper(), '$(touch injected)',
+        for sha in ('f'*40, 'main', self.old[:12], self.old.upper(), '$(touch injected)',
                     self.git('rev-parse', 'HEAD:content.txt')):
             with self.subTest(sha=sha):
                 self.assertNotEqual(self.select(sha).returncode, 0)

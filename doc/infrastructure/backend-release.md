@@ -67,7 +67,7 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 ## 手動入力と配備
 
 - backendのsourceと制御コードは、実行元タグの `github.workflow_sha` に固定する。frontendの指定タグはplan作成時に一度だけSHAを解決する。後からリリースブランチが進んでも同じrunのbuild・配備対象は変わらない。
-- source checkout前にrepository・完全SHA・immutable planとの一致を検証し、checkout後にもHEADを照合する。mainへのマージは配備の条件にしない。
+- source checkout前にrepository・完全SHA・immutable planとの一致を検証する。checkout actionは固定のmainから全履歴とタグを取得し、検証済みSHAのcommitへ切り替えてHEADを照合してからアプリコードを実行する。mainへのマージは配備の条件にしない。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
 - `paused=true`、unstable stack/service、未設定の配備hook/基本alarm/bake、CA未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
 - 検証は Taskfile の install、非破壊 cs-check、phpstan、test を使う。ARM runner で既存 production target を build し、archive SHA256 と platform を記録。公開 job は archive を検証して ECR へ公開し、ECR 応答の digest を以後の全用途へ渡す。

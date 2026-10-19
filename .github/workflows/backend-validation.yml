@@ -62,11 +62,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: kpool09122/kpool-backend
-          ref: ${{ inputs.source_sha }}
+          ref: main
           fetch-depth: 0
           path: source
           persist-credentials: false
-      - name: Check pinned source checkout
+      - name: Select pinned source after validation
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: bash control/scripts/release/select-source.sh source

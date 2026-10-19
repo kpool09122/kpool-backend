@@ -196,7 +196,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: kpool09122/kpool-frontend
-          ref: ${{ needs.plan.outputs.frontend_sha }}
+          ref: main
           fetch-depth: 0
           path: source
           persist-credentials: false
@@ -299,7 +299,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: kpool09122/kpool-frontend
-          ref: ${{ needs.plan.outputs.frontend_sha }}
+          ref: main
           fetch-depth: 0
           path: source
           persist-credentials: false
