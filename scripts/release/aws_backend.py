@@ -2,11 +2,9 @@
 import json
 import os
 import subprocess
-import urllib.request
 from contract import task_definition, runtime_environment, SECRET_KEYS, SECRET_REF
 from deployment import (poll, desired_count, migration_complete, api_complete,
-                        worker_complete, validate_api_service, deployment_alarm_names,
-                        initial_api_configuration)
+                        worker_complete, validate_api_service, api_deployment_configuration)
 from records import write_json
 
 
@@ -91,10 +89,6 @@ class Backend:
         history=self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']
         if any(d.get('status') in ('PENDING','IN_PROGRESS','STOP_REQUESTED','ROLLBACK_REQUESTED','ROLLBACK_IN_PROGRESS') for d in history):
             raise ValueError('A native API deployment is still active; reconcile first')
-        alarm_names = deployment_alarm_names(o)
-        alarms = self.aws('cloudwatch','describe-alarms',AlarmNames=alarm_names)['MetricAlarms']
-        if set(a['AlarmName'] for a in alarms) != set(alarm_names) or any(a['StateValue'] != 'OK' or not a['ActionsEnabled'] for a in alarms):
-            raise ValueError('Deployment alarm is missing, disabled or unhealthy')
         hook = self.aws('lambda','get-function-configuration',FunctionName=o['LifecycleHookArn'])
         source = o.get('HookCodeSource')
         if (source not in ('bundled', 'external')
@@ -204,13 +198,12 @@ class Backend:
 
     def api(self):
         o=self.outputs
-        activation = ({'deploymentConfiguration': initial_api_configuration(self.services()['Api'], o)}
-                      if self.plan['initial'] else {})
+        configuration = api_deployment_configuration(self.services()['Api'], o, self.plan['initial'])
         before={d['serviceDeploymentArn'] for d in self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']}
         self.journal.event('api','requesting',task_definition=self.tasks['Api'],desired=self.counts['Api'])
         self.aws('ecs','update-service',cluster=o['ClusterArn'],service=o['ApiServiceName'],
                  taskDefinition=self.tasks['Api'],desiredCount=self.counts['Api'],forceNewDeployment=True,
-                 **activation)
+                 deploymentConfiguration=configuration)
         def discover():
             deployments=self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']
             candidates=[d['serviceDeploymentArn'] for d in deployments if d['serviceDeploymentArn'] not in before]
@@ -250,14 +243,9 @@ class Backend:
         return attributes
 
     def smoke(self):
-        url=self.outputs['ApiUrl']+'/health'
-        with urllib.request.urlopen(url,timeout=20) as response:
-            if response.status!=200 or response.geturl()!=url:
-                raise ValueError('API health check failed or redirected')
-            response.read(4096)
         self.queue_attributes()
         # This read-only probe is useful, but does NOT prove a job was processed.
-        self.journal.event('smoke','observed',health='HTTP 200 /health',queue='identity/attributes verified',queue_processing='NOT_VERIFIED: approved canary job required')
+        self.journal.event('smoke','observed',health='MANUAL_CHECK_REQUIRED',queue='identity/attributes verified',queue_processing='NOT_VERIFIED: approved canary job required')
 
     def observe(self):
         if not self.outputs.get('ClusterArn'):

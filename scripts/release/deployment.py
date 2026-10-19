@@ -21,8 +21,11 @@ def api_complete(deployment, revision, deployment_arn, task_arn, desired):
     if status not in ('PENDING', 'IN_PROGRESS', 'SUCCESSFUL') or deployment.get('rollback'):
         raise ValueError('API deployment failed, stopped or rolled back')
     configuration = deployment['deploymentConfiguration']
-    if configuration.get('strategy') != 'BLUE_GREEN' or configuration.get('bakeTimeInMinutes', 0) < 5:
-        raise ValueError('API deployment bake contract mismatch')
+    if (configuration.get('strategy') != 'BLUE_GREEN'
+            or configuration.get('bakeTimeInMinutes') != 0
+            or configuration.get('alarms', {}).get('enable')
+            or configuration.get('alarms', {}).get('rollback')):
+        raise ValueError('API deployment must use zero bake time and manual recovery')
     target = deployment['targetServiceRevision']
     return (status == 'SUCCESSFUL' and target.get('runningTaskCount') == desired
             and target.get('pendingTaskCount') == 0
@@ -63,24 +66,12 @@ def poll(check, timeout=1800, interval=15, clock=time.monotonic, sleep=time.slee
     raise TimeoutError('Deployment polling timed out; inspect recorded live state before retry')
 
 
-def deployment_alarm_names(outputs):
-    names = [outputs[k] for k in ('ServerErrorAlarmName', 'LatencyAlarmName')]
-    if outputs.get('ExternalCanaryAlarmName'):
-        names.append(outputs['ExternalCanaryAlarmName'])
-    return names
-
-
 def validate_api_service(service, outputs, allow_bootstrap=False):
     configuration = service.get('deploymentConfiguration', {})
-    alarms = configuration.get('alarms', {})
-    names = deployment_alarm_names(outputs)
     if (service.get('deploymentController', {}).get('type') != 'ECS'
             or configuration.get('strategy') != 'BLUE_GREEN'
-            or configuration.get('bakeTimeInMinutes', 0) < 5
-            or not alarms.get('enable') or not alarms.get('rollback')
-            or not all(names) or set(alarms.get('alarmNames', [])) != set(names)
             or configuration.get('earlySuccessCriteria', {}).get('enable')):
-        raise ValueError('API controller/alarm/bake contract is incomplete')
+        raise ValueError('API controller contract is incomplete')
     hooks = configuration.get('lifecycleHooks', [])
     bootstrap = (allow_bootstrap and not hooks
                  and all(service.get(key) == 0 for key in ('desiredCount', 'runningCount', 'pendingCount'))
@@ -117,4 +108,14 @@ def initial_api_configuration(service, outputs):
         'lifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
     }]
     validate_api_service(dict(service, deploymentConfiguration=configuration), outputs)
+    return configuration
+
+
+def api_deployment_configuration(service, outputs, initial=False):
+    """Apply manual recovery policy with the release, including existing services."""
+    validate_api_service(service, outputs, allow_bootstrap=initial)
+    configuration = (initial_api_configuration(service, outputs) if initial
+                     else copy.deepcopy(service['deploymentConfiguration']))
+    configuration['bakeTimeInMinutes'] = 0
+    configuration['alarms'] = {'enable': False, 'rollback': False, 'alarmNames': []}
     return configuration

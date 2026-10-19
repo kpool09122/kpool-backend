@@ -159,11 +159,6 @@ def observe(directory, config, plan):
                 or deployed[0].get('worker_name') != config['wrangler']['name']
                 or deployed[0].get('version_id') != value['current']['version_id']):
             raise ValueError('Live Workers version differs from this deployment command')
-        url = config['smoke_url']
-        with urllib.request.urlopen(url, timeout=30) as response:
-            if response.status != 200 or response.geturl() != url:
-                raise ValueError('Frontend HTTPS smoke failed or redirected')
-            response.read(4096)
         value['status'] = 'success'
     finally:
         write_json(directory / 'frontend-deployment.json', value)

@@ -350,7 +350,7 @@ jobs:
           KPOOL_WORKERS_DEPLOY_CONFIG: wrangler.deploy.json
           WRANGLER_OUTPUT_FILE_PATH: ${{ github.workspace }}/release/wrangler-output.jsonl
         run: pnpm workers:deploy
-      - name: Observe Worker version and public HTTPS after deployment
+      - name: Observe Worker version after deployment
         if: always() && steps.preflight.outcome == 'success'
         env:
           FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}

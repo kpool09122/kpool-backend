@@ -13,14 +13,21 @@ class MigrationTests(unittest.TestCase):
         self.assertTrue(migration_complete({'lastStatus':'STOPPED','containers':[{'name':'migration','exitCode':0}]}))
 
 class ApiTests(unittest.TestCase):
-    def test_success_requires_exact_deployment_revision_bake_and_old_tasks_removed(self):
+    def test_success_requires_exact_revision_zero_bake_and_old_tasks_removed(self):
         from deployment import api_complete
         deployment = {'serviceDeploymentArn':'fixture-deployment', 'status':'SUCCESSFUL',
-                      'deploymentConfiguration':{'strategy':'BLUE_GREEN','bakeTimeInMinutes':5},
+                      'deploymentConfiguration':{'strategy':'BLUE_GREEN','bakeTimeInMinutes':0},
                       'targetServiceRevision':{'arn':'fixture-revision','runningTaskCount':2,'pendingTaskCount':0,'requestedTaskCount':2,'requestedProductionTrafficWeight':100},
                       'sourceServiceRevisions':[{'runningTaskCount':0,'pendingTaskCount':0}]}
         revision = {'serviceRevisionArn':'fixture-revision','taskDefinition':'fixture-task'}
         self.assertTrue(api_complete(deployment, revision, 'fixture-deployment', 'fixture-task', 2))
+        for configuration in (
+                {'strategy': 'BLUE_GREEN', 'bakeTimeInMinutes': 5},
+                {'strategy': 'BLUE_GREEN', 'bakeTimeInMinutes': 0, 'alarms': {'enable': True}},
+                {'strategy': 'BLUE_GREEN', 'bakeTimeInMinutes': 0, 'alarms': {'rollback': True}}):
+            with self.subTest(configuration=configuration), self.assertRaises(ValueError):
+                api_complete(dict(deployment, deploymentConfiguration=configuration), revision,
+                             'fixture-deployment', 'fixture-task', 2)
         for key, value in [('status','ROLLBACK_SUCCESSFUL'),('serviceDeploymentArn','old-stable')]:
             broken = dict(deployment, **{key:value})
             with self.subTest(key=key), self.assertRaises(ValueError):
@@ -67,11 +74,11 @@ class ServiceContractTests(unittest.TestCase):
         self.assertNotIn('lifecycleHooks', service['deploymentConfiguration'])
         validate_api_service(dict(service, deploymentConfiguration=config), outputs)
 
-    def test_hooks_alarms_bake_and_target_group_role_swap_are_checked(self):
+    def test_hooks_and_target_group_role_swap_are_checked(self):
         from deployment import validate_api_service
         outputs = {k:'fixture-'+k for k in ('LifecycleHookArn','HookInvocationRoleArn','ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName','BlueTargetGroupArn','GreenTargetGroupArn','ProductionRuleArn','TestRuleArn','AlbInfrastructureRoleArn')}
-        configuration = {'strategy':'BLUE_GREEN','bakeTimeInMinutes':5,
-                         'alarms':{'enable':True,'rollback':True,'alarmNames':[outputs[k] for k in ('ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName')]},
+        configuration = {'strategy':'BLUE_GREEN','bakeTimeInMinutes':0,
+                         'alarms':{'enable':False,'rollback':False,'alarmNames':[]},
                          'lifecycleHooks':[{'hookTargetArn':outputs['LifecycleHookArn'],'roleArn':outputs['HookInvocationRoleArn'],'lifecycleStages':['POST_TEST_TRAFFIC_SHIFT']}]}
         service = {'deploymentController':{'type':'ECS'},'deploymentConfiguration':configuration,
                    'loadBalancers':[{'targetGroupArn':outputs['BlueTargetGroupArn'], 'advancedConfiguration':{'alternateTargetGroupArn':outputs['GreenTargetGroupArn'], 'productionListenerRule':outputs['ProductionRuleArn'], 'testListenerRule':outputs['TestRuleArn'],'roleArn':outputs['AlbInfrastructureRoleArn']}}]}
@@ -79,7 +86,7 @@ class ServiceContractTests(unittest.TestCase):
         service['loadBalancers'][0]['targetGroupArn']=outputs['GreenTargetGroupArn']
         service['loadBalancers'][0]['advancedConfiguration']['alternateTargetGroupArn']=outputs['BlueTargetGroupArn']
         validate_api_service(service, outputs)
-        for key,value in [('bakeTimeInMinutes',0),('lifecycleHooks',[]),('alarms',{})]:
+        for key,value in [('strategy','ROLLING'),('lifecycleHooks',[])]:
             original=configuration[key]; configuration[key]=value
             with self.subTest(key=key), self.assertRaises(ValueError): validate_api_service(service,outputs)
             configuration[key]=original

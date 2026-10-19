@@ -82,7 +82,7 @@ class RuntimeContracts(unittest.TestCase):
                     'HookArtifactKey': key, 'HookArtifactVersion': version,
                 }), bool(bucket) == bool(key) == bool(version))
 
-    def test_api_hook_and_alarm_rollback_contract(self):
+    def test_api_hook_without_post_traffic_monitoring(self):
         api = self.runtime['ApiService']['Properties']
         configuration = api['DeploymentConfiguration']
         self.assertEqual(api['DeploymentController'], {'Type': 'ECS'})
@@ -90,13 +90,8 @@ class RuntimeContracts(unittest.TestCase):
         self.assertNotIn('DeploymentCircuitBreaker', configuration)
         self.assertNotIn('LinearConfiguration', configuration)
         self.assertNotIn('CanaryConfiguration', configuration)
-        self.assertEqual(configuration['BakeTimeInMinutes'], 5)
-        self.assertTrue(configuration['Alarms']['Enable'])
-        self.assertTrue(configuration['Alarms']['Rollback'])
-        self.assertEqual(configuration['Alarms']['AlarmNames'], [
-            {'Ref': 'ServerErrorAlarm'}, {'Ref': 'LatencyAlarm'},
-            {'Fn::If': ['HasCanary', {'Ref': 'ExternalCanaryAlarmName'}, {'Ref': 'AWS::NoValue'}]},
-        ])
+        self.assertEqual(configuration['BakeTimeInMinutes'], 0)
+        self.assertEqual(configuration['Alarms'], {'Enable': False, 'Rollback': False, 'AlarmNames': []})
         hook_condition, release_hooks, bootstrap_hooks = configuration['LifecycleHooks']['Fn::If']
         self.assertEqual(hook_condition, 'HasApiRelease')
         self.assertEqual(bootstrap_hooks, {'Ref': 'AWS::NoValue'})

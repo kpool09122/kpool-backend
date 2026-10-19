@@ -8,7 +8,7 @@ AWS操作は `task infra:operate`、アプリ配備は GitHub Actions `Productio
 
 - 東京のFargate API/worker、RDS PostgreSQL 18、Valkey Serverless、ALB、S3、SQS。
 - 画像はS3/OAC/CloudFront、API証明書は東京、画像証明書はus-east-1。
-- ALBは30秒ごとに `/health` を確認する。5xx/遅延のalarmは配備rollbackと通知、異常targetのalarmは通知に使う。
+- ALBは30秒ごとに `/health` を確認する。5xx/遅延のalarmは通知、異常targetのalarmは通知に使う。
 - 外部URLの常時監視は省略。`ExternalCanaryAlarmName` は任意。Container Insightsは既定無効で、有効化する場合だけ `inputs.runtime.ContainerInsights=enabled` を設定する。
 - RDS/ECSの継続高負荷・DB空き容量、ALB異常/5xx/遅延、work/Scheduler DLQをメールへ通知する。Slackはworkspace承認後、任意のID設定で接続する。
 - アプリログは既定30日。RDSの自動出力ログの保持は別途確認する。
@@ -113,7 +113,7 @@ backendの `production` Environmentでタグ `v*` の許可を確認し、次の
 | RDS_CA_SHA256 | `github-variables.json` |
 
 バック・フロントにマイナーバージョンごとの `release/v1.0` などのブランチを用意し、公開対象コミットに `v1.0.0` などのタグを付ける。Actionsの **Production release** でbackendのタグを実行元に選び、`target=all`, `mode=deploy` で起動する。frontendは同名タグなら `frontend_ref` を空欄にできる。別のタグを使う場合だけ指定する。CLI例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
-初回のみ `initial=true`。migration成功 → APIのBLUE_GREENと5分bake → worker → 公開HTTPS `/health` の順に進む。
+初回のみ `initial=true`。migration成功 → APIのBLUE_GREEN（切替後の待機なし） → workerの順に進み、配備後の公開URLへのアクセス・画面確認は運用者が行う。
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
 API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
 
