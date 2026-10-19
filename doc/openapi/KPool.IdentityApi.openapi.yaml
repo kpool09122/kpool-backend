@@ -1955,7 +1955,6 @@ components:
         - accountPrincipalIdentifier
         - accountPrincipalStatus
         - siteManagementPrincipalStatus
-        - wikiPrincipalStatus
         - accountType
         - accountIdentityCount
         - accountPolicies
@@ -2002,11 +2001,6 @@ components:
             - $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
           nullable: true
           description: Current SiteManagement Principal status, also returned while stopped. Null only when the Principal does not exist.
-        wikiPrincipalStatus:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
-          nullable: true
-          description: Current Wiki Principal status in the current account, also returned while stopped. Null only when the Principal does not exist.
         accountType:
           type: string
           nullable: true

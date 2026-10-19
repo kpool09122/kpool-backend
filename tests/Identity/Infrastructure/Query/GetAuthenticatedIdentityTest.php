@@ -52,34 +52,6 @@ class GetAuthenticatedIdentityTest extends TestCase
     }
 
     #[Group('useDb')]
-    #[DataProvider('principalStatuses')]
-    public function testReturnsWikiStatusIndependentlyOfOtherPrincipalStatuses(string $status): void
-    {
-        $f = new SiteManagementPrincipalGroupsFixture();
-        $identity = $f->administrator->identityIdentifier();
-        $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
-        $input = new GetAuthenticatedIdentityInput($identity);
-        self::assertNull($query->process($input)->toArray()['wikiPrincipalStatus']);
-        DB::table('wiki_principals')->insert([
-            'id' => StrTestHelper::generateUuid(),
-            'identity_id' => (string) $identity,
-            'account_id' => (string) $f->otherAccount,
-            'status' => 'active',
-        ]);
-        self::assertNull($query->process($input)->toArray()['wikiPrincipalStatus']);
-        DB::table('wiki_principals')->insert([
-            'id' => StrTestHelper::generateUuid(),
-            'identity_id' => (string) $identity,
-            'account_id' => (string) $f->account,
-            'status' => $status,
-        ]);
-        $result = $query->process($input)->toArray();
-        self::assertSame($status, $result['wikiPrincipalStatus']);
-        self::assertSame('active', $result['accountPrincipalStatus']);
-        self::assertSame('active', $result['siteManagementPrincipalStatus']);
-    }
-
-    #[Group('useDb')]
     public function testSitePoliciesUseCurrentAccountAndReturnGeneralAdminAndDeny(): void
     {
         $this->app()->make(AccountAuthorizationSeeder::class)->run();
