@@ -62,6 +62,8 @@ ECS は integration AppSecretArn／MigrationSecretArn の `APP_KEY`, `DATABASE_U
 
 外部サービスを使う場合は `GOOGLE_CLIENT_SECRET`、`LINE_CLIENT_SECRET`、`KAKAO_CLIENT_SECRET`、`GENERATIVE_LANGUAGE_API_KEY`、`YOUTUBE_API_KEY`、`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET` の必要な値を application Secret に登録し、同じキー名を `app_secret_keys` に追加する。Secretへの登録だけではECSに渡らないため、backendのproduction Variable `BACKEND_RELEASE_CONFIGURATION` と手元の設定ファイルを合わせ、backendを再配備する。Client IDとredirect URI（`GOOGLE`／`LINE`／`KAKAO` の `_CLIENT_ID`／`_REDIRECT_URI`）、`STRIPE_PUBLISHABLE_KEY` は非秘密の `runtime_environment` に設定する。
 
+コミット済み `.env.prod` の非秘密設定は公開・配備時に読み取り、ECSの環境変数に反映する。優先順位はSSMの基盤設定 → `.env.prod` → `BACKEND_RELEASE_CONFIGURATION.runtime_environment`（後者が優先）。OAuth Client ID・本番callback URL・Geminiモデル・公開可能なSentry DSNも対象とする。ファイル自体はコンテナに含めず、秘密情報・未解決のプレースホルダー・重複キーは拒否する。
+
 DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool-rds-ca.pem` を含める。公開 CA は checksum／OpenSSL 構文を検証し BuildKit mount から既存 production target に同梱する。Secret 値は build に渡さない。通常のローカル container build は CA mount 省略可能。
 
 今回の基盤定義追加は既存 bootstrap role の scoped 読取（SSM String、project-prefix CloudWatch alarms、deployment-hook Lambda metadata、既存 work queue 属性）と runtime bootstrap task の writable volume のみ。API／worker／migration／scheduler の readonly root は維持する。runtime task 雛形と Dockerfile VOLUME により `/tmp`, `storage`, `bootstrap/cache` の所有者・mode を継承する。**管理者による既存 stack への反映が必要**。Pipeline 自身は反映しない。外部監視を任意導入する場合、ExternalCanaryAlarmName は `${ProjectName}-` prefix 内で設定する（この scoped IAM の対象）。既存 ECS revision 読取／用途別 PassRole 制約は維持する。
