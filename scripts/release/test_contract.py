@@ -11,6 +11,20 @@ class SourceTests(unittest.TestCase):
             validate_source('kpool09122/kpool-backend', 'main; touch /tmp/injection')
         self.assertEqual(validate_source('kpool09122/kpool-backend', 'a' * 40), 'a' * 40)
 
+class ExternalServiceConfigurationTests(unittest.TestCase):
+    def test_oauth_public_settings_are_plain_environment_but_secrets_are_rejected(self):
+        from contract import runtime_environment
+        settings = {}
+        for provider in ('GOOGLE', 'LINE', 'KAKAO'):
+            settings[provider + '_CLIENT_ID'] = 'fixture-client'
+            settings[provider + '_REDIRECT_URI'] = 'https://api.example.invalid/oauth/callback'
+        settings['STRIPE_PUBLISHABLE_KEY'] = 'pk_test_fixture'
+        self.assertEqual({item['name']: item['value'] for item in runtime_environment(settings)}, settings)
+        for name in ('GOOGLE_CLIENT_SECRET', 'LINE_CLIENT_SECRET', 'KAKAO_CLIENT_SECRET',
+                     'GENERATIVE_LANGUAGE_API_KEY', 'YOUTUBE_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                runtime_environment({name: 'fixture-never-export'})
+
 class DefinitionTests(unittest.TestCase):
     def test_template_is_preserved_and_runtime_config_is_nonsecret(self):
         from contract import task_definition

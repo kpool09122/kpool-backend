@@ -55,6 +55,20 @@ class BackendTests(unittest.TestCase):
             self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in container['environment']})
         migration=self.backend.definitions['Migration']['containerDefinitions'][0]
         self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in migration['secrets']})
+    def test_external_service_secrets_use_application_secret_without_values_or_migration_access(self):
+        names = ['GOOGLE_CLIENT_SECRET', 'LINE_CLIENT_SECRET', 'KAKAO_CLIENT_SECRET',
+                 'GENERATIVE_LANGUAGE_API_KEY', 'YOUTUBE_API_KEY', 'STRIPE_SECRET_KEY',
+                 'STRIPE_WEBHOOK_SECRET']
+        self.config['app_secret_keys'] = names
+        self.backend.preflight()
+        for kind in ('Api', 'Worker'):
+            container = self.backend.definitions[kind]['containerDefinitions'][0]
+            for name in names:
+                self.assertIn({'name': name, 'valueFrom': self.o['AppSecretArn'] + ':' + name + '::'},
+                              container['secrets'])
+                self.assertNotIn(name, {item['name'] for item in container['environment']})
+        migration = self.backend.definitions['Migration']['containerDefinitions'][0]
+        self.assertFalse(set(names) & {item['name'] for item in migration['secrets']})
     def test_visitor_location_secret_cannot_be_supplied_as_plain_runtime_configuration(self):
         self.config['runtime_environment']['WIKI_VISITOR_LOCATION_SECRET']='test-only-secret'
         with self.assertRaises(ValueError): self.backend.preflight()
