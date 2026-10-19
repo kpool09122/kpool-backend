@@ -16,6 +16,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\Get
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
+use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -32,15 +33,11 @@ readonly class GetContactDetail implements GetContactDetailInterface
     public function process(GetContactDetailInputPort $input, GetContactDetailOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null) {
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT))) {
             throw new UnauthorizedException();
         }
 
         $targetPrincipalIdentifier = $input->targetPrincipalIdentifier();
-        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $targetPrincipalIdentifier))) {
-            throw new UnauthorizedException();
-        }
-
         $contact = ContactModel::query()
             ->select(['id', 'principal_identifier', 'category', 'name', 'content', 'created_at'])
             ->where('id', (string) $input->contactIdentifier())
@@ -48,6 +45,11 @@ readonly class GetContactDetail implements GetContactDetailInterface
             ->first();
         if ($contact === null) {
             throw new ContactNotFoundException();
+        }
+
+        $owner = $contact->principal_identifier === null ? null : new PrincipalIdentifier($contact->principal_identifier);
+        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT, $owner))) {
+            throw new UnauthorizedException();
         }
 
         $contact->load([

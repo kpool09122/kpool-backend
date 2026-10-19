@@ -22,6 +22,9 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\Get
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
@@ -96,7 +99,7 @@ class GetContactDetailTest extends TestCase
     public static function policyScenarios(): array
     {
         return [
-            'general can view own contact' => [true, false, false, true],
+            'general cannot use management detail even for own contact' => [true, false, false, false],
             'general cannot view another contact' => [false, false, false, false],
             'own contact deny overrides Operator allow' => [true, true, true, false],
             'own contact deny does not affect another contact' => [false, true, true, true],
@@ -123,7 +126,7 @@ class GetContactDetailTest extends TestCase
             DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update([
                 'statements' => json_encode([[
                     'effect' => 'deny',
-                    'actions' => ['contact:view'],
+                    'actions' => ['contact:reply'],
                     'resource_types' => ['contact'],
                     'condition' => 'own_contact',
                 ]], JSON_THROW_ON_ERROR),
@@ -157,7 +160,7 @@ class GetContactDetailTest extends TestCase
             $this->setGeneralPolicy('deny-own');
         }
         $owner = $ownContact ? $principal->principalIdentifier() : new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $this->expectException($allowed ? ContactNotFoundException::class : UnauthorizedException::class);
+        $this->expectException($operator ? ContactNotFoundException::class : UnauthorizedException::class);
         $this->app()->make(GetContactDetailInterface::class)->process(
             new GetContactDetailInput($principal->principalIdentifier(), $owner, new ContactIdentifier(StrTestHelper::generateUuid())),
             new GetContactDetailOutput(),
@@ -248,10 +251,13 @@ class GetContactDetailTest extends TestCase
             'Operator own' => ['own', true, null, true],
             'Operator another' => ['another', true, null, true],
             'Operator anonymous' => ['anonymous', true, null, true],
-            'General own is not Operator' => ['own', false, null, false],
+            'General own without reply permission' => ['own', false, null, false],
             'General another' => ['another', false, null, false],
             'General anonymous' => ['anonymous', false, null, false],
-            'non-Operator with unconditional view permission' => ['own', false, 'allow', false],
+            'non-Operator with unconditional view permission' => ['own', false, 'view-only', false],
+            'non-Operator with unconditional reply permission' => ['own', false, 'allow', true],
+            'reply-only allows another owner without Operator' => ['another', false, 'allow', true],
+            'reply-only allows anonymous without Operator' => ['anonymous', false, 'allow', true],
             'explicit own deny overrides Operator allow' => ['own', true, 'deny-own', false],
             'own deny does not affect another owner' => ['another', true, 'deny-own', true],
             'own deny does not match null owner' => ['anonymous', true, 'deny-own', true],
@@ -261,7 +267,7 @@ class GetContactDetailTest extends TestCase
 
     #[Group('useDb')]
     #[DataProvider('policiesWithoutTarget')]
-    public function testRequiresOperatorAndEvaluatesPersistedOwnerWithoutTarget(string $ownerKind, bool $operator, ?string $policy, bool $allowed): void
+    public function testEvaluatesReplyPermissionForPersistedOwnerWithoutTarget(string $ownerKind, bool $operator, ?string $policy, bool $allowed): void
     {
         $principal = $this->provisionPrincipal();
         if ($operator) {
@@ -289,12 +295,12 @@ class GetContactDetailTest extends TestCase
     /** @return array<string, array{string, bool}> */
     public static function conditionalAllows(): array
     {
-        return ['own contact' => ['own', true], 'another owner' => ['another', false], 'anonymous owner' => ['anonymous', false], 'missing contact' => ['missing', false]];
+        return ['own contact' => ['own', false], 'another owner' => ['another', false], 'anonymous owner' => ['anonymous', false], 'missing contact' => ['missing', false]];
     }
 
     #[Group('useDb')]
     #[DataProvider('conditionalAllows')]
-    public function testOperatorWithOnlyOwnContactAllowUsesActualOwnerWithoutTarget(string $ownerKind, bool $allowed): void
+    public function testConditionalOnlyReplyAllowIsDeniedByOwnerlessPrecheck(string $ownerKind, bool $allowed): void
     {
         $principal = $this->provisionPrincipal();
         SiteManagementAuthorization::grantOperator($principal);
@@ -302,7 +308,7 @@ class GetContactDetailTest extends TestCase
         DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::OPERATOR_ROLE)->update([
             'statements' => json_encode([[
                 'effect' => 'allow',
-                'actions' => ['contact:view'],
+                'actions' => ['contact:reply'],
                 'resource_types' => ['contact'],
                 'condition' => 'own_contact',
             ]], JSON_THROW_ON_ERROR),
@@ -344,7 +350,7 @@ class GetContactDetailTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testOperatorRoleFromAnotherAccountDoesNotQualifyWithoutTarget(): void
+    public function testReplyPermissionDoesNotRequireOperatorRoleFromSameAccount(): void
     {
         $principal = $this->provisionPrincipal();
         $otherAccount = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -355,8 +361,8 @@ class GetContactDetailTest extends TestCase
         $this->setGeneralPolicy('allow');
         $id = StrTestHelper::generateUuid();
         $this->insertContact($id, null);
-        $this->expectException(UnauthorizedException::class);
-        $this->processWithoutTarget($principal->principalIdentifier(), $id);
+        $output = $this->processWithoutTarget($principal->principalIdentifier(), $id);
+        $this->assertSame($id, $output->toArray()['contactIdentifier']);
     }
 
     public function testMissingRequesterPrincipalIsUnauthorizedBeforeContactLookupWithoutTarget(): void
@@ -367,6 +373,102 @@ class GetContactDetailTest extends TestCase
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->expectException(UnauthorizedException::class);
         $this->processWithoutTarget($identifier, StrTestHelper::generateUuid());
+    }
+
+    /** @return array<string, array{bool, string, string, bool, string}> */
+    public static function replyAuthorizationScenarios(): array
+    {
+        $scenarios = [
+            'view-only own is denied' => ['view-only', 'own', true, 'forbidden'],
+            'reply-only own without Operator is allowed' => ['allow', 'own', true, 'allowed'],
+            'reply-only other owner without Operator is allowed' => ['allow', 'another', true, 'allowed'],
+            'reply-only missing is not found' => ['allow', 'own', false, 'missing'],
+            'view-only missing is forbidden before lookup' => ['view-only', 'own', false, 'forbidden'],
+            'unconditional deny overrides Operator' => ['deny', 'own', true, 'forbidden'],
+            'unconditional deny before missing' => ['deny', 'own', false, 'forbidden'],
+            'own deny applies after lookup' => ['deny-own', 'own', true, 'forbidden'],
+            'own deny does not affect another owner' => ['deny-own', 'another', true, 'allowed'],
+            'own deny does not override missing' => ['deny-own', 'own', false, 'missing'],
+        ];
+        $cases = [];
+        foreach ([true, false] as $scoped) {
+            foreach ($scenarios as $name => $scenario) {
+                $cases[($scoped ? 'principal scoped: ' : 'identifier only: ') . $name] = [$scoped, ...$scenario];
+            }
+        }
+
+        return $cases;
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('replyAuthorizationScenarios')]
+    public function testManagementQueriesUseReplyAuthorization(bool $scoped, string $policy, string $ownerKind, bool $exists, string $result): void
+    {
+        $principal = $this->provisionPrincipal();
+        if (str_starts_with($policy, 'deny')) {
+            SiteManagementAuthorization::grantOperator($principal);
+        } else {
+            // Reply permission must work even when the system Operator role does not exist.
+            DB::table('site_management_roles')->where('id', SiteManagementAuthorizationSeeder::OPERATOR_ROLE)->delete();
+        }
+        $this->setGeneralPolicy($policy);
+        $owner = $ownerKind === 'own' ? $principal->principalIdentifier() : new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $id = StrTestHelper::generateUuid();
+        if ($exists) {
+            $this->insertContact($id, (string) $owner);
+        }
+        if ($result !== 'allowed') {
+            $this->expectException($result === 'missing' ? ContactNotFoundException::class : UnauthorizedException::class);
+        }
+        if ($scoped) {
+            $output = new GetContactDetailOutput();
+            $this->app()->make(GetContactDetailInterface::class)->process(
+                new GetContactDetailInput($principal->principalIdentifier(), $owner, new ContactIdentifier($id)),
+                $output,
+            );
+        } else {
+            $output = $this->processWithoutTarget($principal->principalIdentifier(), $id);
+        }
+        if ($result === 'allowed') {
+            $this->assertSame($id, $output->toArray()['contactIdentifier']);
+        }
+    }
+
+    #[Group('useDb')]
+    public function testUnknownPrincipalIsRejectedByScopedQuery(): void
+    {
+        $identifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $this->expectException(UnauthorizedException::class);
+        $this->app()->make(GetContactDetailInterface::class)->process(
+            new GetContactDetailInput($identifier, $identifier, new ContactIdentifier(StrTestHelper::generateUuid())),
+            new GetContactDetailOutput(),
+        );
+    }
+
+    /** @return array<string, array{bool}> */
+    public static function selfOwners(): array
+    {
+        return ['own contact' => [true], 'other contact' => [false]];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('selfOwners')]
+    public function testSelfQueryStillUsesGeneralViewPermissionAndOwnerScope(bool $own): void
+    {
+        $principal = $this->provisionPrincipal();
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, $own ? (string) $principal->principalIdentifier() : StrTestHelper::generateUuid());
+        if (! $own) {
+            $this->expectException(ContactNotFoundException::class);
+        }
+        $output = new GetMyContactDetailOutput();
+        $this->app()->make(GetMyContactDetailInterface::class)->process(
+            new GetMyContactDetailInput($principal->principalIdentifier(), new ContactIdentifier($id)),
+            $output,
+        );
+        if ($own) {
+            $this->assertSame($id, $output->toArray()['contactIdentifier']);
+        }
     }
 
     private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailByIdentifierOutput
@@ -396,8 +498,8 @@ class GetContactDetailTest extends TestCase
     {
         DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update([
             'statements' => json_encode([[
-                'effect' => $policy === 'allow' ? 'allow' : 'deny',
-                'actions' => ['contact:view'],
+                'effect' => in_array($policy, ['allow', 'view-only'], true) ? 'allow' : 'deny',
+                'actions' => [$policy === 'view-only' ? 'contact:view' : 'contact:reply'],
                 'resource_types' => ['contact'],
                 'condition' => $policy === 'deny-own' ? 'own_contact' : null,
             ]], JSON_THROW_ON_ERROR),

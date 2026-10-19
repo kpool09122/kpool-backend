@@ -13,10 +13,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Query\ContactDetailReadMod
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutputPort;
-use Source\SiteManagement\Principal\Domain\Entity\PrincipalGroup;
-use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\SiteManagement\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
@@ -30,25 +27,13 @@ readonly class GetContactDetailByIdentifier implements GetContactDetailByIdentif
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
-        private PrincipalGroupRepositoryInterface $principalGroupRepository,
-        private RoleRepositoryInterface $roleRepository,
     ) {
     }
 
     public function process(GetContactDetailByIdentifierInputPort $input, GetContactDetailByIdentifierOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null) {
-            throw new UnauthorizedException();
-        }
-
-        $operatorRole = $this->roleRepository->findSystemByName('Operator');
-        if ($operatorRole === null || ! array_any(
-            $this->principalGroupRepository->findByPrincipalId($principal->principalIdentifier()),
-            static fn (PrincipalGroup $group): bool => (string) $group->accountIdentifier() === (string) $principal->accountIdentifier()
-                && $group->hasMember($principal->principalIdentifier())
-                && $group->hasRole($operatorRole->roleIdentifier()),
-        )) {
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT))) {
             throw new UnauthorizedException();
         }
 
@@ -56,12 +41,13 @@ readonly class GetContactDetailByIdentifier implements GetContactDetailByIdentif
             ->select(['id', 'principal_identifier', 'category', 'name', 'content', 'created_at'])
             ->where('id', (string) $input->contactIdentifier())
             ->first();
-        $owner = $contact?->principal_identifier === null ? null : new PrincipalIdentifier($contact->principal_identifier);
-        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_VIEW, new Resource(ResourceType::CONTACT, $owner))) {
-            throw new UnauthorizedException();
-        }
         if ($contact === null) {
             throw new ContactNotFoundException();
+        }
+
+        $owner = $contact->principal_identifier === null ? null : new PrincipalIdentifier($contact->principal_identifier);
+        if (! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT, $owner))) {
+            throw new UnauthorizedException();
         }
 
         $contact->load([
