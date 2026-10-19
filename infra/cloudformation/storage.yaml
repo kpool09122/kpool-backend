@@ -159,7 +159,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      Queues: [!Ref Queue, !Ref DeadLetterQueue]
+      Queues: [!Ref Queue]
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -167,7 +167,22 @@ Resources:
             Effect: Deny
             Principal: '*'
             Action: 'sqs:*'
-            Resource: [!GetAtt Queue.Arn, !GetAtt DeadLetterQueue.Arn]
+            Resource: !GetAtt Queue.Arn
+            Condition: {Bool: {'aws:SecureTransport': 'false'}}
+  DeadLetterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Queues: [!Ref DeadLetterQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 'sqs:*'
+            Resource: !GetAtt DeadLetterQueue.Arn
             Condition: {Bool: {'aws:SecureTransport': 'false'}}
 Outputs:
   PublicImagesBucketName:

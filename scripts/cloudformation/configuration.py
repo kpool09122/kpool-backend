@@ -275,7 +275,12 @@ def write_release_configuration(config, outputs, path, frontend_sha):
         if outputs.get('MailDkimName' + str(i)) and outputs.get('MailDkimValue' + str(i)):
             dns_records.append({'type': 'CNAME', 'name': outputs['MailDkimName' + str(i)],
                                 'content': outputs['MailDkimValue' + str(i)], 'proxied': False})
+    dns_bind = '; API, images and SES DKIM records for Cloudflare import\n'
+    for record in dns_records:
+        dns_bind += (record['name'].rstrip('.') + '. 300 IN CNAME '
+                     + record['content'].rstrip('.') + '. ; cf_tags=cf-proxied:false\n')
     for name, data in (('dns-records.json', json.dumps(dns_records, indent=2)),
+                       ('dns-records.bind', dns_bind),
                        ('backend-release-configuration.json', json.dumps(value, indent=2)),
                        ('github-variables.json', json.dumps(values, indent=2)),
                        ('rds-ca.pem', ca.decode())):

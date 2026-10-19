@@ -45,9 +45,10 @@ def resolve(outputs, services, rules, schedule):
         targets = config['TargetGroups']
         weights = {target['TargetGroupArn']: target.get('Weight', 1) for target in targets}
         if (len(targets) != 2 or set(weights) != set(colors)
-                or sorted(weights.values()) != [0, 1]):
+                or any(type(weight) is not int or not 0 <= weight <= 999 for weight in weights.values())
+                or sum(weight > 0 for weight in weights.values()) != 1):
             raise ValueError('Intermediate or unknown forwarding weights')
-        values[prefix + 'TargetGroup'] = colors[next(arn for arn, weight in weights.items() if weight == 1)]
+        values[prefix + 'TargetGroup'] = colors[next(arn for arn, weight in weights.items() if weight > 0)]
     if schedule['State'] not in {'ENABLED', 'DISABLED'}:
         raise ValueError('Unknown scheduler state')
     values['SchedulerState'] = schedule['State']

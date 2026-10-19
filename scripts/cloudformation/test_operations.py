@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from cfnlint.decode import decode
+
 import environment
 import operations
 from test_runtime_state import fixture
@@ -20,6 +22,7 @@ class FakeAws:
         self.after_create = lambda: None
         self.after_wait = lambda: None
         self.runtime_data = None
+        self.uploaded_templates = {}
         self.change = {'Id': 'arn:aws:cloudformation:ap-northeast-1:123456789012:changeSet/test/id',
                        'Status': 'CREATE_COMPLETE', 'ExecutionStatus': 'AVAILABLE', 'Changes': []}
 
@@ -30,6 +33,8 @@ class FakeAws:
         if operation == 'get-bucket-location':
             return {'LocationConstraint': 'ap-northeast-1'}
         if operation == 'put-object':
+            self.uploaded_templates[args[args.index('--key') + 1]] = json.loads(
+                Path(args[args.index('--body') + 1]).read_text())
             return {'VersionId': 'fixture-version'}
         if operation == 'describe-stacks':
             name = args[args.index('--stack-name') + 1]
@@ -68,6 +73,40 @@ class OperationsTests(unittest.TestCase):
         self.config = json.loads((ROOT / 'environment.example.json').read_text())
         self.aws = FakeAws()
 
+    def test_nested_packaging_preserves_scalar_types_and_pins_each_child_version(self):
+        templates, contract = environment.load_contract(ROOT)
+        bootstrap = environment.parameters(self.config, 'bootstrap', templates, contract, {})
+        self.aws.stacks[self.config['stacks']['bootstrap']] = {
+            'StackStatus': 'CREATE_COMPLETE',
+            'Parameters': [{'ParameterKey': key, 'ParameterValue': value} for key, value in bootstrap.items()],
+            'Outputs': [{'OutputKey': 'CloudFormationExecutionRoleArn', 'OutputValue': 'fixture-cfn-role'}],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            operations.prepare(self.aws, self.config, 'root', ROOT, Path(directory), True)
+            create = next(args for _, op, args in self.aws.calls if op == 'create-change-set')
+            parent = json.loads(Path(create[create.index('--template-body') + 1].removeprefix('file://')).read_text())
+            self.assertEqual(len(self.aws.uploaded_templates), 3)
+            for name in ('Network', 'Data', 'Storage'):
+                reference = parent['Resources'][name]['Properties']['TemplateURL']
+                self.assertIn('/' + name.lower() + '.json?versionId=fixture-version', reference)
+            for key, value in self.aws.uploaded_templates.items():
+                original, errors = decode(str(ROOT / (Path(key).stem + '.yaml')))
+                self.assertFalse(errors)
+                self.assertEqual(value, original)
+            data = next(value for key, value in self.aws.uploaded_templates.items() if key.endswith('/data.json'))
+            self.assertEqual(data['Resources']['Cache']['Properties']['DailySnapshotTime'], '17:30')
+        self.assertFalse(any(op == 'package' for _, op, _ in self.aws.calls))
+
+    def test_nested_upload_without_object_version_cannot_create_changeset(self):
+        templates, _ = environment.load_contract(ROOT)
+        def unversioned(service, operation, *args):
+            if operation == 'put-object':
+                return {}
+            return self.aws(service, operation, *args)
+        with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(ValueError, 'versioning'):
+            operations.package_nested_templates(unversioned, self.config, ROOT, Path(directory), 'test', templates['root'])
+        self.assertFalse(any(op == 'create-change-set' for _, op, _ in self.aws.calls))
+
     def test_plan_then_execute_uses_exact_reviewed_changeset(self):
         with tempfile.TemporaryDirectory() as directory:
             plan = operations.prepare(self.aws, self.config, 'bootstrap', ROOT, Path(directory), True)
@@ -75,6 +114,16 @@ class OperationsTests(unittest.TestCase):
         writes = [call for call in self.aws.calls if call[1] == 'execute-change-set']
         self.assertEqual(len(writes), 1)
         self.assertIn(plan['changeSetArn'], writes[0][2])
+        self.assertIn('--disable-rollback', writes[0][2])
+
+    def test_existing_stack_update_keeps_automatic_rollback(self):
+        self.aws.stacks[self.config['stacks']['bootstrap']] = {'StackStatus': 'CREATE_COMPLETE'}
+        with tempfile.TemporaryDirectory() as directory:
+            plan = operations.prepare(self.aws, self.config, 'bootstrap', ROOT, Path(directory), True)
+            operations.execute(self.aws, plan, ROOT, True)
+        writes = [call for call in self.aws.calls if call[1] == 'execute-change-set']
+        self.assertEqual(len(writes), 1)
+        self.assertNotIn('--disable-rollback', writes[0][2])
 
     def test_wrong_account_cannot_create_changeset(self):
         self.aws.account = '999999999999'
@@ -277,9 +326,25 @@ class OperationsTests(unittest.TestCase):
         live = {**values, 'ApiTaskDefinitionArn': 'api-bootstrap:1',
                 'WorkerTaskDefinitionArn': 'worker-bootstrap:1', 'SchedulerTaskDefinitionArn': 'scheduler-bootstrap:1'}
         operations.verify_initial_runtime(values, outputs, {'parameters': live})
+        operations.verify_initial_runtime(values, outputs, {'parameters': {
+            **live, 'PrimaryTargetGroup': 'Green', 'ProductionTargetGroup': 'Green', 'TestTargetGroup': 'Green'}})
         for change in ({'ApiDesiredCount': '1'}, {'SchedulerState': 'ENABLED'}, {'ApiTaskDefinitionArn': 'unexpected-release:2'}):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'Initial runtime'):
                 operations.verify_initial_runtime(values, outputs, {'parameters': {**live, **change}})
+
+    def test_update_keeps_zero_task_bootstrap_distinct_from_paused_release(self):
+        outputs = {kind + 'BootstrapTaskDefinitionArn': kind + '-bootstrap:1'
+                   for kind in ('Api', 'Worker', 'Scheduler')}
+        live = dict(ApiTaskDefinitionArn='Api-bootstrap:1', ApiDesiredCount='0',
+                    WorkerTaskDefinitionArn='worker-release:7', WorkerDesiredCount='0',
+                    SchedulerTaskDefinitionArn='Scheduler-bootstrap:1', SchedulerState='DISABLED')
+        values = operations.runtime_parameters_for_update(live, outputs)
+        self.assertEqual(values['ApiTaskDefinitionArn'], '')
+        self.assertEqual(values['SchedulerTaskDefinitionArn'], '')
+        self.assertEqual(values['WorkerTaskDefinitionArn'], 'worker-release:7')
+        self.assertEqual(live['ApiTaskDefinitionArn'], 'Api-bootstrap:1')
+        active = operations.runtime_parameters_for_update({**live, 'ApiDesiredCount': '1'}, outputs)
+        self.assertEqual(active['ApiTaskDefinitionArn'], 'Api-bootstrap:1')
 
     def test_terminal_native_rollback_identity_invalidates_old_snapshot(self):
         outputs, services, rules, schedule = fixture()

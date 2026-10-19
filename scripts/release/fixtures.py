@@ -74,6 +74,8 @@ class FakeAws:
         if operation=='update-service':
             kind='Api' if arguments['service']==o['ApiServiceName'] else 'Worker'
             item=self.services[kind]; item['taskDefinition']=arguments['taskDefinition']; item['desiredCount']=arguments['desiredCount']; item['runningCount']=arguments['desiredCount']
+            if 'deploymentConfiguration' in arguments:
+                item['deploymentConfiguration'] = copy.deepcopy(arguments['deploymentConfiguration'])
             item['deployments']=[{'status':'PRIMARY','taskDefinition':arguments['taskDefinition'],'rolloutState':'FAILED' if kind=='Worker' and self.worker_failed else 'COMPLETED'}]
             if kind=='Api': self.api_updated=True
             return {'service':copy.deepcopy(item)}

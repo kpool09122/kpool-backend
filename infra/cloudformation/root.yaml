@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Kpool issue 668 foundation. Package nested templates before deployment.
-# Local nested paths are intentional: deployment must use cloudformation package.
+# Local nested paths are packaged as JSON by the infrastructure operator tool.
 Metadata:
   cfn-lint:
     config:

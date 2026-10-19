@@ -5,7 +5,8 @@ import subprocess
 import urllib.request
 from contract import task_definition, runtime_environment, SECRET_KEYS, SECRET_REF
 from deployment import (poll, desired_count, migration_complete, api_complete,
-                        worker_complete, validate_api_service, deployment_alarm_names)
+                        worker_complete, validate_api_service, deployment_alarm_names,
+                        initial_api_configuration)
 from records import write_json
 
 
@@ -79,7 +80,7 @@ class Backend:
             if len(images) != 1 or images[0]['imageDigest'] != self.manifest['image_digest']:
                 raise ValueError('Recorded digest is unavailable')
         services = self.services()
-        validate_api_service(services['Api'],o)
+        validate_api_service(services['Api'],o,allow_bootstrap=self.plan['initial'])
         for kind, service in services.items():
             if (service['status'] != 'ACTIVE' or service['pendingCount'] != 0
                     or service['runningCount'] != service['desiredCount']
@@ -209,10 +210,13 @@ class Backend:
 
     def api(self):
         o=self.outputs
+        activation = ({'deploymentConfiguration': initial_api_configuration(self.services()['Api'], o)}
+                      if self.plan['initial'] else {})
         before={d['serviceDeploymentArn'] for d in self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']}
         self.journal.event('api','requesting',task_definition=self.tasks['Api'],desired=self.counts['Api'])
         self.aws('ecs','update-service',cluster=o['ClusterArn'],service=o['ApiServiceName'],
-                 taskDefinition=self.tasks['Api'],desiredCount=self.counts['Api'],forceNewDeployment=True)
+                 taskDefinition=self.tasks['Api'],desiredCount=self.counts['Api'],forceNewDeployment=True,
+                 **activation)
         def discover():
             deployments=self.aws('ecs','list-service-deployments',cluster=o['ClusterArn'],service=o['ApiServiceName'])['serviceDeployments']
             candidates=[d['serviceDeploymentArn'] for d in deployments if d['serviceDeploymentArn'] not in before]
