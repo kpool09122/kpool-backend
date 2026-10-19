@@ -1,15 +1,13 @@
 """Pinned source resolution and repository-owned artifact retrieval using read-only GH API."""
 import io
 import json
-import os
 import subprocess
 import zipfile
-from contract import BACKEND, FRONTEND, SHA, validate_source
+from contract import BACKEND, FRONTEND, RELEASE_TAG, SHA, validate_source
 
 
-def gh(path, binary=False, token=None):
-    environment = dict(os.environ, GH_TOKEN=token) if token else None
-    result=subprocess.run(['gh','api',path],capture_output=True,timeout=60,env=environment)
+def gh(path, binary=False):
+    result=subprocess.run(['gh','api',path],capture_output=True,timeout=60)
     if result.returncode:
         raise RuntimeError('GitHub read failed')
     return result.stdout if binary else json.loads(result.stdout)
@@ -18,16 +16,20 @@ def gh(path, binary=False, token=None):
 def resolve_source(repository, ref):
     if repository not in (BACKEND,FRONTEND) or not (ref=='main' or SHA.fullmatch(ref)):
         raise ValueError('Production source must be main or an approved full SHA')
-    def lookup(path):
-        if repository == FRONTEND and os.environ.get('FRONTEND_GH_TOKEN'):
-            return gh(path, token=os.environ['FRONTEND_GH_TOKEN'])
-        return gh(path)
-    sha=lookup(f'repos/{repository}/commits/{ref}')['sha']
+    sha=gh(f'repos/{repository}/commits/{ref}')['sha']
     validate_source(repository,sha)
-    comparison=lookup(f'repos/{repository}/compare/{sha}...main')
+    comparison=gh(f'repos/{repository}/compare/{sha}...main')
     if comparison['status'] not in ('ahead','identical'):
         raise ValueError('Production source is not reachable from main')
     return sha
+
+
+def verify_control(ref, sha):
+    if not ref.startswith('refs/tags/') or not RELEASE_TAG.fullmatch(ref.removeprefix('refs/tags/')):
+        raise ValueError('Production control workflow must run from a v-prefixed release tag')
+    validate_source(BACKEND, sha)
+    if resolve_source(BACKEND, sha) != sha:
+        raise ValueError('Tagged control SHA differs from the commit verified on main')
 
 
 def recorded_artifacts(run_id, current=False, attempt=1):
@@ -37,7 +39,8 @@ def recorded_artifacts(run_id, current=False, attempt=1):
     run=gh(f'repos/{BACKEND}/actions/runs/{run_id}')
     workflow=gh(f'repos/{BACKEND}/actions/workflows/{run["workflow_id"]}')
     if (run['repository']['full_name']!=BACKEND or run['event']!='workflow_dispatch'
-            or run['head_branch']!='main' or workflow['path']!='.github/workflows/release.yml'
+            or not (run['head_branch']=='main' or RELEASE_TAG.fullmatch(run['head_branch'] or ''))
+            or workflow['path']!='.github/workflows/release.yml'
             or (not current and run['status']!='completed')):
         raise ValueError('Recorded run ownership/event/environment is not trusted')
     # Pagination is explicit: old records are never replaced by a latest-source lookup.
@@ -67,4 +70,12 @@ def recorded_artifacts(run_id, current=False, attempt=1):
         matches=[a for a in artifacts if a['name']==prefix+'-'+str(attempt)]
         if not matches: return {}
         return read(max(matches,key=lambda a:a['id']))
-    return select('release-plan'),select('backend-image'),select('backend-record')
+    plan, image, record = select('release-plan'), select('backend-image'), select('backend-record')
+    if run['head_branch'] != 'main':
+        # Use immutable run metadata, not the tag's current (possibly moved) target.
+        source = plan.get('plan.json', {})
+        if (source.get('workflow_ref') != 'refs/tags/' + run['head_branch']
+                or source.get('workflow_sha') != run.get('head_sha')):
+            raise ValueError('Recorded release tag/SHA does not match the workflow run')
+        verify_control(source['workflow_ref'], source['workflow_sha'])
+    return plan, image, record

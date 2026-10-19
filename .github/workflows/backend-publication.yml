@@ -34,7 +34,7 @@ jobs:
           python3 - <<'PYCODE'
           import os, re
           if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
-              or os.environ['GITHUB_REF'] != 'refs/heads/main'
+              or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
               or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])
               or os.environ['CONTROL_SHA'] != os.environ['EXPECTED_CONTROL_SHA']):
               raise ValueError('Untrusted workflow control SHA/repository/ref')

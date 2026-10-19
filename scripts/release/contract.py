@@ -7,6 +7,7 @@ BACKEND = 'kpool09122/kpool-backend'
 FRONTEND = 'kpool09122/kpool-frontend'
 SHA = re.compile(r'[0-9a-f]{40}\Z')
 DIGEST = re.compile(r'sha256:[0-9a-f]{64}\Z')
+RELEASE_TAG = re.compile(r'v[A-Za-z0-9][A-Za-z0-9._-]*\Z')
 
 
 def validate_source(repository, sha):

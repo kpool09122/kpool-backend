@@ -7,11 +7,47 @@ import warnings
 import zipfile
 from unittest.mock import patch
 from contract import BACKEND, FRONTEND
-from github_source import recorded_artifacts, resolve_source
+from github_source import recorded_artifacts, resolve_source, verify_control
 from cli import plan_release, validate_plan, validate_manifest
 from fixtures import fixture, FakeAws
 
 class SourceAndRecordTests(unittest.TestCase):
+    def test_control_requires_a_release_tag_and_a_pinned_commit_on_main(self):
+        sha = 'a' * 40
+        for ref in ('refs/heads/main', 'refs/heads/v1.0.0', 'refs/tags/feature', 'refs/tags/v1/other'):
+            with self.subTest(ref=ref), patch('github_source.gh') as api:
+                with self.assertRaises(ValueError):
+                    verify_control(ref, sha)
+                api.assert_not_called()
+        for status in ('ahead', 'identical', 'behind', 'diverged'):
+            with self.subTest(status=status), patch('github_source.gh', side_effect=[{'sha': sha}, {'status': status}]):
+                if status in ('ahead', 'identical'):
+                    verify_control('refs/tags/v1.0.0', sha)
+                else:
+                    with self.assertRaises(ValueError):
+                        verify_control('refs/tags/v1.0.0', sha)
+        with patch('github_source.gh', side_effect=[{'sha': 'b' * 40}, {'status': 'ahead'}]):
+            with self.assertRaisesRegex(ValueError, 'differs'):
+                verify_control('refs/tags/v1.0.0', sha)
+
+    def test_tagged_record_is_bound_to_immutable_run_sha_and_recorded_ref(self):
+        sha = 'a' * 40
+        run = dict(repository={'full_name': BACKEND}, event='workflow_dispatch', head_branch='v1.0.0',
+                   head_sha=sha, workflow_id=1, status='completed')
+        source = dict(workflow_ref='refs/tags/v1.0.0', workflow_sha=sha)
+        for change in ({}, {'workflow_ref': 'refs/heads/v1.0.0'}, {'workflow_sha': 'b' * 40}):
+            archive = self.record_zip([('plan.json', json.dumps(dict(source, **change)))])
+            responses = [run, {'path': '.github/workflows/release.yml'},
+                         {'artifacts': [{'id': 1, 'name': 'release-plan-1', 'expired': False}]}, archive]
+            with patch('github_source.gh', side_effect=responses), patch('github_source.verify_control') as control:
+                if change:
+                    with self.assertRaisesRegex(ValueError, 'tag/SHA'):
+                        recorded_artifacts('42')
+                    control.assert_not_called()
+                else:
+                    self.assertEqual(recorded_artifacts('42')[0]['plan.json'], source)
+                    control.assert_called_once_with('refs/tags/v1.0.0', sha)
+
     def read_record_zip(self, archive):
         run={'repository':{'full_name':BACKEND},'event':'workflow_dispatch','head_branch':'main','workflow_id':1,'status':'completed'}
         artifacts=[{'id':1,'name':'backend-record-1','expired':False}]
@@ -61,14 +97,13 @@ class SourceAndRecordTests(unittest.TestCase):
             self.assertEqual(api.call_args_list[1].args[0],f'repos/{BACKEND}/compare/{sha}...main')
         with patch('github_source.gh',side_effect=[{'sha':sha},{'status':'diverged'}]):
             with self.assertRaises(ValueError): resolve_source(BACKEND,sha)
-    def test_frontend_token_is_scoped_to_frontend_source_queries(self):
+    def test_public_frontend_uses_standard_read_token_without_app_credentials(self):
         sha = 'a' * 40
-        with patch.dict('os.environ', FRONTEND_GH_TOKEN='TEST ONLY installation token'), \
-                patch('github_source.gh', side_effect=[{'sha': sha}, {'status': 'ahead'}, {'sha': sha}, {'status': 'ahead'}]) as api:
-            resolve_source(FRONTEND, 'main')
-            resolve_source(BACKEND, 'main')
-        self.assertEqual([call.kwargs for call in api.call_args_list],
-                         [{'token': 'TEST ONLY installation token'}, {'token': 'TEST ONLY installation token'}, {}, {}])
+        with patch('github_source.gh', side_effect=[{'sha': sha}, {'status': 'ahead'}]) as api:
+            self.assertEqual(resolve_source(FRONTEND, 'main'), sha)
+        self.assertEqual([call.kwargs for call in api.call_args_list], [{}, {}])
+        self.assertEqual(api.call_args_list[0].args[0], f'repos/{FRONTEND}/commits/main')
+
     def test_injection_ref_never_calls_github(self):
         with patch('github_source.gh') as api:
             for ref in ('feature/test','main;echo secret','$(id)','a'*39):
@@ -111,7 +146,7 @@ class ReplayPlanTests(unittest.TestCase):
         self.root=Path(self.directory.name)/'release'
         self.o,self.runtime_env,self.config,self.source,self.manifest=fixture()
         self.previous={'repository':BACKEND,'environment':'production','release_id':self.source['release_id'],'events':[]}
-        self.environment={'GITHUB_REPOSITORY':BACKEND,'GITHUB_REF':'refs/heads/main',
+        self.environment={'GITHUB_REPOSITORY':BACKEND,'GITHUB_REF':'refs/tags/v1.0.0',
                           'RELEASE_TARGET':'backend','RELEASE_MODE':'redeploy','CONTROL_SHA':'e'*40,
                           'SOURCE_RUN':'42','GITHUB_RUN_ATTEMPT':'1','GITHUB_RUN_ID':'43',
                           'INITIAL_ACTIVATION':'false','GITHUB_SERVER_URL':'https://github.com',
@@ -119,7 +154,7 @@ class ReplayPlanTests(unittest.TestCase):
 
     def create_plan(self, record=None, image=None):
         if record is None: record={'deployment-manifest.json':self.manifest,'journal.json':self.previous}
-        with patch('cli.ROOT',self.root),patch.dict('os.environ',self.environment,clear=True),patch('cli.recorded_artifacts',return_value=({'plan.json':self.source},image or {},record)):
+        with patch('cli.ROOT',self.root),patch.dict('os.environ',self.environment,clear=True),patch('cli.verify_control'),patch('cli.recorded_artifacts',return_value=({'plan.json':self.source},image or {},record)):
             plan_release()
         return json.loads((self.root/'plan.json').read_text())
 

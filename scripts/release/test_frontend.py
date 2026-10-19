@@ -142,11 +142,33 @@ class FrontendReleaseTests(unittest.TestCase):
 
 
 class FrontendPlanTests(unittest.TestCase):
+    def test_empty_backend_ref_deploys_tag_commit_even_if_main_has_advanced(self):
+        plan, config = fixture()
+        plan['backend_sha'] = plan['workflow_sha']
+        config['compatibility']['backend_sha'] = plan['backend_sha']
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
+                               RELEASE_TARGET='all', RELEASE_MODE='deploy', CONTROL_SHA=plan['workflow_sha'],
+                               LIVE_FRONTEND_SHA=plan['live_frontend_sha'], BACKEND_REF='', FRONTEND_REF='main',
+                               GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42', INITIAL_ACTIVATION='false',
+                               GITHUB_SERVER_URL='https://github.com',
+                               FRONTEND_RELEASE_CONFIGURATION=json.dumps(config),
+                               GITHUB_OUTPUT=str(Path(temporary) / 'output'))
+            def resolve(repository, ref):
+                self.assertEqual(ref, plan['workflow_sha'] if repository == BACKEND else 'main')
+                return plan['backend_sha'] if repository == BACKEND else plan['frontend_sha']
+            with patch.dict(os.environ, environment, clear=True), patch.object(cli, 'ROOT', Path(temporary) / 'release'), \
+                    patch('cli.verify_control'), patch('cli.resolve_source', side_effect=resolve):
+                cli.plan_release()
+            result = json.loads((Path(temporary) / 'release/plan.json').read_text())
+            self.assertEqual(result['backend_sha'], plan['workflow_sha'])
+            self.assertEqual(result['workflow_ref'], 'refs/tags/v1.0.0')
+
     def test_targets_resolve_once_and_frontend_only_uses_live_backend_without_aws(self):
         plan, config = fixture()
         for target in ('all', 'frontend'):
             with self.subTest(target=target), tempfile.TemporaryDirectory() as temporary:
-                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/heads/main',
+                environment = dict(GITHUB_REPOSITORY=BACKEND, GITHUB_REF='refs/tags/v1.0.0',
                                    RELEASE_TARGET=target, RELEASE_MODE='deploy', CONTROL_SHA=plan['workflow_sha'],
                                    LIVE_FRONTEND_SHA=plan['live_frontend_sha'], LIVE_BACKEND_SHA=plan['backend_sha'],
                                    BACKEND_REF='main', FRONTEND_REF='main', GITHUB_RUN_ATTEMPT='1', GITHUB_RUN_ID='42',
@@ -157,11 +179,13 @@ class FrontendPlanTests(unittest.TestCase):
                     self.assertEqual(ref, 'main')
                     return plan['backend_sha'] if repository == BACKEND else plan['frontend_sha']
                 with patch.dict(os.environ, environment, clear=True), patch.object(cli, 'ROOT', Path(temporary) / 'release'), \
-                        patch.object(cli, 'resolve_source', side_effect=resolve) as sources, patch('cli.Aws') as aws:
+                        patch.object(cli, 'resolve_source', side_effect=resolve) as sources, \
+                        patch('cli.verify_control') as control, patch('cli.Aws') as aws:
                     cli.plan_release()
                 result = json.loads((Path(temporary) / 'release/plan.json').read_text())
                 self.assertEqual(result['frontend_sha'], plan['frontend_sha'])
                 self.assertEqual(result['frontend_configuration_sha256'], configuration_digest(config))
                 self.assertEqual(sources.call_count, 1 if target == 'frontend' else 2)
+                control.assert_called_once_with('refs/tags/v1.0.0', plan['workflow_sha'])
                 aws.assert_not_called()
 

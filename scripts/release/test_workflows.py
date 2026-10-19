@@ -11,6 +11,41 @@ BASE=Path(__file__).resolve().parents[2]/'.github/workflows'
 def workflow(name): return yaml.safe_load((BASE/name).read_text())
 
 class WorkflowTests(unittest.TestCase):
+    def test_settings_are_checked_before_plan_without_exposing_cloudflare_token(self):
+        steps = workflow('release.yml')['jobs']['plan']['steps']
+        settings = next(i for i, step in enumerate(steps)
+                        if step.get('run') == 'python3 -B scripts/release/settings.py')
+        plan = next(i for i, step in enumerate(steps) if step.get('id') == 'plan')
+        self.assertLess(settings, plan)
+        self.assertFalse(any(step.get('uses', '').startswith('actions/create-github-app-token@') for step in steps))
+        for key in ('CLOUDFLARE_API_TOKEN',):
+            self.assertEqual(steps[settings]['env']['HAS_' + key], "${{ secrets." + key + " != '' }}")
+            self.assertNotIn(key, steps[settings]['env'])
+
+    def test_production_guards_accept_release_tags_and_reject_branches_before_checkout(self):
+        data = workflow('release.yml')
+        inputs = data.get('on', data.get(True))['workflow_dispatch']['inputs']
+        self.assertEqual(inputs['backend_ref']['default'], '')
+        jobs = [data['jobs'][name] for name in ('plan', 'frontend-build', 'frontend-deploy')]
+        for name in ('backend-validation.yml', 'backend-publication.yml', 'backend-deployment.yml'):
+            jobs.extend(workflow(name)['jobs'].values())
+        for job in jobs:
+            guard = job['steps'][0]
+            script = '\n'.join(guard['run'].splitlines()[1:-1])
+            for ref in ('refs/tags/v1.0.0', 'refs/heads/main', 'refs/heads/v1.0.0', 'refs/tags/feature'):
+                environment = dict(GITHUB_REPOSITORY='kpool09122/kpool-backend', GITHUB_REF=ref,
+                                   CONTROL_SHA='a' * 40, EXPECTED_CONTROL_SHA='a' * 40)
+                with self.subTest(job=job, ref=ref), patch.dict('os.environ', environment, clear=True):
+                    if ref == 'refs/tags/v1.0.0':
+                        exec(compile(script, '<tag-guard>', 'exec'), {})
+                    else:
+                        with self.assertRaises(ValueError):
+                            exec(compile(script, '<tag-guard>', 'exec'), {})
+        steps = data['jobs']['plan']['steps']
+        ancestry = next(i for i, step in enumerate(steps) if 'verify_control' in step.get('run', ''))
+        settings = next(i for i, step in enumerate(steps) if step.get('run') == 'python3 -B scripts/release/settings.py')
+        self.assertLess(ancestry, settings)
+
     def test_validation_checks_main_ancestry_before_checkout_and_execution(self):
         steps = workflow('backend-validation.yml')['jobs']['validate-build']['steps']
         check_index = next(i for i, step in enumerate(steps) if 'resolve_source' in step.get('run', ''))
@@ -110,8 +145,12 @@ class WorkflowTests(unittest.TestCase):
             self.assertFalse(steps[checkout]['with']['persist-credentials'])
             self.assertEqual(steps[checkout]['with']['ref'], 'main')
             self.assertEqual(steps[checkout]['with']['fetch-depth'], 0)
-            self.assertIn('SOURCE_APP_PRIVATE_KEY', json.dumps(job))
+            self.assertNotIn('SOURCE_APP', json.dumps(job))
+            self.assertTrue(any(step.get('env', {}).get('GH_TOKEN') == '${{ github.token }}' for step in steps))
         self.assertNotIn('CLOUDFLARE_API_TOKEN', json.dumps(jobs['frontend-build']))
+        build = next(step['run'] for step in jobs['frontend-build']['steps']
+                     if 'pnpm workers:build' in step.get('run', ''))
+        self.assertLess(build.index('pnpm workers:build'), build.index('pnpm workers:smoke'))
         steps = jobs['frontend-deploy']['steps']
         self.assertFalse(any('workers:build' in step.get('run', '') for step in steps))
         self.assertTrue(any(step.get('run', '').endswith('frontend.py restore') for step in steps))

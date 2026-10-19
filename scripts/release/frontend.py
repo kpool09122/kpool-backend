@@ -1,4 +1,4 @@
-"""Pinned Workers build handoff and deployment records, controlled by backend main."""
+"""Pinned Workers build handoff and deployment records, controlled by backend release tags."""
 import hashlib
 import json
 import os
