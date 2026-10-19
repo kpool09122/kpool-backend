@@ -69,9 +69,9 @@ task infra:operate -- execute --record "$RECORD_DIR/$STACK.plan.json" --release-
 API/worker/Schedulerとmigration等のRunTaskは root `PublicSubnetIds` と用途別SGを使用し、`assignPublicIp=ENABLED` にする。public subnetは自動public IP割当を無効にしているため、task起動設定で明示する。外向きHTTPSはInternet Gateway経由。
 起動後はALB経由のAPI疎通とtaskの外向き接続を確認し、APIの8080がALB SGのみ、worker/migrationに受信許可がないことを実SGと照合する。DB/cacheの非公開設定と用途別SGも確認する。
 
-**backend release Pipeline は `.github/workflows/release.yml` に実装済み。AWSでの動作確認は初回構築時に行う。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功・5分bake → worker → frontendの順で処理する。
+**backend release Pipeline は `.github/workflows/release.yml` に実装済み。AWSでの動作確認は初回構築時に行う。** 固定backend/frontend SHAとimage digestを使い、migration exit=0 → APIの目的deployment成功（bake=0） → worker → frontendの順で処理する。
 通常配備はCloudFormation更新なし、desiredは現在値を維持。初回0→1のみ起動時に変更する。
-API BLUE_GREENは切替前hook、切替後alarm rollback。workerはROLLING+breaker。
+API BLUE_GREENは切替前hookを実行し、切替後の待機とalarmによる自動rollbackは行わない。配備後に運用者が動作確認し、必要なら手動で再配備する。5xx/遅延alarmの通知とworkerのROLLING+breakerは維持する。
 `services-stable`だけでは旧revisionへのrollbackを成功と誤認するため、目的revision/digest・deployment結果・転送先も確認する。
 詳細な引き渡し項目は接続台帳、API8080/health・read-only volumes・ARM64・signalは[コンテナ契約](container-runtime.md)。
 
@@ -152,7 +152,7 @@ Slackの接続手順:
 ## 5. 障害・復旧・切戻し
 
 1. 配備/基盤変更を停止し、目的revision・実task/target・変更ID・最初のstack eventを非秘密の記録へ保存。ログ全文/queue payload/認証値を記録しない。
-2. hook失敗は旧API維持、bake中はECS rollbackを確認。いずれもリリース失敗。完了後の障害は記録済正常revision/digestへ対象サービスだけ再配備する。worker失敗やfrontend部分成功で正常backend/DBを自動で戻さない。初回は正常な旧APIが無いため修正後再実行。
+2. hook失敗は旧APIを維持し、リリース失敗として扱う。切替後のalarmによる自動rollbackは行わない。完了後の障害は記録済正常revision/digestへ対象サービスだけ再配備する。worker失敗やfrontend部分成功で正常backend/DBを自動で戻さない。初回は正常な旧APIが無いため修正後再実行。
 3. CloudFormation UPDATE_ROLLBACK_FAILEDは原因修復後continue-update-rollback。resources-to-skipは最後の手段で、実状態/テンプレートの再整合が必要。データstack削除で隠さない。
 4. RDSはPITR/snapshotから**別DB**へ復元し、TLS・権限・schema・業務整合を確認。書込停止後endpoint/Secretを切替。旧DBを保持し、新DBへ書込み後の切戻しはデータ再整合を伴う。アプリrollbackでDBをdowngradeしない。
 5. Valkeyは別cacheへ復元し、user/Secret/TLS・session再ログイン・challenge/lockを確認。復元したlockを副作用の成功証拠にしない。外部決済等は業務照合が必要。

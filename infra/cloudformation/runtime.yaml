@@ -289,11 +289,6 @@ Conditions:
       - Fn::Equals:
         - Ref: HookArtifactVersion
         - ''
-  HasCanary:
-    Fn::Not:
-    - Fn::Equals:
-      - Ref: ExternalCanaryAlarmName
-      - ''
   PrimaryBlue:
     Fn::Equals:
     - Ref: PrimaryTargetGroup
@@ -1599,7 +1594,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${ProjectName}-api-5xx'
-      AlarmDescription: Sustained target 5xx errors; deployment rollback and operator notification.
+      AlarmDescription: Sustained target 5xx errors; operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: HTTPCode_Target_5XX_Count
       Dimensions:
@@ -1621,7 +1616,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${ProjectName}-api-latency'
-      AlarmDescription: Sustained average API response latency; deployment rollback and operator notification.
+      AlarmDescription: Sustained average API response latency; operator notification.
       Namespace: AWS/ApplicationELB
       MetricName: TargetResponseTime
       Dimensions:
@@ -1655,17 +1650,11 @@ Resources:
         Strategy: BLUE_GREEN
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-        BakeTimeInMinutes: 5
+        BakeTimeInMinutes: 0
         Alarms:
-          Enable: true
-          Rollback: true
-          AlarmNames:
-          - Ref: ServerErrorAlarm
-          - Ref: LatencyAlarm
-          - Fn::If:
-            - HasCanary
-            - Ref: ExternalCanaryAlarmName
-            - Ref: AWS::NoValue
+          Enable: false
+          Rollback: false
+          AlarmNames: []
         LifecycleHooks:
           Fn::If:
           - HasApiRelease

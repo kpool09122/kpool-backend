@@ -26,7 +26,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 - 初期運用の費用を抑えるため、ALBとFargateはpublic subnetに配置し、taskのpublic IPを明示的に有効化する。外向きHTTPSはInternet Gateway経由とし、NATの時間/処理料金を追加しない。APIの受信はALB SGから8080のみ、worker/migrationには受信許可を設けない。DB/cacheとprivate hookはinternet既定経路のないdata subnetに置く。
 - public配置はSGの受信制限に依存する。受信元をInternetへ広げるとtaskへ直接到達できるため、template/testと実SGの照合でALB限定・用途別の受信制限を維持する。taskごとのpublic IPv4は課金対象。HTTPS egressは宛先allowlistではなく、侵害後の外部送信を防ぐものではない。private task + NATはSG誤設定時の直接到達を防ぐ追加の防御として、将来の要件・予算に応じて再評価する。AWS用endpointのみではGoogle/Stripe等の外部APIを代替できない。
 - private hookのEC2 interface endpointはALB ENI発見のため。ALBの8443はhook SGだけを許可し、hookのHost/SNI/TLS検証は同梱コードで実施する。endpointの利用API/有効性を実hookで確かめるまで削除・拡張しない。
-- API native BLUE_GREENを維持し、切替前smokeと切替後rollbackを分離する。新旧taskの併存費用はdeployment/bake中に発生し、通常時にAPIを常時二重化する設定ではない。ALBとhook用EC2 interface endpointは配備の有無にかかわらず固定費が続き、hook/canaryの実行費用は別に扱う。workerはROLLINGを維持。
+- API native BLUE_GREENと切替前smokeを維持し、切替後のbakeは0分、alarmによる自動rollbackは無効とする。配備後の動作確認と必要な再配備は手動で行う。新旧taskの併存費用はdeployment中に発生し、通常時にAPIを常時二重化する設定ではない。ALBとhook用EC2 interface endpointは配備の有無にかかわらず固定費が続き、hook/canaryの実行費用は別に扱う。workerはROLLINGを維持。
 - RDS Single-AZは費用を抑える初期選択で、自動failover/SLAの保証ではない。backupを高可用性と同一視しない。Multi-AZ/容量変更は復旧目標・実測に基づき管理者が選ぶ。Valkey Serverlessは容量管理を減らす一方、最小課金/処理費と復元検証が残る。
 - ALB、Fargate旧新task、public IPv4、Valkey、endpoint、canary、CloudFront転送、logs、S3 versions、Retain資源を費用台帳に含める。Budgetsはaccount全体の通知であり上限強制でもk-pool単体の原価でもない。Cloudflare/外部APIは別集計。見積金額・負荷実測なしに「最安」とは判断しない。
 
@@ -40,7 +40,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | 非公開書類のCDN公開 | 画像/書類を別bucket、BPA/暗号化/OAC、画像だけにCloudFront Allow。書類は認可API+private/no-store | APIのListBucketは書類bucket全キーを列挙可能。workerには与えない。S3/認可実動作はアプリ/実AWS検証が必要 |
 | 削除・置換/誤更新による消失 | RDS Snapshot/削除保護/backup/TLS、S3 versioning、永続資源のRetain/UpdateReplace、planの削除/置換拒否と終了保護 | Retainはbackup/復旧成功/無期限保存の保証ではない。SQS/log期限、version完全消去、復元/import、RPO/RTOは別検証 |
 | 稼働revisionやcapacityの巻戻し | ECS/ALB/Schedulerを独立して取得し、未安定・権限不足・state変化で中止 | 分散ロックではない。全配備入口のpause排出と基盤管理者の単独操作が必要。AWS実行直前との競合窓は残る |
-| 配備失敗や無通信障害の見逃し | hook、ECS alarm rollback、worker breaker、異常target/work DLQ alarm、SNS/Scheduler DLQ、ECS STOPPED rule | `/health`はDB/外部API疎通を保証しない。初期費用を抑えるため外部canaryは任意で省略し、無通信時の公開DNS/HTTPS障害検知は保証しない。通知配送・STOPPED検知は実環境未検証 |
+| 配備失敗や無通信障害の見逃し | hook、運用者による配備後確認と手動再配備、worker breaker、異常target/work DLQ alarm、SNS/Scheduler DLQ、ECS STOPPED rule | `/health`はDB/外部API疎通を保証しない。初期費用を抑えるため外部canaryは任意で省略し、無通信時の公開DNS/HTTPS障害検知は保証しない。通知配送・STOPPED検知は実環境未検証 |
 
 管理者CF実行roleには資源生成のための広い権限が残る。全wildcardを「AWS制約だから安全」とは扱わない。特にGlobalDeliveryAndBudgetはCloudFront/Budgetsの変更を `*` に許可するため、account内の他資源への影響が残る。専用account/管理者の短期認証・監査とChange Setの人的レビューが前提。実効権限/SCP/permissions boundaryは今回未確認。
 

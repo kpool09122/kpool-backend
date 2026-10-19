@@ -36,7 +36,7 @@ class FakeAws:
                              'desiredCount':2,'runningCount':2,'pendingCount':0,
                              'deployments':[{'status':'PRIMARY','taskDefinition':'fixture-old-'+kind,'rolloutState':'COMPLETED'}]} for kind in ('Api','Worker')}
         self.services['Api'].update(deploymentController={'type':'ECS'},deploymentConfiguration={
-            'strategy':'BLUE_GREEN','bakeTimeInMinutes':5,'alarms':{'enable':True,'rollback':True,'alarmNames':[outputs[k] for k in ('ServerErrorAlarmName','LatencyAlarmName','ExternalCanaryAlarmName')]},
+            'strategy':'BLUE_GREEN','bakeTimeInMinutes':0,'alarms':{'enable':False,'rollback':False,'alarmNames':[]},
             'lifecycleHooks':[{'hookTargetArn':outputs['LifecycleHookArn'],'roleArn':outputs['HookInvocationRoleArn'],'lifecycleStages':['POST_TEST_TRAFFIC_SHIFT']}]},
             loadBalancers=[{'targetGroupArn':outputs['BlueTargetGroupArn'],'advancedConfiguration':{'alternateTargetGroupArn':outputs['GreenTargetGroupArn'],'productionListenerRule':outputs['ProductionRuleArn'],'testListenerRule':outputs['TestRuleArn'],'roleArn':outputs['AlbInfrastructureRoleArn']}}])
         self.session=botocore.session.get_session()

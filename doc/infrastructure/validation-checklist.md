@@ -11,7 +11,7 @@
 
 | 操作 | 入口 / 正本 | 必要な確認 / 中止 / 復旧 |
 |---|---|---|
-| 通常配備 | Pipeline・接続台帳、operations §3 | 固定成果物、migration→API目的deployment/bake→worker→frontend。失敗で後続停止、部分成功は対象だけ復旧 |
+| 通常配備 | Pipeline・接続台帳、operations §3 | 固定成果物、migration→API目的deployment（bake=0）→worker→frontend。失敗で後続停止、部分成功は対象だけ復旧 |
 | 基盤変更 | operations §2 のplan/execute | pause排出、live Outputs/state、nested review。state変化/中間重み/権限不足は中止、新planを再レビュー |
 | 設定/Secret | environment inputs / SSM / Secrets、§4 | 非秘密と値を分離、新task反映・新旧互換確認、旧資格情報の失効。SecretだけのValkey変更を禁止 |
 | 容量変更 | root/runtime inputs、§4 | 現revision/desired維持、release定義CPU反映、DB再起動/費用/提供version。置換は専用移行計画 |
@@ -27,7 +27,7 @@
 | 競合/失敗 | plan後に検証環境で配備/容量変更しexecuteを拒否。中間重み、bake中、権限不足、stack更新中、waiter timeoutで後続を止める |
 | integration設定 | SSMの新env名をreleaseへ注入しSQS/S3/画像URLを確認。TLS付きDATABASE_URL/REDIS_URLとCAは別に検証 |
 | IAM/データ保護 | policy評価/安全な拒否試験で別repo/OIDC/PassRole/CF変更拒否、非公開DB/cache、書類がCDNに出ない、保持/暗号化 |
-| API/worker | hook失敗/timeoutで旧API維持、bake alarm/欠損でrollbackを失敗扱い、draining/ジョブ再試行と副作用を確認 |
+| API/worker | hook失敗/timeoutで旧API維持、切替後の待機・alarm自動rollbackが無効で、配備後の手動確認・再配備が可能、draining/ジョブ再試行と副作用を確認 |
 | 復元 | 別DB/cacheでTLS/権限/業務整合/RPO/RTO、旧資源保持と新書込後切戻し、import可否を確認。S3 version/DLQも必要な範囲 |
 | Cloudflare/認証 | 変更がある場合のみ固定SHA/build/preview/deploy、token scope、DNS/SAN、Cookie/CSRF/OAuth/passkey成功・拒否 |
 | 監視/費用 | 外部canaryの失敗/欠損、通知配送、Scheduler delivery/task/job別監視、retained資源/旧新併存費用 |

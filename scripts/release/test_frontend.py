@@ -1,6 +1,5 @@
 import copy
 import hashlib
-import io
 import json
 import os
 from pathlib import Path
@@ -107,7 +106,7 @@ class FrontendReleaseTests(unittest.TestCase):
                 preflight(directory, config, plan)
             self.assertIsNone(json.loads((directory / 'frontend-before.json').read_text())['previous'])
 
-    def test_observe_records_partial_failure_and_requires_new_version_and_https(self):
+    def test_observe_records_partial_failure_and_requires_exact_new_version_without_public_requests(self):
         plan, config = fixture()
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
@@ -124,11 +123,11 @@ class FrontendReleaseTests(unittest.TestCase):
             self.assertEqual(record['previous'], previous)
             (directory / 'wrangler-output.jsonl').write_text(json.dumps(dict(
                 type='deploy', version=1, worker_name=config['wrangler']['name'], version_id='new')) + '\n')
-            response = io.BytesIO(b'frontend'); response.status = 200; response.geturl = lambda: config['smoke_url']
             with patch.dict(os.environ, FRONTEND_DEPLOY_OUTCOME='success'), \
                     patch('frontend.deployed_version', return_value=current), \
-                    patch('frontend.urllib.request.urlopen', return_value=response):
+                    patch('frontend.urllib.request.urlopen') as http:
                 observe(directory, config, plan)
+                http.assert_not_called()
             self.assertEqual(json.loads((directory / 'frontend-deployment.json').read_text())['status'], 'success')
             with patch.dict(os.environ, FRONTEND_DEPLOY_OUTCOME='success'), \
                     patch('frontend.deployed_version', return_value=previous):
