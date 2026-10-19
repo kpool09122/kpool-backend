@@ -1,4 +1,5 @@
 """Offline behavioral tests; identifiers in fixtures are never runtime defaults."""
+import copy
 import unittest
 from contract import validate_source
 
@@ -30,6 +31,40 @@ class DefinitionTests(unittest.TestCase):
         self.assertNotIn('environment', template['containerDefinitions'][0])
         with self.assertRaises(ValueError):
             task_definition('Api', template, outputs, {'DB_PASSWORD': 'never-log-me'}, [], 'sha256:'+'a'*64)
+
+    def test_aws_empty_host_defaults_are_accepted_without_mutating_bootstrap(self):
+        from contract import task_definition
+        from fixtures import fixture, FakeAws
+        outputs, environment, _, _, manifest = fixture()
+        aws = FakeAws(outputs, environment)
+        for kind in ('Api', 'Worker', 'Migration'):
+            template = aws('ecs', 'describe-task-definition', taskDefinition=outputs[kind+'BootstrapTaskDefinitionArn'])['taskDefinition']
+            original = copy.deepcopy(template)
+            actual = task_definition(kind, template, outputs, environment, [], manifest['image_digest'])
+            bare = copy.deepcopy(template)
+            for volume in bare['volumes']: volume.pop('host')
+            expected = task_definition(kind, bare, outputs, environment, [], manifest['image_digest'])
+            with self.subTest(kind=kind):
+                self.assertEqual(actual, expected)
+                self.assertEqual(template, original)
+
+    def test_required_writable_volumes_reject_storage_changes_and_duplicates(self):
+        from contract import task_definition
+        from fixtures import fixture, FakeAws
+        outputs, environment, _, _, manifest = fixture()
+        template = FakeAws(outputs, environment)('ecs', 'describe-task-definition',
+                         taskDefinition=outputs['ApiBootstrapTaskDefinitionArn'])['taskDefinition']
+        for replacement in ({'host': {'sourcePath': '/host'}},
+                            {'efsVolumeConfiguration': {'fileSystemId': 'fs-unapproved'}},
+                            {'dockerVolumeConfiguration': {'driver': 'local'}}):
+            changed = copy.deepcopy(template)
+            changed['volumes'][0].update(replacement)
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                task_definition('Api', changed, outputs, environment, [], manifest['image_digest'])
+        changed = copy.deepcopy(template)
+        changed['volumes'].append(copy.deepcopy(changed['volumes'][0]))
+        with self.assertRaises(ValueError):
+            task_definition('Api', changed, outputs, environment, [], manifest['image_digest'])
 
 class CaTests(unittest.TestCase):
     def test_public_ca_requires_exact_checksum_and_pem_shape(self):

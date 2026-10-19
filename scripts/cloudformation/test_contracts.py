@@ -303,6 +303,14 @@ class CloudFormationContracts(unittest.TestCase):
             self.assertLessEqual(len(json.dumps(self.templates[stack], separators=(',', ':')).encode()), 51200,
                                  'Documented template-body path must fit CloudFormation limit')
 
+    def test_release_role_passes_only_the_hook_invocation_role_to_ecs(self):
+        role = self.templates['bootstrap']['Resources']['DeploymentRole']
+        grant = next(item for item in statements(role) if item.get('Sid') == 'PassDeploymentHookRole')
+        self.assertEqual(grant['Effect'], 'Allow')
+        self.assertEqual(grant['Action'], 'iam:PassRole')
+        self.assertEqual(grant['Resource'], {'Fn::Sub': 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-invocation'})
+        self.assertEqual(grant['Condition'], {'StringEquals': {'iam:PassedToService': 'ecs.amazonaws.com'}})
+
     def test_private_dns_endpoint_execution_permission(self):
         runtime = self.templates['runtime']['Resources']
         endpoint = runtime['Ec2Endpoint']['Properties']

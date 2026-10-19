@@ -106,6 +106,9 @@ jobs:
   validate-build:
     needs: plan
     if: inputs.target != 'frontend' && needs.plan.outputs.mode == 'deploy'
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/backend-validation.yml
     with:
       source_sha: ${{ needs.plan.outputs.backend_sha }}

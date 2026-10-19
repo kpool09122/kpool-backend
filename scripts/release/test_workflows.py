@@ -118,6 +118,21 @@ class WorkflowTests(unittest.TestCase):
                     if 'uses' not in job: self.assertEqual(job['environment'],'production')
                 self.assertNotEqual(job.get('secrets'),'inherit')
 
+    def test_reusable_workflows_cannot_request_permissions_missing_from_caller(self):
+        caller = workflow('release.yml')
+        levels = {'none': 0, 'read': 1, 'write': 2}
+        for name, job in caller['jobs'].items():
+            reference = job.get('uses', '')
+            if not reference.startswith('./.github/workflows/'):
+                continue
+            granted = job.get('permissions', caller['permissions'])
+            called = workflow(reference.rsplit('/', 1)[-1])
+            for child_name, child in called['jobs'].items():
+                required = child.get('permissions', called.get('permissions', {}))
+                for scope, level in required.items():
+                    with self.subTest(caller=name, called=child_name, scope=scope):
+                        self.assertGreaterEqual(levels[granted.get(scope, 'none')], levels[level])
+
     def test_frontend_build_gates_publication_and_deploy_has_only_cloudflare_credentials(self):
         jobs = workflow('release.yml')['jobs']
         self.assertEqual(jobs['frontend-build']['needs'], 'plan')

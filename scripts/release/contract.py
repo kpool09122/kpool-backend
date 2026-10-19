@@ -62,8 +62,15 @@ def task_definition(kind, template, outputs, config, secrets, digest):
     for name, path in paths.items():
         matching = [m for m in mounts if m['containerPath'] == path]
         if matching:
-            if len(matching) != 1 or matching[0] != {'sourceVolume': name, 'containerPath': path, 'readOnly': False} or {'name': name} not in volumes:
+            named_volumes = [volume for volume in volumes if volume.get('name') == name]
+            if (len(matching) != 1
+                    or matching[0] != {'sourceVolume': name, 'containerPath': path, 'readOnly': False}
+                    or len(named_volumes) != 1
+                    or named_volumes[0] not in ({'name': name}, {'name': name, 'host': {}})):
                 raise ValueError('Bootstrap writable volume contract mismatch')
+            # ECS describes an unnamed ephemeral host volume as host: {}.
+            # Keep registration canonical without changing the bootstrap response.
+            named_volumes[0].pop('host', None)
         else:
             if any(v['name'] == name for v in volumes):
                 raise ValueError('Bootstrap writable volume collision')
