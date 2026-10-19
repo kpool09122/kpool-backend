@@ -19,6 +19,9 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundE
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInput;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
@@ -366,10 +369,10 @@ class GetContactDetailTest extends TestCase
         $this->processWithoutTarget($identifier, StrTestHelper::generateUuid());
     }
 
-    private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailOutput
+    private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailByIdentifierOutput
     {
-        $output = new GetContactDetailOutput();
-        $this->app()->make(GetContactDetailInterface::class)->process(new GetContactDetailInput($principalIdentifier, null, new ContactIdentifier($id)), $output);
+        $output = new GetContactDetailByIdentifierOutput();
+        $this->app()->make(GetContactDetailByIdentifierInterface::class)->process(new GetContactDetailByIdentifierInput($principalIdentifier, new ContactIdentifier($id)), $output);
 
         return $output;
     }

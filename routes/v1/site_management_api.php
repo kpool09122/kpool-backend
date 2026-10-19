@@ -14,6 +14,7 @@ use Application\Http\Action\SiteManagement\Announcement\Query\ListDraftAnnouncem
 use Application\Http\Action\SiteManagement\Contact\Command\ReplyContact\ReplyContactAction;
 use Application\Http\Action\SiteManagement\Contact\Command\SubmitContact\SubmitContactAction;
 use Application\Http\Action\SiteManagement\Contact\Query\GetContactDetail\GetContactDetailAction;
+use Application\Http\Action\SiteManagement\Contact\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierAction;
 use Application\Http\Action\SiteManagement\Contact\Query\GetMyContactDetail\GetMyContactDetailAction;
 use Application\Http\Action\SiteManagement\Contact\Query\ListContacts\ListContactsAction;
 use Application\Http\Action\SiteManagement\Contact\Query\ListContactsByPrincipal\ListContactsByPrincipalAction;
@@ -51,6 +52,6 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::get('/contact/principals/{principalIdentifier}', ListContactsByPrincipalAction::class);
         Route::get('/contact/principals/{principalIdentifier}/{contactIdentifier}', GetContactDetailAction::class);
         Route::get('/contacts', ListContactsAction::class);
-        Route::get('/contacts/{contactIdentifier}', GetContactDetailAction::class);
+        Route::get('/contacts/{contactIdentifier}', GetContactDetailByIdentifierAction::class);
     });
 });
