@@ -52,7 +52,7 @@ root内のnetwork/data/storageは責務別のテンプレート分割であり�
 | contracts.json | 操作が実際に読むregion/deploymentOrder/親間linksだけを残す。未使用version/stacks/nestedStacks/serviceRoles/outputInventoryと子間linksを削除。nested接続/Output定義はroot/templateが正本で、消費者のない全Output一覧を複製しない |
 | environment.py | 手入力のOutputs/revisionやSecret拒否、live Outputsの必須接続、template制約の検査を維持。単なる転記をなくす利益が小さな専用resolverの保守を上回る。汎用schema/互換mapperは追加しない |
 | runtime_state.py | CF旧Parametersはrelease後の実状態を表さないため維持。primary/production/testを別に読む。CLIの単純なDescribeStacksだけでは安全に置換できない |
-| operations.py | native package/immutable Change Set/waiterを利用し、その前後のaccount・依存・state・置換検査だけを担当。手動AWS CLI案では検査漏れと再転記が増えるため採用しない。独自lock/自動復旧は追加しない。作成・更新共通のconfigureでSecret補完・専用DB設定task・release設定生成・月次schedule反映を行う |
+| operations.py | 子テンプレートを型を保つJSONでversion付きS3へ保存し、immutable Change SetとAWS waiterを使う。AWS CLIのYAML再出力で時刻文字列が数値へ変わる問題を避ける。account・依存・state・置換検査を行い、作成・更新共通のconfigureでSecret補完・専用DB設定task・release設定生成・月次schedule反映を行う |
 | 検証入口 | `task infra:validate`→`run.sh check`、CIも`run.sh check`に統一。未使用の旧`cfn:check`/`validate.sh`を削除。install/lint/testは同じpinned環境を使う部分実行として残す |
 | 文書 | 入口=全体像/正本、operations=操作、handoff=担当/接続、本文=採否、検証票=実環境の記録。コンテナ/queue/S3はアプリ固有契約だけ。過去の未実装表現とconfig cacheの矛盾を修正 |
 

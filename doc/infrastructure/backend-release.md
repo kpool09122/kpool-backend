@@ -8,7 +8,7 @@
 
 基盤の作成からSecret/DB設定までの順序は [構築手順](first-deployment.md)。標準hookはCloudFormation同梱で、`hook_code_sha256` は外部ZIPを使う場合に設定する。外部URLの常時監視は任意。Container Insightsは既定無効。
 
-backend の production Environment に許可 branch `main` を設定する。途中承認待ちを設けない運用では required reviewers を設定しない。workflow 変更は branch protection／レビューで保護する。統合入口の production concurrency は cancel-in-progress=false。基盤の管理者操作との排他・drift 反映は既存 [operations.md](operations.md) に従う。
+backend の production Environment は許可 tag `v*` を使う。`main` に含まれるコミットへリリースタグ（例: `v1.0.0`）を作成し、そのタグを指定して手動実行する。途中承認待ちを設けない運用では required reviewers を設定しない。workflow 変更は branch protection／レビューで保護する。統合入口の production concurrency は cancel-in-progress=false。基盤の管理者操作との排他・drift 反映は既存 [operations.md](operations.md) に従う。
 
 Environment Variables:
 
@@ -21,7 +21,6 @@ Environment Variables:
 | RDS_CA_SHA256 | 上記 PEM の UTF-8 bytes の SHA256。改行も一致させる |
 | BACKEND_RELEASE_CONFIGURATION | 以下の非秘密 JSON。stack 名は実環境の正本から登録 |
 | FRONTEND_RELEASE_CONFIGURATION | 下記のWorkers設定・互換性承認JSON。all/frontendで必須 |
-| SOURCE_APP_ID | frontend repoへContents:readを持つGitHub AppのID |
 | LIVE_BACKEND_SHA | frontend単独配備で接続する稼働backendの完全40桁SHA |
 
 設定 JSON の形（括弧付きの文字は実値に置換する。ARN・account・SHA の実行時既定値はない）:
@@ -64,7 +63,7 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 
 ## 手動入力と配備
 
-- `target=backend`、`mode=deploy`。`backend_ref=main` または main の履歴に存在する完全 SHA。plan 作成時に SHA を解決し、build／配備は同じ SHA と artifact を使う。production control code は起動元 workflow SHA に固定し、アプリ source SHA を control code として実行しない。
+- `target=backend`、`mode=deploy`。`backend_ref` は空欄なら起動元のリリースタグのコミットを使う。別の配備対象を選ぶ場合は `main` または main の履歴に存在する完全 SHAを指定する。plan 作成時に SHA を解決し、build／配備は同じ SHA と artifact を使う。production control code は起動元タグの workflow SHA に固定し、main への祖先関係を確認する。アプリ source SHA を control code として実行しない。
 - validation job は control checkout に `github.workflow_sha` を直接使い、source checkout 前に plan の SHA 一致と main の履歴への到達性を再確認する。main 外の SHA、GitHub API の確認失敗、固定 SHA の解決不一致ではアプリコードを実行せず停止する。
 - source checkout は固定の `main` と全履歴を取得する。信頼済み control の `select-source.sh` が取得済み `origin/main` への祖先関係を Git で確認してから、対象の固定 SHA に切り替える。入力 SHA を checkout action の ref に渡さず、検証とビルドはこの選択の成功後に同じ job で実行する。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
@@ -74,13 +73,22 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 - API は新 service deployment ARN を発見し、その target service revision の task definition を照合。SUCCESSFUL、5分以上の bake、target traffic weight=100、希望数／pending=0、source tasks=0、live task definition の一致が必要。旧 stable revision、rollback、wrong revision、25分 timeout は成功にならない。
 - API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に HTTPS `/health`（redirect 禁止）と SQS identity／attributes を読む。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
 
+タグをリモートへ登録し、この変更が既定ブランチとタグの両方に含まれた後、GitHub CLIで起動する。タグの作成・pushとActions実行は運用者の明示操作で行う。
+
+```sh
+gh workflow run release.yml --repo kpool09122/kpool-backend --ref v1.0.0 \
+  -f target=all -f mode=deploy -f frontend_ref=main -F initial=true
+```
+
+通常配備は `initial=false`。タグのpushだけでは配備を開始しない。再実行・rollbackも起動元にはリリースタグを指定し、戻すimageは `source_run` と `source_attempt` で選ぶ。
+
 ## 記録・再実行・手動復旧
 
 artifact は run／attempt ごとに immutable な名前で保存する（90日保持、image archive は14日）。release-plan、backend-image の publication manifest、backend-record の deployment manifest／append-only event files／journal、release-result を保存。summary と record に source SHA、control SHA、image digest、task ARN、API deployment ARN、stage 結果、観測時点の API／worker revision と希望数が残る。worker 失敗でも API の成功・live revision を消さない。
 
 SIGTERM／例外では finally で live state を照会し、観測不能も記録する。全 upload step は always 条件。runner 消失／強制停止時には最後の upload／live 照会まで保証できないので、残った immutable intent／manifest と ECS live state を管理者が照合する。AWS 応答中断後に latest SHA へ読み替えたり、自動で DB を戻したりしない。
 
-再実行は **source_run と source_attempt（既定1）の組を指定**する。対象 artifact 名を完全一致で選び、最新 attempt を探索しない。GitHub run の backend repository／workflow_dispatch／main／release.yml 所有と記録 environment／source／release ID／digest を確認。失効 artifact、未記録 migration、実環境との不一致は fail closed。
+再実行は **source_run と source_attempt（既定1）の組を指定**する。対象 artifact 名を完全一致で選び、最新 attempt を探索しない。GitHub run の backend repository／workflow_dispatch／release.yml（新規runはv付きタグ、旧main runも読取可能） 所有と記録 environment／source／release ID／digest を確認。失効 artifact、未記録 migration、実環境との不一致は fail closed。
 
 backend-record はアップロード時の `records/` 配下と従来のルート直下の記録を読み取る。同名記録の重複・両形式の衝突は停止する。manifest は deployment manifest → backend-record の `manifest.json` → backend-image の publication manifest の順に選び、resume／rollback の run も記録元に指定できる。
 
@@ -97,11 +105,10 @@ backend-record はアップロード時の `records/` 配下と従来のルー�
 
 ## backend Actionsからのfrontend配備
 
-frontendの既存 `workers:build` / `workers:deploy` をbackendのjobから呼ぶ。workflow制御コードはbackendの `github.workflow_sha`、アプリはfrontendのmain履歴に存在する完全SHAに固定する。別repoのworkflow呼出し設定は不要。
+frontendの既存 `workers:build` / `workers:deploy` をbackendのjobから呼ぶ。公開リポジトリのref照会とcheckoutには標準の `GITHUB_TOKEN` を使う。workflow制御コードはbackendの `github.workflow_sha`、アプリはfrontendのmain履歴に存在する完全SHAに固定する。
 
 backendの `production` Environmentへ次を設定する。
 
-- Variable `SOURCE_APP_ID`、Secret `SOURCE_APP_PRIVATE_KEY`。GitHub Appをfrontend repositoryにinstallし、Contents:readを許可する。jobが作るtokenはfrontendだけに限定する。
 - Secret `CLOUDFLARE_API_TOKEN`。対象accountのWorkers配備・metadata読取・R2 cache投入、custom domain設定に必要な権限を与える。権限と対象account/zoneは[frontend配備手順](https://github.com/kpool09122/kpool-frontend/blob/main/docs/cloudflare-workers.md)に従う。
 - Variable `FRONTEND_RELEASE_CONFIGURATION`。下記JSONを実値で設定する。`wrangler` はfrontendの `wrangler.json` を元にし、local名を本番のWorker/R2名へ変更し、account/domain/API URLを設定する。DO migration、IMAGES等のbindingを維持する。
 
@@ -146,7 +153,7 @@ backendの `production` Environmentへ次を設定する。
 | --- | --- |
 | 両方を配備 | `target=all`, `mode=deploy`, 両refをmainまたは承認した完全SHA。両build成功後にbackend → frontend。初回のみ `initial=true` |
 | frontendのみ配備 | `target=frontend`, `mode=deploy`, `frontend_ref`を指定。`LIVE_BACKEND_SHA`を稼働backendのSHAにする。AWS jobは動かない |
-| backendのみ配備 | 従来どおり `target=backend`。GitHub App/Cloudflare設定は不要 |
+| backendのみ配備 | 従来どおり `target=backend`。Cloudflare設定は不要 |
 
 build jobではESLint・unit testとOpenNextのproduction buildを実行し、Cloudflare tokenを渡さない。SHA・lockfile・設定・archiveのchecksum付き `.open-next` artifactを保存する。deploy jobは同じsourceと設定を照合し、artifactを復元して再buildせず既存配備スクリプトを実行する。直前にR2 bucketとruntime Secretを確認する。frontend jobにAWS OIDC/credentialsを付与しない。
 

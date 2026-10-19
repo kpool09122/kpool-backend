@@ -57,8 +57,10 @@ task infra:operate -- execute --record "$RECORD_DIR/$STACK.plan.json" --release-
 ```
 
 `STACK` を次の親へ変え、新しい記録で繰り返す。runtime作成直後はAPI/workerが0、Schedulerは無効。
+0台のAPI初期基盤にはヘルスチェックhookを付けない。アプリがない状態でのチェック失敗を避け、Actionsの明示的な初回起動時にhookと1台への変更を同じECS更新で設定する。稼働後はhookを必須として検証する。
 配備hookはテンプレート内のPythonコードを使う。外部ZIPを使うときだけ3つのHookArtifact入力とreleaseのchecksumを指定する。
-大きな親テンプレートはpackage bucketへアップロードされ、object version付きURLでChange Setへ渡される。
+子テンプレートと大きな親テンプレートは、型を保つJSONへ変換してpackage bucketへアップロードし、object version付きURLでChange Setへ渡す。時刻などの文字列がYAMLの再解釈で数値へ変わることを防ぐ。
+新規作成は成功したリソースを保持するため自動rollbackを無効にする。作成失敗時は次のplanを拒否するので、AWS eventsを確認して復旧する。既存スタックの更新は自動rollbackを維持する。
 
 ## 3. DNS・SES・通知先
 
@@ -70,6 +72,8 @@ runtime Outputsから次を設定する。
 | 画像 | root `ImageBaseUrl` のhostnameを画像distributionのdomainへCNAME。CloudflareのDNSのみ |
 | SES | runtime `MailDkimName1..3` → `MailDkimValue1..3` のCNAMEをDNSのみで追加 |
 | メール通知 | runtimeのSNS購読確認メールを承認。Budgetsの通知先も確認 |
+
+次節の `configure` が生成する `dns-records.bind` は、Cloudflareの対象zoneで **DNS → Records → Import and Export** から取り込める。**Proxy imported DNS records** を外してインポートし、API・画像・SES DKIMがDNSのみになったことを確認する。[Cloudflareの取込手順](https://developers.cloudflare.com/dns/manage-dns-records/how-to/import-and-export/)
 
 ACM検証用CNAMEは更新に必要なので残す。SES domainの検証完了後、東京SESのsandbox解除（production access）を申請する。
 sandbox中は原則として検証済み宛先しか送れないため、一般利用者への認証メールを送る前に解除を確認する。
@@ -92,7 +96,7 @@ task infra:operate -- configure --environment "$ENVIRONMENT" \
 - API/workerが0の場合は、専用Fargate taskでDBユーザーと権限を作成/再適用する。管理Secretはこのtaskのexecution roleだけに許可する。
 - `kpool_app` はDML、`kpool_migration` はschema/migration用。TLSはverify-full、将来作成するtable/sequenceにもアプリ権限を設定する。
 - 稼働済みAPI/workerがある更新ではDB初期設定を実行せず、既存資格情報を維持する。不整合を検出した場合はrotationとして扱い、停止する。
-- ローカルに `backend-release-configuration.json`、`github-variables.json`、`dns-records.json`、`rds-ca.pem` を作成/更新する。既存の追加env・Secretキー一覧・pause設定は維持する。
+- ローカルに `backend-release-configuration.json`、`github-variables.json`、`dns-records.json`、Cloudflare取込用の `dns-records.bind`、`rds-ca.pem` を作成/更新する。DNS取込ファイルにはDNS-only指定を付ける。既存の追加env・Secretキー一覧・pause設定は維持する。
 - API配備後の再実行では、現在稼働APIのimage/env/Secret参照でWiki taskを作成/更新する。最初のbootstrap scheduleから切り替えるときに月次処理を有効化し、以後の明示的な無効化は維持する。
 
 生成したrelease設定の `compatibility` に配備するbackend SHAと確認記録を設定し、`approved=true` にする。
@@ -102,7 +106,7 @@ Wiki接続元情報の署名用 `WIKI_VISITOR_LOCATION_SECRET` はapp Secretへ�
 
 ## 5. GitHub設定とbackend配備
 
-backendの `production` Environmentでmainを許可し、次のVariablesを登録/更新する。
+backendの `production` Environmentでタグ `v*` の許可を確認し、次のVariablesを登録/更新する。
 
 | Variable | 取得元 |
 | --- | --- |
@@ -111,7 +115,7 @@ backendの `production` Environmentでmainを許可し、次のVariablesを登�
 | RDS_CA_PEM | `rds-ca.pem` の公開PEM全文 |
 | RDS_CA_SHA256 | `github-variables.json` |
 
-Actionsの `Production release` を `target=backend`, `mode=deploy`, `backend_ref=main` で起動する。
+mainに含まれる配備コミットへリリースタグを登録し、そのタグを指定してActionsの `Production release` を `target=backend`, `mode=deploy` で起動する。`backend_ref` は空欄にしてタグのコミットを配備する。CLIの実行例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
 初回のみ `initial=true`。migration成功 → APIのBLUE_GREENと5分bake → worker → 公開HTTPS `/health` の順に進む。
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
 API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
@@ -129,7 +133,7 @@ ECSで現在のAPI task definitionを使う単発taskを起動し、APIと同じ
 ## 6. frontend配備と公開確認
 
 frontendのbuild/deployもbackendの `Production release` から実行する。
-[リリース手順](backend-release.md#backend-actionsからのfrontend配備)のGitHub App・Cloudflare token・`FRONTEND_RELEASE_CONFIGURATION` をbackendのproduction Environmentへ設定する。
+[リリース手順](backend-release.md#backend-actionsからのfrontend配備)のCloudflare token・`FRONTEND_RELEASE_CONFIGURATION` をbackendのproduction Environmentへ設定する。
 
 - 承認したWorker名・R2 cache bucket・account・custom domainをfrontendの配備JSONへ設定する。
 - 4つのKPOOL API base URLを本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
