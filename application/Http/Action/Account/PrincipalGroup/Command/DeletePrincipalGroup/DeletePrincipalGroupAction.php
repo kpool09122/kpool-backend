@@ -65,16 +65,16 @@ readonly class DeletePrincipalGroupAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('cannot_delete_last_owner_group', $language), previous: $e);
+            } catch (CannotRemoveLastPrincipalGroupManagerException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('cannot_delete_last_owner_group', $language), extensions: ['code' => 'last_active_manager'], previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (CannotRemoveLastPrincipalGroupManagerException $e) {
-            $exception = new ConflictHttpException(detail: error_message('cannot_delete_last_owner_group', $request->language()), extensions: ['code' => 'last_active_manager'], previous: $e);
-
-            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
-        } catch (NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

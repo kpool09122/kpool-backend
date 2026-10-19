@@ -29,12 +29,6 @@ readonly class EnsurePrincipalActive
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (in_array($request->path(), [
-            'api/v1/identity/auth/me', 'api/v1/identity/auth/logout', 'api/v1/wiki/principal/me',
-        ], true)) {
-            return $next($request);
-        }
-
         try {
             $context = $this->accountResolver->resolve(new IdentityIdentifier((string) Auth::id()));
         } catch (AccountNotFoundException) {

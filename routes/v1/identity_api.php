@@ -64,6 +64,7 @@ Route::middleware('rate-limit:screen,command')->group(function () {
     Route::get('/auth/social/{provider}/callback', SocialAuthenticateCallbackAction::class);
 });
 
+// Identity operations require authentication independently of account and principal status.
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         Route::get('/auth/me', GetAuthenticatedIdentityAction::class);

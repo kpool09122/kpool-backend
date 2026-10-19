@@ -57,15 +57,15 @@ readonly class DeletePrincipalGroupAction
                 DB::rollBack();
 
                 throw new ConflictHttpException(detail: error_message('cannot_delete_default_principal_group', $language), previous: $e);
+            } catch (CannotRemoveLastWikiAdministratorException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('cannot_remove_last_wiki_administrator', $language), extensions: ['code' => 'last_active_manager'], previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (CannotRemoveLastWikiAdministratorException $e) {
-            $exception = new ConflictHttpException(detail: error_message('cannot_remove_last_wiki_administrator', $request->language()), extensions: ['code' => 'last_active_manager'], previous: $e);
-
-            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
         } catch (NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 

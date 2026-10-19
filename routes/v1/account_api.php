@@ -34,11 +34,11 @@ use Application\Http\Action\Account\PrincipalGroup\Query\ListPrincipalGroups\Lis
 use Illuminate\Support\Facades\Route;
 
 // Account
-Route::middleware(['auth.api', 'resolve.actor', 'rate-limit:screen,command'])->group(function () {
+Route::middleware(['auth.api', 'principal.active', 'resolve.actor', 'rate-limit:screen,command'])->group(function () {
     Route::post('/accounts/setup', CompleteInitialSetupAction::class);
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Account
         Route::get('/my/documents', ListMyAccountDocumentsAction::class);
