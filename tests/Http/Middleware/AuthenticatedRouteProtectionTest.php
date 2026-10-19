@@ -8,6 +8,7 @@ use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Middleware\EnforceApiRateLimit;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
+use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
@@ -33,6 +34,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router->middlewareGroup('auth.api', [
             EnsureAuthenticated::class,
             EnsureAccountActive::class,
+            EnsurePrincipalActive::class,
         ]);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
@@ -83,7 +85,34 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $this->assertSame([
             EnsureAuthenticated::class,
             EnsureAccountActive::class,
+            EnsurePrincipalActive::class,
         ], $groups['auth.api']);
+    }
+
+    public function testIdentityOperationsRequireAuthenticationWithoutAccountOrPrincipalStatusGates(): void
+    {
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/v1/identity/')
+                || ! in_array('auth.api', $route->gatherMiddleware(), true)) {
+                continue;
+            }
+
+            $middleware = $this->app()->make('router')->gatherRouteMiddleware($route);
+            $this->assertContains(EnsureAuthenticated::class, $middleware, $route->uri());
+            $this->assertContains(ResolveActorContext::class, $middleware, $route->uri());
+            $this->assertNotContains(EnsureAccountActive::class, $middleware, $route->uri());
+            $this->assertNotContains(EnsurePrincipalActive::class, $middleware, $route->uri());
+        }
+    }
+
+    public function testServiceApisRetainAccountAndPrincipalStatusGates(): void
+    {
+        foreach (['/api/v1/account/accounts/example', '/api/v1/wiki/principal/me', '/api/v1/site-management/contacts'] as $uri) {
+            $middleware = $this->app()->make('router')->gatherRouteMiddleware($this->routeFor('GET', $uri));
+            $this->assertContains(EnsureAuthenticated::class, $middleware, $uri);
+            $this->assertContains(EnsureAccountActive::class, $middleware, $uri);
+            $this->assertContains(EnsurePrincipalActive::class, $middleware, $uri);
+        }
     }
 
     #[DataProvider('authenticatedRouteProvider')]

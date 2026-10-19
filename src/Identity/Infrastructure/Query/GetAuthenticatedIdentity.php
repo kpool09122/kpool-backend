@@ -14,6 +14,7 @@ use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnec
 use Application\Models\SiteManagement\Policy as SiteManagementPolicyModel;
 use Application\Models\SiteManagement\Principal as SiteManagementPrincipalModel;
 use Application\Models\SiteManagement\RolePolicyAttachment;
+use Application\Models\Wiki\Principal as WikiPrincipalModel;
 use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -156,6 +157,11 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
             ->first();
 
+        $wikiPrincipal = $accountContext === null ? null : WikiPrincipalModel::query()
+            ->where('identity_id', (string) $input->identityIdentifier())
+            ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
+            ->first();
+
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
             identityName: $model->identity_name,
@@ -179,6 +185,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             siteManagementPrincipalIdentifier: $siteManagementPrincipal?->id,
             accountPrincipalStatus: $accountContext?->principal()->status()->value,
             siteManagementPrincipalStatus: $siteManagementPrincipal?->status,
+            wikiPrincipalStatus: $wikiPrincipal?->status,
             siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
             accountIdentityCount: $accountContext === null ? 0 : AccountPrincipalModel::query()
                 ->where('account_id', (string) $accountContext->principal()->accountIdentifier())

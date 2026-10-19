@@ -153,6 +153,8 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountPrincipalStatus: PrincipalStatus | null;
   @doc("Current SiteManagement Principal status, also returned while stopped. Null only when the Principal does not exist.")
   siteManagementPrincipalStatus: PrincipalStatus | null;
+  @doc("Current Wiki Principal status in the current account, also returned while stopped. Null only when the Principal does not exist.")
+  wikiPrincipalStatus: PrincipalStatus | null;
   @doc("Account type associated with the authenticated identity.")
   accountType: string | null;
   @doc("Number of distinct identities belonging to the current effective account, including the current identity when it is a member. Pending invitations are excluded. Zero when there is no account.")
