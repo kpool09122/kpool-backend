@@ -3,7 +3,7 @@ import io
 import json
 import subprocess
 import zipfile
-from contract import BACKEND, FRONTEND, RELEASE_TAG, SHA, validate_source
+from contract import BACKEND, FRONTEND, RELEASE_BRANCH, RELEASE_TAG, SHA, validate_source
 
 
 def gh(path, binary=False):
@@ -14,22 +14,25 @@ def gh(path, binary=False):
 
 
 def resolve_source(repository, ref):
-    if repository not in (BACKEND,FRONTEND) or not (ref=='main' or SHA.fullmatch(ref)):
-        raise ValueError('Production source must be main or an approved full SHA')
-    sha=gh(f'repos/{repository}/commits/{ref}')['sha']
-    validate_source(repository,sha)
-    comparison=gh(f'repos/{repository}/compare/{sha}...main')
-    if comparison['status'] not in ('ahead','identical'):
-        raise ValueError('Production source is not reachable from main')
-    return sha
+    if repository not in (BACKEND, FRONTEND):
+        raise ValueError('Unknown source repository')
+    if RELEASE_BRANCH.fullmatch(ref):
+        # Fully qualified branch lookup cannot accidentally select a same-named tag.
+        sha = gh(f'repos/{repository}/git/ref/heads/{ref}')['object']['sha']
+    elif SHA.fullmatch(ref):
+        sha = gh(f'repos/{repository}/commits/{ref}')['sha']
+        if sha != ref:
+            raise ValueError('Pinned source SHA changed')
+    else:
+        raise ValueError('Production source must be a release/* branch')
+    return validate_source(repository, sha)
 
 
 def verify_control(ref, sha):
-    if not ref.startswith('refs/tags/') or not RELEASE_TAG.fullmatch(ref.removeprefix('refs/tags/')):
-        raise ValueError('Production control workflow must run from a v-prefixed release tag')
+    if not ref.startswith('refs/heads/') or not RELEASE_BRANCH.fullmatch(ref.removeprefix('refs/heads/')):
+        raise ValueError('Production workflow must run from a release/* branch')
+    # GitHub supplies workflow_sha for this invocation; do not reread a moving branch.
     validate_source(BACKEND, sha)
-    if resolve_source(BACKEND, sha) != sha:
-        raise ValueError('Tagged control SHA differs from the commit verified on main')
 
 
 def recorded_artifacts(run_id, current=False, attempt=1):
@@ -39,7 +42,7 @@ def recorded_artifacts(run_id, current=False, attempt=1):
     run=gh(f'repos/{BACKEND}/actions/runs/{run_id}')
     workflow=gh(f'repos/{BACKEND}/actions/workflows/{run["workflow_id"]}')
     if (run['repository']['full_name']!=BACKEND or run['event']!='workflow_dispatch'
-            or not (run['head_branch']=='main' or RELEASE_TAG.fullmatch(run['head_branch'] or ''))
+            or not (run['head_branch']=='main' or RELEASE_BRANCH.fullmatch(run['head_branch'] or '') or RELEASE_TAG.fullmatch(run['head_branch'] or ''))
             or workflow['path']!='.github/workflows/release.yml'
             or (not current and run['status']!='completed')):
         raise ValueError('Recorded run ownership/event/environment is not trusted')
@@ -72,10 +75,10 @@ def recorded_artifacts(run_id, current=False, attempt=1):
         return read(max(matches,key=lambda a:a['id']))
     plan, image, record = select('release-plan'), select('backend-image'), select('backend-record')
     if run['head_branch'] != 'main':
-        # Use immutable run metadata, not the tag's current (possibly moved) target.
         source = plan.get('plan.json', {})
-        if (source.get('workflow_ref') != 'refs/tags/' + run['head_branch']
+        prefix = 'refs/heads/' if RELEASE_BRANCH.fullmatch(run['head_branch']) else 'refs/tags/'
+        if (source.get('workflow_ref') != prefix + run['head_branch']
                 or source.get('workflow_sha') != run.get('head_sha')):
-            raise ValueError('Recorded release tag/SHA does not match the workflow run')
-        verify_control(source['workflow_ref'], source['workflow_sha'])
+            raise ValueError('Recorded release ref/SHA does not match the workflow run')
+        validate_source(BACKEND, source['workflow_sha'])
     return plan, image, record

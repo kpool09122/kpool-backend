@@ -362,7 +362,6 @@ def main():
     configure_parser = commands.add_parser('configure', help='Create/update app Secrets, DB roles and local release configuration')
     configure_parser.add_argument('--environment', type=Path, required=True)
     configure_parser.add_argument('--output', type=Path, required=True)
-    configure_parser.add_argument('--frontend-sha', help='Planned/live frontend full SHA; reused from output on updates')
     configure_parser.add_argument('--release-paused', action='store_true')
     prepare_parser = commands.add_parser('plan', help='Create (not execute) a reviewed AWS change set')
     prepare_parser.add_argument('--environment', type=Path, required=True)
@@ -387,7 +386,7 @@ def main():
         if args.command == 'configure':
             from configuration import configure
             capture(Aws(config['region']), config, args.release_paused)
-            configure(Aws(config['region']), config, args.output, args.frontend_sha)
+            configure(Aws(config['region']), config, args.output)
             return
         if args.command == 'config-check':
             parameters(config, 'bootstrap', templates, contract, {})

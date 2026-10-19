@@ -147,14 +147,9 @@ def database_setup(aws, outputs):
     raise ValueError('Database setup timed out; inspect task state before rerunning')
 
 
-def configure(aws, config, path, frontend_sha):
+def configure(aws, config, path):
     if not path or not path.is_absolute() or path.resolve().is_relative_to(ROOT.parents[1]):
         raise ValueError('Configuration output directory must be absolute and outside the repository')
-    if frontend_sha is None and (path / 'github-variables.json').exists():
-        frontend_sha = json.loads((path / 'github-variables.json').read_text())['LIVE_FRONTEND_SHA']
-    import re
-    if not re.fullmatch('[0-9a-f]{40}', frontend_sha or ''):
-        raise ValueError('Provide the planned/live frontend full SHA on first configuration')
     if not config['inputs'].get('runtime', {}).get('MailDomainName'):
         raise ValueError('Configure runtime.MailDomainName for SES first')
     existing_path = path / 'backend-release-configuration.json'
@@ -166,7 +161,7 @@ def configure(aws, config, path, frontend_sha):
     initialize_secrets(aws, outputs)
     if services_are_inactive(aws, outputs):
         database_setup(aws, outputs)
-    write_release_configuration(config, outputs, path, frontend_sha)
+    write_release_configuration(config, outputs, path)
     if not services_are_inactive(aws, outputs):
         configure_wiki_schedule(aws, outputs)
 
@@ -222,15 +217,13 @@ def configure_wiki_schedule(aws, outputs):
     aws('scheduler', 'update-schedule', '--cli-input-json', json.dumps(request))
 
 
-def write_release_configuration(config, outputs, path, frontend_sha):
-    import re
-    if not path or not path.is_absolute() or not re.fullmatch('[0-9a-f]{40}', frontend_sha or ''):
-        raise ValueError('Provide an absolute new output directory and the planned frontend full SHA')
+def write_release_configuration(config, outputs, path):
+    if not path or not path.is_absolute():
+        raise ValueError('Provide an absolute output directory')
     domain = config['inputs'].get('runtime', {}).get('MailDomainName')
     if not domain:
         raise ValueError('Configure runtime.MailDomainName for SES first')
-    # No private credentials are included. The release compatibility approval is
-    # intentionally left for the operator after checking the selected source.
+    # Deployment destinations are stable; source versions belong to each Actions run.
     value = {
         'paused': False, 'region': config['region'], 'account_id': config['accountId'],
         'deployment_role_arn': outputs['DeploymentRoleArn'], 'stacks': config['stacks'],
@@ -243,8 +236,6 @@ def write_release_configuration(config, outputs, path, frontend_sha):
         },
         'secret_contract': {'DATABASE_URL': 'verify-full:/etc/ssl/certs/kpool-rds-ca.pem', 'REDIS_URL': 'tls:db0'},
         'app_secret_keys': ['WIKI_VISITOR_LOCATION_SECRET'],
-        'compatibility': {'approved': False, 'backend_sha': '', 'live_frontend_sha': frontend_sha,
-                          'migration_policy': 'expand-contract', 'evidence': ''},
     }
     path.mkdir(mode=0o700, parents=True, exist_ok=True)
     existing_path = path / 'backend-release-configuration.json'
@@ -253,10 +244,6 @@ def write_release_configuration(config, outputs, path, frontend_sha):
         value['app_secret_keys'] = sorted(set(value['app_secret_keys']) | set(existing.get('app_secret_keys', [])))
         value['runtime_environment'] = {**value['runtime_environment'], **existing.get('runtime_environment', {}),
                                         'APP_URL': outputs['ApiUrl']}
-        value['compatibility'] = existing.get('compatibility', value['compatibility'])
-        if value['compatibility'].get('live_frontend_sha') != frontend_sha:
-            value['compatibility'] = {**value['compatibility'], 'approved': False,
-                                      'live_frontend_sha': frontend_sha}
         value['paused'] = existing.get('paused', False)
         if existing.get('hook_code_sha256'):
             value['hook_code_sha256'] = existing['hook_code_sha256']
@@ -265,7 +252,7 @@ def write_release_configuration(config, outputs, path, frontend_sha):
     if len(ca) > 48000 or not ca.startswith(b'-----BEGIN CERTIFICATE-----'):
         raise ValueError('Unexpected public RDS CA bundle')
     values = {'AWS_ACCOUNT_ID': config['accountId'], 'AWS_DEPLOY_ROLE_ARN': outputs['DeploymentRoleArn'],
-              'LIVE_FRONTEND_SHA': frontend_sha, 'RDS_CA_SHA256': hashlib.sha256(ca).hexdigest()}
+              'RDS_CA_SHA256': hashlib.sha256(ca).hexdigest()}
     dns_records = []
     for hostname, target in ((urlsplit(outputs['ApiUrl']).hostname, outputs.get('LoadBalancerDnsName')),
                              (urlsplit(outputs.get('ImageBaseUrl', '')).hostname, outputs.get('ImageDistributionDomainName'))):

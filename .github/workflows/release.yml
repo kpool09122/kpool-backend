@@ -5,15 +5,11 @@ on:
       target:
         type: choice
         options: [backend, all, frontend]
-        default: backend
-      backend_ref:
-        description: Backend source (empty uses the release tag commit); main or full SHA on main
+        default: all
+      frontend_ref:
+        description: Frontend release/* branch (empty uses the same branch name as backend)
         type: string
         default: ''
-      frontend_ref:
-        description: Frontend main or full SHA reachable from main
-        type: string
-        default: main
       mode:
         type: choice
         options: [deploy, redeploy, resume-worker, rollback-api, rollback-worker]
@@ -48,18 +44,18 @@ jobs:
       mode: ${{ steps.plan.outputs.mode }}
       release_id: ${{ steps.plan.outputs.release_id }}
     steps:
-      - name: Require backend release tag before checkout or credentials
+      - name: Require backend release branch before checkout or credentials
         run: |
           python3 - <<'PYCODE'
           import os, re
-          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF']):
-              raise ValueError('Production control workflow must run from a backend release tag')
+          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF']):
+              raise ValueError('Production control workflow must run from a backend release branch')
           PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
-      - name: Verify tagged control commit belongs to main
+      - name: Verify release branch workflow identity
         env:
           GH_TOKEN: ${{ github.token }}
           CONTROL_SHA: ${{ github.workflow_sha }}
@@ -79,8 +75,6 @@ jobs:
           BACKEND_RELEASE_CONFIGURATION: ${{ vars.BACKEND_RELEASE_CONFIGURATION }}
           RDS_CA_PEM: ${{ vars.RDS_CA_PEM }}
           RDS_CA_SHA256: ${{ vars.RDS_CA_SHA256 }}
-          LIVE_FRONTEND_SHA: ${{ vars.LIVE_FRONTEND_SHA }}
-          LIVE_BACKEND_SHA: ${{ vars.LIVE_BACKEND_SHA }}
           FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
           HAS_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
         run: python3 -B scripts/release/settings.py
@@ -92,11 +86,8 @@ jobs:
           SOURCE_RUN: ${{ inputs.source_run }}
           SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
           INITIAL_ACTIVATION: ${{ inputs.initial }}
-          BACKEND_REF: ${{ inputs.backend_ref }}
           FRONTEND_REF: ${{ inputs.frontend_ref }}
           CONTROL_SHA: ${{ github.workflow_sha }}
-          LIVE_FRONTEND_SHA: ${{ vars.LIVE_FRONTEND_SHA }}
-          LIVE_BACKEND_SHA: ${{ vars.LIVE_BACKEND_SHA }}
           FRONTEND_RELEASE_CONFIGURATION: ${{ vars.FRONTEND_RELEASE_CONFIGURATION }}
         run: python3 -B scripts/release/cli.py plan
       - if: always()
@@ -168,7 +159,7 @@ jobs:
           python3 - <<'PYCODE'
           import os, re
           if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
-              or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
+              or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
               or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
               raise ValueError('Untrusted workflow control repository/ref/SHA')
           PYCODE
@@ -181,7 +172,7 @@ jobs:
         with:
           name: release-plan-${{ github.run_attempt }}
           path: release
-      - name: Verify pinned source ancestry and workflow identity
+      - name: Verify pinned source and workflow identity
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
@@ -200,12 +191,12 @@ jobs:
               raise ValueError('Source/control SHA does not match immutable plan')
           validate_configuration(json.loads(os.environ['FRONTEND_RELEASE_CONFIGURATION']), plan)
           if resolve_source(FRONTEND, plan['frontend_sha']) != plan['frontend_sha']:
-              raise ValueError('Frontend source is not pinned to main history')
+              raise ValueError('Frontend source does not match the pinned commit')
           PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: kpool09122/kpool-frontend
-          ref: main
+          ref: ${{ needs.plan.outputs.frontend_sha }}
           fetch-depth: 0
           path: source
           persist-credentials: false
@@ -271,7 +262,7 @@ jobs:
           python3 - <<'PYCODE'
           import os, re
           if (os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend'
-              or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
+              or not re.fullmatch(r'refs/heads/release/[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF'])
               or not re.fullmatch('[0-9a-f]{40}', os.environ['CONTROL_SHA'])):
               raise ValueError('Untrusted workflow control repository/ref/SHA')
           PYCODE
@@ -284,7 +275,7 @@ jobs:
         with:
           name: release-plan-${{ github.run_attempt }}
           path: release
-      - name: Verify pinned source ancestry and workflow identity
+      - name: Verify pinned source and workflow identity
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ needs.plan.outputs.frontend_sha }}
@@ -303,12 +294,12 @@ jobs:
               raise ValueError('Source/control SHA does not match immutable plan')
           validate_configuration(json.loads(os.environ['FRONTEND_RELEASE_CONFIGURATION']), plan)
           if resolve_source(FRONTEND, plan['frontend_sha']) != plan['frontend_sha']:
-              raise ValueError('Frontend source is not pinned to main history')
+              raise ValueError('Frontend source does not match the pinned commit')
           PYCODE
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: kpool09122/kpool-frontend
-          ref: main
+          ref: ${{ needs.plan.outputs.frontend_sha }}
           fetch-depth: 0
           path: source
           persist-credentials: false

@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-from contract import SHA, validate_ca
+from contract import validate_ca
 
 
 def validate_settings(environment):
@@ -12,7 +12,7 @@ def validate_settings(environment):
     mode = environment.get('RELEASE_MODE')
     if target not in ('backend', 'frontend', 'all'):
         raise ValueError('Unknown release target')
-    required = {'LIVE_FRONTEND_SHA'}
+    required = set()
     if target != 'frontend':
         required.update(('AWS_ACCOUNT_ID', 'AWS_DEPLOY_ROLE_ARN', 'BACKEND_RELEASE_CONFIGURATION'))
         if mode == 'deploy':
@@ -21,14 +21,9 @@ def validate_settings(environment):
         required.add('FRONTEND_RELEASE_CONFIGURATION')
         if environment.get('HAS_CLOUDFLARE_API_TOKEN') != 'true':
             required.add('CLOUDFLARE_API_TOKEN')
-    if target == 'frontend':
-        required.add('LIVE_BACKEND_SHA')
     missing = sorted(key for key in required if not environment.get(key))
     if missing:
         raise ValueError('Missing production Environment settings: ' + ', '.join(missing))
-    for key in ('LIVE_FRONTEND_SHA', 'LIVE_BACKEND_SHA'):
-        if key in required and not SHA.fullmatch(environment[key]):
-            raise ValueError(key + ' must be a full commit SHA')
     if target != 'frontend':
         account = environment['AWS_ACCOUNT_ID']
         role = environment['AWS_DEPLOY_ROLE_ARN']

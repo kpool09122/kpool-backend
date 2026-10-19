@@ -82,12 +82,11 @@ Slack通知は[監視設定](operations.md#slack通知と負荷アラーム)に�
 
 ## 4. 作成・更新共通の設定コマンド
 
-基盤操作と同じ入口の `configure` を使う。初回のみ `--frontend-sha` に配備予定frontendの実際の完全SHAを渡す。
-以後は保存済みSHAを再利用でき、変更するときだけ再指定する。
+基盤操作と同じ入口の `configure` を使う。配備するソースのSHAはActionsが解決するため、基盤設定には指定しない。
 
 ```sh
 task infra:operate -- configure --environment "$ENVIRONMENT" \
-  --output "$RELEASE_CONFIG" --frontend-sha <frontendの完全40桁SHA> --release-paused
+  --output "$RELEASE_CONFIG" --release-paused
 ```
 
 このコマンドはAWSを変更する。
@@ -99,23 +98,21 @@ task infra:operate -- configure --environment "$ENVIRONMENT" \
 - ローカルに `backend-release-configuration.json`、`github-variables.json`、`dns-records.json`、Cloudflare取込用の `dns-records.bind`、`rds-ca.pem` を作成/更新する。DNS取込ファイルにはDNS-only指定を付ける。既存の追加env・Secretキー一覧・pause設定は維持する。
 - API配備後の再実行では、現在稼働APIのimage/env/Secret参照でWiki taskを作成/更新する。最初のbootstrap scheduleから切り替えるときに月次処理を有効化し、以後の明示的な無効化は維持する。
 
-生成したrelease設定の `compatibility` に配備するbackend SHAと確認記録を設定し、`approved=true` にする。
-初回はまだfrontendが稼働していないため配備予定SHAで互換性を確認し、公開後は現在稼働SHAを使う。
 DB/Redisの実接続・Secret注入はAWSで確認する。任意の外部API資格情報（Google OAuth/Translation、Stripe等）は利用する機能に合わせてapp Secretへ登録し、`app_secret_keys` に実際の環境変数名を列挙する。
 Wiki接続元情報の署名用 `WIKI_VISITOR_LOCATION_SECRET` はapp Secretへ生成する。frontendの同名Workers Secretにも同じ値を安全な管理経路で登録する。
 
 ## 5. GitHub設定とbackend配備
 
-backendの `production` Environmentでタグ `v*` の許可を確認し、次のVariablesを登録/更新する。
+backendの `production` Environmentでブランチ `release/*` の許可を確認し、次のVariablesを登録/更新する。
 
 | Variable | 取得元 |
 | --- | --- |
-| AWS_ACCOUNT_ID / AWS_DEPLOY_ROLE_ARN / LIVE_FRONTEND_SHA | 生成した `github-variables.json` |
-| BACKEND_RELEASE_CONFIGURATION | 生成・互換性確認した `backend-release-configuration.json` のJSON全文 |
+| AWS_ACCOUNT_ID / AWS_DEPLOY_ROLE_ARN | 生成した `github-variables.json` |
+| BACKEND_RELEASE_CONFIGURATION | 生成した `backend-release-configuration.json` のJSON全文 |
 | RDS_CA_PEM | `rds-ca.pem` の公開PEM全文 |
 | RDS_CA_SHA256 | `github-variables.json` |
 
-mainに含まれる配備コミットへリリースタグを登録し、そのタグを指定してActionsの `Production release` を `target=backend`, `mode=deploy` で起動する。`backend_ref` は空欄にしてタグのコミットを配備する。CLIの実行例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
+バック・フロントに `release/v1.0.0` などのリリースブランチを用意する。Actionsの **Production release** でbackendのリリースブランチを実行元に選び、`target=all`, `mode=deploy` で起動する。frontendは同名なら `frontend_ref` を空欄にできる。別名ならそのリリースブランチを指定する。CLI例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
 初回のみ `initial=true`。migration成功 → APIのBLUE_GREENと5分bake → worker → 公開HTTPS `/health` の順に進む。
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
 API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
@@ -138,7 +135,7 @@ frontendのbuild/deployもbackendの `Production release` から実行する。
 - 承認したWorker名・R2 cache bucket・account・custom domainをfrontendの配備JSONへ設定する。
 - 4つのKPOOL API base URLを本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
 - 署名用Workers Secretを登録する。本番画像hostをNextのremotePatternsで許可する。
-- backend配備後に `target=frontend`, `mode=deploy`, `frontend_ref=main` で起動する。`LIVE_BACKEND_SHA` は先ほど稼働したbackend SHAを設定する。設定を先に揃えた場合は手順5で `target=all` を選び、両方を一度に配備できる。
+- 個別に配備する場合は `target=frontend`, `mode=deploy` でfrontendのリリースブランチを指定する。通常は手順5の `target=all` で両方を配備する。
 - Cloudflare Workers等の料金はAWS見積もりと別。
 - `k-pool.app` とAPI/画像のHTTPS、認証メール、ログイン、Cookie/CSRF、画像アップロード・表示、SQS実ジョブ、SNS通知を確認する。
 

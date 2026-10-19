@@ -119,12 +119,6 @@ class Backend:
             raise ValueError('Production origins are incomplete')
         if c.get('secret_contract') != {'DATABASE_URL':'verify-full:/etc/ssl/certs/kpool-rds-ca.pem','REDIS_URL':'tls:db0'}:
             raise ValueError('Operator TLS URL secret contract must be explicitly attested')
-        compatibility = c['compatibility']
-        if (compatibility.get('approved') is not True or compatibility.get('backend_sha') != self.plan['backend_sha']
-                or compatibility.get('live_frontend_sha') != self.plan['live_frontend_sha']
-                or compatibility.get('migration_policy') != 'expand-contract'
-                or not compatibility.get('evidence')):
-            raise ValueError('DB/queue/live frontend compatibility evidence is missing')
         # Only ARN references are read. Secret values remain in ECS/Secrets Manager.
         self.secrets = {}
         for kind in ('Api','Worker','Migration'):

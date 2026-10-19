@@ -11,7 +11,7 @@ def fixture(target='all'):
     role = 'arn:aws:iam::' + account + ':role/fixture-deployment'
     ca = '-----BEGIN CERTIFICATE-----\nTEST ONLY\n-----END CERTIFICATE-----\n'
     return dict(RELEASE_TARGET=target, RELEASE_MODE='deploy', AWS_ACCOUNT_ID=account,
-                AWS_DEPLOY_ROLE_ARN=role, LIVE_FRONTEND_SHA='a' * 40, LIVE_BACKEND_SHA='b' * 40,
+                AWS_DEPLOY_ROLE_ARN=role,
                 BACKEND_RELEASE_CONFIGURATION=json.dumps(dict(paused=False, region='ap-northeast-1',
                                                              account_id=account, deployment_role_arn=role)),
                 RDS_CA_PEM=ca, RDS_CA_SHA256=hashlib.sha256(ca.encode()).hexdigest(),
@@ -33,7 +33,7 @@ class SettingsTests(unittest.TestCase):
         for target in ('backend', 'frontend', 'all'):
             environment = fixture(target)
             if target == 'backend':
-                for key in ('FRONTEND_RELEASE_CONFIGURATION', 'LIVE_BACKEND_SHA', 'HAS_CLOUDFLARE_API_TOKEN'):
+                for key in ('FRONTEND_RELEASE_CONFIGURATION', 'HAS_CLOUDFLARE_API_TOKEN'):
                     environment.pop(key)
             if target == 'frontend':
                 for key in ('AWS_ACCOUNT_ID', 'AWS_DEPLOY_ROLE_ARN', 'BACKEND_RELEASE_CONFIGURATION',
@@ -53,7 +53,7 @@ class SettingsTests(unittest.TestCase):
             environment['BACKEND_RELEASE_CONFIGURATION'] = json.dumps(dict(config, **change))
             with self.assertRaises(ValueError):
                 validate_settings(environment)
-        for key, value in (('LIVE_FRONTEND_SHA', 'main'), ('RDS_CA_SHA256', 'c' * 64),
+        for key, value in (('RDS_CA_SHA256', 'c' * 64),
                            ('BACKEND_RELEASE_CONFIGURATION', '[]'),
                            ('BACKEND_RELEASE_CONFIGURATION', 'sensitive-invalid-json')):
             environment = copy.deepcopy(fixture())

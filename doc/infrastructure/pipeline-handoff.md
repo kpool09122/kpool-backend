@@ -49,10 +49,10 @@ Variables はバックエンド repository の Settings → Environments → pro
 
 ## GitHub repository 間連携
 
-- 本番Environment、AWS OIDC、Cloudflare tokenは **バックエンド側** で管理する。初期運用は Environment required reviewers を設けず、許可タグ `v*` と用途別権限で保護する。
+- 本番Environment、AWS OIDC、Cloudflare tokenは **バックエンド側** で管理する。初期運用は Environment required reviewers を設けず、許可ブランチ `release/*` と用途別権限で保護する。
 - `kpool-frontend` は公開リポジトリ。ref解決・checkoutにはbackend jobの読取用 `GITHUB_TOKEN` を使う。
 - frontendの既存build/deployスクリプトをbackend jobから呼ぶ。workflowの管理はbackendに集約する。
-- workflow制御はmainに含まれるリリースタグの `github.workflow_sha`、frontend sourceはmain履歴の完全SHAへ固定し、checksum付きbuild artifactをdeployへ渡す。Cloudflare tokenは配備stepだけに渡す。`id-token: write`はAWS操作jobだけへ。
+- workflow制御とbackend sourceは実行元release/*ブランチの `github.workflow_sha`、frontend sourceは指定release/*ブランチから一度だけ解決した完全SHAへ固定し、checksum付きbuild artifactをdeployへ渡す。Cloudflare tokenは配備stepだけに渡す。`id-token: write`はAWS操作jobだけへ。
 - 実行時の設定・concurrency・初回起動フラグ・復旧入力は [リリース手順](backend-release.md) を参照する。クラウド適用とworkflowの実動作は [検証票](validation-checklist.md) に記録する。
 
 ## 未達ゲート・担当

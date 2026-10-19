@@ -205,10 +205,11 @@ class BackendTests(unittest.TestCase):
                 for definition in definitions.values(): definition['taskRoleArn'] = 'foreign-role'
                 with self.assertRaisesRegex(ValueError, 'not owned'):
                     backend.preflight()
-    def test_compatibility_is_required_before_any_mutation(self):
-        self.config['compatibility']['approved']=False
-        with self.assertRaises(ValueError): self.run_release()
-        self.assertFalse(any(op=='register-task-definition' for _,op,_ in self.aws.calls))
+    def test_deploy_needs_no_per_release_approval_configuration(self):
+        self.assertNotIn('compatibility', self.config)
+        self.run_release()
+        self.assertTrue(any(op == 'update-service' for _, op, _ in self.aws.calls))
+
     def test_role_swap_fails_before_any_mutation(self):
         self.aws.template_overrides['taskRoleArn']='fixture-migration-role-swapped'
         with self.assertRaises(ValueError): self.run_release()

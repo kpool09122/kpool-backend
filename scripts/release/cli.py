@@ -6,7 +6,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
-from contract import BACKEND, FRONTEND, SHA, DIGEST, validate_source, validate_ca
+from contract import BACKEND, FRONTEND, RELEASE_BRANCH, SHA, DIGEST, validate_source, validate_ca
 from github_source import resolve_source, recorded_artifacts, verify_control
 from aws_backend import Aws, Backend, stack_outputs
 from records import Journal, write_json
@@ -30,10 +30,10 @@ def validate_plan(plan):
             or plan.get('target') not in ('backend','all','frontend')
             or plan.get('mode') not in ('deploy','redeploy','resume-worker','rollback-api','rollback-worker')
             or not SHA.fullmatch(plan.get('workflow_sha',''))
-            or not SHA.fullmatch(plan.get('live_frontend_sha',''))
             or not isinstance(plan.get('initial'),bool)):
         raise ValueError('Release plan schema/environment is invalid')
-    validate_source(BACKEND,plan['backend_sha'])
+    if plan['target'] != 'frontend':
+        validate_source(BACKEND,plan['backend_sha'])
     if plan['target'] != 'backend':
         validate_source(FRONTEND, plan.get('frontend_sha', ''))
         if plan['mode'] != 'deploy' or not DIGEST.fullmatch('sha256:' + plan.get('frontend_configuration_sha256', '')):
@@ -59,14 +59,12 @@ def plan_release():
     control=os.environ['CONTROL_SHA']
     if not SHA.fullmatch(control): raise ValueError('Control workflow SHA must be complete')
     verify_control(os.environ['GITHUB_REF'], control)
-    live_frontend_sha=os.environ.get('LIVE_FRONTEND_SHA','')
-    if not SHA.fullmatch(live_frontend_sha): raise ValueError('Current live frontend SHA must be complete')
     recorded=os.environ.get('SOURCE_RUN','')
     attempt=int(os.environ['GITHUB_RUN_ATTEMPT'])
     if attempt>1 and not recorded: recorded=os.environ['GITHUB_RUN_ID']
     plan={'schema':1,'repository':BACKEND,'environment':'production','target':target,'mode':mode,
           'workflow_sha':control,'workflow_ref':os.environ['GITHUB_REF'],
-          'live_frontend_sha':live_frontend_sha,'initial':os.environ['INITIAL_ACTIVATION']=='true',
+          'initial':os.environ['INITIAL_ACTIVATION']=='true',
           'release_id':os.environ['GITHUB_RUN_ID']+'-'+str(attempt),
           'run_id':os.environ['GITHUB_RUN_ID'],'run_attempt':attempt,
           'run_url':os.environ['GITHUB_SERVER_URL']+'/'+BACKEND+'/actions/runs/'+os.environ['GITHUB_RUN_ID']}
@@ -75,7 +73,7 @@ def plan_release():
         source=validate_plan(original['plan.json'])
         plan.update(backend_sha=source['backend_sha'],
                     source_run=str(recorded),source_release_id=source.get('source_release_id',source['release_id']),initial=False)
-        if target!='backend': raise ValueError('Frontend replay requires a new deploy with the recorded full SHAs')
+        if target!='backend': raise ValueError('Frontend replay requires a new deploy from a release branch at the recorded commit')
         manifest=record.get('deployment-manifest.json',record.get('manifest.json',image.get('manifest.json')))
         if not manifest: raise ValueError('Recorded image manifest is unavailable; do not rebuild latest source')
         if attempt>1 and mode=='deploy': plan['mode']='redeploy'
@@ -88,12 +86,14 @@ def plan_release():
         write_json(ROOT/'previous.json',previous,exclusive=True)
     else:
         if mode!='deploy': raise ValueError('Replay/rollback requires source_run')
-        if target == 'frontend':
-            plan['backend_sha'] = validate_source(BACKEND, os.environ.get('LIVE_BACKEND_SHA', ''))
-        else:
-            plan['backend_sha']=resolve_source(BACKEND,os.environ.get('BACKEND_REF') or control)
+        plan['backend_sha'] = None if target == 'frontend' else control
+        plan['backend_ref'] = os.environ['GITHUB_REF'].removeprefix('refs/heads/')
         if target != 'backend':
-            plan['frontend_sha'] = resolve_source(FRONTEND, os.environ['FRONTEND_REF'])
+            ref = os.environ.get('FRONTEND_REF') or plan['backend_ref']
+            if not RELEASE_BRANCH.fullmatch(ref):
+                raise ValueError('Frontend source must be a release/* branch')
+            plan['frontend_ref'] = ref
+            plan['frontend_sha'] = resolve_source(FRONTEND, ref)
             from frontend import validate_configuration, configuration_digest
             config = json.loads(os.environ.get('FRONTEND_RELEASE_CONFIGURATION') or '{}')
             validate_configuration(config, plan)
@@ -182,7 +182,7 @@ def summary():
     plan=load(ROOT/'plan.json') if (ROOT/'plan.json').exists() else {}
     with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:
         stream.write('## Production release\n')
-        for key in ('release_id','environment','backend_sha','frontend_sha','live_frontend_sha','workflow_sha','run_url'):
+        for key in ('release_id','environment','backend_sha','frontend_sha','backend_ref','frontend_ref','workflow_sha','run_url'):
             value=plan.get(key,'unavailable')
             stream.write(f'- {key}: `{value}`\n')
         if (ROOT/'records'/'journal.json').exists():

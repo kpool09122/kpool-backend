@@ -8,7 +8,16 @@
 
 基盤の作成からSecret/DB設定までの順序は [構築手順](first-deployment.md)。標準hookはCloudFormation同梱で、`hook_code_sha256` は外部ZIPを使う場合に設定する。外部URLの常時監視は任意。Container Insightsは既定無効。
 
-backend の production Environment は許可 tag `v*` を使う。`main` に含まれるコミットへリリースタグ（例: `v1.0.0`）を作成し、そのタグを指定して手動実行する。途中承認待ちを設けない運用では required reviewers を設定しない。workflow 変更は branch protection／レビューで保護する。統合入口の production concurrency は cancel-in-progress=false。基盤の管理者操作との排他・drift 反映は既存 [operations.md](operations.md) に従う。
+backendの `production` Environmentは許可ブランチ `release/*` を使う。バック・フロントそれぞれに `release/v1.0.0` などのブランチを用意し、backendのActionsでそのバックエンドブランチを実行元に選ぶ。frontendは同名ブランチを既定とし、別名なら `frontend_ref` に指定する。workflow定義は既定ブランチにも存在する必要がある。リリースブランチ上のworkflow変更はレビューで保護する。production concurrencyはcancel-in-progress=false。基盤の管理者操作との排他・drift反映は [operations.md](operations.md) に従う。
+
+## 毎回の操作
+
+1. 公開するコードから両repositoryに `release/v1.0.0` を作成し、pushする。
+2. backendの **Actions → Production release → Run workflow** を開く。
+3. **Use workflow from** で `release/v1.0.0` を選び、`target=all`, `mode=deploy` にする。`frontend_ref` は同名なら空欄。初回のみ `initial=true`。
+4. Actionsが両コミットを固定し、検証・build後にbackend → frontendを配備する。結果はSummaryとartifactで確認する。
+
+SHAの転記、互換性承認JSONの編集、リリースタグの作成は不要。以下のVariablesは配備先や設定が変わるときだけ更新する。
 
 Environment Variables:
 
@@ -16,14 +25,12 @@ Environment Variables:
 | --- | --- |
 | AWS_ACCOUNT_ID | 対象 account（12桁） |
 | AWS_DEPLOY_ROLE_ARN | bootstrap DeploymentRoleArn と一致する OIDC role |
-| LIVE_FRONTEND_SHA | 現在稼働 frontend の完全40桁 SHA（backend compatibility gate） |
 | RDS_CA_PEM | 管理者が公式 RDS 東京 truststore から取得した公開 PEM（48KB以下）。秘密情報を入れない |
 | RDS_CA_SHA256 | 上記 PEM の UTF-8 bytes の SHA256。改行も一致させる |
 | BACKEND_RELEASE_CONFIGURATION | 以下の非秘密 JSON。stack 名は実環境の正本から登録 |
-| FRONTEND_RELEASE_CONFIGURATION | 下記のWorkers設定・互換性承認JSON。all/frontendで必須 |
-| LIVE_BACKEND_SHA | frontend単独配備で接続する稼働backendの完全40桁SHA |
+| FRONTEND_RELEASE_CONFIGURATION | 下記のWorkers設定JSON。all/frontendで必須 |
 
-設定 JSON の形（括弧付きの文字は実値に置換する。ARN・account・SHA の実行時既定値はない）:
+設定 JSON の形（括弧付きの文字は実値に置換する。ARN・account の実行時既定値はない）:
 
 ```json
 {
@@ -42,14 +49,7 @@ Environment Variables:
     "DATABASE_URL": "verify-full:/etc/ssl/certs/kpool-rds-ca.pem",
     "REDIS_URL": "tls:db0"
   },
-  "app_secret_keys": [],
-  "compatibility": {
-    "approved": true,
-    "backend_sha": "<resolved release SHA>",
-    "live_frontend_sha": "<LIVE_FRONTEND_SHA>",
-    "migration_policy": "expand-contract",
-    "evidence": "<reviewed DB/queue/API/frontend compatibility evidence URL>"
-  }
+  "app_secret_keys": []
 }
 ```
 
@@ -63,24 +63,23 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 
 ## 手動入力と配備
 
-- `target=backend`、`mode=deploy`。`backend_ref` は空欄なら起動元のリリースタグのコミットを使う。別の配備対象を選ぶ場合は `main` または main の履歴に存在する完全 SHAを指定する。plan 作成時に SHA を解決し、build／配備は同じ SHA と artifact を使う。production control code は起動元タグの workflow SHA に固定し、main への祖先関係を確認する。アプリ source SHA を control code として実行しない。
-- validation job は control checkout に `github.workflow_sha` を直接使い、source checkout 前に plan の SHA 一致と main の履歴への到達性を再確認する。main 外の SHA、GitHub API の確認失敗、固定 SHA の解決不一致ではアプリコードを実行せず停止する。
-- source checkout は固定の `main` と全履歴を取得する。信頼済み control の `select-source.sh` が取得済み `origin/main` への祖先関係を Git で確認してから、対象の固定 SHA に切り替える。入力 SHA を checkout action の ref に渡さず、検証とビルドはこの選択の成功後に同じ job で実行する。
+- backendのsourceと制御コードは、実行元 `release/*` ブランチの `github.workflow_sha` に固定する。frontendの指定リリースブランチはplan作成時に一度だけSHAを解決する。後からブランチが進んでも同じrunのbuild・配備対象は変わらない。
+- source checkout前にrepository・完全SHA・immutable planとの一致を検証し、checkout後にもHEADを照合する。mainへのマージは配備の条件にしない。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
-- `paused=true`、unstable stack/service、未設定の配備hook/基本alarm/bake、CA／compatibility 未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
+- `paused=true`、unstable stack/service、未設定の配備hook/基本alarm/bake、CA未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
 - 検証は Taskfile の install、非破壊 cs-check、phpstan、test を使う。ARM runner で既存 production target を build し、archive SHA256 と platform を記録。公開 job は archive を検証して ECR へ公開し、ECR 応答の digest を以後の全用途へ渡す。
 - migration は既存 public subnet＋専用 SG、Fargate、public IP ENABLED で実行。DB は非公開。単一 task ARN／task definition／exitCode=0 が必要。停止コード欠落・起動失敗・10分 timeout は API を止める。
 - API は新 service deployment ARN を発見し、その target service revision の task definition を照合。SUCCESSFUL、5分以上の bake、target traffic weight=100、希望数／pending=0、source tasks=0、live task definition の一致が必要。旧 stable revision、rollback、wrong revision、25分 timeout は成功にならない。
 - API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に HTTPS `/health`（redirect 禁止）と SQS identity／attributes を読む。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
 
-タグをリモートへ登録し、この変更が既定ブランチとタグの両方に含まれた後、GitHub CLIで起動する。タグの作成・pushとActions実行は運用者の明示操作で行う。
+CLIからの初回実行例（両repositoryの同名ブランチを使用）:
 
 ```sh
-gh workflow run release.yml --repo kpool09122/kpool-backend --ref v1.0.0 \
-  -f target=all -f mode=deploy -f frontend_ref=main -F initial=true
+gh workflow run release.yml --repo kpool09122/kpool-backend --ref release/v1.0.0 \
+  -f target=all -f mode=deploy -F initial=true
 ```
 
-通常配備は `initial=false`。タグのpushだけでは配備を開始しない。再実行・rollbackも起動元にはリリースタグを指定し、戻すimageは `source_run` と `source_attempt` で選ぶ。
+通常配備は `initial=false`。ブランチのpushだけでは配備は始まらない。再実行・rollbackも実行元には `release/*` を指定し、戻すimageは `source_run` と `source_attempt` で選ぶ。
 
 ## 記録・再実行・手動復旧
 
@@ -88,7 +87,7 @@ artifact は run／attempt ごとに immutable な名前で保存する（90日�
 
 SIGTERM／例外では finally で live state を照会し、観測不能も記録する。全 upload step は always 条件。runner 消失／強制停止時には最後の upload／live 照会まで保証できないので、残った immutable intent／manifest と ECS live state を管理者が照合する。AWS 応答中断後に latest SHA へ読み替えたり、自動で DB を戻したりしない。
 
-再実行は **source_run と source_attempt（既定1）の組を指定**する。対象 artifact 名を完全一致で選び、最新 attempt を探索しない。GitHub run の backend repository／workflow_dispatch／release.yml（新規runはv付きタグ、旧main runも読取可能） 所有と記録 environment／source／release ID／digest を確認。失効 artifact、未記録 migration、実環境との不一致は fail closed。
+再実行は **source_run と source_attempt（既定1）の組を指定**する。対象 artifact 名を完全一致で選び、最新 attempt を探索しない。GitHub run の backend repository／workflow_dispatch／release.yml（新規runはrelease/*ブランチ、旧main・タグrunも読取可能） 所有と記録 environment／source／release ID／digest を確認。失効 artifact、未記録 migration、実環境との不一致は fail closed。
 
 backend-record はアップロード時の `records/` 配下と従来のルート直下の記録を読み取る。同名記録の重複・両形式の衝突は停止する。manifest は deployment manifest → backend-record の `manifest.json` → backend-image の publication manifest の順に選び、resume／rollback の run も記録元に指定できる。
 
@@ -101,11 +100,11 @@ backend-record はアップロード時の `records/` 配下と従来のルー�
 | GitHub の Re-run all jobs | attempt1 の固定記録から redeploy へ切り替える。digest／migration success 記録がなければ停止。検証失敗のみの回復は、記録の SHA を明示した新 deploy を選ぶ |
 | migration 応答中断／成功不明 | 自動再実行しない。task ARN／exitCode／DB migration 台帳を照合。新しい deploy を明示する前に DB 担当が安全性を判断 |
 
-過去 release の replay／rollback と GitHub Re-run all jobs でも、現在稼働する frontend の完全40桁 SHA を `LIVE_FRONTEND_SHA` に設定する。記録済み backend SHA と現在の frontend SHA に対応した compatibility 証跡を設定し、配備前の gate で照合する。frontend 失敗を理由に backend／DB を戻さない。ECR digest の保持と90日より長い記録の保管は運用側で管理する。
+replay／rollbackは記録されたbackend SHA・image digestを使い、最新ブランチへ読み替えない。frontend失敗を理由にbackend／DBを戻さない。ECR digestの保持と90日より長い記録の保管は運用側で管理する。
 
 ## backend Actionsからのfrontend配備
 
-frontendの既存 `workers:build` / `workers:deploy` をbackendのjobから呼ぶ。公開リポジトリのref照会とcheckoutには標準の `GITHUB_TOKEN` を使う。workflow制御コードはbackendの `github.workflow_sha`、アプリはfrontendのmain履歴に存在する完全SHAに固定する。
+frontendの既存 `workers:build` / `workers:deploy` をbackendのjobから呼ぶ。公開リポジトリのref照会とcheckoutには標準の `GITHUB_TOKEN` を使う。workflow制御コードはbackendの `github.workflow_sha`、アプリはfrontendのリリースブランチから解決した完全SHAに固定する。
 
 backendの `production` Environmentへ次を設定する。
 
@@ -116,12 +115,6 @@ backendの `production` Environmentへ次を設定する。
 {
   "paused": false,
   "smoke_url": "https://k-pool.app/en",
-  "compatibility": {
-    "approved": true,
-    "backend_sha": "<配備するbackendの完全SHA、frontend単独ならLIVE_BACKEND_SHA>",
-    "frontend_sha": "<配備するfrontendの完全SHA>",
-    "evidence": "<API/認証/画像の互換性を確認した記録>"
-  },
   "wrangler": {
     "name": "<本番Worker名>",
     "account_id": "<Cloudflare account ID 32桁>",
@@ -151,18 +144,17 @@ backendの `production` Environmentへ次を設定する。
 
 | 操作 | 入力と実行順 |
 | --- | --- |
-| 両方を配備 | `target=all`, `mode=deploy`, 両refをmainまたは承認した完全SHA。両build成功後にbackend → frontend。初回のみ `initial=true` |
-| frontendのみ配備 | `target=frontend`, `mode=deploy`, `frontend_ref`を指定。`LIVE_BACKEND_SHA`を稼働backendのSHAにする。AWS jobは動かない |
+| 両方を配備 | `target=all`, `mode=deploy`。実行元にbackendのrelease/*ブランチ、frontend_refにfrontendのrelease/*ブランチ（同名なら空欄）。両build成功後にbackend → frontend。初回のみ `initial=true` |
+| frontendのみ配備 | `target=frontend`, `mode=deploy`, `frontend_ref`にリリースブランチを指定（同名なら空欄）。稼働backendをそのまま使い、AWS jobは動かない |
 | backendのみ配備 | 従来どおり `target=backend`。Cloudflare設定は不要 |
 
 build jobではESLint・unit testとOpenNextのproduction buildを実行し、Cloudflare tokenを渡さない。SHA・lockfile・設定・archiveのchecksum付き `.open-next` artifactを保存する。deploy jobは同じsourceと設定を照合し、artifactを復元して再buildせず既存配備スクリプトを実行する。直前にR2 bucketとruntime Secretを確認する。frontend jobにAWS OIDC/credentialsを付与しない。
 
 配備後はWranglerの構造化出力とCloudflareの稼働version IDを照合し、公開HTTPSの200を確認して、`frontend-record-<attempt>`へ前後のversionと結果を90日保存する。deploy失敗時も取得できた実状態を記録する。OpenNextのR2 cache投入がWorker公開より先に行われるため、失敗してもcache変更が残り得る。frontend失敗でbackend/DBを自動で戻さない。
 
-all/frontendのGitHub Re-runやsource_runによる自動replayは停止する。失敗したrunのplanに記録された完全frontend SHAを指定して新しい `target=frontend` deployを起動し、稼働backend SHAとの承認を更新する。backendのdigest replay/rollbackは従来どおり `target=backend` を使う。
+all/frontendのGitHub Re-runやsource_runによる自動replayは停止する。失敗したrunのplanでfrontend SHAを確認し、そのコミットを指すリリースブランチを指定して新しい `target=frontend` deployを起動する。backendのdigest replay/rollbackは従来どおり `target=backend` を使う。
 
-配備結果を確認して `LIVE_BACKEND_SHA` / `LIVE_FRONTEND_SHA` を更新する。allでfrontendが失敗した場合も、backendが成功していればbackendのSHAを更新する。backendのcompatibility設定は現在稼働frontendとの組、frontendのcompatibility設定は今回公開する組をそれぞれ確認する。
-
+公開したfrontend SHAとCloudflare version ID、backend SHAとECR digest・ECS revisionはActionsのartifactへ記録する。稼働版管理のためにGitHub Variablesを手で更新する操作は不要。frontend単独配備の記録には、未確認のbackend SHAを記入しない。
 ## ローカル確認
 
 既存 CF tool venv と actionlint を使う。再インストールは不要。
@@ -172,4 +164,4 @@ ACTIONLINT=/tmp/kpool-release-bin/actionlint CFN_VENV=/tmp/kpool-cfn-tools task 
 ```
 
 これは release の公開 API／state machine／AWS transport fixture テスト、実 botocore request shape 照合、workflow graph／権限／action SHA の検査、actionlint、既存 CF lint＋全テストを実行する。fixture は TEST ONLY と明記しており、runtime は cloud 応答の代わりに fixture を使わない。PHP変更はなく、task check の破壊的 style fix は今回のローカル確認対象外。production Docker build と container verify は別の実行証跡を参照する。
-PR の CI infrastructure job でも同じ release／CloudFormation 検証を実行する。source 選択のテストは一時 Git repository を使い、main の現在・過去 commit の選択と、未マージ commit・不正 SHA・不完全な履歴の拒否を確認する。
+PR の CI infrastructure job でも同じ release／CloudFormation 検証を実行する。source 選択のテストは一時 Git repository を使い、main未マージのリリースコミットの受け入れと、checkout不一致・不正SHAの拒否を確認する。
