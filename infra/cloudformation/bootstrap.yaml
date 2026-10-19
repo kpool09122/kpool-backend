@@ -209,6 +209,14 @@ Resources:
             Condition:
               StringEquals:
                 iam:PassedToService: ecs-tasks.amazonaws.com
+          - Sid: PassDeploymentHookRole
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-hook-invocation
+            Condition:
+              StringEquals:
+                iam:PassedToService: ecs.amazonaws.com
   CloudFormationExecutionRole:
     Type: AWS::IAM::Role
     Properties:
