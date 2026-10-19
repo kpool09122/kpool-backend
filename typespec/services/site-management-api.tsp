@@ -193,6 +193,8 @@ interface ContactOperations {
 
 @doc("User information for a principal in the current Account, including users with no group memberships.")
 model PrincipalGroupMember {
+  @doc("Principal lifecycle status. Stopped users remain in management lists and retain their permissions.")
+  status: PrincipalStatus;
   principalIdentifier: Uuid;
   identityIdentifier: Uuid;
   identityName: string;
@@ -226,6 +228,7 @@ model UpdatedPrincipalGroup {
 
 model UpdatePrincipalGroupMembersResponse {
   principalGroups: UpdatedPrincipalGroup[];
+  principalStatuses: PrincipalStatusUpdate[];
 }
 
 model UpdatePrincipalGroupMembersItem {
@@ -235,6 +238,8 @@ model UpdatePrincipalGroupMembersItem {
 
 model UpdatePrincipalGroupMembersRequestBody {
   principalGroups: UpdatePrincipalGroupMembersItem[];
+  @doc("Statuses to save atomically with group memberships. Omission or an empty array makes no status changes; omitted Principals retain their status. All three values are accepted so unchanged forced_stop rows can be included.")
+  principalStatuses?: PrincipalStatusUpdate[];
 }
 
 @route("/principal-groups")
@@ -246,8 +251,8 @@ interface PrincipalGroupOperations {
 
   @patch
   @route("/members")
-  @doc("Replace membership of specified groups and retain omitted groups. Empty member arrays remove all members. Duplicate group IDs and duplicate members within one group return 422; multiple group membership is allowed. Requires principal-group:manage on principal_group. System Operator groups, including mixed-role groups, return 403. Missing or other-Account groups/principals return 404. Removing the last real same-Account Administrator across editable groups returns 422. Returns summaries of the updated groups only; clients fetch the list separately. Self-removal succeeds when another Administrator remains, without reauthorization until the next request.")
-  updatePrincipalGroupMembers(@body body: UpdatePrincipalGroupMembersRequestBody): UpdatePrincipalGroupMembersResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+  @doc("Atomically save specified group memberships and Principal statuses while preserving omitted groups and statuses. The final combined state must retain a reachable active permission manager; an active replacement and suspension of the old manager can be saved together. Duplicate status identifiers return 422; missing or out-of-scope Principals return 404; insufficient permission or protected Operator groups return 403. An unchanged forced_stop is accepted. A forbidden status change returns 409 code principal_status_change_forbidden; losing the last active manager returns 409 code last_active_manager. Both roll back the entire save. Success returns only the submitted groups and Principal statuses; clients refetch management lists separately. Status restrictions take effect on the next request even for logged-in cached sessions.")
+  updatePrincipalGroupMembers(@body body: UpdatePrincipalGroupMembersRequestBody): UpdatePrincipalGroupMembersResponse | PrincipalStatusConflictProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 }
 
 @doc("Category shared by all language contents of an announcement.")

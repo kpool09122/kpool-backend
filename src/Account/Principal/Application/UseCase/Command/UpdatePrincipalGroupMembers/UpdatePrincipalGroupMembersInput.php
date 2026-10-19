@@ -12,12 +12,14 @@ readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupM
 {
     /**
      * @param array<int, PrincipalGroupMembers> $principalGroups
+     * @param array<int, PrincipalStatusUpdate> $principalStatuses
      */
     public function __construct(
         private AccountIdentifier $accountIdentifier,
         private Principal $principal,
         private array $principalGroups,
         private ?AccountType $accountType = null,
+        private array $principalStatuses = [],
     ) {
     }
 
@@ -42,5 +44,11 @@ readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupM
     public function principalGroups(): array
     {
         return $this->principalGroups;
+    }
+
+    /** @return array<int, PrincipalStatusUpdate> */
+    public function principalStatuses(): array
+    {
+        return $this->principalStatuses;
     }
 }

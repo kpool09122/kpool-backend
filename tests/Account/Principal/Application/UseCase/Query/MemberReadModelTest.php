@@ -26,6 +26,7 @@ class MemberReadModelTest extends TestCase
             identityIdentifier: $identityIdentifier,
             identityName: 'Test User',
             email: 'test@example.com',
+            status: 'active',
             principalGroups: [$principalGroup],
         );
 
@@ -47,6 +48,7 @@ class MemberReadModelTest extends TestCase
             identityIdentifier: $identityIdentifier,
             identityName: 'Test User',
             email: 'test@example.com',
+            status: 'active',
             principalGroups: [
                 new MemberPrincipalGroupReadModel(
                     principalGroupIdentifier: $principalGroupIdentifier,
@@ -57,6 +59,7 @@ class MemberReadModelTest extends TestCase
         );
 
         $this->assertSame([
+            'status' => 'active',
             'principalIdentifier' => $principalIdentifier,
             'identityIdentifier' => $identityIdentifier,
             'identityName' => 'Test User',

@@ -22,7 +22,9 @@ use Source\Account\Principal\Domain\ValueObject\ConditionClause;
 use Source\Account\Principal\Domain\ValueObject\ConditionKey;
 use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
+use Source\Account\Principal\Domain\ValueObject\PolicyEvaluation;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
@@ -39,6 +41,77 @@ use Tests\TestCase;
 
 class PolicyEvaluatorTest extends TestCase
 {
+    public function testBatchLoadsAuthorizationOnceAndKeepsDecisionsSeparate(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $allowed = $this->createPrincipal($accountIdentifier);
+        $denied = $this->createPrincipal($accountIdentifier);
+        $stopped = $this->createPrincipal($accountIdentifier);
+        $stopped->changeStatus(PrincipalStatus::SUSPENDED);
+        $allowRoleId = new RoleIdentifier(StrTestHelper::generateUuid());
+        $denyRoleId = new RoleIdentifier(StrTestHelper::generateUuid());
+        $allowGroup = $this->createPrincipalGroup($accountIdentifier, $allowed->principalIdentifier(), $allowRoleId);
+        $denyGroup = $this->createPrincipalGroup($accountIdentifier, $denied->principalIdentifier(), $denyRoleId);
+        $denyGroup->addRole(new Role($allowRoleId, 'Allow', [], null));
+        $allow = new Policy(new PolicyIdentifier(StrTestHelper::generateUuid()), 'Allow switch', [new Statement(Effect::ALLOW, [Action::DELEGATION_ACCOUNT_SWITCH], [ResourceType::ACCOUNT])], null, new DateTimeImmutable());
+        $deny = new Policy(new PolicyIdentifier(StrTestHelper::generateUuid()), 'Deny target', [new Statement(Effect::DENY, [Action::DELEGATION_ACCOUNT_SWITCH], [ResourceType::ACCOUNT], new Condition([new ConditionClause(ConditionKey::RESOURCE_TARGET_ACCOUNT_ID, ConditionOperator::EQUALS, (string) $accountIdentifier)]))], null, new DateTimeImmutable());
+        $principalGroupRepository = $this->createMock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->expects(self::once())->method('findByPrincipalIds')->willReturn([$allowGroup, $denyGroup]);
+        $roleRepository = $this->createMock(RoleRepositoryInterface::class);
+        $roleRepository->expects(self::once())->method('findByIds')->willReturn([
+            new Role($allowRoleId, 'Allow', [$allow->policyIdentifier()], null),
+            new Role($denyRoleId, 'Deny', [$deny->policyIdentifier()], null),
+        ]);
+        $policyRepository = $this->createMock(PolicyRepositoryInterface::class);
+        $policyRepository->expects(self::once())->method('findByIds')->willReturn([$allow, $deny]);
+        $resource = Resource::delegationAccount($accountIdentifier, new DelegationIdentifier(StrTestHelper::generateUuid()), $accountIdentifier);
+        $otherTarget = Resource::delegationAccount($accountIdentifier, new DelegationIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $evaluations = [
+            'allowed' => new PolicyEvaluation($allowed, Action::DELEGATION_ACCOUNT_SWITCH, $resource),
+            'denied' => new PolicyEvaluation($denied, Action::DELEGATION_ACCOUNT_SWITCH, $resource),
+            'other-target' => new PolicyEvaluation($denied, Action::DELEGATION_ACCOUNT_SWITCH, $otherTarget),
+            'removed-membership' => new PolicyEvaluation($allowed, Action::DELEGATION_ACCOUNT_SWITCH, $resource, []),
+            'stopped' => new PolicyEvaluation($stopped, Action::DELEGATION_ACCOUNT_SWITCH, $resource, [$allowGroup]),
+        ];
+        self::assertSame([
+            'allowed' => true,
+            'denied' => false,
+            'other-target' => true,
+            'removed-membership' => false,
+            'stopped' => false,
+        ], $this->makePolicyEvaluator($principalGroupRepository, $roleRepository, $policyRepository)->evaluateMany($evaluations));
+    }
+
+    /** @return iterable<string, array{PrincipalStatus}> */
+    public static function stoppedStatuses(): iterable
+    {
+        yield 'suspended' => [PrincipalStatus::SUSPENDED];
+        yield 'forced_stop' => [PrincipalStatus::FORCED_STOP];
+    }
+
+    #[DataProvider('stoppedStatuses')]
+    public function testStoppedPrincipalIsRejectedBeforePolicyLookup(PrincipalStatus $status): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
+            status: $status,
+        );
+        $principalGroupRepository = $this->createMock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->expects(self::never())->method('findByAccountIdAndPrincipal');
+        $roleRepository = $this->createMock(RoleRepositoryInterface::class);
+        $roleRepository->expects(self::never())->method('findByIds');
+        $policyRepository = $this->createMock(PolicyRepositoryInterface::class);
+        $policyRepository->expects(self::never())->method('findByIds');
+        self::assertFalse($this->makePolicyEvaluator(
+            $principalGroupRepository,
+            $roleRepository,
+            $policyRepository,
+        )->evaluate($principal, Action::INVITE_MEMBER, Resource::account($accountIdentifier)));
+    }
+
     /** @param Statement[] $statements */
     #[DataProvider('conditionalPolicyDecisions')]
     public function testConditionalPolicyDecision(array $statements, ?AccountType $accountType, bool $expected): void

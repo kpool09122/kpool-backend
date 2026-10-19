@@ -15,7 +15,10 @@ class UpdatePrincipalGroupMembersRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'principalGroups' => ['required', 'array'],
+            'principalGroups' => ['present', 'array'],
+            'principalStatuses' => ['sometimes', 'array'],
+            'principalStatuses.*.principalIdentifier' => ['required', 'uuid', 'distinct'],
+            'principalStatuses.*.status' => ['required', 'in:active,suspended,forced_stop'],
             'principalGroups.*.principalGroupIdentifier' => ['required', 'uuid', 'distinct'],
             'principalGroups.*.principalIdentifiers' => ['present', 'array'],
             'principalGroups.*.principalIdentifiers.*' => ['required', 'uuid'],
@@ -29,5 +32,14 @@ class UpdatePrincipalGroupMembersRequest extends FormRequest
         $principalGroups = $this->input('principalGroups', []);
 
         return $principalGroups;
+    }
+
+    /** @return array<int, array{principalIdentifier: string, status: string}> */
+    public function principalStatuses(): array
+    {
+        /** @var array<int, array{principalIdentifier: string, status: string}> $statuses */
+        $statuses = $this->validated('principalStatuses', []);
+
+        return $statuses;
     }
 }

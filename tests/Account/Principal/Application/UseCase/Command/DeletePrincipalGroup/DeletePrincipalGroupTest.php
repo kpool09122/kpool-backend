@@ -10,6 +10,7 @@ use Mockery;
 use Source\Account\Principal\Application\Exception\CannotDeleteDefaultPrincipalGroupException;
 use Source\Account\Principal\Application\Exception\CannotDeleteLastOwnerGroupException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Account\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
@@ -31,6 +32,12 @@ use Tests\TestCase;
 
 class DeletePrincipalGroupTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(PrincipalGroupChangeGuardInterface::class, $this->createStub(PrincipalGroupChangeGuardInterface::class));
+    }
+
     /**
      * @return void
      * @throws BindingResolutionException
@@ -38,6 +45,7 @@ class DeletePrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
@@ -63,6 +71,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -95,6 +104,7 @@ class DeletePrincipalGroupTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -130,6 +140,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -169,6 +180,7 @@ class DeletePrincipalGroupTest extends TestCase
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -209,6 +221,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -255,6 +268,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $principalGroupRepository->shouldReceive('findById')->once()->andReturn($group);
         $principalGroupRepository->shouldReceive('delete')->once()->with($group);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);

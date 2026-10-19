@@ -16,6 +16,7 @@ use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -282,6 +283,59 @@ class AuthContextCacheTest extends TestCase
         (new AuthContextCache(new NullLogger()))->forgetWiki($identity);
     }
 
+    public function testAccountCachePreservesEveryPrincipalStatus(): void
+    {
+        /** @var ArrayObject<string, string> $payloads */
+        $payloads = new ArrayObject();
+        Redis::shouldReceive('get')->times(6)->andReturnUsing(static fn (string $key): ?string => $payloads[$key] ?? null);
+        Redis::shouldReceive('setex')->times(3)->andReturnUsing(static function (string $key, int $ttl, string $payload) use ($payloads): void {
+            $payloads[$key] = $payload;
+        });
+        $cache = new AuthContextCache(new NullLogger());
+        foreach (PrincipalStatus::cases() as $status) {
+            $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+            $context = new AccountContext(
+                new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid()), $status),
+                AccountType::CORPORATION,
+                AccountStatus::ACTIVE,
+                AccountCategory::GENERAL,
+            );
+            $cache->resolveAccount($identity, fn () => $context);
+            $cached = $cache->resolveAccount($identity, fn () => throw new RuntimeException('Expected cached context'));
+            self::assertSame($status, $cached->principal()->status());
+        }
+    }
+
+    public function testAccountCacheRejectsMissingAndUnknownPrincipalStatus(): void
+    {
+        /** @var ArrayObject<string, string> $payloads */
+        $payloads = new ArrayObject();
+        Redis::shouldReceive('get')->times(3)->andReturnUsing(static fn (string $key): ?string => $payloads[$key] ?? null);
+        Redis::shouldReceive('setex')->times(3)->andReturnUsing(static function (string $key, int $ttl, string $payload) use ($payloads): void {
+            $payloads[$key] = $payload;
+        });
+        $cache = new AuthContextCache(new NullLogger());
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $context = new AccountContext(
+            new AccountPrincipal(new AccountPrincipalIdentifier(StrTestHelper::generateUuid()), $identity, new AccountIdentifier(StrTestHelper::generateUuid()), PrincipalStatus::SUSPENDED),
+            AccountType::CORPORATION,
+            AccountStatus::ACTIVE,
+            AccountCategory::GENERAL,
+        );
+        $cache->resolveAccount($identity, fn () => $context);
+        $key = 'auth-context:account:' . $identity . ':stateless';
+        $serialized = $payloads[$key];
+        self::assertIsString($serialized);
+        $payload = json_decode($serialized, true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($payload);
+        unset($payload['principalStatus']);
+        $payloads[$key] = json_encode($payload, JSON_THROW_ON_ERROR);
+        self::assertSame($context, $cache->resolveAccount($identity, fn () => $context));
+        $payload['principalStatus'] = 'unknown';
+        $payloads[$key] = json_encode($payload, JSON_THROW_ON_ERROR);
+        self::assertSame($context, $cache->resolveAccount($identity, fn () => $context));
+    }
+
     public function testResolveAccountSerializesAndDeserializes(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -292,6 +346,7 @@ class AuthContextCacheTest extends TestCase
             'principalIdentifier' => (string) $principalIdentifier,
             'identityIdentifier' => (string) $identityIdentifier,
             'accountIdentifier' => (string) $accountIdentifier,
+            'principalStatus' => PrincipalStatus::ACTIVE->value,
             'accountType' => AccountType::CORPORATION->value,
             'accountStatus' => AccountStatus::ACTIVE->value,
             'originalAccountStatus' => AccountStatus::ACTIVE->value,
@@ -394,6 +449,7 @@ class AuthContextCacheTest extends TestCase
             'principalIdentifier' => (string) $effectivePrincipalIdentifier,
             'identityIdentifier' => (string) $identityIdentifier,
             'accountIdentifier' => (string) $effectiveAccountIdentifier,
+            'principalStatus' => PrincipalStatus::ACTIVE->value,
             'accountType' => AccountType::CORPORATION->value,
             'accountStatus' => AccountStatus::ACTIVE->value,
             'originalAccountStatus' => AccountStatus::PENDING->value,

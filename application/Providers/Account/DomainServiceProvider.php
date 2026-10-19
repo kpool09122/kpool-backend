@@ -49,6 +49,9 @@ use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
 use Source\Account\Notification\Application\Service\AccountApprovalNotificationServiceInterface;
 use Source\Account\Notification\Infrastructure\Service\AccountApprovalNotificationService;
+use Source\Account\Principal\Application\Service\ChildPrincipalManagerContinuityInterface;
+use Source\Account\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
+use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\Account\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -66,7 +69,10 @@ use Source\Account\Principal\Infrastructure\Repository\PolicyRepository;
 use Source\Account\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Account\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
+use Source\Account\Principal\Infrastructure\Service\ChildPrincipalManagerContinuity;
 use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator as PolicyEvaluator;
+use Source\Account\Principal\Infrastructure\Service\PrincipalGroupChangeGuard;
+use Source\Account\Principal\Infrastructure\Service\PrincipalReachability;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 
@@ -74,6 +80,9 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
+        $this->app->bind(PrincipalReachabilityInterface::class, PrincipalReachability::class);
+        $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WithdrawalEligibilityServiceInterface::class, WithdrawalEligibilityService::class);
         $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);
         $this->app->singleton(ArchivedAccountRepositoryInterface::class, ArchivedAccountRepository::class);

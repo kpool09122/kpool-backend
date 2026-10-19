@@ -8,10 +8,15 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
+use Source\Account\Principal\Application\Service\ChildPrincipalManagerContinuityInterface;
+use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
+use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalStatusUpdate;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInput;
 use Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
@@ -28,12 +33,15 @@ use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Effect;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -41,6 +49,64 @@ use Tests\TestCase;
 
 class UpdatePrincipalGroupMembersTest extends TestCase
 {
+    private function accountRepository(): AccountRepositoryInterface
+    {
+        $account = $this->createStub(Account::class);
+        $account->method('type')->willReturn(AccountType::INDIVIDUAL);
+        $account->method('accountCategory')->willReturn(AccountCategory::GENERAL);
+        $accountRepository = $this->createStub(AccountRepositoryInterface::class);
+        $accountRepository->method('findById')->willReturn($account);
+
+        return $accountRepository;
+    }
+
+    private function reachable(): PrincipalReachabilityInterface
+    {
+        $service = $this->createStub(PrincipalReachabilityInterface::class);
+        $service->method('filterReachable')->willReturnCallback(static function (array $principals): array {
+            /** @var Principal[] $principals */
+            $result = [];
+            foreach ($principals as $principal) {
+                $result[(string) $principal->principalIdentifier()] = $principal;
+            }
+
+            return $result;
+        });
+
+        return $service;
+    }
+
+    public function testStatusOnlySavePreservesMemberships(): void
+    {
+        [$accountId, $executor, $manager, $memberA, , $groupA, , , $roleId, $policyId] = $this->fixture();
+        $principalGroupRepository = $this->createStub(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->method('findByAccountId')->willReturn([$groupA]);
+        $principalRepository = $this->createMock(PrincipalRepositoryInterface::class);
+        $principalRepository->method('findByIds')->willReturn([
+            (string) $manager->principalIdentifier() => $manager,
+            (string) $memberA->principalIdentifier() => $memberA,
+        ]);
+        $principalRepository->expects(self::once())->method('save')->with($memberA);
+        $output = new UpdatePrincipalGroupMembersOutput();
+        (new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
+            $principalGroupRepository,
+            $principalRepository,
+            $this->roleRepository($roleId, $policyId),
+            $this->policyRepository($policyId),
+            $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
+        ))->process(new UpdatePrincipalGroupMembersInput(
+            $accountId,
+            $executor,
+            [],
+            principalStatuses: [new PrincipalStatusUpdate($memberA->principalIdentifier(), PrincipalStatus::SUSPENDED)],
+        ), $output);
+        self::assertSame(PrincipalStatus::SUSPENDED, $memberA->status());
+        self::assertSame([['principalIdentifier' => (string) $memberA->principalIdentifier(), 'status' => 'suspended']], $output->toArray()['principalStatuses']);
+    }
+
     public function test__construct(): void
     {
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, Mockery::mock(PrincipalGroupRepositoryInterface::class));
@@ -72,11 +138,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalRepository->shouldNotReceive('findById');
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->roleRepository($roleId, $policyId),
             $this->policyRepository($policyId),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $output = new UpdatePrincipalGroupMembersOutput();
@@ -109,11 +178,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         ]);
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->roleRepository($roleId, $policyId),
             $this->policyRepository($policyId),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $output = new UpdatePrincipalGroupMembersOutput();
@@ -144,11 +216,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         ]);
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->roleRepository($roleId, $policyId),
             $this->policyRepository($policyId),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $output = new UpdatePrincipalGroupMembersOutput();
@@ -172,11 +247,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalGroupRepository->shouldNotReceive('save');
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $this->emptyPrincipalRepository(),
             $this->emptyRoleRepository(),
             $this->emptyPolicyRepository(),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $this->expectException(PrincipalGroupNotFoundException::class);
@@ -202,11 +280,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalRepository->shouldNotReceive('findById');
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->emptyRoleRepository(),
             $this->emptyPolicyRepository(),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $this->expectException(PrincipalNotFoundException::class);
@@ -229,11 +310,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalRepository->shouldNotReceive('findById');
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->emptyRoleRepository(),
             $this->emptyPolicyRepository(),
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $this->expectException(PrincipalNotFoundException::class);
@@ -254,11 +338,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $principalGroupRepository->shouldNotReceive('save');
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $this->emptyPrincipalRepository(),
             $this->emptyRoleRepository(),
             $this->emptyPolicyRepository(),
             $policyEvaluator,
+            $this->accountRepository(),
         );
 
         $this->expectException(AccountUpdateForbiddenException::class);
@@ -287,11 +374,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $policyRepository->shouldReceive('findByIds')->andReturn([]);
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $this->roleRepositoryWithoutPolicies($roleId),
             $policyRepository,
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $this->expectException(CannotRemoveLastPrincipalGroupManagerException::class);
@@ -344,11 +434,14 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         ]);
 
         $useCase = new UpdatePrincipalGroupMembers(
+            $this->createStub(ChildPrincipalManagerContinuityInterface::class),
+            $this->reachable(),
             $principalGroupRepository,
             $principalRepository,
             $roleRepository,
             $policyRepository,
             $this->allowedPolicyEvaluator(),
+            $this->accountRepository(),
         );
 
         $this->expectException(CannotRemoveLastPrincipalGroupManagerException::class);

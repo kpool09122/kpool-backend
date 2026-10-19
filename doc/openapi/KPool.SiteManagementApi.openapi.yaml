@@ -1205,7 +1205,7 @@ paths:
   /principal-groups/members:
     patch:
       operationId: PrincipalGroupOperations_updatePrincipalGroupMembers
-      description: Replace membership of specified groups and retain omitted groups. Empty member arrays remove all members. Duplicate group IDs and duplicate members within one group return 422; multiple group membership is allowed. Requires principal-group:manage on principal_group. System Operator groups, including mixed-role groups, return 403. Missing or other-Account groups/principals return 404. Removing the last real same-Account Administrator across editable groups returns 422. Returns summaries of the updated groups only; clients fetch the list separately. Self-removal succeeds when another Administrator remains, without reauthorization until the next request.
+      description: Atomically save specified group memberships and Principal statuses while preserving omitted groups and statuses. The final combined state must retain a reachable active permission manager; an active replacement and suspension of the old manager can be saved together. Duplicate status identifiers return 422; missing or out-of-scope Principals return 404; insufficient permission or protected Operator groups return 403. An unchanged forced_stop is accepted. A forbidden status change returns 409 code principal_status_change_forbidden; losing the last active manager returns 409 code last_active_manager. Both roll back the entire save. Success returns only the submitted groups and Principal statuses; clients refetch management lists separately. Status restrictions take effect on the next request even for logged-in cached sessions.
       parameters: []
       responses:
         '200':
@@ -1232,6 +1232,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.PrincipalStatusConflictProblem'
         '419':
           description: Client error
           content:
@@ -1455,6 +1461,38 @@ components:
     KPool.Common.DateString:
       type: string
       description: ISO 8601 date string.
+    KPool.Common.PrincipalStatus:
+      type: string
+      enum:
+        - active
+        - suspended
+        - forced_stop
+      description: Lifecycle of a context-specific Principal, independent of Account status. Only active authorizes protected operations. A forced_stop is set operationally, not through user permission management.
+    KPool.Common.PrincipalStatusConflictProblem:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - last_active_manager
+            - principal_status_change_forbidden
+          description: 'last_active_manager: the final state loses the last reachable active permission manager. principal_status_change_forbidden: a forced-stop lifecycle transition was requested.'
+      allOf:
+        - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      description: Atomic Principal membership/status save rejected. No submitted group or Principal change is committed.
+    KPool.Common.PrincipalStatusUpdate:
+      type: object
+      required:
+        - principalIdentifier
+        - status
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        status:
+          $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
+      description: A Principal status in a bulk save or its successful result. Omitted Principals are unchanged. Duplicate identifiers are rejected. An unchanged forced_stop is accepted, but a change from forced_stop or a new forced_stop is forbidden.
     KPool.Common.ProblemDetails:
       type: object
       properties:
@@ -1476,7 +1514,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.
+          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string
@@ -1669,11 +1707,16 @@ components:
     PrincipalGroupMember:
       type: object
       required:
+        - status
         - principalIdentifier
         - identityIdentifier
         - identityName
         - email
       properties:
+        status:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
+          description: Principal lifecycle status. Stopped users remain in management lists and retain their permissions.
         principalIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         identityIdentifier:
@@ -1847,15 +1890,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UpdatePrincipalGroupMembersItem'
+        principalStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.PrincipalStatusUpdate'
+          description: Statuses to save atomically with group memberships. Omission or an empty array makes no status changes; omitted Principals retain their status. All three values are accepted so unchanged forced_stop rows can be included.
     UpdatePrincipalGroupMembersResponse:
       type: object
       required:
         - principalGroups
+        - principalStatuses
       properties:
         principalGroups:
           type: array
           items:
             $ref: '#/components/schemas/UpdatedPrincipalGroup'
+        principalStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.PrincipalStatusUpdate'
     UpdatedPrincipalGroup:
       type: object
       required:

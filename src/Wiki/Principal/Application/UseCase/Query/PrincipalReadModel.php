@@ -13,14 +13,14 @@ readonly class PrincipalReadModel
         private string $principalIdentifier,
         private string $identityIdentifier,
         private bool $isDelegatedPrincipal,
-        private bool $isEnabled,
+        private string $status,
         private array $policies,
         private int $accountPrincipalCount,
     ) {
     }
 
     /**
-     * @return array{principalIdentifier: string, identityIdentifier: string, isDelegatedPrincipal: bool, isEnabled: bool, accountPrincipalCount: int, policies: array<int, array<string, mixed>>}
+     * @return array{principalIdentifier: string, identityIdentifier: string, isDelegatedPrincipal: bool, status: string, accountPrincipalCount: int, policies: array<int, array<string, mixed>>}
      */
     public function toArray(): array
     {
@@ -28,7 +28,7 @@ readonly class PrincipalReadModel
             'principalIdentifier' => $this->principalIdentifier,
             'identityIdentifier' => $this->identityIdentifier,
             'isDelegatedPrincipal' => $this->isDelegatedPrincipal,
-            'isEnabled' => $this->isEnabled,
+            'status' => $this->status,
             'accountPrincipalCount' => $this->accountPrincipalCount,
             'policies' => $this->policies,
         ];

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastOwnerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Account\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
@@ -28,6 +29,12 @@ use Tests\TestCase;
 
 class RemovePrincipalFromPrincipalGroupTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(PrincipalGroupChangeGuardInterface::class, $this->createStub(PrincipalGroupChangeGuardInterface::class));
+    }
+
     /**
      * @return void
      * @throws BindingResolutionException
@@ -35,6 +42,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
         $this->app()->instance(RoleRepositoryInterface::class, $roleRepository);
@@ -62,6 +70,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -100,6 +109,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -137,6 +147,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -182,6 +193,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -233,6 +245,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $principalGroup->addMember($anotherPrincipalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -281,6 +294,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $principalGroup->addMember($principalIdentifier);
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))

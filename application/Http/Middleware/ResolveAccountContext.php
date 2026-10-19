@@ -24,10 +24,13 @@ class ResolveAccountContext
     {
         /** @var ActorContext $actorContext */
         $actorContext = app(ActorContext::class);
-        app()->instance(AccountContext::class, $this->authContextCache->resolveAccount(
-            $actorContext->identityIdentifier,
-            fn () => $this->accountResolver->resolve($actorContext->identityIdentifier),
-        ));
+        $verifiedContext = $request->attributes->get(AccountContext::class);
+        app()->instance(AccountContext::class, $verifiedContext instanceof AccountContext
+            ? $verifiedContext
+            : $this->authContextCache->resolveAccount(
+                $actorContext->identityIdentifier,
+                fn () => $this->accountResolver->resolve($actorContext->identityIdentifier),
+            ));
 
         return $next($request);
     }

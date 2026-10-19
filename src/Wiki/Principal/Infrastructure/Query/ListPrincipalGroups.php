@@ -40,6 +40,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
 
                 return new PrincipalGroupMemberReadModel(
                     principalIdentifier: $principal->id,
+                    status: $principal->status,
                     identityIdentifier: $principal->identity_id,
                     identityName: $identity->identity_name,
                     email: $identity->email,

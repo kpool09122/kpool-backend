@@ -10,6 +10,9 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface UpdatePrincipalGroupMembersInputPort
 {
+    /** @return array<int, PrincipalStatusUpdate> */
+    public function principalStatuses(): array;
+
     public function accountIdentifier(): AccountIdentifier;
 
     public function principal(): Principal;

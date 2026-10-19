@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
 use InvalidArgumentException;
+use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\SiteManagement\Principal\Application\Exception\CannotRemoveLastAdministratorException;
 use Source\SiteManagement\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\SiteManagement\Principal\Application\Exception\PrincipalNotFoundException;
+use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\SiteManagement\Principal\Domain\Service\PrincipalGroupManagerContinuity;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
@@ -24,6 +27,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PrincipalReachabilityInterface $principalReachability,
     ) {
     }
 
@@ -49,6 +53,15 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         }
         $requested = [];
         $principalIdentifiers = [];
+        $statusIdentifiers = [];
+        foreach ($input->principalStatuses() as $update) {
+            $id = (string) $update->principalIdentifier;
+            if (isset($statusIdentifiers[$id])) {
+                throw new InvalidArgumentException('Duplicate principal status identifier.');
+            }
+            $statusIdentifiers[$id] = $update->principalIdentifier;
+            $principalIdentifiers[$id] = $update->principalIdentifier;
+        }
         foreach ($input->principalGroups() as $groupInput) {
             $id = (string) $groupInput->principalGroupIdentifier();
             if (isset($requested[$id])) {
@@ -91,26 +104,33 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
                 }
             }
         }
-        $hasAdministrator = false;
-        foreach ($groupsById as $id => $group) {
-            if ($administratorRole === null || ! $group->hasRole($administratorRole->roleIdentifier()) || ($operatorRole !== null && $group->hasRole($operatorRole->roleIdentifier()))) {
-                continue;
+        foreach ($input->principalStatuses() as $update) {
+            $id = (string) $update->principalIdentifier;
+            if (! isset($validPrincipals[$id])) {
+                throw new PrincipalNotFoundException();
             }
-            foreach ($requested[$id] ?? $group->members() as $member) {
-                if (isset($validPrincipals[(string) $member])) {
-                    $hasAdministrator = true;
-
-                    break 2;
-                }
+            $principalsById[$id]->changeStatus($update->status);
+        }
+        foreach ($groupsById as $id => $group) {
+            if (isset($requested[$id])) {
+                $group->replaceMembers(array_values($requested[$id]));
             }
         }
-        if (! $hasAdministrator) {
+        if (! (new PrincipalGroupManagerContinuity($this->roleRepository, $this->policyEvaluator))->hasManager(
+            array_values($groupsById),
+            $principalsById,
+            fn (Principal $principal): bool => $this->principalReachability->canAccess($principal->identityIdentifier(), $input->accountIdentifier()),
+        )) {
             throw new CannotRemoveLastAdministratorException();
         }
         foreach ($requested as $id => $members) {
             $groupsById[$id]->replaceMembers(array_values($members));
             $this->principalGroupRepository->save($groupsById[$id]);
         }
+        foreach ($statusIdentifiers as $id => $identifier) {
+            $this->principalRepository->save($principalsById[$id]);
+        }
+        $output->setPrincipalStatuses(array_values(array_intersect_key($principalsById, $statusIdentifiers)));
         $output->setPrincipalGroups(array_values(array_intersect_key($groupsById, $requested)));
     }
 }

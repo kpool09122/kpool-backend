@@ -1953,6 +1953,8 @@ components:
         - siteManagementPolicies
         - accountIdentifier
         - accountPrincipalIdentifier
+        - accountPrincipalStatus
+        - siteManagementPrincipalStatus
         - accountType
         - accountIdentityCount
         - accountPolicies
@@ -1989,6 +1991,16 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Account principal identifier associated with the authenticated identity in the current account.
+        accountPrincipalStatus:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
+          nullable: true
+          description: Current Account Principal status, also returned while stopped. Null only when the Principal does not exist; independent of account.status.
+        siteManagementPrincipalStatus:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.PrincipalStatus'
+          nullable: true
+          description: Current SiteManagement Principal status, also returned while stopped. Null only when the Principal does not exist.
         accountType:
           type: string
           nullable: true
@@ -2163,6 +2175,27 @@ components:
     KPool.Common.EmptyJsonObject:
       type: object
       description: Empty JSON object returned by endpoints with no payload.
+    KPool.Common.PrincipalStatus:
+      type: string
+      enum:
+        - active
+        - suspended
+        - forced_stop
+      description: Lifecycle of a context-specific Principal, independent of Account status. Only active authorizes protected operations. A forced_stop is set operationally, not through user permission management.
+    KPool.Common.PrincipalStatusConflictProblem:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - last_active_manager
+            - principal_status_change_forbidden
+          description: 'last_active_manager: the final state loses the last reachable active permission manager. principal_status_change_forbidden: a forced-stop lifecycle transition was requested.'
+      allOf:
+        - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      description: Atomic Principal membership/status save rejected. No submitted group or Principal change is committed.
     KPool.Common.ProblemDetails:
       type: object
       properties:
@@ -2184,7 +2217,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.
+          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'principal_inactive' => 'このユーザーの利用は停止されています。',
+    'principal_status_change_forbidden' => 'ユーザー権限管理から強制停止のステータスを変更することはできません。',
     'published_announcement_not_found' => '指定されたお知らせが見つかりません。',
     'announcement_not_found' => '指定されたお知らせの下書きが見つかりません。',
     'invalid_notification_settings' => '通知先の指定が不正です。',

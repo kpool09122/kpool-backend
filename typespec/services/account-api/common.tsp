@@ -164,6 +164,8 @@ model MemberPrincipalGroupSummary {
 
 @doc("Account member summary.")
 model AccountMemberSummary {
+  @doc("Principal lifecycle status. Stopped users remain in management lists and retain their permissions.")
+  status: PrincipalStatus;
   @doc("Principal identifier.")
   principalIdentifier: Uuid;
   @doc("Identity identifier.")

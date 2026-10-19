@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -39,7 +40,7 @@ class PrincipalFactoryTest extends TestCase
         $this->assertSame($accountIdentifier, $principal->accountIdentifier());
         $this->assertNull($principal->delegationIdentifier());
         $this->assertFalse($principal->isDelegatedPrincipal());
-        $this->assertTrue($principal->isEnabled());
+        $this->assertSame(PrincipalStatus::ACTIVE, $principal->status());
     }
 
     /**
@@ -74,6 +75,6 @@ class PrincipalFactoryTest extends TestCase
         $this->assertSame($originalPrincipal->accountIdentifier(), $delegatedPrincipal->accountIdentifier());
         $this->assertSame($delegationIdentifier, $delegatedPrincipal->delegationIdentifier());
         $this->assertTrue($delegatedPrincipal->isDelegatedPrincipal());
-        $this->assertTrue($delegatedPrincipal->isEnabled());
+        $this->assertSame(PrincipalStatus::ACTIVE, $delegatedPrincipal->status());
     }
 }

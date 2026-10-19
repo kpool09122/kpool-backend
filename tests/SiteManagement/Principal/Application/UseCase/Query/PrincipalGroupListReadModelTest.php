@@ -13,7 +13,7 @@ class PrincipalGroupListReadModelTest extends TestCase
 {
     public function testCompleteListIncludesUnassignedPrincipals(): void
     {
-        $member = new PrincipalGroupMemberReadModel('principal', 'identity', 'Alice', 'alice@example.com');
+        $member = new PrincipalGroupMemberReadModel('principal', 'identity', 'Alice', 'alice@example.com', 'forced_stop');
         $group = new PrincipalGroupReadModel('group', 'account', 'General', null, ['role'], true, []);
         $model = new PrincipalGroupListReadModel([$group], [$member]);
         self::assertSame([$group], $model->principalGroups());

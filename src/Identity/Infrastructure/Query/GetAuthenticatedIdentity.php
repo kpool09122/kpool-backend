@@ -177,6 +177,8 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                 : (string) $accountContext->delegationIdentifier(),
             switchableAccounts: $switchableAccounts,
             siteManagementPrincipalIdentifier: $siteManagementPrincipal?->id,
+            accountPrincipalStatus: $accountContext?->principal()->status()->value,
+            siteManagementPrincipalStatus: $siteManagementPrincipal?->status,
             siteManagementPolicies: $siteManagementPrincipal === null ? [] : $this->siteManagementPolicies($siteManagementPrincipal),
             accountIdentityCount: $accountContext === null ? 0 : AccountPrincipalModel::query()
                 ->where('account_id', (string) $accountContext->principal()->accountIdentifier())

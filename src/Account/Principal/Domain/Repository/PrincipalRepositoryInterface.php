@@ -23,6 +23,18 @@ interface PrincipalRepositoryInterface
     /** @return Principal[] */
     public function findByAccountId(AccountIdentifier $accountIdentifier): array;
 
+    /**
+     * @param AccountIdentifier[] $accountIdentifiers
+     * @return Principal[]
+     */
+    public function findByAccountIds(array $accountIdentifiers): array;
+
+    /**
+     * @param IdentityIdentifier[] $identityIdentifiers
+     * @return Principal[]
+     */
+    public function findAllByIdentityIdentifiers(array $identityIdentifiers): array;
+
     /** @return Principal[] */
     public function findOwnersByAccountId(AccountIdentifier $accountIdentifier): array;
 

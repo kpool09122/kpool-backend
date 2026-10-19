@@ -149,6 +149,10 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountIdentifier: Uuid | null;
   @doc("Account principal identifier associated with the authenticated identity in the current account.")
   accountPrincipalIdentifier: Uuid | null;
+  @doc("Current Account Principal status, also returned while stopped. Null only when the Principal does not exist; independent of account.status.")
+  accountPrincipalStatus: PrincipalStatus | null;
+  @doc("Current SiteManagement Principal status, also returned while stopped. Null only when the Principal does not exist.")
+  siteManagementPrincipalStatus: PrincipalStatus | null;
   @doc("Account type associated with the authenticated identity.")
   accountType: string | null;
   @doc("Number of distinct identities belonging to the current effective account, including the current identity when it is a member. Pending invitations are excluded. Zero when there is no account.")

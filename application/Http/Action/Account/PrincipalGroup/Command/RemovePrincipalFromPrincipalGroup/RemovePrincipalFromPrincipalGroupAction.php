@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup;
 
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastOwnerException;
+use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInput;
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
@@ -72,6 +74,10 @@ readonly class RemovePrincipalFromPrincipalGroupAction
 
                 throw $e;
             }
+        } catch (CannotRemoveLastPrincipalGroupManagerException $e) {
+            $exception = new ConflictHttpException(detail: error_message('cannot_remove_last_owner', $request->language()), extensions: ['code' => 'last_active_manager'], previous: $e);
+
+            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
         } catch (NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 

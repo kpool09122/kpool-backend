@@ -9,11 +9,13 @@ use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupMembersInputPort
 {
-    /** @param array<int, PrincipalGroupMembers> $principalGroups */
+    /** @param array<int, PrincipalGroupMembers> $principalGroups
+     * @param array<int, PrincipalStatusUpdate> $principalStatuses */
     public function __construct(
         private AccountIdentifier $accountIdentifier,
         private PrincipalIdentifier $operatorPrincipalIdentifier,
         private array $principalGroups,
+        private array $principalStatuses = [],
     ) {
     }
 
@@ -31,5 +33,11 @@ readonly class UpdatePrincipalGroupMembersInput implements UpdatePrincipalGroupM
     public function principalGroups(): array
     {
         return $this->principalGroups;
+    }
+
+    /** @return array<int, PrincipalStatusUpdate> */
+    public function principalStatuses(): array
+    {
+        return $this->principalStatuses;
     }
 }

@@ -101,7 +101,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $f = new SiteManagementPrincipalGroupsFixture();
         $before = DB::table('site_management_principal_group_memberships')->orderBy('principal_group_id')->orderBy('principal_id')->get()->toArray();
         $output = $this->update($f, []);
-        self::assertSame(['principalGroups' => []], $output->toArray());
+        self::assertSame(['principalStatuses' => [], 'principalGroups' => []], $output->toArray());
         self::assertEquals($before, DB::table('site_management_principal_group_memberships')->orderBy('principal_group_id')->orderBy('principal_id')->get()->toArray());
     }
 

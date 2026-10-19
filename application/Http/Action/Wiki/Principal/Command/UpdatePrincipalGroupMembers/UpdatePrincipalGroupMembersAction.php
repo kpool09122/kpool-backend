@@ -6,6 +6,7 @@ namespace Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMem
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -19,10 +20,13 @@ use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministrato
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalGroupMembers;
+use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\PrincipalStatusUpdate;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInput;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersOutput;
+use Source\Wiki\Principal\Domain\Exception\PrincipalStatusChangeForbiddenException;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -52,10 +56,11 @@ readonly class UpdatePrincipalGroupMembersAction
                         array_map(static fn (string $principalIdentifier): PrincipalIdentifier => new PrincipalIdentifier($principalIdentifier), $principalGroup['principalIdentifiers']),
                     ), $request->principalGroups()),
                     accountType: $this->accountContext->accountType(),
+                    principalStatuses: array_map(static fn (array $update): PrincipalStatusUpdate => new PrincipalStatusUpdate(new PrincipalIdentifier($update['principalIdentifier']), PrincipalStatus::from($update['status'])), $request->principalStatuses()),
                 );
                 $output = new UpdatePrincipalGroupMembersOutput();
             } catch (InvalidArgumentException $e) {
-                throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_principal_group_members', $language), previous: $e);
             }
 
             DB::beginTransaction();
@@ -74,13 +79,21 @@ readonly class UpdatePrincipalGroupMembersAction
             } catch (CannotRemoveLastWikiAdministratorException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: error_message('cannot_remove_last_wiki_administrator', $language), previous: $e);
+                throw new ConflictHttpException(detail: error_message('cannot_remove_last_wiki_administrator', $language), extensions: ['code' => 'last_active_manager'], previous: $e);
+            } catch (PrincipalStatusChangeForbiddenException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('principal_status_change_forbidden', $language), extensions: ['code' => 'principal_status_change_forbidden'], previous: $e);
+            } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_principal_group_members', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

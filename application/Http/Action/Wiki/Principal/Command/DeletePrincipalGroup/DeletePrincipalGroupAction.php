@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\Principal\Application\Exception\CannotDeleteDefaultPrincipalGroupException;
+use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministratorException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInput;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
@@ -61,6 +62,10 @@ readonly class DeletePrincipalGroupAction
 
                 throw $e;
             }
+        } catch (CannotRemoveLastWikiAdministratorException $e) {
+            $exception = new ConflictHttpException(detail: error_message('cannot_remove_last_wiki_administrator', $request->language()), extensions: ['code' => 'last_active_manager'], previous: $e);
+
+            return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
         } catch (NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 

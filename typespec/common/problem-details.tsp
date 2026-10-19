@@ -19,7 +19,7 @@ model ProblemDetails {
   @doc("URI reference identifying the specific occurrence.")
   instance?: string;
 
-  @doc("Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text.")
+  @doc("Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.")
   code?: string;
 }
 
@@ -41,6 +41,17 @@ model NotFoundProblemResponse {
 model ConflictProblemResponse {
   @statusCode statusCode: 409;
   @body body: ProblemDetails;
+}
+
+@doc("Atomic Principal membership/status save rejected. No submitted group or Principal change is committed.")
+model PrincipalStatusConflictProblem extends ProblemDetails {
+  @doc("last_active_manager: the final state loses the last reachable active permission manager. principal_status_change_forbidden: a forced-stop lifecycle transition was requested.")
+  code: "last_active_manager" | "principal_status_change_forbidden";
+}
+
+model PrincipalStatusConflictProblemResponse {
+  @statusCode statusCode: 409;
+  @body body: PrincipalStatusConflictProblem;
 }
 
 model UnprocessableEntityProblemResponse {

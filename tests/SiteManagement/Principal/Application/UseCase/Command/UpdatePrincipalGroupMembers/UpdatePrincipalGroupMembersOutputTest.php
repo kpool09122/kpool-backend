@@ -18,7 +18,7 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
     public function testUpdatedGroupSummariesCanBeReplaced(): void
     {
         $output = new UpdatePrincipalGroupMembersOutput();
-        self::assertSame(['principalGroups' => []], $output->toArray());
+        self::assertSame(['principalStatuses' => [], 'principalGroups' => []], $output->toArray());
         $group = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             'General',
@@ -29,7 +29,7 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
         );
         $group->replaceMembers([new PrincipalIdentifier(StrTestHelper::generateUuid())]);
         $output->setPrincipalGroups([$group]);
-        self::assertSame(['principalGroups' => [[
+        self::assertSame(['principalStatuses' => [], 'principalGroups' => [[
             'principalGroupIdentifier' => (string) $group->principalGroupIdentifier(),
             'accountIdentifier' => (string) $group->accountIdentifier(),
             'name' => 'General',
@@ -38,7 +38,7 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
             'memberCount' => 1,
         ]]], $output->toArray());
         $output->setPrincipalGroups([]);
-        self::assertSame(['principalGroups' => []], $output->toArray());
+        self::assertSame(['principalStatuses' => [], 'principalGroups' => []], $output->toArray());
     }
 
     public function testGroupWithoutDescriptionOrMembers(): void

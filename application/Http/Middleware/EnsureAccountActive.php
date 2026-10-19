@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Middleware;
 
 use Application\Http\Context\AccountResolver;
+use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Closure;
@@ -15,12 +16,15 @@ use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
+use TypeError;
+use ValueError;
 
 readonly class EnsureAccountActive
 {
     private const array EXEMPT_PATHS = [
         'api/v1/identity/auth/me',
         'api/v1/identity/auth/logout',
+        'api/v1/wiki/principal/me',
         'api/v1/account/accounts/setup',
     ];
 
@@ -41,6 +45,12 @@ readonly class EnsureAccountActive
             $context = $this->authContextCache->resolveAccount(
                 $identityIdentifier,
                 fn () => $this->accountResolver->resolve($identityIdentifier),
+            );
+        } catch (ValueError|TypeError $e) {
+            throw new ForbiddenHttpException(
+                detail: error_message('principal_inactive', app()->bound(ActorContext::class) ? app(ActorContext::class)->language->value : app()->getLocale()),
+                extensions: ['code' => 'principal_inactive'],
+                previous: $e,
             );
         } catch (DelegationUnavailableException $e) {
             throw new ForbiddenHttpException(

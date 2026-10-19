@@ -708,8 +708,8 @@ model PrincipalSummary {
   identityIdentifier: Uuid;
   @doc("Whether the principal is delegated.")
   isDelegatedPrincipal: boolean;
-  @doc("Whether the principal is enabled.")
-  isEnabled: boolean;
+  @doc("Principal lifecycle status. Access restrictions are defined separately from Account status.")
+  status: PrincipalStatus;
   @doc("Effective policies granted to the principal through principal groups and roles.")
   policies: EffectivePolicySummary[];
   @doc("Number of Wiki principals belonging to the current account, including the current principal.")
@@ -725,8 +725,8 @@ model CreatedPrincipalSummary {
   identityIdentifier: Uuid;
   @doc("Whether the principal is delegated.")
   isDelegatedPrincipal: boolean;
-  @doc("Whether the principal is enabled.")
-  isEnabled: boolean;
+  @doc("Principal lifecycle status. Access restrictions are defined separately from Account status.")
+  status: PrincipalStatus;
 }
 
 @doc("Summary of a principal group.")
@@ -750,6 +750,8 @@ model PrincipalGroupSummary {
 
 @doc("Principal group member summary for management.")
 model PrincipalGroupMemberSummary {
+  @doc("Principal lifecycle status. Stopped users remain in management lists and retain their permissions.")
+  status: PrincipalStatus;
   @doc("Principal identifier.")
   principalIdentifier: Uuid;
   @doc("Identity identifier linked to the principal.")

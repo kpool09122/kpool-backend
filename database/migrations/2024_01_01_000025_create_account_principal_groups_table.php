@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('account_principals', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Principal ID');
             $table->uuid('identity_id')->comment('Identity ID');
+            $table->string('status')->default('active');
             $table->uuid('account_id')->index()->comment('アカウントID');
             $table->timestamps();
 

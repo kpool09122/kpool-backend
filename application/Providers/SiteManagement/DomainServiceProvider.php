@@ -33,6 +33,7 @@ use Source\SiteManagement\Contact\Infrastructure\Factory\ReplyContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
 use Source\SiteManagement\Principal\Application\EventHandler\IdentityWithdrawingHandler;
 use Source\SiteManagement\Principal\Application\EventHandler\PrincipalCreatedHandler;
+use Source\SiteManagement\Principal\Application\Service\ReachablePrincipalGroupManagerInterface;
 use Source\SiteManagement\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\SiteManagement\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\SiteManagement\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -51,11 +52,13 @@ use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalGroupRepo
 use Source\SiteManagement\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\SiteManagement\Principal\Infrastructure\Repository\RoleRepository;
 use Source\SiteManagement\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\SiteManagement\Principal\Infrastructure\Service\ReachablePrincipalGroupManager;
 
 class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
         $this->app->singleton(TranslationServiceInterface::class, TranslationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);

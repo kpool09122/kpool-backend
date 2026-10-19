@@ -2,6 +2,19 @@ using TypeSpec.Http;
 
 namespace KPool.Common;
 
+@doc("Lifecycle of a context-specific Principal, independent of Account status. Only active authorizes protected operations. A forced_stop is set operationally, not through user permission management.")
+enum PrincipalStatus {
+  active,
+  suspended,
+  forced_stop,
+}
+
+@doc("A Principal status in a bulk save or its successful result. Omitted Principals are unchanged. Duplicate identifiers are rejected. An unchanged forced_stop is accepted, but a change from forced_stop or a new forced_stop is forbidden.")
+model PrincipalStatusUpdate {
+  principalIdentifier: Uuid;
+  status: PrincipalStatus;
+}
+
 @format("uuid")
 @doc("UUID identifier.")
 scalar Uuid extends string;

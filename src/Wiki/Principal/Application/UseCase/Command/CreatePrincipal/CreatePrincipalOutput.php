@@ -16,7 +16,7 @@ class CreatePrincipalOutput implements CreatePrincipalOutputPort
     }
 
     /**
-     * @return array{principalIdentifier: ?string, identityIdentifier: ?string, isDelegatedPrincipal: ?bool, isEnabled: ?bool}
+     * @return array{principalIdentifier: ?string, identityIdentifier: ?string, isDelegatedPrincipal: ?bool, status: ?string}
      */
     public function toArray(): array
     {
@@ -25,7 +25,7 @@ class CreatePrincipalOutput implements CreatePrincipalOutputPort
                 'principalIdentifier' => null,
                 'identityIdentifier' => null,
                 'isDelegatedPrincipal' => null,
-                'isEnabled' => null,
+                'status' => null,
             ];
         }
 
@@ -33,7 +33,7 @@ class CreatePrincipalOutput implements CreatePrincipalOutputPort
             'principalIdentifier' => (string) $this->principal->principalIdentifier(),
             'identityIdentifier' => (string) $this->principal->identityIdentifier(),
             'isDelegatedPrincipal' => $this->principal->isDelegatedPrincipal(),
-            'isEnabled' => $this->principal->isEnabled(),
+            'status' => $this->principal->status()->value,
         ];
     }
 }

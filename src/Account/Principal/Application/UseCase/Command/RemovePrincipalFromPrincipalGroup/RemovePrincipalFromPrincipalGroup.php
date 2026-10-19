@@ -6,6 +6,7 @@ namespace Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFr
 
 use Source\Account\Principal\Application\Exception\CannotRemoveLastOwnerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Account\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Exception\SystemRoleNotFoundException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -16,6 +17,7 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
     public function __construct(
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
+        private PrincipalGroupChangeGuardInterface $principalGroupChangeGuard,
     ) {
     }
 
@@ -52,6 +54,14 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
         }
 
         $principalGroup->removeMember($input->principalIdentifier());
+
+        $groups = $allPrincipalGroups ?? $this->principalGroupRepository->findByAccountId($principalGroup->accountIdentifier());
+        foreach ($groups as $index => $group) {
+            if ((string) $group->principalGroupIdentifier() === (string) $principalGroup->principalGroupIdentifier()) {
+                $groups[$index] = $principalGroup;
+            }
+        }
+        $this->principalGroupChangeGuard->assertPreserved($principalGroup->accountIdentifier(), $groups);
 
         $this->principalGroupRepository->save($principalGroup);
 

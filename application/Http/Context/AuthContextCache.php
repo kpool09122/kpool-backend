@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
@@ -74,6 +75,7 @@ class AuthContextCache
             'identityIdentifier' => (string) $principal->identityIdentifier(),
             'accountIdentifier' => (string) $principal->accountIdentifier(),
             'accountType' => $context->nullableAccountType()?->value,
+            'principalStatus' => $principal->status()->value,
             'accountStatus' => $context->accountStatus()->value,
             'originalAccountStatus' => $context->originalAccountStatus()->value,
             'accountCategory' => $context->accountCategory()->value,
@@ -292,6 +294,7 @@ class AuthContextCache
             || ! is_string($payload['identityIdentifier'] ?? null)
             || ! is_string($payload['accountIdentifier'] ?? null)
             || (! is_string($payload['accountType'] ?? null) && ($payload['accountType'] ?? null) !== null)
+            || ! is_string($payload['principalStatus'] ?? null)
             || ! is_string($payload['accountStatus'] ?? null)
             || ! is_string($payload['originalAccountStatus'] ?? null)
             || ! is_string($payload['accountCategory'] ?? null)
@@ -305,10 +308,11 @@ class AuthContextCache
         }
 
         $accountType = is_string($payload['accountType']) ? AccountType::tryFrom($payload['accountType']) : null;
+        $principalStatus = PrincipalStatus::tryFrom($payload['principalStatus']);
         $accountStatus = AccountStatus::tryFrom($payload['accountStatus']);
         $originalAccountStatus = AccountStatus::tryFrom($payload['originalAccountStatus']);
         $accountCategory = AccountCategory::tryFrom($payload['accountCategory']);
-        if ($accountStatus === null || $originalAccountStatus === null || $accountCategory === null) {
+        if ($principalStatus === null || $accountStatus === null || $originalAccountStatus === null || $accountCategory === null) {
             return null;
         }
 
@@ -317,6 +321,7 @@ class AuthContextCache
                 new AccountPrincipalIdentifier($payload['principalIdentifier']),
                 new IdentityIdentifier($payload['identityIdentifier']),
                 new AccountIdentifier($payload['accountIdentifier']),
+                $principalStatus,
             ),
             accountType: $accountType,
             accountStatus: $accountStatus,

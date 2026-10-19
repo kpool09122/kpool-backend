@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\Exception\CannotDeleteDefaultPrincipalGroupException;
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Wiki\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInput;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
@@ -21,6 +22,12 @@ use Tests\TestCase;
 
 class DeletePrincipalGroupTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app()->instance(PrincipalGroupChangeGuardInterface::class, $this->createStub(PrincipalGroupChangeGuardInterface::class));
+    }
+
     /**
      * @return void
      * @throws BindingResolutionException
@@ -28,6 +35,7 @@ class DeletePrincipalGroupTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $this->app()->instance(PrincipalGroupRepositoryInterface::class, $repository);
         $useCase = $this->app()->make(DeletePrincipalGroupInterface::class);
         $this->assertInstanceOf(DeletePrincipalGroup::class, $useCase);
@@ -51,6 +59,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -77,6 +86,7 @@ class DeletePrincipalGroupTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))
@@ -111,6 +121,7 @@ class DeletePrincipalGroupTest extends TestCase
         );
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $repository->shouldReceive('findByAccountId')->byDefault()->andReturn([]);
         $repository->shouldReceive('findById')
             ->once()
             ->with(Mockery::on(fn (PrincipalGroupIdentifier $arg) => (string) $arg === (string) $principalGroupIdentifier))

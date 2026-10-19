@@ -64,6 +64,6 @@ class UpdatePrincipalGroupMembersOutputTest extends TestCase
     {
         $output = new UpdatePrincipalGroupMembersOutput();
 
-        $this->assertSame(['principalGroups' => []], $output->toArray());
+        $this->assertSame(['principalStatuses' => [], 'principalGroups' => []], $output->toArray());
     }
 }

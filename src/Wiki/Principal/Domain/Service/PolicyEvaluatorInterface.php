@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Domain\Service;
 
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 
 interface PolicyEvaluatorInterface
 {
+    /** @param array<PrincipalGroup>|null $principalGroups */
     public function evaluate(
         Principal $principal,
         Action    $action,
         Resource  $resource,
+        ?array $principalGroups = null,
     ): bool;
 }

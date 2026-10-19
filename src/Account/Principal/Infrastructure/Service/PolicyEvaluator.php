@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Infrastructure\Service;
 
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -15,6 +16,8 @@ use Source\Account\Principal\Domain\ValueObject\ConditionClause;
 use Source\Account\Principal\Domain\ValueObject\ConditionKey;
 use Source\Account\Principal\Domain\ValueObject\ConditionOperator;
 use Source\Account\Principal\Domain\ValueObject\Effect;
+use Source\Account\Principal\Domain\ValueObject\PolicyEvaluation;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
@@ -29,12 +32,62 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     ) {
     }
 
+    /**
+     * @param array<string, PolicyEvaluation> $evaluations
+     * @return array<string, bool>
+     */
+    public function evaluateMany(array $evaluations): array
+    {
+        $principalIdentifiers = [];
+        foreach ($evaluations as $evaluation) {
+            if ($evaluation->principal->status() === PrincipalStatus::ACTIVE && $evaluation->principalGroups === null) {
+                $principalIdentifiers[(string) $evaluation->principal->principalIdentifier()] = $evaluation->principal->principalIdentifier();
+            }
+        }
+        $persistedGroups = $principalIdentifiers === [] ? [] : $this->principalGroupRepository->findByPrincipalIds(array_values($principalIdentifiers));
+        $groupsByEvaluation = [];
+        $allGroups = [];
+        foreach ($evaluations as $key => $evaluation) {
+            $groups = $evaluation->principal->status() !== PrincipalStatus::ACTIVE ? [] : array_filter(
+                $evaluation->principalGroups ?? $persistedGroups,
+                static fn (PrincipalGroup $group): bool => (string) $group->accountIdentifier() === (string) $evaluation->resource->accountIdentifier()
+                    && $group->hasMember($evaluation->principal->principalIdentifier()),
+            );
+            $groupsByEvaluation[$key] = $groups;
+            foreach ($groups as $group) {
+                $allGroups[] = $group;
+            }
+        }
+        $statementsByRole = $this->collectStatementsByRole($allGroups);
+        $results = [];
+        foreach ($evaluations as $key => $evaluation) {
+            $results[$key] = $evaluation->principal->status() === PrincipalStatus::ACTIVE && $this->evaluateStatements(
+                $this->statementsForGroups($groupsByEvaluation[$key], $statementsByRole),
+                $evaluation->action,
+                $evaluation->resource,
+            );
+        }
+
+        return $results;
+    }
+
+    /** @param PrincipalGroup[]|null $principalGroups */
     public function evaluate(
         Principal $principal,
         Action $action,
         Resource $resource,
+        ?array $principalGroups = null,
     ): bool {
-        $statements = $this->collectStatements($principal, $resource);
+        if ($principal->status() !== PrincipalStatus::ACTIVE) {
+            return false;
+        }
+
+        return $this->evaluateStatements($this->collectStatements($principal, $resource, $principalGroups), $action, $resource);
+    }
+
+    /** @param Statement[] $statements */
+    private function evaluateStatements(array $statements, Action $action, Resource $resource): bool
+    {
         $applicableStatements = $this->filterApplicable($statements, $action, $resource->type());
 
         // 条件に一致する明示的 Deny を優先する。
@@ -59,26 +112,34 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     }
 
     /**
+     * @param PrincipalGroup[]|null $principalGroups
      * @return Statement[]
      */
-    private function collectStatements(Principal $principal, Resource $resource): array
+    private function collectStatements(Principal $principal, Resource $resource, ?array $principalGroups): array
     {
-        $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
+        $principalGroups = $principalGroups === null ? $this->principalGroupRepository->findByAccountIdAndPrincipal(
             $resource->accountIdentifier(),
             $principal->principalIdentifier(),
-        );
+        ) : array_filter($principalGroups, static fn (PrincipalGroup $group): bool => (string) $group->accountIdentifier() === (string) $resource->accountIdentifier() && $group->hasMember($principal->principalIdentifier()));
 
-        if (empty($principalGroups)) {
-            return [];
-        }
+        return $this->statementsForGroups($principalGroups, $this->collectStatementsByRole($principalGroups));
+    }
 
+    /**
+     * @param PrincipalGroup[] $principalGroups
+     * @return array<string, Statement[]>
+     */
+    private function collectStatementsByRole(array $principalGroups): array
+    {
         $roleIdentifiers = [];
         foreach ($principalGroups as $principalGroup) {
             foreach ($principalGroup->roles() as $roleIdentifier) {
                 $roleIdentifiers[(string) $roleIdentifier] = $roleIdentifier;
             }
         }
-
+        if ($roleIdentifiers === []) {
+            return [];
+        }
         $roles = $this->roleRepository->findByIds(array_values($roleIdentifiers));
         $policyIdentifiers = [];
         foreach ($roles as $role) {
@@ -86,12 +147,38 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
                 $policyIdentifiers[(string) $policyIdentifier] = $policyIdentifier;
             }
         }
+        $policiesById = [];
+        foreach ($this->policyRepository->findByIds(array_values($policyIdentifiers)) as $policy) {
+            $policiesById[(string) $policy->policyIdentifier()] = $policy;
+        }
+        $statementsByRole = [];
+        foreach ($roles as $role) {
+            $statements = [];
+            foreach ($role->policies() as $policyIdentifier) {
+                array_push($statements, ...(($policiesById[(string) $policyIdentifier] ?? null)?->statements() ?? []));
+            }
+            $statementsByRole[(string) $role->roleIdentifier()] = $statements;
+        }
 
-        $policies = $this->policyRepository->findByIds(array_values($policyIdentifiers));
+        return $statementsByRole;
+    }
 
+    /**
+     * @param PrincipalGroup[] $principalGroups
+     * @param array<string, Statement[]> $statementsByRole
+     * @return Statement[]
+     */
+    private function statementsForGroups(array $principalGroups, array $statementsByRole): array
+    {
+        $roleIds = [];
+        foreach ($principalGroups as $group) {
+            foreach ($group->roles() as $roleIdentifier) {
+                $roleIds[(string) $roleIdentifier] = true;
+            }
+        }
         $statements = [];
-        foreach ($policies as $policy) {
-            array_push($statements, ...$policy->statements());
+        foreach (array_keys($roleIds) as $roleId) {
+            array_push($statements, ...($statementsByRole[$roleId] ?? []));
         }
 
         return $statements;

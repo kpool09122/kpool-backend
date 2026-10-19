@@ -4,232 +4,104 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
+use InvalidArgumentException;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Principal\Application\Exception\CannotRemoveLastPrincipalGroupManagerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Principal\Application\Exception\PrincipalNotFoundException;
-use Source\Account\Principal\Domain\Entity\Policy;
-use Source\Account\Principal\Domain\Entity\Principal;
-use Source\Account\Principal\Domain\Entity\PrincipalGroup;
-use Source\Account\Principal\Domain\Entity\Role;
+use Source\Account\Principal\Application\Service\ChildPrincipalManagerContinuityInterface;
+use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\Service\PrincipalGroupManagerContinuity;
 use Source\Account\Principal\Domain\ValueObject\Action;
-use Source\Account\Principal\Domain\ValueObject\Effect;
-use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Resource;
-use Source\Account\Principal\Domain\ValueObject\ResourceType;
-use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
-use Source\Account\Principal\Domain\ValueObject\Statement;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMembersInterface
 {
     public function __construct(
+        private ChildPrincipalManagerContinuityInterface $childPrincipalManagerContinuity,
+        private PrincipalReachabilityInterface $principalReachability,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyRepositoryInterface $policyRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private AccountRepositoryInterface $accountRepository,
     ) {
     }
 
     public function process(UpdatePrincipalGroupMembersInputPort $input, UpdatePrincipalGroupMembersOutputPort $output): void
     {
         $accountIdentifier = $input->accountIdentifier();
-        if ((string) $input->principal()->accountIdentifier() !== (string) $accountIdentifier
-            || ! $this->policyEvaluator->evaluate(
-                $input->principal(),
-                Action::PRINCIPAL_GROUP_MANAGE,
-                Resource::account($accountIdentifier, $input->accountType())
-            )
-        ) {
+        $account = $this->accountRepository->findById($accountIdentifier);
+        if ($account === null) {
             throw new AccountUpdateForbiddenException();
         }
-
-        $principalGroups = $this->principalGroupRepository->findByAccountId($accountIdentifier);
-        $principalGroupsById = [];
-        foreach ($principalGroups as $principalGroup) {
-            $principalGroupsById[(string) $principalGroup->principalGroupIdentifier()] = $principalGroup;
+        $resource = Resource::account($accountIdentifier, $account->type(), $account->accountCategory());
+        if ((string) $input->principal()->accountIdentifier() !== (string) $accountIdentifier
+            || ! $this->policyEvaluator->evaluate($input->principal(), Action::PRINCIPAL_GROUP_MANAGE, $resource)) {
+            throw new AccountUpdateForbiddenException();
         }
-
-        $requestedPrincipalIdentifiersByGroupId = [];
-        $allRequestedPrincipalIdentifiers = [];
-        foreach ($input->principalGroups() as $principalGroupInput) {
-            $principalGroupId = (string) $principalGroupInput->principalGroupIdentifier();
-            if (! isset($principalGroupsById[$principalGroupId])) {
-                throw new PrincipalGroupNotFoundException();
+        $groupsById = [];
+        foreach ($this->principalGroupRepository->findByAccountId($accountIdentifier) as $group) {
+            $groupsById[(string) $group->principalGroupIdentifier()] = $group;
+        }
+        $requested = [];
+        $requestedIdentifiers = [];
+        foreach ($input->principalGroups() as $groupInput) {
+            $id = (string) $groupInput->principalGroupIdentifier();
+            if (isset($requested[$id])) {
+                throw new InvalidArgumentException('Duplicate principal group identifier.');
             }
-
-            $requestedPrincipalIdentifiersByGroupId[$principalGroupId] = $principalGroupInput->principalIdentifiers();
-            foreach ($principalGroupInput->principalIdentifiers() as $principalIdentifier) {
-                $allRequestedPrincipalIdentifiers[(string) $principalIdentifier] = $principalIdentifier;
+            $group = $groupsById[$id] ?? throw new PrincipalGroupNotFoundException();
+            $group->replaceMembers($groupInput->principalIdentifiers());
+            $requested[$id] = true;
+            foreach ($groupInput->principalIdentifiers() as $identifier) {
+                $requestedIdentifiers[(string) $identifier] = $identifier;
             }
         }
-
-        foreach ($requestedPrincipalIdentifiersByGroupId as $principalGroupId => $principalIdentifiers) {
-            $principalGroupsById[$principalGroupId]->replaceMembers($principalIdentifiers);
+        $statusIdentifiers = [];
+        foreach ($input->principalStatuses() as $update) {
+            $id = (string) $update->principalIdentifier;
+            if (isset($statusIdentifiers[$id])) {
+                throw new InvalidArgumentException('Duplicate principal status identifier.');
+            }
+            $statusIdentifiers[$id] = $update->principalIdentifier;
         }
-
-        $principalsById = $this->principalRepository->findByIds(array_values($this->collectPrincipalIdentifiers($principalGroups)));
-        $this->assertPrincipalsBelongToAccount(array_values($allRequestedPrincipalIdentifiers), $principalsById, $accountIdentifier);
-
-        if (! $this->hasPrincipalGroupManager($principalGroups, $principalsById)) {
-            throw new CannotRemoveLastPrincipalGroupManagerException();
+        $identifiers = $requestedIdentifiers + $statusIdentifiers;
+        foreach ($groupsById as $group) {
+            foreach ($group->members() as $identifier) {
+                $identifiers[(string) $identifier] = $identifier;
+            }
         }
-
-        foreach (array_keys($requestedPrincipalIdentifiersByGroupId) as $principalGroupId) {
-            $this->principalGroupRepository->save($principalGroupsById[$principalGroupId]);
-        }
-
-        $output->setPrincipalGroups(array_values(array_intersect_key($principalGroupsById, $requestedPrincipalIdentifiersByGroupId)));
-    }
-
-    /**
-     * @param array<int, PrincipalIdentifier> $principalIdentifiers
-     * @param array<string, Principal> $principalsById
-     */
-    private function assertPrincipalsBelongToAccount(array $principalIdentifiers, array $principalsById, AccountIdentifier $accountIdentifier): void
-    {
-        foreach ($principalIdentifiers as $principalIdentifier) {
-            $principal = $principalsById[(string) $principalIdentifier] ?? null;
+        $principalsById = $this->principalRepository->findByIds(array_values($identifiers));
+        foreach ($requestedIdentifiers + $statusIdentifiers as $id => $identifier) {
+            $principal = $principalsById[$id] ?? null;
             if ($principal === null || (string) $principal->accountIdentifier() !== (string) $accountIdentifier) {
                 throw new PrincipalNotFoundException();
             }
         }
-    }
-
-    /**
-     * @param array<PrincipalGroup> $principalGroups
-     * @param array<string, Principal> $principalsById
-     */
-    private function hasPrincipalGroupManager(array $principalGroups, array $principalsById): bool
-    {
-        $roleIdentifiersByPrincipalId = $this->collectRoleIdentifiersByPrincipalId($principalGroups, $principalsById);
-        if (empty($roleIdentifiersByPrincipalId)) {
-            return false;
+        foreach ($input->principalStatuses() as $update) {
+            $principalsById[(string) $update->principalIdentifier]->changeStatus($update->status);
         }
-
-        $roles = $this->roleRepository->findByIds(array_values($this->flattenUnique($roleIdentifiersByPrincipalId)));
-        $policyIdentifiersByPrincipalId = $this->collectPolicyIdentifiersByPrincipalId($roleIdentifiersByPrincipalId, $roles);
-        if (empty($policyIdentifiersByPrincipalId)) {
-            return false;
+        $reachablePrincipals = $this->principalReachability->filterReachable(array_values($principalsById), $principalsById, array_values($groupsById), $accountIdentifier);
+        if (! (new PrincipalGroupManagerContinuity($this->roleRepository, $this->policyRepository))->hasManager(array_values($groupsById), $reachablePrincipals, $resource)) {
+            throw new CannotRemoveLastPrincipalGroupManagerException();
         }
-
-        $policies = $this->policyRepository->findByIds(array_values($this->flattenUnique($policyIdentifiersByPrincipalId)));
-
-        return array_any($policyIdentifiersByPrincipalId, fn ($policyIdentifiers) => $this->canManagePrincipalGroups($policyIdentifiers, $policies));
-    }
-
-    /**
-     * @param array<PrincipalGroup> $principalGroups
-     * @return array<string, PrincipalIdentifier>
-     */
-    private function collectPrincipalIdentifiers(array $principalGroups): array
-    {
-        $principalIdentifiers = [];
-        foreach ($principalGroups as $principalGroup) {
-            foreach ($principalGroup->members() as $principalIdentifier) {
-                $principalIdentifiers[(string) $principalIdentifier] = $principalIdentifier;
-            }
+        $this->childPrincipalManagerContinuity->assertPreserved($accountIdentifier, $principalsById, array_values($groupsById));
+        foreach (array_keys($requested) as $id) {
+            // All continuity checks run before either memberships or statuses are persisted.
+            $this->principalGroupRepository->save($groupsById[$id]);
         }
-
-        return $principalIdentifiers;
-    }
-
-    /**
-     * @param array<PrincipalGroup> $principalGroups
-     * @param array<string, Principal> $principalsById
-     * @return array<string, array<string, RoleIdentifier>>
-     */
-    private function collectRoleIdentifiersByPrincipalId(array $principalGroups, array $principalsById): array
-    {
-        $roleIdentifiersByPrincipalId = [];
-        foreach ($principalGroups as $principalGroup) {
-            foreach ($principalGroup->roles() as $roleIdentifier) {
-                foreach ($principalGroup->members() as $principalIdentifier) {
-                    $principalId = (string) $principalIdentifier;
-                    if (! isset($principalsById[$principalId])) {
-                        continue;
-                    }
-                    $roleIdentifiersByPrincipalId[$principalId][(string) $roleIdentifier] = $roleIdentifier;
-                }
-            }
+        foreach ($statusIdentifiers as $id => $identifier) {
+            $this->principalRepository->save($principalsById[$id]);
         }
-
-        return $roleIdentifiersByPrincipalId;
-    }
-
-    /**
-     * @param array<string, array<string, RoleIdentifier>> $roleIdentifiersByPrincipalId
-     * @param array<string, Role> $roles
-     * @return array<string, array<string, PolicyIdentifier>>
-     */
-    private function collectPolicyIdentifiersByPrincipalId(array $roleIdentifiersByPrincipalId, array $roles): array
-    {
-        $policyIdentifiersByPrincipalId = [];
-        foreach ($roleIdentifiersByPrincipalId as $principalId => $roleIdentifiers) {
-            foreach ($roleIdentifiers as $roleIdentifier) {
-                $role = $roles[(string) $roleIdentifier] ?? null;
-                if ($role === null) {
-                    continue;
-                }
-                foreach ($role->policies() as $policyIdentifier) {
-                    $policyIdentifiersByPrincipalId[$principalId][(string) $policyIdentifier] = $policyIdentifier;
-                }
-            }
-        }
-
-        return $policyIdentifiersByPrincipalId;
-    }
-
-    /**
-     * @param array<string, PolicyIdentifier> $policyIdentifiers
-     * @param array<string, Policy> $policies
-     */
-    private function canManagePrincipalGroups(array $policyIdentifiers, array $policies): bool
-    {
-        $statements = [];
-        foreach ($policyIdentifiers as $policyIdentifier) {
-            $policy = $policies[(string) $policyIdentifier] ?? null;
-            if ($policy === null) {
-                continue;
-            }
-            array_push($statements, ...$policy->statements());
-        }
-
-        $applicableStatements = array_filter(
-            $statements,
-            static fn (Statement $statement): bool =>
-            in_array(Action::PRINCIPAL_GROUP_MANAGE, $statement->actions(), true)
-            && in_array(ResourceType::ACCOUNT, $statement->resourceTypes(), true)
-        );
-
-        if (array_any($applicableStatements, static fn (Statement $statement): bool => $statement->effect() === Effect::DENY)) {
-            return false;
-        }
-
-        return array_any($applicableStatements, static fn (Statement $statement): bool => $statement->effect() === Effect::ALLOW);
-    }
-
-    /**
-     * @template T
-     * @param array<string, array<string, T>> $itemsByOwnerId
-     * @return array<string, T>
-     */
-    private function flattenUnique(array $itemsByOwnerId): array
-    {
-        $items = [];
-        foreach ($itemsByOwnerId as $ownerItems) {
-            foreach ($ownerItems as $itemId => $item) {
-                $items[$itemId] = $item;
-            }
-        }
-
-        return $items;
+        $output->setPrincipalStatuses(array_values(array_intersect_key($principalsById, $statusIdentifiers)));
+        $output->setPrincipalGroups(array_values(array_intersect_key($groupsById, $requested)));
     }
 }

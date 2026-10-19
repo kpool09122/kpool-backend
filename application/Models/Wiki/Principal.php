@@ -13,14 +13,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Override;
 
 /**
  * @property string $id
  * @property string $identity_id
  * @property string $account_id
  * @property ?string $delegation_identifier
- * @property bool $enabled
+ * @property string $status
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read Collection<int, PrincipalGroupMembership> $memberships
@@ -32,20 +31,12 @@ use Override;
     'identity_id',
     'account_id',
     'delegation_identifier',
-    'enabled',
+    'status',
 ])]
 #[Table(name: 'wiki_principals', keyType: 'string')]
 class Principal extends Model
 {
     public $incrementing = false;
-
-    #[Override]
-    protected function casts(): array
-    {
-        return [
-            'enabled' => 'boolean',
-        ];
-    }
 
     /**
      * @return HasMany<PrincipalGroupMembership, $this>
