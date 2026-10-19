@@ -29,7 +29,7 @@ class StripeClient
 
     public function __construct(
         private readonly string $secretKey,
-        private readonly string $apiVersion = '2024-12-18.acacia',
+        private readonly string $apiVersion = '2026-09-30.endive',
     ) {
     }
 
@@ -112,7 +112,7 @@ class StripeClient
             'currency' => $request->currency(),
             'customer' => $request->customerId(),
             'payment_method' => $request->paymentMethodId(),
-            'payment_method_types' => $request->paymentMethodTypes(),
+            'allowed_payment_method_types' => $request->paymentMethodTypes(),
             'capture_method' => 'manual',
             'confirm' => true,
             'off_session' => true,
