@@ -62,7 +62,7 @@ class PublishAnnouncementTest extends AnnouncementTestCase
             $original->setLocalizedContent($this->localized($supported));
         }
         $publishedRepository = $this->app()->make(AnnouncementRepositoryInterface::class);
-        $publishedRepository->save(new Announcement($original->announcementIdentifier(), $original->sourceLanguage(), $original->category(), $original->contents(), $original->publishedDate()));
+        $publishedRepository->save(new Announcement($original->announcementIdentifier(), $original->sourceLanguage(), $original->category(), $original->contents(), $this->publishedDate()));
         $contents = new AnnouncementContents();
         foreach (Language::cases() as $supported) {
             if ($supported === $language) {
@@ -75,7 +75,7 @@ class PublishAnnouncementTest extends AnnouncementTestCase
             ));
         }
         $sourceLanguage = $language === Language::JAPANESE ? Language::KOREAN : Language::JAPANESE;
-        $draft = new DraftAnnouncement($original->announcementIdentifier(), $sourceLanguage, $original->category(), $contents, $original->publishedDate());
+        $draft = new DraftAnnouncement($original->announcementIdentifier(), $sourceLanguage, $original->category(), $contents);
         $draftRepository = $this->app()->make(DraftAnnouncementRepositoryInterface::class);
         $draftRepository->save($draft);
         $output = new PublishAnnouncementOutput();

@@ -30,8 +30,8 @@ class DeleteAnnouncementTest extends AnnouncementTestCase
         $draftRepository = $this->app()->make(DraftAnnouncementRepositoryInterface::class);
         $publishedRepository = $this->app()->make(AnnouncementRepositoryInterface::class);
         $draftRepository->save($draft);
-        $publishedRepository->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
-        $other = new DraftAnnouncement(new AnnouncementIdentifier('019c9b4c-0000-7000-8000-000000000002'), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate());
+        $publishedRepository->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate()));
+        $other = new DraftAnnouncement(new AnnouncementIdentifier('019c9b4c-0000-7000-8000-000000000002'), $draft->sourceLanguage(), $draft->category(), $draft->contents());
         $draftRepository->save($other);
         $output = new DeleteAnnouncementOutput();
         $this->app()->make(DeleteAnnouncementInterface::class)->process(new DeleteAnnouncementInput($principal, $this->draft()->announcementIdentifier()), $output);

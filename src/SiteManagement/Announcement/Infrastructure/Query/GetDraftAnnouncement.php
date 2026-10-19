@@ -15,7 +15,6 @@ use Source\SiteManagement\Principal\Domain\ValueObject\Action;
 use Source\SiteManagement\Principal\Domain\ValueObject\Resource;
 use Source\SiteManagement\Principal\Domain\ValueObject\ResourceType;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
-use UnexpectedValueException;
 
 readonly class GetDraftAnnouncement implements GetDraftAnnouncementInterface
 {
@@ -40,7 +39,6 @@ readonly class GetDraftAnnouncement implements GetDraftAnnouncementInterface
             $model->source_language,
             $model->category,
             $model->contents,
-            ($model->published_date ?? throw new UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable(),
         );
     }
 }

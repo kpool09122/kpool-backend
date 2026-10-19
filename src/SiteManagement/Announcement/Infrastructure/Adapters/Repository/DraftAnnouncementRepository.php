@@ -13,9 +13,7 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
-use UnexpectedValueException;
 
 class DraftAnnouncementRepository implements DraftAnnouncementRepositoryInterface
 {
@@ -35,7 +33,6 @@ class DraftAnnouncementRepository implements DraftAnnouncementRepositoryInterfac
             Language::from($model->source_language),
             Category::from($model->category),
             new AnnouncementContents(...$contents),
-            new PublishedDate(($model->published_date ?? throw new UnexpectedValueException('Publication date is missing.'))->toDateTimeImmutable()),
         );
     }
 
@@ -45,7 +42,6 @@ class DraftAnnouncementRepository implements DraftAnnouncementRepositoryInterfac
             'source_language' => $draftAnnouncement->sourceLanguage()->value,
             'category' => $draftAnnouncement->category()->value,
             'contents' => $draftAnnouncement->contents()->toArray(),
-            'published_date' => $draftAnnouncement->publishedDate()->value(),
         ]);
     }
 

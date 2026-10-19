@@ -18,7 +18,7 @@ class AnnouncementRepositoryTest extends AnnouncementTestCase
         $draft = $this->draft();
         $draft->setLocalizedContent($this->localized(Language::KOREAN));
         $repository = $this->app()->make(AnnouncementRepositoryInterface::class);
-        $entity = new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate());
+        $entity = new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate());
         $repository->save($entity);
         $loaded = $repository->findById($draft->announcementIdentifier());
         $this->assertNotNull($loaded);
@@ -27,7 +27,7 @@ class AnnouncementRepositoryTest extends AnnouncementTestCase
         $this->assertSame($entity->category(), $loaded->category());
         $this->assertEquals($entity->publishedDate(), $loaded->publishedDate());
         $draft->setLocalizedContent($this->localized(Language::ENGLISH));
-        $repository->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
+        $repository->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate()));
         $this->assertCount(3, $repository->findById($draft->announcementIdentifier())?->contents()->toArray() ?? []);
         $this->assertDatabaseCount('announcements', 1);
     }

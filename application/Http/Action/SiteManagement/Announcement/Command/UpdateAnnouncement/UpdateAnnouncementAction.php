@@ -10,7 +10,6 @@ use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
-use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -23,7 +22,6 @@ use Source\SiteManagement\Announcement\Application\UseCase\Exception\Announcemen
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
@@ -55,7 +53,6 @@ readonly class UpdateAnnouncementAction
                 Category::from($request->category()),
                 new Title($request->title()),
                 new Content($request->content()),
-                new PublishedDate(new DateTimeImmutable($request->publishedDate())),
             );
             $output = new UpdateAnnouncementOutput();
             DB::transaction(fn () => $this->updateAnnouncement->process($input, $output));

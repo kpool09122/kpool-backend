@@ -14,13 +14,12 @@ class DraftAnnouncementReadModelTest extends AnnouncementTestCase
     {
         $draft = $this->draft();
         $draft->setLocalizedContent($this->localized(Language::KOREAN));
-        $readModel = new DraftAnnouncementReadModel((string) $draft->announcementIdentifier(), $draft->sourceLanguage()->value, $draft->category()->value, $draft->contents()->toArray(), $draft->publishedDate()->value());
+        $readModel = new DraftAnnouncementReadModel((string) $draft->announcementIdentifier(), $draft->sourceLanguage()->value, $draft->category()->value, $draft->contents()->toArray());
         $this->assertSame([
             'announcementIdentifier' => (string) $draft->announcementIdentifier(),
             'sourceLanguage' => 'ja',
             'category' => 1,
             'contents' => ['ja' => ['title' => 'ja title', 'content' => 'ja body'], 'ko' => ['title' => 'ko title', 'content' => 'ko body']],
-            'publishedDate' => '2026-10-01',
         ], $readModel->toArray());
     }
 }

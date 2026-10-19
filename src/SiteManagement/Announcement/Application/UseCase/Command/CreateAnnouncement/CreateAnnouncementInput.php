@@ -7,7 +7,6 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateA
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
@@ -19,7 +18,6 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
         private Category                   $category,
         private Title                      $title,
         private Content                    $content,
-        private PublishedDate              $publishedDate,
     ) {
     }
 
@@ -46,10 +44,5 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
     public function content(): Content
     {
         return $this->content;
-    }
-
-    public function publishedDate(): PublishedDate
-    {
-        return $this->publishedDate;
     }
 }

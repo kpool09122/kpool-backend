@@ -10,7 +10,6 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementContents;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 
 class DraftAnnouncement
 {
@@ -19,7 +18,6 @@ class DraftAnnouncement
         private readonly Language $sourceLanguage,
         private Category $category,
         private AnnouncementContents $contents,
-        private PublishedDate $publishedDate,
     ) {
         if ($contents->get($sourceLanguage) === null) {
             throw new InvalidArgumentException('Source language content is required.');
@@ -51,19 +49,9 @@ class DraftAnnouncement
         return $this->contents->get($language);
     }
 
-    public function publishedDate(): PublishedDate
-    {
-        return $this->publishedDate;
-    }
-
     public function setCategory(Category $category): void
     {
         $this->category = $category;
-    }
-
-    public function setPublishedDate(PublishedDate $publishedDate): void
-    {
-        $this->publishedDate = $publishedDate;
     }
 
     public function setLocalizedContent(LocalizedAnnouncementContent $content): void

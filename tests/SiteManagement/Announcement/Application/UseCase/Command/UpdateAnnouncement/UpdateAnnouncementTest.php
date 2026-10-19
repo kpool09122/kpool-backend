@@ -30,7 +30,7 @@ class UpdateAnnouncementTest extends AnnouncementTestCase
         $repository = $this->app()->make(DraftAnnouncementRepositoryInterface::class);
         $repository->save($draft);
         $output = new UpdateAnnouncementOutput();
-        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body"), $this->draft()->publishedDate()), $output);
+        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body")), $output);
         $loaded = $repository->findById($draft->announcementIdentifier());
         $this->assertSame('manual ko', (string) $loaded?->localizedContent(Language::KOREAN)?->title);
         $this->assertSame('ja title', (string) $loaded?->localizedContent(Language::JAPANESE)?->title);
@@ -48,7 +48,7 @@ class UpdateAnnouncementTest extends AnnouncementTestCase
         $principal = $this->authorize(Action::ANNOUNCEMENT_UPDATE);
         $this->expectException(AnnouncementNotFoundException::class);
         $output = new UpdateAnnouncementOutput();
-        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body"), $this->draft()->publishedDate()), $output);
+        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body")), $output);
     }
 
     public function testDeniesWithoutPermission(): void
@@ -60,13 +60,13 @@ class UpdateAnnouncementTest extends AnnouncementTestCase
         $repository->shouldNotReceive('delete');
         $this->app()->instance(DraftAnnouncementRepositoryInterface::class, $repository);
         $this->expectException(UnauthorizedException::class);
-        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body"), $this->draft()->publishedDate()), new UpdateAnnouncementOutput());
+        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body")), new UpdateAnnouncementOutput());
     }
 
     public function testDeniesMissingPrincipal(): void
     {
         $principal = $this->authorize(Action::ANNOUNCEMENT_UPDATE, true, false);
         $this->expectException(UnauthorizedException::class);
-        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body"), $this->draft()->publishedDate()), new UpdateAnnouncementOutput());
+        $this->app()->make(UpdateAnnouncementInterface::class)->process(new UpdateAnnouncementInput($principal, $this->draft()->announcementIdentifier(), Language::KOREAN, Category::UPDATES, new Title("manual ko"), new Content("manual body")), new UpdateAnnouncementOutput());
     }
 }

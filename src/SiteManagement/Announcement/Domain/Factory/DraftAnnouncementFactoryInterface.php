@@ -8,10 +8,9 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 
 interface DraftAnnouncementFactoryInterface
 {
-    public function create(Language $language, Category $category, Title $title, Content $content, PublishedDate $publishedDate): DraftAnnouncement;
+    public function create(Language $language, Category $category, Title $title, Content $content): DraftAnnouncement;
 }

@@ -37,7 +37,7 @@ class GetDraftAnnouncementTest extends AnnouncementTestCase
     {
         $principal = $this->authorize(Action::ANNOUNCEMENT_VIEW_DRAFT);
         $draft = $this->draft();
-        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $draft->publishedDate()));
+        $this->app()->make(AnnouncementRepositoryInterface::class)->save(new Announcement($draft->announcementIdentifier(), $draft->sourceLanguage(), $draft->category(), $draft->contents(), $this->publishedDate()));
         $this->expectException(AnnouncementNotFoundException::class);
         $this->app()->make(GetDraftAnnouncementInterface::class)->process(new GetDraftAnnouncementInput($principal, $draft->announcementIdentifier()));
     }

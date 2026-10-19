@@ -13,7 +13,6 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\LocalizedAnnouncementContent;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 
 readonly class DraftAnnouncementFactory implements DraftAnnouncementFactoryInterface
@@ -22,8 +21,8 @@ readonly class DraftAnnouncementFactory implements DraftAnnouncementFactoryInter
     {
     }
 
-    public function create(Language $language, Category $category, Title $title, Content $content, PublishedDate $publishedDate): DraftAnnouncement
+    public function create(Language $language, Category $category, Title $title, Content $content): DraftAnnouncement
     {
-        return new DraftAnnouncement(new AnnouncementIdentifier($this->uuidGenerator->generate()), $language, $category, new AnnouncementContents(new LocalizedAnnouncementContent($language, $title, $content)), $publishedDate);
+        return new DraftAnnouncement(new AnnouncementIdentifier($this->uuidGenerator->generate()), $language, $category, new AnnouncementContents(new LocalizedAnnouncementContent($language, $title, $content)));
     }
 }

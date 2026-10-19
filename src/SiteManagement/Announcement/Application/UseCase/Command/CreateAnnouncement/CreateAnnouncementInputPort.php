@@ -7,7 +7,6 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateA
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
@@ -22,6 +21,4 @@ interface CreateAnnouncementInputPort
     public function title(): Title;
 
     public function content(): Content;
-
-    public function publishedDate(): PublishedDate;
 }

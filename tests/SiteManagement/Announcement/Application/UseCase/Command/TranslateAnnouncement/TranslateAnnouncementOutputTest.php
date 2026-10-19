@@ -23,7 +23,6 @@ class TranslateAnnouncementOutputTest extends AnnouncementTestCase
             'sourceLanguage' => 'ja',
             'category' => Category::NEWS->value,
             'contents' => ['ja' => ['title' => 'ja title', 'content' => 'ja body'], 'ko' => ['title' => 'ko title', 'content' => 'ko body']],
-            'publishedDate' => '2026-10-01',
         ];
         $this->assertSame(['announcements' => [$expected]], $output->toArray());
         $this->assertSame([$entity], $output->announcements());

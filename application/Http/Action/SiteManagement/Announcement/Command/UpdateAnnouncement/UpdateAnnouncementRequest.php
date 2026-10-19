@@ -18,7 +18,6 @@ class UpdateAnnouncementRequest extends FormRequest
             'category' => ['required', 'integer', 'in:1,2,3'],
             'title' => ['required', 'string', 'max:64'],
             'content' => ['required', 'string', 'max:2048'],
-            'publishedDate' => ['required', 'date_format:Y-m-d'],
         ];
     }
 
@@ -46,11 +45,6 @@ class UpdateAnnouncementRequest extends FormRequest
     public function content(): string
     {
         return RequestValue::string($this->input('content'));
-    }
-
-    public function publishedDate(): string
-    {
-        return RequestValue::string($this->input('publishedDate'));
     }
 
     public function category(): int
