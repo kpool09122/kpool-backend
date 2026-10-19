@@ -149,29 +149,6 @@ class EnsureAccountActiveTest extends TestCase
         }
     }
 
-    #[DataProvider('exemptPathProvider')]
-    public function testAllowsExplicitSetupExceptionsWithoutResolvingAccount(string $path): void
-    {
-        /** @var AuthContextCache&Mockery\MockInterface $cache */
-        $cache = Mockery::mock(AuthContextCache::class);
-        $cache->shouldNotReceive('resolveAccount');
-        $middleware = new EnsureAccountActive($cache, $this->accountResolver());
-
-        $response = $middleware->handle(Request::create($path, 'GET'), fn () => response('ok'));
-
-        $this->assertSame('ok', $response->getContent());
-    }
-
-    /** @return array<string, array{string}> */
-    public static function exemptPathProvider(): array
-    {
-        return [
-            'me' => ['/api/v1/identity/auth/me'],
-            'setup' => ['/api/v1/account/accounts/setup'],
-            'logout' => ['/api/v1/identity/auth/logout'],
-        ];
-    }
-
     private function context(
         AccountStatus $status,
         ?AccountStatus $originalStatus = null,

@@ -32,8 +32,6 @@ use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
-use Application\Http\Middleware\EnsureAccountActive;
-use Application\Http\Middleware\EnsurePrincipalActive;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('rate-limit:screen,query')->group(function () {
@@ -67,26 +65,24 @@ Route::middleware('rate-limit:screen,command')->group(function () {
 });
 
 // Identity operations require authentication independently of account and principal status.
-Route::middleware(['auth.api', 'resolve.actor'])
-    ->withoutMiddleware([EnsureAccountActive::class, EnsurePrincipalActive::class])
-    ->group(function () {
-        Route::middleware('rate-limit:screen,query')->group(function () {
-            Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
-            Route::get('/auth/passkeys', ListPasskeysAction::class);
-            // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
-            Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
-        });
-
-        Route::middleware('rate-limit:screen,command')->group(function () {
-            Route::post('/auth/step-up/passkey/options', CreateStepUpPasskeyOptionsAction::class);
-            Route::post('/auth/step-up/passkey', CompleteStepUpWithPasskeyAction::class);
-            Route::get('/auth/step-up/social/{provider}/redirect', StartStepUpWithSocialAction::class);
-            Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
-            Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
-            Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
-            Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
-            Route::post('/auth/logout', LogoutAction::class);
-            Route::patch('/identities/me', UpdateIdentityAction::class);
-            Route::delete('/identities/me', WithdrawFromServiceAction::class);
-        });
+Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+    Route::middleware('rate-limit:screen,query')->group(function () {
+        Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
+        Route::get('/auth/passkeys', ListPasskeysAction::class);
+        // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
+        Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
     });
+
+    Route::middleware('rate-limit:screen,command')->group(function () {
+        Route::post('/auth/step-up/passkey/options', CreateStepUpPasskeyOptionsAction::class);
+        Route::post('/auth/step-up/passkey', CompleteStepUpWithPasskeyAction::class);
+        Route::get('/auth/step-up/social/{provider}/redirect', StartStepUpWithSocialAction::class);
+        Route::post('/auth/passkeys/addition/options', CreatePasskeyOptionsAction::class);
+        Route::post('/auth/passkeys/addition', AddPasskeyAction::class);
+        Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
+        Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
+        Route::post('/auth/logout', LogoutAction::class);
+        Route::patch('/identities/me', UpdateIdentityAction::class);
+        Route::delete('/identities/me', WithdrawFromServiceAction::class);
+    });
+});

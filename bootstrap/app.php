@@ -42,7 +42,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         then: function () {
             Route::prefix('api/v1')->middleware(['api', 'session'])->group(function () {
                 Route::prefix('identity')->group(base_path('routes/v1/identity_api.php'));
-                Route::prefix('monetization')->middleware(['auth.api', 'resolve.actor'])
+                Route::prefix('monetization')->middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor'])
                     ->group(base_path('routes/v1/monetization_api.php'));
                 Route::prefix('account')->group(base_path('routes/v1/account_api.php'));
                 Route::prefix('site-management')->group(base_path('routes/v1/site_management_api.php'));
@@ -100,10 +100,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->group('auth.api', [
             EnsureAuthenticated::class,
-            EnsureAccountActive::class,
-            EnsurePrincipalActive::class,
         ]);
         $middleware->alias([
+            'account.active' => EnsureAccountActive::class,
+            'principal.active' => EnsurePrincipalActive::class,
             'resolve.actor' => ResolveActorContext::class,
             'resolve.account' => ResolveAccountContext::class,
             'resolve.wiki' => ResolveWikiContext::class,

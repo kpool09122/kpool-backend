@@ -54,7 +54,7 @@ use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisA
 use Application\Http\Action\Wiki\Wiki\Query\SearchTranslationSetMasterWikis\SearchTranslationSetMasterWikisAction;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth.api')->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Wiki
         Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class);
@@ -87,7 +87,7 @@ Route::middleware('auth.api')->group(function () {
     // Disabled by #605: Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 });
 
-Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Wiki
         Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class);
@@ -99,7 +99,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     });
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.wiki'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Wiki
         Route::get('/my/draft-wikis', ListMyDraftWikisAction::class);
@@ -149,17 +149,14 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     });
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Wiki
         Route::get('/my/owned-wikis', ListMyOwnedWikisAction::class);
-
-        // Principal
-        Route::get('/principal/me', GetCurrentPrincipalAction::class);
     });
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.wiki'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.wiki'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         // Wiki
         Route::get('/wiki/{resourceType}/{translationSetIdentifier}/related-wikis', ListRelatedWikisAction::class);
@@ -189,4 +186,9 @@ Route::middleware('rate-limit:screen,query')->group(function () {
 });
 
 // VideoLink
-// Disabled by #605: Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
+// Disabled by #605: Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.wiki']);
+
+// Status snapshots remain available while account or principal access is stopped.
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'])->group(function () {
+    Route::get('/principal/me', GetCurrentPrincipalAction::class);
+});

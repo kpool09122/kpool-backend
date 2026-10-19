@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Http\Action\Identity;
 
 use Application\Http\Exceptions\Handler;
-use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveActorContext;
@@ -36,7 +35,7 @@ class WithdrawalCsrfTest extends TestCase
 {
     protected function defineRoutes($router): void
     {
-        $router->middlewareGroup('auth.api', [EnsureAuthenticated::class, EnsureAccountActive::class]);
+        $router->middlewareGroup('auth.api', [EnsureAuthenticated::class]);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->middlewareGroup('session', [EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class]);
         $router->middleware('session')->prefix('api/v1/identity')->group(dirname(__DIR__, 4) . '/routes/v1/identity_api.php');

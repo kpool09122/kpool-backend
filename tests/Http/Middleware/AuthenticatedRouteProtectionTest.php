@@ -33,9 +33,9 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router = $this->app()['router'];
         $router->middlewareGroup('auth.api', [
             EnsureAuthenticated::class,
-            EnsureAccountActive::class,
-            EnsurePrincipalActive::class,
         ]);
+        $router->aliasMiddleware('account.active', EnsureAccountActive::class);
+        $router->aliasMiddleware('principal.active', EnsurePrincipalActive::class);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
@@ -47,7 +47,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/v1/identity')
             ->group($routePath('identity_api.php'));
-        RouteFacade::middleware(['api', 'session', 'auth.api', 'resolve.actor'])
+        RouteFacade::middleware(['api', 'session', 'auth.api', 'account.active', 'principal.active', 'resolve.actor'])
             ->prefix('api/v1/monetization')
             ->group($routePath('monetization_api.php'));
         RouteFacade::middleware(['api', 'session'])
@@ -78,14 +78,12 @@ class AuthenticatedRouteProtectionTest extends TestCase
         }
     }
 
-    public function testAuthApiMiddlewareGroupIncludesAccountStatusGate(): void
+    public function testAuthApiMiddlewareGroupOnlyChecksAuthentication(): void
     {
         $groups = $this->app()['router']->getMiddlewareGroups();
 
         $this->assertSame([
             EnsureAuthenticated::class,
-            EnsureAccountActive::class,
-            EnsurePrincipalActive::class,
         ], $groups['auth.api']);
     }
 
@@ -105,14 +103,38 @@ class AuthenticatedRouteProtectionTest extends TestCase
         }
     }
 
-    public function testServiceApisRetainAccountAndPrincipalStatusGates(): void
+    #[DataProvider('authenticatedRouteProvider')]
+    public function testStatusChecksOnlyApplyToAccountDependentRoutes(string $method, string $uri): void
     {
-        foreach (['/api/v1/account/accounts/example', '/api/v1/wiki/principal/me', '/api/v1/site-management/contacts'] as $uri) {
-            $middleware = $this->app()->make('router')->gatherRouteMiddleware($this->routeFor('GET', $uri));
-            $this->assertContains(EnsureAuthenticated::class, $middleware, $uri);
+        $middleware = $this->app()->make('router')->gatherRouteMiddleware($this->routeFor($method, $uri));
+        $this->assertContains(EnsureAuthenticated::class, $middleware, $uri);
+        if (str_starts_with($uri, '/api/v1/identity/') || $uri === '/api/v1/wiki/principal/me') {
+            $this->assertNotContains(EnsureAccountActive::class, $middleware, $uri);
+            $this->assertNotContains(EnsurePrincipalActive::class, $middleware, $uri);
+        } elseif ($uri === '/api/v1/account/accounts/setup') {
+            $this->assertNotContains(EnsureAccountActive::class, $middleware, $uri);
+            $this->assertContains(EnsurePrincipalActive::class, $middleware, $uri);
+        } else {
             $this->assertContains(EnsureAccountActive::class, $middleware, $uri);
             $this->assertContains(EnsurePrincipalActive::class, $middleware, $uri);
         }
+    }
+
+    public function testWikiStatusSnapshotRequiresAuthenticationWithoutStatusChecks(): void
+    {
+        $middleware = $this->app()->make('router')->gatherRouteMiddleware($this->routeFor('GET', '/api/v1/wiki/principal/me'));
+        $this->assertContains(EnsureAuthenticated::class, $middleware);
+        $this->assertContains(ResolveAccountContext::class, $middleware);
+        $this->assertNotContains(EnsureAccountActive::class, $middleware);
+        $this->assertNotContains(EnsurePrincipalActive::class, $middleware);
+    }
+
+    public function testAccountSetupChecksExistingPrincipalWithoutRequiringActiveAccount(): void
+    {
+        $middleware = $this->app()->make('router')->gatherRouteMiddleware($this->routeFor('POST', '/api/v1/account/accounts/setup'));
+        $this->assertContains(EnsureAuthenticated::class, $middleware);
+        $this->assertContains(EnsurePrincipalActive::class, $middleware);
+        $this->assertNotContains(EnsureAccountActive::class, $middleware);
     }
 
     #[DataProvider('authenticatedRouteProvider')]
@@ -268,7 +290,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             $this->assertSame('rate-limit:screen,' . $operation, $rateLimits[0], $route->uri());
 
             $rateLimitIndex = array_search($rateLimits[0], $middleware, true);
-            foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $prerequisite) {
+            foreach (['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account'] as $prerequisite) {
                 $prerequisiteIndex = array_search($prerequisite, $middleware, true);
                 if ($prerequisiteIndex !== false) {
                     $this->assertLessThan($rateLimitIndex, $prerequisiteIndex, $route->uri());

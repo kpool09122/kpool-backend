@@ -80,23 +80,6 @@ class EnsurePrincipalActiveTest extends TestCase
         $this->assertAccess(Request::create('/api/v1/account/accounts/setup', 'PATCH'), true);
     }
 
-    /** @return iterable<string, array{string, string}> */
-    public static function selfPaths(): iterable
-    {
-        yield 'me' => ['/api/v1/identity/auth/me', 'GET'];
-        yield 'wiki me' => ['/api/v1/wiki/principal/me', 'GET'];
-        yield 'logout' => ['/api/v1/identity/auth/logout', 'POST'];
-    }
-
-    #[DataProvider('selfPaths')]
-    public function testStoppedSelfStateAndLogoutRemainAvailable(string $path, string $method): void
-    {
-        [$identity, , $principal] = $this->fixture();
-        DB::table('account_principals')->where('id', (string) $principal)->update(['status' => 'forced_stop']);
-        Auth::shouldReceive('id')->andReturn((string) $identity);
-        $this->assertAccess(Request::create($path, $method), true);
-    }
-
     public function testSetupCannotBypassStoppedExistingPrincipal(): void
     {
         [$identity, , $principal] = $this->fixture();

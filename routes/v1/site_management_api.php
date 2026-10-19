@@ -31,7 +31,7 @@ Route::middleware('rate-limit:screen,query')->group(function () {
     Route::get('/announcements/{announcementIdentifier}', GetAnnouncementAction::class);
 });
 
-Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'resolve.site-management'])->group(function () {
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.site-management'])->group(function () {
     Route::middleware('rate-limit:screen,command')->group(function () {
         Route::post('/draft-announcements', CreateAnnouncementAction::class);
         Route::put('/draft-announcements/{announcementIdentifier}', UpdateAnnouncementAction::class);

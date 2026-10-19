@@ -21,13 +21,6 @@ use ValueError;
 
 readonly class EnsureAccountActive
 {
-    private const array EXEMPT_PATHS = [
-        'api/v1/identity/auth/me',
-        'api/v1/identity/auth/logout',
-        'api/v1/wiki/principal/me',
-        'api/v1/account/accounts/setup',
-    ];
-
     public function __construct(
         private AuthContextCache $authContextCache,
         private AccountResolver $accountResolver,
@@ -36,10 +29,6 @@ readonly class EnsureAccountActive
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (in_array($request->path(), self::EXEMPT_PATHS, true)) {
-            return $next($request);
-        }
-
         try {
             $identityIdentifier = new IdentityIdentifier((string) Auth::id());
             $context = $this->authContextCache->resolveAccount(

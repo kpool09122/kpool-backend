@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Http\Action\Account;
 
-use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsureAuthenticated;
+use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Models\Identity\Identity;
 use Illuminate\Session\Middleware\StartSession;
@@ -35,8 +35,8 @@ class CompleteInitialSetupApiTest extends TestCase
         $router = $this->app()['router'];
         $router->middlewareGroup('auth.api', [
             EnsureAuthenticated::class,
-            EnsureAccountActive::class,
         ]);
+        $router->aliasMiddleware('principal.active', EnsurePrincipalActive::class);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
         $router->aliasMiddleware('session', StartSession::class);
 
