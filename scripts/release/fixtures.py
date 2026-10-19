@@ -60,7 +60,10 @@ class FakeAws:
             template={'family':'fixture-'+kind+'-bootstrap','taskRoleArn':o[kind+'TaskRoleArn'],'executionRoleArn':o['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn'],
                       'networkMode':'awsvpc','requiresCompatibilities':['FARGATE'],'cpu':'512','memory':'1024',
                       'runtimePlatform':{'cpuArchitecture':'ARM64','operatingSystemFamily':'LINUX'},
-                      'containerDefinitions':[{'name':kind.lower(),'image':'fixture-unpublished','readonlyRootFilesystem':True,'essential':True,'stopTimeout':120}]}
+                      'volumes':[{'name': name, 'host': {}} for name in ('release-tmp','release-storage','release-cache')],
+                      'containerDefinitions':[{'name':kind.lower(),'image':'fixture-unpublished','readonlyRootFilesystem':True,'essential':True,'stopTimeout':120,
+                          'mountPoints':[{'sourceVolume': name, 'containerPath': path, 'readOnly': False} for name, path in
+                                         (('release-tmp','/tmp'),('release-storage','/var/www/html/storage'),('release-cache','/var/www/html/bootstrap/cache'))]}]}
             template.update(self.template_overrides)
             return {'taskDefinition':template}
         if operation=='get-queue-attributes': return {'Attributes':{'QueueArn':o['QueueArn'],'ApproximateNumberOfMessages':'0','ApproximateNumberOfMessagesNotVisible':'0'}}
