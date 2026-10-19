@@ -173,22 +173,18 @@ class WebAuthnServiceTest extends TestCase
 
     private function credentialSource(string $credentialId, string $userHandle): CredentialSource
     {
-        $privateKey = openssl_pkey_new([
-            'private_key_type' => OPENSSL_KEYTYPE_EC,
-            'curve_name' => 'prime256v1',
-        ]);
-        $this->assertNotFalse($privateKey);
-        $details = openssl_pkey_get_details($privateKey);
-        $this->assertIsArray($details);
-        $this->assertIsArray($details['ec']);
-        $this->assertIsString($details['ec']['x']);
-        $this->assertIsString($details['ec']['y']);
+        // The P-256 generator is a fixed, valid public point. These rejection
+        // tests do not need private keys or variable-length OpenSSL coordinates.
+        $x = hex2bin('6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296');
+        $y = hex2bin('4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5');
+        $this->assertIsString($x);
+        $this->assertIsString($y);
         $publicKey = (string) MapObject::create()
             ->add(UnsignedIntegerObject::create(1), UnsignedIntegerObject::create(2))
             ->add(UnsignedIntegerObject::create(3), NegativeIntegerObject::create(-7))
             ->add(NegativeIntegerObject::create(-1), UnsignedIntegerObject::create(1))
-            ->add(NegativeIntegerObject::create(-2), ByteStringObject::create($details['ec']['x']))
-            ->add(NegativeIntegerObject::create(-3), ByteStringObject::create($details['ec']['y']));
+            ->add(NegativeIntegerObject::create(-2), ByteStringObject::create($x))
+            ->add(NegativeIntegerObject::create(-3), ByteStringObject::create($y));
 
         return new CredentialSource(json_encode([
             'publicKeyCredentialId' => $this->base64url($credentialId),
