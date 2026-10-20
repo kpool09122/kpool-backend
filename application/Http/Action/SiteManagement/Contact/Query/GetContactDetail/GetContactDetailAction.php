@@ -39,11 +39,12 @@ readonly class GetContactDetailAction
     public function __invoke(GetContactDetailRequest $request): JsonResponse
     {
         try {
+            $targetPrincipalIdentifier = $request->principalIdentifier();
             $output = new GetContactDetailOutput();
             $this->getContactDetail->process(
                 new GetContactDetailInput(
                     $this->siteManagementContext->principalIdentifier,
-                    new PrincipalIdentifier($request->principalIdentifier()),
+                    $targetPrincipalIdentifier === null ? null : new PrincipalIdentifier($targetPrincipalIdentifier),
                     new ContactIdentifier($request->contactIdentifier()),
                 ),
                 $output,

@@ -12,7 +12,7 @@ class GetContactDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'principalIdentifier' => ['required', 'uuid'],
+            'principalIdentifier' => ['nullable', 'uuid'],
             'contactIdentifier' => ['required', 'uuid'],
         ];
     }
@@ -26,9 +26,11 @@ class GetContactDetailRequest extends FormRequest
         ]);
     }
 
-    public function principalIdentifier(): string
+    public function principalIdentifier(): ?string
     {
-        return (string) $this->route('principalIdentifier');
+        $principalIdentifier = $this->route('principalIdentifier');
+
+        return $principalIdentifier === null ? null : (string) $principalIdentifier;
     }
 
     public function contactIdentifier(): string

@@ -41,7 +41,9 @@ readonly class GetContactDetail implements GetContactDetailInterface
         $contact = ContactModel::query()
             ->select(['id', 'principal_identifier', 'category', 'name', 'content', 'created_at'])
             ->where('id', (string) $input->contactIdentifier())
-            ->where('principal_identifier', (string) $targetPrincipalIdentifier)
+            ->when($targetPrincipalIdentifier !== null, static function ($query) use ($targetPrincipalIdentifier): void {
+                $query->where('principal_identifier', (string) $targetPrincipalIdentifier);
+            })
             ->first();
         if ($contact === null) {
             throw new ContactNotFoundException();

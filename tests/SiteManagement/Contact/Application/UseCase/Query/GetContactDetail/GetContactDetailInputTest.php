@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail;
 
 use PHPUnit\Framework\TestCase;
-use ReflectionMethod;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
@@ -13,10 +12,16 @@ use Tests\Helper\StrTestHelper;
 
 class GetContactDetailInputTest extends TestCase
 {
-    public function testTargetPrincipalIsRequired(): void
+    public function testTargetPrincipalCanBeOmitted(): void
     {
-        $constructor = new ReflectionMethod(GetContactDetailInput::class, '__construct');
-        $this->assertFalse($constructor->getParameters()[1]->allowsNull());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+
+        $input = new GetContactDetailInput($principalIdentifier, null, $contactIdentifier);
+
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
+        $this->assertNull($input->targetPrincipalIdentifier());
+        $this->assertSame($contactIdentifier, $input->contactIdentifier());
     }
 
     public function test__construct(): void

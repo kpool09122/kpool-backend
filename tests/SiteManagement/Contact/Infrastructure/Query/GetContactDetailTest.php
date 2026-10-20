@@ -19,9 +19,6 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundE
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailOutput;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInput;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetailByIdentifier\GetContactDetailByIdentifierOutput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInput;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetMyContactDetail\GetMyContactDetailOutput;
@@ -402,7 +399,7 @@ class GetContactDetailTest extends TestCase
 
     #[Group('useDb')]
     #[DataProvider('replyAuthorizationScenarios')]
-    public function testManagementQueriesUseReplyAuthorization(bool $scoped, string $policy, string $ownerKind, bool $exists, string $result): void
+    public function testManagementQueryUsesReplyAuthorization(bool $scoped, string $policy, string $ownerKind, bool $exists, string $result): void
     {
         $principal = $this->provisionPrincipal();
         if (str_starts_with($policy, 'deny')) {
@@ -471,10 +468,10 @@ class GetContactDetailTest extends TestCase
         }
     }
 
-    private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailByIdentifierOutput
+    private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailOutput
     {
-        $output = new GetContactDetailByIdentifierOutput();
-        $this->app()->make(GetContactDetailByIdentifierInterface::class)->process(new GetContactDetailByIdentifierInput($principalIdentifier, new ContactIdentifier($id)), $output);
+        $output = new GetContactDetailOutput();
+        $this->app()->make(GetContactDetailInterface::class)->process(new GetContactDetailInput($principalIdentifier, null, new ContactIdentifier($id)), $output);
 
         return $output;
     }
