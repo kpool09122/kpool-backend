@@ -11,10 +11,16 @@
 - `fixtures.py`, `test_*.py`: 明示されたfake AWS外部境界。実botocoreモデルでrequestを検証する。
 
 ```sh
+mkdir -p /tmp/kpool-release-bin
+GOBIN=/tmp/kpool-release-bin go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 ACTIONLINT=/tmp/kpool-release-bin/actionlint CFN_VENV=/tmp/kpool-cfn-tools bash scripts/release/run.sh check
 ```
 
 AWS・Cloudflareへの実変更を行わないoffline command。`cli.py publish/deploy` は実環境でのmutation入口なので、ローカルテストでは直接実行しない。
+
+workflow検証はCI・ローカルともactionlint v1.7.12を使用する（ソースからのインストールにはGo 1.25以降が必要）。
+同版には公式GitHub-hosted runnerのUbuntu 26.04ラベルが未収録のため、`.github/actionlint.yaml` の追加ラベル設定で `ubuntu-26.04` / `ubuntu-26.04-arm` だけを許可する。
+この設定はself-hosted runnerへの変更ではなく、検証ツールの互換性設定。その他の不明なラベルは引き続き検証エラーになる。
 
 ## PR #732 のランタイム更新確認
 

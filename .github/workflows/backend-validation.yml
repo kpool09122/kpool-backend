@@ -13,7 +13,7 @@ permissions:
   actions: read
 jobs:
   validate-build:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 60
     environment: production
     outputs:
@@ -75,7 +75,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/release-bin"
           GOBIN="$RUNNER_TEMP/release-bin" go install github.com/go-task/task/v3/cmd/task@v3.45.4
           printf '#!/bin/sh\nexec docker compose "$@"\n' > "$RUNNER_TEMP/release-bin/docker-compose"
-          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
           chmod +x "$RUNNER_TEMP/release-bin/docker-compose"
           echo "$RUNNER_TEMP/release-bin" >> "$GITHUB_PATH"
       - name: Validate PHP through Taskfile (non-destructive style check)
@@ -85,7 +85,7 @@ jobs:
           task composer -- cs-check
           task phpstan
           task test
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.15'
       - name: Validate deployment controls and existing infrastructure offline

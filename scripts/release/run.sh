@@ -7,7 +7,7 @@ case "${1:-check}" in
   test) "$release_python" -B -m unittest discover -s scripts/release -p 'test_*.py' -v ;;
   lint)
     "$release_actionlint" -version
-    "$release_actionlint" -shellcheck='' .github/workflows/release.yml .github/workflows/backend-*.yml
+    "$release_actionlint" -config-file .github/actionlint.yaml -shellcheck='' .github/workflows/release.yml .github/workflows/backend-*.yml
     ;;
   check)
     bash scripts/release/run.sh test
