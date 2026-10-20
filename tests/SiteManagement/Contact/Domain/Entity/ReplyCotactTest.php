@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Domain\Entity;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -19,7 +21,8 @@ class ReplyCotactTest extends TestCase
     /**
      * 正常系: インスタンスが生成されること
      */
-    public function test__construct(): void
+    #[DataProvider('replyTypeProvider')]
+    public function test__construct(string $replyType): void
     {
         $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -45,8 +48,10 @@ class ReplyCotactTest extends TestCase
             $sentAt,
             $failedAt,
             $createdAt,
+            ReplyType::from($replyType),
         );
 
+        $this->assertSame($replyType, $reply->replyType()->value);
         $this->assertSame((string)$replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame((string)$contactIdentifier, (string)$reply->contactIdentifier());
         $this->assertSame((string)$principalIdentifier, (string)$reply->principalIdentifier());
@@ -77,9 +82,19 @@ class ReplyCotactTest extends TestCase
             null,
             new DateTimeImmutable('2026-01-01 12:34:58'),
             new DateTimeImmutable('2026-01-01 12:34:57'),
+            ReplyType::OPERATOR,
         );
 
         $this->assertNull($reply->sentAt());
         $this->assertNotNull($reply->failedAt());
+    }
+
+    /** @return array<string, array{string}> */
+    public static function replyTypeProvider(): array
+    {
+        return [
+            'operator' => ['operator'],
+            'submitter' => ['submitter'],
+        ];
     }
 }

@@ -12,6 +12,7 @@ use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterf
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 final class ReplyContactRepository implements ReplyContactRepositoryInterface
@@ -29,6 +30,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             ],
             [
                 'contact_id' => (string)$replyCotact->contactIdentifier(),
+                'reply_type' => $replyCotact->replyType()->value,
                 'principal_identifier' => $replyCotact->principalIdentifier() !== null
                     ? (string)$replyCotact->principalIdentifier()
                     : null,
@@ -60,6 +62,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             $model->sent_at?->toDateTimeImmutable(),
             $model->failed_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
+            ReplyType::from($model->reply_type),
         );
     }
 }
