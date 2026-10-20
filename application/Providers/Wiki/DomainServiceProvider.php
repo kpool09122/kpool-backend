@@ -27,6 +27,7 @@ use Source\Wiki\Grading\Infrastructure\Repository\ContributionPointSummaryReposi
 use Source\Wiki\Grading\Infrastructure\Repository\DemotionWarningRepository;
 use Source\Wiki\Grading\Infrastructure\Repository\PromotionHistoryRepository;
 use Source\Wiki\Grading\Infrastructure\Service\ContributionPointService;
+use Source\Wiki\Image\Application\Service\FreeMaterialSearchServiceInterface;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
@@ -40,6 +41,7 @@ use Source\Wiki\Image\Infrastructure\Factory\ImageSnapshotFactory;
 use Source\Wiki\Image\Infrastructure\Repository\DraftImageRepository;
 use Source\Wiki\Image\Infrastructure\Repository\ImageRepository;
 use Source\Wiki\Image\Infrastructure\Repository\ImageSnapshotRepository;
+use Source\Wiki\Image\Infrastructure\Service\FreeMaterialSearchService;
 use Source\Wiki\Image\Infrastructure\Service\ImageAuthorizationResourceBuilder;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
 use Source\Wiki\OfficialCertification\Application\Service\SyncableOwnedWikiResourceQueryServiceInterface;
@@ -129,6 +131,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(FreeMaterialSearchServiceInterface::class, FreeMaterialSearchService::class);
         $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
         $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WikiContextServiceInterface::class, WikiContextService::class);

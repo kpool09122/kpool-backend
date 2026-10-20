@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_material_search_context' => 'The image material search context is invalid.',
     'principal_inactive' => 'This principal is not active.',
     'principal_status_change_forbidden' => 'A forced-stop principal status cannot be changed through user permission management.',
     'published_announcement_not_found' => 'The specified announcement was not found.',

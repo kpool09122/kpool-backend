@@ -15,6 +15,8 @@ use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongRequest;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongResponse;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentResponse;
+use Application\Http\Client\GeminiClient\SearchFreeMaterials\SearchFreeMaterialsRequest;
+use Application\Http\Client\GeminiClient\SearchFreeMaterials\SearchFreeMaterialsResponse;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -122,6 +124,16 @@ class GeminiClient
         $response = $this->sendRequest($psrRequest);
 
         return new GenerateSongResponse($response);
+    }
+
+    public function searchFreeMaterials(SearchFreeMaterialsRequest $request): SearchFreeMaterialsResponse
+    {
+        if (! $this->isConfigured()) {
+            throw new GeminiException('Gemini API key is not configured');
+        }
+        $psrRequest = $request->toPsrRequest($this->createBaseRequest(), $this->psrFactories->getStreamFactory());
+
+        return new SearchFreeMaterialsResponse($this->sendRequest($psrRequest));
     }
 
     private function createBaseRequest(): RequestInterface

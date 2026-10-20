@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_material_search_context' => 'El contexto de búsqueda de imágenes no es válido.',
     'principal_inactive' => 'Este usuario no está activo.',
     'principal_status_change_forbidden' => 'No se puede cambiar el estado de suspensión forzada desde la gestión de permisos de usuario.',
     'published_announcement_not_found' => 'No se encontró el anuncio especificado.',

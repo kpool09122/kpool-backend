@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_material_search_context' => '画像素材の検索条件が正しくありません。',
     'principal_inactive' => 'このユーザーの利用は停止されています。',
     'principal_status_change_forbidden' => 'ユーザー権限管理から強制停止のステータスを変更することはできません。',
     'published_announcement_not_found' => '指定されたお知らせが見つかりません。',
