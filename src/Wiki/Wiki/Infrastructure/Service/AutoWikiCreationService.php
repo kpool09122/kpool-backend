@@ -38,6 +38,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\EnglishLevel;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\MBTI;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\ZodiacSign;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
@@ -374,10 +376,27 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         }
 
         if ($params->representativeSongs() !== []) {
+            $songs = array_slice($params->representativeSongs(), 0, 5);
+            $titles = [];
+            foreach ($songs as $song) {
+                $titles[] = $song->title();
+            }
+            $contents = [new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $titles)];
+            foreach ($songs as $song) {
+                if ($song->youtubeVideoId() !== null) {
+                    $contents[] = new EmbedBlock(
+                        displayOrder: count($contents),
+                        provider: EmbedProvider::YOUTUBE,
+                        embedId: $song->youtubeVideoId(),
+                        caption: $song->title(),
+                    );
+                }
+            }
+
             $sections[] = new Section(
                 title: section_title('representative_songs', $language),
                 displayOrder: $order++,
-                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->representativeSongs())]),
+                contents: new SectionContentCollection($contents),
             );
         }
 
@@ -492,11 +511,23 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $sections = [];
         $order = 0;
 
+        $overviewContents = [];
+        $musicVideo = $params->officialMusicVideo();
+        if ($musicVideo !== null) {
+            $overviewContents[] = new EmbedBlock(
+                displayOrder: 0,
+                provider: EmbedProvider::YOUTUBE,
+                embedId: $musicVideo->id(),
+            );
+        }
         if ($params->overview() !== null && $params->overview() !== '') {
+            $overviewContents[] = new TextBlock(displayOrder: count($overviewContents), content: $params->overview());
+        }
+        if ($overviewContents !== []) {
             $sections[] = new Section(
                 title: section_title('overview', $language),
                 displayOrder: $order++,
-                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->overview())]),
+                contents: new SectionContentCollection($overviewContents),
             );
         }
 

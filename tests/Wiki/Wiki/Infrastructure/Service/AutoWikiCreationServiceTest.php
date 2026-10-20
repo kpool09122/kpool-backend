@@ -17,6 +17,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use InvalidArgumentException;
 use JsonException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -33,6 +34,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -245,6 +248,53 @@ class AutoWikiCreationServiceTest extends TestCase
     // ========================================================================
     // Group
     // ========================================================================
+
+    public function testGenerateGroupEmbedsMusicVideosAndLimitsSongsToFive(): void
+    {
+        $responseJson = $this->createGeminiResponseJson([
+            'representative_songs' => [
+                null,
+                ['title' => ''],
+                ['title' => 'Song A (2020)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghijk'],
+                ['title' => 'Song B (2021)', 'official_mv_url' => null],
+                ['title' => 'Song C (2022)', 'official_mv_url' => 'https://www.youtube.com.evil.example/watch?v=abcdefghijk'],
+                ['title' => 'Song D (2023)', 'official_mv_url' => 'https://www.youtube.com/watch?v=invalid'],
+                ['title' => 'Song E (2024)', 'official_mv_url' => 'https://www.youtube.com/watch?v=123456789_-'],
+                ['title' => 'Song F (2025)', 'official_mv_url' => 'https://www.youtube.com/watch?v=ABCDEFGHIJK'],
+            ],
+        ]);
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        $geminiClient->shouldReceive('generateGroup')->once()
+            ->andReturn(new GenerateGroupResponse($this->createPsrResponse($responseJson)));
+        $this->app()->instance(GeminiClient::class, $geminiClient);
+
+        $result = $this->app()->make(AutoWikiCreationServiceInterface::class)->generate(new AutoWikiCreationPayload(
+            language: Language::JAPANESE,
+            resourceType: ResourceType::GROUP,
+            name: new Name('Group'),
+            slug: new Slug('gr-group'),
+            agencyIdentifier: null,
+            groupIdentifiers: [],
+            talentIdentifiers: [],
+        ));
+
+        $sections = $result->sections()->sections();
+        $this->assertCount(1, $sections);
+        $this->assertSame('代表曲', $sections[0]->title());
+        $blocks = $sections[0]->contents()->blocks();
+        $this->assertCount(3, $blocks);
+        $this->assertInstanceOf(ListBlock::class, $blocks[0]);
+        $this->assertSame(['Song A (2020)', 'Song B (2021)', 'Song C (2022)', 'Song D (2023)', 'Song E (2024)'], $blocks[0]->items());
+        $this->assertInstanceOf(EmbedBlock::class, $blocks[1]);
+        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[1]->provider());
+        $this->assertSame('abcdefghijk', $blocks[1]->embedId());
+        $this->assertSame('Song A (2020)', $blocks[1]->caption());
+        $this->assertSame(1, $blocks[1]->displayOrder());
+        $this->assertInstanceOf(EmbedBlock::class, $blocks[2]);
+        $this->assertSame('123456789_-', $blocks[2]->embedId());
+        $this->assertSame('Song E (2024)', $blocks[2]->caption());
+        $this->assertSame(2, $blocks[2]->displayOrder());
+    }
 
     /**
      * 正常系: Group の情報が正しく生成され、事務所名が解決されること.
@@ -788,6 +838,51 @@ class AutoWikiCreationServiceTest extends TestCase
     // Song
     // ========================================================================
 
+    #[DataProvider('invalidMusicVideoUrls')]
+    public function testGenerateSongOmitsInvalidMusicVideo(mixed $url): void
+    {
+        $responseJson = $this->createGeminiResponseJson([
+            'overview' => 'Song overview',
+            'official_mv_url' => $url,
+        ]);
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        $geminiClient->shouldReceive('generateSong')->once()
+            ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
+        $this->app()->instance(GeminiClient::class, $geminiClient);
+
+        $result = $this->app()->make(AutoWikiCreationServiceInterface::class)->generate(new AutoWikiCreationPayload(
+            language: Language::JAPANESE,
+            resourceType: ResourceType::SONG,
+            name: new Name('Song'),
+            slug: new Slug('sg-song'),
+            agencyIdentifier: null,
+            groupIdentifiers: [],
+            talentIdentifiers: [],
+        ));
+
+        $sections = $result->sections()->sections();
+        $this->assertCount(1, $sections);
+        $this->assertSame('概要', $sections[0]->title());
+        $block = $sections[0]->contents()->blocks()[0];
+        $this->assertInstanceOf(TextBlock::class, $block);
+        $this->assertSame('Song overview', $block->content());
+    }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function invalidMusicVideoUrls(): array
+    {
+        return [
+            'not found' => [null],
+            'empty' => [''],
+            'wrong type' => [['https://www.youtube.com/watch?v=abcdefghijk']],
+            'untrusted host' => ['https://www.youtube.com.evil.example/watch?v=abcdefghijk'],
+            'invalid video id' => ['https://www.youtube.com/watch?v=invalid'],
+            'insecure URL' => ['http://www.youtube.com/watch?v=abcdefghijk'],
+        ];
+    }
+
     /**
      * 正常系: Song の情報が正しく生成され、関連エンティティが解決されること.
      *
@@ -829,6 +924,7 @@ class AutoWikiCreationServiceTest extends TestCase
             'album_name' => 'Dynamite',
             'overview' => $overview,
             'chart_performance' => $chartPerformance,
+            'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghijk',
         ], [
             ['uri' => 'https://example.com/dynamite', 'title' => 'Dynamite - Wikipedia'],
         ]);
@@ -879,13 +975,24 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertCount(3, $sections);
 
         $this->assertSame('概要', $sections[0]->title());
-        $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
-        $this->assertSame($overview, $sections[0]->contents()->blocks()[0]->content());
+        $this->assertSame(0, $sections[0]->displayOrder());
+        $blocks = $sections[0]->contents()->blocks();
+        $this->assertCount(2, $blocks);
+        $embed = $blocks[0];
+        $this->assertInstanceOf(EmbedBlock::class, $embed);
+        $this->assertSame(EmbedProvider::YOUTUBE, $embed->provider());
+        $this->assertSame('abcdefghijk', $embed->embedId());
+        $this->assertSame(0, $embed->displayOrder());
+        $this->assertInstanceOf(TextBlock::class, $blocks[1]);
+        $this->assertSame($overview, $blocks[1]->content());
+        $this->assertSame(1, $blocks[1]->displayOrder());
 
+        $this->assertSame(1, $sections[1]->displayOrder());
         $this->assertSame('チャート成績', $sections[1]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[1]->contents()->blocks()[0]);
         $this->assertSame($chartPerformance, $sections[1]->contents()->blocks()[0]->items());
 
+        $this->assertSame(2, $sections[2]->displayOrder());
         $this->assertSame('出典', $sections[2]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
         $this->assertSame(

@@ -10,7 +10,7 @@ use Source\Wiki\Shared\Application\DTO\SourceReference;
 final readonly class GenerateGroupParams
 {
     /**
-     * @param string[] $representativeSongs
+     * @param RepresentativeSong[] $representativeSongs
      * @param string[] $awards
      * @param string[] $members
      * @param string[] $officialColors
@@ -56,7 +56,7 @@ final readonly class GenerateGroupParams
             representativeSymbol: self::nullableString($data['representative_symbol'] ?? null),
             overview: self::nullableString($data['overview'] ?? null),
             history: self::nullableString($data['history'] ?? null),
-            representativeSongs: self::stringArray($data['representative_songs'] ?? []),
+            representativeSongs: self::songsArray($data['representative_songs'] ?? []),
             awards: self::stringArray($data['awards'] ?? []),
             members: self::stringArray($data['members'] ?? []),
             sources: $sources,
@@ -155,7 +155,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return string[]
+     * @return RepresentativeSong[]
      */
     public function representativeSongs(): array
     {
@@ -184,6 +184,29 @@ final readonly class GenerateGroupParams
     public function sources(): array
     {
         return $this->sources;
+    }
+
+    /**
+     * @return RepresentativeSong[]
+     */
+    private static function songsArray(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $songs = [];
+        foreach ($value as $item) {
+            $song = RepresentativeSong::fromValue($item);
+            if ($song !== null) {
+                $songs[] = $song;
+            }
+            if (count($songs) === 5) {
+                break;
+            }
+        }
+
+        return $songs;
     }
 
     /**
