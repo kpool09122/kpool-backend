@@ -139,6 +139,14 @@ model ReplyContactRequestBody {
 @route("/contacts")
 interface ContactListOperations {
   @useAuth(SessionCookieAuth)
+  @get
+  @route("/{contactIdentifier}")
+  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Returns the existing detail without an email address.")
+  getContactDetailByIdentifier(
+    @path contactIdentifier: Uuid,
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @useAuth(SessionCookieAuth)
   @post
   @route("/{contactIdentifier}/replies")
   @doc("Send a reply to a contact inquiry. Requires a site-management Operator. Returns no payload; mail delivery failures retain failed reply history and return 500.")
@@ -168,7 +176,7 @@ interface ContactListOperations {
 interface ContactOperations {
   @get
   @route("/principals/{principalIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for an principal. Requires a site-management Operator.")
+  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds.")
   getContactDetail(
     @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,

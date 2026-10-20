@@ -11,7 +11,7 @@ interface GetContactDetailInputPort
 {
     public function principalIdentifier(): PrincipalIdentifier;
 
-    public function targetPrincipalIdentifier(): PrincipalIdentifier;
+    public function targetPrincipalIdentifier(): ?PrincipalIdentifier;
 
     public function contactIdentifier(): ContactIdentifier;
 }

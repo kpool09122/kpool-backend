@@ -11,18 +11,26 @@ class GetContactDetailRequest extends FormRequest
     /** @return array<string, array<int, string>> */
     public function rules(): array
     {
-        return ['principalIdentifier' => ['required', 'uuid'], 'contactIdentifier' => ['required', 'uuid']];
+        return [
+            'principalIdentifier' => ['nullable', 'uuid'],
+            'contactIdentifier' => ['required', 'uuid'],
+        ];
     }
 
     /** @return array<array-key, mixed> */
     public function validationData(): array
     {
-        return array_merge(parent::validationData(), ['principalIdentifier' => $this->route('principalIdentifier'), 'contactIdentifier' => $this->route('contactIdentifier')]);
+        return array_merge(parent::validationData(), [
+            'principalIdentifier' => $this->route('principalIdentifier'),
+            'contactIdentifier' => $this->route('contactIdentifier'),
+        ]);
     }
 
-    public function principalIdentifier(): string
+    public function principalIdentifier(): ?string
     {
-        return (string) $this->route('principalIdentifier');
+        $principalIdentifier = $this->route('principalIdentifier');
+
+        return $principalIdentifier === null ? null : (string) $principalIdentifier;
     }
 
     public function contactIdentifier(): string
