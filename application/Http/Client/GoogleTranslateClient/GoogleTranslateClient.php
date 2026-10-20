@@ -14,15 +14,14 @@ use Throwable;
 class GoogleTranslateClient
 {
     public function __construct(
-        private readonly string $projectId,
-        private readonly string $credentialsPath,
+        private readonly GoogleTranslateCredentials $googleTranslateCredentials,
         private readonly LoggerInterface $logger,
     ) {
     }
 
     public function isConfigured(): bool
     {
-        return $this->projectId !== '' && $this->credentialsPath !== '' && file_exists($this->credentialsPath);
+        return $this->googleTranslateCredentials->isConfigured();
     }
 
     public function translateTexts(TranslateTextsRequest $request): TranslateTextsResponse
@@ -35,13 +34,13 @@ class GoogleTranslateClient
 
         try {
             $client = new TranslationServiceClient([
-                'credentials' => $this->credentialsPath,
+                'credentials' => $this->googleTranslateCredentials->create(),
             ]);
 
             $translateRequest = new TranslateTextRequest()
                 ->setContents($request->texts())
                 ->setTargetLanguageCode($request->targetLanguage())
-                ->setParent(TranslationServiceClient::locationName($this->projectId, 'global'))
+                ->setParent(TranslationServiceClient::locationName($this->googleTranslateCredentials->projectId(), 'global'))
                 ->setMimeType('text/plain');
 
             $response = $client->translateText($translateRequest);
@@ -54,7 +53,8 @@ class GoogleTranslateClient
             return new TranslateTextsResponse(translatedTexts: $translations);
         } catch (Throwable $e) {
             $this->logger->error('Google Translate API failed', [
-                'message' => $e->getMessage(),
+                'exception_class' => $e::class,
+                'code' => $e->getCode(),
             ]);
 
             return new TranslateTextsResponse([]);

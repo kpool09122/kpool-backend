@@ -6,6 +6,7 @@ namespace Tests\Providers;
 
 use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Mockery;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -56,5 +57,24 @@ class ClientServiceProviderTest extends TestCase
         config(['google' => []]);
 
         self::assertFalse($this->app()->make(GeminiClient::class)->isConfigured());
+    }
+
+    public function testNullGoogleTranslateConfigResolvesWithoutConstructorError(): void
+    {
+        config(['google' => ['project_id' => null, 'credentials' => null]]);
+
+        self::assertFalse($this->app()->make(GoogleTranslateClient::class)->isConfigured());
+    }
+
+    public function testGoogleTranslateUsesProjectFromSecretJson(): void
+    {
+        config(['google' => ['project_id' => null, 'credentials' => json_encode([
+            'type' => 'service_account',
+            'project_id' => 'test-translation-project',
+            'client_email' => 'translation@example.test',
+            'private_key' => 'test-only-key',
+        ], JSON_THROW_ON_ERROR)]]);
+
+        self::assertTrue($this->app()->make(GoogleTranslateClient::class)->isConfigured());
     }
 }
