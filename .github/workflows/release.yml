@@ -32,7 +32,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   plan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: production
     timeout-minutes: 10
     permissions:
@@ -148,7 +148,7 @@ jobs:
   frontend-build:
     needs: plan
     if: inputs.target != 'backend' && needs.plan.outputs.mode == 'deploy'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: production
     timeout-minutes: 30
     permissions:
@@ -251,7 +251,7 @@ jobs:
       always() && !cancelled() && needs.plan.result == 'success' && needs.frontend-build.result == 'success' &&
       ((inputs.target == 'all' && needs.deploy.result == 'success') ||
       (inputs.target == 'frontend' && needs.deploy.result == 'skipped'))
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: production
     timeout-minutes: 30
     permissions:
@@ -370,7 +370,7 @@ jobs:
   record:
     needs: [plan, validate-build, frontend-build, publish, deploy, frontend-deploy]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       actions: read
