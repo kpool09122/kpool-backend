@@ -13,6 +13,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\TranslatedWikiRelationResolver;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -29,6 +30,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
         private DraftWikiFactoryInterface    $draftWikiFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface     $policyEvaluator,
+        private TranslatedWikiRelationResolver $translatedWikiRelationResolver,
     ) {
     }
 
@@ -88,7 +90,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $wikiDraft = $this->draftWikiFactory->create(
                 editorIdentifier: $input->principalIdentifier(),
                 language: $language,
-                basic: $translatedData->translatedBasic(),
+                basic: $this->translatedWikiRelationResolver->resolve($translatedData->translatedBasic(), $language),
                 slug: $wiki->slug(),
                 translationSetIdentifier: $wiki->translationSetIdentifier(),
             );

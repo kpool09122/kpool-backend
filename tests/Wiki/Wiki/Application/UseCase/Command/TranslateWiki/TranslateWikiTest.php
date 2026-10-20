@@ -115,6 +115,11 @@ class TranslateWikiTest extends TestCase
             ->twice()
             ->andReturn(null);
 
+        $missingGroupIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiRepository->shouldReceive('findById')
+            ->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $missingGroupIdentifier)
+            ->once()
+            ->andReturn(null);
         $jaTranslatedBasic = $this->createTalentBasic('テスト ウィキ');
         $jaTranslatedSections = new SectionContentCollection();
 
@@ -126,7 +131,10 @@ class TranslateWikiTest extends TestCase
             ->with($testData->wiki, Language::JAPANESE)
             ->once()
             ->andReturn(new TranslatedWikiData(
-                translatedBasic: $jaTranslatedBasic,
+                translatedBasic: TalentBasic::fromArray([
+                    ...$jaTranslatedBasic->toArray(),
+                    'group_identifiers' => [(string) $missingGroupIdentifier],
+                ]),
                 translatedSections: $jaTranslatedSections,
             ));
         $translationService->shouldReceive('translateWiki')
@@ -170,7 +178,7 @@ class TranslateWikiTest extends TestCase
             ->with(
                 $principalIdentifier,
                 Language::JAPANESE,
-                $jaTranslatedBasic,
+                Mockery::on(fn (BasicInterface $basic) => $basic->toArray() === $jaTranslatedBasic->toArray()),
                 $testData->slug,
                 $testData->translationSetIdentifier,
             )
