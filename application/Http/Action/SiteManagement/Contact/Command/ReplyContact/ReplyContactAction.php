@@ -10,8 +10,8 @@ use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Psr\Log\LoggerInterface;
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperatorInput;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperatorInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
@@ -21,7 +21,7 @@ use Throwable;
 readonly class ReplyContactAction
 {
     public function __construct(
-        private ReplyContactInterface $replyContact,
+        private ReplyContactByOperatorInterface $replyContactByOperator,
         private ActorContext $actorContext,
         private SiteManagementContext $siteManagementContext,
         private LoggerInterface $logger,
@@ -37,8 +37,8 @@ readonly class ReplyContactAction
     {
         try {
             // Do not wrap this use case in a transaction: mail failures must retain the failed reply history.
-            $this->replyContact->process(
-                new ReplyContactInput(
+            $this->replyContactByOperator->process(
+                new ReplyContactByOperatorInput(
                     new ContactIdentifier($request->contactIdentifier()),
                     $this->siteManagementContext->principalIdentifier,
                     $request->content(),

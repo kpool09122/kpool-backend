@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator;
 
 use DateTimeImmutable;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
@@ -23,7 +23,7 @@ use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Throwable;
 use UnexpectedValueException;
 
-readonly class ReplyContact implements ReplyContactInterface
+readonly class ReplyContactByOperator implements ReplyContactByOperatorInterface
 {
     public function __construct(
         private ContactRepositoryInterface $contactRepository,
@@ -40,7 +40,7 @@ readonly class ReplyContact implements ReplyContactInterface
      * @throws FailedToSendEmailException
      * @throws UnauthorizedException
      */
-    public function process(ReplyContactInputPort $input): void
+    public function process(ReplyContactByOperatorInputPort $input): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT))) {
