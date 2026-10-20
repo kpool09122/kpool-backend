@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -13,11 +14,11 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Application\Service\TranslatedWikiRelationResolver;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -30,7 +31,6 @@ readonly class TranslateWiki implements TranslateWikiInterface
         private DraftWikiFactoryInterface    $draftWikiFactory,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface     $policyEvaluator,
-        private TranslatedWikiRelationResolver $translatedWikiRelationResolver,
     ) {
     }
 
@@ -90,7 +90,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $wikiDraft = $this->draftWikiFactory->create(
                 editorIdentifier: $input->principalIdentifier(),
                 language: $language,
-                basic: $this->translatedWikiRelationResolver->resolve($translatedData->translatedBasic(), $language),
+                basic: $this->resolveTranslatedRelations($translatedData->translatedBasic(), $language),
                 slug: $wiki->slug(),
                 translationSetIdentifier: $wiki->translationSetIdentifier(),
             );
@@ -115,5 +115,54 @@ readonly class TranslateWiki implements TranslateWikiInterface
         }
 
         $output->setDraftWikis($wikiDrafts);
+    }
+
+    private function resolveTranslatedRelations(BasicInterface $basic, Language $language): BasicInterface
+    {
+        $data = $basic->toArray();
+        $resolved = $data;
+        if (array_key_exists('agency_identifier', $data)) {
+            $resolved['agency_identifier'] = $this->resolveTranslatedIdentifier(TypedValue::nullableString($data['agency_identifier']), $language);
+        }
+        foreach (['group_identifiers', 'talent_identifiers'] as $key) {
+            if (! array_key_exists($key, $data)) {
+                continue;
+            }
+            $identifiers = [];
+            foreach (TypedValue::stringArray($data[$key]) as $identifier) {
+                $translatedIdentifier = $this->resolveTranslatedIdentifier($identifier, $language);
+                if ($translatedIdentifier !== null) {
+                    $identifiers[] = $translatedIdentifier;
+                }
+            }
+            $resolved[$key] = array_values(array_unique($identifiers));
+        }
+
+        return $resolved === $data ? $basic : $basic::fromArray($resolved);
+    }
+
+    private function resolveTranslatedIdentifier(?string $identifier, Language $language): ?string
+    {
+        if ($identifier === null) {
+            return null;
+        }
+        $wiki = $this->wikiRepository->findById(new WikiIdentifier($identifier));
+        if ($wiki === null) {
+            return null;
+        }
+        if ($wiki->language() === $language) {
+            return (string) $wiki->wikiIdentifier();
+        }
+        $translations = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages(
+            $wiki->translationSetIdentifier(),
+            [$language],
+        );
+        foreach ($translations as $translation) {
+            if ($translation->language() === $language) {
+                return (string) $translation->wikiIdentifier();
+            }
+        }
+
+        return null;
     }
 }
