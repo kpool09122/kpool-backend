@@ -1,0 +1,6 @@
+# Official GitHub-hosted labels not yet included in actionlint v1.7.12.
+# https://github.com/actions/runner-images/tree/main/images/ubuntu
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - ubuntu-26.04-arm

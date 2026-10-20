@@ -25,7 +25,7 @@ jobs:
       - name: Install pinned workflow validator
         run: |
           mkdir -p "$RUNNER_TEMP/release-bin"
-          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          GOBIN="$RUNNER_TEMP/release-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - name: Validate release and infrastructure contracts
         env:
           ACTIONLINT: ${{ runner.temp }}/release-bin/actionlint
