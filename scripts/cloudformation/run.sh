@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."
 CFN_VENV="${CFN_VENV:-/tmp/kpool-cfn-tools}"
 case "${1:-check}" in
   install)
-    "${CFN_PYTHON:-python3.13}" -m venv "$CFN_VENV"
+    "${CFN_PYTHON:-python3.15}" -m venv "$CFN_VENV"
     "$CFN_VENV/bin/python" -m pip install -r scripts/cloudformation/requirements.txt
     ;;
   lint)
