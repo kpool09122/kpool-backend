@@ -46,6 +46,7 @@ readonly class ListContactsByPrincipal implements ListContactsByPrincipalInterfa
         $replyIdentifiersByContactIdentifier = ContactReplyModel::query()
             ->select(['contact_id', 'id'])
             ->whereIn('contact_id', $contacts->pluck('id'))
+            ->where('reply_type', 'operator')
             ->whereNotNull('sent_at')
             ->whereNull('failed_at')
             ->orderBy('created_at')

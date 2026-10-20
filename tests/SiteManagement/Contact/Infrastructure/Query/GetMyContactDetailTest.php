@@ -78,6 +78,8 @@ class GetMyContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $sentReply->replyIdentifier(),
                 'content' => '送信成功した返信',
                 'sentAt' => (new DateTimeImmutable('2026-08-17 10:00:00'))->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => (new DateTimeImmutable('2026-08-17 09:00:00'))->format(DateTimeInterface::ATOM),
             ]],
         ], $output->toArray());
     }

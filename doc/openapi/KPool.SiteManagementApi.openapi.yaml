@@ -373,7 +373,18 @@ paths:
         - name: hasReply
           in: query
           required: false
-          description: 'Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.'
+          description: 'Operator reply-status filter: 1 for at least one successfully sent operator reply, 0 for none. Submitter posts never count. When omitted (null), no reply-status filter is applied; existing defaults are unchanged.'
+          schema:
+            type: string
+            enum:
+              - '0'
+              - '1'
+            nullable: true
+          explode: false
+        - name: isPending
+          in: query
+          required: false
+          description: 'Conversation pending filter: 1 for pending, 0 for resolved (see isPending). Omitted/null does not filter. Applied in SQL before pagination, combined with hasReply and principalIdentifier using AND.'
           schema:
             type: string
             enum:
@@ -1217,6 +1228,87 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/contact/{contactIdentifier}/replies:
+    post:
+      operationId: MyContactOperations_replyMyContact
+      description: "Post a reply to the authenticated principal's own non-anonymous inquiry after at least one successfully sent operator reply. Uses existing own-contact contact:view policy and requires an active principal in the existing authenticated/active-account route group; does not grant contact:reply. Only content is accepted: author and type are resolved server-side. Sends a distinct notification to the existing configured administrator recipient, never to the submitter. Returns 204 on successful notification. Notification failure retains the submitter post with failedAt internally, keeps it visible and pending, and returns 500 as for existing operator replies; do not blindly retry. A present inquiry with no successful operator reply returns 409; other/anonymous ownership is forbidden, missing inquiry is 404. Domain input rejection returns the existing 422 response."
+      parameters:
+        - name: contactIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyContactRequestBody'
+      security:
+        - SessionCookieAuth: []
   /principal-groups:
     get:
       operationId: PrincipalGroupOperations_listPrincipalGroups
@@ -1424,6 +1516,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ContactReplyDetail'
+          description: Oldest first by display timestamp (operator sentAt; submitter createdAt), then replyIdentifier ascending to break equal timestamps consistently with pending status. Author and recipient information is not exposed to submitters.
       description: Contact inquiry detail.
     ContactReplyDetail:
       type: object
@@ -1431,14 +1524,33 @@ components:
         - replyIdentifier
         - content
         - sentAt
+        - replyType
+        - createdAt
       properties:
         replyIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         content:
           type: string
         sentAt:
-          $ref: '#/components/schemas/KPool.Common.Timestamp'
-      description: A successfully sent reply to a contact inquiry.
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Persisted delivery timestamp. For operator replies this retains the existing successful user-email delivery meaning. For submitter posts this records successful administrator notification. Null when not successfully delivered.
+        replyType:
+          allOf:
+            - $ref: '#/components/schemas/ContactReplyType'
+          description: Persisted reply_type; existing historical replies are operator, not inferred from authors.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Persisted database post creation timestamp, not the delivery timestamp.
+      description: 'Conversation entry: successfully sent operator replies and all submitter posts, including failed administrator notifications. No recipient information is returned.'
+    ContactReplyType:
+      type: string
+      enum:
+        - operator
+        - submitter
     ContactSummary:
       type: object
       required:
@@ -1641,7 +1753,7 @@ components:
         contacts:
           type: array
           items:
-            $ref: '#/components/schemas/MyContactSummary'
+            $ref: '#/components/schemas/ManagedContactSummary'
           description: Contact inquiries on the requested page.
         current_page:
           type: integer
@@ -1690,6 +1802,49 @@ components:
           format: int32
           minimum: 1
           maximum: 100
+    ManagedContactSummary:
+      type: object
+      required:
+        - contactIdentifier
+        - category
+        - name
+        - replyIdentifiers
+        - createdAt
+        - content
+        - isPending
+      properties:
+        contactIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Contact identifier.
+        principalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Site-management principal identifier associated with the inquiry.
+        category:
+          type: integer
+          format: int32
+          description: Category of the inquiry.
+        name:
+          type: string
+          description: Name of the person submitting the inquiry.
+        replyIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identifiers of successfully sent operator replies only, ordered by persisted creation timestamp then reply identifier. Submitter posts and failed operator deliveries are excluded.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Timestamp when the inquiry was created.
+        content:
+          type: string
+          description: Full inquiry content.
+        isPending:
+          type: boolean
+          description: True initially or when a submitter post (including failed notifications) sorts after every successfully sent operator reply. Compare (submitter createdAt, replyIdentifier) with (operator sentAt, replyIdentifier). Equal timestamps use replyIdentifier ascending (UUIDv7 order), so operator then submitter is pending and submitter then operator is resolved. Failed operator deliveries never resolve the inquiry. Computed from replies, not a separately persisted status.
     MyContactSummary:
       type: object
       required:
@@ -1721,7 +1876,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identifiers of replies sent successfully for this inquiry.
+          description: Identifiers of successfully sent operator replies only, ordered by persisted creation timestamp then reply identifier. Submitter posts and failed operator deliveries are excluded.
         createdAt:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
@@ -1760,13 +1915,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperatorContactReplyDetail'
-      description: Contact detail returned to an Operator, with author information on each successfully sent reply. No email addresses are returned.
+      description: Contact detail returned only to an Operator, with author information on each visible conversation entry. No email addresses are returned. Replies use the same (display timestamp, replyIdentifier) ordering as submitter details.
     OperatorContactReplyDetail:
       type: object
       required:
         - replyIdentifier
         - content
         - sentAt
+        - replyType
+        - createdAt
         - principalIdentifier
         - name
       properties:
@@ -1775,7 +1932,19 @@ components:
         content:
           type: string
         sentAt:
-          $ref: '#/components/schemas/KPool.Common.Timestamp'
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Persisted delivery timestamp. For operator replies this retains the existing successful user-email delivery meaning. For submitter posts this records successful administrator notification. Null when not successfully delivered.
+        replyType:
+          allOf:
+            - $ref: '#/components/schemas/ContactReplyType'
+          description: Persisted reply_type; existing historical replies are operator, not inferred from authors.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Persisted database post creation timestamp, not the delivery timestamp.
         principalIdentifier:
           type: string
           allOf:
@@ -1786,7 +1955,7 @@ components:
           type: string
           nullable: true
           description: Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.
-      description: A successfully sent reply including author information, returned only to a site-management Operator.
+      description: Conversation entry including author information, returned only to a site-management Operator.
     PrincipalGroup:
       type: object
       required:

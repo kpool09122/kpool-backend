@@ -14,6 +14,7 @@ class ListContactsRequest extends FormRequest
         return [
             'principalIdentifier' => ['nullable', 'uuid'],
             'hasReply' => ['nullable', 'string', 'in:0,1'],
+            'isPending' => ['nullable', 'string', 'in:0,1'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
@@ -27,6 +28,11 @@ class ListContactsRequest extends FormRequest
     public function hasReply(): ?bool
     {
         return $this->query('hasReply') !== null ? $this->boolean('hasReply') : null;
+    }
+
+    public function isPending(): ?bool
+    {
+        return $this->query('isPending') !== null ? $this->boolean('isPending') : null;
     }
 
     public function perPage(): ?int
