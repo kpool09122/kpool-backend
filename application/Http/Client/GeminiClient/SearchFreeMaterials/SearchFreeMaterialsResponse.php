@@ -46,7 +46,6 @@ final readonly class SearchFreeMaterialsResponse
             throw new GeminiException('Invalid material search JSON', 0, $e);
         }
 
-        $groundedText = $this->groundedText($candidate);
         $results = [];
         $seenDomains = [];
         $seenNames = [];
@@ -63,17 +62,6 @@ final readonly class SearchFreeMaterialsResponse
             $host = $this->validateUrl($site['pageUrl']);
             $this->validateUrl($site['usageEvidenceUrl']);
             $evidence = $site['usageEvidence'];
-            $grounded = true;
-            foreach (['pageUrl', 'usageEvidence', 'usageEvidenceUrl'] as $field) {
-                $value = $site[$field];
-                $encoded = json_encode($value, JSON_THROW_ON_ERROR);
-                if (! str_contains($groundedText, $value) && ! str_contains($groundedText, substr($encoded, 1, -1))) {
-                    $grounded = false;
-                }
-            }
-            if (! $grounded) {
-                continue;
-            }
             // Conservatively collapse subdomains (including www) to avoid multiple suggestions from one site.
             $labels = explode('.', $host);
             $domain = implode('.', array_slice($labels, -2));
@@ -89,39 +77,6 @@ final readonly class SearchFreeMaterialsResponse
         }
 
         return $results;
-    }
-
-    /** @param array<string, mixed> $candidate */
-    private function groundedText(array $candidate): string
-    {
-        $metadata = $candidate['groundingMetadata'] ?? null;
-        if (! is_array($metadata)) {
-            return '';
-        }
-        $chunks = $metadata['groundingChunks'] ?? [];
-        $supports = $metadata['groundingSupports'] ?? [];
-        if (! is_array($chunks) || ! is_array($supports)) {
-            return '';
-        }
-        $text = '';
-        foreach ($supports as $support) {
-            if (! is_array($support) || ! is_string($support['segment']['text'] ?? null) || ! is_array($support['groundingChunkIndices'] ?? null)) {
-                continue;
-            }
-            foreach ($support['groundingChunkIndices'] as $index) {
-                if (! is_int($index) || ! is_array($chunks[$index] ?? null)) {
-                    continue;
-                }
-                $uri = $chunks[$index]['web']['uri'] ?? null;
-                if (is_string($uri) && str_starts_with($uri, 'https://') && filter_var($uri, FILTER_VALIDATE_URL) !== false) {
-                    $text .= $support['segment']['text'] . "\n";
-
-                    break;
-                }
-            }
-        }
-
-        return $text;
     }
 
     private function validateUrl(string $url): string
