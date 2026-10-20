@@ -51,12 +51,15 @@ root 内の子は個別に配備しない。手動転記のための分割では
 ## 検証・操作の入口
 
 ```sh
-task cfn:install                 # 初回のみ: Python 3.13 / pinned cfn-lint
+task cfn:install                 # 初回およびPython更新時: Python 3.15 / pinned cfn-lint
 task infra:validate              # AWS認証不要。CIも同じ実装を実行
 task infra:operate -- --help
 ```
 
 `CFN_PYTHON` / `CFN_VENV` でPythonと仮想環境を選べる。部分検証は `task cfn:lint` / `task cfn:test`。CIも `run.sh check` を直接実行する。旧 `cfn:check` / `validate.sh` は削除し、通常入口へ統一した。
+CIは setup-python の Python 3.15 を `CFN_PYTHON=python3` で選択する。ローカルの既定値は `python3.15`。
+3.13で作成した仮想環境は別の `CFN_VENV`（例: `/tmp/kpool-cfn-tools-315`）を指定して作り直し、以後の検証・操作でも同じ値を指定する。
+`task release:check` で依存インストール後のリリース契約・workflow・CloudFormationをまとめて検証する。
 AWSを操作する `plan` / `execute` は明示操作であり、検証やCIからは呼ばれない。
 
 ## 基盤の保護と制約

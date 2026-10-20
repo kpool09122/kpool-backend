@@ -285,7 +285,7 @@ tasks:
       - task --list
 
   cfn:install:
-    desc: Install pinned CloudFormation validator (CFN_PYTHON=python3.13, CFN_VENV=/tmp/kpool-cfn-tools)
+    desc: Install pinned CloudFormation validator (CFN_PYTHON=python3.15, CFN_VENV=/tmp/kpool-cfn-tools)
     cmds:
       - bash scripts/cloudformation/run.sh install
 

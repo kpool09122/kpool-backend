@@ -6,7 +6,7 @@
 
 ## 1. 環境入力を用意する
 
-AWS CLI v2、Python3.13、Taskを用意し `task cfn:install`、`task infra:validate` を実行する。
+AWS CLI v2、Python 3.15、Taskを用意し `task cfn:install`、`task infra:validate` を実行する。Python更新時の仮想環境の作り直しは[インフラの入口](../../infra/cloudformation/README.md#検証操作の入口)を参照。
 `infra/cloudformation/environment.example.json` をリポジトリ外へコピーし、account、4親stack、既存package bucket、ドメイン・ACM・通知先を実値にする。
 外部入力は `inputs.<stack>.<Parameter>` に必須項目と変更する任意項目だけ記載。制約/既定値はテンプレートを見る。
 Outputs・revision・desired・Blue/Green・Scheduler Stateの手入力は拒否される。
