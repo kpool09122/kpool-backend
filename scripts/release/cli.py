@@ -11,6 +11,7 @@ from github_source import resolve_source, recorded_artifacts, verify_control
 from aws_backend import Aws, Backend, stack_outputs
 from records import Journal, write_json
 from runner import execute
+from production_environment import load_production_environment
 
 ROOT=Path('release')
 
@@ -124,6 +125,8 @@ def configuration():
     value=json.loads(os.environ['RELEASE_CONFIGURATION'])
     # No fallback account/ARN/stack/secret values.
     if not isinstance(value,dict) or value.get('region')!='ap-northeast-1': raise ValueError('Invalid release configuration')
+    defaults = load_production_environment(Path(__file__).resolve().parents[2] / '.env.prod')
+    value['runtime_environment'] = {**defaults, **value.get('runtime_environment', {})}
     return value
 
 

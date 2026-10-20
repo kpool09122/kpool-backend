@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Application\UseCase\Command\TranslateWiki;
 
 use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -30,7 +32,9 @@ use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -115,6 +119,11 @@ class TranslateWikiTest extends TestCase
             ->twice()
             ->andReturn(null);
 
+        $missingGroupIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiRepository->shouldReceive('findById')
+            ->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $missingGroupIdentifier)
+            ->once()
+            ->andReturn(null);
         $jaTranslatedBasic = $this->createTalentBasic('テスト ウィキ');
         $jaTranslatedSections = new SectionContentCollection();
 
@@ -126,7 +135,10 @@ class TranslateWikiTest extends TestCase
             ->with($testData->wiki, Language::JAPANESE)
             ->once()
             ->andReturn(new TranslatedWikiData(
-                translatedBasic: $jaTranslatedBasic,
+                translatedBasic: TalentBasic::fromArray([
+                    ...$jaTranslatedBasic->toArray(),
+                    'group_identifiers' => [(string) $missingGroupIdentifier],
+                ]),
                 translatedSections: $jaTranslatedSections,
             ));
         $translationService->shouldReceive('translateWiki')
@@ -170,7 +182,7 @@ class TranslateWikiTest extends TestCase
             ->with(
                 $principalIdentifier,
                 Language::JAPANESE,
-                $jaTranslatedBasic,
+                Mockery::on(fn (BasicInterface $basic) => $basic->toArray() === $jaTranslatedBasic->toArray()),
                 $testData->slug,
                 $testData->translationSetIdentifier,
             )
@@ -333,6 +345,138 @@ class TranslateWikiTest extends TestCase
         $this->expectException(DisallowedException::class);
         $translateWiki = $this->app()->make(TranslateWikiInterface::class);
         $translateWiki->process($input, new TranslateWikiOutput());
+    }
+
+    /** @return array<string, array{class-string<GroupBasic|SongBasic|TalentBasic>}> */
+    public static function basicTypes(): array
+    {
+        return ['group' => [GroupBasic::class], 'song' => [SongBasic::class], 'talent' => [TalentBasic::class]];
+    }
+
+    /** @param class-string<GroupBasic|SongBasic|TalentBasic> $basicClass */
+    #[DataProvider('basicTypes')]
+    public function testProcessReplacesOnlyRelationsAvailableInTargetLanguage(string $basicClass): void
+    {
+        $sourceId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $targetId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $untranslatedId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $missingId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $sourceSet = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $untranslatedSet = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $source = Mockery::mock(Wiki::class);
+        $source->shouldReceive('language')->andReturn(Language::KOREAN);
+        $source->shouldReceive('translationSetIdentifier')->andReturn($sourceSet);
+        $target = Mockery::mock(Wiki::class);
+        $target->shouldReceive('language')->andReturn(Language::JAPANESE);
+        $target->shouldReceive('wikiIdentifier')->andReturn($targetId);
+        $untranslated = Mockery::mock(Wiki::class);
+        $untranslated->shouldReceive('language')->andReturn(Language::KOREAN);
+        $untranslated->shouldReceive('translationSetIdentifier')->andReturn($untranslatedSet);
+        /** @var WikiRepositoryInterface&MockInterface $wikiRepository */
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $sourceId)->andReturn($source);
+        $wikiRepository->shouldReceive('findById')->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $untranslatedId)->andReturn($untranslated);
+        $wikiRepository->shouldReceive('findById')->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $missingId)->andReturn(null);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->with($sourceSet, [Language::JAPANESE])->andReturn([$target]);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->with($untranslatedSet, [Language::JAPANESE])->andReturn([]);
+        $original = $basicClass::fromArray([
+            'name' => '翻訳済みの名前',
+            'agency_identifier' => (string) $untranslatedId,
+            'group_identifiers' => [(string) $untranslatedId, (string) $sourceId, (string) $missingId],
+            'talent_identifiers' => [(string) $sourceId, (string) $untranslatedId],
+        ]);
+        $before = $original->toArray();
+        $result = $this->translateBasicThroughProcess($original, $wikiRepository);
+        $expected = $before;
+        $expected['agency_identifier'] = null;
+        foreach (['group_identifiers', 'talent_identifiers'] as $key) {
+            if (array_key_exists($key, $expected)) {
+                $expected[$key] = [(string) $targetId];
+            }
+        }
+        $this->assertSame($expected, $result->toArray());
+        $this->assertSame($before, $original->toArray());
+    }
+
+    public function testProcessKeepsExistingTargetAndRemovesMissingRelations(): void
+    {
+        $targetId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $missingId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $target = Mockery::mock(Wiki::class);
+        $target->shouldReceive('language')->andReturn(Language::JAPANESE);
+        $target->shouldReceive('wikiIdentifier')->andReturn($targetId);
+        /** @var WikiRepositoryInterface&MockInterface $wikiRepository */
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $targetId)->andReturn($target);
+        $wikiRepository->shouldReceive('findById')->withArgs(fn (WikiIdentifier $id) => (string) $id === (string) $missingId)->andReturn(null);
+        $basic = SongBasic::fromArray([
+            'name' => 'Song',
+            'agency_identifier' => (string) $targetId,
+            'group_identifiers' => [(string) $missingId],
+            'talent_identifiers' => [(string) $missingId],
+        ]);
+        $result = $this->translateBasicThroughProcess($basic, $wikiRepository)->toArray();
+        $this->assertSame((string) $targetId, $result['agency_identifier']);
+        $this->assertSame([], $result['group_identifiers']);
+        $this->assertSame([], $result['talent_identifiers']);
+    }
+
+    private function translateBasicThroughProcess(BasicInterface $basic, WikiRepositoryInterface $wikiRepository): BasicInterface
+    {
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $resourceType = ResourceType::from($basic->getBasicType());
+        $wiki = new Wiki(
+            $wikiIdentifier,
+            $translationSetIdentifier,
+            new Slug($resourceType->slugPrefix() . '-test'),
+            Language::KOREAN,
+            $resourceType,
+            $basic,
+            new SectionContentCollection(),
+            null,
+            new Version(1),
+            null,
+            $principalIdentifier,
+        );
+        /** @var WikiRepositoryInterface&MockInterface $wikiRepository */
+        $wikiRepository->shouldReceive('findById')->with($wikiIdentifier)->once()->andReturn($wiki);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
+            ->with($translationSetIdentifier, [Language::JAPANESE, Language::ENGLISH])->once()->andReturn([]);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->with($principalIdentifier)->once()->andReturn(new Principal(
+            $principalIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        ));
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateWiki')->with($wiki, Language::JAPANESE)->once()
+            ->andReturn(new TranslatedWikiData($basic, new SectionContentCollection()));
+        $englishBasic = $basic::fromArray([
+            ...$basic->toArray(),
+            'agency_identifier' => null,
+            'group_identifiers' => [],
+            'talent_identifiers' => [],
+        ]);
+        $translationService->shouldReceive('translateWiki')->with($wiki, Language::ENGLISH)->once()
+            ->andReturn(new TranslatedWikiData($englishBasic, new SectionContentCollection()));
+        $saved = [];
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('save')->twice()->andReturnUsing(function (DraftWiki $draft) use (&$saved): void {
+            $saved[$draft->language()->value] = $draft->basic();
+        });
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app()->make(TranslateWikiInterface::class)->process(
+            new TranslateWikiInput($wikiIdentifier, $principalIdentifier, $resourceType),
+            new TranslateWikiOutput(),
+        );
+        $this->assertCount(2, $saved);
+
+        return $saved[Language::JAPANESE->value];
     }
 
     private function createTalentBasic(string $name): TalentBasic

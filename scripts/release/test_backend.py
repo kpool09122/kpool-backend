@@ -14,13 +14,6 @@ def fast_poll(check,timeout=1,**kwargs):
     clock=iter(range(30))
     return poll(check,timeout=5,interval=0,clock=lambda:next(clock),sleep=lambda _:None)
 
-class HttpResponse:
-    status=200
-    def __enter__(self): return self
-    def __exit__(self,*args): pass
-    def geturl(self): return 'https://api.example.invalid/health'
-    def read(self,size): return b'healthy fixture'
-
 class BackendTests(unittest.TestCase):
     def setUp(self):
         self.directory=tempfile.TemporaryDirectory(); self.addCleanup(self.directory.cleanup)
@@ -29,8 +22,9 @@ class BackendTests(unittest.TestCase):
         self.journal=Journal(Path(self.directory.name),self.plan)
         self.backend=Backend(self.aws,self.plan,self.manifest,self.journal,self.config)
         self.poll=patch('aws_backend.poll',fast_poll); self.poll.start(); self.addCleanup(self.poll.stop)
-        self.http=patch('aws_backend.urllib.request.urlopen',return_value=HttpResponse()); self.http.start(); self.addCleanup(self.http.stop)
-    def run_release(self): execute(self.backend,self.journal,'deploy')
+    def run_release(self):
+        with patch('urllib.request.urlopen', side_effect=AssertionError('Public URL checks belong to the operator')):
+            execute(self.backend,self.journal,'deploy')
     def test_initial_zero_task_scaffold_adds_health_hook_with_first_activation(self):
         self.plan['initial'] = True
         self.manifest['initial'] = True
@@ -61,6 +55,20 @@ class BackendTests(unittest.TestCase):
             self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in container['environment']})
         migration=self.backend.definitions['Migration']['containerDefinitions'][0]
         self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in migration['secrets']})
+    def test_external_service_secrets_use_application_secret_without_values_or_migration_access(self):
+        names = ['GOOGLE_CLIENT_SECRET', 'LINE_CLIENT_SECRET', 'KAKAO_CLIENT_SECRET',
+                 'GENERATIVE_LANGUAGE_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS', 'YOUTUBE_API_KEY', 'STRIPE_SECRET_KEY',
+                 'STRIPE_WEBHOOK_SECRET']
+        self.config['app_secret_keys'] = names
+        self.backend.preflight()
+        for kind in ('Api', 'Worker'):
+            container = self.backend.definitions[kind]['containerDefinitions'][0]
+            for name in names:
+                self.assertIn({'name': name, 'valueFrom': self.o['AppSecretArn'] + ':' + name + '::'},
+                              container['secrets'])
+                self.assertNotIn(name, {item['name'] for item in container['environment']})
+        migration = self.backend.definitions['Migration']['containerDefinitions'][0]
+        self.assertFalse(set(names) & {item['name'] for item in migration['secrets']})
     def test_visitor_location_secret_cannot_be_supplied_as_plain_runtime_configuration(self):
         self.config['runtime_environment']['WIKI_VISITOR_LOCATION_SECRET']='test-only-secret'
         with self.assertRaises(ValueError): self.backend.preflight()
@@ -78,17 +86,24 @@ class BackendTests(unittest.TestCase):
         record=json.loads((Path(self.directory.name)/'journal.json').read_text())
         self.assertNotIn('fixture-never-log',json.dumps(record))
         self.assertNotIn('fixture-never-log',''.join(p.read_text() for p in Path(self.directory.name).glob('*.json')))
-    def test_release_without_external_monitor_keeps_internal_alarms_and_hook(self):
-        self.o['ExternalCanaryAlarmName'] = ''
-        self.aws.outputs['ExternalCanaryAlarmName'] = ''
-        self.aws.services['Api']['deploymentConfiguration']['alarms']['alarmNames'] = [
-            self.o['ServerErrorAlarmName'], self.o['LatencyAlarmName']]
-        self.config.pop('hook_code_sha256')
-        self.run_release()
-        alarms = next(args['AlarmNames'] for _, op, args in self.aws.calls if op == 'describe-alarms')
-        self.assertEqual(alarms, [self.o['ServerErrorAlarmName'], self.o['LatencyAlarmName']])
-        self.assertTrue(any(op == 'get-function-configuration' for _, op, _ in self.aws.calls))
-        self.assertTrue(any(op == 'update-service' for _, op, _ in self.aws.calls))
+    def test_existing_bake_and_alarm_policy_is_replaced_with_manual_recovery(self):
+        import copy
+        self.aws.services['Api']['deploymentConfiguration'].update(
+            bakeTimeInMinutes=5, alarms={'enable': True, 'rollback': True,
+                                        'alarmNames': [self.o['ServerErrorAlarmName']]})
+        original = copy.deepcopy(self.aws.services['Api']['deploymentConfiguration'])
+        self.aws.alarm_state = 'ALARM'
+        self.backend.preflight()
+        self.assertEqual(self.aws.services['Api']['deploymentConfiguration'], original)
+        self.backend.register()
+        self.backend.api()
+        configuration = next(args['deploymentConfiguration'] for _, op, args in self.aws.calls
+                             if op == 'update-service')
+        self.assertEqual(configuration['bakeTimeInMinutes'], 0)
+        self.assertEqual(configuration['alarms'], {'enable': False, 'rollback': False, 'alarmNames': []})
+        self.assertEqual(configuration['lifecycleHooks'], original['lifecycleHooks'])
+        self.assertFalse(any(op == 'describe-alarms' for _, op, _ in self.aws.calls))
+
     def test_external_hook_requires_approved_checksum(self):
         self.aws.outputs['HookCodeSource'] = 'external'
         self.config.pop('hook_code_sha256')
@@ -115,7 +130,7 @@ class BackendTests(unittest.TestCase):
         self.aws.api_status='ROLLBACK_REQUESTED'
         with self.assertRaises(ValueError): self.run_release()
         self.assertEqual(len([op for _,op,_ in self.aws.calls if op=='update-service']),1)
-    def test_bake_rollback_blocks_worker(self):
+    def test_unexpected_rollback_blocks_worker(self):
         self.aws.api_status='ROLLBACK_SUCCESSFUL'
         with self.assertRaises(ValueError): self.run_release()
         self.assertEqual(len([op for _,op,_ in self.aws.calls if op=='update-service']),1)
@@ -152,7 +167,7 @@ class BackendTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.run_release()
         self.assertFalse(any(op=='register-task-definition' for _,op,_ in self.aws.calls))
     def test_preflight_failure_matrix_has_no_mutation(self):
-        cases=[('account','wrong'),('stack_status','UPDATE_IN_PROGRESS'),('alarm_state','INSUFFICIENT_DATA'),('hook_state','Pending'),('ssm_type','SecureString')]
+        cases=[('account','wrong'),('stack_status','UPDATE_IN_PROGRESS'),('hook_state','Pending'),('ssm_type','SecureString')]
         for key,value in cases:
             with self.subTest(key=key):
                 aws=FakeAws(self.o,self.env); setattr(aws,key,value)

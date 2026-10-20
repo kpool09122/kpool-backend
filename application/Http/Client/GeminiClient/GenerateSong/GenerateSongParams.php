@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateSong;
 
 use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
+use Application\Http\Client\GeminiClient\GeneratedYouTubeVideo;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateSongParams
@@ -27,6 +28,7 @@ final readonly class GenerateSongParams
         private array $chartPerformance,
         private array $sources,
         private GeneratedWikiMetadata $metadata = new GeneratedWikiMetadata(),
+        private ?GeneratedYouTubeVideo $officialMusicVideo = null,
     ) {
     }
 
@@ -57,6 +59,7 @@ final readonly class GenerateSongParams
             chartPerformance: self::stringArray($data['chart_performance'] ?? []),
             sources: $sources,
             metadata: GeneratedWikiMetadata::fromArray($data),
+            officialMusicVideo: GeneratedYouTubeVideo::fromUrl($data['official_mv_url'] ?? null),
         );
     }
 
@@ -75,6 +78,11 @@ final readonly class GenerateSongParams
             chartPerformance: [],
             sources: [],
         );
+    }
+
+    public function officialMusicVideo(): ?GeneratedYouTubeVideo
+    {
+        return $this->officialMusicVideo;
     }
 
     public function metadata(): GeneratedWikiMetadata

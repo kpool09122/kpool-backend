@@ -60,6 +60,10 @@ SSM integration RuntimeConfigParameterName の String JSON を読み、runtime_e
 
 ECS は integration AppSecretArn／MigrationSecretArn の `APP_KEY`, `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD` を JSON-key ARN 参照で注入する。API／worker は AppSecret の `REDIS_URL` と root CacheSecretArn の `password` を追加する。REDIS_URL は application user・TLS・DB0・現在の cache password と整合させる。追加アプリ Secret は許可キーを app_secret_keys に列挙する。migration へ追加アプリ Secret／cache secret は渡さない。RDS 管理ユーザーを使わない。
 
+外部サービスを使う場合は `GOOGLE_CLIENT_SECRET`、`LINE_CLIENT_SECRET`、`KAKAO_CLIENT_SECRET`、`GENERATIVE_LANGUAGE_API_KEY`、`YOUTUBE_API_KEY`、`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET` の必要な値を application Secret に登録し、同じキー名を `app_secret_keys` に追加する。Secretへの登録だけではECSに渡らないため、backendのproduction Variable `BACKEND_RELEASE_CONFIGURATION` と手元の設定ファイルを合わせ、backendを再配備する。Client IDとredirect URI（`GOOGLE`／`LINE`／`KAKAO` の `_CLIENT_ID`／`_REDIRECT_URI`）、`STRIPE_PUBLISHABLE_KEY` は非秘密の `runtime_environment` に設定する。
+
+コミット済み `.env.prod` の非秘密設定は公開・配備時に読み取り、ECSの環境変数に反映する。優先順位はSSMの基盤設定 → `.env.prod` → `BACKEND_RELEASE_CONFIGURATION.runtime_environment`（後者が優先）。OAuth Client ID・本番callback URL・Geminiモデル・公開可能なSentry DSNも対象とする。ファイル自体はコンテナに含めず、秘密情報・未解決のプレースホルダー・重複キーは拒否する。
+
 DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool-rds-ca.pem` を含める。公開 CA は checksum／OpenSSL 構文を検証し BuildKit mount から既存 production target に同梱する。Secret 値は build に渡さない。通常のローカル container build は CA mount 省略可能。
 
 今回の基盤定義追加は既存 bootstrap role の scoped 読取（SSM String、project-prefix CloudWatch alarms、deployment-hook Lambda metadata、既存 work queue 属性）と runtime bootstrap task の writable volume のみ。API／worker／migration／scheduler の readonly root は維持する。runtime task 雛形と Dockerfile VOLUME により `/tmp`, `storage`, `bootstrap/cache` の所有者・mode を継承する。**管理者による既存 stack への反映が必要**。Pipeline 自身は反映しない。外部監視を任意導入する場合、ExternalCanaryAlarmName は `${ProjectName}-` prefix 内で設定する（この scoped IAM の対象）。既存 ECS revision 読取／用途別 PassRole 制約は維持する。
@@ -69,11 +73,11 @@ DATABASE_URL の query に `sslmode=verify-full&sslrootcert=/etc/ssl/certs/kpool
 - backendのsourceと制御コードは、実行元タグの `github.workflow_sha` に固定する。frontendの指定タグはplan作成時に一度だけSHAを解決する。後からリリースブランチが進んでも同じrunのbuild・配備対象は変わらない。
 - source checkout前にrepository・完全SHA・immutable planとの一致を検証する。checkout actionは固定のmainから全履歴とタグを取得し、検証済みSHAのcommitへ切り替えてHEADを照合してからアプリコードを実行する。mainへのマージは配備の条件にしない。
 - 初回だけ `initial=true`。API と worker がともに desired=0 の場合だけ 1 にする。通常は `initial=false` で各 service の現在希望数を維持する。
-- `paused=true`、unstable stack/service、未設定の配備hook/基本alarm/bake、CA未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
+- `paused=true`、unstable stack/service、未設定の配備hook、CA未設定、異なる account／role／digest は変更前に停止する。ECR 公開前にも非 image preflight を行う。
 - 検証は Taskfile の install、非破壊 cs-check、phpstan、test を使う。ARM runner で既存 production target を build し、archive SHA256 と platform を記録。公開 job は archive を検証して ECR へ公開し、ECR 応答の digest を以後の全用途へ渡す。
 - migration は既存 public subnet＋専用 SG、Fargate、public IP ENABLED で実行。DB は非公開。単一 task ARN／task definition／exitCode=0 が必要。停止コード欠落・起動失敗・10分 timeout は API を止める。
-- API は新 service deployment ARN を発見し、その target service revision の task definition を照合。SUCCESSFUL、5分以上の bake、target traffic weight=100、希望数／pending=0、source tasks=0、live task definition の一致が必要。旧 stable revision、rollback、wrong revision、25分 timeout は成功にならない。
-- API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に HTTPS `/health`（redirect 禁止）と SQS identity／attributes を読む。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
+- API は新 service deployment ARN を発見し、その target service revision の task definition を照合。SUCCESSFUL、bake=0、配備alarm無効、target traffic weight=100、希望数／pending=0、source tasks=0、live task definition の一致が必要。旧 stable revision、rollback、wrong revision、25分 timeout は成功にならない。
+- API 成功後に worker を更新。対象 revision と希望数・COMPLETED を10分以内に確認。最後に SQS identity／attributes を読む。公開URLへのアクセスはCIでは行わず、配備後に運用者が確認する。**属性読取は job 処理証明ではない**。承認済み canary の投入・完了・DLQ 確認は実環境確認に残る。
 
 CLIからの初回実行例（両repositoryの同名タグを使用）:
 
@@ -143,7 +147,7 @@ backendの `production` Environmentへ次を設定する。
 }
 ```
 
-本番R2 bucketと対象Workerを準備し、Workerの `WIKI_VISITOR_LOCATION_SECRET` へbackendと同じ値を登録する。これはCloudflare runtime Secretとして管理し、JSON・buildには入れない。初回配備前にもWorker側のSecret名をmetadataで確認する。`smoke_url` は認証不要でredirectせず200を返すpathを選ぶ（ルートは言語redirectがあるため `/en` 等）。
+本番R2 bucketと対象Workerを準備し、Workerの `WIKI_VISITOR_LOCATION_SECRET` へbackendと同じ値を登録する。これはCloudflare runtime Secretとして管理し、JSON・buildには入れない。初回配備前にもWorker側のSecret名をmetadataで確認する。`smoke_url` は配備先custom domainの照合に使う既存設定として保持する。CIからこのURLへはアクセスしない。
 
 | 操作 | 入力と実行順 |
 | --- | --- |
@@ -153,7 +157,7 @@ backendの `production` Environmentへ次を設定する。
 
 build jobではESLint・unit testとOpenNextのproduction buildを実行し、Cloudflare tokenを渡さない。SHA・lockfile・設定・archiveのchecksum付き `.open-next` artifactを保存する。deploy jobは同じsourceと設定を照合し、artifactを復元して再buildせず既存配備スクリプトを実行する。直前にR2 bucketとruntime Secretを確認する。frontend jobにAWS OIDC/credentialsを付与しない。
 
-配備後はWranglerの構造化出力とCloudflareの稼働version IDを照合し、公開HTTPSの200を確認して、`frontend-record-<attempt>`へ前後のversionと結果を90日保存する。deploy失敗時も取得できた実状態を記録する。OpenNextのR2 cache投入がWorker公開より先に行われるため、失敗してもcache変更が残り得る。frontend失敗でbackend/DBを自動で戻さない。
+配備後はWranglerの構造化出力とCloudflareの稼働version IDを照合し、`frontend-record-<attempt>`へ前後のversionと結果を90日保存する。deploy失敗時も取得できた実状態を記録する。OpenNextのR2 cache投入がWorker公開より先に行われるため、失敗してもcache変更が残り得る。frontend失敗でbackend/DBを自動で戻さない。
 
 all/frontendのGitHub Re-runやsource_runによる自動replayは停止する。失敗したrunのplanでfrontend SHAを確認し、そのコミットを指すリリースタグを指定して新しい `target=frontend` deployを起動する。backendのdigest replay/rollbackは従来どおり `target=backend` を使う。
 
@@ -168,3 +172,7 @@ ACTIONLINT=/tmp/kpool-release-bin/actionlint CFN_VENV=/tmp/kpool-cfn-tools task 
 
 これは release の公開 API／state machine／AWS transport fixture テスト、実 botocore request shape 照合、workflow graph／権限／action SHA の検査、actionlint、既存 CF lint＋全テストを実行する。fixture は TEST ONLY と明記しており、runtime は cloud 応答の代わりに fixture を使わない。PHP変更はなく、task check の破壊的 style fix は今回のローカル確認対象外。production Docker build と container verify は別の実行証跡を参照する。
 PR の CI infrastructure job でも同じ release／CloudFormation 検証を実行する。source 選択のテストは一時 Git repository を使い、main未マージのリリースコミットの受け入れと、checkout不一致・不正SHAの拒否を確認する。
+
+APIの切替後監視は行わず、配備後に運用者が動作確認する。既存サービスの5分bakeとalarm連動は、次のAPI更新時に配備コードがbake=0・alarm無効へ変更するため、設定変更だけの基盤更新を先に実行する必要はない。CloudWatchの通知用alarmは残す。
+
+Workers配備後はCloudflareのdeployment/versionとWranglerの配備結果の一致を確認する。公開URLへのアクセス確認はCIでは行わず、配備後に運用者が実施する。

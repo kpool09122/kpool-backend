@@ -78,7 +78,7 @@ flowchart TB
 
 ## 配備と運用の流れ
 
-実線はテンプレートにある接続、破線はbackend release Pipeline からのbackend/frontend配備操作を示す。Blue/Green の新旧 API task が併存するのは配備・bake 中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
+実線はテンプレートにある接続、破線はbackend release Pipeline からのbackend/frontend配備操作を示す。Blue/Green の新旧 API task が併存するのは配備中で、通常時の台数は desired count で決まる。ALB と hook 用 VPC Endpoint は常設で、配備の有無にかかわらず料金が発生する。
 
 ```mermaid
 flowchart LR
@@ -131,7 +131,6 @@ flowchart LR
     alb -->|metrics| alarms
     sdlq -->|滞留数| alarms
     alarms --> sns
-    alarms -->|API の配備失敗時 rollback 判定| api
 ```
 
 Scheduler は月次Wiki権限更新用で、初期状態は無効。API配備後に `infra:operate configure` で稼働imageを反映して有効化する。送金処理は非公開のためscheduleを作成しない。Scheduler DLQは配送失敗、EventBridgeのECS STOPPED ruleは起動失敗・非0終了を通知する。SNS配送と実処理は実環境で確認する。外部canaryは任意とし、初期運用では追加しない。

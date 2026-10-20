@@ -103,7 +103,10 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 10. representative_symbol: Representative symbol text or null.
 11. overview: Overview of the group (concept, characteristics, agency, etc.) approximately 800 characters.
 12. history: Chronological description of formation, debut, and career milestones, approximately 1200 characters.
-13. representative_songs: Array of representative songs (max 10). Format: "Song Title (Year)". Example: "Dynamite (2020)"
+13. representative_songs: Array of up to 5 representative song objects. Each item must have:
+   - title: Song title and release year, e.g. "Dynamite (2020)".
+   - official_mv_url: Direct YouTube watch URL (https://www.youtube.com/watch?v=VIDEO_ID) of the official full music video, or null if not verified.
+   Search for each song's official MV. Only use uploads from the artist, agency, label, or authorized distributor's official channel, with evidence linking that channel to the artist/release. Do not rely on "official" in the video title alone. Exclude fan uploads, reuploads, teasers, Shorts, live performances, and dance practices. Never invent a URL or video ID. Include the pages used to verify the video and official uploader in sources. Keep the song with official_mv_url: null when no official MV can be verified.
 14. awards: Array of major awards (max 10). Include award name and year.
 15. members: Array of current member names (stage names).
 16. sources: Array of referenced pages used for this response. Each item must have:
@@ -113,7 +116,7 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
    - description: Short description of what information was verified from this page.
 
 ## Constraints
-- Limit your web searches to a maximum of 5 queries
+- Limit your web searches to a maximum of 10 queries (up to 5 for group information and up to 5 for official music videos)
 - Prioritize Korean language sources in this order:
   1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
   2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}

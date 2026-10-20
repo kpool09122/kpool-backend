@@ -111,14 +111,16 @@ Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki
 8. arranger: Name of the arranger(s). If multiple arrangers, separate with commas. If unknown, set to null.
 9. overview: Background, production, music style, and characteristics of the song, approximately 800 characters.
 10. chart_performance: Array of chart performance records (max 10). Format: "Chart Name - Ranking/Certification". Example: "Billboard Hot 100 - #1"
-11. sources: Array of referenced pages used for this response. Each item must have:
+11. official_mv_url: Direct YouTube watch URL (https://www.youtube.com/watch?v=VIDEO_ID) of one official full music video for the target song, or null if not verified.
+   Search using the song name and its performers to avoid confusing songs with the same title. Only use uploads from the artist, agency, label, or authorized distributor's official channel, with evidence linking that channel to the artist/release. Do not rely on "official" in the video title alone. Exclude fan uploads, reuploads, teasers, Shorts, live performances, and dance practices. Never invent a URL or video ID. Include the pages used to verify the video and official uploader in sources. Return null when no official MV can be verified.
+12. sources: Array of referenced pages used for this response. Each item must have:
    - page_title: Specific page title that describes the referenced content.
    - site_name: Website or publication name, not a search/proxy/cache host.
    - url: Direct HTTPS URL of the referenced page.
    - description: Short description of what information was verified from this page.
 
 ## Constraints
-- Limit your web searches to a maximum of 5 queries
+- Limit your web searches to a maximum of 6 queries (up to 5 for song information and 1 for the official music video)
 - Prioritize Korean language sources in this order:
   1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
   2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}

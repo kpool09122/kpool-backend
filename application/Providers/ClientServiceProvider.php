@@ -7,6 +7,7 @@ namespace Application\Providers;
 use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
+use Application\Http\Client\GoogleTranslateClient\GoogleTranslateCredentials;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Application\Http\Client\StripeClient\StripeClient;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
@@ -70,13 +71,17 @@ class ClientServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(GoogleTranslateClient::class, function (Application $app) {
-            /** @var string $projectId */
-            $projectId = config('google.project_id', '');
+            $projectId = config('google.project_id');
 
-            /** @var string $credentialsPath */
-            $credentialsPath = config('google.credentials_path', '');
+            $credentials = config('google.credentials');
 
-            return new GoogleTranslateClient($projectId, $credentialsPath, $app->make(LoggerInterface::class));
+            return new GoogleTranslateClient(
+                new GoogleTranslateCredentials(
+                    is_string($projectId) ? $projectId : '',
+                    is_string($credentials) ? $credentials : '',
+                ),
+                $app->make(LoggerInterface::class),
+            );
         });
 
         $this->app->singleton(GeminiClient::class, function (Application $app) {
