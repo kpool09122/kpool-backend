@@ -57,7 +57,7 @@ class BackendTests(unittest.TestCase):
         self.assertNotIn('WIKI_VISITOR_LOCATION_SECRET',{item['name'] for item in migration['secrets']})
     def test_external_service_secrets_use_application_secret_without_values_or_migration_access(self):
         names = ['GOOGLE_CLIENT_SECRET', 'LINE_CLIENT_SECRET', 'KAKAO_CLIENT_SECRET',
-                 'GENERATIVE_LANGUAGE_API_KEY', 'YOUTUBE_API_KEY', 'STRIPE_SECRET_KEY',
+                 'GENERATIVE_LANGUAGE_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS', 'YOUTUBE_API_KEY', 'STRIPE_SECRET_KEY',
                  'STRIPE_WEBHOOK_SECRET']
         self.config['app_secret_keys'] = names
         self.backend.preflight()
