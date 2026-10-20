@@ -25,6 +25,7 @@ class ActionTest extends TestCase
             'MERGE' => 'merge',
             'AUTOMATIC_CREATE' => 'automatic_create',
             'SAVE_VIDEO_LINKS' => 'save_video_links',
+            'SEARCH_FREE_MATERIALS' => 'search_free_materials',
             'DELETE' => 'delete',
             'HIDE' => 'hide',
             'UNHIDE' => 'unhide',

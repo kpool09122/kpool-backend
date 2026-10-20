@@ -162,6 +162,7 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_MERGE',
             'GLOBAL_AUTOMATIC_CREATE',
             'GLOBAL_SAVE_VIDEO_LINKS',
+            'GLOBAL_SEARCH_FREE_MATERIALS',
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
             'GLOBAL_UNHIDE',

@@ -831,6 +831,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /images/search-free-materials:
+    post:
+      operationId: FreeMaterialSearchOperations_searchFreeMaterials
+      description: Search free image materials for an unsaved Wiki. Operator and SeniorCollaborator only. Does not store input/results or download images. Provider configuration, transport and parsing failures return 503.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchFreeMaterialsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchFreeMaterialsRequestBody'
   /my/draft-wikis:
     get:
       operationId: MyDraftWikiListOperations_listMyDraftWikis
@@ -5400,6 +5466,34 @@ components:
             $ref: '#/components/schemas/PolicyStatement'
           description: Statements that define the effective policy.
       description: Effective policy summary returned for the current principal.
+    FreeMaterialSite:
+      type: object
+      required:
+        - siteName
+        - pageUrl
+        - reason
+        - usageEvidence
+        - usageEvidenceUrl
+      properties:
+        siteName:
+          type: string
+          minLength: 1
+          maxLength: 4096
+        pageUrl:
+          type: string
+          format: uri
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4096
+        usageEvidence:
+          type: string
+          minLength: 1
+          maxLength: 4096
+        usageEvidenceUrl:
+          type: string
+          format: uri
+      description: AI suggestion backed by search citations. Users must still confirm the source and usage conditions before use.
     GroupDraftWikiBasic:
       type: object
       required:
@@ -5919,6 +6013,35 @@ components:
           format: int32
           description: Number of wikis per page.
       description: Response body for the wiki list endpoint.
+    MaterialSearchRelatedWiki:
+      type: object
+      required:
+        - identifier
+        - title
+        - resourceType
+        - relationType
+      properties:
+        identifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        resourceType:
+          $ref: '#/components/schemas/MaterialSearchWikiType'
+        relationType:
+          type: string
+          minLength: 1
+          maxLength: 100
+      description: Related Wiki from the current unsaved editor state; used only to disambiguate the target.
+    MaterialSearchWikiType:
+      type: string
+      enum:
+        - agency
+        - group
+        - talent
+        - song
+      description: Wiki kinds supported by image material search.
     MetaDescriptionText:
       type: string
       maxLength: 140
@@ -6478,6 +6601,48 @@ components:
             $ref: '#/components/schemas/VideoLinkInput'
           description: Video links to save.
       description: Request body for saving video links.
+    SearchFreeMaterialsRequestBody:
+      type: object
+      required:
+        - resourceType
+        - language
+        - relatedWikis
+      properties:
+        title:
+          type: string
+          nullable: true
+          maxLength: 255
+        displayName:
+          type: string
+          nullable: true
+          maxLength: 255
+          description: Basic information display name, used when title is blank or null; not the SEO title.
+        resourceType:
+          $ref: '#/components/schemas/MaterialSearchWikiType'
+        language:
+          type: string
+          enum:
+            - ja
+            - en
+            - ko
+          description: Logged-in user's usage language, not Wiki language. Must match the authenticated user language; a mismatch returns 422.
+        relatedWikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialSearchRelatedWiki'
+          maxItems: 100
+      description: Unsaved Wiki search context. At least title or displayName must identify the target.
+    SearchFreeMaterialsResponseBody:
+      type: object
+      required:
+        - sites
+      properties:
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreeMaterialSite'
+          maxItems: 3
+          description: Up to three different material sites. No verified candidates is an empty list, not an error.
     SearchMasterWikisResponseBody:
       type: object
       required:

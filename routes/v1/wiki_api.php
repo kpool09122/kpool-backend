@@ -11,6 +11,7 @@ use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListImageDeletionRequests\ListImageDeletionRequestsAction;
 use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImagesAction;
+use Application\Http\Action\Wiki\Image\Query\SearchFreeMaterials\SearchFreeMaterialsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
@@ -111,6 +112,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 
         // ImageDeletionRequest
         Route::get('/image-deletion-requests', ListImageDeletionRequestsAction::class);
+        Route::post('/images/search-free-materials', SearchFreeMaterialsAction::class);
 
         // OfficialCertification
         Route::get('/official-certifications', ListOfficialCertificationsAction::class);

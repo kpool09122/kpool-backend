@@ -19,6 +19,7 @@ enum Action: string
     case MERGE = 'merge';
     case AUTOMATIC_CREATE = 'automatic_create';
     case SAVE_VIDEO_LINKS = 'save_video_links';
+    case SEARCH_FREE_MATERIALS = 'search_free_materials';
     case DELETE = 'delete';
     case HIDE = 'hide';
     case UNHIDE = 'unhide';

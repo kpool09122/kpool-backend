@@ -292,6 +292,54 @@ interface ImageOperations {
   ): RejectImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
+@doc("Wiki kinds supported by image material search.")
+union MaterialSearchWikiType { "agency", "group", "talent", "song" }
+
+@doc("Related Wiki from the current unsaved editor state; used only to disambiguate the target.")
+model MaterialSearchRelatedWiki {
+  identifier: Uuid;
+  @minLength(1) @maxLength(255) title: string;
+  resourceType: MaterialSearchWikiType;
+  @minLength(1) @maxLength(100) relationType: string;
+}
+
+@doc("Unsaved Wiki search context. At least title or displayName must identify the target.")
+model SearchFreeMaterialsRequestBody {
+  @maxLength(255) title?: string | null;
+  @doc("Basic information display name, used when title is blank or null; not the SEO title.")
+  @maxLength(255) displayName?: string | null;
+  resourceType: MaterialSearchWikiType;
+  @doc("Logged-in user's usage language, not Wiki language. Must match the authenticated user language; a mismatch returns 422.")
+  language: "ja" | "en" | "ko";
+  @maxItems(100) relatedWikis: MaterialSearchRelatedWiki[];
+}
+
+@doc("AI suggestion backed by search citations. Users must still confirm the source and usage conditions before use.")
+model FreeMaterialSite {
+  @minLength(1) @maxLength(4096) siteName: string;
+  @format("uri") pageUrl: string;
+  @minLength(1) @maxLength(4096) reason: string;
+  @minLength(1) @maxLength(4096) usageEvidence: string;
+  @format("uri") usageEvidenceUrl: string;
+}
+
+model SearchFreeMaterialsResponseBody {
+  @doc("Up to three different material sites. No verified candidates is an empty list, not an error.")
+  @maxItems(3) sites: FreeMaterialSite[];
+}
+
+model SearchFreeMaterialsResponse {
+  @statusCode statusCode: 200;
+  @body body: SearchFreeMaterialsResponseBody;
+}
+
+@route("/images/search-free-materials")
+interface FreeMaterialSearchOperations {
+  @post
+  @doc("Search free image materials for an unsaved Wiki. Operator and SeniorCollaborator only. Does not store input/results or download images. Provider configuration, transport and parsing failures return 503.")
+  searchFreeMaterials(@body body: SearchFreeMaterialsRequestBody): SearchFreeMaterialsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
 @route("/images")
 interface ImageListOperations {
   @get

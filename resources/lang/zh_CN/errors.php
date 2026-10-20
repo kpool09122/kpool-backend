@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_material_search_context' => '图片素材搜索条件无效。',
     'principal_inactive' => '此用户已停止使用。',
     'principal_status_change_forbidden' => '无法通过用户权限管理更改强制停止状态。',
     'published_announcement_not_found' => '找不到指定的公告。',
