@@ -6,7 +6,6 @@ namespace Tests\Account\Account\Application\UseCase\Query;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestDetailReadModel;
-use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestIdentityReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountDocumentReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
@@ -35,7 +34,6 @@ class AccountCategoryChangeRequestDetailReadModelTest extends TestCase
                 status: 'active',
                 accountCategory: 'general',
             ),
-            identities: [new AccountCategoryChangeRequestIdentityReadModel('Alice', 'alice@example.com')],
             documents: [new AccountDocumentReadModel('identity', 'documents/identity.png', '2026-08-11T11:00:00+00:00')],
         );
 
@@ -60,9 +58,6 @@ class AccountCategoryChangeRequestDetailReadModelTest extends TestCase
                 'accountCategory' => 'general',
                 'phone' => null,
                 'address' => null,
-            ],
-            'identities' => [
-                ['name' => 'Alice', 'email' => 'alice@example.com'],
             ],
             'documents' => [
                 ['documentType' => 'identity', 'documentPath' => 'documents/identity.png', 'uploadedAt' => '2026-08-11T11:00:00+00:00'],

@@ -54,6 +54,16 @@ class DocumentStorageService implements DocumentStorageServiceInterface
         return $documentPath;
     }
 
+    public function copy(DocumentPath $source, DocumentPath $destination): void
+    {
+        if (! Storage::disk(self::DISK)->copy((string) $source, (string) $destination)) {
+            throw UnableToWriteFile::atLocation((string) $destination);
+        }
+        if (DB::transactionLevel() > 0) {
+            DB::afterRollBack(fn () => $this->deleteFile($destination));
+        }
+    }
+
     public function getTemporaryUrl(DocumentPath $path, int $expirationMinutes = 30): string
     {
         $disk = Storage::disk(self::DISK);

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestApprovalException;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestRejectionException;
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestWithdrawalException;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestAccount;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
@@ -26,7 +27,13 @@ class AccountCategoryChangeRequest
         private ?AccountIdentifier $reviewedBy,
         private ?DateTimeImmutable $reviewedAt,
         private ?RejectionReason $rejectionReason,
+        private readonly AccountCategoryChangeRequestAccount $accountSnapshot,
     ) {
+    }
+
+    public function accountSnapshot(): AccountCategoryChangeRequestAccount
+    {
+        return $this->accountSnapshot;
     }
 
     public function requestIdentifier(): AccountCategoryChangeRequestIdentifier

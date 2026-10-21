@@ -14,6 +14,7 @@ use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeReques
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,6 +44,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
             null,
             null,
             null,
+            CreateAccountCategoryChangeRequestAccount::create(locality: null),
         );
 
         $repository = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class);
@@ -58,6 +60,8 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
         ]);
         $this->assertNotNull($found);
         $this->assertSame($requestId, (string) $found->requestIdentifier());
+        $this->assertEquals($request->accountSnapshot(), $found->accountSnapshot());
+        $this->assertNull($found->accountSnapshot()->locality);
         $this->assertSame(AccountCategory::GENERAL, $found->currentAccountCategory());
         $this->assertSame(AccountCategory::AGENCY, $found->requestedAccountCategory());
         $this->assertSame(AccountCategoryChangeRequestStatus::PENDING, $found->status());
@@ -81,6 +85,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
             null,
             null,
             null,
+            CreateAccountCategoryChangeRequestAccount::create(),
         ));
 
         $found = $repository->findByAccountIdAndStatuses(new AccountIdentifier($accountId), [AccountCategoryChangeRequestStatus::PENDING]);
@@ -95,7 +100,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $accountId);
         $repository = new AccountCategoryChangeRequestRepository();
-        $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::PENDING, new DateTimeImmutable('2026-08-11'), null, null, null);
+        $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::PENDING, new DateTimeImmutable('2026-08-11'), null, null, null, CreateAccountCategoryChangeRequestAccount::create());
         $repository->save($request);
         $request->withdraw();
         $repository->save($request);
@@ -108,7 +113,7 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
         $this->assertNull($found->rejectionReason());
         $this->assertSame([], $repository->findByAccountIdAndStatuses($accountId, [AccountCategoryChangeRequestStatus::PENDING]));
         $this->assertSame([], $repository->findByAccountIdAndStatuses($accountId, [AccountCategoryChangeRequestStatus::APPROVED]));
-        $next = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::TALENT, AccountCategoryChangeRequestStatus::PENDING, new DateTimeImmutable(), null, null, null);
+        $next = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::TALENT, AccountCategoryChangeRequestStatus::PENDING, new DateTimeImmutable(), null, null, null, CreateAccountCategoryChangeRequestAccount::create());
         $repository->save($next);
         $this->assertDatabaseHas('accounts', ['id' => (string) $accountId, 'category' => 'general']);
         $this->assertDatabaseCount('account_category_change_requests', 2);
@@ -121,10 +126,10 @@ class AccountCategoryChangeRequestRepositoryTest extends TestCase
         CreateAccount::create((string) $accountId);
         $repository = new AccountCategoryChangeRequestRepository();
         foreach ([AccountCategoryChangeRequestStatus::REJECTED, AccountCategoryChangeRequestStatus::WITHDRAWN, AccountCategoryChangeRequestStatus::PENDING] as $status) {
-            $repository->save(new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable('2026-08-12'), null, null, null));
+            $repository->save(new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable('2026-08-12'), null, null, null, CreateAccountCategoryChangeRequestAccount::create()));
         }
         $this->assertSame([], $repository->findByAccountIdAndStatuses($accountId, [AccountCategoryChangeRequestStatus::APPROVED]));
-        $repository->save(new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::APPROVED, new DateTimeImmutable('2026-08-11'), null, null, null));
+        $repository->save(new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::APPROVED, new DateTimeImmutable('2026-08-11'), null, null, null, CreateAccountCategoryChangeRequestAccount::create()));
         $found = $repository->findByAccountIdAndStatuses($accountId, [AccountCategoryChangeRequestStatus::APPROVED]);
         $this->assertCount(1, $found);
         $this->assertSame(AccountCategoryChangeRequestStatus::APPROVED, $found[0]->status());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\WithdrawFromService;
 
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
@@ -24,6 +25,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
+        private AccountCategoryChangeRequestSnapshotServiceInterface $accountCategoryChangeRequestSnapshotService,
         private PrincipalRepositoryInterface $principalRepository,
         private WithdrawalEligibilityServiceInterface $withdrawalEligibilityService,
         private ArchivedPrincipalRepositoryInterface $archivedPrincipalRepository,
@@ -69,6 +71,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
                 $this->documentStorageService->delete($document->documentPath());
             }
             $this->eventDispatcher->dispatch(new AccountDeleting($account->accountIdentifier()));
+            $this->accountCategoryChangeRequestSnapshotService->deleteForAccount($account->accountIdentifier());
             $this->accountRepository->delete($account);
         }
         $this->principalRepository->deleteByIdentityIdentifier($identityIdentifier);

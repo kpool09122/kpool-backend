@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\DeleteAccount;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInput;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
@@ -64,6 +65,9 @@ class DeleteAccountTest extends TestCase
             ->andReturnNull();
 
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
+        $snapshotService = Mockery::mock(AccountCategoryChangeRequestSnapshotServiceInterface::class);
+        $snapshotService->shouldReceive('deleteForAccount')->once()->with($dummyData->identifier);
+        $this->app()->instance(AccountCategoryChangeRequestSnapshotServiceInterface::class, $snapshotService);
         $useCase = $this->app()->make(DeleteAccountInterface::class);
         $output = new DeleteAccountOutput();
         $useCase->process($input, $output);

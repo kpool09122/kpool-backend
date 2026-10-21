@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Infrastructure\Query;
 
-use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\AccountCategoryChangeRequest as AccountCategoryChangeRequestModel;
-use Application\Models\Account\AccountDocument as AccountDocumentModel;
-use Application\Models\Account\Principal as PrincipalModel;
+use Application\Models\Account\AccountCategoryChangeRequestDocument;
 use DateTimeInterface;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
-use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestDetailReadModel;
-use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestIdentityReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountDocumentReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
@@ -23,7 +19,6 @@ use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeReq
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
-use UnexpectedValueException;
 
 readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChangeRequestInterface
 {
@@ -41,78 +36,11 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
         )) {
             throw new AccountCategoryChangeRequestForbiddenException();
         }
-
-        /** @var AccountCategoryChangeRequestModel|null $request */
-        $request = AccountCategoryChangeRequestModel::query()
-            ->select([
-                'id',
-                'account_id',
-                'current_account_category',
-                'requested_account_category',
-                'status',
-                'requested_at',
-                'reviewed_by',
-                'reviewed_at',
-                'rejection_reason',
-            ])
-            ->where('id', (string) $input->requestIdentifier())
-            ->first();
-
+        $request = AccountCategoryChangeRequestModel::query()->with('documents')
+            ->where('id', (string) $input->requestIdentifier())->first();
         if ($request === null) {
             throw new AccountCategoryChangeRequestNotFoundException();
         }
-
-        /** @var AccountModel|null $account */
-        $account = AccountModel::query()
-            ->select([
-                'id',
-                'email',
-                'type',
-                'name',
-                'status',
-                'category',
-                'phone',
-                'address_country_code',
-                'address_administrative_area_code',
-                'address_postal_code',
-                'address_locality',
-                'address_line1',
-                'address_line2',
-            ])
-            ->where('id', $request->account_id)
-            ->first();
-
-        if ($account === null) {
-            throw new AccountNotFoundException();
-        }
-
-        $identities = PrincipalModel::query()
-            ->select('account_principals.*')
-            ->with('identity')
-            ->where('account_id', $request->account_id)
-            ->join('identities', 'identities.id', '=', 'account_principals.identity_id')
-            ->orderBy('identities.identity_name')
-            ->get()
-            ->map(static fn (PrincipalModel $principal): AccountCategoryChangeRequestIdentityReadModel => new AccountCategoryChangeRequestIdentityReadModel(
-                name: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->identity_name,
-                email: ($principal->identity ?? throw new UnexpectedValueException('Principal identity is missing.'))->email,
-            ))
-            ->values()
-            ->all();
-
-        $documents = AccountDocumentModel::query()
-            ->select(['document_type', 'document_path', 'uploaded_at'])
-            ->where('account_id', $request->account_id)
-            ->orderBy('document_type')
-            ->get()
-            ->map(static fn (AccountDocumentModel $document): AccountDocumentReadModel => new AccountDocumentReadModel(
-                documentType: $document->document_type,
-                documentPath: $document->document_path,
-                uploadedAt: $document->uploaded_at->format(DateTimeInterface::ATOM),
-            ))
-            ->values()
-            ->all();
-
         $output->output(new AccountCategoryChangeRequestDetailReadModel(
             request: new AccountCategoryChangeRequestReadModel(
                 requestIdentifier: $request->id,
@@ -123,62 +51,32 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
                 requestedAt: $request->requested_at->format(DateTimeInterface::ATOM),
                 reviewedBy: $request->reviewed_by,
                 reviewedAt: $request->reviewed_at?->format(DateTimeInterface::ATOM),
-                rejectionReason: self::rejectionReason($request->rejection_reason),
+                rejectionReason: $request->rejection_reason,
             ),
             account: new AccountReadModel(
-                accountIdentifier: $account->id,
-                email: $account->email,
-                type: $account->type,
-                name: $account->name,
-                status: $account->status,
-                accountCategory: $account->category,
-                phone: $account->phone,
-                address: self::address($account),
+                accountIdentifier: $request->account_id,
+                email: $request->account_email,
+                type: $request->account_type,
+                name: $request->account_name,
+                status: $request->account_status,
+                accountCategory: $request->current_account_category,
+                phone: $request->account_phone,
+                address: [
+                    'countryCode' => $request->account_address_country_code,
+                    'administrativeAreaCode' => $request->account_address_administrative_area_code,
+                    'postalCode' => $request->account_address_postal_code,
+                    'locality' => $request->account_address_locality,
+                    'addressLine1' => $request->account_address_line1,
+                    'addressLine2' => $request->account_address_line2,
+                ],
             ),
-            identities: $identities,
-            documents: $documents,
+            documents: $request->documents->map(
+                static fn (AccountCategoryChangeRequestDocument $document): AccountDocumentReadModel => new AccountDocumentReadModel(
+                    $document->document_type,
+                    $document->document_path,
+                    $document->uploaded_at->format(DateTimeInterface::ATOM),
+                ),
+            )->all(),
         ));
-    }
-
-    /**
-     * @param array<string, string|null>|null $rejectionReason
-     * @return array{code: string, detail: ?string}|null
-     */
-    private static function rejectionReason(?array $rejectionReason): ?array
-    {
-        if ($rejectionReason === null) {
-            return null;
-        }
-
-        return [
-            'code' => (string) $rejectionReason['code'],
-            'detail' => isset($rejectionReason['detail']) ? (string) $rejectionReason['detail'] : null,
-        ];
-    }
-
-    /**
-     * @return array{countryCode: string|null, administrativeAreaCode: string|null, postalCode: string|null, locality: string|null, addressLine1: string|null, addressLine2: string|null}|null
-     */
-    private static function address(AccountModel $account): ?array
-    {
-        if (
-            $account->address_country_code === null
-            && $account->address_administrative_area_code === null
-            && $account->address_postal_code === null
-            && $account->address_locality === null
-            && $account->address_line1 === null
-            && $account->address_line2 === null
-        ) {
-            return null;
-        }
-
-        return [
-            'countryCode' => $account->address_country_code,
-            'administrativeAreaCode' => $account->address_administrative_area_code,
-            'postalCode' => $account->address_postal_code,
-            'locality' => $account->address_locality,
-            'addressLine1' => $account->address_line1,
-            'addressLine2' => $account->address_line2,
-        ];
     }
 }

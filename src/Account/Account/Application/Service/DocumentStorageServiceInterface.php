@@ -18,6 +18,8 @@ interface DocumentStorageServiceInterface
         string $contents,
     ): DocumentPath;
 
+    public function copy(DocumentPath $source, DocumentPath $destination): void;
+
     /**
      * Get a temporary URL for accessing the document.
      *

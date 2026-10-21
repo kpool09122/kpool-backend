@@ -97,7 +97,13 @@ class Account
 
     public function hasRequiredContactForCategoryChange(): bool
     {
-        if ($this->phone === null || $this->address === null || $this->address->countryCode() === null || $this->address->addressLine1() === null) {
+        if (
+            $this->phone === null
+            || $this->address === null
+            || $this->address->countryCode() === null
+            || $this->address->postalCode() === null
+            || $this->address->addressLine1() === null
+        ) {
             return false;
         }
 

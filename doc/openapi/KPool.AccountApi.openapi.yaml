@@ -233,6 +233,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-category-change-requests/{requestId}/documents/{documentType}:
+    get:
+      operationId: AccountCategoryChangeRequestOperations_viewAccountCategoryChangeRequestDocument
+      description: View an independently stored application document snapshot. Requires category request management permission.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: documentType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when an account document file is streamed.
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - private, no-store
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /account-category-change-requests/{requestId}/reject:
     post:
       operationId: AccountCategoryChangeRequestOperations_rejectAccountCategoryChangeRequest
@@ -453,7 +531,7 @@ paths:
   /accounts/{accountIdentifier}/category-change-requests:
     post:
       operationId: AccountCategoryChangeRequestOperations_requestAccountCategoryChange
-      description: Request account category change. Accounts with any approved request history cannot apply again; rejected or withdrawn history permits a new request when the remaining requirements are met.
+      description: Request account category change. Requires saved phone, address country, postal code, and address line 1, plus administrative area code where applicable. Accounts with any approved request history cannot apply again; rejected or withdrawn history permits a new request when the remaining requirements are met.
       parameters:
         - name: accountIdentifier
           in: path
@@ -952,84 +1030,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UploadAccountDocumentsRequestBody'
-  /accounts/{accountId}/documents/{documentType}:
-    get:
-      operationId: AccountOperations_viewAccountDocument
-      description: View a saved document file for the specified account as an operator.
-      parameters:
-        - name: accountId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-        - name: documentType
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Response returned when an account document file is streamed.
-          headers:
-            Cache-Control:
-              required: true
-              schema:
-                type: string
-                enum:
-                  - private, no-store
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '403':
-          description: Access is forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '429':
-          description: Client error
-          headers:
-            Retry-After:
-              required: true
-              schema:
-                type: integer
-                format: int32
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '503':
-          description: Service unavailable.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /accounts/{accountId}/notification-settings:
     get:
       operationId: AccountNotificationOperations_getNotificationSettings
@@ -2411,7 +2411,6 @@ components:
       required:
         - request
         - account
-        - identities
         - documents
       properties:
         request:
@@ -2421,31 +2420,13 @@ components:
         account:
           allOf:
             - $ref: '#/components/schemas/AccountSummary'
-          description: Target account.
-        identities:
-          type: array
-          items:
-            $ref: '#/components/schemas/AccountCategoryChangeRequestIdentitySummary'
-          description: Identities attached to the target account.
+          description: Account information captured when the request was submitted.
         documents:
           type: array
           items:
             $ref: '#/components/schemas/AccountDocumentSummary'
-          description: Documents attached to the target account.
+          description: Independent copies of the documents captured when the request was submitted.
       description: Response body for account category change request detail.
-    AccountCategoryChangeRequestIdentitySummary:
-      type: object
-      required:
-        - name
-        - email
-      properties:
-        name:
-          type: string
-          description: Identity display name.
-        email:
-          type: string
-          description: Identity email address.
-      description: Identity summary attached to an account category change request target account.
     AccountCategoryChangeRequestListItemSummary:
       type: object
       required:
@@ -2504,7 +2485,7 @@ components:
         account:
           allOf:
             - $ref: '#/components/schemas/AccountSummary'
-          description: Target account.
+          description: Account information captured when the request was submitted.
       description: Account category change request state with target account summary.
     AccountCategoryChangeRequestSummary:
       type: object
