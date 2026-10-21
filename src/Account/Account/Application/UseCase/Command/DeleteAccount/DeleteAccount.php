@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Account\Application\UseCase\Command\DeleteAccount;
 
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 
@@ -12,6 +13,7 @@ readonly class DeleteAccount implements DeleteAccountInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
+        private AccountCategoryChangeRequestSnapshotServiceInterface $accountCategoryChangeRequestSnapshotService,
     ) {
     }
 
@@ -33,6 +35,7 @@ readonly class DeleteAccount implements DeleteAccountInterface
 
         $account->assertDeletable();
 
+        $this->accountCategoryChangeRequestSnapshotService->deleteForAccount($account->accountIdentifier());
         $this->accountRepository->delete($account);
 
         $output->setAccount($account);

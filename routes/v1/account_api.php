@@ -12,10 +12,10 @@ use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocume
 use Application\Http\Action\Account\Account\Command\WithdrawAccountCategoryChangeRequest\WithdrawAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequestDocument\GetAccountCategoryChangeRequestDocumentAction;
 use Application\Http\Action\Account\Account\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
-use Application\Http\Action\Account\Account\Query\ViewAccountDocument\ViewAccountDocumentAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
@@ -45,7 +45,6 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
         Route::get('/accounts/{accountId}', GetAccountAction::class);
         Route::get('/accounts/{accountId}/notification-settings', GetNotificationSettingsAction::class);
-        Route::get('/accounts/{accountId}/documents/{documentType}', ViewAccountDocumentAction::class);
 
         // Delegation
         Route::get('/delegations', ListDelegationsAction::class);
@@ -59,6 +58,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // AccountCategoryChangeRequest
         Route::get('/accounts/{accountIdentifier}/category-change-requests/latest', GetLatestAccountCategoryChangeRequestAction::class);
         Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
+        Route::get('/account-category-change-requests/{requestId}/documents/{documentType}', GetAccountCategoryChangeRequestDocumentAction::class);
         Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
 
         // Affiliation

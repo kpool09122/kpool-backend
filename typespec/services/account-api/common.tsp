@@ -11,9 +11,9 @@ model AccountDocumentUploadItem {
   fileContents: string;
 }
 
-@doc("Request body for account document upload.")
+@doc("Request body for saving the complete account document set.")
 model UploadAccountDocumentsRequestBody {
-  @doc("Documents to upload.")
+  @doc("Complete document set to save. An empty array removes all saved documents. Required documents are checked when requesting an account category change.")
   documents: AccountDocumentUploadItem[];
 }
 
@@ -277,18 +277,10 @@ model AccountCategoryChangeRequestSummary {
   rejectionReason?: VerificationRejectionReasonSummary | null;
 }
 
-@doc("Identity summary attached to an account category change request target account.")
-model AccountCategoryChangeRequestIdentitySummary {
-  @doc("Identity display name.")
-  name: string;
-  @doc("Identity email address.")
-  email: string;
-}
-
 @doc("Account category change request state with target account summary.")
 model AccountCategoryChangeRequestListItemSummary {
   ...AccountCategoryChangeRequestSummary;
-  @doc("Target account.")
+  @doc("Account information captured when the request was submitted.")
   account: AccountSummary;
 }
 
@@ -296,11 +288,9 @@ model AccountCategoryChangeRequestListItemSummary {
 model AccountCategoryChangeRequestDetailResponseBody {
   @doc("Account category change request.")
   request: AccountCategoryChangeRequestSummary;
-  @doc("Target account.")
+  @doc("Account information captured when the request was submitted.")
   account: AccountSummary;
-  @doc("Identities attached to the target account.")
-  identities: AccountCategoryChangeRequestIdentitySummary[];
-  @doc("Documents attached to the target account.")
+  @doc("Independent copies of the documents captured when the request was submitted.")
   documents: AccountDocumentSummary[];
 }
 

@@ -7,6 +7,7 @@ namespace Tests\Account\Account\Application\UseCase\Command\UploadDocuments;
 use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Source\Account\Account\Application\Exception\AccountDocumentUploadForbiddenException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
@@ -42,6 +43,97 @@ use Tests\TestCase;
 
 class UploadDocumentsTest extends TestCase
 {
+    /** @return array<string, array{AccountType, DocumentType[]}> */
+    public static function partialDocumentSets(): array
+    {
+        return [
+            'clear corporate documents' => [AccountType::CORPORATION, []],
+            'clear individual documents' => [AccountType::INDIVIDUAL, []],
+            'save corporate document alone' => [AccountType::CORPORATION, [DocumentType::REPRESENTATIVE_ID]],
+            'save individual document alone' => [AccountType::INDIVIDUAL, [DocumentType::PASSPORT]],
+        ];
+    }
+
+    /** @param DocumentType[] $documentTypes */
+    #[DataProvider('partialDocumentSets')]
+    public function testSavesIncompleteOrEmptyDocumentSet(AccountType $accountType, array $documentTypes): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $oldPath = new DocumentPath('accounts/documents/old.pdf');
+        $oldType = $accountType === AccountType::CORPORATION ? DocumentType::CORPORATE_REGISTRY : DocumentType::SELFIE;
+        $account = $this->createAccount($accountId, $accountType, [
+            new AccountDocument($accountId, $oldType, $oldPath, new DateTimeImmutable()),
+        ]);
+        /** @var AccountRepositoryInterface&MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->with($accountId)->andReturn($account);
+        $accountRepository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (Account $saved): bool => $saved->documents()->documentTypes() === $documentTypes,
+        ));
+        /** @var DocumentStorageServiceInterface&MockInterface $documentStorageService */
+        $documentStorageService = Mockery::mock(DocumentStorageServiceInterface::class);
+        $documentStorageService->shouldReceive('delete')->once()->with($oldPath);
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
+        $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
+        $documents = [];
+        foreach ($documentTypes as $documentType) {
+            $documents[] = new DocumentData($documentType, 'contents');
+            $fileTypeDetector->shouldReceive('detect')->once()->with('contents')->andReturn(AccountDocumentFileType::PDF);
+            $documentStorageService->shouldReceive('storeForAccount')->once()
+                ->with($accountId, $documentType, AccountDocumentFileType::PDF, 'contents')
+                ->andReturn(new DocumentPath('accounts/documents/new.pdf'));
+        }
+        if ($documents === []) {
+            $fileTypeDetector->shouldNotReceive('detect');
+            $documentStorageService->shouldNotReceive('storeForAccount');
+        }
+        $this->bindUseCaseDependencies($accountRepository, $documentStorageService, $fileTypeDetector);
+        $output = new UploadDocumentsOutput();
+
+        $this->app()->make(UploadDocumentsInterface::class)->process(
+            new UploadDocumentsInput($accountId, $this->createPrincipal($accountId), $documents),
+            $output,
+        );
+
+        self::assertCount(count($documentTypes), $output->toArray()['documents']);
+    }
+
+    /** @return array<string, array{DocumentType[]}> */
+    public static function invalidDocumentTypes(): array
+    {
+        return [
+            'duplicate' => [[DocumentType::REPRESENTATIVE_ID, DocumentType::REPRESENTATIVE_ID]],
+            'different account type' => [[DocumentType::PASSPORT]],
+        ];
+    }
+
+    /** @param DocumentType[] $documentTypes */
+    #[DataProvider('invalidDocumentTypes')]
+    public function testRejectsInvalidDocumentTypesBeforeStoring(array $documentTypes): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        /** @var AccountRepositoryInterface&MockInterface $accountRepository */
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')->once()->andReturn($this->createAccount($accountId, AccountType::CORPORATION));
+        $accountRepository->shouldNotReceive('save');
+        /** @var DocumentStorageServiceInterface&MockInterface $documentStorageService */
+        $documentStorageService = Mockery::mock(DocumentStorageServiceInterface::class);
+        $documentStorageService->shouldNotReceive('storeForAccount');
+        /** @var AccountDocumentFileTypeDetectorInterface&MockInterface $fileTypeDetector */
+        $fileTypeDetector = Mockery::mock(AccountDocumentFileTypeDetectorInterface::class);
+        $fileTypeDetector->shouldNotReceive('detect');
+        $this->bindUseCaseDependencies($accountRepository, $documentStorageService, $fileTypeDetector);
+
+        $this->expectException(InvalidDocumentsForVerificationException::class);
+        $this->app()->make(UploadDocumentsInterface::class)->process(
+            new UploadDocumentsInput($accountId, $this->createPrincipal($accountId), array_map(
+                static fn (DocumentType $documentType): DocumentData => new DocumentData($documentType, 'contents'),
+                $documentTypes,
+            )),
+            new UploadDocumentsOutput(),
+        );
+    }
+
     public function testRejectsMissingAccountTypeBeforeStoringDocuments(): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());

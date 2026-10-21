@@ -16,7 +16,7 @@ class UploadDocumentsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'documents' => ['required', 'array', 'min:1'],
+            'documents' => ['present', 'array'],
             'documents.*.documentType' => ['required', 'string'],
             'documents.*.fileContents' => ['required', 'string'],
         ];

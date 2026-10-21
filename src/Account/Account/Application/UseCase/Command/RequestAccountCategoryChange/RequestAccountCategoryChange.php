@@ -9,11 +9,13 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestAccount;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 
 readonly class RequestAccountCategoryChange implements RequestAccountCategoryChangeInterface
@@ -23,6 +25,7 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountCategoryChangeRequestFactoryInterface $requestFactory,
         private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
+        private AccountCategoryChangeRequestSnapshotServiceInterface $accountCategoryChangeRequestSnapshotService,
     ) {
     }
 
@@ -51,8 +54,9 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
 
         $this->documentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
-        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory());
+        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory(), AccountCategoryChangeRequestAccount::fromAccount($account));
         $this->accountCategoryChangeRequestRepository->save($request);
+        $this->accountCategoryChangeRequestSnapshotService->capture($request, $account);
         $output->setRequest($request);
     }
 }

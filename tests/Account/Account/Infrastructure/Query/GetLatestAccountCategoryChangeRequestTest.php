@@ -17,6 +17,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -111,6 +112,7 @@ class GetLatestAccountCategoryChangeRequestTest extends TestCase
 
     private function insertRequest(string $id, AccountIdentifier $accountId, string $status, string $requestedAt): void
     {
-        DB::table('account_category_change_requests')->insert(['id' => $id, 'account_id' => (string) $accountId, 'current_account_category' => 'general', 'requested_account_category' => 'agency', 'status' => $status, 'requested_at' => $requestedAt]);
+        DB::table('account_category_change_requests')->insert([
+            ...CreateAccountCategoryChangeRequestAccount::columns(),'id' => $id, 'account_id' => (string) $accountId, 'current_account_category' => 'general', 'requested_account_category' => 'agency', 'status' => $status, 'requested_at' => $requestedAt]);
     }
 }

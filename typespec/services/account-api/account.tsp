@@ -50,7 +50,6 @@ interface AccountNotificationOperations {
   updateNotificationSettings(@path accountId: Uuid, @body body: UpdateAccountNotificationSettingsBody): UpdatedAccountNotificationSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 }
 
-
 @doc("Request body for updating account information.")
 model UpdateAccountRequestBody {
   @doc("Updated account display name.")
@@ -159,18 +158,11 @@ interface AccountOperations {
 
   @post
   @route("/{accountId}/documents")
-  @doc("Upload required documents for an account.")
+  @doc("Save the complete document set for an account, including an empty set to remove all documents.")
   uploadDocuments(
     @path accountId: Uuid,
     @body body: UploadAccountDocumentsRequestBody,
   ): CreatedAccountDocumentsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
-  @get
-  @route("/{accountId}/documents/{documentType}")
-  @doc("View a saved document file for the specified account as an operator.")
-  viewAccountDocument(
-    @path accountId: Uuid,
-    @path documentType: string,
-  ): OkAccountDocumentFileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
 }

@@ -11,6 +11,7 @@ use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdenti
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,6 +34,7 @@ class ApproveAccountCategoryChangeRequestOutputTest extends TestCase
             $reviewedBy,
             $reviewedAt,
             null,
+            CreateAccountCategoryChangeRequestAccount::create(),
         );
 
         $output = new ApproveAccountCategoryChangeRequestOutput();

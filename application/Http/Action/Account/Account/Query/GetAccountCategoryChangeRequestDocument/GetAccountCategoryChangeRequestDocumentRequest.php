@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Account\Query\ViewAccountDocument;
+namespace Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequestDocument;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ViewAccountDocumentRequest extends FormRequest
+class GetAccountCategoryChangeRequestDocumentRequest extends FormRequest
 {
     use ResolvesLanguage;
 
@@ -17,9 +17,9 @@ class ViewAccountDocumentRequest extends FormRequest
         return [];
     }
 
-    public function accountId(): string
+    public function requestId(): string
     {
-        return (string) $this->route('accountId');
+        return (string) $this->route('requestId');
     }
 
     public function documentType(): string

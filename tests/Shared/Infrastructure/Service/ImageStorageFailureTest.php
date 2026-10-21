@@ -11,6 +11,7 @@ use League\Flysystem\UnableToWriteFile;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\NullLogger;
+use Source\Shared\Application\Service\SvgImageRasterizerInterface;
 use Source\Shared\Infrastructure\Service\ImageService;
 use Tests\TestCase;
 
@@ -31,7 +32,7 @@ class ImageStorageFailureTest extends TestCase
         Storage::shouldReceive('disk')->with('s3')->andReturn($disk);
         $data = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true);
         self::assertIsString($data);
-        $service = new ImageService(new NullLogger());
+        $service = new ImageService(new NullLogger(), $this->app()->make(SvgImageRasterizerInterface::class));
         Http::fake(['https://example.test/image.png' => Http::response($data)]);
 
         $this->expectException(UnableToWriteFile::class);

@@ -11,6 +11,7 @@ use Source\Account\Account\Infrastructure\Factory\AccountCategoryChangeRequestFa
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ class AccountCategoryChangeRequestFactoryTest extends TestCase
         $requestedAccountCategory = AccountCategory::AGENCY;
 
         $factory = $this->app()->make(AccountCategoryChangeRequestFactoryInterface::class);
-        $request = $factory->create($accountIdentifier, $currentAccountCategory, $requestedAccountCategory);
+        $request = $factory->create($accountIdentifier, $currentAccountCategory, $requestedAccountCategory, CreateAccountCategoryChangeRequestAccount::create());
 
         $this->assertTrue(UuidValidator::isValid((string) $request->requestIdentifier()));
         $this->assertSame((string) $accountIdentifier, (string) $request->accountIdentifier());

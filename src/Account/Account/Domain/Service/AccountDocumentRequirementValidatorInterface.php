@@ -11,4 +11,7 @@ interface AccountDocumentRequirementValidatorInterface
 {
     /** @param DocumentType[] $documentTypes */
     public function validate(AccountType $accountType, array $documentTypes): void;
+
+    /** @param DocumentType[] $documentTypes */
+    public function validateTypes(AccountType $accountType, array $documentTypes): void;
 }

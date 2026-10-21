@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInput;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsOutput;
+use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Infrastructure\Query\ListAccountCategoryChangeRequests;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -20,6 +24,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -42,11 +47,13 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         CreateAccount::create((string) $accountB, ['email' => 'account-b@example.com', 'name' => 'Account B']);
 
         $oldId = StrTestHelper::generateUuid();
-        $newerLowId = '00000000-0000-0000-0000-000000000001';
-        $newerHighId = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+        $newerLowId = '00000000-0000-4000-8000-000000000001';
+        $newerHighId = 'ffffffff-ffff-4fff-bfff-ffffffffffff';
         $this->insertRequest($oldId, $accountA, 'pending', 'agency', '2026-08-10 10:00:00');
         $this->insertRequest($newerLowId, $accountA, 'approved', 'talent', '2026-08-11 10:00:00', (string) $operator->accountIdentifier());
         $this->insertRequest($newerHighId, $accountB, 'rejected', 'agency', '2026-08-11 10:00:00', (string) $operator->accountIdentifier(), ['code' => 'other', 'detail' => '書類不足']);
+
+        DB::table('accounts')->where('id', (string) $accountB)->update(['name' => 'Changed', 'email' => 'changed@example.com']);
 
         $output = new ListAccountCategoryChangeRequestsOutput();
         (new ListAccountCategoryChangeRequests($this->allowingPolicyEvaluator($operator)))
@@ -56,6 +63,9 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $this->assertSame([$newerHighId, $newerLowId, $oldId], array_column($payload['requests'], 'requestIdentifier'));
         $this->assertSame('account-b@example.com', $payload['requests'][0]['account']['email']);
         $this->assertSame('Account B', $payload['requests'][0]['account']['name']);
+        $this->assertSame('+819012345678', $payload['requests'][0]['account']['phone']);
+        $this->assertNotNull($payload['requests'][0]['account']['address']);
+        $this->assertSame('100-0001', $payload['requests'][0]['account']['address']['postalCode']);
         $this->assertSame('account-a@example.com', $payload['requests'][1]['account']['email']);
         $this->assertSame('Account A', $payload['requests'][1]['account']['name']);
         $this->assertSame(['code' => 'other', 'detail' => '書類不足'], $payload['requests'][0]['rejectionReason']);
@@ -154,7 +164,22 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
     /** @param array{code: string, detail: ?string}|null $rejectionReason */
     private function insertRequest(string $id, AccountIdentifier $accountIdentifier, string $status, string $requestedCategory, string $requestedAt, ?string $reviewedBy = null, ?array $rejectionReason = null): void
     {
+        $account = DB::table('accounts')->where('id', (string) $accountIdentifier)->first();
+        self::assertNotNull($account);
         DB::table('account_category_change_requests')->insert([
+            ...CreateAccountCategoryChangeRequestAccount::columns(),
+            'account_email' => $account->email,
+            'account_name' => $account->name,
+            'account_type' => $account->type,
+            'account_status' => $account->status,
+            'account_phone' => $account->phone ?? '+819012345678',
+            'account_address_country_code' => $account->address_country_code ?? 'JP',
+            'account_address_administrative_area_code' => $account->address_administrative_area_code,
+            'account_address_postal_code' => $account->address_postal_code ?? '100-0001',
+            'account_address_locality' => $account->address_locality ?? '千代田区',
+            'account_address_line1' => $account->address_line1 ?? 'Address',
+            'account_address_line2' => $account->address_line2,
+
             'id' => $id,
             'account_id' => (string) $accountIdentifier,
             'current_account_category' => 'general',
@@ -165,6 +190,11 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
             'reviewed_at' => $reviewedBy !== null ? '2026-08-12 12:00:00' : null,
             'rejection_reason' => $rejectionReason !== null ? json_encode($rejectionReason) : null,
         ]);
+        $account = $this->app()->make(AccountRepositoryInterface::class)->findById($accountIdentifier);
+        $request = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->findById(new AccountCategoryChangeRequestIdentifier($id));
+        self::assertNotNull($account);
+        self::assertNotNull($request);
+        $this->app()->make(AccountCategoryChangeRequestSnapshotServiceInterface::class)->capture($request, $account);
     }
 
     private function principal(AccountIdentifier $accountIdentifier): Principal

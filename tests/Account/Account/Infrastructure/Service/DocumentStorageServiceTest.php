@@ -41,6 +41,28 @@ class DocumentStorageServiceTest extends TestCase
         parent::tearDown();
     }
 
+    public function testCopiedDocumentIsIndependentOfOriginalAndRemovedOnRollback(): void
+    {
+        $disk = Storage::disk('verification-documents');
+        $disk->put('original.pdf', 'original');
+        DB::beginTransaction();
+        (new DocumentStorageService(new NullLogger()))->copy(new DocumentPath('original.pdf'), new DocumentPath('snapshot.pdf'));
+        $disk->put('original.pdf', 'changed');
+        $this->assertSame('original', $disk->get('snapshot.pdf'));
+        DB::rollBack();
+        $this->assertFalse($disk->exists('snapshot.pdf'));
+        $this->assertSame('changed', $disk->get('original.pdf'));
+    }
+
+    public function testFailedCopyDoesNotSucceed(): void
+    {
+        $disk = Mockery::mock(Filesystem::class);
+        $disk->shouldReceive('copy')->once()->with('original.pdf', 'snapshot.pdf')->andReturnFalse();
+        Storage::shouldReceive('disk')->with('verification-documents')->andReturn($disk);
+        $this->expectException(UnableToWriteFile::class);
+        (new DocumentStorageService(new NullLogger()))->copy(new DocumentPath('original.pdf'), new DocumentPath('snapshot.pdf'));
+    }
+
     public function testFailedWriteDoesNotReturnDocumentPath(): void
     {
         $disk = Mockery::mock(Filesystem::class);

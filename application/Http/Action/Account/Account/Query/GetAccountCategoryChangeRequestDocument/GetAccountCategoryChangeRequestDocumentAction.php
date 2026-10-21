@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Account\Query\ViewAccountDocument;
+namespace Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequestDocument;
 
 use Application\Http\Context\AccountContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
@@ -13,35 +13,34 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Application\Exception\AccountDocumentNotFoundException;
-use Source\Account\Account\Application\Exception\AccountDocumentViewForbiddenException;
-use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\UseCase\Query\GetAccountDocument\GetAccountDocumentInput;
-use Source\Account\Account\Application\UseCase\Query\GetAccountDocument\GetAccountDocumentInterface;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
+use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
+use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInput;
+use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
+use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestOutput;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-readonly class ViewAccountDocumentAction
+readonly class GetAccountCategoryChangeRequestDocumentAction
 {
     private const string DISK = 'verification-documents';
 
     public function __construct(
-        private GetAccountDocumentInterface $getAccountDocument,
+        private GetAccountCategoryChangeRequestInterface $getAccountCategoryChangeRequest,
         private AccountContext $accountContext,
         private LoggerInterface $logger,
     ) {
     }
 
-    public function __invoke(ViewAccountDocumentRequest $request): JsonResponse|StreamedResponse
+    public function __invoke(GetAccountCategoryChangeRequestDocumentRequest $request): JsonResponse|StreamedResponse
     {
         try {
             $language = $request->language();
 
             try {
-                $input = new GetAccountDocumentInput(
-                    accountIdentifier: new AccountIdentifier($request->accountId()),
-                    documentType: $request->documentType(),
+                $input = new GetAccountCategoryChangeRequestInput(
+                    requestIdentifier: new AccountCategoryChangeRequestIdentifier($request->requestId()),
                     principal: $this->accountContext->principal(),
                 );
             } catch (InvalidArgumentException $e) {
@@ -49,17 +48,25 @@ readonly class ViewAccountDocumentAction
             }
 
             try {
-                $document = $this->getAccountDocument->process($input);
-            } catch (AccountDocumentNotFoundException|AccountNotFoundException $e) {
+                $output = new GetAccountCategoryChangeRequestOutput();
+                $this->getAccountCategoryChangeRequest->process($input, $output);
+            } catch (AccountCategoryChangeRequestNotFoundException $e) {
                 throw new NotFoundHttpException(detail: $e->getMessage(), previous: $e);
-            } catch (AccountDocumentViewForbiddenException $e) {
+            } catch (AccountCategoryChangeRequestForbiddenException $e) {
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
             }
 
             $disk = Storage::disk(self::DISK);
-            $documentPath = $document->documentPath();
+            $documentPath = null;
+            foreach ($output->toArray()['documents'] as $document) {
+                if ($document['documentType'] === $request->documentType()) {
+                    $documentPath = $document['documentPath'];
 
-            if (! $disk->exists($documentPath)) {
+                    break;
+                }
+            }
+
+            if ($documentPath === null || ! $disk->exists($documentPath)) {
                 throw new NotFoundHttpException(detail: 'Account document file not found.');
             }
 

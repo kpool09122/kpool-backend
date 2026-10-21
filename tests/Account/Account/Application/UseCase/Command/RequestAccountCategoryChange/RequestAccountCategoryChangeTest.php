@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChange;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInput;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeOutput;
@@ -21,6 +23,7 @@ use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInt
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestAccount;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -42,6 +45,7 @@ use Source\Shared\Domain\ValueObject\ContactAddress;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Phone;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\StrTestHelper;
 
 class RequestAccountCategoryChangeTest extends TestCase
@@ -55,6 +59,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             $requestRepository,
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(AccountSetupUnavailableException::class);
@@ -74,16 +79,20 @@ class RequestAccountCategoryChangeTest extends TestCase
             DocumentType::REPRESENTATIVE_ID,
         ]);
         $repository = new FakeRequestRepository();
+        $snapshotService = new FakeSnapshotService();
         $useCase = new RequestAccountCategoryChange(
             new FakeAccountRepository($account),
             $repository,
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            $snapshotService,
         );
         $output = new RequestAccountCategoryChangeOutput();
 
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), $output);
 
+        $this->assertSame($account, $snapshotService->account);
+        $this->assertSame($repository->saved, $snapshotService->request);
         $this->assertSame(1, $repository->findCalls);
         $this->assertNotNull($repository->saved);
         $this->assertSame(AccountCategoryChangeRequestStatus::PENDING, $repository->saved->status());
@@ -93,10 +102,38 @@ class RequestAccountCategoryChangeTest extends TestCase
         $this->assertSame((string) $repository->saved->requestIdentifier(), $output->toArray()['requestIdentifier']);
     }
 
+    public function testCapturesImmutableAccountDataAndPreservesOptionalAddressValues(): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $account = $this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID], address: ContactAddress::fromArray([
+            'countryCode' => 'FR',
+            'postalCode' => '75001',
+            'addressLine1' => '1 rue de Paris',
+        ]));
+        $repository = new FakeRequestRepository();
+        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($account), $repository, new FixedFactory(), new AccountDocumentRequirementValidator(), new FakeSnapshotService());
+        $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+        self::assertNotNull($repository->saved);
+        $snapshot = $repository->saved->accountSnapshot();
+        $this->assertSame('75001', $snapshot->postalCode);
+        $this->assertNull($snapshot->locality);
+        $this->assertNull($snapshot->administrativeAreaCode);
+        $this->assertNull($snapshot->addressLine2);
+        $this->assertSame('FR', $snapshot->countryCode);
+        $originalName = $snapshot->name;
+        $originalPhone = $snapshot->phone;
+        $account->changeName(new AccountName('Changed'));
+        $account->changePhone(null);
+        $account->changeAddress(null);
+        $this->assertSame($originalName, $snapshot->name);
+        $this->assertSame($originalPhone, $snapshot->phone);
+        $this->assertSame('1 rue de Paris', $snapshot->addressLine1);
+    }
+
     public function testThrowsWhenAccountIsMissing(): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
-        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository(null), new FakeRequestRepository(), new FixedFactory(), new AccountDocumentRequirementValidator());
+        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository(null), new FakeRequestRepository(), new FixedFactory(), new AccountDocumentRequirementValidator(), new FakeSnapshotService());
 
         $this->expectException(AccountNotFoundException::class);
 
@@ -111,6 +148,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(SameAccountCategoryChangeRequestException::class);
@@ -118,14 +156,27 @@ class RequestAccountCategoryChangeTest extends TestCase
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::GENERAL), new RequestAccountCategoryChangeOutput());
     }
 
-    public function testThrowsWhenDocumentsDoNotSatisfyRequestedCategory(): void
+    /** @return array<string, array{DocumentType[]}> */
+    public static function insufficientDocuments(): array
+    {
+        return [
+            'empty' => [[]],
+            'missing registration' => [[DocumentType::REPRESENTATIVE_ID]],
+            'wrong account type' => [[DocumentType::PASSPORT, DocumentType::SELFIE]],
+        ];
+    }
+
+    /** @param DocumentType[] $documentTypes */
+    #[DataProvider('insufficientDocuments')]
+    public function testThrowsWhenDocumentsDoNotSatisfyRequestedCategory(array $documentTypes): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $useCase = new RequestAccountCategoryChange(
-            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::PASSPORT, DocumentType::SELFIE])),
+            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, $documentTypes)),
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(InvalidDocumentsForVerificationException::class);
@@ -141,11 +192,36 @@ class RequestAccountCategoryChangeTest extends TestCase
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
 
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function missingRequiredAddressFields(): iterable
+    {
+        yield 'postal code' => ['postalCode'];
+    }
+
+    #[DataProvider('missingRequiredAddressFields')]
+    public function testRejectsMissingRequiredAddressFieldBeforeSavingRequest(string $field): void
+    {
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $address = ['countryCode' => 'FR', 'postalCode' => '75001', 'locality' => 'Paris', 'addressLine1' => '1 rue de Paris'];
+        $address[$field] = null;
+        $account = $this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID], address: ContactAddress::fromArray($address));
+        $repository = new FakeRequestRepository();
+        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($account), $repository, new FixedFactory(), new AccountDocumentRequirementValidator(), new FakeSnapshotService());
+        $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
+
+        try {
+            $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
+        } finally {
+            $this->assertNull($repository->saved);
+        }
     }
 
     public function testThrowsWhenContactAddressCountryCodeIsMissing(): void
@@ -168,6 +244,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
@@ -195,6 +272,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
@@ -222,6 +300,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(IncompleteAccountContactForCategoryChangeException::class);
@@ -250,6 +329,7 @@ class RequestAccountCategoryChangeTest extends TestCase
             $repository,
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
@@ -261,12 +341,13 @@ class RequestAccountCategoryChangeTest extends TestCase
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $repository = new FakeRequestRepository();
-        $repository->pendingRequest = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY);
+        $repository->pendingRequest = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, CreateAccountCategoryChangeRequestAccount::create());
         $useCase = new RequestAccountCategoryChange(
             new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])),
             $repository,
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),
+            new FakeSnapshotService(),
         );
 
         $this->expectException(InvalidAccountCategoryChangeRequestException::class);
@@ -278,13 +359,13 @@ class RequestAccountCategoryChangeTest extends TestCase
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $repository = new FakeRequestRepository();
-        $approved = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY);
+        $approved = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, CreateAccountCategoryChangeRequestAccount::create());
         $approved->approve($accountId);
-        $rejected = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT);
+        $rejected = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT, CreateAccountCategoryChangeRequestAccount::create());
         $rejected->reject($accountId, new RejectionReason(RejectionReasonCode::OTHER, 'reason'));
         $repository->history = [$approved, $rejected];
-        $repository->pendingRequest = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT);
-        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::AGENCY, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator());
+        $repository->pendingRequest = (new FixedFactory())->create($accountId, AccountCategory::AGENCY, AccountCategory::TALENT, CreateAccountCategoryChangeRequestAccount::create());
+        $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::AGENCY, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator(), new FakeSnapshotService());
         $this->expectException(InvalidAccountCategoryChangeRequestException::class);
 
         try {
@@ -299,14 +380,14 @@ class RequestAccountCategoryChangeTest extends TestCase
         foreach (['rejected', 'withdrawn'] as $status) {
             $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
             $repository = new FakeRequestRepository();
-            $previous = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY);
+            $previous = (new FixedFactory())->create($accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, CreateAccountCategoryChangeRequestAccount::create());
             if ($status === 'withdrawn') {
                 $previous->withdraw();
             } else {
                 $previous->reject($accountId, new RejectionReason(RejectionReasonCode::OTHER, 'reason'));
             }
             $repository->history = [$previous];
-            $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator());
+            $useCase = new RequestAccountCategoryChange(new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::BUSINESS_REGISTRATION, DocumentType::REPRESENTATIVE_ID])), $repository, new FixedFactory(), new AccountDocumentRequirementValidator(), new FakeSnapshotService());
             $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::AGENCY), new RequestAccountCategoryChangeOutput());
             $this->assertNotNull($repository->saved);
             $this->assertNotSame((string) $previous->requestIdentifier(), (string) $repository->saved->requestIdentifier());
@@ -435,7 +516,7 @@ class FakeRequestRepository implements AccountCategoryChangeRequestRepositoryInt
 
 class FixedFactory implements AccountCategoryChangeRequestFactoryInterface
 {
-    public function create(AccountIdentifier $accountIdentifier, AccountCategory $currentAccountCategory, AccountCategory $requestedAccountCategory): AccountCategoryChangeRequest
+    public function create(AccountIdentifier $accountIdentifier, AccountCategory $currentAccountCategory, AccountCategory $requestedAccountCategory, AccountCategoryChangeRequestAccount $accountSnapshot): AccountCategoryChangeRequest
     {
         return new AccountCategoryChangeRequest(
             new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()),
@@ -447,6 +528,23 @@ class FixedFactory implements AccountCategoryChangeRequestFactoryInterface
             null,
             null,
             null,
+            $accountSnapshot,
         );
+    }
+}
+
+class FakeSnapshotService implements AccountCategoryChangeRequestSnapshotServiceInterface
+{
+    public ?Account $account = null;
+    public ?AccountCategoryChangeRequest $request = null;
+
+    public function capture(AccountCategoryChangeRequest $request, Account $account): void
+    {
+        $this->account = $account;
+        $this->request = $request;
+    }
+
+    public function deleteForAccount(AccountIdentifier $accountIdentifier): void
+    {
     }
 }

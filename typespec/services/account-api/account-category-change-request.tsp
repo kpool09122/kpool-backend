@@ -93,9 +93,17 @@ interface AccountCategoryChangeRequestOperations {
     @path requestId: Uuid,
   ): GetAccountCategoryChangeRequestResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
+  @get
+  @route("/account-category-change-requests/{requestId}/documents/{documentType}")
+  @doc("View an independently stored application document snapshot. Requires category request management permission.")
+  viewAccountCategoryChangeRequestDocument(
+    @path requestId: Uuid,
+    @path documentType: string,
+  ): OkAccountDocumentFileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
-  @doc("Request account category change. Accounts with any approved request history cannot apply again; rejected or withdrawn history permits a new request when the remaining requirements are met.")
+  @doc("Request account category change. Requires saved phone, address country, postal code, and address line 1, plus administrative area code where applicable. Accounts with any approved request history cannot apply again; rejected or withdrawn history permits a new request when the remaining requirements are met.")
   requestAccountCategoryChange(
     @path accountIdentifier: Uuid,
     @body body: RequestAccountCategoryChangeRequestBody,

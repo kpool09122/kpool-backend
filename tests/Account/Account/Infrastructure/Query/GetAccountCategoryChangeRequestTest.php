@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInput;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestOutput;
+use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Infrastructure\Query\GetAccountCategoryChangeRequest;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -22,6 +26,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -36,7 +41,7 @@ class GetAccountCategoryChangeRequestTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessReturnsRequestAccountIdentitiesAndDocuments(): void
+    public function testProcessReturnsImmutableAccountAndDocumentSnapshotWithCurrentReviewStatus(): void
     {
         $operator = $this->principal(new AccountIdentifier(StrTestHelper::generateUuid()));
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -61,8 +66,23 @@ class GetAccountCategoryChangeRequestTest extends TestCase
         $this->insertRequest($requestId, $accountIdentifier, 'pending', 'agency', '2026-08-11 10:00:00');
         $this->insertIdentityPrincipal((string) $accountIdentifier, 'Alice', 'alice@example.com');
         $this->insertIdentityPrincipal((string) $accountIdentifier, 'Bob', 'bob@example.com');
-        $this->insertDocument((string) $accountIdentifier, 'business_license', 'documents/business-license.png', '2026-08-11 11:00:00');
-        $this->insertDocument((string) $accountIdentifier, 'identity', 'documents/identity.png', '2026-08-11 12:00:00');
+        $this->insertDocument((string) $accountIdentifier, 'business_registration', 'documents/business-license.png', '2026-08-11 11:00:00');
+        $this->insertDocument((string) $accountIdentifier, 'representative_id', 'documents/identity.png', '2026-08-11 12:00:00');
+
+        Storage::fake('verification-documents');
+        $disk = Storage::disk('verification-documents');
+        $disk->put('documents/business-license.png', 'license bytes');
+        $disk->put('documents/identity.png', 'identity bytes');
+        $account = $this->app()->make(AccountRepositoryInterface::class)->findById($accountIdentifier);
+        $request = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->findById(new AccountCategoryChangeRequestIdentifier($requestId));
+        self::assertNotNull($account);
+        self::assertNotNull($request);
+        $this->app()->make(AccountCategoryChangeRequestSnapshotServiceInterface::class)->capture($request, $account);
+        DB::table('accounts')->where('id', (string) $accountIdentifier)->update(['name' => 'Changed', 'email' => 'new@example.com', 'phone' => null, 'address_line1' => 'Changed', 'category' => 'agency']);
+        DB::table('account_documents')->where('account_id', (string) $accountIdentifier)->delete();
+        $disk->delete(['documents/business-license.png', 'documents/identity.png']);
+        $request->approve($operator->accountIdentifier());
+        $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->save($request);
 
         $output = new GetAccountCategoryChangeRequestOutput();
         (new GetAccountCategoryChangeRequest($this->allowingPolicyEvaluator($operator)))
@@ -84,11 +104,13 @@ class GetAccountCategoryChangeRequestTest extends TestCase
             'addressLine1' => '千代田1-1',
             'addressLine2' => '1F',
         ], $payload['account']['address']);
-        $this->assertSame([
-            ['name' => 'Alice', 'email' => 'alice@example.com'],
-            ['name' => 'Bob', 'email' => 'bob@example.com'],
-        ], $payload['identities']);
-        $this->assertSame(['business_license', 'identity'], array_column($payload['documents'], 'documentType'));
+        $this->assertArrayNotHasKey('identities', $payload);
+        $this->assertSame('general', $payload['account']['accountCategory']);
+        $this->assertSame('approved', $payload['request']['status']);
+        $this->assertNotNull($payload['request']['reviewedAt']);
+        $this->assertSame((string) $operator->accountIdentifier(), $payload['request']['reviewedBy']);
+        $this->assertSame(['license bytes', 'identity bytes'], array_map(static fn (array $document): ?string => $disk->get($document['documentPath']), $payload['documents']));
+        $this->assertSame(['business_registration', 'representative_id'], array_column($payload['documents'], 'documentType'));
     }
 
     #[Group('useDb')]
@@ -128,7 +150,22 @@ class GetAccountCategoryChangeRequestTest extends TestCase
 
     private function insertRequest(string $id, AccountIdentifier $accountIdentifier, string $status, string $requestedCategory, string $requestedAt): void
     {
+        $account = DB::table('accounts')->where('id', (string) $accountIdentifier)->first();
+        self::assertNotNull($account);
         DB::table('account_category_change_requests')->insert([
+            ...CreateAccountCategoryChangeRequestAccount::columns(),
+            'account_email' => $account->email,
+            'account_name' => $account->name,
+            'account_type' => $account->type,
+            'account_status' => $account->status,
+            'account_phone' => $account->phone ?? '+819012345678',
+            'account_address_country_code' => $account->address_country_code ?? 'JP',
+            'account_address_administrative_area_code' => $account->address_administrative_area_code,
+            'account_address_postal_code' => $account->address_postal_code ?? '100-0001',
+            'account_address_locality' => $account->address_locality ?? '千代田区',
+            'account_address_line1' => $account->address_line1 ?? 'Address',
+            'account_address_line2' => $account->address_line2,
+
             'id' => $id,
             'account_id' => (string) $accountIdentifier,
             'current_account_category' => 'general',

@@ -6,6 +6,7 @@ namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\Service\AccountCategoryChangeNotificationServiceInterface;
+use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
@@ -26,6 +27,7 @@ use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeReques
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeNotificationService;
+use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeRequestSnapshotService;
 use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
@@ -80,6 +82,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(AccountCategoryChangeRequestSnapshotServiceInterface::class, AccountCategoryChangeRequestSnapshotService::class);
         $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
         $this->app->bind(PrincipalReachabilityInterface::class, PrincipalReachability::class);
         $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);

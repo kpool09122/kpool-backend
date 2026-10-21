@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
+use Source\Shared\Application\Service\SvgImageRasterizerInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Infrastructure\Service\ImageService;
 use Tests\TestCase;
@@ -43,7 +44,7 @@ class ImageServiceDeletionTest extends TestCase
         $disk = Storage::disk('public');
         $disk->put('images/old.webp', 'old');
 
-        $this->assertTrue((new ImageService(new NullLogger()))->delete(new ImagePath('images/old.webp')));
+        $this->assertTrue((new ImageService(new NullLogger(), $this->app()->make(SvgImageRasterizerInterface::class)))->delete(new ImagePath('images/old.webp')));
         $disk->assertMissing('images/old.webp');
     }
 
@@ -54,7 +55,7 @@ class ImageServiceDeletionTest extends TestCase
         DB::beginTransaction();
         DB::beginTransaction();
 
-        $this->assertTrue((new ImageService(new NullLogger()))->delete(new ImagePath('images/old.webp')));
+        $this->assertTrue((new ImageService(new NullLogger(), $this->app()->make(SvgImageRasterizerInterface::class)))->delete(new ImagePath('images/old.webp')));
         $disk->assertExists('images/old.webp');
         DB::commit();
         $disk->assertExists('images/old.webp');
@@ -67,7 +68,7 @@ class ImageServiceDeletionTest extends TestCase
         $disk = Storage::disk('public');
         $disk->put('images/old.webp', 'old');
         DB::beginTransaction();
-        (new ImageService(new NullLogger()))->delete(new ImagePath('images/old.webp'));
+        (new ImageService(new NullLogger(), $this->app()->make(SvgImageRasterizerInterface::class)))->delete(new ImagePath('images/old.webp'));
         DB::rollBack();
         DB::beginTransaction();
         DB::commit();
@@ -99,7 +100,7 @@ class ImageServiceDeletionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('warning')->once()->with('Failed to delete image.', $context);
         DB::beginTransaction();
-        (new ImageService($logger))->delete(new ImagePath('images/old.webp'));
+        (new ImageService($logger, $this->app()->make(SvgImageRasterizerInterface::class)))->delete(new ImagePath('images/old.webp'));
         DB::commit();
 
         $this->assertSame(0, DB::transactionLevel());
