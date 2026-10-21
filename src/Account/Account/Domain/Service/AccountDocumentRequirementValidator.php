@@ -12,6 +12,16 @@ class AccountDocumentRequirementValidator implements AccountDocumentRequirementV
 {
     public function validate(AccountType $accountType, array $documentTypes): void
     {
+        $this->validateTypes($accountType, $documentTypes);
+
+        match ($accountType) {
+            AccountType::CORPORATION => $this->validateCorporate($documentTypes),
+            AccountType::INDIVIDUAL => $this->validateIndividual($documentTypes),
+        };
+    }
+
+    public function validateTypes(AccountType $accountType, array $documentTypes): void
+    {
         $values = array_map(static fn (DocumentType $type) => $type->value, $documentTypes);
         $uniqueValues = array_unique($values);
 
@@ -20,20 +30,24 @@ class AccountDocumentRequirementValidator implements AccountDocumentRequirementV
         }
 
         match ($accountType) {
-            AccountType::CORPORATION => $this->validateCorporate($documentTypes),
-            AccountType::INDIVIDUAL => $this->validateIndividual($documentTypes),
+            AccountType::CORPORATION => $this->assertAllowed($documentTypes, [
+                DocumentType::BUSINESS_REGISTRATION,
+                DocumentType::CORPORATE_REGISTRY,
+                DocumentType::INCORPORATION_DOCUMENT,
+                DocumentType::REPRESENTATIVE_ID,
+            ]),
+            AccountType::INDIVIDUAL => $this->assertAllowed($documentTypes, [
+                DocumentType::RESIDENT_REGISTRATION,
+                DocumentType::PASSPORT,
+                DocumentType::DRIVER_LICENSE,
+                DocumentType::SELFIE,
+            ]),
         };
     }
 
     /** @param DocumentType[] $documentTypes */
     private function validateCorporate(array $documentTypes): void
     {
-        $this->assertAllowed($documentTypes, [
-            DocumentType::BUSINESS_REGISTRATION,
-            DocumentType::CORPORATE_REGISTRY,
-            DocumentType::INCORPORATION_DOCUMENT,
-            DocumentType::REPRESENTATIVE_ID,
-        ]);
         $this->assertContainsAny($documentTypes, [
             DocumentType::BUSINESS_REGISTRATION,
             DocumentType::CORPORATE_REGISTRY,
@@ -45,12 +59,6 @@ class AccountDocumentRequirementValidator implements AccountDocumentRequirementV
     /** @param DocumentType[] $documentTypes */
     private function validateIndividual(array $documentTypes): void
     {
-        $this->assertAllowed($documentTypes, [
-            DocumentType::RESIDENT_REGISTRATION,
-            DocumentType::PASSPORT,
-            DocumentType::DRIVER_LICENSE,
-            DocumentType::SELFIE,
-        ]);
         $this->assertContainsAny($documentTypes, [
             DocumentType::RESIDENT_REGISTRATION,
             DocumentType::PASSPORT,

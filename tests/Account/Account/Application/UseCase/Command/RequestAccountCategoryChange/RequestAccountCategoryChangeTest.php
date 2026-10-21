@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
@@ -118,11 +119,23 @@ class RequestAccountCategoryChangeTest extends TestCase
         $useCase->process(new RequestAccountCategoryChangeInput($accountId, $this->createPrincipal($accountId), AccountCategory::GENERAL), new RequestAccountCategoryChangeOutput());
     }
 
-    public function testThrowsWhenDocumentsDoNotSatisfyRequestedCategory(): void
+    /** @return array<string, array{DocumentType[]}> */
+    public static function insufficientDocuments(): array
+    {
+        return [
+            'empty' => [[]],
+            'missing registration' => [[DocumentType::REPRESENTATIVE_ID]],
+            'wrong account type' => [[DocumentType::PASSPORT, DocumentType::SELFIE]],
+        ];
+    }
+
+    /** @param DocumentType[] $documentTypes */
+    #[DataProvider('insufficientDocuments')]
+    public function testThrowsWhenDocumentsDoNotSatisfyRequestedCategory(array $documentTypes): void
     {
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $useCase = new RequestAccountCategoryChange(
-            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, [DocumentType::PASSPORT, DocumentType::SELFIE])),
+            new FakeAccountRepository($this->createAccount($accountId, AccountCategory::GENERAL, $documentTypes)),
             new FakeRequestRepository(),
             new FixedFactory(),
             new AccountDocumentRequirementValidator(),

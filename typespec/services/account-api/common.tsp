@@ -11,9 +11,9 @@ model AccountDocumentUploadItem {
   fileContents: string;
 }
 
-@doc("Request body for account document upload.")
+@doc("Request body for saving the complete account document set.")
 model UploadAccountDocumentsRequestBody {
-  @doc("Documents to upload.")
+  @doc("Complete document set to save. An empty array removes all saved documents. Required documents are checked when requesting an account category change.")
   documents: AccountDocumentUploadItem[];
 }
 

@@ -159,7 +159,7 @@ interface AccountOperations {
 
   @post
   @route("/{accountId}/documents")
-  @doc("Upload required documents for an account.")
+  @doc("Save the complete document set for an account, including an empty set to remove all documents.")
   uploadDocuments(
     @path accountId: Uuid,
     @body body: UploadAccountDocumentsRequestBody,

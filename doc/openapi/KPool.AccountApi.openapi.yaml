@@ -878,7 +878,7 @@ paths:
   /accounts/{accountId}/documents:
     post:
       operationId: AccountOperations_uploadDocuments
-      description: Upload required documents for an account.
+      description: Save the complete document set for an account, including an empty set to remove all documents.
       parameters:
         - name: accountId
           in: path
@@ -3479,8 +3479,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountDocumentUploadItem'
-          description: Documents to upload.
-      description: Request body for account document upload.
+          description: Complete document set to save. An empty array removes all saved documents. Required documents are checked when requesting an account category change.
+      description: Request body for saving the complete account document set.
     UploadAccountDocumentsResponseBody:
       type: object
       required:

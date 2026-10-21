@@ -39,7 +39,7 @@ readonly class UploadDocuments implements UploadDocumentsInterface
 
         $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
 
-        $this->documentRequirementValidator->validate(
+        $this->documentRequirementValidator->validateTypes(
             $accountType,
             array_map(static fn (DocumentData $document) => $document->documentType, $input->documents()),
         );
