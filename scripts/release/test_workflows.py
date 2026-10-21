@@ -11,6 +11,27 @@ BASE=Path(__file__).resolve().parents[2]/'.github/workflows'
 def workflow(name): return yaml.safe_load((BASE/name).read_text())
 
 class WorkflowTests(unittest.TestCase):
+    def test_partial_reruns_use_artifact_names_from_successful_producers(self):
+        jobs = workflow('release.yml')['jobs']
+        for producer in ('plan', 'frontend-build'):
+            job = jobs[producer]
+            uploads = [step['with']['name'] for step in job['steps']
+                       if step.get('uses', '').startswith('actions/upload-artifact@')]
+            self.assertIn(job['outputs']['artifact_name'], uploads)
+
+        for consumer in ('validate-build', 'publish', 'deploy'):
+            with self.subTest(consumer=consumer):
+                self.assertEqual(jobs[consumer]['with']['plan_artifact'],
+                                 '${{ needs.plan.outputs.artifact_name }}')
+        for consumer in ('frontend-build', 'frontend-deploy'):
+            downloads = [step['with']['name'] for step in jobs[consumer]['steps']
+                         if step.get('uses', '').startswith('actions/download-artifact@')]
+            with self.subTest(consumer=consumer):
+                self.assertIn('${{ needs.plan.outputs.artifact_name }}', downloads)
+                self.assertFalse(any('github.run_attempt' in name for name in downloads))
+                if consumer == 'frontend-deploy':
+                    self.assertIn('${{ needs.frontend-build.outputs.artifact_name }}', downloads)
+
     def test_every_production_job_requires_successful_release_approval(self):
         jobs = workflow('release.yml')['jobs']
         approval = jobs['approve']

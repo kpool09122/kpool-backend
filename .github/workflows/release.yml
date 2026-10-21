@@ -54,6 +54,7 @@ jobs:
       contents: read
       actions: read
     outputs:
+      artifact_name: release-plan-${{ github.run_attempt }}
       backend_sha: ${{ steps.plan.outputs.backend_sha }}
       frontend_sha: ${{ steps.plan.outputs.frontend_sha }}
       mode: ${{ steps.plan.outputs.mode }}
@@ -128,7 +129,7 @@ jobs:
     with:
       source_sha: ${{ needs.plan.outputs.backend_sha }}
       control_sha: ${{ github.workflow_sha }}
-      plan_artifact: release-plan-${{ github.run_attempt }}
+      plan_artifact: ${{ needs.plan.outputs.artifact_name }}
   publish:
     needs: [plan, validate-build, frontend-build]
     if: >-
@@ -143,7 +144,7 @@ jobs:
     uses: ./.github/workflows/backend-publication.yml
     with:
       control_sha: ${{ github.workflow_sha }}
-      plan_artifact: release-plan-${{ github.run_attempt }}
+      plan_artifact: ${{ needs.plan.outputs.artifact_name }}
       build_artifact: ${{ needs.validate-build.outputs.artifact_name }}
   deploy:
     needs: [plan, validate-build, publish]
@@ -158,7 +159,7 @@ jobs:
     uses: ./.github/workflows/backend-deployment.yml
     with:
       control_sha: ${{ github.workflow_sha }}
-      plan_artifact: release-plan-${{ github.run_attempt }}
+      plan_artifact: ${{ needs.plan.outputs.artifact_name }}
       image_artifact: ${{ needs.publish.outputs.artifact_name }}
   frontend-build:
     needs: plan
@@ -166,6 +167,8 @@ jobs:
     runs-on: ubuntu-26.04
     environment: production
     timeout-minutes: 30
+    outputs:
+      artifact_name: frontend-build-${{ github.run_attempt }}
     permissions:
       contents: read
       actions: read
@@ -188,7 +191,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: release-plan-${{ github.run_attempt }}
+          name: ${{ needs.plan.outputs.artifact_name }}
           path: release
       - name: Verify pinned source and workflow identity
         env:
@@ -291,7 +294,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: release-plan-${{ github.run_attempt }}
+          name: ${{ needs.plan.outputs.artifact_name }}
           path: release
       - name: Verify pinned source and workflow identity
         env:
@@ -343,7 +346,7 @@ jobs:
         run: python3 -B control/scripts/release/frontend.py prepare
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: frontend-build-${{ github.run_attempt }}
+          name: ${{ needs.frontend-build.outputs.artifact_name }}
           path: release
       - name: Restore the verified build without rebuilding
         env:
