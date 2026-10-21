@@ -45,27 +45,20 @@ class SearchFreeMaterialsResponseTest extends TestCase
         self::assertSame([$sites[0], $sites[2], $sites[3]], $this->parse(self::body($sites)));
     }
 
-    public function testOmitsCandidateWithoutGroundedUsageEvidence(): void
+    public function testReturnsCandidateWithGeneralReuseTermsAndUnconfirmedImageLicense(): void
     {
         $site = self::site();
-        $site['usageEvidence'] = 'Unverified permission';
+        $site['usageEvidence'] = 'This collection generally offers CC images. Check the individual image license and attribution before applying.';
         $body = self::body([$site]);
-        $body['candidates'][0]['groundingMetadata']['groundingSupports'][0]['segment']['text'] = 'CC BY with attribution';
-        self::assertSame([], $this->parse($body));
+        $body['candidates'][0]['groundingMetadata']['groundingSupports'][0]['segment']['text'] = 'This collection generally offers Creative Commons images.';
+        self::assertSame([$site], $this->parse($body));
     }
 
-    public function testDoesNotReuseAnotherSitesGroundingForIdenticalLicenseText(): void
-    {
-        $body = self::body([self::site()]);
-        $body['candidates'][0]['groundingMetadata']['groundingSupports'][0]['segment']['text'] = json_encode(['sites' => [self::site('flickr.com')]], JSON_THROW_ON_ERROR);
-        self::assertSame([], $this->parse($body));
-    }
-
-    public function testOmitsCandidatesWhenGroundingIsAbsent(): void
+    public function testReturnsCandidatesWhenGroundingMetadataIsAbsent(): void
     {
         $body = self::body([self::site()]);
         unset($body['candidates'][0]['groundingMetadata']);
-        self::assertSame([], $this->parse($body));
+        self::assertSame([self::site()], $this->parse($body));
     }
 
     /** @return iterable<string, array{array<array-key, mixed>}> */
