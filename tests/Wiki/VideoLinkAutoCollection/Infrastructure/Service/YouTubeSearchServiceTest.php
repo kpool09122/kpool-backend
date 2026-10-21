@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Service;
 
-use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsResponse;
-use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
-use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
-use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
-use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Mockery\MockInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
+use Tests\Helper\YouTubeClientTestHelper;
 use Tests\TestCase;
 
 class YouTubeSearchServiceTest extends TestCase
@@ -28,24 +26,23 @@ class YouTubeSearchServiceTest extends TestCase
     }
 
     /**
-     * 正常系: APIキーが空の場合、空配列を返すこと.
+     * 正常系: APIキーが空の場合、失敗として扱うこと.
      *
      * @throws BindingResolutionException
      * @return void
      */
-    public function testSearchVideosReturnsEmptyWhenApiKeyIsEmpty(): void
+    public function testSearchVideosFailsWhenApiKeyIsEmpty(): void
     {
-        $client = Mockery::mock(YouTubeClient::class);
-        $client->shouldReceive('isConfigured')
-            ->once()
-            ->andReturn(false);
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        $http->shouldNotReceive('sendRequest');
+        $client = YouTubeClientTestHelper::create($http, '');
 
         $this->app()->instance(YouTubeClient::class, $client);
 
         $service = $this->app()->make(YouTubeSearchServiceInterface::class);
-        $result = $service->searchVideos('test keyword');
-
-        $this->assertEmpty($result);
+        $this->expectException(VideoSearchFailedException::class);
+        $service->searchVideos('test keyword');
     }
 
     /**
@@ -56,7 +53,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosReturnsEmptyWhenNoVideosFound(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: [],
             relevanceVideoIds: [],
             recentVideoIds: [],
@@ -79,7 +76,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosReturnsVideos(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['video1', 'video2', 'video3'],
             relevanceVideoIds: ['video4', 'video5'],
             recentVideoIds: ['video6'],
@@ -114,7 +111,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosFiltersLowLikeRateVideos(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['good_video', 'bad_video'],
             relevanceVideoIds: [],
             recentVideoIds: [],
@@ -143,7 +140,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosDeduplicatesVideos(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['same_video'],
             relevanceVideoIds: ['same_video'],
             recentVideoIds: ['same_video'],
@@ -171,7 +168,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosAssignsCorrectVideoUsage(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['view_video'],
             relevanceVideoIds: ['like_video'],
             recentVideoIds: ['recent_video'],
@@ -208,7 +205,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosFiltersLowLikeCountVideos(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['good_video', 'low_like_video'],
             relevanceVideoIds: [],
             recentVideoIds: [],
@@ -237,7 +234,7 @@ class YouTubeSearchServiceTest extends TestCase
      */
     public function testSearchVideosFiltersLowViewCountForLikeRateCategory(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: [],
             relevanceVideoIds: ['high_view_video', 'low_view_video'],
             recentVideoIds: [],
@@ -259,14 +256,14 @@ class YouTubeSearchServiceTest extends TestCase
     }
 
     /**
-     * 正常系: 詳細情報が取得できない動画はスキップされること.
+     * 異常系: 詳細情報が一部欠落しても収集全体を失敗させること.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testSearchVideosSkipsVideosWithoutDetails(): void
+    public function testSearchVideosFailsWhenAnyDetailIsMissing(): void
     {
-        $client = $this->createMockYouTubeClient(
+        $client = $this->createYouTubeClient(
             viewCountVideoIds: ['video_with_details', 'video_without_details'],
             relevanceVideoIds: [],
             recentVideoIds: [],
@@ -278,12 +275,8 @@ class YouTubeSearchServiceTest extends TestCase
         $this->app()->instance(YouTubeClient::class, $client);
 
         $service = $this->app()->make(YouTubeSearchServiceInterface::class);
-        $result = $service->searchVideos('test keyword');
-
-        $videoIds = array_map(static fn ($video) => $video->videoId(), $result);
-
-        $this->assertContains('video_with_details', $videoIds);
-        $this->assertNotContains('video_without_details', $videoIds);
+        $this->expectException(VideoSearchFailedException::class);
+        $service->searchVideos('test keyword');
     }
 
     /**
@@ -291,36 +284,23 @@ class YouTubeSearchServiceTest extends TestCase
      * @param string[] $relevanceVideoIds
      * @param string[] $recentVideoIds
      * @param array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int}> $videoDetails
-     * @return MockInterface&YouTubeClient
      */
-    private function createMockYouTubeClient(
+    private function createYouTubeClient(
         array $viewCountVideoIds,
         array $relevanceVideoIds,
         array $recentVideoIds,
         array $videoDetails,
-    ): MockInterface {
-        /** @var MockInterface&YouTubeClient $client */
-        $client = Mockery::mock(YouTubeClient::class);
+    ): YouTubeClient {
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        foreach ([$viewCountVideoIds, $relevanceVideoIds, $recentVideoIds] as $ids) {
+            $http->shouldReceive('sendRequest')->once()->ordered()->andReturn($this->createSearchResponse($ids));
+        }
+        if (array_merge($viewCountVideoIds, $relevanceVideoIds, $recentVideoIds) !== []) {
+            $http->shouldReceive('sendRequest')->once()->ordered()->andReturn($this->createVideoDetailsResponse($videoDetails));
+        }
 
-        $client->shouldReceive('isConfigured')
-            ->andReturn(true);
-
-        $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
-            ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($viewCountVideoIds)));
-
-        $client->shouldReceive('searchVideoIds')
-            ->withArgs(fn (SearchVideoIdsRequest $request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
-            ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($relevanceVideoIds)));
-
-        $client->shouldReceive('searchRecentVideoIds')
-            ->withArgs(fn (SearchRecentVideoIdsRequest $request) => $request->keyword() === 'test keyword')
-            ->andReturn(new SearchRecentVideoIdsResponse($this->createSearchResponse($recentVideoIds)));
-
-        $client->shouldReceive('getVideoDetails')
-            ->andReturn(new GetVideoDetailsResponse($this->createVideoDetailsResponse($videoDetails)));
-
-        return $client;
+        return YouTubeClientTestHelper::create($http);
     }
 
     /**

@@ -81,6 +81,8 @@ use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurre
 use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
 use Source\Wiki\Principal\Infrastructure\Query\ListPrincipalGroups;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
+use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWiki;
@@ -152,6 +154,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(ListVideosInterface::class, ListVideos::class);
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(DeleteAccountDataInterface::class, DeleteAccountData::class);
 

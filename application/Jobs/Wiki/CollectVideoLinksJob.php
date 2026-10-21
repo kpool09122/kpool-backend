@@ -11,9 +11,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
 use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksOutput;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoLinkCollectionFailedException;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Throwable;
 
 class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
@@ -27,6 +30,10 @@ class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
 
     public int $uniqueFor = 2700;
 
+    /**
+     * @throws VideoSearchFailedException
+     * @throws VideoLinkCollectionFailedException
+     */
     public function handle(CollectVideoLinksInterface $useCase, YouTubeClient $youTubeClient): void
     {
         if (! $youTubeClient->isConfigured()) {
@@ -38,7 +45,9 @@ class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
         Log::info('CollectVideoLinksJob started');
 
         $output = new CollectVideoLinksOutput();
-        $useCase->process($output);
+        DB::transaction(static function () use ($useCase, $output): void {
+            $useCase->process($output);
+        });
 
         if ($output->processed) {
             Log::info('CollectVideoLinksJob completed', [

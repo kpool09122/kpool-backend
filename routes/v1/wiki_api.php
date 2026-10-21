@@ -22,6 +22,7 @@ use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincip
 use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
+use Application\Http\Action\Wiki\VideoLink\Query\ListVideos\ListVideosAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
@@ -180,6 +181,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 Route::middleware('rate-limit:screen,query')->group(function () {
     // Wiki
     Route::get('/wikis/{language}', ListWikisAction::class);
+    Route::get('/wiki/{language}/{resourceType}/{slug}/videos', ListVideosAction::class);
     Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
     Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
     Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);

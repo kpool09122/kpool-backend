@@ -17,6 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -44,6 +45,7 @@ readonly class PublishWiki implements PublishWikiInterface
         private PolicyEvaluatorInterface          $policyEvaluator,
         private ContributionPointServiceInterface $contributionPointService,
         private WikiWorkflowNotificationServiceInterface $wikiWorkflowNotificationService,
+        private VideoLinkCollectionRegistrationServiceInterface $videoLinkCollectionRegistrationService,
     ) {
     }
 
@@ -135,6 +137,10 @@ readonly class PublishWiki implements PublishWikiInterface
         $publishedWiki->setPublishedAt(new DateTimeImmutable());
 
         $this->wikiRepository->save($publishedWiki);
+        $this->videoLinkCollectionRegistrationService->register(
+            $publishedWiki->resourceType(),
+            $publishedWiki->wikiIdentifier(),
+        );
 
         $history = $this->wikiHistoryFactory->create(
             actionType: HistoryActionType::Publish,

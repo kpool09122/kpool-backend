@@ -9,9 +9,12 @@ use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoLinkCollectionFailedException;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Throwable;
 
 readonly class CollectVideoLinks implements CollectVideoLinksInterface
 {
@@ -19,12 +22,16 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         private VideoLinkCollectionStatusRepositoryInterface $videoLinkCollectionStatusRepository,
         private WikiRepositoryInterface $wikiRepository,
         private YouTubeSearchServiceInterface $youTubeSearchService,
-        private VideoLinkFactoryInterface $videoLinkFactory,
         private VideoLinkRepositoryInterface $videoLinkRepository,
+        private VideoLinkFactoryInterface $videoLinkFactory,
         private LoggerInterface $logger,
     ) {
     }
 
+    /**
+     * @throws VideoSearchFailedException
+     * @throws VideoLinkCollectionFailedException
+     */
     public function process(CollectVideoLinksOutputPort $output): void
     {
         $status = $this->videoLinkCollectionStatusRepository->findNextTargetResource();
@@ -77,48 +84,53 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $videos = $this->youTubeSearchService->searchVideos($resourceName);
 
-        $this->videoLinkRepository->deleteAutoCollectedByResource(
-            $status->resourceType(),
-            $status->wikiIdentifier(),
-        );
-
-        $videoUrls = array_map(static fn ($video) => $video->url(), $videos);
-        $existingVideoLinks = $this->videoLinkRepository->findByResourceAndUrls(
-            $status->resourceType(),
-            $status->wikiIdentifier(),
-            $videoUrls,
-        );
-        $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
-
-        $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
-            $status->resourceType(),
-            $status->wikiIdentifier(),
-        );
-        $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
-
-        $savedCount = 0;
-        foreach ($videos as $video) {
-            if (in_array($video->url(), $existingUrls, true)) {
-                continue;
-            }
-
-            $videoLink = $this->videoLinkFactory->create(
+        try {
+            $this->videoLinkRepository->deleteAutoCollectedByResource(
                 $status->resourceType(),
                 $status->wikiIdentifier(),
-                new ExternalContentLink($video->url()),
-                $video->videoUsage(),
-                $video->title(),
-                $maxDisplayOrder + $savedCount + 1,
             );
-            $videoLink->setThumbnailUrl($video->thumbnailUrl());
-            $videoLink->setPublishedAt($video->publishedAt());
 
-            $this->videoLinkRepository->save($videoLink);
-            $savedCount++;
+            $videoUrls = array_map(static fn ($video) => $video->url(), $videos);
+            $existingVideoLinks = $this->videoLinkRepository->findByResourceAndUrls(
+                $status->resourceType(),
+                $status->wikiIdentifier(),
+                $videoUrls,
+            );
+            $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
+
+            $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
+                $status->resourceType(),
+                $status->wikiIdentifier(),
+            );
+            $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
+
+            $savedCount = 0;
+            foreach ($videos as $video) {
+                if (in_array($video->url(), $existingUrls, true)) {
+                    continue;
+                }
+
+                $videoLink = $this->videoLinkFactory->create(
+                    $status->resourceType(),
+                    $status->wikiIdentifier(),
+                    new ExternalContentLink($video->url()),
+                    $video->videoUsage(),
+                    $video->title(),
+                    $maxDisplayOrder + $savedCount + 1,
+                );
+                $videoLink->setThumbnailUrl($video->thumbnailUrl());
+                $videoLink->setPublishedAt($video->publishedAt());
+
+                $this->videoLinkRepository->save($videoLink);
+                $savedCount++;
+            }
+
+            $updatedStatus = clone $status;
+            $updatedStatus->markCollected(new DateTimeImmutable());
+            $this->videoLinkCollectionStatusRepository->save($updatedStatus);
+        } catch (Throwable $e) {
+            throw new VideoLinkCollectionFailedException($e);
         }
-
-        $status->markCollected(new DateTimeImmutable());
-        $this->videoLinkCollectionStatusRepository->save($status);
 
         $this->logger->info('CollectVideoLinks: Collection completed', [
             'resource_type' => $status->resourceType()->value,

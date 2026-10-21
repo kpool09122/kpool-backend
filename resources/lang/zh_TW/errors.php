@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_wiki_not_found' => '找不到指定的已發布Wiki。',
+    'invalid_video_list_query' => '影片清單查詢條件無效。',
     'invalid_material_search_context' => '圖片素材搜尋條件無效。',
     'principal_inactive' => '此使用者已停止使用。',
     'principal_status_change_forbidden' => '無法透過使用者權限管理變更強制停止狀態。',

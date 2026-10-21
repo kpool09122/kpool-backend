@@ -103,6 +103,7 @@ use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Factory\VideoLinkCollecti
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Service\YouTubeSearchService;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface as WikiTranslationServiceInterface;
+use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
@@ -125,6 +126,7 @@ use Source\Wiki\Wiki\Infrastructure\Repository\WikiRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiSnapshotRepository;
 use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
 use Source\Wiki\Wiki\Infrastructure\Service\TranslationService as WikiTranslationService;
+use Source\Wiki\Wiki\Infrastructure\Service\VideoLinkCollectionRegistrationService;
 use Source\Wiki\Wiki\Infrastructure\Service\WikiWorkflowNotificationService;
 
 class DomainServiceProvider extends ServiceProvider
@@ -171,6 +173,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(VideoLinkCollectionStatusFactoryInterface::class, VideoLinkCollectionStatusFactory::class);
         $this->app->singleton(VideoLinkCollectionStatusRepositoryInterface::class, VideoLinkCollectionStatusRepository::class);
         $this->app->singleton(YouTubeSearchServiceInterface::class, YouTubeSearchService::class);
+        $this->app->singleton(VideoLinkCollectionRegistrationServiceInterface::class, VideoLinkCollectionRegistrationService::class);
         $this->app->singleton(CollectVideoLinksInterface::class, CollectVideoLinks::class);
         $this->app->singleton(ContributionPointHistoryRepositoryInterface::class, ContributionPointHistoryRepository::class);
         $this->app->singleton(ContributionPointSummaryRepositoryInterface::class, ContributionPointSummaryRepository::class);

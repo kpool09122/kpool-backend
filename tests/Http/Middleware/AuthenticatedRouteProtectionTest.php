@@ -487,6 +487,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
     private static function publicWikiRouteUris(): array
     {
         return [
+            'api/v1/wiki/wiki/{language}/{resourceType}/{slug}/videos',
             'api/v1/wiki/wiki/{language}/{slug}/related-profiles',
             'api/v1/wiki/wiki/{language}/agency/{slug}',
             'api/v1/wiki/wiki/{language}/group/{slug}',

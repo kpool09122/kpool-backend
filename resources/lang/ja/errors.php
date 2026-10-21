@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_wiki_not_found' => '指定した公開Wikiが見つかりません。',
+    'invalid_video_list_query' => '動画一覧の取得条件が不正です。',
     'invalid_material_search_context' => '画像素材の検索条件が正しくありません。',
     'principal_inactive' => 'このユーザーの利用は停止されています。',
     'principal_status_change_forbidden' => 'ユーザー権限管理から強制停止のステータスを変更することはできません。',

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_wiki_not_found' => '지정한 공개 위키를 찾을 수 없습니다.',
+    'invalid_video_list_query' => '동영상 목록 조회 조건이 올바르지 않습니다.',
     'invalid_material_search_context' => '이미지 소재 검색 조건이 올바르지 않습니다.',
     'principal_inactive' => '이 사용자는 이용이 중지되었습니다.',
     'principal_status_change_forbidden' => '사용자 권한 관리에서 강제 중지 상태를 변경할 수 없습니다.',
