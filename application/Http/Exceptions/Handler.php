@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use RedisException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException as SymfonyNotFoundHttpException;
 use Throwable;
 
 final readonly class Handler
@@ -49,6 +50,10 @@ final readonly class Handler
     {
         if (! $e instanceof ServiceUnavailableHttpException && $this->causedByRedisConnectionFailure($e)) {
             $e = new ServiceUnavailableHttpException($e);
+        }
+
+        if ($e instanceof SymfonyNotFoundHttpException) {
+            $e = new NotFoundHttpException(previous: $e);
         }
 
         if ($request->expectsJson()) {

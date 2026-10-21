@@ -17,10 +17,63 @@ use RedisException;
 use RuntimeException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException as SymfonyNotFoundHttpException;
 use Tests\TestCase;
 
 class HandlerTest extends TestCase
 {
+    public function testRenderJsonReturnsNotFoundForSymfonyNotFoundException(): void
+    {
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('warning')->once();
+        $logger->shouldNotReceive('error');
+
+        $handler = new Handler($logger);
+        $response = $handler(new SymfonyNotFoundHttpException('Internal route information'), $this->jsonRequest());
+
+        $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+        $this->assertSame([
+            'status' => Response::HTTP_NOT_FOUND,
+            'type' => 'https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5',
+            'title' => 'Not Found',
+        ], json_decode((string) $response->getContent(), true));
+    }
+
+    public function testRenderViewReturnsNotFoundForSymfonyNotFoundException(): void
+    {
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldNotReceive('error');
+        config(['view.paths' => [__DIR__ . '/../../../resources/views']]);
+
+        $handler = new Handler($logger);
+        $response = $handler(
+            new SymfonyNotFoundHttpException('Internal route information'),
+            Request::create('/missing-endpoint', server: ['HTTP_ACCEPT' => 'text/html']),
+        );
+
+        $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+        $this->assertStringContainsString('<div class="status-code">404</div>', (string) $response->getContent());
+        $this->assertStringContainsString('<h1 class="title">Not Found</h1>', (string) $response->getContent());
+        $this->assertStringNotContainsString('Internal route information', (string) $response->getContent());
+    }
+
+    public function testRenderViewLogsUnhandledServerException(): void
+    {
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
+        config(['view.paths' => [__DIR__ . '/../../../resources/views']]);
+
+        $handler = new Handler($logger);
+        $response = $handler(new RuntimeException('boom'), Request::create('/missing-endpoint'));
+
+        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+        $this->assertStringContainsString('<div class="status-code">500</div>', (string) $response->getContent());
+        $this->assertStringNotContainsString('boom', (string) $response->getContent());
+    }
+
     public function testRenderJsonReturnsNotFoundForPrincipalNotFound(): void
     {
         /** @var LoggerInterface&MockInterface $logger */
