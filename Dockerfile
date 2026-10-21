@@ -1,5 +1,5 @@
 # Native extensions are built for the requested target (including linux/arm64).
-FROM php:8.5-fpm AS extensions
+FROM php:8.5.12-fpm AS extensions
 COPY --chmod=755 docker/install-php-extension-source.sh /usr/local/bin/install-php-extension-source
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
     libzip-dev libpq-dev libpng-dev libjpeg-dev libwebp-dev libfreetype6-dev; \
@@ -8,7 +8,7 @@ RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
     install-php-extension-source redis 6.3.0 phpredis/phpredis df4fab2de7fc327c54c94a13af2b9542e4fbd720; \
     rm -rf /var/lib/apt/lists/*
 
-FROM php:8.5-fpm AS runtime
+FROM php:8.5.12-fpm AS runtime
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
     bash curl libzip5 libpq5 libpng16-16t64 libjpeg62-turbo libwebp7 libfreetype6 \
     mecab mecab-ipadic-utf8 nginx tini librsvg2-bin; \
