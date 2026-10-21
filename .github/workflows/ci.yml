@@ -54,10 +54,10 @@ jobs:
         extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, pdo, phar, tokenizer, xmlreader, xmlwriter, redis
         tools: composer:v2
 
-    - name: Install MeCab
+    - name: Install native dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y mecab mecab-ipadic-utf8
+        sudo apt-get install -y mecab mecab-ipadic-utf8 librsvg2-bin
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
