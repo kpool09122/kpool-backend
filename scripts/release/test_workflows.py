@@ -11,6 +11,35 @@ BASE=Path(__file__).resolve().parents[2]/'.github/workflows'
 def workflow(name): return yaml.safe_load((BASE/name).read_text())
 
 class WorkflowTests(unittest.TestCase):
+    def test_every_production_job_requires_successful_release_approval(self):
+        jobs = workflow('release.yml')['jobs']
+        approval = jobs['approve']
+        self.assertEqual(approval['environment'], 'production-approval')
+        self.assertEqual(approval['permissions'], {})
+        self.assertNotIn('needs', approval)
+        self.assertEqual(jobs['plan']['needs'], 'approve')
+        self.assertNotIn('if', jobs['plan'])
+        self.assertIn('approve', jobs['record']['needs'])
+
+        def ancestors(name):
+            needs = jobs[name].get('needs', [])
+            if isinstance(needs, str):
+                needs = [needs]
+            return set(needs).union(*(ancestors(parent) for parent in needs))
+
+        for name, job in jobs.items():
+            if name in ('approve', 'record'):
+                continue
+            with self.subTest(job=name):
+                self.assertIn('approve', ancestors(name))
+                if 'always()' in job.get('if', ''):
+                    self.assertIn("needs.plan.result == 'success'", job['if'])
+        for filename in ('release.yml', 'backend-validation.yml', 'backend-publication.yml', 'backend-deployment.yml'):
+            for name, job in workflow(filename)['jobs'].items():
+                if 'environment' in job:
+                    expected = 'production-approval' if filename == 'release.yml' and name == 'approve' else 'production'
+                    self.assertEqual(job['environment'], expected)
+
     def test_settings_are_checked_before_plan_without_exposing_cloudflare_token(self):
         steps = workflow('release.yml')['jobs']['plan']['steps']
         settings = next(i for i, step in enumerate(steps)
@@ -27,7 +56,7 @@ class WorkflowTests(unittest.TestCase):
         inputs = data.get('on', data.get(True))['workflow_dispatch']['inputs']
         self.assertNotIn('backend_ref', inputs)
         self.assertEqual(inputs['frontend_ref']['default'], '')
-        jobs = [data['jobs'][name] for name in ('plan', 'frontend-build', 'frontend-deploy')]
+        jobs = [data['jobs'][name] for name in ('approve', 'plan', 'frontend-build', 'frontend-deploy')]
         for name in ('backend-validation.yml', 'backend-publication.yml', 'backend-deployment.yml'):
             jobs.extend(workflow(name)['jobs'].values())
         for job in jobs:

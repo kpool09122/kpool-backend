@@ -8,9 +8,30 @@
 
 基盤の作成からSecret/DB設定までの順序は [構築手順](first-deployment.md)。標準hookはCloudFormation同梱で、`hook_code_sha256` は外部ZIPを使う場合に設定する。外部URLの常時監視は任意。Container Insightsは既定無効。
 
-backendの `production` Environmentは許可タグ `v*` を使う。バック・フロントそれぞれに、マイナーバージョン単位の `release/v1.0`、`release/v1.1` などのブランチを用意する。そのブランチ上の公開対象コミットに `v1.0.0`、次の修正に `v1.0.1` のようにタグを付け、Actionsではタグを指定して配備する。タグ作成自体はブランチからの通常のGit操作で行い、配備処理は選んだタグのコミットを使う。
+バック・フロントそれぞれに、マイナーバージョン単位の `release/v1.0`、`release/v1.1` などのブランチを用意する。そのブランチ上の公開対象コミットに `v1.0.0`、次の修正に `v1.0.1` のようにタグを付け、Actionsではタグを指定して配備する。タグ作成自体はブランチからの通常のGit操作で行い、配備処理は選んだタグのコミットを使う。backendのEnvironment設定は以下に従う。
 
 workflow定義は既定ブランチにも存在する必要がある。workflowの変更はレビューで保護する。production concurrencyはcancel-in-progress=false。基盤の管理者操作との排他・drift反映は [operations.md](operations.md) に従う。
+
+### リリース実行ごとの承認
+
+GitHubの **Settings → Environments** で、承認用の `production-approval` と実行用の `production` を設定する。
+
+| Environment | Required reviewers | Variables / Secrets | Deployment branches and tags |
+| --- | --- | --- | --- |
+| `production-approval` | リリース承認者を登録 | 登録不要 | リリースタグ `v*` のみ許可 |
+| `production` | 設定しない | 既存の本番設定を保持 | 承認ジョブを含むリリースタグのみ許可 |
+
+最初の `approve` ジョブで1回承認すると、plan → 検証・build → 公開・配備が自動で進む。拒否・キャンセル時は後続の本番処理を開始せず、recordに結果を残す。新しいrunや承認ジョブを含む再実行では改めて承認する。AWS OIDCは引き続き `production` を使う。
+
+既存環境からの切り替えは、リリース実行を止めた状態で次の順に行う。
+
+1. この承認ジョブを含むworkflowを既定ブランチとリリースブランチへ反映し、新しいリリースタグを作る。
+2. `production-approval` を作成し、Required reviewersと許可タグを設定する。未設定のEnvironmentをworkflowが自動作成すると承認なしで進むため、実行前に設定を完了する。
+3. `production` の許可タグを、新しいworkflowを含むタグの明示的な許可リストへ変更する。旧workflowのタグを実行する必要がある場合は、先に `production` のRequired reviewersを戻す。
+4. `production` のRequired reviewersを外す。Variables・Secrets・タグ制限は保持する。
+5. 新しいタグで起動し、`Approve production release` の承認後に追加の承認待ちが発生しないことを確認する。
+
+以後のリリースも、承認ジョブを含むタグを `production` の許可リストへ追加してから起動する。
 
 ## 毎回の操作
 
@@ -18,7 +39,8 @@ workflow定義は既定ブランチにも存在する必要がある。workflow�
 2. 公開するコミットに `v1.0.0` などのタグを付け、ブランチとタグをpushする。公開済みタグは付け替えず、次回は `v1.0.1` などを作る。
 3. backendの **Actions → Production release → Run workflow** を開く。
 4. **Use workflow from** でbackendのタグ `v1.0.0` を選び、`target=all`, `mode=deploy` にする。`frontend_ref` は同じタグ名なら空欄。別のタグを使う場合だけ入力する。初回のみ `initial=true`。
-5. Actionsが両タグのコミットを固定し、検証・build後にbackend → frontendを配備する。結果はSummaryとartifactで確認する。
+5. `Approve production release` の承認待ちで **Review deployments → production-approval → Approve and deploy** を選ぶ。
+6. Actionsが両タグのコミットを固定し、検証・build後にbackend → frontendを配備する。結果はSummaryとartifactで確認する。
 
 SHAの転記や互換性承認JSONの編集は不要。以下のVariablesは配備先や設定が変わるときだけ更新する。
 

@@ -1,11 +1,12 @@
 # Native extensions are built for the requested target (including linux/arm64).
 FROM php:8.5-fpm AS extensions
+COPY --chmod=755 docker/install-php-extension-source.sh /usr/local/bin/install-php-extension-source
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
     libzip-dev libpq-dev libpng-dev libjpeg-dev libwebp-dev libfreetype6-dev; \
     docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype; \
     docker-php-ext-install -j"$(nproc)" zip pdo_pgsql gd pcntl; \
-    pecl install redis-6.3.0; docker-php-ext-enable redis; \
-    rm -rf /tmp/pear /var/lib/apt/lists/*
+    install-php-extension-source redis 6.3.0 phpredis/phpredis df4fab2de7fc327c54c94a13af2b9542e4fbd720; \
+    rm -rf /var/lib/apt/lists/*
 
 FROM php:8.5-fpm AS runtime
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
@@ -59,7 +60,8 @@ CMD ["api"]
 # Keep the default stage compatible with existing local builds.
 FROM extensions AS development
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends bash curl unzip mecab mecab-ipadic-utf8 librsvg2-bin; \
-    pecl install pcov; docker-php-ext-enable pcov; rm -rf /tmp/pear /var/lib/apt/lists/*
+    install-php-extension-source pcov 1.0.12 krakjoe/pcov e16c08e14da0a74fd19e2e14960382bc8f28292d; \
+    rm -rf /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

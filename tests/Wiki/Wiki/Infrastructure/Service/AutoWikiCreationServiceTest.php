@@ -282,18 +282,23 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertCount(1, $sections);
         $this->assertSame('代表曲', $sections[0]->title());
         $blocks = $sections[0]->contents()->blocks();
-        $this->assertCount(3, $blocks);
-        $this->assertInstanceOf(ListBlock::class, $blocks[0]);
-        $this->assertSame(['Song A (2020)', 'Song B (2021)', 'Song C (2022)', 'Song D (2023)', 'Song E (2024)'], $blocks[0]->items());
+        $this->assertCount(7, $blocks);
+        foreach ([0 => 'Song A (2020)', 2 => 'Song B (2021)', 3 => 'Song C (2022)', 4 => 'Song D (2023)', 5 => 'Song E (2024)'] as $index => $title) {
+            $this->assertInstanceOf(ListBlock::class, $blocks[$index]);
+            $this->assertSame([$title], $blocks[$index]->items());
+        }
+        foreach ($blocks as $index => $block) {
+            $this->assertSame($index, $block->displayOrder());
+        }
         $this->assertInstanceOf(EmbedBlock::class, $blocks[1]);
         $this->assertSame(EmbedProvider::YOUTUBE, $blocks[1]->provider());
         $this->assertSame('abcdefghijk', $blocks[1]->embedId());
         $this->assertSame('Song A (2020)', $blocks[1]->caption());
         $this->assertSame(1, $blocks[1]->displayOrder());
-        $this->assertInstanceOf(EmbedBlock::class, $blocks[2]);
-        $this->assertSame('123456789_-', $blocks[2]->embedId());
-        $this->assertSame('Song E (2024)', $blocks[2]->caption());
-        $this->assertSame(2, $blocks[2]->displayOrder());
+        $this->assertInstanceOf(EmbedBlock::class, $blocks[6]);
+        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[6]->provider());
+        $this->assertSame('123456789_-', $blocks[6]->embedId());
+        $this->assertSame('Song E (2024)', $blocks[6]->caption());
     }
 
     /**
@@ -396,8 +401,13 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertInstanceOf(TextBlock::class, $sections[1]->contents()->blocks()[0]);
 
         $this->assertSame('대표곡', $sections[2]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
-        $this->assertSame($representativeSongs, $sections[2]->contents()->blocks()[0]->items());
+        $songBlocks = $sections[2]->contents()->blocks();
+        $this->assertCount(count($representativeSongs), $songBlocks);
+        foreach ($representativeSongs as $index => $title) {
+            $this->assertInstanceOf(ListBlock::class, $songBlocks[$index]);
+            $this->assertSame([$title], $songBlocks[$index]->items());
+            $this->assertSame($index, $songBlocks[$index]->displayOrder());
+        }
 
         $this->assertSame('수상 이력', $sections[3]->title());
         $this->assertSame('멤버', $sections[4]->title());
