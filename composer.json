@@ -3,7 +3,7 @@
     "description": "PHP Project with PHPUnit",
     "type": "project",
     "require": {
-        "php": "^8.5",
+        "php": "^8.5.12",
         "symfony/uid": "^8.0",
         "laravel/framework": "^13.0",
         "psr/log": "^3.0",
