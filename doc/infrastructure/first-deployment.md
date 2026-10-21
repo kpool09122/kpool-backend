@@ -103,7 +103,7 @@ Wiki接続元情報の署名用 `WIKI_VISITOR_LOCATION_SECRET` はapp Secretへ�
 
 ## 5. GitHub設定とbackend配備
 
-backendの `production` Environmentでタグ `v*` の許可を確認し、次のVariablesを登録/更新する。
+[リリース承認の設定](backend-release.md#リリース実行ごとの承認)に従って `production-approval` と `production` を用意する。`production` で承認ジョブを含むリリースタグの許可を確認し、次のVariablesを登録/更新する。
 
 | Variable | 取得元 |
 | --- | --- |

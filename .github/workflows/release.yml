@@ -31,7 +31,22 @@ concurrency:
   group: kpool-release-production
   cancel-in-progress: false
 jobs:
+  approve:
+    name: Approve production release
+    runs-on: ubuntu-26.04
+    environment: production-approval
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require backend release tag
+        run: |
+          python3 - <<'PYCODE'
+          import os, re
+          if os.environ['GITHUB_REPOSITORY'] != 'kpool09122/kpool-backend' or not re.fullmatch(r'refs/tags/v[A-Za-z0-9][A-Za-z0-9._-]*', os.environ['GITHUB_REF']):
+              raise ValueError('Production release approval requires a backend release tag')
+          PYCODE
   plan:
+    needs: approve
     runs-on: ubuntu-26.04
     environment: production
     timeout-minutes: 10
@@ -368,7 +383,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
   record:
-    needs: [plan, validate-build, frontend-build, publish, deploy, frontend-deploy]
+    needs: [approve, plan, validate-build, frontend-build, publish, deploy, frontend-deploy]
     if: always()
     runs-on: ubuntu-26.04
     permissions:
