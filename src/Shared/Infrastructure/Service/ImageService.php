@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Application\Service\SvgImageRasterizerInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Throwable;
 use UnexpectedValueException;
@@ -22,8 +23,10 @@ class ImageService implements ImageServiceInterface
 {
     private const int MAX_RESIZED_DIMENSION = 1024;
 
-    public function __construct(private readonly LoggerInterface $logger)
-    {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+        private readonly SvgImageRasterizerInterface $svgImageRasterizer,
+    ) {
     }
 
     /**
@@ -39,7 +42,7 @@ class ImageService implements ImageServiceInterface
             throw new InvalidBase64ImageException();
         }
 
-        $gdImage = @imagecreatefromstring($imageData);
+        $gdImage = $this->decodeImage($imageData);
         if ($gdImage === false) {
             throw new InvalidBase64ImageException();
         }
@@ -64,7 +67,7 @@ class ImageService implements ImageServiceInterface
             throw new InvalidRemoteImageException('Remote image is empty.');
         }
 
-        $gdImage = @imagecreatefromstring($imageData);
+        $gdImage = $this->decodeImage($imageData);
         if ($gdImage === false) {
             throw new InvalidRemoteImageException('Remote URL did not contain a valid image.');
         }
@@ -97,6 +100,18 @@ class ImageService implements ImageServiceInterface
 
             return false;
         }
+    }
+
+    private function decodeImage(string $imageData): GdImage | false
+    {
+        $image = @imagecreatefromstring($imageData);
+        if ($image !== false) {
+            return $image;
+        }
+
+        $png = $this->svgImageRasterizer->rasterizeToPng($imageData, self::MAX_RESIZED_DIMENSION);
+
+        return $png === false ? false : @imagecreatefromstring($png);
     }
 
     private function storeImage(GdImage $gdImage): ImagePath

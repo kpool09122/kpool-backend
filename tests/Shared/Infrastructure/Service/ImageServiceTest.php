@@ -7,14 +7,41 @@ namespace Tests\Shared\Infrastructure\Service;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Mockery;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Application\Service\SvgImageRasterizerInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Infrastructure\Service\ImageService;
 use Tests\TestCase;
 
 class ImageServiceTest extends TestCase
 {
+    public function testUsesRasterizerBoundThroughInterface(): void
+    {
+        Storage::fake('s3');
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"/>';
+        ob_start();
+        imagepng(imagecreatetruecolor(20, 10));
+        $png = ob_get_clean();
+        self::assertIsString($png);
+        $svgImageRasterizer = Mockery::mock(SvgImageRasterizerInterface::class);
+        $svgImageRasterizer->shouldReceive('rasterizeToPng')->once()->with($svg, 1024)
+            ->andReturn($png);
+        $this->app()->instance(SvgImageRasterizerInterface::class, $svgImageRasterizer);
+
+        $imageService = $this->app()->make(ImageServiceInterface::class);
+        $path = $imageService->upload(base64_encode($svg));
+
+        $stored = Storage::disk('s3')->get((string) $path);
+        self::assertIsString($stored);
+        $size = getimagesizefromstring($stored);
+        self::assertNotFalse($size);
+        self::assertSame('image/webp', $size['mime']);
+        self::assertSame(20, $size[0]);
+        self::assertSame(10, $size[1]);
+    }
+
     public function testImportPreservesTransparencyAndStoresResizedWebpOnSelectedDisk(): void
     {
         Storage::fake('s3');

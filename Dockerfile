@@ -10,7 +10,7 @@ RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
 FROM php:8.5-fpm AS runtime
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends \
     bash curl libzip5 libpq5 libpng16-16t64 libjpeg62-turbo libwebp7 libfreetype6 \
-    mecab mecab-ipadic-utf8 nginx tini; \
+    mecab mecab-ipadic-utf8 nginx tini librsvg2-bin; \
     rm -rf /var/lib/apt/lists/*; \
     groupadd -g 1000 app; useradd -u 1000 -g app -M app
 COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
@@ -58,7 +58,7 @@ CMD ["api"]
 
 # Keep the default stage compatible with existing local builds.
 FROM extensions AS development
-RUN set -eux; apt-get update; apt-get install -y --no-install-recommends bash curl unzip mecab mecab-ipadic-utf8; \
+RUN set -eux; apt-get update; apt-get install -y --no-install-recommends bash curl unzip mecab mecab-ipadic-utf8 librsvg2-bin; \
     pecl install pcov; docker-php-ext-enable pcov; rm -rf /tmp/pear /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
