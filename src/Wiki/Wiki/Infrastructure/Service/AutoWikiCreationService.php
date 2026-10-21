@@ -377,12 +377,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
 
         if ($params->representativeSongs() !== []) {
             $songs = array_slice($params->representativeSongs(), 0, 5);
-            $titles = [];
+            $contents = [];
             foreach ($songs as $song) {
-                $titles[] = $song->title();
-            }
-            $contents = [new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $titles)];
-            foreach ($songs as $song) {
+                $contents[] = new ListBlock(
+                    displayOrder: count($contents),
+                    listType: ListType::BULLET,
+                    items: [$song->title()],
+                );
                 if ($song->youtubeVideoId() !== null) {
                     $contents[] = new EmbedBlock(
                         displayOrder: count($contents),
