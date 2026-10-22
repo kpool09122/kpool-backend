@@ -22,6 +22,46 @@ use Tests\TestCase;
 
 class YouTubeClientTest extends TestCase
 {
+    #[DataProvider('searchResultTypes')]
+    public function testSearchIgnoresResultsWithoutVideoIds(bool $recent, bool $withVideos): void
+    {
+        $items = [
+            ['id' => ['channelId' => 'channel1']],
+            ['id' => ['playlistId' => 'playlist1']],
+            ['id' => []],
+            [],
+            ['id' => ['videoId' => null]],
+            ['id' => ['videoId' => '']],
+        ];
+        if ($withVideos) {
+            array_unshift($items, ['id' => ['videoId' => 'video1']]);
+            $items[] = ['id' => ['videoId' => 'video2']];
+        }
+
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        $http->shouldReceive('sendRequest')->once()->andReturn(
+            new Response(200, [], json_encode(['items' => $items], JSON_THROW_ON_ERROR)),
+        );
+        $client = $this->client($http);
+        $response = $recent
+            ? $client->searchRecentVideoIds(new SearchRecentVideoIdsRequest('TWICE', 30, new CarbonImmutable()))
+            : $client->searchVideoIds(new SearchVideoIdsRequest('TWICE', 'relevance', 30));
+
+        self::assertSame($withVideos ? ['video1', 'video2'] : [], $response->videoIds());
+    }
+
+    /** @return array<string, array{bool, bool}> */
+    public static function searchResultTypes(): array
+    {
+        return [
+            'regular mixed results' => [false, true],
+            'recent mixed results' => [true, true],
+            'regular without videos' => [false, false],
+            'recent without videos' => [true, false],
+        ];
+    }
+
     #[DataProvider('searchFailures')]
     public function testSearchFailuresAreNotEmptySuccesses(bool $recent, bool $transport): void
     {
