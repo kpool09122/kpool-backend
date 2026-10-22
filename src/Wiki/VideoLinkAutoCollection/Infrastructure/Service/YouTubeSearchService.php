@@ -76,10 +76,10 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
             $recentVideos = $this->selectTopVideos($videoDetails, $recentVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, false);
 
             return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos, ...$recentVideos]);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
             $this->logger->error('Video search failed; existing collection is unchanged');
 
-            throw new VideoSearchFailedException();
+            throw new VideoSearchFailedException($exception);
         }
     }
 

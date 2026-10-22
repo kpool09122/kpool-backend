@@ -115,7 +115,7 @@ Wiki接続元情報の署名用 `WIKI_VISITOR_LOCATION_SECRET` はapp Secretへ�
 バック・フロントにマイナーバージョンごとの `release/v1.0` などのブランチを用意し、公開対象コミットに `v1.0.0` などのタグを付ける。Actionsの **Production release** でbackendのタグを実行元に選び、`target=all`, `mode=deploy` で起動する。frontendは同名タグなら `frontend_ref` を空欄にできる。別のタグを使う場合だけ指定する。CLI例は [リリース手順](backend-release.md#手動入力と配備) を参照する。
 初回のみ `initial=true`。migration成功 → APIのBLUE_GREEN（切替後の待機なし） → workerの順に進み、配備後の公開URLへのアクセス・画面確認は運用者が行う。
 失敗したstageの記録を確認し、再実行/rollbackは [backend-release.md](backend-release.md) に従う。
-API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。
+API/workerの正常稼働確認後、同じ `configure` を再実行してWiki scheduleを反映する。月次は初回有効化され、YouTube収集用 `${ProjectName}-video-links-collect` は実行先だけを準備してDISABLEDを維持する。YouTube APIキーとworker・収集動作を確認後、EventBridge Scheduler画面で動画収集を手動でONにする。以後の再設定と `infra:operate` 経由のCloudFormation更新は現在のON/OFFを引き継ぐ。
 
 公開前にマスターを手動投入する。デプロイ処理は `migrate --force` のみで、Seederは自動実行しない。
 ECSで現在のAPI task definitionを使う単発taskを起動し、APIと同じsubnet・security group・public IP設定で、アプリcontainerのcommandを次へ上書きする。

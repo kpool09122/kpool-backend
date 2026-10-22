@@ -27,12 +27,17 @@ final readonly class SearchVideoIdsParams
      */
     public function videoIds(): array
     {
-        /** @var array<int, array{id: array{videoId: string}}> $items */
+        /** @var array<int, array{id?: array{videoId?: string|null}}> $items */
         $items = $this->params['items'] ?? [];
+        $videoIds = [];
 
-        return array_map(
-            static fn (array $item): string => $item['id']['videoId'],
-            $items,
-        );
+        foreach ($items as $item) {
+            $videoId = $item['id']['videoId'] ?? null;
+            if ($videoId !== null && $videoId !== '') {
+                $videoIds[] = $videoId;
+            }
+        }
+
+        return $videoIds;
     }
 }

@@ -151,6 +151,9 @@ class CloudFormationContracts(unittest.TestCase):
         for desired in ('ApiDesiredCount', 'WorkerDesiredCount'):
             self.assertFalse(rules_accept(template, {**base, desired: 1}))
         self.assertFalse(rules_accept(template, {**base, 'SchedulerState': 'ENABLED'}))
+        self.assertFalse(rules_accept(template, {**base, 'VideoCollectionSchedulerState': 'ENABLED'}))
+        self.assertTrue(rules_accept(template, {**base, 'VideoCollectionSchedulerState': 'ENABLED',
+                                              'VideoCollectionTaskDefinitionArn': 'scheduler-release:1'}))
         ready = {**base, 'ApiDesiredCount': 1, 'ApiTaskDefinitionArn': 'release:1',
                  'HookArtifactBucket': 'artifact-bucket', 'HookArtifactKey': 'hook.zip',
                  'HookArtifactVersion': 'immutable-version', 'ExternalCanaryAlarmName': 'continuous-smoke'}

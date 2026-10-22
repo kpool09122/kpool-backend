@@ -97,6 +97,10 @@ Parameters:
     Type: String
     Description: Current pipeline-owned release revision ARN; empty uses a never-started bootstrap definition.
     Default: ''
+  VideoCollectionTaskDefinitionArn:
+    Type: String
+    Description: Current video collection scheduler release revision; reconciled from the live schedule on updates.
+    Default: ''
   ApiDesiredCount:
     Type: Number
     MinValue: 0
@@ -116,6 +120,13 @@ Parameters:
   ScheduleExpression:
     Type: String
     Default: cron(0 3 1 * ? *)
+  VideoCollectionSchedulerState:
+    Type: String
+    Description: Initially disabled; preserve the live operator-controlled state on infrastructure updates.
+    AllowedValues:
+    - DISABLED
+    - ENABLED
+    Default: DISABLED
   PrimaryTargetGroup:
     Type: String
     AllowedValues:
@@ -271,6 +282,11 @@ Conditions:
     - Fn::Equals:
       - Ref: SchedulerTaskDefinitionArn
       - ''
+  HasVideoCollectionRelease:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: VideoCollectionTaskDefinitionArn
+      - ''
   CreateCertificate:
     Fn::Equals:
     - Ref: CertificateArn
@@ -413,6 +429,18 @@ Rules:
           - Ref: SchedulerTaskDefinitionArn
           - ''
       AssertDescription: Enable only with an approved scheduler release task definition.
+  VideoCollectionSchedulerActivation:
+    RuleCondition:
+      Fn::Equals:
+      - Ref: VideoCollectionSchedulerState
+      - ENABLED
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Equals:
+          - Ref: VideoCollectionTaskDefinitionArn
+          - ''
+      AssertDescription: Enable video collection only after configuring a scheduler release task definition.
   ApiSize:
     RuleCondition:
       Fn::Equals:
@@ -1837,6 +1865,41 @@ Resources:
             Fn::GetAtt:
             - SchedulerDlq
             - Arn
+  VideoCollectionSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !Sub '${ProjectName}-video-links-collect'
+      Description: Enqueue YouTube video collection every 45 minutes; enable manually after configuration.
+      GroupName: {Ref: ScheduleGroup}
+      State: {Ref: VideoCollectionSchedulerState}
+      ScheduleExpression: rate(45 minutes)
+      ScheduleExpressionTimezone: Asia/Tokyo
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: {Fn::GetAtt: [Cluster, Arn]}
+        RoleArn: {Fn::GetAtt: [SchedulerRole, Arn]}
+        Input: '{"containerOverrides":[{"name":"scheduler","command":["php","artisan","video-links:collect"]}]}'
+        EcsParameters:
+          TaskDefinitionArn:
+            Fn::If:
+            - HasVideoCollectionRelease
+            - Ref: VideoCollectionTaskDefinitionArn
+            - Ref: SchedulerBootstrapTaskDefinition
+          TaskCount: 1
+          LaunchType: FARGATE
+          PlatformVersion: 1.4.0
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: {Ref: PublicSubnetIds}
+              SecurityGroups:
+              - Ref: ApplicationSecurityGroupId
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 60
+          MaximumRetryAttempts: 0
+        DeadLetterConfig:
+          Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
   SchedulerFailureRule:
     Type: AWS::Events::Rule
     Properties:
@@ -2243,6 +2306,8 @@ Outputs:
   SchedulerArn:
     # The provider's Arn lookup can read the default group despite GroupName.
     Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${Schedule}'
+  VideoCollectionSchedulerArn:
+    Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${VideoCollectionSchedule}'
   SchedulerDlqUrl:
     Value: {Ref: SchedulerDlq}
   ApiTaskRoleArn:

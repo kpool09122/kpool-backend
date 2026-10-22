@@ -322,13 +322,16 @@ class OperationsTests(unittest.TestCase):
                    'SchedulerBootstrapTaskDefinitionArn': 'scheduler-bootstrap:1'}
         values = {name: '' for name in RUNTIME_STATE}
         values.update(ApiDesiredCount='0', WorkerDesiredCount='0', SchedulerState='DISABLED',
+                      VideoCollectionSchedulerState='DISABLED',
                       PrimaryTargetGroup='Blue', ProductionTargetGroup='Blue', TestTargetGroup='Green')
         live = {**values, 'ApiTaskDefinitionArn': 'api-bootstrap:1',
-                'WorkerTaskDefinitionArn': 'worker-bootstrap:1', 'SchedulerTaskDefinitionArn': 'scheduler-bootstrap:1'}
+                'WorkerTaskDefinitionArn': 'worker-bootstrap:1', 'SchedulerTaskDefinitionArn': 'scheduler-bootstrap:1',
+                'VideoCollectionTaskDefinitionArn': 'scheduler-bootstrap:1'}
         operations.verify_initial_runtime(values, outputs, {'parameters': live})
         operations.verify_initial_runtime(values, outputs, {'parameters': {
             **live, 'PrimaryTargetGroup': 'Green', 'ProductionTargetGroup': 'Green', 'TestTargetGroup': 'Green'}})
-        for change in ({'ApiDesiredCount': '1'}, {'SchedulerState': 'ENABLED'}, {'ApiTaskDefinitionArn': 'unexpected-release:2'}):
+        for change in ({'ApiDesiredCount': '1'}, {'SchedulerState': 'ENABLED'},
+                       {'VideoCollectionSchedulerState': 'ENABLED'}, {'ApiTaskDefinitionArn': 'unexpected-release:2'}):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'Initial runtime'):
                 operations.verify_initial_runtime(values, outputs, {'parameters': {**live, **change}})
 
@@ -337,14 +340,52 @@ class OperationsTests(unittest.TestCase):
                    for kind in ('Api', 'Worker', 'Scheduler')}
         live = dict(ApiTaskDefinitionArn='Api-bootstrap:1', ApiDesiredCount='0',
                     WorkerTaskDefinitionArn='worker-release:7', WorkerDesiredCount='0',
-                    SchedulerTaskDefinitionArn='Scheduler-bootstrap:1', SchedulerState='DISABLED')
+                    SchedulerTaskDefinitionArn='Scheduler-bootstrap:1', SchedulerState='DISABLED',
+                    VideoCollectionTaskDefinitionArn='Scheduler-bootstrap:1', VideoCollectionSchedulerState='DISABLED')
         values = operations.runtime_parameters_for_update(live, outputs)
         self.assertEqual(values['ApiTaskDefinitionArn'], '')
         self.assertEqual(values['SchedulerTaskDefinitionArn'], '')
+        self.assertEqual(values['VideoCollectionTaskDefinitionArn'], '')
         self.assertEqual(values['WorkerTaskDefinitionArn'], 'worker-release:7')
         self.assertEqual(live['ApiTaskDefinitionArn'], 'Api-bootstrap:1')
         active = operations.runtime_parameters_for_update({**live, 'ApiDesiredCount': '1'}, outputs)
         self.assertEqual(active['ApiTaskDefinitionArn'], 'Api-bootstrap:1')
+
+    def test_video_schedule_snapshot_preserves_manual_activation_and_detects_changes(self):
+        outputs, services, rules, monthly = fixture()
+        outputs.update(ClusterArn='cluster',
+                       SchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/monthly',
+                       VideoCollectionSchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/video')
+        video = dict(State='ENABLED', LastModificationDate='before',
+                     Target={'EcsParameters': {'TaskDefinitionArn': 'scheduler-release:12'}})
+        def aws(service, operation, *args):
+            if operation == 'describe-services':
+                return services
+            if operation == 'list-service-deployments':
+                return {'serviceDeployments': []}
+            if operation == 'describe-rules':
+                return rules
+            if operation == 'get-schedule':
+                self.assertEqual(args[:2], ('--group-name', 'group'))
+                return video if args[-1] == 'video' else monthly
+            self.fail('Unexpected AWS request')
+        before = operations.runtime_snapshot(aws, outputs)
+        values = operations.runtime_parameters_for_update(before['parameters'], outputs)
+        self.assertEqual(values['VideoCollectionSchedulerState'], 'ENABLED')
+        self.assertEqual(values['VideoCollectionTaskDefinitionArn'], 'scheduler-release:12')
+        video.update(State='DISABLED', LastModificationDate='after')
+        after = operations.runtime_snapshot(aws, outputs)
+        self.assertEqual(after['parameters']['VideoCollectionSchedulerState'], 'DISABLED')
+        self.assertNotEqual(before, after)
+        with self.assertRaisesRegex(ValueError, 'Live runtime values changed'):
+            operations.verify_runtime_transition(before, after, runtime_updated=True)
+
+    def test_adding_disabled_video_schedule_preserves_existing_live_runtime(self):
+        outputs, services, rules, monthly = fixture()
+        before = {'parameters': operations.resolve(outputs, services, rules, monthly), 'nativeHistory': {}}
+        video = dict(State='DISABLED', Target={'EcsParameters': {'TaskDefinitionArn': 'scheduler-bootstrap:1'}})
+        after = {'parameters': operations.resolve(outputs, services, rules, monthly, video), 'nativeHistory': {}}
+        operations.verify_runtime_transition(before, after, runtime_updated=True)
 
     def test_terminal_native_rollback_identity_invalidates_old_snapshot(self):
         outputs, services, rules, schedule = fixture()

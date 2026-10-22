@@ -1,5 +1,6 @@
 """Runtime lifecycle contracts handed to #157 (AWS) and #156 (releases)."""
 from itertools import product
+import json
 import re
 import unittest
 
@@ -47,6 +48,26 @@ class RuntimeContracts(unittest.TestCase):
     def test_scheduler_output_uses_its_explicit_group(self):
         self.assertEqual(self.template['Outputs']['SchedulerArn']['Value'], {'Fn::Sub':
             'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${Schedule}'})
+        self.assertEqual(self.template['Outputs']['VideoCollectionSchedulerArn']['Value'], {'Fn::Sub':
+            'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${VideoCollectionSchedule}'})
+
+    def test_video_schedule_enqueues_every_45_minutes_and_starts_disabled(self):
+        schedule = self.runtime['VideoCollectionSchedule']['Properties']
+        self.assertEqual(schedule['ScheduleExpression'], 'rate(45 minutes)')
+        self.assertEqual(schedule['State'], {'Ref': 'VideoCollectionSchedulerState'})
+        self.assertEqual(self.template['Parameters']['VideoCollectionSchedulerState']['Default'], 'DISABLED')
+        self.assertEqual(schedule['FlexibleTimeWindow'], {'Mode': 'OFF'})
+        target = schedule['Target']
+        self.assertEqual(json.loads(target['Input']), {'containerOverrides': [
+            {'name': 'scheduler', 'command': ['php', 'artisan', 'video-links:collect']}]})
+        self.assertEqual(target['RoleArn'], {'Fn::GetAtt': ['SchedulerRole', 'Arn']})
+        self.assertEqual(target['DeadLetterConfig']['Arn'], {'Fn::GetAtt': ['SchedulerDlq', 'Arn']})
+        self.assertEqual(target['RetryPolicy']['MaximumRetryAttempts'], 0)
+        for arn in ('', 'scheduler-release:3'):
+            parameters = {name: item.get('Default', '') for name, item in self.template['Parameters'].items()}
+            parameters.update(VideoCollectionTaskDefinitionArn=arn)
+            resolved = resolve_conditions(target['EcsParameters'], self.template, parameters)
+            self.assertEqual(resolved['TaskDefinitionArn'], arn or 'SchedulerBootstrapTaskDefinition')
 
     def test_target_roles_and_rule_weights_follow_parameters(self):
         # Reconciliation reflects each live value independently, including a test
@@ -116,6 +137,8 @@ class RuntimeContracts(unittest.TestCase):
         task_networks = [self.runtime[name]['Properties']['NetworkConfiguration']['AwsvpcConfiguration']
                          for name in ('ApiService', 'WorkerService')]
         task_networks.append(self.runtime['Schedule']['Properties']['Target']['EcsParameters']
+                             ['NetworkConfiguration']['AwsvpcConfiguration'])
+        task_networks.append(self.runtime['VideoCollectionSchedule']['Properties']['Target']['EcsParameters']
                              ['NetworkConfiguration']['AwsvpcConfiguration'])
         for configuration in task_networks:
             self.assertEqual(configuration['Subnets'], {'Ref': 'PublicSubnetIds'})
