@@ -6,6 +6,7 @@ namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
@@ -16,7 +17,6 @@ use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
@@ -33,7 +33,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     private const string DEFAULT_REDIRECT_URL = '/auth/callback';
 
     public function __construct(
-        private OAuthStateRepositoryInterface      $oAuthStateRepository,
+        private OAuthStateStorageServiceInterface      $oAuthStateStorageService,
         private SocialOAuthServiceInterface        $socialOAuthService,
         private IdentityRepositoryInterface        $identityRepository,
         private IdentityFactoryInterface           $identityFactory,
@@ -58,7 +58,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
      */
     public function process(SocialLoginCallbackInputPort $input, SocialLoginCallbackOutputPort $output): void
     {
-        $this->oAuthStateRepository->consume($input->state());
+        $this->oAuthStateStorageService->consume($input->state());
         $isStepUp = str_starts_with((string) $input->state(), 'step-up-');
         $stepUpSession = $isStepUp
             ? $this->stepUpOAuthSessionStorageService->consume($input->state())

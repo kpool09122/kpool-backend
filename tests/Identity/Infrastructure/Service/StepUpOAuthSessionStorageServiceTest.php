@@ -44,7 +44,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
     {
         $storage = $this->app()->make(StepUpOAuthSessionStorageServiceInterface::class);
         $this->assertInstanceOf(StepUpOAuthSessionStorageService::class, $storage);
-        $state = new OAuthState('step-up-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('step-up-state');
         $storage->store($state, new StepUpOAuthSession(
             new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'),
             SocialProvider::GOOGLE,
@@ -63,7 +63,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
 
     public function testItRejectsAndConsumesAnExpiredSession(): void
     {
-        $state = new OAuthState('step-up-expired', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('step-up-expired');
         Redis::set('step_up_oauth_session:step-up-expired:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', json_encode([
             'identity_id' => '123e4567-e89b-72d3-a456-426614174001',
             'provider' => 'google',
@@ -80,7 +80,7 @@ class StepUpOAuthSessionStorageServiceTest extends TestCase
     public function testAnotherLoginSessionCannotConsumeTheOAuthSession(): void
     {
         $storage = $this->app()->make(StepUpOAuthSessionStorageServiceInterface::class);
-        $state = new OAuthState('step-up-bound', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('step-up-bound');
         $storage->store($state, new StepUpOAuthSession(
             new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174001'),
             SocialProvider::GOOGLE,

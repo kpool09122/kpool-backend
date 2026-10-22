@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Repository;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
@@ -16,10 +17,10 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
 {
     private const string KEY_PREFIX = 'signup_session:';
 
-    public function store(OAuthState $state, SignupSession $session): void
+    public function store(OAuthState $state, SignupSession $session, DateTimeImmutable $expiresAt): void
     {
         $key = $this->buildKey($state);
-        $ttl = $state->expiresAt()->getTimestamp() - time();
+        $ttl = $expiresAt->getTimestamp() - time();
 
         if ($ttl > 0) {
             $data = [

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\StartStepUpWithSocial;
 
+use Source\Identity\Application\Service\OAuthStateGeneratorInterface;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
-use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
@@ -22,8 +23,8 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         private IdentityRepositoryInterface $identityRepository,
         private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private SocialOAuthServiceInterface $socialOAuthService,
-        private OAuthStateGeneratorInterface $stateGenerator,
-        private OAuthStateRepositoryInterface $oAuthStateRepository,
+        private OAuthStateGeneratorInterface $oauthStateGenerator,
+        private OAuthStateStorageServiceInterface $oAuthStateStorageService,
         private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
     ) {
     }
@@ -37,9 +38,9 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         if ($this->passkeyCredentialRepository->findByIdentityIdentifier($input->identityIdentifier()) !== []) {
             throw new StepUpSocialAuthenticationFailedException('An existing passkey must be used for step-up authentication.');
         }
-        $generatedState = $this->stateGenerator->generate();
-        $state = new OAuthState('step-up-' . $generatedState, $generatedState->expiresAt());
-        $this->oAuthStateRepository->store($state);
+        $generatedSession = $this->oauthStateGenerator->generate();
+        $state = new OAuthState('step-up-' . $generatedSession->state);
+        $this->oAuthStateStorageService->store(new OAuthStateSession($state, $generatedSession->expiresAt));
         $returnTo = match ($input->returnDestination()) {
             StepUpReturnDestination::PASSKEYS => '/settings/passkeys?stepUp=complete',
             StepUpReturnDestination::WITHDRAWAL => '/settings/withdrawal?stepUp=complete',
@@ -48,7 +49,7 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
             $input->identityIdentifier(),
             $input->provider(),
             StepUpAuthenticationScope::RECENT_AUTHENTICATION,
-            $state->expiresAt(),
+            $generatedSession->expiresAt,
             $returnTo,
         ));
         $output->setRedirectUrl($this->socialOAuthService->buildRedirectUrl($input->provider(), $state));

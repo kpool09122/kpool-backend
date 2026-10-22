@@ -7,7 +7,6 @@ namespace Application\Http\Action\Identity\Command\SocialAuthenticate\Callback;
 use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
-use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +48,7 @@ readonly class SocialAuthenticateCallbackAction
             try {
                 $provider = SocialProvider::fromString($request->provider());
                 $code = new OAuthCode($request->code());
-                $state = new OAuthState($request->state(), new DateTimeImmutable('+10 minutes'));
+                $state = new OAuthState($request->state());
                 $isPasskeyRecovery = str_starts_with((string) $state, 'passkey-recovery-');
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

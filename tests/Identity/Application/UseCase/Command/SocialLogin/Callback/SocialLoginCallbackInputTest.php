@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
-use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Domain\ValueObject\OAuthCode;
@@ -22,7 +21,7 @@ class SocialLoginCallbackInputTest extends TestCase
     {
         $provider = SocialProvider::LINE;
         $code = new OAuthCode('authorization-code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
 
         $input = new SocialLoginCallbackInput($provider, $code, $state);
 

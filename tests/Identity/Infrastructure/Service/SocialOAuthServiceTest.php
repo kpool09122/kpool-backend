@@ -9,7 +9,6 @@ use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeFor
 use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserRequest;
 use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserResponse;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
-use DateTimeImmutable;
 use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
@@ -103,7 +102,7 @@ class SocialOAuthServiceTest extends TestCase
 
         $service = $this->app()->make(SocialOAuthService::class);
 
-        $state = new OAuthState('test-state-value', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-value');
 
         $url = $service->buildRedirectUrl($provider, $state);
 
@@ -602,7 +601,7 @@ class SocialOAuthServiceTest extends TestCase
 
         $service = $this->app()->make(SocialOAuthService::class);
 
-        $state = new OAuthState('test-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state');
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('OAuth configuration not found for provider: google');

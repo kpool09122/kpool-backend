@@ -7,6 +7,8 @@ namespace Tests\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWith
 use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSession;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionStorageServiceInterface;
@@ -16,7 +18,6 @@ use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocia
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\IdentityName;
@@ -74,11 +75,11 @@ class CompletePasskeyRecoveryWithSocialTest extends TestCase
     private function scenario(string $failure = ''): array
     {
         $identityId = new IdentityIdentifier('123e4567-e89b-72d3-a456-426614174000');
-        $state = new OAuthState('passkey-recovery-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('passkey-recovery-state');
         $code = new OAuthCode('code');
-        /** @var MockInterface&OAuthStateRepositoryInterface $oauthStateRepository */
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')->once()->with($state);
+        /** @var MockInterface&OAuthStateStorageServiceInterface $oAuthStateStorageService */
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')->once()->with($state)->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
         /** @var MockInterface&PasskeyRecoveryOAuthSessionStorageServiceInterface $oauthSessions */
         $oauthSessions = Mockery::mock(PasskeyRecoveryOAuthSessionStorageServiceInterface::class);
         $oauthSessions->shouldReceive('consume')->once()->with($state)->andReturn($failure === 'session' ? null : new PasskeyRecoveryOAuthSession($failure === 'provider' ? SocialProvider::LINE : SocialProvider::GOOGLE, new DateTimeImmutable('+10 minutes')));
@@ -115,6 +116,6 @@ class CompletePasskeyRecoveryWithSocialTest extends TestCase
             $sessions->shouldReceive('issue')->once()->with($identityId, 'sso')->andReturn($recoveryKey);
         }
 
-        return [new CompletePasskeyRecoveryWithSocial($oauthStateRepository, $oauthSessions, $oauth, $identityRepository, $passkeyCredentialRepository, $sessions), new CompletePasskeyRecoveryWithSocialInput(SocialProvider::GOOGLE, $code, $state), $recoveryKey];
+        return [new CompletePasskeyRecoveryWithSocial($oAuthStateStorageService, $oauthSessions, $oauth, $identityRepository, $passkeyCredentialRepository, $sessions), new CompletePasskeyRecoveryWithSocialInput(SocialProvider::GOOGLE, $code, $state), $recoveryKey];
     }
 }

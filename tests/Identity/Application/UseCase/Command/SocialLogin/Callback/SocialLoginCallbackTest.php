@@ -11,6 +11,8 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
@@ -25,7 +27,6 @@ use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
@@ -62,7 +63,7 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function test__construct(): void
     {
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
@@ -71,7 +72,7 @@ class SocialLoginCallbackTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -94,7 +95,7 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
@@ -102,11 +103,11 @@ class SocialLoginCallbackTest extends TestCase
         $profile = new SocialProfile($provider, 'provider-user-1', $email, 'Example User');
         $identity = $this->createIdentity($email, connections: [new SocialConnection($provider, $profile->providerUserId())]);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
-            ->andReturnNull();
+            ->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
@@ -141,7 +142,7 @@ class SocialLoginCallbackTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -167,7 +168,7 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::LINE;
         $code = new OAuthCode('code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
@@ -175,11 +176,11 @@ class SocialLoginCallbackTest extends TestCase
         $profile = new SocialProfile($provider, 'provider-user-2', $email, 'Line User');
         $existingUser = $this->createIdentity($email);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
-            ->andReturnNull();
+            ->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
@@ -218,7 +219,7 @@ class SocialLoginCallbackTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldNotReceive('dispatch');
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -260,7 +261,7 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::KAKAO;
         $code = new OAuthCode('code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
@@ -269,11 +270,11 @@ class SocialLoginCallbackTest extends TestCase
         $newUser = $this->createIdentity($email);
         $signupSession = new SignupSession(AccountType::CORPORATION, returnTo: '/mypage/wiki');
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
-            ->andReturnNull();
+            ->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
@@ -328,7 +329,7 @@ class SocialLoginCallbackTest extends TestCase
                     && $event->name === $profile->name()
             ));
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -353,7 +354,7 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
@@ -363,11 +364,11 @@ class SocialLoginCallbackTest extends TestCase
         $oneTimeToken = new OneTimeToken(bin2hex(random_bytes(32)));
         $signupSession = new SignupSession(null, $oneTimeToken);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
-            ->andReturnNull();
+            ->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
@@ -421,7 +422,7 @@ class SocialLoginCallbackTest extends TestCase
                     && (string) $event->oneTimeToken === (string) $oneTimeToken
             ));
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -446,7 +447,7 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
@@ -454,11 +455,11 @@ class SocialLoginCallbackTest extends TestCase
         $profile = new SocialProfile($provider, 'new-provider-user', $email, 'New User');
         $newUser = $this->createIdentity($email);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
-            ->andReturnNull();
+            ->andReturn(new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
@@ -508,7 +509,7 @@ class SocialLoginCallbackTest extends TestCase
                     && $event->name === $profile->name()
             ));
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -533,12 +534,12 @@ class SocialLoginCallbackTest extends TestCase
     {
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
-        $state = new OAuthState('invalid-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('invalid-state');
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('consume')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('consume')
             ->once()
             ->with($state)
             ->andThrow(new RuntimeException('state mismatch'));
@@ -553,7 +554,7 @@ class SocialLoginCallbackTest extends TestCase
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(IdentityFactoryInterface::class, $identityFactory);
@@ -612,9 +613,9 @@ class SocialLoginCallbackTest extends TestCase
 
     public function testStepUpRejectsAMissingOrExpiredSessionBeforeFetchingProfile(): void
     {
-        /** @var MockInterface&OAuthStateRepositoryInterface $oauthState */
-        $oauthState = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthState->shouldReceive('consume')->once();
+        /** @var MockInterface&OAuthStateStorageServiceInterface $oauthState */
+        $oauthState = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oauthState->shouldReceive('consume')->once()->andReturn(new OAuthStateSession(new OAuthState('step-up-state'), new DateTimeImmutable('+10 minutes')));
         /** @var MockInterface&StepUpOAuthSessionStorageServiceInterface $sessions */
         $sessions = Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
         $sessions->shouldReceive('consume')->once()->andReturnNull();
@@ -647,13 +648,13 @@ class SocialLoginCallbackTest extends TestCase
         array $passkeys,
         ?StepUpAuthenticationStorageServiceInterface $stepUp = null,
         (StepUpOAuthSessionStorageServiceInterface&MockInterface)|null $sessions = null,
-        (OAuthStateRepositoryInterface&MockInterface)|null $oauthState = null,
+        (OAuthStateStorageServiceInterface&MockInterface)|null $oauthState = null,
         (SocialOAuthServiceInterface&MockInterface)|null $social = null,
     ): void {
-        $oauthState ??= Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthState ??= Mockery::mock(OAuthStateStorageServiceInterface::class);
         $oauthState->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(
             static fn (OAuthState $candidate): bool => (string) $candidate === 'step-up-state',
-        ));
+        ))->andReturn(new OAuthStateSession(new OAuthState('step-up-state'), new DateTimeImmutable('+10 minutes')));
         $sessions ??= Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
         $sessions->shouldReceive('consume')->zeroOrMoreTimes()->with(Mockery::on(
             static fn (OAuthState $candidate): bool => (string) $candidate === 'step-up-state',
@@ -684,7 +685,7 @@ class SocialLoginCallbackTest extends TestCase
         $events = Mockery::mock(EventDispatcherInterface::class);
         $events->shouldNotReceive('dispatch');
 
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthState);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oauthState);
         $this->app()->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
         $this->app()->instance(SocialOAuthServiceInterface::class, $social);
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
@@ -698,7 +699,7 @@ class SocialLoginCallbackTest extends TestCase
 
     private function stepUpInput(SocialProvider $provider = SocialProvider::GOOGLE): SocialLoginCallbackInput
     {
-        return new SocialLoginCallbackInput($provider, new OAuthCode('code'), new OAuthState('step-up-state', new DateTimeImmutable('+10 minutes')));
+        return new SocialLoginCallbackInput($provider, new OAuthCode('code'), new OAuthState('step-up-state'));
     }
 
     private function stepUpIdentity(string $identityId): Identity

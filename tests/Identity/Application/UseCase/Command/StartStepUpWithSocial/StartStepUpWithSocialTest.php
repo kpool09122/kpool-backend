@@ -8,6 +8,9 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Identity\Application\Service\OAuthStateGeneratorInterface;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocial;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocialInput;
@@ -17,9 +20,7 @@ use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
-use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\OAuthState;
@@ -55,11 +56,11 @@ class StartStepUpWithSocialTest extends TestCase
     #[DataProvider('returnDestinations')]
     public function testItStartsReauthenticationForALinkedProviderWhenNoPasskeyExists(StepUpReturnDestination $destination, string $returnTo): void
     {
-        $generatedState = new OAuthState('generated-state', new DateTimeImmutable('+10 minutes'));
-        /** @var MockInterface&OAuthStateRepositoryInterface $oauthStateRepository */
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')->once()->with(Mockery::on(
-            static fn (OAuthState $state): bool => (string) $state === 'step-up-generated-state',
+        $generatedState = new OAuthStateSession(new OAuthState('generated-state'), new DateTimeImmutable('+10 minutes'));
+        /** @var MockInterface&OAuthStateStorageServiceInterface $oAuthStateStorageService */
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')->once()->with(Mockery::on(
+            static fn (OAuthStateSession $session): bool => (string) $session->state === 'step-up-generated-state',
         ));
         /** @var MockInterface&StepUpOAuthSessionStorageServiceInterface $sessions */
         $sessions = Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
@@ -77,7 +78,7 @@ class StartStepUpWithSocialTest extends TestCase
             SocialProvider::GOOGLE,
             Mockery::on(static fn (OAuthState $state): bool => (string) $state === 'step-up-generated-state'),
         )->andReturn('https://accounts.example.test/authorize');
-        $this->bindDependencies($this->identity(), [], $oauthStateRepository, $sessions, $oauth, $generatedState);
+        $this->bindDependencies($this->identity(), [], $oAuthStateStorageService, $sessions, $oauth, $generatedState);
 
         $output = new StartStepUpWithSocialOutput();
         $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input($destination), $output);
@@ -109,29 +110,29 @@ class StartStepUpWithSocialTest extends TestCase
     private function bindDependencies(
         ?Identity $identity,
         array $credentials,
-        ?OAuthStateRepositoryInterface $oauthStateRepository = null,
+        ?OAuthStateStorageServiceInterface $oAuthStateStorageService = null,
         ?StepUpOAuthSessionStorageServiceInterface $sessions = null,
         ?SocialOAuthServiceInterface $oauth = null,
-        ?OAuthState $generatedState = null,
+        ?OAuthStateSession $generatedState = null,
     ): void {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findById')->zeroOrMoreTimes()->andReturn($identity);
         $passkeyCredentialRepository = Mockery::mock(PasskeyCredentialRepositoryInterface::class);
         $passkeyCredentialRepository->shouldReceive('findByIdentityIdentifier')->zeroOrMoreTimes()->andReturn($credentials);
-        $oauthStateRepository ??= Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oAuthStateStorageService ??= Mockery::mock(OAuthStateStorageServiceInterface::class);
         $sessions ??= Mockery::mock(StepUpOAuthSessionStorageServiceInterface::class);
         $oauth ??= Mockery::mock(SocialOAuthServiceInterface::class);
-        foreach ([$oauthStateRepository, $sessions, $oauth] as $mock) {
+        foreach ([$oAuthStateStorageService, $sessions, $oauth] as $mock) {
             if ($mock instanceof MockInterface) {
                 $mock->shouldIgnoreMissing();
             }
         }
         $generator = Mockery::mock(OAuthStateGeneratorInterface::class);
-        $generator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn($generatedState ?? new OAuthState('state', new DateTimeImmutable('+10 minutes')));
+        $generator->shouldReceive('generate')->zeroOrMoreTimes()->andReturn($generatedState ?? new OAuthStateSession(new OAuthState('state'), new DateTimeImmutable('+10 minutes')));
 
         $this->app()->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app()->instance(PasskeyCredentialRepositoryInterface::class, $passkeyCredentialRepository);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(StepUpOAuthSessionStorageServiceInterface::class, $sessions);
         $this->app()->instance(SocialOAuthServiceInterface::class, $oauth);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $generator);

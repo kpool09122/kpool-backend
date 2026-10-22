@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Tests\Application\Http\Action\Identity\SocialLinking;
 
 use Application\Mail\SocialLinkingCodeMail;
+use DateTimeImmutable;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\SocialLinking\SocialLinkingSessionStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SendSocialLinkingEmail\SendSocialLinkingEmailInterface;
 use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailInterface;
@@ -18,13 +21,13 @@ use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Entity\PasskeyCredential;
 use Source\Identity\Domain\Entity\PasskeyUser;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\CredentialSource;
+use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\PasskeyCredentialIdentifier;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Identity\Domain\ValueObject\PasskeyUserIdentifier;
@@ -80,9 +83,11 @@ class SocialLinkingFlowTest extends TestCase
             $this->createPasskey($identityIdentifier);
         }
 
-        $oauthState = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthState->shouldReceive('consume')->once();
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthState);
+        $oauthState = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oauthState->shouldReceive('consume')->once()->andReturnUsing(
+            static fn (OAuthState $state): OAuthStateSession => new OAuthStateSession($state, new DateTimeImmutable('+10 minutes')),
+        );
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oauthState);
         $signupSessions = Mockery::mock(SignupSessionRepositoryInterface::class);
         $signupSessions->shouldReceive('find')->once()->andReturnNull();
         $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessions);
