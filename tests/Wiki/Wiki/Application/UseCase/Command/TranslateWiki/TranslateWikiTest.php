@@ -37,7 +37,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -140,6 +143,9 @@ class TranslateWikiTest extends TestCase
                     'group_identifiers' => [(string) $missingGroupIdentifier],
                 ]),
                 translatedSections: $jaTranslatedSections,
+                translatedTitle: new SeoTitle('翻訳タイトル'),
+                translatedMetaDescription: new MetaDescription('翻訳説明文'),
+                translatedKeywords: new SeoKeywords(['翻訳キーワード']),
             ));
         $translationService->shouldReceive('translateWiki')
             ->with($testData->wiki, Language::ENGLISH)
@@ -211,6 +217,10 @@ class TranslateWikiTest extends TestCase
         $result = $output->toArray();
 
         $this->assertCount(2, $result['draftWikis']);
+        self::assertSame('翻訳タイトル', (string) $jaDraftWiki->title());
+        self::assertSame('翻訳説明文', (string) $jaDraftWiki->metaDescription());
+        self::assertSame(['翻訳キーワード'], $jaDraftWiki->keywords()?->values());
+        self::assertNull($enDraftWiki->title());
         $this->assertSame($principalIdentifier, $jaDraftWiki->editorIdentifier());
         $this->assertSame($principalIdentifier, $enDraftWiki->editorIdentifier());
         $this->assertNull($jaDraftWiki->publishedWikiIdentifier());

@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 final readonly class RepresentativeSymbol
 {
-    private const int MAX_LENGTH = 32;
+    public const int MAX_LENGTH = 32;
 
     public function __construct(
         private string $value,

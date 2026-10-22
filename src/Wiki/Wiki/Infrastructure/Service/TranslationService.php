@@ -13,20 +13,40 @@ use Source\Wiki\Wiki\Application\Service\TranslatedWikiData;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Arranger;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 
 readonly class TranslationService implements TranslationServiceInterface
 {
+    private const int ALBUM_NAME_MAX_LENGTH = 255;
+
     public function __construct(
         private GoogleTranslateClient $googleTranslateClient,
     ) {
@@ -34,203 +54,199 @@ readonly class TranslationService implements TranslationServiceInterface
 
     public function translateWiki(Wiki $wiki, Language $targetLanguage): TranslatedWikiData
     {
-        $basicArray = $wiki->basic()->toArray();
-        $basicType = $wiki->basic()->getBasicType();
-        $translatableKeys = match ($basicType) {
-            'talent' => ['name', 'real_name', 'representative_symbol', 'position'],
-            'agency' => ['name', 'ceo'],
-            'group' => ['name'],
-            'song' => ['name', 'lyricist', 'composer', 'arranger'],
-            default => throw new InvalidArgumentException("Unsupported basic type: $basicType"),
-        };
-
-        $translatableKeys = array_values(array_filter(
-            $translatableKeys,
-            static fn (string $key): bool => trim(TypedValue::string($basicArray[$key] ?? '')) !== '',
-        ));
-
-        // 翻訳対象のテキストを収集
         $texts = [];
-        foreach ($translatableKeys as $key) {
-            $texts[] = TypedValue::string($basicArray[$key] ?? '');
-        }
-        $this->collectSectionTexts($wiki->sections(), $texts);
+        $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength) use (&$texts): string {
+            if (trim($text) !== '') {
+                $texts[] = $text;
+            }
 
-        // 一括翻訳
-        $request = new TranslateTextsRequest(
+            return $text;
+        });
+
+        if ($texts === []) {
+            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength): string => $text);
+        }
+
+        $translations = $this->googleTranslateClient->translateTexts(new TranslateTextsRequest(
             texts: $texts,
             targetLanguage: $targetLanguage->value,
-        );
-        $response = $this->googleTranslateClient->translateTexts($request);
-        $translations = $response->translatedTexts();
-
-        // Basic情報を再構築
+        ))->translatedTexts();
         $offset = 0;
-        foreach ($translatableKeys as $key) {
-            $basicArray[$key] = $translations[$offset] ?? $basicArray[$key];
-            $offset++;
-        }
-        $storedBasicType = TypedValue::string($basicArray['type']);
-        $translatedBasic = match ($storedBasicType) {
-            'talent' => TalentBasic::fromArray($basicArray),
-            'agency' => AgencyBasic::fromArray($basicArray),
-            'group' => GroupBasic::fromArray($basicArray),
-            'song' => SongBasic::fromArray($basicArray),
-            default => throw new InvalidArgumentException("Unsupported basic type: {$storedBasicType}"),
-        };
 
-        // セクションを再構築
-        $translatedSections = $this->reconstructSections($wiki->sections(), $translations, $offset, $targetLanguage);
+        return $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength) use ($translations, &$offset): string {
+            if (trim($text) === '') {
+                return $text;
+            }
 
-        return new TranslatedWikiData($translatedBasic, $translatedSections);
+            $translated = $translations[$offset++] ?? $text;
+            if (trim($translated) === '') {
+                return $text;
+            }
+
+            return $maxLength === null ? $translated : mb_substr(trim($translated), 0, $maxLength);
+        });
     }
 
     /**
-     * @param string[] &$texts
+     * @param callable(string, ?int): string $translate
      */
-    private function collectSectionTexts(SectionContentCollection $sections, array &$texts): void
+    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate): TranslatedWikiData
     {
-        foreach ($sections->all() as $content) {
-            if ($content instanceof Section) {
-                $texts[] = $content->title();
-                $this->collectSectionTexts($content->contents(), $texts);
-            } elseif ($content instanceof TextBlock) {
-                $texts[] = $content->content();
-            } elseif ($content instanceof QuoteBlock) {
-                $texts[] = $content->content();
-                if ($content->source() !== null) {
-                    $texts[] = $content->source();
-                }
-            } elseif ($content instanceof ListBlock) {
-                foreach ($content->items() as $item) {
-                    $texts[] = $item;
-                }
-            } elseif ($content instanceof TableBlock) {
-                $this->collectTableCellTexts($content->headerCells(), $texts);
-                foreach ($content->rowCells() as $row) {
-                    $this->collectTableCellTexts($row, $texts);
-                }
+        $basic = $this->mapBasic($wiki->basic(), $translate);
+        $sections = $this->mapSections($wiki->sections(), $targetLanguage, $translate);
+        $title = $wiki->title();
+        $description = $wiki->metaDescription();
+        $keywords = $wiki->keywords();
+
+        return new TranslatedWikiData(
+            translatedBasic: $basic,
+            translatedSections: $sections,
+            translatedTitle: $title === null ? null : new SeoTitle($translate((string) $title, SeoTitle::MAX_LENGTH)),
+            translatedMetaDescription: $description === null ? null : new MetaDescription($translate((string) $description, MetaDescription::MAX_LENGTH)),
+            translatedKeywords: $keywords === null ? null : new SeoKeywords(array_map(
+                static fn (string $keyword): string => $translate($keyword, SeoKeywords::MAX_KEYWORD_LENGTH),
+                $keywords->values(),
+            )),
+        );
+    }
+
+    /**
+     * @param callable(string, ?int): string $translate
+     */
+    private function mapBasic(BasicInterface $basic, callable $translate): BasicInterface
+    {
+        $data = $basic->toArray();
+        $fields = match ($basic->getBasicType()) {
+            'talent' => [
+                'name' => Name::MAX_LENGTH,
+                'real_name' => RealName::MAX_LENGTH,
+                'representative_symbol' => RepresentativeSymbol::MAX_LENGTH,
+                'position' => Position::MAX_LENGTH,
+                'fandom_name' => FandomName::MAX_LENGTH,
+            ],
+            'agency' => ['name' => Name::MAX_LENGTH, 'ceo' => CEO::MAX_LENGTH],
+            'group' => [
+                'name' => Name::MAX_LENGTH,
+                'representative_symbol' => RepresentativeSymbol::MAX_LENGTH,
+                'fandom_name' => FandomName::MAX_LENGTH,
+            ],
+            'song' => [
+                'name' => Name::MAX_LENGTH,
+                'lyricist' => Lyricist::MAX_LENGTH,
+                'composer' => Composer::MAX_LENGTH,
+                'arranger' => Arranger::MAX_LENGTH,
+                'album_name' => self::ALBUM_NAME_MAX_LENGTH,
+            ],
+            default => throw new InvalidArgumentException('Unsupported basic type: ' . $basic->getBasicType()),
+        };
+        foreach ($fields as $key => $maxLength) {
+            if (isset($data[$key])) {
+                $data[$key] = $translate(TypedValue::string($data[$key]), $maxLength);
             }
         }
-    }
+        if ($basic instanceof GroupBasic) {
+            $data['official_colors'] = array_map(static function (mixed $color) use ($translate): array {
+                $colorData = TypedValue::array($color);
+                $colorData['label'] = $translate(TypedValue::string($colorData['label']), Color::MAX_LABEL_LENGTH);
 
-    /**
-     * @param string[] $translations
-     */
-    private function reconstructSections(
-        SectionContentCollection $sections,
-        array $translations,
-        int &$offset,
-        Language $targetLanguage,
-    ): SectionContentCollection {
-        $translatedContents = [];
-        foreach ($sections->all() as $content) {
-            $translatedContents[] = $this->reconstructContent($content, $translations, $offset, $targetLanguage);
+                return $colorData;
+            }, TypedValue::array($data['official_colors']));
         }
 
-        return new SectionContentCollection($translatedContents);
+        $storedBasicType = TypedValue::string($data['type']);
+
+        return match ($storedBasicType) {
+            'talent' => TalentBasic::fromArray($data),
+            'agency' => AgencyBasic::fromArray($data),
+            'group' => GroupBasic::fromArray($data),
+            'song' => SongBasic::fromArray($data),
+            default => throw new InvalidArgumentException('Unsupported basic type: ' . $storedBasicType),
+        };
     }
 
     /**
-     * @param string[] $translations
+     * @param callable(string, ?int): string $translate
      */
-    private function reconstructContent(
-        SectionContentInterface $content,
-        array $translations,
-        int &$offset,
-        Language $targetLanguage,
-    ): SectionContentInterface {
+    private function mapSections(SectionContentCollection $sections, Language $targetLanguage, callable $translate): SectionContentCollection
+    {
+        return new SectionContentCollection(array_map(
+            fn (SectionContentInterface $content): SectionContentInterface => $this->mapContent($content, $targetLanguage, $translate),
+            $sections->all(),
+        ));
+    }
+
+    /**
+     * @param callable(string, ?int): string $translate
+     */
+    private function mapContent(SectionContentInterface $content, Language $targetLanguage, callable $translate): SectionContentInterface
+    {
         if ($content instanceof Section) {
-            $translatedTitle = $translations[$offset] ?? $content->title();
-            if ($targetLanguage === Language::ENGLISH) {
-                $translatedTitle = ucfirst($translatedTitle);
-            }
-            $offset++;
-            $translatedContents = $this->reconstructSections($content->contents(), $translations, $offset, $targetLanguage);
+            $title = $translate($content->title(), null);
 
-            return new Section($translatedTitle, $content->displayOrder(), $translatedContents, $content->depth());
-        }
-
-        if ($content instanceof TextBlock) {
-            $translatedText = $translations[$offset] ?? $content->content();
-            $offset++;
-
-            return new TextBlock($content->displayOrder(), $translatedText);
-        }
-
-        if ($content instanceof QuoteBlock) {
-            $translatedText = $translations[$offset] ?? $content->content();
-            $offset++;
-            $translatedSource = null;
-            if ($content->source() !== null) {
-                $translatedSource = $translations[$offset] ?? $content->source();
-                $offset++;
-            }
-
-            return new QuoteBlock($content->displayOrder(), $translatedText, $translatedSource);
-        }
-
-        if ($content instanceof ListBlock) {
-            $translatedItems = [];
-            foreach ($content->items() as $item) {
-                $translatedItems[] = $translations[$offset] ?? $item;
-                $offset++;
-            }
-
-            return new ListBlock($content->displayOrder(), $content->listType(), $translatedItems);
-        }
-
-        if ($content instanceof TableBlock) {
-            $translatedHeaderCells = $this->translateTableCells($content->headerCells(), $translations, $offset);
-            $translatedRowCells = [];
-            foreach ($content->rowCells() as $row) {
-                $translatedRowCells[] = $this->translateTableCells($row, $translations, $offset) ?? [];
-            }
-
-            return new TableBlock(
+            return new Section(
+                $targetLanguage === Language::ENGLISH ? ucfirst($title) : $title,
                 $content->displayOrder(),
-                $translatedRowCells,
-                $translatedHeaderCells,
-                $content->tableWidth(),
+                $this->mapSections($content->contents(), $targetLanguage, $translate),
+                $content->depth(),
             );
         }
+        if ($content instanceof TextBlock) {
+            return new TextBlock($content->displayOrder(), $translate($content->content(), null));
+        }
+        if ($content instanceof QuoteBlock) {
+            return new QuoteBlock($content->displayOrder(), $translate($content->content(), null), $this->mapOptionalText($content->source(), $translate));
+        }
+        if ($content instanceof ListBlock) {
+            return new ListBlock($content->displayOrder(), $content->listType(), array_map(
+                static fn (string $item): string => $translate($item, null),
+                $content->items(),
+            ));
+        }
+        if ($content instanceof TableBlock) {
+            $headers = $this->mapTableCells($content->headerCells(), $translate);
+            $rows = array_map(fn (array $row): array => $this->mapTableCells($row, $translate) ?? [], $content->rowCells());
 
-        // 翻訳不要なブロック（ImageBlock, EmbedBlock等）はそのまま返す
+            return new TableBlock($content->displayOrder(), $rows, $headers, $content->tableWidth());
+        }
+        if ($content instanceof ImageBlock) {
+            return new ImageBlock(
+                $content->displayOrder(),
+                $content->imageIdentifier(),
+                $this->mapOptionalText($content->caption(), $translate),
+                $this->mapOptionalText($content->alt(), $translate)
+            );
+        }
+        if ($content instanceof ImageGalleryBlock) {
+            return new ImageGalleryBlock($content->displayOrder(), $content->imageIdentifiers(), $this->mapOptionalText($content->caption(), $translate));
+        }
+        if ($content instanceof EmbedBlock) {
+            return new EmbedBlock($content->displayOrder(), $content->provider(), $content->embedId(), $this->mapOptionalText($content->caption(), $translate));
+        }
+        if ($content instanceof ProfileCardListBlock) {
+            return new ProfileCardListBlock($content->displayOrder(), $content->wikiIdentifiers(), $this->mapOptionalText($content->title(), $translate));
+        }
+
         return $content;
     }
 
     /**
-     * @param array<TableCell>|null $cells
-     * @param string[] &$texts
+     * @param callable(string, ?int): string $translate
      */
-    private function collectTableCellTexts(?array $cells, array &$texts): void
+    private function mapOptionalText(?string $text, callable $translate): ?string
     {
-        if ($cells === null) {
-            return;
-        }
-
-        foreach ($cells as $cell) {
-            $texts[] = $cell->content();
-        }
+        return $text === null ? null : $translate($text, null);
     }
 
     /**
      * @param array<TableCell>|null $cells
-     * @param string[] $translations
+     * @param callable(string, ?int): string $translate
      * @return array<TableCell>|null
      */
-    private function translateTableCells(?array $cells, array $translations, int &$offset): ?array
+    private function mapTableCells(?array $cells, callable $translate): ?array
     {
-        if ($cells === null) {
-            return null;
-        }
-
-        $translatedCells = [];
-        foreach ($cells as $cell) {
-            $translatedCells[] = $cell->withContent($translations[$offset] ?? $cell->content());
-            $offset++;
-        }
-
-        return $translatedCells;
+        return $cells === null ? null : array_map(
+            static fn (TableCell $cell): TableCell => $cell->withContent($translate($cell->content(), null)),
+            $cells,
+        );
     }
 }
