@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_wiki_not_found' => 'The specified published wiki was not found.',
+    'invalid_video_list_query' => 'The video list query is invalid.',
     'invalid_material_search_context' => 'The image material search context is invalid.',
     'principal_inactive' => 'This principal is not active.',
     'principal_status_change_forbidden' => 'A forced-stop principal status cannot be changed through user permission management.',

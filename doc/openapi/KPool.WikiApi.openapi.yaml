@@ -3434,6 +3434,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/{resourceType}/{slug}/videos:
+    get:
+      operationId: PublicVideoLinkOperations_listVideos
+      description: 'Public, unauthenticated list of videos for the exact published wiki. Currently, only automatically collected videos are included. Ordered by displayOrder ascending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Collection targets are group/song/talent; agency returns an empty list. Viewing never calls YouTube or dispatches collection jobs.'
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - ja
+              - ko
+              - en
+        - name: resourceType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - agency
+              - group
+              - song
+              - talent
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Video'
+                required:
+                  - videos
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{language}/{slug}/related-profiles:
     get:
       operationId: WikiOperations_listRelatedProfiles
@@ -7704,6 +7783,39 @@ components:
           nullable: true
           description: Timestamp when the image was uploaded.
       description: Uploaded image item returned by the uploaded image list endpoint.
+    Video:
+      type: object
+      required:
+        - videoLinkIdentifier
+        - url
+        - title
+        - thumbnailUrl
+        - publishedAt
+        - displayOrder
+        - videoUsage
+      properties:
+        videoLinkIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        url:
+          type: string
+        title:
+          type: string
+        thumbnailUrl:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+          nullable: true
+        displayOrder:
+          type: integer
+          format: int32
+        videoUsage:
+          type: string
+          enum:
+            - youtube_auto_view_count
+            - youtube_auto_like_count
+            - youtube_auto_recent_popular
+      description: A public wiki video. Currently, only automatically collected YouTube videos are included.
     VideoLinkInput:
       type: object
       required:

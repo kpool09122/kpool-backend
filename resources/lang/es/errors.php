@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'published_wiki_not_found' => 'No se encontró el wiki publicado especificado.',
+    'invalid_video_list_query' => 'La consulta de la lista de vídeos no es válida.',
     'invalid_material_search_context' => 'El contexto de búsqueda de imágenes no es válido.',
     'principal_inactive' => 'Este usuario no está activo.',
     'principal_status_change_forbidden' => 'No se puede cambiar el estado de suspensión forzada desde la gestión de permisos de usuario.',

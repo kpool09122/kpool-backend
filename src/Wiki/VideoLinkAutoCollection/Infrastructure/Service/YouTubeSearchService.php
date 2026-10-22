@@ -11,8 +11,10 @@ use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Carbon\CarbonImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\YouTubeVideoInfo;
+use Throwable;
 
 class YouTubeSearchService implements YouTubeSearchServiceInterface
 {
@@ -34,40 +36,51 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
 
     /**
      * @return YouTubeVideoInfo[]
+     * @throws VideoSearchFailedException
      */
     public function searchVideos(string $keyword): array
     {
         if (! $this->youTubeClient->isConfigured()) {
             $this->logger->warning('YouTube API key is not configured');
 
-            return [];
+            throw new VideoSearchFailedException();
         }
 
-        $viewCountVideoIds = $this->youTubeClient->searchVideoIds(
-            new SearchVideoIdsRequest($keyword, 'viewCount', self::MAX_RESULTS_PER_SEARCH),
-        )->videoIds();
-        $relevanceVideoIds = $this->youTubeClient->searchVideoIds(
-            new SearchVideoIdsRequest($keyword, 'relevance', self::MAX_RESULTS_PER_SEARCH),
-        )->videoIds();
-        $recentVideoIds = $this->youTubeClient->searchRecentVideoIds(
-            new SearchRecentVideoIdsRequest($keyword, self::MAX_RESULTS_PER_SEARCH, CarbonImmutable::now()->subMonth()),
-        )->videoIds();
+        try {
+            $viewCountVideoIds = $this->youTubeClient->searchVideoIds(
+                new SearchVideoIdsRequest($keyword, 'viewCount', self::MAX_RESULTS_PER_SEARCH),
+            )->videoIds();
+            $relevanceVideoIds = $this->youTubeClient->searchVideoIds(
+                new SearchVideoIdsRequest($keyword, 'relevance', self::MAX_RESULTS_PER_SEARCH),
+            )->videoIds();
+            $recentVideoIds = $this->youTubeClient->searchRecentVideoIds(
+                new SearchRecentVideoIdsRequest($keyword, self::MAX_RESULTS_PER_SEARCH, CarbonImmutable::now()->subMonth()),
+            )->videoIds();
 
-        $allVideoIds = array_unique(array_merge($viewCountVideoIds, $relevanceVideoIds, $recentVideoIds));
+            $allVideoIds = array_unique(array_merge($viewCountVideoIds, $relevanceVideoIds, $recentVideoIds));
 
-        if (empty($allVideoIds)) {
-            return [];
+            if (empty($allVideoIds)) {
+                return [];
+            }
+
+            $videoDetails = $this->youTubeClient->getVideoDetails(
+                new GetVideoDetailsRequest($allVideoIds),
+            )->details();
+
+            if (array_diff($allVideoIds, array_keys($videoDetails)) !== []) {
+                throw new VideoSearchFailedException();
+            }
+
+            $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, false);
+            $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, true);
+            $recentVideos = $this->selectTopVideos($videoDetails, $recentVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, false);
+
+            return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos, ...$recentVideos]);
+        } catch (Throwable) {
+            $this->logger->error('Video search failed; existing collection is unchanged');
+
+            throw new VideoSearchFailedException();
         }
-
-        $videoDetails = $this->youTubeClient->getVideoDetails(
-            new GetVideoDetailsRequest($allVideoIds),
-        )->details();
-
-        $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, false);
-        $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, true);
-        $recentVideos = $this->selectTopVideos($videoDetails, $recentVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, false);
-
-        return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos, ...$recentVideos]);
     }
 
     /**

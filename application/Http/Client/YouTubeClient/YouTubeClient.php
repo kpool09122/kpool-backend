@@ -14,9 +14,11 @@ use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Application\Exception\YouTubeRequestFailedException;
 
 class YouTubeClient
 {
@@ -34,61 +36,24 @@ class YouTubeClient
         return $this->apiKey !== '';
     }
 
+    /** @throws YouTubeRequestFailedException */
     public function searchVideoIds(SearchVideoIdsRequest $request): SearchVideoIdsResponse
     {
         $baseRequest = $this->psrFactories->getRequestFactory()->createRequest('GET', $this->uri);
-        $psrRequest = $request->toPsrRequest($baseRequest, $this->apiKey);
 
-        try {
-            $response = $this->client->sendRequest($psrRequest);
-        } catch (ClientExceptionInterface $e) {
-            $this->logger->error('YouTube search API failed', [
-                'message' => $e->getMessage(),
-            ]);
-
-            return new SearchVideoIdsResponse($this->createEmptyJsonResponse());
-        }
-
-        if ($response->getStatusCode() >= 400) {
-            $this->logger->error('YouTube search API failed', [
-                'status' => $response->getStatusCode(),
-                'body' => $response->getBody()->getContents(),
-            ]);
-
-            return new SearchVideoIdsResponse($this->createEmptyJsonResponse());
-        }
-
-        return new SearchVideoIdsResponse($response);
+        return new SearchVideoIdsResponse($this->send($request->toPsrRequest($baseRequest, $this->apiKey)));
     }
 
+    /** @throws YouTubeRequestFailedException */
     public function searchRecentVideoIds(SearchRecentVideoIdsRequest $request): SearchRecentVideoIdsResponse
     {
         $baseRequest = $this->psrFactories->getRequestFactory()->createRequest('GET', $this->uri);
-        $psrRequest = $request->toPsrRequest($baseRequest, $this->apiKey);
 
-        try {
-            $response = $this->client->sendRequest($psrRequest);
-        } catch (ClientExceptionInterface $e) {
-            $this->logger->error('YouTube recent search API failed', [
-                'message' => $e->getMessage(),
-            ]);
-
-            return new SearchRecentVideoIdsResponse($this->createEmptyJsonResponse());
-        }
-
-        if ($response->getStatusCode() >= 400) {
-            $this->logger->error('YouTube recent search API failed', [
-                'status' => $response->getStatusCode(),
-                'body' => $response->getBody()->getContents(),
-            ]);
-
-            return new SearchRecentVideoIdsResponse($this->createEmptyJsonResponse());
-        }
-
-        return new SearchRecentVideoIdsResponse($response);
+        return new SearchRecentVideoIdsResponse($this->send($request->toPsrRequest($baseRequest, $this->apiKey)));
     }
 
     /**
+     * @throws YouTubeRequestFailedException
      * @throws JsonException
      */
     public function getVideoDetails(GetVideoDetailsRequest $request): GetVideoDetailsResponse
@@ -100,26 +65,11 @@ class YouTubeClient
             $baseRequest = $this->psrFactories->getRequestFactory()->createRequest('GET', $this->uri);
             $psrRequest = $request->toPsrRequest($baseRequest, $this->apiKey, $chunk);
 
-            try {
-                $response = $this->client->sendRequest($psrRequest);
-            } catch (ClientExceptionInterface $e) {
-                $this->logger->error('YouTube videos API failed', [
-                    'message' => $e->getMessage(),
-                ]);
-
-                continue;
-            }
-
-            if ($response->getStatusCode() >= 400) {
-                $this->logger->error('YouTube videos API failed', [
-                    'status' => $response->getStatusCode(),
-                    'body' => $response->getBody()->getContents(),
-                ]);
-
-                continue;
-            }
-
+            $response = $this->send($psrRequest);
             $chunkResponse = new GetVideoDetailsResponse($response);
+            if (array_diff($chunk, array_keys($chunkResponse->details())) !== []) {
+                throw new YouTubeRequestFailedException();
+            }
             $allDetails += $chunkResponse->details();
         }
 
@@ -150,10 +100,32 @@ class YouTubeClient
         );
     }
 
-    private function createEmptyJsonResponse(): ResponseInterface
+    /** @throws YouTubeRequestFailedException */
+    private function send(RequestInterface $request): ResponseInterface
     {
-        $stream = $this->psrFactories->getStreamFactory()->createStream('{"items":[]}');
+        try {
+            $response = $this->client->sendRequest($request);
+        } catch (ClientExceptionInterface) {
+            $this->logger->error('Video provider transport failed');
 
-        return $this->psrFactories->getResponseFactory()->createResponse()->withBody($stream);
+            throw new YouTubeRequestFailedException();
+        }
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+            $this->logger->error('Video provider request failed', ['status' => $response->getStatusCode()]);
+
+            throw new YouTubeRequestFailedException();
+        }
+
+        try {
+            $contents = (string) $response->getBody();
+            $data = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            throw new YouTubeRequestFailedException();
+        }
+        if (! is_array($data) || ! isset($data['items']) || ! is_array($data['items'])) {
+            throw new YouTubeRequestFailedException();
+        }
+
+        return $response->withBody($this->psrFactories->getStreamFactory()->createStream($contents));
     }
 }

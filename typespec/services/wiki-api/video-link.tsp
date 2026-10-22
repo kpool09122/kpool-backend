@@ -29,6 +29,33 @@ model SaveVideoLinksRequestBody {
   videoLinks: VideoLinkInput[];
 }
 
+@doc("A public wiki video. Currently, only automatically collected YouTube videos are included.")
+model Video {
+  videoLinkIdentifier: Uuid;
+  url: string;
+  title: string;
+  thumbnailUrl: string | null;
+  publishedAt: string | null;
+  displayOrder: int32;
+  videoUsage: "youtube_auto_view_count" | "youtube_auto_like_count" | "youtube_auto_recent_popular";
+}
+
+model ListVideosResponse {
+  @statusCode statusCode: 200;
+  @body body: { videos: Video[]; };
+}
+
+interface PublicVideoLinkOperations {
+  @get
+  @route("/wiki/{language}/{resourceType}/{slug}/videos")
+  @doc("Public, unauthenticated list of videos for the exact published wiki. Currently, only automatically collected videos are included. Ordered by displayOrder ascending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Collection targets are group/song/talent; agency returns an empty list. Viewing never calls YouTube or dispatches collection jobs.")
+  listVideos(
+    @path language: "ja" | "ko" | "en",
+    @path resourceType: "agency" | "group" | "song" | "talent",
+    @path slug: string,
+  ): ListVideosResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
 @route("/video-link")
 interface VideoLinkOperations {
   @post

@@ -7,6 +7,7 @@ namespace Tests\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\Collect
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -34,6 +35,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
+#[Group('useDb')]
 class CollectVideoLinksTest extends TestCase
 {
     protected function tearDown(): void
@@ -116,7 +118,14 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($status);
         $collectionStatusRepository->shouldReceive('save')
-            ->once();
+            ->once()
+            ->with(Mockery::on(static fn (VideoLinkCollectionStatus $updated): bool =>
+                $updated !== $status
+                && $updated->identifier() === $status->identifier()
+                && $updated->resourceType() === $status->resourceType()
+                && $updated->wikiIdentifier() === $status->wikiIdentifier()
+                && $updated->createdAt() === $status->createdAt()
+                && $updated->lastCollectedAt() !== null));
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
@@ -184,6 +193,7 @@ class CollectVideoLinksTest extends TestCase
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
         $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(2, $output->collectedCount);
+        $this->assertNull($status->lastCollectedAt());
     }
 
     /**

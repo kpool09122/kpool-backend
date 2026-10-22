@@ -27,6 +27,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInput;
@@ -67,6 +68,9 @@ class PublishWikiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $videoLinkCollectionRegistrationService = Mockery::mock(VideoLinkCollectionRegistrationServiceInterface::class);
+        $videoLinkCollectionRegistrationService->shouldReceive('register')->byDefault();
+        $this->app()->instance(VideoLinkCollectionRegistrationServiceInterface::class, $videoLinkCollectionRegistrationService);
         $this->app()->instance(WikiWorkflowNotificationServiceInterface::class, Mockery::mock(WikiWorkflowNotificationServiceInterface::class));
     }
 
@@ -113,11 +117,13 @@ class PublishWikiTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
-
         $dummyPublishWiki = $this->createDummyPublishWiki(
             hasPublishedWiki: true,
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
+        $videoLinkCollectionRegistrationService = Mockery::mock(VideoLinkCollectionRegistrationServiceInterface::class);
+        $videoLinkCollectionRegistrationService->shouldReceive('register')->once()->with(ResourceType::GROUP, $dummyPublishWiki->publishedWikiIdentifier);
+        $this->app()->instance(VideoLinkCollectionRegistrationServiceInterface::class, $videoLinkCollectionRegistrationService);
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
@@ -351,6 +357,10 @@ class PublishWikiTest extends TestCase
             hasPublishedWiki: false,
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
+
+        $videoLinkCollectionRegistrationService = Mockery::mock(VideoLinkCollectionRegistrationServiceInterface::class);
+        $videoLinkCollectionRegistrationService->shouldReceive('register')->once()->with(ResourceType::GROUP, $dummyPublishWiki->publishedWikiIdentifier);
+        $this->app()->instance(VideoLinkCollectionRegistrationServiceInterface::class, $videoLinkCollectionRegistrationService);
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
