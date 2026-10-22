@@ -11,6 +11,7 @@ use Mockery;
 use Mockery\MockInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
@@ -19,6 +20,25 @@ use Tests\TestCase;
 
 class YouTubeSearchServiceTest extends TestCase
 {
+    public function testSearchVideosPreservesOriginalExceptionMessageAndCause(): void
+    {
+        $exception = new RuntimeException('Video response could not be parsed.');
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        $http->shouldReceive('sendRequest')->once()->andThrow($exception);
+        $this->app()->instance(YouTubeClient::class, YouTubeClientTestHelper::create($http));
+
+        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
+
+        try {
+            $service->searchVideos('TWICE');
+            self::fail('Expected video search to fail.');
+        } catch (VideoSearchFailedException $actual) {
+            self::assertSame($exception->getMessage(), $actual->getMessage());
+            self::assertSame($exception, $actual->getPrevious());
+        }
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();

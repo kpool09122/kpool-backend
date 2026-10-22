@@ -11,6 +11,6 @@ class VideoSearchFailedException extends RuntimeException
 {
     public function __construct(?Throwable $previous = null)
     {
-        parent::__construct('Video search failed.', 0, $previous);
+        parent::__construct($previous?->getMessage() ?? 'Video search failed.', 0, $previous);
     }
 }
