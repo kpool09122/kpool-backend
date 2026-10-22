@@ -65,7 +65,7 @@ class GetGroupWikiTest extends TestCase
         $this->assertSame(2, $readModel->version());
         $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#fe5f8f', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'sourceUrl' => null, 'sourceName' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('girl_group', $readModel->basic()['groupType']);

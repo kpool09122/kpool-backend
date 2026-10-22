@@ -5346,6 +5346,14 @@ components:
           type: string
           nullable: true
           description: Hero image alternative text.
+        sourceUrl:
+          type: string
+          nullable: true
+          description: Original source page URL for the hero image.
+        sourceName:
+          type: string
+          nullable: true
+          description: Source site name for the hero image.
         isHidden:
           type: boolean
           nullable: true
@@ -8016,6 +8024,14 @@ components:
           type: string
           nullable: true
           description: Hero image alternative text.
+        sourceUrl:
+          type: string
+          nullable: true
+          description: Original source page URL for the hero image.
+        sourceName:
+          type: string
+          nullable: true
+          description: Source site name for the hero image.
         isHidden:
           type: boolean
           nullable: true

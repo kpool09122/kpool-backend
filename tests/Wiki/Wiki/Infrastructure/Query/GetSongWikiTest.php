@@ -110,7 +110,7 @@ class GetSongWikiTest extends TestCase
         $this->assertSame(5, $readModel->version());
         $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#fe5f8f', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'sourceUrl' => null, 'sourceName' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(SongWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TT', $readModel->basic()['name']);
         $this->assertSame('title_track', $readModel->basic()['songType']);

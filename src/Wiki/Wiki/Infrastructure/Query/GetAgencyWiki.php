@@ -28,6 +28,8 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
                 'wikis.*',
                 'wiki_images.image_path as hero_image_path',
                 'wiki_images.alt_text as hero_image_alt_text',
+                'wiki_images.source_url as hero_image_source_url',
+                'wiki_images.source_name as hero_image_source_name',
                 'wiki_images.is_hidden as hero_image_is_hidden',
             )
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
@@ -60,6 +62,8 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
                 'imageIdentifier' => $model->image_identifier,
                 'src' => ImageUrl::fromPath(TypedValue::nullableString($model->getAttribute('hero_image_path'))),
                 'alt' => $model->getAttribute('hero_image_alt_text'),
+                'sourceUrl' => $model->getAttribute('hero_image_source_url'),
+                'sourceName' => $model->getAttribute('hero_image_source_name'),
                 'isHidden' => $model->getAttribute('hero_image_is_hidden') === null
                     ? null
                     : (bool) $model->getAttribute('hero_image_is_hidden'),
