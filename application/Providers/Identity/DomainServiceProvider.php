@@ -104,7 +104,7 @@ class DomainServiceProvider extends ServiceProvider
         ));
         $this->app->singleton(CollaboratorNotificationServiceInterface::class, CollaboratorNotificationService::class);
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);
-        $this->app->singleton(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);
+        $this->app->bind(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);
         $this->app->singleton(SignupSessionRepositoryInterface::class, SignupSessionRepository::class);
         $this->app->singleton(StepUpAuthenticationStorageServiceInterface::class, StepUpAuthenticationStorageService::class);
         $this->app->singleton(StepUpOAuthSessionStorageServiceInterface::class, StepUpOAuthSessionStorageService::class);

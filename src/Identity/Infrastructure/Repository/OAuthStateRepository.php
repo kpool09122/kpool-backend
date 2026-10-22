@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Repository;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
@@ -12,6 +13,10 @@ use Source\Identity\Domain\ValueObject\OAuthState;
 class OAuthStateRepository implements OAuthStateRepositoryInterface
 {
     private const string KEY_PREFIX = 'oauth_state:';
+
+    public function __construct(private readonly Request $request)
+    {
+    }
 
     /**
      * @throws InvalidOAuthStateException
@@ -45,6 +50,10 @@ class OAuthStateRepository implements OAuthStateRepositoryInterface
 
     private function buildKey(OAuthState $state): string
     {
-        return self::KEY_PREFIX . $state;
+        if (! $this->request->hasSession()) {
+            throw new InvalidOAuthStateException('An OAuth session is required.');
+        }
+
+        return self::KEY_PREFIX . $state . ':' . $this->request->session()->getId();
     }
 }
