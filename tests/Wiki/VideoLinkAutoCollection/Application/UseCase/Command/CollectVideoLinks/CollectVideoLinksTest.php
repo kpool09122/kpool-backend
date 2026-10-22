@@ -136,7 +136,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('채영')
+            ->with('채영 k-pop')
             ->andReturn($videos);
 
         $existingVideoLink = $this->createDummyVideoLink($resourceId, 5);
@@ -290,7 +290,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with($groupName)
+            ->with($groupName . ' k-pop')
             ->andReturn($videos);
 
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
@@ -381,7 +381,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('テストソング')
+            ->with('テストソング k-pop')
             ->andReturn($videos);
 
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);

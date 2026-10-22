@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLinkAutoCollection\Application\Service\VideoSearchKeywordBuilder;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoLinkCollectionFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
@@ -24,6 +25,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         private YouTubeSearchServiceInterface $youTubeSearchService,
         private VideoLinkRepositoryInterface $videoLinkRepository,
         private VideoLinkFactoryInterface $videoLinkFactory,
+        private VideoSearchKeywordBuilder $videoSearchKeywordBuilder,
         private LoggerInterface $logger,
     ) {
     }
@@ -61,9 +63,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         $wiki = $this->wikiRepository->findById(
             $status->wikiIdentifier(),
         );
-        $resourceName = $wiki !== null ? (string) $wiki->basic()->name() : null;
-
-        if ($resourceName === null) {
+        if ($wiki === null) {
             $this->logger->warning('CollectVideoLinks: Resource not found', [
                 'resource_type' => $status->resourceType()->value,
                 'wiki_id' => (string) $status->wikiIdentifier(),
@@ -76,13 +76,16 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             return;
         }
 
+        $keyword = $this->videoSearchKeywordBuilder->build($wiki);
+
         $this->logger->info('CollectVideoLinks: Starting collection', [
             'resource_type' => $status->resourceType()->value,
             'wiki_id' => (string) $status->wikiIdentifier(),
-            'resource_name' => $resourceName,
+            'resource_name' => (string) $wiki->basic()->name(),
+            'search_keyword' => $keyword,
         ]);
 
-        $videos = $this->youTubeSearchService->searchVideos($resourceName);
+        $videos = $this->youTubeSearchService->searchVideos($keyword);
 
         try {
             $this->videoLinkRepository->deleteAutoCollectedByResource(
