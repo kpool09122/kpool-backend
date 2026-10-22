@@ -83,6 +83,69 @@ class TranslationServiceTest extends TestCase
     }
 
     /**
+     * @param list<string> $basicTranslations
+     */
+    #[TestWith(['호랑이', '메인 래퍼', ['虎', 'メインラッパー'], '虎', 'メインラッパー'])]
+    #[TestWith(['', '메인 래퍼', ['メインラッパー'], '', 'メインラッパー'])]
+    #[TestWith(['호랑이', '', ['虎'], '虎', ''])]
+    public function testTranslatesTalentSymbolAndPositionWithoutShiftingSectionTexts(
+        string $representativeSymbol,
+        string $position,
+        array $basicTranslations,
+        string $expectedSymbol,
+        string $expectedPosition,
+    ): void {
+        $sections = new SectionContentCollection([
+            new Section('개요', 0, new SectionContentCollection([new TextBlock(0, '소개')])),
+        ]);
+        $wiki = $this->createTalentWiki($sections, $representativeSymbol, $position);
+        $googleTranslateClient = $this->createGoogleTranslateClientMock([
+            'チェヨン', 'ソン・チェヨン', ...$basicTranslations, '概要', '紹介文',
+        ]);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
+
+        $service = $this->app()->make(TranslationServiceInterface::class);
+        $result = $service->translateWiki($wiki, Language::JAPANESE);
+
+        $basic = $result->translatedBasic();
+        self::assertInstanceOf(TalentBasic::class, $basic);
+        self::assertSame($expectedSymbol, $basic->representativeSymbol()->value());
+        self::assertSame($expectedPosition, $basic->position()->value());
+        $section = $result->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        self::assertSame('概要', $section->title());
+        $text = $section->contents()->all()[0];
+        self::assertInstanceOf(TextBlock::class, $text);
+        self::assertSame('紹介文', $text->content());
+    }
+
+    public function testSendsTalentSymbolAndPositionToTranslationApi(): void
+    {
+        $wiki = $this->createTalentWiki(representativeSymbol: '호랑이', position: '메인 래퍼');
+        $googleTranslateClient = Mockery::mock(GoogleTranslateClient::class);
+        $googleTranslateClient->shouldReceive('translateTexts')->once()
+            ->withArgs(static fn (TranslateTextsRequest $request): bool =>
+                $request->texts() === ['채영', '손채영', '호랑이', '메인 래퍼']
+                && $request->targetLanguage() === 'ja')
+            ->andReturn(new TranslateTextsResponse(['チェヨン', 'ソン・チェヨン', '虎', 'メインラッパー']));
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
+
+        $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+    }
+
+    public function testPreservesTalentSymbolAndPositionWhenTranslationsAreMissing(): void
+    {
+        $wiki = $this->createTalentWiki(representativeSymbol: '호랑이', position: '메인 래퍼');
+        $this->app()->instance(GoogleTranslateClient::class, $this->createGoogleTranslateClientMock([]));
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        $basic = $result->translatedBasic();
+        self::assertInstanceOf(TalentBasic::class, $basic);
+        self::assertSame('호랑이', $basic->representativeSymbol()->value());
+        self::assertSame('메인 래퍼', $basic->position()->value());
+    }
+
+    /**
      * 正常系：AgencyタイプのWikiのBasic情報が正しく翻訳されること.
      *
      * @throws BindingResolutionException
@@ -512,8 +575,11 @@ class TranslationServiceTest extends TestCase
         return $mock;
     }
 
-    private function createTalentWiki(?SectionContentCollection $sections = null): Wiki
-    {
+    private function createTalentWiki(
+        ?SectionContentCollection $sections = null,
+        string $representativeSymbol = '',
+        string $position = '',
+    ): Wiki {
         $basic = TalentBasic::fromArray([
             'type' => 'talent',
             'name' => '채영',
@@ -524,8 +590,8 @@ class TranslationServiceTest extends TestCase
             'agency_identifier' => null,
             'group_identifiers' => [],
             'emoji' => '',
-            'representative_symbol' => '',
-            'position' => '',
+            'representative_symbol' => $representativeSymbol,
+            'position' => $position,
             'fandom_name' => '',
         ]);
 

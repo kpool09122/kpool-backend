@@ -37,12 +37,17 @@ readonly class TranslationService implements TranslationServiceInterface
         $basicArray = $wiki->basic()->toArray();
         $basicType = $wiki->basic()->getBasicType();
         $translatableKeys = match ($basicType) {
-            'talent' => ['name', 'real_name'],
+            'talent' => ['name', 'real_name', 'representative_symbol', 'position'],
             'agency' => ['name', 'ceo'],
             'group' => ['name'],
             'song' => ['name', 'lyricist', 'composer', 'arranger'],
             default => throw new InvalidArgumentException("Unsupported basic type: $basicType"),
         };
+
+        $translatableKeys = array_values(array_filter(
+            $translatableKeys,
+            static fn (string $key): bool => trim(TypedValue::string($basicArray[$key] ?? '')) !== '',
+        ));
 
         // 翻訳対象のテキストを収集
         $texts = [];
