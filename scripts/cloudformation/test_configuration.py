@@ -232,6 +232,50 @@ class WikiScheduleTests(unittest.TestCase):
             configuration.configure_wiki_schedule(aws, outputs)
         self.assertEqual(mutations, [])
 
+    def test_video_target_configuration_preserves_manual_on_and_off_and_is_repeatable(self):
+        outputs = dict(SchedulerBootstrapTaskDefinitionArn='scheduler-bootstrap:1',
+                       SchedulerArn='arn:aws:scheduler:ap-northeast-1:123:schedule/project/wiki',
+                       VideoCollectionSchedulerArn='arn:aws:scheduler:ap-northeast-1:123:schedule/project/video')
+        for state in ('DISABLED', 'ENABLED'):
+            with self.subTest(state=state):
+                monthly = {'Target': {'EcsParameters': {'TaskDefinitionArn': 'scheduler-release:3'}}}
+                current = dict(Name='video', GroupName='project', State=state, ScheduleExpression='rate(45 minutes)',
+                               FlexibleTimeWindow={'Mode': 'OFF'},
+                               Target={'EcsParameters': {'TaskDefinitionArn': 'scheduler-bootstrap:1'},
+                                       'Input': json.dumps({'containerOverrides': [{'name': 'scheduler', 'command': ['php', 'artisan', 'video-links:collect']}]})})
+                original = copy.deepcopy(current)
+                mutations = []
+                def aws(service, operation, *args):
+                    if operation == 'get-schedule':
+                        return copy.deepcopy(current if args[-1] == 'video' else monthly)
+                    if operation == 'update-schedule':
+                        mutations.append(json.loads(args[1]))
+                        current.update(mutations[-1])
+                        return {}
+                    self.fail('Unexpected AWS request')
+                configuration.configure_video_collection_schedule(aws, outputs)
+                self.assertEqual(current['State'], state)
+                self.assertEqual(current['ScheduleExpression'], 'rate(45 minutes)')
+                self.assertEqual(current['Target']['Input'], original['Target']['Input'])
+                self.assertEqual(current['Target']['EcsParameters']['TaskDefinitionArn'], 'scheduler-release:3')
+                self.assertEqual(len(mutations), 1)
+                configuration.configure_video_collection_schedule(aws, outputs)
+                self.assertEqual(len(mutations), 1)
+                monthly['Target']['EcsParameters']['TaskDefinitionArn'] = 'scheduler-release:4'
+                configuration.configure_video_collection_schedule(aws, outputs)
+                self.assertEqual(current['State'], state)
+                self.assertEqual(current['Target']['EcsParameters']['TaskDefinitionArn'], 'scheduler-release:4')
+
+    def test_video_configuration_rejects_bootstrap_and_supports_older_stacks(self):
+        def aws(service, operation, *args):
+            return {'Target': {'EcsParameters': {'TaskDefinitionArn': 'scheduler-bootstrap:1'}}}
+        outputs = dict(SchedulerBootstrapTaskDefinitionArn='scheduler-bootstrap:1',
+                       SchedulerArn='arn:aws:scheduler:ap-northeast-1:123:schedule/project/wiki',
+                       VideoCollectionSchedulerArn='arn:aws:scheduler:ap-northeast-1:123:schedule/project/video')
+        with self.assertRaisesRegex(ValueError, 'scheduler release'):
+            configuration.configure_video_collection_schedule(aws, outputs)
+        configuration.configure_video_collection_schedule(lambda *args: self.fail('Unexpected request'), {})
+
 
 @unittest.skipUnless(os.environ.get('RUN_DATABASE_SETUP_INTEGRATION') == '1', 'Optional isolated PostgreSQL 18 integration test')
 class DatabasePrivilegesTests(unittest.TestCase):

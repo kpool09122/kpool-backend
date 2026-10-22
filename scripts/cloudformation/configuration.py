@@ -164,6 +164,7 @@ def configure(aws, config, path):
     write_release_configuration(config, outputs, path)
     if not services_are_inactive(aws, outputs):
         configure_wiki_schedule(aws, outputs)
+        configure_video_collection_schedule(aws, outputs)
 
 
 def configure_wiki_schedule(aws, outputs):
@@ -214,6 +215,26 @@ def configure_wiki_schedule(aws, outputs):
     request['Target']['EcsParameters']['TaskDefinitionArn'] = new_arn
     if current_arn == outputs['SchedulerBootstrapTaskDefinitionArn']:
         request['State'] = 'ENABLED'
+    aws('scheduler', 'update-schedule', '--cli-input-json', json.dumps(request))
+
+
+def configure_video_collection_schedule(aws, outputs):
+    """Prepare the video target with the current scheduler image without changing operator activation."""
+    if not outputs.get('VideoCollectionSchedulerArn'):
+        return
+    group, name = outputs['SchedulerArn'].split(':schedule/', 1)[1].split('/')
+    monthly = aws('scheduler', 'get-schedule', '--group-name', group, '--name', name)
+    task_arn = monthly['Target']['EcsParameters']['TaskDefinitionArn']
+    if task_arn == outputs['SchedulerBootstrapTaskDefinitionArn']:
+        raise ValueError('Configure the Wiki scheduler release before preparing video collection')
+    group, name = outputs['VideoCollectionSchedulerArn'].split(':schedule/', 1)[1].split('/')
+    current = aws('scheduler', 'get-schedule', '--group-name', group, '--name', name)
+    if current['Target']['EcsParameters']['TaskDefinitionArn'] == task_arn:
+        return
+    selected = 'Name GroupName Description StartDate EndDate ScheduleExpression ScheduleExpressionTimezone State FlexibleTimeWindow Target KmsKeyArn ActionAfterCompletion'.split()
+    request = {key: current[key] for key in selected if key in current}
+    request.update(Name=name, GroupName=group)
+    request['Target']['EcsParameters']['TaskDefinitionArn'] = task_arn
     aws('scheduler', 'update-schedule', '--cli-input-json', json.dumps(request))
 
 

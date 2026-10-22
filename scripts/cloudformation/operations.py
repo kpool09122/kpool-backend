@@ -61,12 +61,13 @@ def output_values(stack):
 def runtime_parameters_for_update(live, outputs):
     """Keep empty bootstrap inputs distinct from deployed release revisions."""
     values = dict(live)
-    for kind, state, inactive in (('Api', 'ApiDesiredCount', '0'),
-                                   ('Worker', 'WorkerDesiredCount', '0'),
-                                   ('Scheduler', 'SchedulerState', 'DISABLED')):
+    for kind, state, inactive, bootstrap in (('Api', 'ApiDesiredCount', '0', 'Api'),
+                                           ('Worker', 'WorkerDesiredCount', '0', 'Worker'),
+                                           ('Scheduler', 'SchedulerState', 'DISABLED', 'Scheduler'),
+                                           ('VideoCollection', 'VideoCollectionSchedulerState', 'DISABLED', 'Scheduler')):
         name = kind + 'TaskDefinitionArn'
         if (values.get(state) == inactive
-                and values.get(name) == outputs.get(kind + 'BootstrapTaskDefinitionArn')):
+                and values.get(name) == outputs.get(bootstrap + 'BootstrapTaskDefinitionArn')):
             values[name] = ''
     return values
 
@@ -106,12 +107,19 @@ def runtime_snapshot(aws, outputs):
     if len(arn_parts) != 2:
         raise ValueError('Unexpected Scheduler ARN')
     schedule = aws('scheduler', 'get-schedule', '--group-name', arn_parts[0], '--name', arn_parts[1])
-    return {'parameters': resolve(outputs, services, rules, schedule),
+    video_collection_schedule = None
+    if outputs.get('VideoCollectionSchedulerArn'):
+        video_parts = outputs['VideoCollectionSchedulerArn'].split(':schedule/', 1)[1].split('/')
+        if len(video_parts) != 2:
+            raise ValueError('Unexpected video collection Scheduler ARN')
+        video_collection_schedule = aws('scheduler', 'get-schedule', '--group-name', video_parts[0], '--name', video_parts[1])
+    return {'parameters': resolve(outputs, services, rules, schedule, video_collection_schedule),
             'nativeHistory': native_history,
             # Track deployment identity too, so an ABA revision change is not silently accepted.
             'deployments': {service['serviceName']: [item.get('id') for item in service['deployments']]
                             for service in services['services']},
-            'schedulerModified': schedule.get('LastModificationDate')}
+            'schedulerModified': schedule.get('LastModificationDate'),
+            'videoCollectionSchedulerModified': (video_collection_schedule or {}).get('LastModificationDate')}
 
 
 def capture(aws, config, paused, allow_created_runtime=False):
@@ -268,10 +276,11 @@ def prepare(aws, config, stack, root, directory, paused):
 
 def verify_initial_runtime(values, outputs, runtime):
     expected = {name: values[name] for name in RUNTIME_STATE}
-    for prefix in ('Api', 'Worker', 'Scheduler'):
+    for prefix, bootstrap in (('Api', 'Api'), ('Worker', 'Worker'), ('Scheduler', 'Scheduler'),
+                              ('VideoCollection', 'Scheduler')):
         name = prefix + 'TaskDefinitionArn'
         if not expected[name]:
-            expected[name] = outputs[prefix + 'BootstrapTaskDefinitionArn']
+            expected[name] = outputs[bootstrap + 'BootstrapTaskDefinitionArn']
     # ECS can finish the empty blue/green deployment on either known target.
     # runtime_snapshot has already rejected split traffic and unknown groups.
     for name in ('PrimaryTargetGroup', 'ProductionTargetGroup', 'TestTargetGroup'):

@@ -20,7 +20,8 @@ def service(name, target=None):
 
 def fixture():
     outputs = {'ApiServiceName': 'api', 'WorkerServiceName': 'worker', 'BlueTargetGroupArn': 'blue',
-               'GreenTargetGroupArn': 'green', 'ProductionRuleArn': 'prod', 'TestRuleArn': 'test'}
+               'GreenTargetGroupArn': 'green', 'ProductionRuleArn': 'prod', 'TestRuleArn': 'test',
+               'SchedulerBootstrapTaskDefinitionArn': 'scheduler-bootstrap:1'}
     rules = {'Rules': [{'RuleArn': name, 'Actions': [{'Type': 'forward', 'ForwardConfig': {
         'TargetGroups': [{'TargetGroupArn': 'blue', 'Weight': 0},
                          {'TargetGroupArn': 'green', 'Weight': 1}]}}]} for name in ('prod', 'test')]}
@@ -29,6 +30,27 @@ def fixture():
 
 
 class RuntimeStateTests(unittest.TestCase):
+    def test_existing_stack_without_video_schedule_starts_disabled_on_upgrade(self):
+        result = runtime_state.resolve(*fixture())
+        self.assertEqual(result['VideoCollectionSchedulerState'], 'DISABLED')
+        self.assertEqual(result['VideoCollectionTaskDefinitionArn'], 'scheduler-bootstrap:1')
+
+    def test_video_activation_and_revision_are_preserved_independently_of_monthly_schedule(self):
+        for monthly_state in ('ENABLED', 'DISABLED'):
+            for video_state in ('ENABLED', 'DISABLED'):
+                with self.subTest(monthly_state=monthly_state, video_state=video_state):
+                    outputs, services, rules, schedule = fixture()
+                    schedule['State'] = monthly_state
+                    video = {'State': video_state, 'Target': {'EcsParameters': {'TaskDefinitionArn': 'scheduler-release:12'}}}
+                    result = runtime_state.resolve(outputs, services, rules, schedule, video)
+                    self.assertEqual(result['SchedulerState'], monthly_state)
+                    self.assertEqual(result['VideoCollectionSchedulerState'], video_state)
+                    self.assertEqual(result['VideoCollectionTaskDefinitionArn'], 'scheduler-release:12')
+
+    def test_unknown_video_state_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'video collection scheduler state'):
+            runtime_state.resolve(*fixture(), {'State': 'UNKNOWN'})
+
     def test_ecs_full_traffic_weights_are_equivalent_to_template_unit_weights(self):
         for weight in (1, 100, 999):
             with self.subTest(weight=weight):

@@ -67,7 +67,7 @@ ShouldBeUnique は **dispatch 時の共有 cache lock** であり永続冪等性
 
 不正引数・依存障害・enqueue 失敗・sync 失敗は非0（1）。複数送金の途中 enqueue 失敗は既送信分を取り消さない。通常の command 成功は業務完了ではない。
 production の Laravel Schedule は月次を登録しない。local/testing/staging/preview は公開月次コマンド経由で毎月1日03:00 JST。非productionで外部Schedulerを使う場合は Laravel schedule:run と併用しない。
-#673 の現在の Scheduler は bootstrap の汎用枠（既定 rate(1 minute)、DISABLED）であり、実配備時に #157/#673 が上記 **月次と動画の2つの定義**、適切な command override、両方 **DISABLED**、FlexibleTimeWindow=OFF を設定する。既定の汎用式をアプリ周期とみなさない。#157 の動作確認後だけ ENABLED。送金を追加する場合も初期DISABLED。
+CloudFormationは月次と動画収集の2つのSchedulerを初期DISABLED・FlexibleTimeWindow=OFFで作成する。動画収集は `${ProjectName}-video-links-collect`、`rate(45 minutes)` で、schedulerコンテナのcommandを `php artisan video-links:collect` に上書きする。API配備後の `infra:operate configure` は月次を初回有効化し、動画収集の実行先も同じrelease taskへ更新する。動画収集は設定後もDISABLEDを維持し、YouTube APIキーとworkerの稼働・動作を確認して本番では手動でONにする。再設定時と `infra:operate` によるCloudFormation再適用時は、月次と動画それぞれの現在のON/OFFを保持する。送金を追加する場合も初期DISABLED。
 
 確認は3段階:
 - Scheduler: TargetErrorCount/InvocationDroppedCount と Scheduler delivery DLQ（RunTask API/IAM/容量失敗）。Scheduler の retry/DLQ はアプリ work queue DLQ と別。

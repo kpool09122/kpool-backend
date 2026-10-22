@@ -79,6 +79,10 @@ API BLUE_GREENは切替前hookを実行し、切替後の待機とalarmによる
 外部URLの常時監視は初期運用では省略する。`ExternalCanaryAlarmName` を設定した場合だけ、外部アラームを配備前検査とrollbackへ含める。配備時hookは標準コードをテンプレートに同梱し、VPC内からALBの8443へHost/SNIを保持して `/health` を確認する。外部ZIPを使う場合は承認したchecksumをrelease設定へ登録する。
 Wiki定期処理は毎月1日03:00 Asia/Tokyo、`wiki:process-role-promotion --sync`。初回はDISABLEDで作成し、API配備後に同じ `infra:operate configure` を実行すると現在のAPI image/env/Secret参照でtask revisionを登録して有効化する。以後は明示的な無効化を維持し、現在imageへ更新する。送金バッチは初回公開で作成・有効化しない。再開時の候補は毎日03:00 Asia/Tokyo。Scheduler DLQは起動要求の配送失敗、EventBridgeのSTOPPED通知はtask起動失敗・非0終了を扱う。
 
+YouTube収集は同じSchedule Group内の `${ProjectName}-video-links-collect` が45分ごとに `video-links:collect` を起動し、SQSへ収集Jobを登録する。初回作成時はDISABLED。API配備後の `infra:operate configure` で現在のAPI image/env/Secret参照を持つscheduler release taskへ切り替えるが、動画収集のON/OFFは変更しない。YouTube APIキーの注入とworkerの稼働を確認した後、本番では運用者がEventBridge Scheduler画面で手動有効化する。
+
+インフラの再適用は `infra:operate plan` → Change Set確認 → `infra:operate execute` を使う。この経路は月次・動画それぞれの現在のStateとtask revisionを取得し、CloudFormationパラメータへ引き継ぐ。計画後にON/OFFを変更した場合は再計画する。CloudFormationコンソール等から直接更新する場合、この状態取り込み処理は動かないため、`VideoCollectionSchedulerState` と `VideoCollectionTaskDefinitionArn` に現在値を設定する。`configure` の再実行でも手動で有効化・無効化した状態を保持する。
+
 ### マスターデータの手動投入
 
 Seederはすべて手動実行する。通常デプロイはマイグレーションのみ自動実行し、Seederは呼ばない。
