@@ -11,6 +11,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\TestWith;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -209,6 +210,43 @@ class TranslationServiceTest extends TestCase
         /** @var TextBlock $textBlock */
         $textBlock = $blocks[0];
         $this->assertSame('チェヨンはTWICEのメンバーです。', $textBlock->content());
+    }
+
+    #[TestWith([Language::ENGLISH, 'overview', 'Overview', 'sources', 'Sources'])]
+    #[TestWith([Language::ENGLISH, 'Overview', 'Overview', 'source', 'Source'])]
+    #[TestWith([Language::JAPANESE, '概要', '概要', '出典', '出典'])]
+    #[TestWith([Language::KOREAN, '개요', '개요', '출처', '출처'])]
+    public function testCapitalizesEnglishSectionHeadingsIncludingNestedSections(
+        Language $targetLanguage,
+        string $overviewTranslation,
+        string $expectedOverview,
+        string $sourceTranslation,
+        string $expectedSource,
+    ): void {
+        $sections = new SectionContentCollection([
+            new Section('概要', 0, new SectionContentCollection([
+                new TextBlock(0, '紹介文'),
+                new Section('出典', 1, new SectionContentCollection([]), 2),
+            ])),
+        ]);
+        $googleTranslateClient = $this->createGoogleTranslateClientMock([
+            'Chaeyoung', 'Son Chaeyoung', $overviewTranslation, 'translated body', $sourceTranslation,
+        ]);
+        $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
+
+        $service = $this->app()->make(TranslationServiceInterface::class);
+        $result = $service->translateWiki($this->createTalentWiki($sections), $targetLanguage);
+
+        $overview = $result->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $overview);
+        self::assertSame($expectedOverview, $overview->title());
+        $body = $overview->contents()->all()[0];
+        self::assertInstanceOf(TextBlock::class, $body);
+        self::assertSame('translated body', $body->content());
+        $source = $overview->contents()->all()[1];
+        self::assertInstanceOf(Section::class, $source);
+        self::assertSame($expectedSource, $source->title());
+        self::assertSame(2, $source->depth());
     }
 
     /**

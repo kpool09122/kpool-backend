@@ -75,7 +75,7 @@ readonly class TranslationService implements TranslationServiceInterface
         };
 
         // セクションを再構築
-        $translatedSections = $this->reconstructSections($wiki->sections(), $translations, $offset);
+        $translatedSections = $this->reconstructSections($wiki->sections(), $translations, $offset, $targetLanguage);
 
         return new TranslatedWikiData($translatedBasic, $translatedSections);
     }
@@ -116,10 +116,11 @@ readonly class TranslationService implements TranslationServiceInterface
         SectionContentCollection $sections,
         array $translations,
         int &$offset,
+        Language $targetLanguage,
     ): SectionContentCollection {
         $translatedContents = [];
         foreach ($sections->all() as $content) {
-            $translatedContents[] = $this->reconstructContent($content, $translations, $offset);
+            $translatedContents[] = $this->reconstructContent($content, $translations, $offset, $targetLanguage);
         }
 
         return new SectionContentCollection($translatedContents);
@@ -132,11 +133,15 @@ readonly class TranslationService implements TranslationServiceInterface
         SectionContentInterface $content,
         array $translations,
         int &$offset,
+        Language $targetLanguage,
     ): SectionContentInterface {
         if ($content instanceof Section) {
             $translatedTitle = $translations[$offset] ?? $content->title();
+            if ($targetLanguage === Language::ENGLISH) {
+                $translatedTitle = ucfirst($translatedTitle);
+            }
             $offset++;
-            $translatedContents = $this->reconstructSections($content->contents(), $translations, $offset);
+            $translatedContents = $this->reconstructSections($content->contents(), $translations, $offset, $targetLanguage);
 
             return new Section($translatedTitle, $content->displayOrder(), $translatedContents, $content->depth());
         }
