@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Identity\Domain\Service;
+namespace Tests\Identity\Infrastructure\Service;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Identity\Domain\Service\OAuthStateGenerator;
-use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
+use Source\Identity\Application\Service\OAuthStateGeneratorInterface;
+use Source\Identity\Infrastructure\Service\OAuthStateGenerator;
 use Tests\TestCase;
 
 class OAuthStateGeneratorTest extends TestCase
@@ -39,10 +39,10 @@ class OAuthStateGeneratorTest extends TestCase
 
         $state = $generator->generate();
 
-        $this->assertSame(64, mb_strlen((string) $state));
-        $this->assertMatchesRegularExpression('/\A[0-9a-f]{64}\z/', (string) $state);
-        $this->assertGreaterThan($before, $state->expiresAt());
-        $this->assertLessThan($after, $state->expiresAt());
+        $this->assertSame(64, mb_strlen((string) $state->state));
+        $this->assertMatchesRegularExpression('/\A[0-9a-f]{64}\z/', (string) $state->state);
+        $this->assertGreaterThan($before, $state->expiresAt);
+        $this->assertLessThan($after, $state->expiresAt);
     }
 
     /**
@@ -57,7 +57,7 @@ class OAuthStateGeneratorTest extends TestCase
 
         $states = [];
         for ($i = 0; $i < 10; $i++) {
-            $states[] = (string) $generator->generate();
+            $states[] = (string) $generator->generate()->state;
         }
 
         $uniqueStates = array_unique($states);

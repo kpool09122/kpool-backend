@@ -32,7 +32,7 @@ class PasskeyRecoveryOAuthSessionStorageServiceTest extends TestCase
     public function testItConsumesAnOAuthSessionExactlyOnce(): void
     {
         $storage = new PasskeyRecoveryOAuthSessionStorageService();
-        $state = new OAuthState('passkey-recovery-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('passkey-recovery-state');
         $storage->store($state, new PasskeyRecoveryOAuthSession(SocialProvider::GOOGLE, new DateTimeImmutable('+10 minutes')));
         $this->assertSame(SocialProvider::GOOGLE, $storage->consume($state)?->provider);
         $this->assertNull($storage->consume($state));
@@ -40,7 +40,7 @@ class PasskeyRecoveryOAuthSessionStorageServiceTest extends TestCase
 
     public function testItRejectsAndConsumesAnExpiredOAuthSession(): void
     {
-        $state = new OAuthState('expired-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('expired-state');
         Redis::set('passkey_recovery_oauth_session:expired-state', json_encode(['provider' => 'google', 'expires_at' => (new DateTimeImmutable('-1 second'))->format(DATE_ATOM)], JSON_THROW_ON_ERROR));
         $storage = new PasskeyRecoveryOAuthSessionStorageService();
         $this->assertNull($storage->consume($state));

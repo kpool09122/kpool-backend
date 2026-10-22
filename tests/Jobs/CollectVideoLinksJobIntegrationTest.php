@@ -15,6 +15,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Psr\Http\Client\ClientInterface;
+use Source\Shared\Application\Exception\YouTubeRequestFailedException;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoLinkCollectionFailedException;
@@ -66,7 +67,11 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
             $this->collect();
             $this->fail('A total or partial provider failure must propagate');
         } catch (VideoSearchFailedException $e) {
-            $this->assertNull($e->getPrevious(), 'Provider credentials and payloads must not enter the exception chain');
+            $cause = $e->getPrevious();
+            $this->assertInstanceOf(YouTubeRequestFailedException::class, $cause);
+            $this->assertSame('Video provider request failed.', $cause->getMessage());
+            $this->assertSame($cause->getMessage(), $e->getMessage());
+            $this->assertNull($cause->getPrevious(), 'Raw provider exceptions must not enter the exception chain');
             $this->assertEquals($beforeVideos, DB::table('video_links')->get()->toArray());
             $this->assertEquals($beforeStatuses, DB::table('video_link_collection_statuses')->get()->toArray());
         }

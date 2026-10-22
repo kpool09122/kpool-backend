@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Domain\ValueObject;
 
-use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Domain\ValueObject\OAuthState;
@@ -19,12 +18,10 @@ class OAuthStateTest extends TestCase
     public function test__construct(): void
     {
         $stateToken = 'state-token';
-        $expiresAt = new DateTimeImmutable('+10 minutes');
 
-        $state = new OAuthState($stateToken, $expiresAt);
+        $state = new OAuthState($stateToken);
 
         $this->assertSame($stateToken, (string)$state);
-        $this->assertSame($expiresAt, $state->expiresAt());
     }
 
     /**
@@ -36,7 +33,7 @@ class OAuthStateTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new OAuthState('', new DateTimeImmutable('+5 minutes'));
+        new OAuthState('');
     }
 
     /**
@@ -48,6 +45,6 @@ class OAuthStateTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new OAuthState(str_repeat('a', OAuthState::MAX_LENGTH + 1), new DateTimeImmutable('+5 minutes'));
+        new OAuthState(str_repeat('a', OAuthState::MAX_LENGTH + 1));
     }
 }

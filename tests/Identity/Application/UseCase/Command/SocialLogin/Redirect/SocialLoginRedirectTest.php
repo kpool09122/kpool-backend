@@ -9,13 +9,14 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
+use Source\Identity\Application\Service\OAuthStateGeneratorInterface;
+use Source\Identity\Application\Service\OAuthStateSession;
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirect;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
-use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
@@ -34,10 +35,10 @@ class SocialLoginRedirectTest extends TestCase
     {
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);
 
@@ -56,19 +57,20 @@ class SocialLoginRedirectTest extends TestCase
         $input = new SocialLoginRedirectInput($provider);
         $output = new SocialLoginRedirectOutput();
 
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
+        $session = new OAuthStateSession($state, new DateTimeImmutable('+10 minutes'));
         $redirectUrl = 'https://example.com/google/redirect';
 
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateGenerator->shouldReceive('generate')
             ->once()
-            ->andReturn($state)
+            ->andReturn($session)
             ->ordered('sequence');
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')
             ->once()
-            ->with($state)
+            ->with($session)
             ->andReturnNull()
             ->ordered('sequence');
 
@@ -81,7 +83,7 @@ class SocialLoginRedirectTest extends TestCase
 
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);
 
@@ -102,17 +104,18 @@ class SocialLoginRedirectTest extends TestCase
         $input = new SocialLoginRedirectInput($provider);
         $output = new SocialLoginRedirectOutput();
 
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
+        $session = new OAuthStateSession($state, new DateTimeImmutable('+10 minutes'));
 
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateGenerator->shouldReceive('generate')
             ->once()
-            ->andReturn($state);
+            ->andReturn($session);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')
             ->once()
-            ->with($state)
+            ->with($session)
             ->andThrow(new RuntimeException('failed to store state'));
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
@@ -120,7 +123,7 @@ class SocialLoginRedirectTest extends TestCase
 
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);
 
@@ -141,17 +144,18 @@ class SocialLoginRedirectTest extends TestCase
         $input = new SocialLoginRedirectInput($provider);
         $output = new SocialLoginRedirectOutput();
 
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
+        $session = new OAuthStateSession($state, new DateTimeImmutable('+10 minutes'));
 
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateGenerator->shouldReceive('generate')
             ->once()
-            ->andReturn($state);
+            ->andReturn($session);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')
             ->once()
-            ->with($state)
+            ->with($session)
             ->andReturnNull();
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
@@ -162,7 +166,7 @@ class SocialLoginRedirectTest extends TestCase
 
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);
 
@@ -184,24 +188,25 @@ class SocialLoginRedirectTest extends TestCase
         $input = new SocialLoginRedirectInput($provider, $signupSession);
         $output = new SocialLoginRedirectOutput();
 
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
+        $session = new OAuthStateSession($state, new DateTimeImmutable('+10 minutes'));
         $redirectUrl = 'https://example.com/google/redirect';
 
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateGenerator->shouldReceive('generate')
             ->once()
-            ->andReturn($state);
+            ->andReturn($session);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')
             ->once()
-            ->with($state)
+            ->with($session)
             ->andReturnNull();
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
         $signupSessionRepository->shouldReceive('store')
             ->once()
-            ->with($state, $signupSession)
+            ->with($state, $signupSession, $session->expiresAt)
             ->andReturnNull();
 
         $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
@@ -212,7 +217,7 @@ class SocialLoginRedirectTest extends TestCase
 
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);
@@ -234,18 +239,19 @@ class SocialLoginRedirectTest extends TestCase
         $input = new SocialLoginRedirectInput($provider, null);
         $output = new SocialLoginRedirectOutput();
 
-        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('state-token');
+        $session = new OAuthStateSession($state, new DateTimeImmutable('+10 minutes'));
         $redirectUrl = 'https://example.com/google/redirect';
 
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateGenerator->shouldReceive('generate')
             ->once()
-            ->andReturn($state);
+            ->andReturn($session);
 
-        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $oauthStateRepository->shouldReceive('store')
+        $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
+        $oAuthStateStorageService->shouldReceive('store')
             ->once()
-            ->with($state)
+            ->with($session)
             ->andReturnNull();
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
@@ -259,7 +265,7 @@ class SocialLoginRedirectTest extends TestCase
 
         $this->app()->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app()->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
-        $this->app()->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app()->instance(OAuthStateStorageServiceInterface::class, $oAuthStateStorageService);
         $this->app()->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
 
         $useCase = $this->app()->make(SocialLoginRedirectInterface::class);

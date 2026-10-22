@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial;
 
+use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoverySessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\PasskeyRecoveryVerificationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
@@ -18,7 +18,7 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
     private const string RETURN_TO = '/settings/passkeys/recovery?recoveryKey=';
 
     public function __construct(
-        private OAuthStateRepositoryInterface $oAuthStateRepository,
+        private OAuthStateStorageServiceInterface $oAuthStateStorageService,
         private PasskeyRecoveryOAuthSessionStorageServiceInterface $passkeyRecoveryOAuthSessionStorageService,
         private SocialOAuthServiceInterface $socialOAuthService,
         private IdentityRepositoryInterface $identityRepository,
@@ -31,7 +31,7 @@ readonly class CompletePasskeyRecoveryWithSocial implements CompletePasskeyRecov
         CompletePasskeyRecoveryWithSocialInputPort $input,
         CompletePasskeyRecoveryWithSocialOutputPort $output,
     ): void {
-        $this->oAuthStateRepository->consume($input->state());
+        $this->oAuthStateStorageService->consume($input->state());
         $oauthSession = $this->passkeyRecoveryOAuthSessionStorageService->consume($input->state());
         if ($oauthSession === null || $oauthSession->provider !== $input->provider()) {
             throw new PasskeyRecoveryVerificationFailedException('Passkey recovery OAuth session is invalid.');

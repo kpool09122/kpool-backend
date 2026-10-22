@@ -59,11 +59,11 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testStoreAndFind(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $session = new SignupSession(AccountType::INDIVIDUAL);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
@@ -73,11 +73,11 @@ class SignupSessionRepositoryTest extends TestCase
 
     public function testStoreAndFindWithReturnTo(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $session = new SignupSession(returnTo: '/mypage/wiki');
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
@@ -93,11 +93,11 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testStoreAndFindWithCorporation(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $session = new SignupSession(AccountType::CORPORATION);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
@@ -113,7 +113,7 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testFindReturnsNullWhenNotFound(): void
     {
-        $state = new OAuthState('non-existent-state', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('non-existent-state');
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
         $foundSession = $repository->find($state);
@@ -129,11 +129,11 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testDelete(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $session = new SignupSession(AccountType::INDIVIDUAL);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
         $repository->delete($state);
 
         $foundSession = $repository->find($state);
@@ -148,7 +148,7 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testFindReturnsNullWhenInvalidAccountTypeStored(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $key = 'signup_session:' . $state;
 
         Redis::setex($key, 600, 'invalid_account_type');
@@ -167,12 +167,12 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testStoreAndFindWithOneTimeToken(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $token = bin2hex(random_bytes(32));
         $session = new SignupSession(null, new OneTimeToken($token));
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
@@ -190,12 +190,12 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testStoreAndFindWithAccountTypeAndOneTimeToken(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $token = bin2hex(random_bytes(32));
         $session = new SignupSession(AccountType::INDIVIDUAL, new OneTimeToken($token));
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
@@ -213,11 +213,11 @@ class SignupSessionRepositoryTest extends TestCase
      */
     public function testStoreAndFindWithoutOneTimeToken(): void
     {
-        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $state = new OAuthState('test-state-token');
         $session = new SignupSession(AccountType::INDIVIDUAL, null);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
-        $repository->store($state, $session);
+        $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
 
         $foundSession = $repository->find($state);
 
