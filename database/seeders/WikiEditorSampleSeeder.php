@@ -11,6 +11,9 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInput;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalInterface;
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class WikiEditorSampleSeeder extends Seeder
 {
@@ -213,11 +216,21 @@ class WikiEditorSampleSeeder extends Seeder
             return;
         }
 
+        $videoLinkCollectionRegistrationService = app(VideoLinkCollectionRegistrationServiceInterface::class);
+
         $this->seedPublishedGroup();
+        $videoLinkCollectionRegistrationService->register(
+            ResourceType::GROUP,
+            new WikiIdentifier(self::GROUP_PUBLISHED_WIKI_ID),
+        );
         $this->seedDraftGroup();
 
         foreach (self::TALENTS as $talent) {
             $this->seedPublishedTalent($talent);
+            $videoLinkCollectionRegistrationService->register(
+                ResourceType::TALENT,
+                new WikiIdentifier($talent['published_wiki_id']),
+            );
             $this->seedDraftTalent($talent);
         }
         DB::table('account_principals')->orderBy('id')->each(static function (object $principal): void {
