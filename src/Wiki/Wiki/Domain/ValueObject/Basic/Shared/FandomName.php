@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 final readonly class FandomName
 {
-    private const int MAX_LENGTH = 64;
+    public const int MAX_LENGTH = 64;
 
     public function __construct(
         private string $value,

@@ -68,6 +68,10 @@ model DraftWikiHeroImage {
   src: string | null;
   @doc("Hero image alternative text.")
   alt: string | null;
+  @doc("Original source page URL for the hero image.")
+  sourceUrl?: string | null;
+  @doc("Source site name for the hero image.")
+  sourceName?: string | null;
   @doc("Whether the hero image is hidden.")
   isHidden: boolean | null;
 }
@@ -80,6 +84,10 @@ model WikiHeroImage {
   src: string | null;
   @doc("Hero image alternative text.")
   alt: string | null;
+  @doc("Original source page URL for the hero image.")
+  sourceUrl?: string | null;
+  @doc("Source site name for the hero image.")
+  sourceName?: string | null;
   @doc("Whether the hero image is hidden.")
   isHidden: boolean | null;
 }

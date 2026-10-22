@@ -100,7 +100,7 @@ class GetTalentWikiTest extends TestCase
         $this->assertSame(4, $readModel->version());
         $this->assertTrue($readModel->isOfficial());
         $this->assertSame('#fe5f8f', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'sourceUrl' => null, 'sourceName' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('채영', $readModel->basic()['name']);
         $this->assertSame('손채영', $readModel->basic()['realName']);

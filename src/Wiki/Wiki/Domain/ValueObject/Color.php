@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 final readonly class Color
 {
-    private const int MAX_LABEL_LENGTH = 16;
+    public const int MAX_LABEL_LENGTH = 16;
 
     public function __construct(
         private HexColor $colorCode,
