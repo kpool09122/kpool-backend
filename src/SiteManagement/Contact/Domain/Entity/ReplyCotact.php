@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ReplyCotact
@@ -22,12 +23,18 @@ readonly class ReplyCotact
         private ?DateTimeImmutable $sentAt,
         private ?DateTimeImmutable $failedAt,
         private DateTimeImmutable $createdAt,
+        private ReplyType $replyType,
     ) {
     }
 
     public function replyIdentifier(): ContactReplyIdentifier
     {
         return $this->replyIdentifier;
+    }
+
+    public function replyType(): ReplyType
+    {
+        return $this->replyType;
     }
 
     public function contactIdentifier(): ContactIdentifier

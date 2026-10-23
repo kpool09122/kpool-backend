@@ -29,6 +29,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -109,6 +110,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            ReplyType::OPERATOR,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -120,12 +122,14 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                ReplyType $replyType,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyType === ReplyType::OPERATOR
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
@@ -149,6 +153,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() instanceof DateTimeImmutable
                     && $saved->failedAt() === null
+                    && $saved->replyType() === ReplyType::OPERATOR
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
@@ -304,6 +309,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            ReplyType::OPERATOR,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -315,12 +321,14 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                ReplyType $replyType,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyType === ReplyType::OPERATOR
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
@@ -344,6 +352,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() === null
                     && $saved->failedAt() instanceof DateTimeImmutable
+                    && $saved->replyType() === ReplyType::OPERATOR
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
