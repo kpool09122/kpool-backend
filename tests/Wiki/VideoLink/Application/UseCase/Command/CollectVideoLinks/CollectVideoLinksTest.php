@@ -102,6 +102,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: 253,
             ),
             new YouTubeVideoInfo(
                 videoId: 'video2',
@@ -110,6 +111,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video2/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -153,7 +155,11 @@ class CollectVideoLinksTest extends TestCase
             ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
             ->andReturn($existingVideoLink);
         $videoLinkRepository->shouldReceive('save')
-            ->times(2);
+            ->once()
+            ->with(Mockery::on(static fn (VideoLink $videoLink): bool => $videoLink->durationSeconds() === 253));
+        $videoLinkRepository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static fn (VideoLink $videoLink): bool => $videoLink->durationSeconds() === null));
 
         $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
         $videoLinkFactory->shouldReceive('create')
@@ -271,6 +277,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -362,6 +369,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -539,6 +547,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -624,6 +633,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/existing/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
             new YouTubeVideoInfo(
                 videoId: 'new',
@@ -632,6 +642,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/new/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -646,6 +657,7 @@ class CollectVideoLinksTest extends TestCase
             null,
             1,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
@@ -741,6 +753,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
             $displayOrder,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
     }
 }

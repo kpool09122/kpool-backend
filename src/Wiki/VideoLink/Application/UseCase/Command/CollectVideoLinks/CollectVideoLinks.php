@@ -123,6 +123,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
                 );
                 $videoLink->setThumbnailUrl($video->thumbnailUrl());
                 $videoLink->setPublishedAt($video->publishedAt());
+                $videoLink->setDurationSeconds($video->durationSeconds());
 
                 $this->videoLinkRepository->save($videoLink);
                 $savedCount++;

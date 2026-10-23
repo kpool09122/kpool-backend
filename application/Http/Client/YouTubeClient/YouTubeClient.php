@@ -84,6 +84,9 @@ class YouTubeClient
                         'default' => ['url' => $detail['thumbnailUrl']],
                     ],
                 ],
+                'contentDetails' => $detail['durationSeconds'] === null
+                    ? []
+                    : ['duration' => 'PT' . $detail['durationSeconds'] . 'S'],
                 'statistics' => [
                     'viewCount' => (string) $detail['viewCount'],
                     'likeCount' => (string) $detail['likeCount'],

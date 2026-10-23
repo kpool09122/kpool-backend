@@ -84,7 +84,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
     }
 
     /**
-     * @param array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int}> $videoDetails
+     * @param array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int, durationSeconds: int|null}> $videoDetails
      * @param string[] $videoIds
      * @return YouTubeVideoInfo[]
      */
@@ -127,6 +127,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
                 thumbnailUrl: $video['thumbnailUrl'],
                 videoUsage: $usage,
                 publishedAt: CarbonImmutable::parse($video['publishedAt'])->toDateTimeImmutable(),
+                durationSeconds: $video['durationSeconds'],
             ),
             $topVideos,
         );

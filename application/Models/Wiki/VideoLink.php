@@ -19,6 +19,7 @@ use Override;
  * @property string $title
  * @property string|null $thumbnail_url
  * @property Carbon|null $published_at
+ * @property int|null $duration_seconds
  * @property int $display_order
  * @property Carbon $created_at
  */
@@ -31,6 +32,7 @@ use Override;
     'title',
     'thumbnail_url',
     'published_at',
+    'duration_seconds',
     'display_order',
     'created_at',
 ])]
@@ -46,6 +48,7 @@ class VideoLink extends Model
     #[Override]
     protected $casts = [
         'display_order' => 'integer',
+        'duration_seconds' => 'integer',
         'published_at' => 'datetime',
         'created_at' => 'datetime',
     ];

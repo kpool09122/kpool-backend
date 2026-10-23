@@ -34,7 +34,7 @@ final readonly class GetVideoDetailsRequest
         $query = http_build_query([
             'key' => $apiKey,
             'id' => implode(',', $videoIdChunk),
-            'part' => 'snippet,statistics',
+            'part' => 'snippet,statistics,contentDetails',
         ]);
 
         return $request

@@ -43,6 +43,7 @@ class VideoLinkTest extends TestCase
             $publishedAt,
             $displayOrder,
             $createdAt,
+            durationSeconds: null,
         );
 
         $this->assertSame((string) $videoLinkIdentifier, (string) $videoLink->videoLinkIdentifier());
@@ -120,6 +121,7 @@ class VideoLinkTest extends TestCase
             null,
             1,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
     }
 }

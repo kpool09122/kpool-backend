@@ -16,6 +16,7 @@ use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 use Source\Shared\Application\Exception\YouTubeRequestFailedException;
 use Tests\Helper\YouTubeClientTestHelper;
 use Tests\TestCase;
@@ -114,6 +115,46 @@ class YouTubeClientTest extends TestCase
         $http = Mockery::mock(ClientInterface::class);
         $http->shouldReceive('sendRequest')->once()->andReturn(new Response(200, [], '{"items":[]}'));
         $this->assertSame([], $this->client($http)->searchVideoIds(new SearchVideoIdsRequest('test', 'viewCount', 30))->videoIds());
+    }
+
+    #[DataProvider('videoDurations')]
+    public function testVideoDetailsIncludeDurationInSeconds(?string $duration, ?int $expected): void
+    {
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        $http->shouldReceive('sendRequest')->once()
+            ->with(Mockery::on(static function (RequestInterface $request): bool {
+                parse_str($request->getUri()->getQuery(), $query);
+
+                return $query['part'] === 'snippet,statistics,contentDetails';
+            }))
+            ->andReturn(new Response(200, [], json_encode(['items' => [[
+                'id' => 'video1',
+                'snippet' => [
+                    'title' => 'Test Video',
+                    'publishedAt' => '2026-01-01T00:00:00Z',
+                    'thumbnails' => ['default' => ['url' => 'https://example.com/t.jpg']],
+                ],
+                'statistics' => [],
+                'contentDetails' => $duration === null ? [] : ['duration' => $duration],
+            ]]], JSON_THROW_ON_ERROR)));
+
+        $details = $this->client($http)->getVideoDetails(new GetVideoDetailsRequest(['video1']))->details();
+
+        self::assertSame($expected, $details['video1']['durationSeconds']);
+    }
+
+    /** @return array<string, array{string|null, int|null}> */
+    public static function videoDurations(): array
+    {
+        return [
+            'seconds' => ['PT45S', 45],
+            'minutes' => ['PT4M13S', 253],
+            'hours' => ['PT2H3M4S', 7384],
+            'days' => ['P1DT2H3M4S', 93784],
+            'zero' => ['PT0S', 0],
+            'unavailable' => [null, null],
+        ];
     }
 
     private function client(ClientInterface $http): YouTubeClient

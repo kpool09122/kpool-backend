@@ -6,6 +6,7 @@ namespace Tests\Wiki\VideoLink\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -20,6 +21,48 @@ use Tests\TestCase;
 
 class VideoLinkRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    #[DataProvider('videoDurations')]
+    public function testDurationIsPersistedAndRestored(?int $durationSeconds): void
+    {
+        $videoLinkId = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        $videoLink = new VideoLink(
+            $videoLinkId,
+            ResourceType::TALENT,
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new ExternalContentLink('https://www.youtube.com/watch?v=test'),
+            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
+            'Test Video',
+            null,
+            null,
+            1,
+            new DateTimeImmutable(),
+            $durationSeconds,
+        );
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
+        $repository->save($videoLink);
+
+        $this->assertDatabaseHas('video_links', [
+            'id' => (string) $videoLinkId,
+            'duration_seconds' => $durationSeconds,
+        ]);
+        $this->assertSame($durationSeconds, $repository->findById($videoLinkId)?->durationSeconds());
+
+        $videoLink->setDurationSeconds(600);
+        $repository->save($videoLink);
+        $this->assertSame(600, $repository->findById($videoLinkId)?->durationSeconds());
+
+        $videoLink->setDurationSeconds(null);
+        $repository->save($videoLink);
+        $this->assertNull($repository->findById($videoLinkId)?->durationSeconds());
+    }
+
+    /** @return array<string, array{int|null}> */
+    public static function videoDurations(): array
+    {
+        return ['known' => [253], 'zero' => [0], 'unknown' => [null]];
+    }
+
     /**
      * 正常系：指定したIDの動画リンクが取得できること.
      *
@@ -166,6 +209,7 @@ class VideoLinkRepositoryTest extends TestCase
             null,
             1,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -213,6 +257,7 @@ class VideoLinkRepositoryTest extends TestCase
             null,
             2,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
