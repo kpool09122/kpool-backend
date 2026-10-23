@@ -7,121 +7,40 @@ namespace Tests\Wiki\VideoLink\Domain\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class VideoLinkTest extends TestCase
 {
-    /**
-     * 正常系: インスタンスが生成されること.
-     */
-    public function test__construct(): void
+    public function testConstructorPreservesAllValues(): void
     {
-        $videoLinkIdentifier = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-        $url = new ExternalContentLink('https://www.youtube.com/watch?v=test123');
-        $videoUsage = VideoUsage::MUSIC_VIDEO;
-        $title = 'Test Music Video';
-        $thumbnailUrl = 'https://i.ytimg.com/vi/test123/hqdefault.jpg';
-        $publishedAt = new DateTimeImmutable('2024-01-15T10:30:00Z');
-        $displayOrder = 1;
-        $createdAt = new DateTimeImmutable();
-
-        $videoLink = new VideoLink(
-            $videoLinkIdentifier,
-            $resourceType,
-            $resourceIdentifier,
-            $url,
-            $videoUsage,
-            $title,
-            $thumbnailUrl,
-            $publishedAt,
-            $displayOrder,
-            $createdAt,
-            durationSeconds: null,
-        );
-
-        $this->assertSame((string) $videoLinkIdentifier, (string) $videoLink->videoLinkIdentifier());
-        $this->assertSame($resourceType, $videoLink->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $videoLink->wikiIdentifier());
-        $this->assertSame((string) $url, (string) $videoLink->url());
-        $this->assertSame($videoUsage, $videoLink->videoUsage());
-        $this->assertSame($title, $videoLink->title());
-        $this->assertSame($thumbnailUrl, $videoLink->thumbnailUrl());
-        $this->assertSame($publishedAt, $videoLink->publishedAt());
-        $this->assertSame($displayOrder, $videoLink->displayOrder());
-        $this->assertSame($createdAt, $videoLink->createdAt());
-    }
-
-    /**
-     * 正常系: urlのsetterが正しく動作すること.
-     */
-    public function testSetUrl(): void
-    {
-        $videoLink = $this->createDummyVideoLink();
-        $newUrl = new ExternalContentLink('https://www.youtube.com/watch?v=newvideo');
-
-        $videoLink->setUrl($newUrl);
-
-        $this->assertSame((string) $newUrl, (string) $videoLink->url());
-    }
-
-    /**
-     * 正常系: videoUsageのsetterが正しく動作すること.
-     */
-    public function testSetVideoUsage(): void
-    {
-        $videoLink = $this->createDummyVideoLink();
-
-        $videoLink->setVideoUsage(VideoUsage::LIVE);
-
-        $this->assertSame(VideoUsage::LIVE, $videoLink->videoUsage());
-    }
-
-    /**
-     * 正常系: titleのsetterが正しく動作すること.
-     */
-    public function testSetTitle(): void
-    {
-        $videoLink = $this->createDummyVideoLink();
-        $newTitle = 'Updated Title';
-
-        $videoLink->setTitle($newTitle);
-
-        $this->assertSame($newTitle, $videoLink->title());
-    }
-
-    /**
-     * 正常系: displayOrderのsetterが正しく動作すること.
-     */
-    public function testSetDisplayOrder(): void
-    {
-        $videoLink = $this->createDummyVideoLink();
-
-        $videoLink->setDisplayOrder(5);
-
-        $this->assertSame(5, $videoLink->displayOrder());
-    }
-
-    private function createDummyVideoLink(): VideoLink
-    {
-        return new VideoLink(
-            new VideoLinkIdentifier(StrTestHelper::generateUuid()),
-            ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
-            new ExternalContentLink('https://www.youtube.com/watch?v=test123'),
-            VideoUsage::MUSIC_VIDEO,
-            'Test Music Video',
-            null,
-            null,
-            1,
-            new DateTimeImmutable(),
-            durationSeconds: null,
-        );
+        $identifier = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $url = new ExternalContentLink('https://www.youtube.com/watch?v=test');
+        $publishedAt = new DateTimeImmutable('2026-10-01');
+        $createdAt = new DateTimeImmutable('2026-10-23');
+        $video = new VideoLink($identifier, ResourceType::TALENT, $wikiIdentifier, $url, VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb.jpg'), $publishedAt, new DisplayOrder(1), $createdAt, new DurationSeconds(253), $principalIdentifier);
+        self::assertSame($identifier, $video->videoLinkIdentifier());
+        self::assertSame($wikiIdentifier, $video->wikiIdentifier());
+        self::assertSame(ResourceType::TALENT, $video->resourceType());
+        self::assertSame($url, $video->url());
+        self::assertSame(VideoUsage::MUSIC_VIDEO, $video->videoUsage());
+        self::assertSame('Title', (string) $video->title());
+        self::assertSame('https://example.com/thumb.jpg', (string) $video->thumbnailUrl());
+        self::assertSame($publishedAt, $video->publishedAt());
+        self::assertSame(1, $video->displayOrder()->value());
+        self::assertSame($createdAt, $video->createdAt());
+        self::assertSame(253, $video->durationSeconds()?->value());
+        self::assertSame($principalIdentifier, $video->creatorPrincipalIdentifier());
     }
 }

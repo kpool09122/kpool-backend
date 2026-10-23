@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'video_link_already_exists' => 'このWikiには同じURLの動画が登録されています。',
+    'invalid_video_link' => '動画の入力が不正です。',
     'published_wiki_not_found' => '指定した公開Wikiが見つかりません。',
     'invalid_video_list_query' => '動画一覧の取得条件が不正です。',
     'invalid_material_search_context' => '画像素材の検索条件が正しくありません。',

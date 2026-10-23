@@ -9,10 +9,14 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateVideoLink;
@@ -21,6 +25,21 @@ use Tests\TestCase;
 
 class VideoLinkRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testCreatorPrincipalIdentifierIsPersistedAndRestored(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $identifier = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        $video = new VideoLink($identifier, ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/manual'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), null, null, new DisplayOrder(1), new DateTimeImmutable(), new DurationSeconds(253), $principalIdentifier);
+        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
+        $repository->save($video);
+        $restored = $repository->findById($identifier);
+        self::assertNotNull($restored);
+        self::assertSame((string) $principalIdentifier, (string) $restored->creatorPrincipalIdentifier());
+        self::assertSame(253, $restored->durationSeconds()?->value());
+        $this->assertDatabaseHas('wiki_video_links', ['id' => (string) $identifier, 'creator_principal_id' => (string) $principalIdentifier]);
+    }
+
     #[Group('useDb')]
     #[DataProvider('videoDurations')]
     public function testDurationIsPersistedAndRestored(?int $durationSeconds): void
@@ -32,29 +51,23 @@ class VideoLinkRepositoryTest extends TestCase
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new ExternalContentLink('https://www.youtube.com/watch?v=test'),
             VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-            'Test Video',
+            new VideoTitle('Test Video'),
             null,
             null,
-            1,
+            new DisplayOrder(1),
             new DateTimeImmutable(),
-            $durationSeconds,
+            $durationSeconds !== null ? new DurationSeconds($durationSeconds) : null,
         );
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($videoLink);
 
-        $this->assertDatabaseHas('video_links', [
+        $this->assertDatabaseHas('wiki_video_links', [
             'id' => (string) $videoLinkId,
             'duration_seconds' => $durationSeconds,
         ]);
-        $this->assertSame($durationSeconds, $repository->findById($videoLinkId)?->durationSeconds());
+        $this->assertSame($durationSeconds, $repository->findById($videoLinkId)?->durationSeconds()?->value());
 
-        $videoLink->setDurationSeconds(600);
-        $repository->save($videoLink);
-        $this->assertSame(600, $repository->findById($videoLinkId)?->durationSeconds());
-
-        $videoLink->setDurationSeconds(null);
-        $repository->save($videoLink);
-        $this->assertNull($repository->findById($videoLinkId)?->durationSeconds());
+        $this->assertNull($repository->findById($videoLinkId)?->creatorPrincipalIdentifier());
     }
 
     /** @return array<string, array{int|null}> */
@@ -92,8 +105,8 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertSame($wikiId, (string) $videoLink->wikiIdentifier());
         $this->assertSame('https://www.youtube.com/watch?v=test123', (string) $videoLink->url());
         $this->assertSame(VideoUsage::MUSIC_VIDEO, $videoLink->videoUsage());
-        $this->assertSame('Test Music Video', $videoLink->title());
-        $this->assertSame(1, $videoLink->displayOrder());
+        $this->assertSame('Test Music Video', (string) $videoLink->title());
+        $this->assertSame(1, $videoLink->displayOrder()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $videoLink->createdAt());
     }
 
@@ -204,10 +217,10 @@ class VideoLinkRepositoryTest extends TestCase
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new ExternalContentLink('https://www.youtube.com/watch?v=newvideo'),
             VideoUsage::MUSIC_VIDEO,
-            'New Music Video',
+            new VideoTitle('New Music Video'),
             null,
             null,
-            1,
+            new DisplayOrder(1),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -215,14 +228,14 @@ class VideoLinkRepositoryTest extends TestCase
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($videoLink);
 
-        $this->assertDatabaseHas('video_links', [
+        $this->assertDatabaseHas('wiki_video_links', [
             'id' => (string) $videoLink->videoLinkIdentifier(),
             'resource_type' => $videoLink->resourceType()->value,
             'wiki_id' => (string) $videoLink->wikiIdentifier(),
             'url' => (string) $videoLink->url(),
             'video_usage' => $videoLink->videoUsage()->value,
-            'title' => $videoLink->title(),
-            'display_order' => $videoLink->displayOrder(),
+            'title' => (string) $videoLink->title(),
+            'display_order' => $videoLink->displayOrder()->value(),
         ]);
     }
 
@@ -252,10 +265,10 @@ class VideoLinkRepositoryTest extends TestCase
             new WikiIdentifier($wikiId),
             new ExternalContentLink('https://www.youtube.com/watch?v=updated'),
             VideoUsage::LIVE,
-            'Updated Title',
+            new VideoTitle('Updated Title'),
             null,
             null,
-            2,
+            new DisplayOrder(2),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -263,7 +276,7 @@ class VideoLinkRepositoryTest extends TestCase
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($videoLink);
 
-        $this->assertDatabaseHas('video_links', [
+        $this->assertDatabaseHas('wiki_video_links', [
             'id' => $videoLinkId,
             'url' => 'https://www.youtube.com/watch?v=updated',
             'video_usage' => VideoUsage::LIVE->value,
@@ -271,7 +284,7 @@ class VideoLinkRepositoryTest extends TestCase
             'display_order' => 2,
         ]);
 
-        $this->assertDatabaseCount('video_links', 1);
+        $this->assertDatabaseCount('wiki_video_links', 1);
     }
 
     /**
@@ -290,12 +303,12 @@ class VideoLinkRepositoryTest extends TestCase
             'video_usage' => VideoUsage::OTHER->value,
         ]);
 
-        $this->assertDatabaseHas('video_links', ['id' => $videoLinkId]);
+        $this->assertDatabaseHas('wiki_video_links', ['id' => $videoLinkId]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->delete(new VideoLinkIdentifier($videoLinkId));
 
-        $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $videoLinkId]);
     }
 
     /**
@@ -334,9 +347,9 @@ class VideoLinkRepositoryTest extends TestCase
             new WikiIdentifier($wikiId),
         );
 
-        $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId1]);
-        $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId2]);
-        $this->assertDatabaseHas('video_links', ['id' => $otherVideoLinkId]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $videoLinkId1]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $videoLinkId2]);
+        $this->assertDatabaseHas('wiki_video_links', ['id' => $otherVideoLinkId]);
     }
 
     /**
@@ -384,10 +397,10 @@ class VideoLinkRepositoryTest extends TestCase
             new WikiIdentifier($wikiId),
         );
 
-        $this->assertDatabaseHas('video_links', ['id' => $manualVideoLinkId]);
-        $this->assertDatabaseMissing('video_links', ['id' => $autoViewCountId]);
-        $this->assertDatabaseMissing('video_links', ['id' => $autoLikeCountId]);
-        $this->assertDatabaseMissing('video_links', ['id' => $autoRecentId]);
+        $this->assertDatabaseHas('wiki_video_links', ['id' => $manualVideoLinkId]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $autoViewCountId]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $autoLikeCountId]);
+        $this->assertDatabaseMissing('wiki_video_links', ['id' => $autoRecentId]);
     }
 
     /**
@@ -439,7 +452,7 @@ class VideoLinkRepositoryTest extends TestCase
 
         $this->assertInstanceOf(VideoLink::class, $videoLink);
         $this->assertSame($videoLinkId2, (string) $videoLink->videoLinkIdentifier());
-        $this->assertSame(5, $videoLink->displayOrder());
+        $this->assertSame(5, $videoLink->displayOrder()->value());
     }
 
     /**
@@ -499,7 +512,7 @@ class VideoLinkRepositoryTest extends TestCase
 
         $this->assertInstanceOf(VideoLink::class, $videoLink);
         $this->assertSame($targetVideoLinkId, (string) $videoLink->videoLinkIdentifier());
-        $this->assertSame(2, $videoLink->displayOrder());
+        $this->assertSame(2, $videoLink->displayOrder()->value());
     }
 
     /**

@@ -22,6 +22,7 @@ use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincip
 use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
+use Application\Http\Action\Wiki\VideoLink\Command\CreateVideoLink\CreateVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListVideos\ListVideosAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
@@ -140,6 +141,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/image/{imageId}/reject', RejectImageAction::class);
         // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
         Route::post('/image/upload', UploadImageAction::class);
+        Route::post('/video-link/create', CreateVideoLinkAction::class);
 
         // ImageDeletionRequest
         Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);
@@ -188,9 +190,6 @@ Route::middleware('rate-limit:screen,query')->group(function () {
     Route::get('/wiki/{language}/song/{slug}', GetSongWikiAction::class);
     Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
 });
-
-// VideoLink
-// Disabled by #605: Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.wiki']);
 
 // Status snapshots remain available while account or principal access is stopped.
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'])->group(function () {

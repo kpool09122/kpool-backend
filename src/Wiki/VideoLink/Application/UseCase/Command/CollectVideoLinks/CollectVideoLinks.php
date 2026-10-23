@@ -14,6 +14,10 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Throwable;
 
@@ -105,7 +109,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
                 $status->resourceType(),
                 $status->wikiIdentifier(),
             );
-            $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
+            $maxDisplayOrder = $lastVideoLink?->displayOrder()->value() ?? 0;
 
             $savedCount = 0;
             foreach ($videos as $video) {
@@ -118,12 +122,12 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
                     $status->wikiIdentifier(),
                     new ExternalContentLink($video->url()),
                     $video->videoUsage(),
-                    $video->title(),
-                    $maxDisplayOrder + $savedCount + 1,
+                    new VideoTitle($video->title()),
+                    new DisplayOrder($maxDisplayOrder + $savedCount + 1),
+                    new ThumbnailUrl($video->thumbnailUrl()),
+                    $video->publishedAt(),
+                    $video->durationSeconds() !== null ? new DurationSeconds($video->durationSeconds()) : null,
                 );
-                $videoLink->setThumbnailUrl($video->thumbnailUrl());
-                $videoLink->setPublishedAt($video->publishedAt());
-                $videoLink->setDurationSeconds($video->durationSeconds());
 
                 $this->videoLinkRepository->save($videoLink);
                 $savedCount++;

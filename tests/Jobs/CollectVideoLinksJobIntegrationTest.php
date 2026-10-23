@@ -60,7 +60,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
             $http->shouldReceive('sendRequest')->once()->ordered()->andReturn(new Response($status, [], $body));
         }
         $this->app()->instance(YouTubeClient::class, YouTubeClientTestHelper::create($http));
-        $beforeVideos = DB::table('video_links')->get()->toArray();
+        $beforeVideos = DB::table('wiki_video_links')->get()->toArray();
         $beforeStatuses = DB::table('video_link_collection_statuses')->get()->toArray();
 
         try {
@@ -72,7 +72,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
             $this->assertSame('Video provider request failed.', $cause->getMessage());
             $this->assertSame($cause->getMessage(), $e->getMessage());
             $this->assertNull($cause->getPrevious(), 'Raw provider exceptions must not enter the exception chain');
-            $this->assertEquals($beforeVideos, DB::table('video_links')->get()->toArray());
+            $this->assertEquals($beforeVideos, DB::table('wiki_video_links')->get()->toArray());
             $this->assertEquals($beforeStatuses, DB::table('video_link_collection_statuses')->get()->toArray());
         }
     }
@@ -115,18 +115,18 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
         CreateVideoLink::create($otherId, ['video_usage' => 'youtube_auto_view_count']);
         $this->searchReturns([]);
         $this->collect();
-        $this->assertFalse(DB::table('video_links')->where('id', $this->oldVideoId)->exists());
-        $this->assertTrue(DB::table('video_links')->where('id', $manualId)->exists());
-        $this->assertTrue(DB::table('video_links')->where('id', $otherId)->exists());
+        $this->assertFalse(DB::table('wiki_video_links')->where('id', $this->oldVideoId)->exists());
+        $this->assertTrue(DB::table('wiki_video_links')->where('id', $manualId)->exists());
+        $this->assertTrue(DB::table('wiki_video_links')->where('id', $otherId)->exists());
         $this->assertNotSame('2020-01-01 00:00:00', DB::table('video_link_collection_statuses')->where('id', $this->statusId)->value('last_collected_at'));
     }
 
     public function testFailureAfterFirstInsertRollsBackDeletionInsertAndTimestamp(): void
     {
-        DB::statement("ALTER TABLE video_links ADD CONSTRAINT test_video_failure CHECK (title <> 'fail')");
+        DB::statement("ALTER TABLE wiki_video_links ADD CONSTRAINT test_video_failure CHECK (title <> 'fail')");
         $firstInsertObserved = false;
         DB::listen(static function (QueryExecuted $event) use (&$firstInsertObserved): void {
-            if (str_starts_with($event->sql, 'insert into "video_links"') && in_array('first', $event->bindings, true)) {
+            if (str_starts_with($event->sql, 'insert into "wiki_video_links"') && in_array('first', $event->bindings, true)) {
                 $firstInsertObserved = true;
             }
         });
@@ -138,7 +138,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
         } catch (VideoLinkCollectionFailedException) {
             $this->assertTrue($firstInsertObserved);
             $this->assertOldState();
-            $this->assertSame(1, DB::table('video_links')->where('wiki_id', $this->wikiId)->count());
+            $this->assertSame(1, DB::table('wiki_video_links')->where('wiki_id', $this->wikiId)->count());
         }
     }
 
@@ -152,7 +152,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
             $this->fail('Status update must fail');
         } catch (VideoLinkCollectionFailedException) {
             $this->assertOldState();
-            $this->assertSame(1, DB::table('video_links')->where('wiki_id', $this->wikiId)->count());
+            $this->assertSame(1, DB::table('wiki_video_links')->where('wiki_id', $this->wikiId)->count());
         }
     }
 
@@ -188,7 +188,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
 
     private function assertOldState(): void
     {
-        $this->assertTrue(DB::table('video_links')->where('id', $this->oldVideoId)->exists());
+        $this->assertTrue(DB::table('wiki_video_links')->where('id', $this->oldVideoId)->exists());
         $this->assertSame('2020-01-01 00:00:00', DB::table('video_link_collection_statuses')->where('id', $this->statusId)->value('last_collected_at'));
     }
 }

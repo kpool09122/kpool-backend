@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'video_link_already_exists' => 'A video with this URL already exists for this wiki.',
+    'invalid_video_link' => 'Invalid video input.',
     'published_wiki_not_found' => 'The specified published wiki was not found.',
     'invalid_video_list_query' => 'The video list query is invalid.',
     'invalid_material_search_context' => 'The image material search context is invalid.',

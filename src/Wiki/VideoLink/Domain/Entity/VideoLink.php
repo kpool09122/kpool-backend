@@ -6,25 +6,31 @@ namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
-class VideoLink
+readonly class VideoLink
 {
     public function __construct(
-        private readonly VideoLinkIdentifier $videoLinkIdentifier,
-        private readonly ResourceType        $resourceType,
-        private readonly WikiIdentifier      $wikiIdentifier,
-        private ExternalContentLink          $url,
-        private VideoUsage                   $videoUsage,
-        private string                       $title,
-        private ?string                      $thumbnailUrl,
-        private ?DateTimeImmutable           $publishedAt,
-        private int                          $displayOrder,
-        private readonly DateTimeImmutable   $createdAt,
-        private ?int $durationSeconds,
+        private VideoLinkIdentifier $videoLinkIdentifier,
+        private ResourceType $resourceType,
+        private WikiIdentifier $wikiIdentifier,
+        private ExternalContentLink $url,
+        private VideoUsage $videoUsage,
+        private VideoTitle $title,
+        private ?ThumbnailUrl $thumbnailUrl,
+        private ?DateTimeImmutable $publishedAt,
+        private DisplayOrder $displayOrder,
+        private DateTimeImmutable $createdAt,
+        private ?DurationSeconds $durationSeconds,
+        private ?PrincipalIdentifier $creatorPrincipalIdentifier = null,
     ) {
     }
 
@@ -48,49 +54,24 @@ class VideoLink
         return $this->url;
     }
 
-    public function setUrl(ExternalContentLink $url): void
-    {
-        $this->url = $url;
-    }
-
     public function videoUsage(): VideoUsage
     {
         return $this->videoUsage;
     }
 
-    public function setVideoUsage(VideoUsage $videoUsage): void
-    {
-        $this->videoUsage = $videoUsage;
-    }
-
-    public function title(): string
+    public function title(): VideoTitle
     {
         return $this->title;
     }
 
-    public function setTitle(string $title): void
-    {
-        $this->title = $title;
-    }
-
-    public function thumbnailUrl(): ?string
+    public function thumbnailUrl(): ?ThumbnailUrl
     {
         return $this->thumbnailUrl;
     }
 
-    public function setThumbnailUrl(?string $thumbnailUrl): void
-    {
-        $this->thumbnailUrl = $thumbnailUrl;
-    }
-
-    public function durationSeconds(): ?int
+    public function durationSeconds(): ?DurationSeconds
     {
         return $this->durationSeconds;
-    }
-
-    public function setDurationSeconds(?int $durationSeconds): void
-    {
-        $this->durationSeconds = $durationSeconds;
     }
 
     public function publishedAt(): ?DateTimeImmutable
@@ -98,19 +79,14 @@ class VideoLink
         return $this->publishedAt;
     }
 
-    public function setPublishedAt(?DateTimeImmutable $publishedAt): void
-    {
-        $this->publishedAt = $publishedAt;
-    }
-
-    public function displayOrder(): int
+    public function displayOrder(): DisplayOrder
     {
         return $this->displayOrder;
     }
 
-    public function setDisplayOrder(int $displayOrder): void
+    public function creatorPrincipalIdentifier(): ?PrincipalIdentifier
     {
-        $this->displayOrder = $displayOrder;
+        return $this->creatorPrincipalIdentifier;
     }
 
     public function createdAt(): DateTimeImmutable
