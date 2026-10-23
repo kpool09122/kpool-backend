@@ -36,8 +36,11 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -396,7 +399,7 @@ class TranslateWikiTest extends TestCase
             'talent_identifiers' => [(string) $sourceId, (string) $untranslatedId],
         ]);
         $before = $original->toArray();
-        $result = $this->translateBasicThroughProcess($original, $wikiRepository);
+        $result = $this->translateThroughProcess($original, $wikiRepository)->basic();
         $expected = $before;
         $expected['agency_identifier'] = null;
         foreach (['group_identifiers', 'talent_identifiers'] as $key) {
@@ -425,14 +428,85 @@ class TranslateWikiTest extends TestCase
             'group_identifiers' => [(string) $missingId],
             'talent_identifiers' => [(string) $missingId],
         ]);
-        $result = $this->translateBasicThroughProcess($basic, $wikiRepository)->toArray();
+        $result = $this->translateThroughProcess($basic, $wikiRepository)->basic()->toArray();
         $this->assertSame((string) $targetId, $result['agency_identifier']);
         $this->assertSame([], $result['group_identifiers']);
         $this->assertSame([], $result['talent_identifiers']);
     }
 
-    private function translateBasicThroughProcess(BasicInterface $basic, WikiRepositoryInterface $wikiRepository): BasicInterface
+    public function testProcessResolvesProfileLinksInNestedSections(): void
     {
+        $sourceId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $targetId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $untranslatedId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $missingId = new WikiIdentifier(StrTestHelper::generateUuid());
+        $sourceSet = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $untranslatedSet = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $source = Mockery::mock(Wiki::class);
+        $source->shouldReceive('language')->andReturn(Language::KOREAN);
+        $source->shouldReceive('translationSetIdentifier')->andReturn($sourceSet);
+        $target = Mockery::mock(Wiki::class);
+        $target->shouldReceive('language')->andReturn(Language::JAPANESE);
+        $target->shouldReceive('wikiIdentifier')->andReturn($targetId);
+        $untranslated = Mockery::mock(Wiki::class);
+        $untranslated->shouldReceive('language')->andReturn(Language::KOREAN);
+        $untranslated->shouldReceive('translationSetIdentifier')->andReturn($untranslatedSet);
+        /** @var WikiRepositoryInterface&MockInterface $wikiRepository */
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        foreach ([(string) $sourceId => $source, (string) $targetId => $target, (string) $untranslatedId => $untranslated, (string) $missingId => null] as $identifier => $wiki) {
+            $wikiRepository->shouldReceive('findById')
+                ->withArgs(fn (WikiIdentifier $id) => (string) $id === $identifier)->andReturn($wiki);
+        }
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
+            ->with($sourceSet, [Language::JAPANESE])->andReturn([$target]);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
+            ->with($untranslatedSet, [Language::JAPANESE])->andReturn([]);
+        $text = new TextBlock(1, '翻訳済みの本文');
+        $profiles = new ProfileCardListBlock(3, [$sourceId, $targetId, $untranslatedId, $missingId], '関連プロフィール');
+        $emptyProfiles = new ProfileCardListBlock(2, [$untranslatedId, $missingId]);
+        $sections = new SectionContentCollection([
+            new Section('翻訳済みの見出し', 5, new SectionContentCollection([
+                $text,
+                $profiles,
+                new Section('子見出し', 4, new SectionContentCollection([
+                    new Section('孫見出し', 1, new SectionContentCollection([$profiles, $emptyProfiles]), 3),
+                ]), 2),
+            ])),
+        ]);
+
+        $draft = $this->translateThroughProcess($this->createTalentBasic('テスト'), $wikiRepository, $sections);
+        $section = $draft->sections()->sections()[0];
+        self::assertSame('翻訳済みの見出し', $section->title());
+        self::assertSame(5, $section->displayOrder());
+        self::assertSame(1, $section->depth());
+        self::assertSame($text, $section->contents()->blocks()[0]);
+        $resolved = $section->contents()->blocks()[1];
+        self::assertInstanceOf(ProfileCardListBlock::class, $resolved);
+        self::assertSame([(string) $targetId], array_map(strval(...), $resolved->wikiIdentifiers()));
+        self::assertSame('関連プロフィール', $resolved->title());
+        self::assertSame(3, $resolved->displayOrder());
+        $child = $section->contents()->sections()[0];
+        self::assertSame('子見出し', $child->title());
+        self::assertSame(4, $child->displayOrder());
+        self::assertSame(2, $child->depth());
+        $grandchild = $child->contents()->sections()[0];
+        self::assertSame('孫見出し', $grandchild->title());
+        self::assertSame(3, $grandchild->depth());
+        $nested = $grandchild->contents()->blocks();
+        self::assertInstanceOf(ProfileCardListBlock::class, $nested[0]);
+        self::assertSame([(string) $targetId], array_map(strval(...), $nested[0]->wikiIdentifiers()));
+        self::assertInstanceOf(ProfileCardListBlock::class, $nested[1]);
+        self::assertSame([], $nested[1]->wikiIdentifiers());
+        self::assertNull($nested[1]->title());
+        self::assertSame([$sourceId, $targetId, $untranslatedId, $missingId], $profiles->wikiIdentifiers());
+        self::assertSame([$untranslatedId, $missingId], $emptyProfiles->wikiIdentifiers());
+    }
+
+    private function translateThroughProcess(
+        BasicInterface $basic,
+        WikiRepositoryInterface $wikiRepository,
+        ?SectionContentCollection $sections = null,
+    ): DraftWiki {
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -462,7 +536,7 @@ class TranslateWikiTest extends TestCase
         ));
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateWiki')->with($wiki, Language::JAPANESE)->once()
-            ->andReturn(new TranslatedWikiData($basic, new SectionContentCollection()));
+            ->andReturn(new TranslatedWikiData($basic, $sections ?? new SectionContentCollection()));
         $englishBasic = $basic::fromArray([
             ...$basic->toArray(),
             'agency_identifier' => null,
@@ -474,7 +548,7 @@ class TranslateWikiTest extends TestCase
         $saved = [];
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('save')->twice()->andReturnUsing(function (DraftWiki $draft) use (&$saved): void {
-            $saved[$draft->language()->value] = $draft->basic();
+            $saved[$draft->language()->value] = $draft;
         });
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);

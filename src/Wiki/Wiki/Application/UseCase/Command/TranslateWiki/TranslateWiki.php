@@ -19,6 +19,9 @@ use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -95,7 +98,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
                 translationSetIdentifier: $wiki->translationSetIdentifier(),
             );
 
-            $wikiDraft->setSections($translatedData->translatedSections());
+            $wikiDraft->setSections($this->resolveTranslatedSections($translatedData->translatedSections(), $language));
             $wikiDraft->setThemeColor($wiki->themeColor());
             $wikiDraft->setFontStyle($wiki->fontStyle());
             $wikiDraft->setImageIdentifier($wiki->imageIdentifier());
@@ -139,6 +142,40 @@ readonly class TranslateWiki implements TranslateWikiInterface
         }
 
         return $resolved === $data ? $basic : $basic::fromArray($resolved);
+    }
+
+    private function resolveTranslatedSections(SectionContentCollection $sections, Language $language): SectionContentCollection
+    {
+        $resolved = [];
+        foreach ($sections->all() as $content) {
+            if ($content instanceof Section) {
+                $content = new Section(
+                    $content->title(),
+                    $content->displayOrder(),
+                    $this->resolveTranslatedSections($content->contents(), $language),
+                    $content->depth(),
+                );
+            } elseif ($content instanceof ProfileCardListBlock) {
+                $identifiers = [];
+                foreach ($content->wikiIdentifiers() as $identifier) {
+                    $translatedIdentifier = $this->resolveTranslatedIdentifier((string) $identifier, $language);
+                    if ($translatedIdentifier !== null) {
+                        $identifiers[] = $translatedIdentifier;
+                    }
+                }
+                $content = new ProfileCardListBlock(
+                    $content->displayOrder(),
+                    array_map(
+                        static fn (string $identifier): WikiIdentifier => new WikiIdentifier($identifier),
+                        array_values(array_unique($identifiers)),
+                    ),
+                    $content->title(),
+                );
+            }
+            $resolved[] = $content;
+        }
+
+        return new SectionContentCollection($resolved);
     }
 
     private function resolveTranslatedIdentifier(?string $identifier, Language $language): ?string
