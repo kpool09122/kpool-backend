@@ -1215,6 +1215,64 @@ class AutoWikiCreationServiceTest extends TestCase
         $service->generate($payload);
     }
 
+    /** @return array<string, array{ResourceType, ?string, string}> */
+    public static function generatedEmojis(): array
+    {
+        $cases = [];
+        foreach ([ResourceType::GROUP, ResourceType::TALENT] as $resourceType) {
+            foreach ([
+                'unrecognized emoji' => ['🐈‍⬛', ''],
+                'text' => ['🐰 (うさぎ)', ''],
+                'too long' => [str_repeat('🐰', 17), ''],
+                'missing' => [null, ''],
+                'empty' => ['', ''],
+                'valid' => ['🐰', '🐰'],
+                'combined' => ['👨‍👩‍👧‍👦', '👨‍👩‍👧‍👦'],
+            ] as $label => [$emoji, $expected]) {
+                $cases[$resourceType->value . ' ' . $label] = [$resourceType, $emoji, $expected];
+            }
+        }
+
+        return $cases;
+    }
+
+    #[DataProvider('generatedEmojis')]
+    public function testGeneratePreservesContentWhenEmojiIsInvalid(ResourceType $resourceType, ?string $emoji, string $expected): void
+    {
+        $responseJson = $this->createGeminiResponseJson([
+            'alphabet_name' => 'Test',
+            'emoji' => $emoji,
+            'overview' => '生成された本文である。',
+        ]);
+        $response = $this->createPsrResponse($responseJson);
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        if ($resourceType === ResourceType::GROUP) {
+            $geminiClient->shouldReceive('generateGroup')->once()->andReturn(new GenerateGroupResponse($response));
+        } else {
+            $geminiClient->shouldReceive('generateTalent')->once()->andReturn(new GenerateTalentResponse($response));
+        }
+        $this->app()->instance(GeminiClient::class, $geminiClient);
+
+        $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
+        $result = $service->generate(new AutoWikiCreationPayload(
+            language: Language::JAPANESE,
+            resourceType: $resourceType,
+            name: new Name('テスト'),
+            slug: new Slug($resourceType === ResourceType::GROUP ? 'gr-emoji-test' : 'tl-emoji-test'),
+            agencyIdentifier: null,
+            groupIdentifiers: [],
+            talentIdentifiers: [],
+        ));
+
+        $basic = $result->basic();
+        $this->assertTrue($basic instanceof GroupBasic || $basic instanceof TalentBasic);
+        $this->assertSame($expected, $basic->emoji()->value());
+        $this->assertSame('Test', $result->alphabetName());
+        $block = $result->sections()->sections()[0]->contents()->blocks()[0];
+        $this->assertInstanceOf(TextBlock::class, $block);
+        $this->assertSame('生成された本文である。', $block->content());
+    }
+
     // ========================================================================
     // Helpers
     // ========================================================================

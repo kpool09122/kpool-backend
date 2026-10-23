@@ -29,6 +29,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\Generation;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupStatus;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupType;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongGenre;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongType;
@@ -142,7 +143,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'disband_date' => $this->validDate($params->disbandDate()),
             'fandom_name' => $params->fandomName() ?? '',
             'official_colors' => $this->validOfficialColors($params->officialColors()),
-            'emoji' => $params->emoji() ?? '',
+            'emoji' => $this->validEmoji($params->emoji()),
             'representative_symbol' => $params->representativeSymbol() ?? '',
         ]);
 
@@ -198,7 +199,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
                 static fn (WikiIdentifier $id) => (string) $id,
                 $payload->groupIdentifiers(),
             ),
-            'emoji' => $params->emoji() ?? '',
+            'emoji' => $this->validEmoji($params->emoji()),
             'representative_symbol' => $params->representativeSymbol() ?? '',
             'position' => $params->position() ?? '',
             'mbti' => $this->allowedValue($params->mbti(), MBTI::cases()),
@@ -608,6 +609,15 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             $values,
             fn (string $value) => $this->allowedValue($value, $cases) !== null,
         ));
+    }
+
+    private function validEmoji(?string $value): string
+    {
+        try {
+            return (new Emoji($value ?? ''))->value();
+        } catch (InvalidArgumentException) {
+            return '';
+        }
     }
 
     private function validDate(?string $value): ?string
