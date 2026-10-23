@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Infrastructure\Service;
 
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Service\VideoLinkCollectionPolicy;
+use Source\Wiki\VideoLink\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 

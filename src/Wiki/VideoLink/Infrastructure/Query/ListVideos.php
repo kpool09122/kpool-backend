@@ -10,8 +10,8 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInputPo
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosOutputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\VideoLinkReadModel;
+use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Service\VideoLinkCollectionPolicy;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
 readonly class ListVideos implements ListVideosInterface

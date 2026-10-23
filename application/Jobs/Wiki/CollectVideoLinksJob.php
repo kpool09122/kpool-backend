@@ -13,10 +13,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
-use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksOutput;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoLinkCollectionFailedException;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Exception\VideoSearchFailedException;
+use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksOutput;
+use Source\Wiki\VideoLink\Domain\Exception\VideoLinkCollectionFailedException;
+use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
 use Throwable;
 
 class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
