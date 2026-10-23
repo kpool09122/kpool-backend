@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Application\Models\SiteManagement;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $contact_id
+ * @property string $reply_type
  * @property string|null $principal_identifier
+ * @property-read Principal|null $principal
  * @property string $to_email
  * @property string $content
  * @property Carbon|null $sent_at
@@ -32,12 +35,19 @@ class ContactReply extends Model
     protected $fillable = [
         'id',
         'contact_id',
+        'reply_type',
         'principal_identifier',
         'to_email',
         'content',
         'sent_at',
         'failed_at',
     ];
+
+    /** @return BelongsTo<Principal, $this> */
+    public function principal(): BelongsTo
+    {
+        return $this->belongsTo(Principal::class, 'principal_identifier', 'id');
+    }
 
     protected function casts(): array
     {

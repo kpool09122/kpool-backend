@@ -178,15 +178,15 @@ class GetContactDetailTest extends TestCase
         );
     }
 
-    /** @return array<string, array{bool}> */
+    /** @return array<string, array{bool, bool}> */
     public static function owners(): array
     {
-        return ['signed-in submitter' => [true], 'anonymous submitter' => [false]];
+        return ['signed-in submitter' => [true, false], 'anonymous submitter' => [false, false], 'principal-scoped submitter' => [true, true]];
     }
 
     #[Group('useDb')]
     #[DataProvider('owners')]
-    public function testReturnsExistingDetailContractWithOnlySuccessfullySentRepliesWithoutTarget(bool $signedIn): void
+    public function testReturnsExistingDetailContractWithOnlySuccessfullySentReplies(bool $signedIn, bool $scoped): void
     {
         $principal = $this->provisionPrincipal();
         SiteManagementAuthorization::grantOperator($principal);
@@ -217,7 +217,16 @@ class GetContactDetailTest extends TestCase
         CreateReplyContact::create(new ContactIdentifier($otherId), new Email('contact@example.com'), null, new DateTimeImmutable('2026-08-17 09:00:00'), null, new DateTimeImmutable('2026-08-17 09:00:00'), '別の問い合わせへの返信', $encryptionService);
 
         DB::enableQueryLog();
-        $output = $this->processWithoutTarget($principal->principalIdentifier(), $id);
+        if ($scoped) {
+            $this->assertNotNull($owner);
+            $output = new GetContactDetailOutput();
+            $this->app()->make(GetContactDetailInterface::class)->process(
+                new GetContactDetailInput($principal->principalIdentifier(), new PrincipalIdentifier($owner), new ContactIdentifier($id)),
+                $output,
+            );
+        } else {
+            $output = $this->processWithoutTarget($principal->principalIdentifier(), $id);
+        }
         $contactQueries = array_values(array_filter(DB::getQueryLog(), static fn (array $query): bool => str_contains($query['query'], 'from "contacts"') || str_contains($query['query'], 'from "contact_replies"')));
         DB::disableQueryLog();
         $this->assertCount(2, $contactQueries);
@@ -237,6 +246,10 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => (string) $reply->content(),
                 'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $reply->createdAt()->format(DateTimeInterface::ATOM),
+                'principalIdentifier' => (string) $principal->principalIdentifier(),
+                'name' => 'test-identity',
             ], $replies),
         ], $output->toArray());
     }
@@ -372,6 +385,108 @@ class GetContactDetailTest extends TestCase
         $this->processWithoutTarget($identifier, StrTestHelper::generateUuid());
     }
 
+    /** @return array<string, array{bool}> */
+    public static function detailRoutes(): array
+    {
+        return ['identifier route' => [false], 'principal-scoped route' => [true]];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('detailRoutes')]
+    public function testReplyAuthorsUseStoredPrincipalAndCurrentIdentityWithBoundedPrivateColumnFreeQueries(bool $scoped): void
+    {
+        $viewer = $this->provisionPrincipal();
+        SiteManagementAuthorization::grantOperator($viewer);
+        $first = $this->provisionPrincipal();
+        $second = $this->provisionPrincipal();
+        $missingIdentity = $this->provisionPrincipal();
+        DB::table('identities')->where('id', (string) $first->identityIdentifier())->update(['identity_name' => '佐藤 花子']);
+        DB::table('identities')->where('id', (string) $second->identityIdentifier())->update(['identity_name' => '鈴木 次郎']);
+        // Simulate a legacy orphan; this schema change is rolled back with the test transaction.
+        DB::statement('ALTER TABLE site_management_principals DROP CONSTRAINT site_management_principals_identity_id_foreign');
+        DB::table('site_management_principals')->where('id', (string) $missingIdentity->principalIdentifier())->update(['identity_id' => StrTestHelper::generateUuid()]);
+        $missingPrincipal = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, (string) $viewer->principalIdentifier());
+        $authors = [$first->principalIdentifier(), $second->principalIdentifier(), $missingPrincipal, $missingIdentity->principalIdentifier(), null, $first->principalIdentifier()];
+        $names = ['佐藤 花子', '鈴木 次郎', null, null, null, '佐藤 花子'];
+        $expected = [];
+        foreach ($authors as $index => $author) {
+            $at = new DateTimeImmutable('2026-08-17 10:00:0' . $index);
+            $reply = CreateReplyContact::create(new ContactIdentifier($id), new Email('contact@example.com'), $author, $at, null, $at, '返信' . $index, $this->app()->make(EncryptionServiceInterface::class));
+            $expected[] = [
+                'replyIdentifier' => (string) $reply->replyIdentifier(),
+                'content' => '返信' . $index,
+                'sentAt' => $at->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $at->format(DateTimeInterface::ATOM),
+                'principalIdentifier' => $author === null ? null : (string) $author,
+                'name' => $names[$index],
+            ];
+        }
+        $query = $this->app()->make(GetContactDetailInterface::class);
+        $input = new GetContactDetailInput($viewer->principalIdentifier(), $scoped ? $viewer->principalIdentifier() : null, new ContactIdentifier($id));
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $output = new GetContactDetailOutput();
+        $query->process($input, $output);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertSame($expected, $output->toArray()['replies']);
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $this->assertCount(1, $replyQueries);
+        $principalQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_principals"') && str_contains($query['query'], ' in (')));
+        $identityQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
+        $this->assertCount(1, $principalQueries);
+        $this->assertCount(1, $identityQueries);
+        $this->assertStringContainsString('select "id", "identity_id"', $principalQueries[0]['query']);
+        $this->assertStringContainsString('select "id", "identity_name"', $identityQueries[0]['query']);
+        foreach (array_merge($replyQueries, $principalQueries, $identityQueries) as $sql) {
+            foreach (['email', 'profile_image', 'password', 'select *'] as $privateColumn) {
+                $this->assertStringNotContainsString($privateColumn, $sql['query']);
+            }
+        }
+        DB::table('identities')->where('id', (string) $first->identityIdentifier())->update(['identity_name' => '佐藤 新名']);
+        $query->process($input, $output);
+        $expected[0]['name'] = '佐藤 新名';
+        $expected[5]['name'] = '佐藤 新名';
+        $this->assertSame($expected, $output->toArray()['replies']);
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('detailRoutes')]
+    public function testNonOperatorWithReplyPermissionReceivesNoAuthorFieldsOrAuthorQueries(bool $scoped): void
+    {
+        $viewer = $this->provisionPrincipal();
+        $author = $this->provisionPrincipal();
+        $this->setGeneralPolicy('allow');
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, (string) $viewer->principalIdentifier());
+        $at = new DateTimeImmutable('2026-08-17 10:00:00');
+        $reply = CreateReplyContact::create(new ContactIdentifier($id), new Email('contact@example.com'), $author->principalIdentifier(), $at, null, $at, '返信内容', $this->app()->make(EncryptionServiceInterface::class));
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        if ($scoped) {
+            $output = new GetContactDetailOutput();
+            $this->app()->make(GetContactDetailInterface::class)->process(new GetContactDetailInput($viewer->principalIdentifier(), $viewer->principalIdentifier(), new ContactIdentifier($id)), $output);
+        } else {
+            $output = $this->processWithoutTarget($viewer->principalIdentifier(), $id);
+        }
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertSame([[
+            'replyIdentifier' => (string) $reply->replyIdentifier(),
+            'content' => '返信内容',
+            'sentAt' => $at->format(DateTimeInterface::ATOM),
+            'replyType' => 'operator',
+            'createdAt' => $at->format(DateTimeInterface::ATOM),
+        ]], $output->toArray()['replies']);
+        $this->assertCount(0, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $this->assertCount(1, $replyQueries);
+        $this->assertStringNotContainsString('principal_identifier', $replyQueries[0]['query']);
+    }
+
     /** @return array<string, array{bool, string, string, bool, string}> */
     public static function replyAuthorizationScenarios(): array
     {
@@ -442,19 +557,24 @@ class GetContactDetailTest extends TestCase
         );
     }
 
-    /** @return array<string, array{bool}> */
+    /** @return array<string, array{bool, bool}> */
     public static function selfOwners(): array
     {
-        return ['own contact' => [true], 'other contact' => [false]];
+        return ['own General contact' => [true, false], 'other General contact' => [false, false], 'own Operator contact' => [true, true], 'other Operator contact' => [false, true]];
     }
 
     #[Group('useDb')]
     #[DataProvider('selfOwners')]
-    public function testSelfQueryStillUsesGeneralViewPermissionAndOwnerScope(bool $own): void
+    public function testSelfQueryStillUsesGeneralViewPermissionAndOwnerScope(bool $own, bool $operator): void
     {
         $principal = $this->provisionPrincipal();
+        if ($operator) {
+            SiteManagementAuthorization::grantOperator($principal);
+        }
         $id = StrTestHelper::generateUuid();
         $this->insertContact($id, $own ? (string) $principal->principalIdentifier() : StrTestHelper::generateUuid());
+        $at = new DateTimeImmutable('2026-08-17 10:00:00');
+        $reply = CreateReplyContact::create(new ContactIdentifier($id), new Email('contact@example.com'), $principal->principalIdentifier(), $at, null, $at, '本人向け返信', $this->app()->make(EncryptionServiceInterface::class));
         if (! $own) {
             $this->expectException(ContactNotFoundException::class);
         }
@@ -465,7 +585,28 @@ class GetContactDetailTest extends TestCase
         );
         if ($own) {
             $this->assertSame($id, $output->toArray()['contactIdentifier']);
+            $this->assertSame([[
+                'replyIdentifier' => (string) $reply->replyIdentifier(),
+                'content' => '本人向け返信',
+                'sentAt' => $at->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $at->format(DateTimeInterface::ATOM),
+            ]], $output->toArray()['replies']);
         }
+    }
+
+    #[Group('useDb')]
+    public function testSelfQueryRequiresViewPermissionEvenWhenReplyIsAllowed(): void
+    {
+        $principal = $this->provisionPrincipal();
+        $this->setGeneralPolicy('allow');
+        $id = StrTestHelper::generateUuid();
+        $this->insertContact($id, (string) $principal->principalIdentifier());
+        $this->expectException(UnauthorizedException::class);
+        $this->app()->make(GetMyContactDetailInterface::class)->process(
+            new GetMyContactDetailInput($principal->principalIdentifier(), new ContactIdentifier($id)),
+            new GetMyContactDetailOutput(),
+        );
     }
 
     private function processWithoutTarget(PrincipalIdentifier $principalIdentifier, string $id): GetContactDetailOutput
@@ -481,7 +622,7 @@ class GetContactDetailTest extends TestCase
         $this->app()->make(SiteManagementAuthorizationSeeder::class)->run();
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
-        CreateIdentity::create($identity);
+        CreateIdentity::create($identity, ['email' => (string) $identity . '@example.com']);
         CreateAccount::create((string) $account);
         $output = new ProvisionPrincipalOutput();
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $output);

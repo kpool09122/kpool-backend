@@ -7,11 +7,13 @@ namespace Tests\SiteManagement\Contact\Infrastructure\Factory;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -23,7 +25,8 @@ class ReplyContactFactoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
-    public function testCreate(): void
+    #[DataProvider('replyTypeProvider')]
+    public function testCreate(ReplyType $replyType): void
     {
         $replyIdentifier = StrTestHelper::generateUuid();
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -49,11 +52,13 @@ class ReplyContactFactoryTest extends TestCase
             $content,
             $sentAt,
             $failedAt,
+            $replyType,
         );
         $after = new DateTimeImmutable('now');
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame($contactIdentifier, $reply->contactIdentifier());
+        $this->assertSame($replyType, $reply->replyType());
         $this->assertSame($principalIdentifier, $reply->principalIdentifier());
         $this->assertSame($toEmail, $reply->toEmail());
         $this->assertSame($content, $reply->content());
@@ -89,10 +94,20 @@ class ReplyContactFactoryTest extends TestCase
             new ReplyContent('返信本文'),
             null,
             new DateTimeImmutable('2026-01-01 12:34:56'),
+            ReplyType::OPERATOR,
         );
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertNull($reply->sentAt());
         $this->assertNotNull($reply->failedAt());
+    }
+
+    /** @return array<string, array{ReplyType}> */
+    public static function replyTypeProvider(): array
+    {
+        return [
+            'operator' => [ReplyType::OPERATOR],
+            'submitter' => [ReplyType::SUBMITTER],
+        ];
     }
 }

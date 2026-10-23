@@ -20,6 +20,7 @@ readonly class ListContactsInput implements ListContactsInputPort
         private ?bool $hasReply,
         ?int $perPage = null,
         private int $page = 1,
+        private ?bool $isPending = null,
     ) {
         if ($perPage !== null && ($perPage < 1 || $perPage > self::MAX_PER_PAGE)) {
             throw new InvalidArgumentException('Per page must be between 1 and 100.');
@@ -40,6 +41,11 @@ readonly class ListContactsInput implements ListContactsInputPort
     public function targetPrincipalIdentifier(): ?PrincipalIdentifier
     {
         return $this->targetPrincipalIdentifier;
+    }
+
+    public function isPending(): ?bool
+    {
+        return $this->isPending;
     }
 
     public function hasReply(): ?bool

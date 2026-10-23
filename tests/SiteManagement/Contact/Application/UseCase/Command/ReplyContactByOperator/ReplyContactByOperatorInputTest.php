@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator;
 
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperatorInput;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ReplyContactInputTest extends TestCase
+class ReplyContactByOperatorInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成され、値を取得できること
@@ -26,7 +26,7 @@ class ReplyContactInputTest extends TestCase
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
 
-        $input = new ReplyContactInput(
+        $input = new ReplyContactByOperatorInput(
             $contactIdentifier,
             $principalIdentifier,
             $content,

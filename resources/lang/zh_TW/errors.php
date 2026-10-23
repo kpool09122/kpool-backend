@@ -59,6 +59,7 @@ return [
     'invalid_delegation' => '委託操作無效。',
     'identity_not_found' => '找不到指定的身分。',
     'contact_not_found' => '找不到指定的詢問。',
+    'contact_not_replied_by_operator' => '只有收到營運方回覆後才能回覆詢問。',
     'already_user_exists' => '使用者已存在。',
     'unauthorized_email' => '電子郵件地址尚未驗證。',
     'auth_code_session_not_found' => '找不到驗證碼工作階段。',

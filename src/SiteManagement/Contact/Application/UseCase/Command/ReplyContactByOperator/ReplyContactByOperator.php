@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator;
 
 use DateTimeImmutable;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
@@ -13,6 +13,7 @@ use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -22,7 +23,7 @@ use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Throwable;
 use UnexpectedValueException;
 
-readonly class ReplyContact implements ReplyContactInterface
+readonly class ReplyContactByOperator implements ReplyContactByOperatorInterface
 {
     public function __construct(
         private ContactRepositoryInterface $contactRepository,
@@ -39,7 +40,7 @@ readonly class ReplyContact implements ReplyContactInterface
      * @throws FailedToSendEmailException
      * @throws UnauthorizedException
      */
-    public function process(ReplyContactInputPort $input): void
+    public function process(ReplyContactByOperatorInputPort $input): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::CONTACT_REPLY, new Resource(ResourceType::CONTACT))) {
@@ -64,6 +65,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $content,
             null,
             null,
+            ReplyType::OPERATOR,
         );
         $this->replyContactRepository->save($reply);
 
@@ -84,6 +86,7 @@ readonly class ReplyContact implements ReplyContactInterface
                 null,
                 new DateTimeImmutable('now'),
                 $persisted->createdAt(),
+                $persisted->replyType(),
             );
             $this->replyContactRepository->save($failed);
 
@@ -103,6 +106,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $sentAt,
             null,
             $persisted->createdAt(),
+            $persisted->replyType(),
         );
         $this->replyContactRepository->save($sent);
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -12,9 +12,9 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContact;
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
-use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperator;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperatorInput;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContactByOperator\ReplyContactByOperatorInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
@@ -29,6 +29,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\Entity\Principal;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -37,7 +38,7 @@ use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ReplyContactTest extends TestCase
+class ReplyContactByOperatorTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -49,8 +50,8 @@ class ReplyContactTest extends TestCase
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
-        $replyContact = $this->app()->make(ReplyContactInterface::class);
-        $this->assertInstanceOf(ReplyContact::class, $replyContact);
+        $replyContactByOperator = $this->app()->make(ReplyContactByOperatorInterface::class);
+        $this->assertInstanceOf(ReplyContactByOperator::class, $replyContactByOperator);
     }
 
     /**
@@ -78,7 +79,7 @@ class ReplyContactTest extends TestCase
 実装可否や時期が決まり次第、サイト内のお知らせ等でご案内いたします。
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
-        $input = new ReplyContactInput(
+        $input = new ReplyContactByOperatorInput(
             $contactIdentifier,
             new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
@@ -109,6 +110,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            ReplyType::OPERATOR,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -120,12 +122,14 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                ReplyType $replyType,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyType === ReplyType::OPERATOR
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
@@ -149,6 +153,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() instanceof DateTimeImmutable
                     && $saved->failedAt() === null
+                    && $saved->replyType() === ReplyType::OPERATOR
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
@@ -158,7 +163,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
-        $useCase = $this->app()->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactByOperatorInterface::class);
         $useCase->process($input);
     }
 
@@ -171,7 +176,7 @@ class ReplyContactTest extends TestCase
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $input = new ReplyContactInput(
+        $input = new ReplyContactByOperatorInput(
             $contactIdentifier,
             new PrincipalIdentifier((string) $principalIdentifier),
             '返信内容',
@@ -205,7 +210,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(UnauthorizedException::class);
-        $useCase = $this->app()->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactByOperatorInterface::class);
         $useCase->process($input);
     }
 
@@ -222,7 +227,7 @@ class ReplyContactTest extends TestCase
 
 内容を確認のうえ、担当より折り返しご連絡いたします。
 今しばらくお待ちください。';
-        $input = new ReplyContactInput(
+        $input = new ReplyContactByOperatorInput(
             $contactIdentifier,
             new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
@@ -250,7 +255,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(ContactNotFoundException::class);
-        $useCase = $this->app()->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactByOperatorInterface::class);
         $useCase->process($input);
     }
 
@@ -277,7 +282,7 @@ class ReplyContactTest extends TestCase
 
 ご連絡いただいた件につきまして、現在確認を進めております。
 恐れ入りますが、回答まで今しばらくお時間をいただけますと幸いです。';
-        $input = new ReplyContactInput(
+        $input = new ReplyContactByOperatorInput(
             $contactIdentifier,
             new PrincipalIdentifier((string) $principalIdentifier),
             $expectedContent,
@@ -304,6 +309,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            ReplyType::OPERATOR,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -315,12 +321,14 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                ReplyType $replyType,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyType === ReplyType::OPERATOR
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
@@ -344,6 +352,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() === null
                     && $saved->failedAt() instanceof DateTimeImmutable
+                    && $saved->replyType() === ReplyType::OPERATOR
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
@@ -354,7 +363,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(FailedToSendEmailException::class);
-        $useCase = $this->app()->make(ReplyContactInterface::class);
+        $useCase = $this->app()->make(ReplyContactByOperatorInterface::class);
         $useCase->process($input);
     }
 

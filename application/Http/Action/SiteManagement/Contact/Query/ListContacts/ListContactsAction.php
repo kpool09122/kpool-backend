@@ -38,6 +38,7 @@ readonly class ListContactsAction
                 $request->hasReply(),
                 $request->perPage(),
                 $request->page(),
+                $request->isPending(),
             ), $output);
         } catch (UnauthorizedException $e) {
             $this->logger->error((string) $e);

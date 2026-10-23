@@ -15,6 +15,7 @@ readonly class ContactReadModel
         private array $replyIdentifiers,
         private string $createdAt,
         private string $content,
+        private ?bool $isPending = null,
     ) {
     }
 
@@ -26,7 +27,8 @@ readonly class ContactReadModel
      *     name: string,
      *     replyIdentifiers: array<int, string>,
      *     createdAt: string,
-     *     content: string
+     *     content: string,
+     *     isPending?: bool
      * }
      */
     public function toArray(): array
@@ -39,6 +41,7 @@ readonly class ContactReadModel
             'replyIdentifiers' => $this->replyIdentifiers,
             'createdAt' => $this->createdAt,
             'content' => $this->content,
+            ...($this->isPending === null ? [] : ['isPending' => $this->isPending]),
         ];
     }
 }

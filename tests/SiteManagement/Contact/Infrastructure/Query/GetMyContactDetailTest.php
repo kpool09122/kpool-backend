@@ -52,11 +52,20 @@ class GetMyContactDetailTest extends TestCase
             $encryptionService,
         );
 
+        DB::flushQueryLog();
+        DB::enableQueryLog();
         $output = new GetMyContactDetailOutput();
         $this->app()->make(GetMyContactDetailInterface::class)->process(
             new GetMyContactDetailInput($principalIdentifier, new ContactIdentifier($contactIdentifier)),
             $output,
         );
+
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(0, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"') || str_contains($query['query'], 'from "site_management_principals"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $this->assertCount(1, $replyQueries);
+        $this->assertStringNotContainsString('principal_identifier', $replyQueries[0]['query']);
 
         $this->assertSame([
             'contactIdentifier' => $contactIdentifier,
@@ -69,6 +78,8 @@ class GetMyContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $sentReply->replyIdentifier(),
                 'content' => '送信成功した返信',
                 'sentAt' => (new DateTimeImmutable('2026-08-17 10:00:00'))->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => (new DateTimeImmutable('2026-08-17 09:00:00'))->format(DateTimeInterface::ATOM),
             ]],
         ], $output->toArray());
     }

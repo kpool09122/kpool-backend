@@ -12,6 +12,7 @@ use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterf
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 final class ReplyContactRepository implements ReplyContactRepositoryInterface
@@ -19,6 +20,16 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
     public function __construct(
         private readonly EncryptionServiceInterface $encryptionService,
     ) {
+    }
+
+    public function hasSuccessfulOperatorReply(ContactIdentifier $contactIdentifier): bool
+    {
+        return ContactReplyModel::query()
+            ->where('contact_id', (string) $contactIdentifier)
+            ->where('reply_type', ReplyType::OPERATOR->value)
+            ->whereNotNull('sent_at')
+            ->whereNull('failed_at')
+            ->exists();
     }
 
     public function save(ReplyCotact $replyCotact): void
@@ -29,6 +40,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             ],
             [
                 'contact_id' => (string)$replyCotact->contactIdentifier(),
+                'reply_type' => $replyCotact->replyType()->value,
                 'principal_identifier' => $replyCotact->principalIdentifier() !== null
                     ? (string)$replyCotact->principalIdentifier()
                     : null,
@@ -60,6 +72,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             $model->sent_at?->toDateTimeImmutable(),
             $model->failed_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
+            ReplyType::from($model->reply_type),
         );
     }
 }
