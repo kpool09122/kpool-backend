@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateAgency;
 
 use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
+use Application\Http\Client\GeminiClient\WikiWritingStylePrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
@@ -68,6 +69,7 @@ final readonly class GenerateAgencyRequest
         };
 
         $metadataInstructions = WikiMetadataPrompt::instructions();
+        $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
@@ -79,6 +81,8 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 
 ## Output Language
 {$outputLanguage} (except for alphabet_name which must be in English/alphabet only)
+
+{$writingStyleInstructions}
 
 ## Required Information
 1. alphabet_name: Agency name in English alphabet only (e.g., "JYP Entertainment", "SM Entertainment"). Use official English name if available, otherwise romanize the name.
