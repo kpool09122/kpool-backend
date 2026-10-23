@@ -111,6 +111,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video2/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -276,6 +277,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -367,6 +369,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -544,6 +547,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -629,6 +633,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/existing/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
             new YouTubeVideoInfo(
                 videoId: 'new',
@@ -637,6 +642,7 @@ class CollectVideoLinksTest extends TestCase
                 thumbnailUrl: 'https://i.ytimg.com/vi/new/hqdefault.jpg',
                 videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
+                durationSeconds: null,
             ),
         ];
 
@@ -651,6 +657,7 @@ class CollectVideoLinksTest extends TestCase
             null,
             1,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
@@ -746,6 +753,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
             $displayOrder,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
     }
 }

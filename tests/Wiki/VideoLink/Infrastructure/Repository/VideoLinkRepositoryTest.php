@@ -209,6 +209,7 @@ class VideoLinkRepositoryTest extends TestCase
             null,
             1,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -256,6 +257,7 @@ class VideoLinkRepositoryTest extends TestCase
             null,
             2,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);

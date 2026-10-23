@@ -24,7 +24,7 @@ class VideoLink
         private ?DateTimeImmutable           $publishedAt,
         private int                          $displayOrder,
         private readonly DateTimeImmutable   $createdAt,
-        private ?int $durationSeconds = null,
+        private ?int $durationSeconds,
     ) {
     }
 

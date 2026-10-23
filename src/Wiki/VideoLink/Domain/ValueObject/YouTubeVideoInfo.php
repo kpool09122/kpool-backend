@@ -15,7 +15,7 @@ readonly class YouTubeVideoInfo
         private string $thumbnailUrl,
         private VideoUsage $videoUsage,
         private DateTimeImmutable $publishedAt,
-        private ?int $durationSeconds = null,
+        private ?int $durationSeconds,
     ) {
     }
 

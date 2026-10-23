@@ -25,6 +25,7 @@ class YouTubeVideoInfoTest extends TestCase
             thumbnailUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
             videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
             publishedAt: $publishedAt,
+            durationSeconds: null,
         );
 
         $this->assertSame('dQw4w9WgXcQ', $videoInfo->videoId());
@@ -47,6 +48,7 @@ class YouTubeVideoInfoTest extends TestCase
             thumbnailUrl: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg',
             videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
             publishedAt: new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $this->assertSame(VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, $videoInfo->videoUsage());
@@ -65,6 +67,7 @@ class YouTubeVideoInfoTest extends TestCase
             thumbnailUrl: 'https://i.ytimg.com/vi/xyz789/hqdefault.jpg',
             videoUsage: VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR,
             publishedAt: new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $this->assertSame(VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, $videoInfo->videoUsage());

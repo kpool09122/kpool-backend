@@ -171,7 +171,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
 
     private function video(string $title): YouTubeVideoInfo
     {
-        return new YouTubeVideoInfo($title, $title, 'https://www.youtube.com/watch?v='.$title, 'https://i.ytimg.com/'.$title.'.jpg', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new DateTimeImmutable('2026-01-01'));
+        return new YouTubeVideoInfo($title, $title, 'https://www.youtube.com/watch?v='.$title, 'https://i.ytimg.com/'.$title.'.jpg', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new DateTimeImmutable('2026-01-01'), durationSeconds: null);
     }
 
     /**

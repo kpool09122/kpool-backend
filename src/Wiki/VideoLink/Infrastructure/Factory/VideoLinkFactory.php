@@ -40,6 +40,7 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
             null,
             $displayOrder,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
     }
 }

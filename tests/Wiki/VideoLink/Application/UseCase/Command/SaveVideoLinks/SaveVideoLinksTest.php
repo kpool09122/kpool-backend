@@ -84,6 +84,7 @@ class SaveVideoLinksTest extends TestCase
             null,
             $videoLinkData1->displayOrder,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $videoLink2 = new VideoLink(
@@ -97,6 +98,7 @@ class SaveVideoLinksTest extends TestCase
             null,
             $videoLinkData2->displayOrder,
             new DateTimeImmutable(),
+            durationSeconds: null,
         );
 
         $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
