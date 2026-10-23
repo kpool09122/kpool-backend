@@ -43,7 +43,7 @@ readonly class CreateVideoLink implements CreateVideoLinkInterface
         if ($wiki === null || $wiki->resourceType() !== $input->resourceType()) {
             throw new WikiNotFoundException();
         }
-        if (! $this->policyEvaluator->evaluate($principal, Action::SAVE_VIDEO_LINKS, new Resource(type: $wiki->resourceType()))) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE_VIDEO_LINK, new Resource(type: $wiki->resourceType()))) {
             throw new DisallowedException();
         }
         if ($this->videoLinkRepository->findByResourceAndUrls($input->resourceType(), $input->wikiIdentifier(), [(string) $input->url()]) !== []) {

@@ -2584,6 +2584,73 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateVideoLinkRequestBody'
+  /video-link/{videoLinkId}:
+    delete:
+      operationId: VideoLinkOperations_deleteVideoLink
+      description: Delete only the specified video link. Requires an authenticated Wiki collaborator with an active Account/Principal and DELETE_VIDEO_LINK permission. Manual videos may be deleted only by their creator; all three automatically collected video categories may be deleted by any Wiki collaborator. Returns 204 without a body, 403 when forbidden, 404 when missing, and 422 for an invalid identifier. Deletion does not prevent future automatic re-collection.
+      parameters:
+        - name: videoLinkId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki-translation-sets/masters:
     get:
       operationId: WikiTranslationSetOperations_searchTranslationSetMasterWikis
@@ -3461,7 +3528,7 @@ paths:
   /wiki/{language}/{resourceType}/{slug}/videos:
     get:
       operationId: PublicVideoLinkOperations_listVideos
-      description: 'Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.'
+      description: 'Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.'
       parameters:
         - name: language
           in: path
@@ -7876,6 +7943,8 @@ components:
         - thumbnailUrl
         - publishedAt
         - durationSeconds
+        - creatorPrincipalIdentifier
+        - creatorIdentityName
         - videoUsage
       properties:
         videoLinkIdentifier:
@@ -7896,6 +7965,15 @@ components:
           nullable: true
           minimum: 0
           description: Video duration in seconds; null when unknown.
+        creatorPrincipalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        creatorIdentityName:
+          type: string
+          nullable: true
+          description: The creator's current Identity user name. Null for automatically collected videos or when the creator's Principal or Identity no longer exists.
         videoUsage:
           type: string
           enum:

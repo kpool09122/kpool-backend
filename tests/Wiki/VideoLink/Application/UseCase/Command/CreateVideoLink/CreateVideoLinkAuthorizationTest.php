@@ -42,12 +42,19 @@ class CreateVideoLinkAuthorizationTest extends TestCase
         foreach (['Collaborator', 'None', 'Administrator'] as $role) {
             yield $role => [$role, $role === 'Collaborator'];
         }
+        yield 'Collaborator with deletion permission only' => ['Collaborator', false];
     }
 
     #[DataProvider('roles')]
     public function testSeededAuthorizationAndPreservation(string $role, bool $allowed): void
     {
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        if ($role === 'Collaborator' && ! $allowed) {
+            DB::table('wiki_role_policy_attachments')
+                ->where('role_id', DB::table('wiki_roles')->where('name', $role)->value('id'))
+                ->where('policy_id', DB::table('wiki_policies')->where('name', 'GLOBAL_SAVE_VIDEO_LINKS')->value('id'))
+                ->delete();
+        }
         $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalId = new PrincipalIdentifier(StrTestHelper::generateUuid());

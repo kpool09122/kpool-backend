@@ -18,8 +18,8 @@ class ListVideosOutputTest extends TestCase
     public function testSerializesAllFieldsAndReplacesPriorOutput(): void
     {
         $output = new ListVideosOutput();
-        $output->output([new VideoLinkReadModel('id', 'https://www.youtube.com/watch?v=test', 'title', 'https://i.ytimg.com/test.jpg', '2026-01-01T00:00:00+00:00', 'youtube_auto_view_count', 253)]);
-        $this->assertSame(['videos' => [['videoLinkIdentifier' => 'id','url' => 'https://www.youtube.com/watch?v=test','title' => 'title','thumbnailUrl' => 'https://i.ytimg.com/test.jpg','publishedAt' => '2026-01-01T00:00:00+00:00','videoUsage' => 'youtube_auto_view_count','durationSeconds' => 253]]], $output->toArray());
+        $output->output([new VideoLinkReadModel('id', 'https://www.youtube.com/watch?v=test', 'title', 'https://i.ytimg.com/test.jpg', '2026-01-01T00:00:00+00:00', 'music_video', 253, 'creator-id', '作成者')]);
+        $this->assertSame(['videos' => [['videoLinkIdentifier' => 'id','url' => 'https://www.youtube.com/watch?v=test','title' => 'title','thumbnailUrl' => 'https://i.ytimg.com/test.jpg','publishedAt' => '2026-01-01T00:00:00+00:00','videoUsage' => 'music_video','durationSeconds' => 253, 'creatorPrincipalIdentifier' => 'creator-id', 'creatorIdentityName' => '作成者']]], $output->toArray());
         $output->output([]);
         $this->assertSame(['videos' => []], $output->toArray());
     }

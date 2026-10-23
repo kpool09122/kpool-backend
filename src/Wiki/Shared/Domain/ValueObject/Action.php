@@ -18,7 +18,9 @@ enum Action: string
     case ROLLBACK = 'rollback';
     case MERGE = 'merge';
     case AUTOMATIC_CREATE = 'automatic_create';
-    case SAVE_VIDEO_LINKS = 'save_video_links';
+    // 既存DBのアクション値・ポリシー名との互換性を保つため、保存値は旧名を維持する。
+    case CREATE_VIDEO_LINK = 'save_video_links';
+    case DELETE_VIDEO_LINK = 'delete_video_link';
     case SEARCH_FREE_MATERIALS = 'search_free_materials';
     case DELETE = 'delete';
     case HIDE = 'hide';

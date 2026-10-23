@@ -81,6 +81,8 @@ use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurre
 use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
 use Source\Wiki\Principal\Infrastructure\Query\ListPrincipalGroups;
+use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLink;
+use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
@@ -186,6 +188,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ApproveImageInterface::class, ApproveImage::class);
         $this->app->singleton(RejectImageInterface::class, RejectImage::class);
         $this->app->singleton(DeleteImageInterface::class, DeleteImage::class);
+        $this->app->singleton(DeleteVideoLinkInterface::class, DeleteVideoLink::class);
         $this->app->singleton(UnhideImageInterface::class, UnhideImage::class);
         $this->app->singleton(RequestImageDeletionInterface::class, RequestImageDeletion::class);
         $this->app->singleton(ApproveImageDeletionInterface::class, ApproveImageDeletion::class);

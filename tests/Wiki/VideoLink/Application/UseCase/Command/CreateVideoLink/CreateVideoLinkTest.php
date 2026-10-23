@@ -138,7 +138,7 @@ class CreateVideoLinkTest extends TestCase
         $wikiRepository->shouldReceive('findById')->with($input->wikiIdentifier())->andReturn($wiki);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')->once()->with($principal, Action::SAVE_VIDEO_LINKS, Mockery::on(static fn (Resource $resource): bool => $resource->type() === ResourceType::TALENT))->andReturn($allowed);
+        $policyEvaluator->shouldReceive('evaluate')->once()->with($principal, Action::CREATE_VIDEO_LINK, Mockery::on(static fn (Resource $resource): bool => $resource->type() === ResourceType::TALENT))->andReturn($allowed);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }
