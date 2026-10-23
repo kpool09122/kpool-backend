@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateTalent;
 
 use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
+use Application\Http\Client\GeminiClient\WikiWritingStylePrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
@@ -88,6 +89,7 @@ final readonly class GenerateTalentRequest
         $affiliationContext = $this->buildAffiliationContext();
 
         $metadataInstructions = WikiMetadataPrompt::instructions();
+        $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
@@ -99,6 +101,8 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 
 ## Output Language
 {$outputLanguage} (except for alphabet_name which must be in English/alphabet only)
+
+{$writingStyleInstructions}
 
 ## Required Information
 1. alphabet_name: Talent name in English alphabet only (e.g., "Jimin", "Lisa", "Karina"). Use official English name if available, otherwise romanize the name.
