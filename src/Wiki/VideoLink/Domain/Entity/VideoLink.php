@@ -24,6 +24,7 @@ class VideoLink
         private ?DateTimeImmutable           $publishedAt,
         private int                          $displayOrder,
         private readonly DateTimeImmutable   $createdAt,
+        private ?int $durationSeconds = null,
     ) {
     }
 
@@ -80,6 +81,16 @@ class VideoLink
     public function setThumbnailUrl(?string $thumbnailUrl): void
     {
         $this->thumbnailUrl = $thumbnailUrl;
+    }
+
+    public function durationSeconds(): ?int
+    {
+        return $this->durationSeconds;
+    }
+
+    public function setDurationSeconds(?int $durationSeconds): void
+    {
+        $this->durationSeconds = $durationSeconds;
     }
 
     public function publishedAt(): ?DateTimeImmutable

@@ -55,6 +55,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
                 'title' => $videoLink->title(),
                 'thumbnail_url' => $videoLink->thumbnailUrl(),
                 'published_at' => $videoLink->publishedAt(),
+                'duration_seconds' => $videoLink->durationSeconds(),
                 'display_order' => $videoLink->displayOrder(),
                 'created_at' => $videoLink->createdAt(),
             ],
@@ -135,6 +136,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             $model->published_at?->toDateTimeImmutable(),
             $model->display_order,
             ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
+            $model->duration_seconds,
         );
     }
 }

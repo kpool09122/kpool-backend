@@ -25,7 +25,7 @@ final readonly class GetVideoDetailsResponse
     }
 
     /**
-     * @return array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int}>
+     * @return array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int, durationSeconds: int|null}>
      */
     public function details(): array
     {

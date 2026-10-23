@@ -120,6 +120,7 @@ class YouTubeSearchServiceTest extends TestCase
 
         foreach ($result as $video) {
             $this->assertTrue($video->videoUsage()->isAutoCollected());
+            $this->assertSame(253, $video->durationSeconds());
         }
     }
 
@@ -367,6 +368,7 @@ class YouTubeSearchServiceTest extends TestCase
                         'default' => ['url' => $detail['thumbnailUrl']],
                     ],
                 ],
+                'contentDetails' => ['duration' => 'PT4M13S'],
                 'statistics' => [
                     'viewCount' => (string) $detail['viewCount'],
                     'likeCount' => (string) $detail['likeCount'],

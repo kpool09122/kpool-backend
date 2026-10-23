@@ -15,6 +15,7 @@ readonly class YouTubeVideoInfo
         private string $thumbnailUrl,
         private VideoUsage $videoUsage,
         private DateTimeImmutable $publishedAt,
+        private ?int $durationSeconds = null,
     ) {
     }
 
@@ -41,6 +42,11 @@ readonly class YouTubeVideoInfo
     public function videoUsage(): VideoUsage
     {
         return $this->videoUsage;
+    }
+
+    public function durationSeconds(): ?int
+    {
+        return $this->durationSeconds;
     }
 
     public function publishedAt(): DateTimeImmutable
