@@ -20,6 +20,7 @@ use Override;
  * @property string|null $thumbnail_url
  * @property Carbon|null $published_at
  * @property int|null $duration_seconds
+ * @property string|null $creator_principal_id
  * @property int $display_order
  * @property Carbon $created_at
  */
@@ -33,10 +34,11 @@ use Override;
     'thumbnail_url',
     'published_at',
     'duration_seconds',
+    'creator_principal_id',
     'display_order',
     'created_at',
 ])]
-#[Table(name: 'video_links', keyType: 'string')]
+#[Table(name: 'wiki_video_links', keyType: 'string')]
 class VideoLink extends Model
 {
     #[Override]

@@ -22,8 +22,11 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
@@ -156,34 +159,32 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($existingVideoLink);
         $videoLinkRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn (VideoLink $videoLink): bool => $videoLink->durationSeconds() === 253));
+            ->with(Mockery::on(static fn (VideoLink $videoLink): bool =>
+                $videoLink->durationSeconds()?->value() === 253
+                && $videoLink->resourceType() === ResourceType::TALENT
+                && (string) $videoLink->wikiIdentifier() === $resourceId
+                && (string) $videoLink->url() === $videos[0]->url()
+                && (string) $videoLink->title() === (string) $videos[0]->title()
+                && $videoLink->videoUsage() === $videos[0]->videoUsage()
+                && $videoLink->displayOrder()->value() === 6
+                && (string) $videoLink->thumbnailUrl() === $videos[0]->thumbnailUrl()
+                && $videoLink->publishedAt() === $videos[0]->publishedAt()
+                && $videoLink->creatorPrincipalIdentifier() === null));
         $videoLinkRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn (VideoLink $videoLink): bool => $videoLink->durationSeconds() === null));
+            ->with(Mockery::on(static fn (VideoLink $videoLink): bool =>
+                $videoLink->durationSeconds()?->value() === null
+                && $videoLink->resourceType() === ResourceType::TALENT
+                && (string) $videoLink->wikiIdentifier() === $resourceId
+                && (string) $videoLink->url() === $videos[1]->url()
+                && (string) $videoLink->title() === $videos[1]->title()
+                && $videoLink->videoUsage() === $videos[1]->videoUsage()
+                && $videoLink->displayOrder()->value() === 7
+                && (string) $videoLink->thumbnailUrl() === $videos[1]->thumbnailUrl()
+                && $videoLink->publishedAt() === $videos[1]->publishedAt()
+                && $videoLink->creatorPrincipalIdentifier() === null));
 
-        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                ResourceType::TALENT,
-                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
-                Mockery::type(ExternalContentLink::class),
-                VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-                'Test Video 1',
-                6,
-            )
-            ->andReturn($this->createDummyVideoLink($resourceId, 6));
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                ResourceType::TALENT,
-                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
-                Mockery::type(ExternalContentLink::class),
-                VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
-                'Test Video 2',
-                7,
-            )
-            ->andReturn($this->createDummyVideoLink($resourceId, 7));
+        $videoLinkFactory = $this->app()->make(VideoLinkFactoryInterface::class);
 
         $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
@@ -312,18 +313,7 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
-        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                ResourceType::GROUP,
-                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
-                Mockery::type(ExternalContentLink::class),
-                VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-                'Test Video 1',
-                1,
-            )
-            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+        $videoLinkFactory = $this->app()->make(VideoLinkFactoryInterface::class);
 
         $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
@@ -404,18 +394,7 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
-        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                ResourceType::SONG,
-                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
-                Mockery::type(ExternalContentLink::class),
-                VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-                'Test Song Video 1',
-                1,
-            )
-            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+        $videoLinkFactory = $this->app()->make(VideoLinkFactoryInterface::class);
 
         $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
@@ -580,10 +559,7 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
-        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+        $videoLinkFactory = $this->app()->make(VideoLinkFactoryInterface::class);
 
         $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
@@ -652,10 +628,10 @@ class CollectVideoLinksTest extends TestCase
             new WikiIdentifier($resourceId),
             new ExternalContentLink($existingUrl),
             VideoUsage::MUSIC_VIDEO,
-            'Existing Video',
+            new VideoTitle('Existing Video'),
             null,
             null,
-            1,
+            new DisplayOrder(1),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -694,18 +670,7 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
-        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
-        $videoLinkFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                ResourceType::TALENT,
-                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
-                Mockery::on(static fn (ExternalContentLink $url): bool => (string) $url === $newUrl),
-                VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
-                'New Video',
-                1,
-            )
-            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+        $videoLinkFactory = $this->app()->make(VideoLinkFactoryInterface::class);
 
         $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
@@ -748,10 +713,10 @@ class CollectVideoLinksTest extends TestCase
             new WikiIdentifier($resourceId),
             new ExternalContentLink('https://www.youtube.com/watch?v=test'),
             VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-            'Test Video',
-            'https://i.ytimg.com/vi/test/hqdefault.jpg',
+            new VideoTitle('Test Video'),
+            new ThumbnailUrl('https://i.ytimg.com/vi/test/hqdefault.jpg'),
             new DateTimeImmutable(),
-            $displayOrder,
+            new DisplayOrder($displayOrder),
             new DateTimeImmutable(),
             durationSeconds: null,
         );

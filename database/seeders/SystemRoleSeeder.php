@@ -181,6 +181,7 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_CREATE',
             'GLOBAL_EDIT',
             'GLOBAL_SUBMIT',
+            'GLOBAL_SAVE_VIDEO_LINKS',
             'OWN_WIKI_DELETE',
             'OWN_WIKI_WITHDRAW',
         ];

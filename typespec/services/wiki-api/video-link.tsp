@@ -4,29 +4,25 @@ using KPool.Common;
 namespace KPool.WikiApi;
 
 @doc("Input payload for a single video link.")
-model VideoLinkInput {
+model CreateVideoLinkRequestBody {
+  resourceType: "agency" | "group" | "song" | "talent";
+  wikiIdentifier: Uuid;
   @doc("Video URL.")
   url: string;
   @doc("Usage category of the video.")
-  videoUsage: string;
+  videoUsage: "music_video" | "live" | "interview" | "behind_the_scenes" | "cover" | "collaboration" | "short" | "other";
   @doc("Video title.")
-  title?: string;
+  @maxLength(255)
+  title: string;
   @doc("Display order of the video link.")
+  @minValue(0)
   displayOrder: int32;
+  @minValue(0)
+  durationSeconds: int32;
   @doc("Thumbnail image URL.")
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   @doc("Publication timestamp of the video.")
-  publishedAt?: string;
-}
-
-@doc("Request body for saving video links.")
-model SaveVideoLinksRequestBody {
-  @doc("Resource type that the video links belong to.")
-  resourceType: string;
-  @doc("Wiki identifier that the video links belong to.")
-  wikiIdentifier: Uuid;
-  @doc("Video links to save.")
-  videoLinks: VideoLinkInput[];
+  publishedAt?: string | null;
 }
 
 @doc("A public wiki video. Currently, only automatically collected YouTube videos are included.")
@@ -59,9 +55,9 @@ interface PublicVideoLinkOperations {
 @route("/video-link")
 interface VideoLinkOperations {
   @post
-  @route("/save")
-  @doc("Save video links for a wiki.")
-  saveVideoLinks(
-    @body body: SaveVideoLinksRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  @route("/create")
+  @doc("Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. durationSeconds is a non-negative integer obtained by the frontend player; zero is allowed. The creator principal identifier is determined on the server. Duplicate URLs within the wiki return 409.")
+  createVideoLink(
+    @body body: CreateVideoLinkRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }

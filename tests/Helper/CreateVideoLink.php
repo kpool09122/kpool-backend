@@ -19,12 +19,14 @@ class CreateVideoLink
      *     title?: string,
      *     thumbnail_url?: string|null,
      *     published_at?: string|null,
+     *     duration_seconds?: int|null,
+     *     creator_principal_id?: string|null,
      *     display_order?: int,
      * } $overrides
      */
     public static function create(string $videoLinkId, array $overrides = []): void
     {
-        DB::table('video_links')->insert([
+        DB::table('wiki_video_links')->insert([
             'id' => $videoLinkId,
             'resource_type' => $overrides['resource_type'] ?? ResourceType::TALENT->value,
             'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
@@ -37,6 +39,8 @@ class CreateVideoLink
             'thumbnail_url' => $overrides['thumbnail_url'] ?? null,
             'published_at' => $overrides['published_at'] ?? null,
             'display_order' => $overrides['display_order'] ?? 1,
+            'duration_seconds' => $overrides['duration_seconds'] ?? null,
+            'creator_principal_id' => $overrides['creator_principal_id'] ?? null,
             'created_at' => now(),
         ]);
     }

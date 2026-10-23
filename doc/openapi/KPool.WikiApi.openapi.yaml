@@ -2510,14 +2510,38 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AttachPolicyToRoleRequestBody'
-  /video-link/save:
+  /video-link/create:
     post:
-      operationId: VideoLinkOperations_saveVideoLinks
-      description: Save video links for a wiki.
+      operationId: VideoLinkOperations_createVideoLink
+      description: Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. durationSeconds is a non-negative integer obtained by the frontend player; zero is allowed. The creator principal identifier is determined on the server. Duplicate URLs within the wiki return 409.
       parameters: []
       responses:
         '204':
           description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '419':
           description: Client error
           content:
@@ -2559,7 +2583,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SaveVideoLinksRequestBody'
+              $ref: '#/components/schemas/CreateVideoLinkRequestBody'
   /wiki-translation-sets/masters:
     get:
       operationId: WikiTranslationSetOperations_searchTranslationSetMasterWikis
@@ -5056,6 +5080,63 @@ components:
           nullable: true
           description: Account identifier. Omit or null for a system/global role.
       description: Request body for creating a role.
+    CreateVideoLinkRequestBody:
+      type: object
+      required:
+        - resourceType
+        - wikiIdentifier
+        - url
+        - videoUsage
+        - title
+        - displayOrder
+        - durationSeconds
+      properties:
+        resourceType:
+          type: string
+          enum:
+            - agency
+            - group
+            - song
+            - talent
+        wikiIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        url:
+          type: string
+          description: Video URL.
+        videoUsage:
+          type: string
+          enum:
+            - music_video
+            - live
+            - interview
+            - behind_the_scenes
+            - cover
+            - collaboration
+            - short
+            - other
+          description: Usage category of the video.
+        title:
+          type: string
+          maxLength: 255
+          description: Video title.
+        displayOrder:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Display order of the video link.
+        durationSeconds:
+          type: integer
+          format: int32
+          minimum: 0
+        thumbnailUrl:
+          type: string
+          nullable: true
+          description: Thumbnail image URL.
+        publishedAt:
+          type: string
+          nullable: true
+          description: Publication timestamp of the video.
+      description: Input payload for a single video link.
     CreateWikiRequestBody:
       type: object
       required:
@@ -6668,26 +6749,6 @@ components:
             $ref: '#/components/schemas/PublishedWikiSummary'
           description: Published wikis produced by the rollback action.
       description: Response body for wiki rollback results.
-    SaveVideoLinksRequestBody:
-      type: object
-      required:
-        - resourceType
-        - wikiIdentifier
-        - videoLinks
-      properties:
-        resourceType:
-          type: string
-          description: Resource type that the video links belong to.
-        wikiIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Wiki identifier that the video links belong to.
-        videoLinks:
-          type: array
-          items:
-            $ref: '#/components/schemas/VideoLinkInput'
-          description: Video links to save.
-      description: Request body for saving video links.
     SearchFreeMaterialsRequestBody:
       type: object
       required:
@@ -7824,33 +7885,6 @@ components:
             - youtube_auto_like_count
             - youtube_auto_recent_popular
       description: A public wiki video. Currently, only automatically collected YouTube videos are included.
-    VideoLinkInput:
-      type: object
-      required:
-        - url
-        - videoUsage
-        - displayOrder
-      properties:
-        url:
-          type: string
-          description: Video URL.
-        videoUsage:
-          type: string
-          description: Usage category of the video.
-        title:
-          type: string
-          description: Video title.
-        displayOrder:
-          type: integer
-          format: int32
-          description: Display order of the video link.
-        thumbnailUrl:
-          type: string
-          description: Thumbnail image URL.
-        publishedAt:
-          type: string
-          description: Publication timestamp of the video.
-      description: Input payload for a single video link.
     WikiAgencySummary:
       type: object
       required:

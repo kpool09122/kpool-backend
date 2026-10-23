@@ -6,10 +6,15 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
+use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use UnexpectedValueException;
@@ -52,11 +57,12 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
                 'wiki_id' => (string) $videoLink->wikiIdentifier(),
                 'url' => (string) $videoLink->url(),
                 'video_usage' => $videoLink->videoUsage()->value,
-                'title' => $videoLink->title(),
-                'thumbnail_url' => $videoLink->thumbnailUrl(),
+                'title' => (string) $videoLink->title(),
+                'thumbnail_url' => $videoLink->thumbnailUrl() !== null ? (string) $videoLink->thumbnailUrl() : null,
                 'published_at' => $videoLink->publishedAt(),
-                'duration_seconds' => $videoLink->durationSeconds(),
-                'display_order' => $videoLink->displayOrder(),
+                'duration_seconds' => $videoLink->durationSeconds()?->value(),
+                'creator_principal_id' => $videoLink->creatorPrincipalIdentifier() !== null ? (string) $videoLink->creatorPrincipalIdentifier() : null,
+                'display_order' => $videoLink->displayOrder()->value(),
                 'created_at' => $videoLink->createdAt(),
             ],
         );
@@ -131,12 +137,13 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             new WikiIdentifier($model->wiki_id),
             new ExternalContentLink($model->url),
             VideoUsage::from($model->video_usage),
-            $model->title,
-            $model->thumbnail_url,
+            new VideoTitle($model->title),
+            $model->thumbnail_url !== null ? new ThumbnailUrl($model->thumbnail_url) : null,
             $model->published_at?->toDateTimeImmutable(),
-            $model->display_order,
+            new DisplayOrder($model->display_order),
             ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
-            $model->duration_seconds,
+            $model->duration_seconds !== null ? new DurationSeconds($model->duration_seconds) : null,
+            $model->creator_principal_id !== null ? new PrincipalIdentifier($model->creator_principal_id) : null,
         );
     }
 }

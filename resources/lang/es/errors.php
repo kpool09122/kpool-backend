@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'video_link_already_exists' => 'Ya existe un vídeo con esta URL en este wiki.',
+    'invalid_video_link' => 'Los datos del vídeo no son válidos.',
     'published_wiki_not_found' => 'No se encontró el wiki publicado especificado.',
     'invalid_video_list_query' => 'La consulta de la lista de vídeos no es válida.',
     'invalid_material_search_context' => 'El contexto de búsqueda de imágenes no es válido.',
