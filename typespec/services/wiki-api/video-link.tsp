@@ -26,6 +26,9 @@ model CreateVideoLinkRequestBody {
 @doc("A public wiki video. Includes manually created and automatically collected videos.")
 model Video {
   videoLinkIdentifier: Uuid;
+  @doc("Number of k-pool likes for this VideoLink, not YouTube likes. No personal state is included.")
+  @minValue(0)
+  likeCount: int32;
   url: string;
   title: string;
   thumbnailUrl: string | null;
@@ -59,6 +62,33 @@ interface PublicVideoLinkOperations {
     @minValue(0)
     @query maxDurationSeconds?: int32 | null,
   ): ListVideosResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
+
+interface VideoLinkLikeOperations {
+  @post
+  @route("/video-link/{videoLinkId}/like")
+  @doc("Like a manual or automatically collected VideoLink as the authenticated Wiki Principal. Requires LIKE_VIDEO_LINK permission for its resource type. Returns 409 if the Principal has already liked the VideoLink.")
+  likeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @delete
+  @route("/video-link/{videoLinkId}/like")
+  @doc("Remove only the authenticated Wiki Principal's like. Requires UNLIKE_VIDEO_LINK permission. Repeated removal is idempotent (204); a missing VideoLink returns 404.")
+  unlikeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @get
+  @route("/my/video-link-likes")
+  @doc("Return only requested VideoLink IDs liked by the authenticated active Wiki Principal, sorted by identifier. Unknown or unliked IDs are omitted; zero matches returns an empty array. Accepts 1-100 IDs per request; split larger batches. Does not accept a principal ID.")
+  listMyVideoLinkLikes(
+    @minItems(1)
+    @maxItems(100)
+    @query(#{name: "videoLinkIds[]", explode: true}) videoLinkIds: Uuid[],
+  ): ListMyVideoLinkLikesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
+model ListMyVideoLinkLikesResponse {
+  @statusCode statusCode: 200;
+  @body body: { likedVideoLinkIdentifiers: Uuid[]; };
 }
 
 @route("/video-link")

@@ -55,7 +55,11 @@ class SystemPolicySeeder extends Seeder
                 name: 'GLOBAL_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,
                 action: $action,
-                resourceTypes: $action === Action::SEARCH_FREE_MATERIALS ? [ResourceType::IMAGE] : ResourceType::cases(),
+                resourceTypes: match ($action) {
+                    Action::SEARCH_FREE_MATERIALS => [ResourceType::IMAGE],
+                    Action::LIKE_VIDEO_LINK, Action::UNLIKE_VIDEO_LINK => [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG, ResourceType::TALENT],
+                    default => ResourceType::cases(),
+                },
             );
         }
     }

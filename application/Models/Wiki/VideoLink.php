@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Override;
 
 /**
@@ -23,6 +24,7 @@ use Override;
  * @property int|null $duration_seconds
  * @property string|null $creator_principal_id
  * @property Carbon $created_at
+ * @property-read int $likes_count
  * @property-read Principal|null $creatorPrincipal
  */
 #[Fillable([
@@ -53,6 +55,12 @@ class VideoLink extends Model
         'published_at' => 'datetime',
         'created_at' => 'datetime',
     ];
+
+    /** @return HasMany<VideoLinkLike, $this> */
+    public function likes(): HasMany
+    {
+        return $this->hasMany(VideoLinkLike::class, 'video_link_id', 'id');
+    }
 
     /** @return BelongsTo<Principal, $this> */
     public function creatorPrincipal(): BelongsTo

@@ -163,6 +163,8 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_AUTOMATIC_CREATE',
             'GLOBAL_SAVE_VIDEO_LINKS',
             'GLOBAL_DELETE_VIDEO_LINK',
+            'GLOBAL_LIKE_VIDEO_LINK',
+            'GLOBAL_UNLIKE_VIDEO_LINK',
             'GLOBAL_SEARCH_FREE_MATERIALS',
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
@@ -184,6 +186,8 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_SUBMIT',
             'GLOBAL_SAVE_VIDEO_LINKS',
             'GLOBAL_DELETE_VIDEO_LINK',
+            'GLOBAL_LIKE_VIDEO_LINK',
+            'GLOBAL_UNLIKE_VIDEO_LINK',
             'OWN_WIKI_DELETE',
             'OWN_WIKI_WITHDRAW',
         ];

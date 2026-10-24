@@ -26,6 +26,8 @@ class ActionTest extends TestCase
             'AUTOMATIC_CREATE' => 'automatic_create',
             'CREATE_VIDEO_LINK' => 'save_video_links',
             'DELETE_VIDEO_LINK' => 'delete_video_link',
+            'LIKE_VIDEO_LINK' => 'like_video_link',
+            'UNLIKE_VIDEO_LINK' => 'unlike_video_link',
             'SEARCH_FREE_MATERIALS' => 'search_free_materials',
             'DELETE' => 'delete',
             'HIDE' => 'hide',
