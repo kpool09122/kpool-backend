@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -19,10 +18,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -65,7 +64,7 @@ class CreateVideoLinkAuthorizationTest extends TestCase
             CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => (string) $wikiId, 'resource_type' => ResourceType::TALENT->value, 'url' => 'https://example.com/' . $usage->value, 'video_usage' => $usage->value]);
         }
         $before = DB::table('wiki_video_links')->orderBy('id')->get()->toArray();
-        $input = new CreateVideoLinkInput($principalId, ResourceType::TALENT, $wikiId, new ExternalContentLink('https://example.com/new'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DisplayOrder(1), new DurationSeconds(253));
+        $input = new CreateVideoLinkInput($principalId, ResourceType::TALENT, $wikiId, new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DurationSeconds(253));
         if (! $allowed) {
             try {
                 $this->app()->make(CreateVideoLinkInterface::class)->process($input);
@@ -82,7 +81,7 @@ class CreateVideoLinkAuthorizationTest extends TestCase
         foreach ($before as $row) {
             self::assertEquals($row, DB::table('wiki_video_links')->where('id', $row->id)->first());
         }
-        $videos = $this->app()->make(VideoLinkRepositoryInterface::class)->findByResourceAndUrls(ResourceType::TALENT, $wikiId, ['https://example.com/new']);
+        $videos = $this->app()->make(VideoLinkRepositoryInterface::class)->findByResourceAndUrls(ResourceType::TALENT, $wikiId, ['https://www.youtube.com/watch?v=Os_heh8vPfs']);
         self::assertCount(1, $videos);
         self::assertSame((string) $principalId, (string) $videos[0]->creatorPrincipalIdentifier());
         self::assertSame(253, $videos[0]->durationSeconds()?->value());

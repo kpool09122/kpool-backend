@@ -14,7 +14,6 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
@@ -105,13 +104,6 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             );
             $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
 
-            $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
-                $status->resourceType(),
-                $status->wikiIdentifier(),
-            );
-            $maxDisplayOrder = $lastVideoLink?->displayOrder()->value() ?? 0;
-
-            $savedCount = 0;
             foreach ($videos as $video) {
                 if (in_array($video->url(), $existingUrls, true)) {
                     continue;
@@ -123,14 +115,12 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
                     new ExternalContentLink($video->url()),
                     $video->videoUsage(),
                     new VideoTitle($video->title()),
-                    new DisplayOrder($maxDisplayOrder + $savedCount + 1),
                     new ThumbnailUrl($video->thumbnailUrl()),
                     $video->publishedAt(),
                     $video->durationSeconds() !== null ? new DurationSeconds($video->durationSeconds()) : null,
                 );
 
                 $this->videoLinkRepository->save($videoLink);
-                $savedCount++;
             }
 
             $updatedStatus = clone $status;

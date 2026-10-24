@@ -12,6 +12,7 @@ class CreateVideoLink
 {
     /**
      * @param array{
+     *     created_at?: string,
      *     resource_type?: string,
      *     wiki_id?: string,
      *     url?: string,
@@ -21,7 +22,6 @@ class CreateVideoLink
      *     published_at?: string|null,
      *     duration_seconds?: int|null,
      *     creator_principal_id?: string|null,
-     *     display_order?: int,
      * } $overrides
      */
     public static function create(string $videoLinkId, array $overrides = []): void
@@ -38,10 +38,9 @@ class CreateVideoLink
             'title' => $overrides['title'] ?? 'Test Video',
             'thumbnail_url' => $overrides['thumbnail_url'] ?? null,
             'published_at' => $overrides['published_at'] ?? null,
-            'display_order' => $overrides['display_order'] ?? 1,
             'duration_seconds' => $overrides['duration_seconds'] ?? null,
             'creator_principal_id' => $overrides['creator_principal_id'] ?? null,
-            'created_at' => now(),
+            'created_at' => $overrides['created_at'] ?? now(),
         ]);
     }
 }

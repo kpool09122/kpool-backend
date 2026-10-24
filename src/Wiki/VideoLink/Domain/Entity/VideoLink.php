@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
@@ -27,7 +26,6 @@ readonly class VideoLink
         private VideoTitle $title,
         private ?ThumbnailUrl $thumbnailUrl,
         private ?DateTimeImmutable $publishedAt,
-        private DisplayOrder $displayOrder,
         private DateTimeImmutable $createdAt,
         private ?DurationSeconds $durationSeconds,
         private ?PrincipalIdentifier $creatorPrincipalIdentifier = null,
@@ -77,11 +75,6 @@ readonly class VideoLink
     public function publishedAt(): ?DateTimeImmutable
     {
         return $this->publishedAt;
-    }
-
-    public function displayOrder(): DisplayOrder
-    {
-        return $this->displayOrder;
     }
 
     public function creatorPrincipalIdentifier(): ?PrincipalIdentifier

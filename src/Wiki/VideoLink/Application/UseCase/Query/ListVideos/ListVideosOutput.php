@@ -17,7 +17,7 @@ class ListVideosOutput implements ListVideosOutputPort
         $this->videos = $videos;
     }
 
-    /** @return array{videos: list<array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,displayOrder:int,videoUsage:string}>} */
+    /** @return array{videos: list<array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int}>} */
     public function toArray(): array
     {
         return ['videos' => array_map(static fn (VideoLinkReadModel $video): array => $video->toArray(), $this->videos)];

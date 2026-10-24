@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
@@ -24,7 +23,6 @@ interface VideoLinkFactoryInterface
         ExternalContentLink $url,
         VideoUsage $videoUsage,
         VideoTitle $title,
-        DisplayOrder $displayOrder,
         ?ThumbnailUrl $thumbnailUrl = null,
         ?DateTimeImmutable $publishedAt = null,
         ?DurationSeconds $durationSeconds = null,

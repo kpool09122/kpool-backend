@@ -10,7 +10,6 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
@@ -42,7 +41,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
         $models = VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
             ->where('wiki_id', (string) $wikiIdentifier)
-            ->orderBy('display_order')
+            ->orderByDesc('created_at')->orderBy('id')
             ->get();
 
         return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->all();
@@ -62,7 +61,6 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
                 'published_at' => $videoLink->publishedAt(),
                 'duration_seconds' => $videoLink->durationSeconds()?->value(),
                 'creator_principal_id' => $videoLink->creatorPrincipalIdentifier() !== null ? (string) $videoLink->creatorPrincipalIdentifier() : null,
-                'display_order' => $videoLink->displayOrder()->value(),
                 'created_at' => $videoLink->createdAt(),
             ],
         );
@@ -98,17 +96,6 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->delete();
     }
 
-    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): ?VideoLink
-    {
-        $model = VideoLinkModel::query()
-            ->where('resource_type', $resourceType->value)
-            ->where('wiki_id', (string) $resourceIdentifier)
-            ->orderByDesc('display_order')
-            ->first();
-
-        return $model !== null ? $this->toEntity($model) : null;
-    }
-
     /**
      * @param string[] $urls
      *
@@ -140,7 +127,6 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             new VideoTitle($model->title),
             $model->thumbnail_url !== null ? new ThumbnailUrl($model->thumbnail_url) : null,
             $model->published_at?->toDateTimeImmutable(),
-            new DisplayOrder($model->display_order),
             ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
             $model->duration_seconds !== null ? new DurationSeconds($model->duration_seconds) : null,
             $model->creator_principal_id !== null ? new PrincipalIdentifier($model->creator_principal_id) : null,

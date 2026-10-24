@@ -21,7 +21,7 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListVideosTest extends TestCase
 {
-    public function testReturnsOnlyRequestedPublishedWikiAutoVideosInStableOrder(): void
+    public function testReturnsManualAndAutomaticVideosForRequestedPublishedWikiInStableOrder(): void
     {
         $id = StrTestHelper::generateUuid();
         $other = StrTestHelper::generateUuid();
@@ -30,25 +30,63 @@ class ListVideosTest extends TestCase
         $ids = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         sort($ids);
         foreach (['youtube_auto_view_count', 'youtube_auto_like_count', 'youtube_auto_recent_popular'] as $i => $usage) {
-            CreateVideoLink::create($ids[$i], ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => $usage, 'display_order' => $i === 2 ? 1 : 2]);
+            CreateVideoLink::create($ids[$i], ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => $usage, 'created_at' => '2026-10-01 00:00:00']);
         }
-        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => 'music_video']);
+        $manualId = StrTestHelper::generateUuid();
+        CreateVideoLink::create($manualId, ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => 'music_video', 'duration_seconds' => 253, 'created_at' => '2026-10-02 00:00:00']);
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $other, 'resource_type' => 'group', 'video_usage' => 'youtube_auto_view_count']);
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
-        $this->assertSame([$ids[2], $ids[0], $ids[1]], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'displayOrder', 'videoUsage'], array_keys($payload['videos'][0]));
+        $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
+        $this->assertSame(['videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);
+        $this->assertSame(253, $payload['videos'][0]['durationSeconds']);
+        $this->assertNull($payload['videos'][1]['durationSeconds']);
     }
 
-    public function testUnsupportedAgencyReturnsEmptyEvenWithStoredVideos(): void
+    /** @param list<?int> $expectedDurations */
+    #[DataProvider('durationRanges')]
+    public function testFiltersDurationWithInclusiveBounds(?int $minimum, ?int $maximum, array $expectedDurations): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        CreateWiki::create($wikiId, 'group', ['slug' => 'gr-duration', 'language' => 'ja', 'published_at' => '2026-01-01']);
+        foreach ([null, 0, 599, 600, 1200, 2400, 3600] as $duration) {
+            CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $wikiId, 'resource_type' => 'group', 'duration_seconds' => $duration]);
+        }
+        $output = new ListVideosOutput();
+        $input = new ListVideosInput(new Slug('gr-duration'), Language::JAPANESE, ResourceType::GROUP, $minimum, $maximum);
+        $this->app()->make(ListVideosInterface::class)->process($input, $output);
+        $durations = array_column($output->toArray()['videos'], 'durationSeconds');
+        $this->assertEqualsCanonicalizing($expectedDurations, $durations);
+    }
+
+    /** @return list<array{?int, ?int, list<?int>}> */
+    public static function durationRanges(): array
+    {
+        return [
+            [null, null, [null, 0, 599, 600, 1200, 2400, 3600]],
+            [600, null, [600, 1200, 2400, 3600]],
+            [null, 600, [0, 599, 600]],
+            [600, 1200, [600, 1200]],
+            [2400, null, [2400, 3600]],
+            [600, 600, [600]],
+            [0, null, [0, 599, 600, 1200, 2400, 3600]],
+            [null, 0, [0]],
+            [1, 1, []],
+        ];
+    }
+
+    public function testReturnsManuallyCreatedAgencyVideos(): void
     {
         $id = StrTestHelper::generateUuid();
         CreateWiki::create($id, 'agency', ['slug' => 'ag-test','published_at' => '2026-01-01']);
-        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id,'resource_type' => 'agency','video_usage' => 'youtube_auto_view_count']);
-        $this->assertSame(['videos' => []], $this->process('ag-test', Language::KOREAN, ResourceType::AGENCY));
+        $videoId = StrTestHelper::generateUuid();
+        CreateVideoLink::create($videoId, ['wiki_id' => $id, 'resource_type' => 'agency', 'video_usage' => 'music_video']);
+        $payload = $this->process('ag-test', Language::KOREAN, ResourceType::AGENCY);
+        $this->assertSame([$videoId], array_column($payload['videos'], 'videoLinkIdentifier'));
+        $this->assertSame('music_video', $payload['videos'][0]['videoUsage']);
     }
 
     #[DataProvider('resourceTypes')]

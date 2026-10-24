@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
@@ -29,7 +28,7 @@ class VideoLinkTest extends TestCase
         $url = new ExternalContentLink('https://www.youtube.com/watch?v=test');
         $publishedAt = new DateTimeImmutable('2026-10-01');
         $createdAt = new DateTimeImmutable('2026-10-23');
-        $video = new VideoLink($identifier, ResourceType::TALENT, $wikiIdentifier, $url, VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb.jpg'), $publishedAt, new DisplayOrder(1), $createdAt, new DurationSeconds(253), $principalIdentifier);
+        $video = new VideoLink($identifier, ResourceType::TALENT, $wikiIdentifier, $url, VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb.jpg'), $publishedAt, $createdAt, new DurationSeconds(253), $principalIdentifier);
         self::assertSame($identifier, $video->videoLinkIdentifier());
         self::assertSame($wikiIdentifier, $video->wikiIdentifier());
         self::assertSame(ResourceType::TALENT, $video->resourceType());
@@ -38,7 +37,6 @@ class VideoLinkTest extends TestCase
         self::assertSame('Title', (string) $video->title());
         self::assertSame('https://example.com/thumb.jpg', (string) $video->thumbnailUrl());
         self::assertSame($publishedAt, $video->publishedAt());
-        self::assertSame(1, $video->displayOrder()->value());
         self::assertSame($createdAt, $video->createdAt());
         self::assertSame(253, $video->durationSeconds()?->value());
         self::assertSame($principalIdentifier, $video->creatorPrincipalIdentifier());

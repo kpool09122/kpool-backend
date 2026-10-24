@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\VideoLink\Query\ListVideos;
 
+use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -29,6 +30,8 @@ class ListVideosRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'minDurationSeconds' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
+            'maxDurationSeconds' => ['nullable', 'integer', 'min:0', 'max:2147483647', ...($this->filled('minDurationSeconds') ? ['gte:minDurationSeconds'] : [])],
             'language' => ['required', 'string', 'in:ja,ko,en'],
             'slug' => ['required', 'string'],
             'resourceType' => ['required', 'string', Rule::in([
@@ -38,6 +41,16 @@ class ListVideosRequest extends FormRequest
                 ResourceType::SONG->value,
             ])],
         ];
+    }
+
+    public function minDurationSeconds(): ?int
+    {
+        return $this->input('minDurationSeconds') !== null ? RequestValue::integer($this->input('minDurationSeconds')) : null;
+    }
+
+    public function maxDurationSeconds(): ?int
+    {
+        return $this->input('maxDurationSeconds') !== null ? RequestValue::integer($this->input('maxDurationSeconds')) : null;
     }
 
     public function language(): string

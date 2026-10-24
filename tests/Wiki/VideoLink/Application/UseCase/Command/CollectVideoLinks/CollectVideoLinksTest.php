@@ -22,8 +22,6 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
-use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
@@ -144,8 +142,6 @@ class CollectVideoLinksTest extends TestCase
             ->with('채영 k-pop')
             ->andReturn($videos);
 
-        $existingVideoLink = $this->createDummyVideoLink($resourceId, 5);
-
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once()
@@ -153,10 +149,6 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
-        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
-            ->once()
-            ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
-            ->andReturn($existingVideoLink);
         $videoLinkRepository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(static fn (VideoLink $videoLink): bool =>
@@ -166,7 +158,6 @@ class CollectVideoLinksTest extends TestCase
                 && (string) $videoLink->url() === $videos[0]->url()
                 && (string) $videoLink->title() === (string) $videos[0]->title()
                 && $videoLink->videoUsage() === $videos[0]->videoUsage()
-                && $videoLink->displayOrder()->value() === 6
                 && (string) $videoLink->thumbnailUrl() === $videos[0]->thumbnailUrl()
                 && $videoLink->publishedAt() === $videos[0]->publishedAt()
                 && $videoLink->creatorPrincipalIdentifier() === null));
@@ -179,7 +170,6 @@ class CollectVideoLinksTest extends TestCase
                 && (string) $videoLink->url() === $videos[1]->url()
                 && (string) $videoLink->title() === $videos[1]->title()
                 && $videoLink->videoUsage() === $videos[1]->videoUsage()
-                && $videoLink->displayOrder()->value() === 7
                 && (string) $videoLink->thumbnailUrl() === $videos[1]->thumbnailUrl()
                 && $videoLink->publishedAt() === $videos[1]->publishedAt()
                 && $videoLink->creatorPrincipalIdentifier() === null));
@@ -307,9 +297,6 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
-        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
-            ->once()
-            ->andReturn(null);
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
@@ -388,9 +375,6 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
-        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
-            ->once()
-            ->andReturn(null);
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
@@ -553,9 +537,6 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
-        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
-            ->once()
-            ->andReturn(null);
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
@@ -631,7 +612,6 @@ class CollectVideoLinksTest extends TestCase
             new VideoTitle('Existing Video'),
             null,
             null,
-            new DisplayOrder(1),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -664,9 +644,6 @@ class CollectVideoLinksTest extends TestCase
                 [$existingUrl, $newUrl],
             )
             ->andReturn([$existingVideoLink]);
-        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
-            ->once()
-            ->andReturn(null);
         $videoLinkRepository->shouldReceive('save')
             ->once();
 
@@ -702,23 +679,6 @@ class CollectVideoLinksTest extends TestCase
             new SectionContentCollection(),
             null,
             new Version(1),
-        );
-    }
-
-    private function createDummyVideoLink(string $resourceId, int $displayOrder = 1): VideoLink
-    {
-        return new VideoLink(
-            new VideoLinkIdentifier(StrTestHelper::generateUuid()),
-            ResourceType::TALENT,
-            new WikiIdentifier($resourceId),
-            new ExternalContentLink('https://www.youtube.com/watch?v=test'),
-            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-            new VideoTitle('Test Video'),
-            new ThumbnailUrl('https://i.ytimg.com/vi/test/hqdefault.jpg'),
-            new DateTimeImmutable(),
-            new DisplayOrder($displayOrder),
-            new DateTimeImmutable(),
-            durationSeconds: null,
         );
     }
 }

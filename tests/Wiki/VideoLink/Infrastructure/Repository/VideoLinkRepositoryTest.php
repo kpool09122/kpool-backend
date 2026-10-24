@@ -13,7 +13,6 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
@@ -30,7 +29,7 @@ class VideoLinkRepositoryTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identifier = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        $video = new VideoLink($identifier, ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/manual'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), null, null, new DisplayOrder(1), new DateTimeImmutable(), new DurationSeconds(253), $principalIdentifier);
+        $video = new VideoLink($identifier, ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/manual'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), null, null, new DateTimeImmutable(), new DurationSeconds(253), $principalIdentifier);
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($video);
         $restored = $repository->findById($identifier);
@@ -54,7 +53,6 @@ class VideoLinkRepositoryTest extends TestCase
             new VideoTitle('Test Video'),
             null,
             null,
-            new DisplayOrder(1),
             new DateTimeImmutable(),
             $durationSeconds !== null ? new DurationSeconds($durationSeconds) : null,
         );
@@ -93,7 +91,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=test123',
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Test Music Video',
-            'display_order' => 1,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -106,7 +103,6 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertSame('https://www.youtube.com/watch?v=test123', (string) $videoLink->url());
         $this->assertSame(VideoUsage::MUSIC_VIDEO, $videoLink->videoUsage());
         $this->assertSame('Test Music Video', (string) $videoLink->title());
-        $this->assertSame(1, $videoLink->displayOrder()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $videoLink->createdAt());
     }
 
@@ -144,7 +140,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=video1',
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Music Video 1',
-            'display_order' => 1,
         ]);
 
         CreateVideoLink::create($videoLinkId2, [
@@ -153,7 +148,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=video2',
             'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Live Video',
-            'display_order' => 2,
         ]);
 
         CreateVideoLink::create($otherVideoLinkId, [
@@ -162,7 +156,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=other',
             'video_usage' => VideoUsage::INTERVIEW->value,
             'title' => 'Other Video',
-            'display_order' => 1,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -180,9 +173,6 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertContains($videoLinkId2, $videoLinkIds);
         $this->assertNotContains($otherVideoLinkId, $videoLinkIds);
 
-        // display_orderでソートされていることを確認
-        $this->assertSame($videoLinkId1, (string) $videoLinks[0]->videoLinkIdentifier());
-        $this->assertSame($videoLinkId2, (string) $videoLinks[1]->videoLinkIdentifier());
     }
 
     /**
@@ -220,7 +210,6 @@ class VideoLinkRepositoryTest extends TestCase
             new VideoTitle('New Music Video'),
             null,
             null,
-            new DisplayOrder(1),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -235,7 +224,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => (string) $videoLink->url(),
             'video_usage' => $videoLink->videoUsage()->value,
             'title' => (string) $videoLink->title(),
-            'display_order' => $videoLink->displayOrder()->value(),
         ]);
     }
 
@@ -256,7 +244,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=old',
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Old Title',
-            'display_order' => 1,
         ]);
 
         $videoLink = new VideoLink(
@@ -268,7 +255,6 @@ class VideoLinkRepositoryTest extends TestCase
             new VideoTitle('Updated Title'),
             null,
             null,
-            new DisplayOrder(2),
             new DateTimeImmutable(),
             durationSeconds: null,
         );
@@ -281,7 +267,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=updated',
             'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Updated Title',
-            'display_order' => 2,
         ]);
 
         $this->assertDatabaseCount('wiki_video_links', 1);
@@ -404,118 +389,6 @@ class VideoLinkRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：指定したリソースに紐づくdisplay_orderが最大の動画リンクが取得できること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByResourceWithMaxDisplayOrder(): void
-    {
-        $wikiId = StrTestHelper::generateUuid();
-
-        $videoLinkId1 = StrTestHelper::generateUuid();
-        $videoLinkId2 = StrTestHelper::generateUuid();
-        $videoLinkId3 = StrTestHelper::generateUuid();
-
-        CreateVideoLink::create($videoLinkId1, [
-            'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
-            'url' => 'https://www.youtube.com/watch?v=video1',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
-            'title' => 'Video 1',
-            'display_order' => 1,
-        ]);
-
-        CreateVideoLink::create($videoLinkId2, [
-            'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
-            'url' => 'https://www.youtube.com/watch?v=video2',
-            'video_usage' => VideoUsage::LIVE->value,
-            'title' => 'Video 2',
-            'display_order' => 5,
-        ]);
-
-        CreateVideoLink::create($videoLinkId3, [
-            'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
-            'url' => 'https://www.youtube.com/watch?v=video3',
-            'video_usage' => VideoUsage::INTERVIEW->value,
-            'title' => 'Video 3',
-            'display_order' => 3,
-        ]);
-
-        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
-        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
-            ResourceType::TALENT,
-            new WikiIdentifier($wikiId),
-        );
-
-        $this->assertInstanceOf(VideoLink::class, $videoLink);
-        $this->assertSame($videoLinkId2, (string) $videoLink->videoLinkIdentifier());
-        $this->assertSame(5, $videoLink->displayOrder()->value());
-    }
-
-    /**
-     * 正常系：指定したリソースに紐づく動画リンクが存在しない場合、nullが返ること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByResourceWithMaxDisplayOrderWhenNotExist(): void
-    {
-        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
-        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
-            ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
-        );
-
-        $this->assertNull($videoLink);
-    }
-
-    /**
-     * 正常系：異なるリソースの動画リンクは取得されないこと.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByResourceWithMaxDisplayOrderDoesNotReturnOtherResources(): void
-    {
-        $targetResourceId = StrTestHelper::generateUuid();
-        $otherResourceId = StrTestHelper::generateUuid();
-
-        $targetVideoLinkId = StrTestHelper::generateUuid();
-        $otherVideoLinkId = StrTestHelper::generateUuid();
-
-        CreateVideoLink::create($targetVideoLinkId, [
-            'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $targetResourceId,
-            'url' => 'https://www.youtube.com/watch?v=target',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
-            'title' => 'Target Video',
-            'display_order' => 2,
-        ]);
-
-        CreateVideoLink::create($otherVideoLinkId, [
-            'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $otherResourceId,
-            'url' => 'https://www.youtube.com/watch?v=other',
-            'video_usage' => VideoUsage::LIVE->value,
-            'title' => 'Other Video',
-            'display_order' => 10,
-        ]);
-
-        $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
-        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
-            ResourceType::TALENT,
-            new WikiIdentifier($targetResourceId),
-        );
-
-        $this->assertInstanceOf(VideoLink::class, $videoLink);
-        $this->assertSame($targetVideoLinkId, (string) $videoLink->videoLinkIdentifier());
-        $this->assertSame(2, $videoLink->displayOrder()->value());
-    }
-
-    /**
      * 正常系：指定したリソースに紐づく動画リンクのうち、指定したURLに該当するものを返却すること.
      *
      * @throws BindingResolutionException
@@ -538,7 +411,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => $url1,
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Existing Video 1',
-            'display_order' => 1,
         ]);
 
         CreateVideoLink::create($videoLinkId2, [
@@ -547,7 +419,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => $url2,
             'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Existing Video 2',
-            'display_order' => 2,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -588,7 +459,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => $url,
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Other Resource Video',
-            'display_order' => 1,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -617,7 +487,6 @@ class VideoLinkRepositoryTest extends TestCase
             'url' => 'https://www.youtube.com/watch?v=existing',
             'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Existing Video',
-            'display_order' => 1,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);

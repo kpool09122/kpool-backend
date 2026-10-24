@@ -10,8 +10,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInputPo
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosOutputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\VideoLinkReadModel;
-use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
 readonly class ListVideos implements ListVideosInterface
@@ -27,24 +25,24 @@ readonly class ListVideos implements ListVideosInterface
         if ($wiki === null) {
             throw new WikiNotFoundException();
         }
-        if (! VideoLinkCollectionPolicy::supports($input->resourceType())) {
-            $output->output([]);
-
-            return;
-        }
-        $videos = VideoLinkModel::query()
+        $query = VideoLinkModel::query()
             ->where('wiki_id', $wiki->id)
-            ->where('resource_type', $input->resourceType()->value)
-            ->whereIn('video_usage', array_map(static fn (VideoUsage $usage): string => $usage->value, array_filter(VideoUsage::cases(), static fn (VideoUsage $usage): bool => $usage->isAutoCollected())))
-            ->orderBy('display_order')->orderBy('id')->get()
+            ->where('resource_type', $input->resourceType()->value);
+        if ($input->minDurationSeconds() !== null) {
+            $query->where('duration_seconds', '>=', $input->minDurationSeconds());
+        }
+        if ($input->maxDurationSeconds() !== null) {
+            $query->where('duration_seconds', '<=', $input->maxDurationSeconds());
+        }
+        $videos = $query->orderByDesc('created_at')->orderBy('id')->get()
             ->map(static fn (VideoLinkModel $video): VideoLinkReadModel => new VideoLinkReadModel(
                 $video->id,
                 $video->url,
                 $video->title,
                 $video->thumbnail_url,
                 $video->published_at?->toAtomString(),
-                $video->display_order,
                 $video->video_usage,
+                $video->duration_seconds,
             ))->all();
         $output->output(array_values($videos));
     }

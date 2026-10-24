@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -29,11 +28,11 @@ use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -88,7 +87,7 @@ class CreateVideoLinkTest extends TestCase
         $input = $this->input();
         $this->authorize($input);
         $repository = Mockery::mock(VideoLinkRepositoryInterface::class);
-        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $input->url(), VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new VideoTitle('Existing'), new DisplayOrder(1));
+        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $input->url(), VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new VideoTitle('Existing'), );
         $repository->shouldReceive('findByResourceAndUrls')->once()->andReturn([$existing]);
         $repository->shouldNotReceive('save');
         $this->app()->instance(VideoLinkRepositoryInterface::class, $repository);
@@ -123,7 +122,7 @@ class CreateVideoLinkTest extends TestCase
 
     private function input(): CreateVideoLinkInput
     {
-        return new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://www.youtube.com/watch?v=new'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DisplayOrder(1), new DurationSeconds(253), new ThumbnailUrl('https://i.ytimg.com/vi/new/hqdefault.jpg'), new DateTimeImmutable('2026-10-01'));
+        return new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DurationSeconds(253), new ThumbnailUrl('https://i.ytimg.com/vi/new/hqdefault.jpg'), new DateTimeImmutable('2026-10-01'));
     }
 
     private function authorize(CreateVideoLinkInput $input, bool $allowed = true): void

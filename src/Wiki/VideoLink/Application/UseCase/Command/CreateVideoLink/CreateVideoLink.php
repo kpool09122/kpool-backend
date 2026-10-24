@@ -55,7 +55,6 @@ readonly class CreateVideoLink implements CreateVideoLinkInterface
             $input->url(),
             $input->videoUsage(),
             $input->title(),
-            $input->displayOrder(),
             $input->thumbnailUrl(),
             $input->publishedAt(),
             $input->durationSeconds(),
