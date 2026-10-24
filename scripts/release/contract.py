@@ -31,12 +31,13 @@ def runtime_environment(config):
 
 
 def task_definition(kind, template, outputs, config, secrets, digest):
-    if kind not in ('Api', 'Worker', 'Migration') or not DIGEST.fullmatch(digest):
+    if kind not in ('Api', 'Worker', 'Migration', 'Scheduler') or not DIGEST.fullmatch(digest):
         raise ValueError('Invalid task kind or image digest')
     fields = ('family taskRoleArn executionRoleArn networkMode containerDefinitions volumes placementConstraints requiresCompatibilities cpu memory runtimePlatform ephemeralStorage').split()
     definition = {k: copy.deepcopy(v) for k, v in template.items() if k in fields}
     execution = 'MigrationExecutionRoleArn' if kind == 'Migration' else 'AppExecutionRoleArn'
-    if (template.get('taskRoleArn') != outputs[kind+'TaskRoleArn']
+    role_kind = 'Worker' if kind == 'Scheduler' else kind
+    if (template.get('taskRoleArn') != outputs[role_kind+'TaskRoleArn']
             or template.get('executionRoleArn') != outputs[execution]
             or template.get('runtimePlatform', {}).get('cpuArchitecture') != 'ARM64'
             or template.get('networkMode') != 'awsvpc'

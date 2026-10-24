@@ -2,9 +2,9 @@
 
 
 def execute(backend, journal, mode):
-    stages = {'deploy': ('preflight','register','migration','api','worker','smoke'),
-              'redeploy': ('preflight','register','api','worker','smoke'),
-              'resume-worker': ('preflight','worker','smoke'),
+    stages = {'deploy': ('preflight','register','migration','api','worker','schedulers','smoke'),
+              'redeploy': ('preflight','register','api','worker','schedulers','smoke'),
+              'resume-worker': ('preflight','worker','schedulers','smoke'),
               'rollback-api': ('preflight','api','smoke'),
               'rollback-worker': ('preflight','worker','smoke')}
     if mode not in stages:

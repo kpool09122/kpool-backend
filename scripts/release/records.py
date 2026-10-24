@@ -25,7 +25,8 @@ class Journal:
     def event(self, stage, status, **fields):
         allowed = {'task_definition', 'deployment_arn', 'revision_arn', 'task_arn',
                    'api', 'worker', 'error_type', 'desired', 'health', 'queue', 'queue_processing',
-                   'image_digest', 'source_run', 'api_desired', 'worker_desired'}
+                   'image_digest', 'source_run', 'api_desired', 'worker_desired',
+                   'schedule_arn', 'schedule_state'}
         if not set(fields) <= allowed:
             raise ValueError('Unapproved journal field')
         event = dict(stage=stage, status=status, timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(), **fields)

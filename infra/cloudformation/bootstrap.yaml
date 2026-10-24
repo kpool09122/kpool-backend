@@ -197,6 +197,21 @@ Resources:
             Action: sqs:GetQueueAttributes
             Resource:
               Fn::Sub: arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${FoundationWorkQueueName}
+          - Sid: UpdateReleaseSchedules
+            Effect: Allow
+            Action:
+            - scheduler:GetSchedule
+            - scheduler:UpdateSchedule
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ProjectName}/*
+          - Sid: PassSchedulerRole
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-scheduler
+            Condition:
+              StringEquals:
+                iam:PassedToService: scheduler.amazonaws.com
           - Sid: PassApplicationRoles
             Effect: Allow
             Action: iam:PassRole

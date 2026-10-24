@@ -6,6 +6,7 @@ from contract import task_definition, runtime_environment, SECRET_KEYS, SECRET_R
 from deployment import (poll, desired_count, migration_complete, api_complete,
                         worker_complete, validate_api_service, api_deployment_configuration)
 from records import write_json
+from schedules import read_schedule, update_schedule
 
 
 class Aws:
@@ -43,6 +44,7 @@ class Backend:
         self.outputs = {}
         self.tasks = dict(manifest.get('task_definitions', {}))
         self.counts = {}
+        self.sync_schedulers = self.plan['mode'] in ('deploy', 'redeploy', 'resume-worker')
 
     def services(self):
         response = self.aws('ecs','describe-services',cluster=self.outputs['ClusterArn'],
@@ -65,8 +67,14 @@ class Backend:
         if o['DeploymentRoleArn'] != c['deployment_role_arn']:
             raise ValueError('Deployment role does not match bootstrap output')
         required = ('RepositoryUri ClusterArn ApiServiceName WorkerServiceName ApiReleaseFamily WorkerReleaseFamily MigrationReleaseFamily ApiBootstrapTaskDefinitionArn WorkerBootstrapTaskDefinitionArn MigrationBootstrapTaskDefinitionArn ApiTaskRoleArn WorkerTaskRoleArn MigrationTaskRoleArn AppExecutionRoleArn MigrationExecutionRoleArn LifecycleHookArn HookInvocationRoleArn ServerErrorAlarmName LatencyAlarmName HookCodeSource BlueTargetGroupArn GreenTargetGroupArn ProductionRuleArn TestRuleArn AlbInfrastructureRoleArn PublicSubnetIds MigrationSecurityGroupId RuntimeConfigParameterName AppSecretArn MigrationSecretArn CacheSecretArn ApiUrl QueueUrl').split()
+        if self.sync_schedulers:
+            required += ['SchedulerBootstrapTaskDefinitionArn', 'SchedulerReleaseFamily',
+                         'SchedulerArn', 'VideoCollectionSchedulerArn']
         if any(not o.get(key) for key in required):
             raise ValueError('Required infrastructure output is missing')
+        if self.sync_schedulers:
+            for key in ('SchedulerArn', 'VideoCollectionSchedulerArn'):
+                read_schedule(self.aws, o[key], account)
         registry = f'{account}.dkr.ecr.ap-northeast-1.amazonaws.com/'
         if not o['RepositoryUri'].startswith(registry):
             raise ValueError('ECR repository account mismatch')
@@ -128,6 +136,8 @@ class Backend:
             if any(not SECRET_REF.fullmatch(ref['valueFrom']) for ref in refs):
                 raise ValueError('Invalid ECS secret JSON-key ARN reference')
             self.secrets[kind]=refs
+        if self.sync_schedulers:
+            self.secrets['Scheduler'] = self.secrets['Worker']
         if self.plan['mode'] != 'deploy':
             self.validate_previous(services)
         self.journal.event('preflight','observed',api=services['Api']['taskDefinition'],
@@ -135,11 +145,12 @@ class Backend:
                            api_desired=services['Api']['desiredCount'],worker_desired=services['Worker']['desiredCount'])
         # Prepare every definition before the first registration mutation.
         self.definitions = {}
-        for kind in ('Api','Worker','Migration'):
+        for kind in ('Api','Worker','Migration') + (('Scheduler',) if self.sync_schedulers else ()):
             template = self.aws('ecs','describe-task-definition',taskDefinition=o[kind+'BootstrapTaskDefinitionArn'])['taskDefinition']
+            role_kind = 'Worker' if kind == 'Scheduler' else kind
             if check_image:
                 self.definitions[kind] = task_definition(kind,template,o,self.env,self.secrets[kind],self.manifest['image_digest'])
-            elif (template['taskRoleArn'] != o[kind+'TaskRoleArn'] or template['executionRoleArn'] != o['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn']
+            elif (template['taskRoleArn'] != o[role_kind+'TaskRoleArn'] or template['executionRoleArn'] != o['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn']
                   or template['runtimePlatform']['cpuArchitecture'] != 'ARM64'
                   or not template['containerDefinitions'][0].get('readonlyRootFilesystem')
                   or {m['containerPath'] for m in template['containerDefinitions'][0].get('mountPoints',[])} != {'/tmp','/var/www/html/storage','/var/www/html/bootstrap/cache'}):
@@ -165,7 +176,8 @@ class Backend:
             for kind, arn in self.tasks.items():
                 definition = self.aws('ecs','describe-task-definition',taskDefinition=arn)['taskDefinition']
                 expected = self.outputs[kind+'ReleaseFamily']
-                if (definition['family'] != expected or definition['taskRoleArn'] != self.outputs[kind+'TaskRoleArn']
+                role_kind = 'Worker' if kind == 'Scheduler' else kind
+                if (definition['family'] != expected or definition['taskRoleArn'] != self.outputs[role_kind+'TaskRoleArn']
                         or definition['executionRoleArn'] != self.outputs['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn']
                         or definition['containerDefinitions'][0]['image'] != self.outputs['RepositoryUri']+'@'+self.manifest['image_digest']):
                     raise ValueError('Recorded task revision is not owned by this release/environment')
@@ -241,6 +253,18 @@ class Backend:
         if attributes['QueueArn']!=self.outputs['QueueArn']:
             raise ValueError('Queue identity differs from foundation output')
         return attributes
+
+    def schedulers(self):
+        if 'Scheduler' not in self.tasks:
+            # Older release records predate scheduler deployment. Resume using the recorded digest.
+            result = self.aws('ecs', 'register-task-definition', **self.definitions['Scheduler'])
+            self.tasks['Scheduler'] = result['taskDefinition']['taskDefinitionArn']
+            self.journal.event('schedulers', 'registered', task_definition=self.tasks['Scheduler'])
+            write_json(self.journal.directory/'deployment-manifest.json',
+                       dict(self.manifest, task_definitions=self.tasks), exclusive=True)
+        for key in ('SchedulerArn', 'VideoCollectionSchedulerArn'):
+            update_schedule(self.aws, self.outputs[key], self.configuration['account_id'],
+                            self.tasks['Scheduler'], self.journal)
 
     def smoke(self):
         self.queue_attributes()
