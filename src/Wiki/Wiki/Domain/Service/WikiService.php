@@ -59,7 +59,7 @@ readonly class WikiService implements WikiServiceInterface
 
     public function canApproveDraftWiki(DraftWiki $draftWiki): bool
     {
-        return $this->resolvePublishVersion($draftWiki) !== null;
+        return $draftWiki->publishedWikiIdentifier() !== null || $this->resolvePublishVersion($draftWiki) !== null;
     }
 
     public function resolvePublishVersion(DraftWiki $draftWiki): ?Version

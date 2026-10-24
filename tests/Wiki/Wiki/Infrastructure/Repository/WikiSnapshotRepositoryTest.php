@@ -45,6 +45,74 @@ use Tests\TestCase;
 
 class WikiSnapshotRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testMultipleSnapshotsUseVersionTimestampAndIdentifierOrder(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $setId = StrTestHelper::generateUuid();
+        $ids = [
+            '019a1234-0000-7000-8000-000000000001',
+            '019a1234-0000-7000-8000-000000000002',
+            '019a1234-0000-7000-8000-000000000003',
+            '019a1234-0000-7000-8000-000000000004',
+        ];
+        foreach ([2, 0, 3, 1] as $i) {
+            CreateWikiSnapshot::create($ids[$i], 'group', [
+                'wiki_id' => $wikiId,
+                'translation_set_identifier' => $setId,
+                'version' => $i === 0 ? 1 : 2,
+                'created_at' => $i === 0 ? '2026-01-05 00:00:00' : ($i === 1 ? '2026-01-03 00:00:00' : '2026-01-04 00:00:00'),
+            ]);
+        }
+        $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
+        $revisions = $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
+        $this->assertSame([$ids[3], $ids[2], $ids[1]], array_map(static fn (WikiSnapshot $snapshot): string => (string) $snapshot->snapshotIdentifier(), $revisions));
+        foreach ($revisions as $revision) {
+            $this->assertSame($wikiId, (string) $revision->wikiIdentifier());
+            $this->assertSame(2, $revision->version()->value());
+            $this->assertInstanceOf(GroupBasic::class, $revision->basic());
+        }
+        $this->assertSame([], $repository->findAllByWikiAndVersion(new WikiIdentifier(StrTestHelper::generateUuid()), new Version(2)));
+        $this->assertSame([], $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(3)));
+        $all = $repository->findByWikiIdentifier(new WikiIdentifier($wikiId));
+        $this->assertSame([$ids[3], $ids[2], $ids[1], $ids[0]], array_map(static fn (WikiSnapshot $s): string => (string) $s->snapshotIdentifier(), $all));
+        $this->assertSame($ids[3], (string) $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2))?->snapshotIdentifier());
+        $this->assertSame($ids[3], (string) $repository->findLatestByWikiIdentifier(new WikiIdentifier($wikiId))?->snapshotIdentifier());
+        $selected = $repository->findByTranslationSetIdentifierAndVersion(new TranslationSetIdentifier($setId), new Version(2));
+        $this->assertCount(1, $selected);
+        $this->assertSame($ids[3], (string) $selected[0]->snapshotIdentifier());
+        $this->assertSame('2026-01-04', $selected[0]->createdAt()->format('Y-m-d'));
+        // Saving an entity must preserve its creation time, not substitute the current clock.
+        $repository->save($selected[0]);
+        $this->assertSame('2026-01-04', $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2))?->createdAt()->format('Y-m-d'));
+        $this->assertNull($repository->findLatestByWikiIdentifier(new WikiIdentifier(StrTestHelper::generateUuid())));
+        $newId = new WikiSnapshotIdentifier(StrTestHelper::generateUuid());
+        $newSnapshot = new WikiSnapshot(
+            $newId,
+            new WikiIdentifier($wikiId),
+            new TranslationSetIdentifier($setId),
+            $selected[0]->slug(),
+            $selected[0]->language(),
+            $selected[0]->resourceType(),
+            $selected[0]->basic(),
+            $selected[0]->sections(),
+            null,
+            new Version(2),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            new DateTimeImmutable('2000-01-01 12:34:56'),
+        );
+        $repository->save($newSnapshot);
+        $this->assertDatabaseHas('wiki_snapshots', ['id' => (string) $newId, 'created_at' => '2000-01-01 12:34:56']);
+        $this->assertSame([$ids[3], $ids[2], $ids[1], (string) $newId], array_map(static fn (WikiSnapshot $snapshot): string => (string) $snapshot->snapshotIdentifier(), $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2))));
+
+    }
+
     /**
      * 正常系：GroupタイプのWikiSnapshotが正しく保存されること.
      *

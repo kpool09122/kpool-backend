@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => '此操作未獲授權。',
     'inconsistent_version' => '翻譯集中已發布的Wiki版本不一致。',
+    'published_wiki_required' => '同版本發布需要關聯已發布的Wiki。',
     'snapshot_not_found' => '未找到指定的快照。',
     'version_mismatch' => '翻譯集中檢測到版本不匹配。',
     'invalid_rollback_target_version' => '目標版本必須小於當前版本。',

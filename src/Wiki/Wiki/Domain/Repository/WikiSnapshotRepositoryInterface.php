@@ -15,16 +15,29 @@ interface WikiSnapshotRepositoryInterface
     public function save(WikiSnapshot $snapshot): void;
 
     /**
+     * All revisions within the requested version, ordered by creation time and ID descending.
+     * @return WikiSnapshot[]
+     */
+    public function findAllByWikiAndVersion(WikiIdentifier $wikiIdentifier, Version $version): array;
+
+    /**
+     * All revisions, ordered by version, creation time and ID descending.
      * @return WikiSnapshot[]
      */
     public function findByWikiIdentifier(WikiIdentifier $wikiIdentifier): array;
 
+    /** Latest version, then creation time descending, then snapshot ID descending. */
+    public function findLatestByWikiIdentifier(WikiIdentifier $wikiIdentifier): ?WikiSnapshot;
+
+    /** Latest creation time, then snapshot ID descending, within the requested version. */
     public function findByWikiAndVersion(
         WikiIdentifier $wikiIdentifier,
         Version $version,
     ): ?WikiSnapshot;
 
     /**
+     * One latest revision per Wiki, using creation time then ID descending.
+     * Results are ordered by Wiki ID ascending.
      * @return WikiSnapshot[]
      */
     public function findByTranslationSetIdentifierAndVersion(

@@ -480,7 +480,7 @@ class WikiServiceTest extends TestCase
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->twice()
+            ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$koreanWiki, $japaneseWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
@@ -522,6 +522,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
+        $this->assertTrue($wikiService->canApproveDraftWiki($draftWiki));
         $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
     }
 
@@ -555,6 +556,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
+        $this->assertTrue($wikiService->canApproveDraftWiki($draftWiki));
         $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
     }
 

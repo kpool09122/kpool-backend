@@ -256,13 +256,19 @@ readonly class TranslationService implements TranslationServiceInterface
         if ($existing === null || $existing->version()->value() > $wiki->version()->value()) {
             return null;
         }
-        // Normal edits require synchronized published versions; translations catch up
-        // to the latest version. The target's published version identifies its source.
-        if ($existing->version()->value() === $wiki->version()->value()) {
-            return $wiki;
+        $latest = $this->wikiSnapshotRepository->findLatestByWikiIdentifier($wiki->wikiIdentifier());
+        if ($latest === null) {
+            return $existing->hasSameVersion($wiki->version()) ? $wiki : null;
         }
 
-        return $this->wikiSnapshotRepository->findByWikiAndVersion($wiki->wikiIdentifier(), $existing->version());
+        // Multiple revisions share a version but no source-revision identity is stored
+        // on translations. Reuse would risk retaining text from an older revision.
+        if (count($this->wikiSnapshotRepository->findAllByWikiAndVersion($wiki->wikiIdentifier(), $latest->version())) > 1) {
+            return null;
+        }
+
+        // A lagging translation cannot be paired with a newer source snapshot.
+        return $existing->hasSameVersion($latest->version()) ? $latest : null;
     }
 
     /**

@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => 'この操作は認可されていません。',
     'inconsistent_version' => '翻訳セット内の公開Wikiのバージョンが一致しません。',
+    'published_wiki_required' => '同バージョン公開には、公開済みWikiとの紐づきが必要です。',
     'snapshot_not_found' => '指定されたスナップショットが見つかりません。',
     'version_mismatch' => '翻訳セット内でバージョンの不一致が検出されました。',
     'invalid_rollback_target_version' => 'ロールバック先のバージョンが無効です。',

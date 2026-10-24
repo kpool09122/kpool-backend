@@ -8,9 +8,11 @@ use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsRequest;
 use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsResponse;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestWith;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -46,7 +48,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use Source\Wiki\Wiki\Infrastructure\Repository\WikiSnapshotRepository;
 use Source\Wiki\Wiki\Infrastructure\Service\TranslationService;
+use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -56,6 +60,9 @@ class TranslationServiceTest extends TestCase
     {
         parent::setUp();
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        $wikiSnapshotRepository->shouldReceive('findLatestByWikiIdentifier')->andReturn(null)->byDefault();
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->andReturn([])->byDefault();
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
     }
@@ -261,6 +268,66 @@ class TranslationServiceTest extends TestCase
         self::assertCount(2, $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE)->translatedSections()->all());
     }
 
+    public function testRetranslatesWhenRepeatedSameVersionEditsMakeExistingTranslationAmbiguous(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $existing = $this->existingTranslation($baseline);
+        $this->configureComparison($baseline, $baseline, $existing, 2);
+        $this->expectTranslationTexts(['채영', '손채영'], ['再翻訳した名前', '再翻訳した本名']);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE);
+        self::assertSame('再翻訳した名前', (string) $result->translatedBasic()->name());
+        self::assertSame('再翻訳した本名', $result->translatedBasic()->toArray()['real_name']);
+    }
+
+    #[Group('useDb')]
+    public function testLatestPersistedRevisionAndRepeatedCorrectionFallback(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $baseline->setVersion(new Version(2));
+        $current = clone $baseline;
+        $current->setVersion(new Version(3));
+        $existing = $this->existingTranslation($baseline);
+        CreateWiki::create((string) $current->wikiIdentifier(), 'talent', ['translation_set_identifier' => (string) $current->translationSetIdentifier()]);
+        $repository = $this->app()->make(WikiSnapshotRepository::class);
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $repository);
+        $factory = $this->app()->make(WikiSnapshotFactoryInterface::class);
+        $older = clone $baseline;
+        $older->setVersion(new Version(1));
+        $repository->save($factory->create($older));
+        $repository->save($factory->create($older));
+        $firstLatest = $factory->create($baseline);
+        $repository->save($firstLatest);
+        DB::table('wiki_snapshots')->where('wiki_id', (string) $current->wikiIdentifier())->where('version', 1)->update(['created_at' => '2099-01-01 00:00:00']);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->twice()->andReturn([$existing]);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->expectTranslationTexts([], []);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($current, Language::JAPANESE);
+        self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
+        self::assertSame((string) $firstLatest->snapshotIdentifier(), (string) $repository->findLatestByWikiIdentifier($current->wikiIdentifier())?->snapshotIdentifier());
+        $secondLatest = $factory->create($baseline);
+        $repository->save($secondLatest);
+        DB::table('wiki_snapshots')->where('wiki_id', (string) $current->wikiIdentifier())->where('version', 2)->update(['created_at' => '2026-01-01 00:00:00']);
+        self::assertSame((string) $secondLatest->snapshotIdentifier(), (string) $repository->findLatestByWikiIdentifier($current->wikiIdentifier())?->snapshotIdentifier());
+        $this->app()->forgetInstance(TranslationServiceInterface::class);
+        $this->expectTranslationTexts(['채영', '손채영'], ['再翻訳した名前', '再翻訳した本名']);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($current, Language::JAPANESE);
+        self::assertSame('再翻訳した名前', (string) $result->translatedBasic()->name());
+    }
+
+    public function testUsesLatestSnapshotForSameVersionCorrection(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $existing = $this->existingTranslation($baseline);
+        $current = clone $baseline;
+        $current->setBasic(TalentBasic::fromArray(array_replace($current->basic()->toArray(), ['name' => '수정 이름'])));
+        $this->configureComparison($current, $baseline, $existing);
+        $this->expectTranslationTexts(['수정 이름'], ['修正した名前']);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($current, Language::JAPANESE);
+        self::assertSame('修正した名前', (string) $result->translatedBasic()->name());
+        self::assertSame('保持した本名', $result->translatedBasic()->toArray()['real_name']);
+    }
+
     public function testChoosesComparisonVersionIndependentlyForEachLanguage(): void
     {
         $old = $this->createTalentWiki();
@@ -276,12 +343,12 @@ class TranslationServiceTest extends TestCase
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->with($current->translationSetIdentifier(), [Language::ENGLISH])->andReturn([$english]);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
-        foreach ([$old, $recent] as $baseline) {
-            $wikiSnapshotRepository->shouldReceive('findByWikiAndVersion')->once()->with($current->wikiIdentifier(), $baseline->version())
-                ->andReturn($this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
-        }
+        $wikiSnapshotRepository->shouldReceive('findAllByWikiAndVersion')->with($current->wikiIdentifier(), $recent->version())
+            ->andReturn([$this->app()->make(WikiSnapshotFactoryInterface::class)->create($recent)]);
+        $wikiSnapshotRepository->shouldReceive('findLatestByWikiIdentifier')->twice()->with($current->wikiIdentifier())
+            ->andReturn($this->app()->make(WikiSnapshotFactoryInterface::class)->create($recent));
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
-        $this->expectTranslationTexts(['새 이름'], ['新しい名前']);
+        $this->expectTranslationTexts(['새 이름', '손채영'], ['新しい名前', '再翻訳した本名']);
         $service = $this->app()->make(TranslationServiceInterface::class);
         self::assertSame('新しい名前', (string) $service->translateWiki($current, Language::JAPANESE)->translatedBasic()->name());
         self::assertSame('保持した名前', (string) $service->translateWiki($current, Language::ENGLISH)->translatedBasic()->name());
@@ -437,18 +504,24 @@ class TranslationServiceTest extends TestCase
         );
     }
 
-    private function configureComparison(Wiki $wiki, ?Wiki $baseline, Wiki $existing): void
+    private function configureComparison(Wiki $wiki, ?Wiki $baseline, Wiki $existing, int $snapshotCount = 1): void
     {
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()
             ->with($wiki->translationSetIdentifier(), [$existing->language()])->andReturn([$existing]);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
-        if ($existing->version()->value() < $wiki->version()->value()) {
-            $wikiSnapshotRepository->shouldReceive('findByWikiAndVersion')->once()
-                ->with($wiki->wikiIdentifier(), $existing->version())
-                ->andReturn($baseline === null ? null : $this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
+        if ($baseline !== null) {
+            $snapshots = [];
+            for ($i = 0; $i < $snapshotCount; $i++) {
+                $snapshots[] = $this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline);
+            }
+            $wikiSnapshotRepository->shouldReceive('findAllByWikiAndVersion')->once()
+                ->with($wiki->wikiIdentifier(), $baseline->version())->andReturn($snapshots);
         }
+        $wikiSnapshotRepository->shouldReceive('findLatestByWikiIdentifier')->once()
+            ->with($wiki->wikiIdentifier())
+            ->andReturn($baseline === null ? null : $this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
     }
 
@@ -497,7 +570,9 @@ class TranslationServiceTest extends TestCase
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->andReturn([$translated]);
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
         $snapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
-        $snapshotRepository->shouldReceive('findByWikiAndVersion')->once()->with($wiki->wikiIdentifier(), $baseline->version())
+        $snapshotRepository->shouldReceive('findAllByWikiAndVersion')->once()->with($wiki->wikiIdentifier(), $baseline->version())
+            ->andReturn([$this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline)]);
+        $snapshotRepository->shouldReceive('findLatestByWikiIdentifier')->once()->with($wiki->wikiIdentifier())
             ->andReturn($this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
         $client = Mockery::mock(GoogleTranslateClient::class);

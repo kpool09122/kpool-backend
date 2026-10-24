@@ -34,6 +34,7 @@ use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\DeleteWiki\DeleteWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\EditWiki\EditWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\PublishWiki\PublishWikiAction;
+use Application\Http\Action\Wiki\Wiki\Command\PublishWikiAtSameVersion\PublishWikiAtSameVersionAction;
 use Application\Http\Action\Wiki\Wiki\Command\RejectWiki\RejectWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
@@ -134,6 +135,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
         // Disabled by #605: Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
         Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
+        Route::post('/wiki/{wikiId}/publish-same-version', PublishWikiAtSameVersionAction::class);
         Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
         // Disabled by #605: Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
         Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);

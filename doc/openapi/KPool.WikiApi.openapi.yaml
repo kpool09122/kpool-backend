@@ -4281,7 +4281,88 @@ paths:
   /wiki/{wikiId}/publish:
     post:
       operationId: WikiOperations_publishWiki
-      description: Publish a wiki draft.
+      description: Publish an approved wiki draft as the next generation. Translated drafts catch up to the latest published version. Returns 409 when the selected publication version is inconsistent.
+      parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki is published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wiki/{wikiId}/publish-same-version:
+    post:
+      operationId: WikiOperations_publishWikiAtSameVersion
+      description: Publish an approved draft into its linked published wiki without changing its identifier or version. Other languages are unchanged. wikiId is the draft ID. Returns 409 for an unapproved draft or a draft without a published-wiki link, 404 when the draft or linked published wiki does not exist, and 403 for insufficient publish permission.
       parameters:
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'

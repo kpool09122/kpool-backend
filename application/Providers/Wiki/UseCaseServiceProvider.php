@@ -91,6 +91,8 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyV
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoLinkLikes;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
+use Source\Wiki\Wiki\Application\Service\WikiPublicationService;
+use Source\Wiki\Wiki\Application\Service\WikiPublicationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWiki;
@@ -105,6 +107,8 @@ use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\PublishWikiAtSameVersion\PublishWikiAtSameVersion;
+use Source\Wiki\Wiki\Application\UseCase\Command\PublishWikiAtSameVersion\PublishWikiAtSameVersionInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWiki;
@@ -215,6 +219,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ApproveWikiInterface::class, ApproveWiki::class);
         $this->app->singleton(RejectWikiInterface::class, RejectWiki::class);
         $this->app->singleton(PublishWikiInterface::class, PublishWiki::class);
+        $this->app->singleton(PublishWikiAtSameVersionInterface::class, PublishWikiAtSameVersion::class);
+        $this->app->singleton(WikiPublicationServiceInterface::class, WikiPublicationService::class);
         $this->app->singleton(RollbackWikiInterface::class, RollbackWiki::class);
         $this->app->singleton(TranslateWikiInterface::class, TranslateWiki::class);
         $this->app->singleton(WithdrawWikiInterface::class, WithdrawWiki::class);

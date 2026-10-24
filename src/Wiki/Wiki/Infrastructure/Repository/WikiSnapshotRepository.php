@@ -65,6 +65,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 'merged_at' => $snapshot->mergedAt(),
                 'translated_at' => $snapshot->translatedAt(),
                 'approved_at' => $snapshot->approvedAt(),
+                'created_at' => $snapshot->createdAt(),
             ]
         );
 
@@ -80,6 +81,37 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('version', 'desc')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
+    }
+
+    public function findLatestByWikiIdentifier(WikiIdentifier $wikiIdentifier): ?WikiSnapshot
+    {
+        $model = WikiSnapshotModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('wiki_id', (string) $wikiIdentifier)
+            ->orderByDesc('version')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+
+        return $model === null ? null : $this->toDomainEntity($model);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findAllByWikiAndVersion(WikiIdentifier $wikiIdentifier, Version $version): array
+    {
+        $models = WikiSnapshotModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('wiki_id', (string) $wikiIdentifier)
+            ->where('version', $version->value())
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->get();
 
         return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
@@ -93,6 +125,8 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('wiki_id', (string) $wikiIdentifier)
             ->where('version', $version->value())
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->first();
 
         if ($model === null) {
@@ -113,6 +147,10 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->where('version', $version->value())
+            ->orderBy('wiki_id')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->distinct('wiki_id')
             ->get();
 
         return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
