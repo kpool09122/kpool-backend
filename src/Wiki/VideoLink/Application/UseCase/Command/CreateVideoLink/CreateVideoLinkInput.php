@@ -6,14 +6,13 @@ namespace Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
@@ -22,10 +21,9 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
         private PrincipalIdentifier $principalIdentifier,
         private ResourceType $resourceType,
         private WikiIdentifier $wikiIdentifier,
-        private ExternalContentLink $url,
+        private YouTubeVideoUrl $url,
         private VideoUsage $videoUsage,
         private VideoTitle $title,
-        private DisplayOrder $displayOrder,
         private DurationSeconds $durationSeconds,
         private ?ThumbnailUrl $thumbnailUrl = null,
         private ?DateTimeImmutable $publishedAt = null,
@@ -50,7 +48,7 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
         return $this->wikiIdentifier;
     }
 
-    public function url(): ExternalContentLink
+    public function url(): YouTubeVideoUrl
     {
         return $this->url;
     }
@@ -63,11 +61,6 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
     public function title(): VideoTitle
     {
         return $this->title;
-    }
-
-    public function displayOrder(): DisplayOrder
-    {
-        return $this->displayOrder;
     }
 
     public function durationSeconds(): DurationSeconds

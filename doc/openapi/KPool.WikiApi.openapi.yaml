@@ -3461,7 +3461,7 @@ paths:
   /wiki/{language}/{resourceType}/{slug}/videos:
     get:
       operationId: PublicVideoLinkOperations_listVideos
-      description: 'Public, unauthenticated list of videos for the exact published wiki. Currently, only automatically collected videos are included. Ordered by displayOrder ascending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Collection targets are group/song/talent; agency returns an empty list. Viewing never calls YouTube or dispatches collection jobs.'
+      description: 'Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.'
       parameters:
         - name: language
           in: path
@@ -3487,6 +3487,26 @@ paths:
           required: true
           schema:
             type: string
+        - name: minDurationSeconds
+          in: query
+          required: false
+          description: Inclusive minimum duration in seconds. Unknown durations are excluded when filtering.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 0
+          explode: false
+        - name: maxDurationSeconds
+          in: query
+          required: false
+          description: Inclusive maximum duration in seconds; omit for no upper limit. Must be at least minDurationSeconds.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 0
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -5088,7 +5108,6 @@ components:
         - url
         - videoUsage
         - title
-        - displayOrder
         - durationSeconds
       properties:
         resourceType:
@@ -5102,7 +5121,8 @@ components:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         url:
           type: string
-          description: Video URL.
+          maxLength: 255
+          description: HTTPS YouTube video URL. Supports watch, youtu.be, shorts, live and embed URLs; other providers and non-video links are rejected. Stored as a canonical youtube.com/watch URL.
         videoUsage:
           type: string
           enum:
@@ -5119,11 +5139,6 @@ components:
           type: string
           maxLength: 255
           description: Video title.
-        displayOrder:
-          type: integer
-          format: int32
-          minimum: 0
-          description: Display order of the video link.
         durationSeconds:
           type: integer
           format: int32
@@ -7860,7 +7875,7 @@ components:
         - title
         - thumbnailUrl
         - publishedAt
-        - displayOrder
+        - durationSeconds
         - videoUsage
       properties:
         videoLinkIdentifier:
@@ -7875,16 +7890,27 @@ components:
         publishedAt:
           type: string
           nullable: true
-        displayOrder:
+        durationSeconds:
           type: integer
           format: int32
+          nullable: true
+          minimum: 0
+          description: Video duration in seconds; null when unknown.
         videoUsage:
           type: string
           enum:
+            - music_video
+            - live
+            - interview
+            - behind_the_scenes
+            - cover
+            - collaboration
+            - short
+            - other
             - youtube_auto_view_count
             - youtube_auto_like_count
             - youtube_auto_recent_popular
-      description: A public wiki video. Currently, only automatically collected YouTube videos are included.
+      description: A public wiki video. Includes manually created and automatically collected videos.
     WikiAgencySummary:
       type: object
       required:

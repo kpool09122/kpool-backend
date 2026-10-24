@@ -20,10 +20,9 @@ class CreateVideoLinkRequest extends FormRequest
         return [
             'resourceType' => ['required', Rule::in(['agency', 'group', 'song', 'talent'])],
             'wikiIdentifier' => ['required', 'uuid'],
-            'url' => ['required', 'url:http,https', 'max:255'],
+            'url' => ['required', 'url:https', 'max:255'],
             'videoUsage' => ['required', Rule::in(array_map(static fn (VideoUsage $usage): string => $usage->value, array_filter(VideoUsage::cases(), static fn (VideoUsage $usage): bool => $usage->isManual())))],
             'title' => ['required', 'string', 'max:255'],
-            'displayOrder' => ['required', 'integer', 'min:0', 'max:2147483647'],
             'durationSeconds' => ['required', 'integer', 'min:0', 'max:2147483647'],
             'thumbnailUrl' => ['nullable', 'url:http,https', 'max:255'],
             'publishedAt' => ['nullable', 'date'],
@@ -53,11 +52,6 @@ class CreateVideoLinkRequest extends FormRequest
     public function title(): string
     {
         return RequestValue::string($this->input('title'));
-    }
-
-    public function displayOrder(): int
-    {
-        return RequestValue::integer($this->input('displayOrder'));
     }
 
     public function durationSeconds(): int

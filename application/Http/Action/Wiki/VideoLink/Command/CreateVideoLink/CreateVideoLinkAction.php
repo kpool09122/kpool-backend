@@ -14,18 +14,17 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,10 +49,9 @@ readonly class CreateVideoLinkAction
                     $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
                     new WikiIdentifier($request->wikiIdentifier()),
-                    new ExternalContentLink($request->url()),
+                    new YouTubeVideoUrl($request->url()),
                     VideoUsage::from($request->videoUsage()),
                     new VideoTitle($request->title()),
-                    new DisplayOrder($request->displayOrder()),
                     new DurationSeconds($request->durationSeconds()),
                     $request->thumbnailUrl() !== null ? new ThumbnailUrl($request->thumbnailUrl()) : null,
                     $request->publishedAt() !== null ? new DateTimeImmutable($request->publishedAt()) : null,

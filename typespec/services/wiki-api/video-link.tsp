@@ -7,16 +7,14 @@ namespace KPool.WikiApi;
 model CreateVideoLinkRequestBody {
   resourceType: "agency" | "group" | "song" | "talent";
   wikiIdentifier: Uuid;
-  @doc("Video URL.")
+  @doc("HTTPS YouTube video URL. Supports watch, youtu.be, shorts, live and embed URLs; other providers and non-video links are rejected. Stored as a canonical youtube.com/watch URL.")
+  @maxLength(255)
   url: string;
   @doc("Usage category of the video.")
   videoUsage: "music_video" | "live" | "interview" | "behind_the_scenes" | "cover" | "collaboration" | "short" | "other";
   @doc("Video title.")
   @maxLength(255)
   title: string;
-  @doc("Display order of the video link.")
-  @minValue(0)
-  displayOrder: int32;
   @minValue(0)
   durationSeconds: int32;
   @doc("Thumbnail image URL.")
@@ -25,15 +23,17 @@ model CreateVideoLinkRequestBody {
   publishedAt?: string | null;
 }
 
-@doc("A public wiki video. Currently, only automatically collected YouTube videos are included.")
+@doc("A public wiki video. Includes manually created and automatically collected videos.")
 model Video {
   videoLinkIdentifier: Uuid;
   url: string;
   title: string;
   thumbnailUrl: string | null;
   publishedAt: string | null;
-  displayOrder: int32;
-  videoUsage: "youtube_auto_view_count" | "youtube_auto_like_count" | "youtube_auto_recent_popular";
+  @doc("Video duration in seconds; null when unknown.")
+  @minValue(0)
+  durationSeconds: int32 | null;
+  videoUsage: "music_video" | "live" | "interview" | "behind_the_scenes" | "cover" | "collaboration" | "short" | "other" | "youtube_auto_view_count" | "youtube_auto_like_count" | "youtube_auto_recent_popular";
 }
 
 model ListVideosResponse {
@@ -44,11 +44,17 @@ model ListVideosResponse {
 interface PublicVideoLinkOperations {
   @get
   @route("/wiki/{language}/{resourceType}/{slug}/videos")
-  @doc("Public, unauthenticated list of videos for the exact published wiki. Currently, only automatically collected videos are included. Ordered by displayOrder ascending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Collection targets are group/song/talent; agency returns an empty list. Viewing never calls YouTube or dispatches collection jobs.")
+  @doc("Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.")
   listVideos(
     @path language: "ja" | "ko" | "en",
     @path resourceType: "agency" | "group" | "song" | "talent",
     @path slug: string,
+    @doc("Inclusive minimum duration in seconds. Unknown durations are excluded when filtering.")
+    @minValue(0)
+    @query minDurationSeconds?: int32 | null,
+    @doc("Inclusive maximum duration in seconds; omit for no upper limit. Must be at least minDurationSeconds.")
+    @minValue(0)
+    @query maxDurationSeconds?: int32 | null,
   ): ListVideosResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 

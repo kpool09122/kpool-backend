@@ -11,7 +11,7 @@ class VideoLinkReadModelTest extends TestCase
 {
     public function testPreservesNullMetadata(): void
     {
-        $model = new VideoLinkReadModel('id', 'url', 'title', null, null, 1, 'youtube_auto_view_count');
-        $this->assertSame(['videoLinkIdentifier' => 'id','url' => 'url','title' => 'title','thumbnailUrl' => null,'publishedAt' => null,'displayOrder' => 1,'videoUsage' => 'youtube_auto_view_count'], $model->toArray());
+        $model = new VideoLinkReadModel('id', 'url', 'title', null, null, 'youtube_auto_view_count', null);
+        $this->assertSame(['videoLinkIdentifier' => 'id','url' => 'url','title' => 'title','thumbnailUrl' => null,'publishedAt' => null,'videoUsage' => 'youtube_auto_view_count','durationSeconds' => null], $model->toArray());
     }
 }

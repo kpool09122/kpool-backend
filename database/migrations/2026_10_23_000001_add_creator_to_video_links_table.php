@@ -13,6 +13,7 @@ return new class extends Migration {
 
         Schema::table('wiki_video_links', function (Blueprint $table): void {
             $table->uuid('creator_principal_id')->nullable();
+            $table->dropColumn('display_order');
         });
     }
 
@@ -20,6 +21,7 @@ return new class extends Migration {
     {
         Schema::table('wiki_video_links', function (Blueprint $table): void {
             $table->dropColumn('creator_principal_id');
+            $table->integer('display_order')->default(0)->comment('表示順');
         });
 
         Schema::rename('wiki_video_links', 'video_links');

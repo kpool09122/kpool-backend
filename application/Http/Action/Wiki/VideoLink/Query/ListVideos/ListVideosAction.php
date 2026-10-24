@@ -40,6 +40,8 @@ readonly class ListVideosAction
                     slug: new Slug($request->slug()),
                     language: Language::from($request->language()),
                     resourceType: ResourceType::from($request->resourceType()),
+                    minDurationSeconds: $request->minDurationSeconds(),
+                    maxDurationSeconds: $request->maxDurationSeconds(),
                 );
             } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: error_message('invalid_video_list_query', $request->language()), previous: $e);

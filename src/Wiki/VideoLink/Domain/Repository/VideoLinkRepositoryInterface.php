@@ -26,8 +26,6 @@ interface VideoLinkRepositoryInterface
 
     public function deleteAutoCollectedByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void;
 
-    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): ?VideoLink;
-
     /**
      * 指定したリソースに紐づく動画リンクのうち、指定したURLに該当するものを返却する.
      *

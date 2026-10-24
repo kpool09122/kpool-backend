@@ -10,6 +10,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 interface ListVideosInputPort
 {
+    public function minDurationSeconds(): ?int;
+
+    public function maxDurationSeconds(): ?int;
+
     public function slug(): Slug;
 
     public function language(): Language;

@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DisplayOrder;
 use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
@@ -43,7 +42,7 @@ class VideoLinkFactoryTest extends TestCase
     {
         $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $publishedAt = new DateTimeImmutable('2026-10-01');
-        $video = $this->app()->make(VideoLinkFactoryInterface::class)->create(ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/video'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new DisplayOrder(1), new ThumbnailUrl('https://example.com/thumb'), $publishedAt, new DurationSeconds(253), $principal);
+        $video = $this->app()->make(VideoLinkFactoryInterface::class)->create(ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/video'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb'), $publishedAt, new DurationSeconds(253), $principal);
         self::assertSame($principal, $video->creatorPrincipalIdentifier());
         self::assertSame(253, $video->durationSeconds()?->value());
         self::assertSame($publishedAt, $video->publishedAt());
@@ -57,7 +56,6 @@ class VideoLinkFactoryTest extends TestCase
         $url = new ExternalContentLink('https://www.youtube.com/watch?v=test123');
         $videoUsage = VideoUsage::MUSIC_VIDEO;
         $title = 'Test Music Video';
-        $displayOrder = 1;
 
         $factory = $this->app()->make(VideoLinkFactoryInterface::class);
         $videoLink = $factory->create(
@@ -66,7 +64,6 @@ class VideoLinkFactoryTest extends TestCase
             $url,
             $videoUsage,
             new VideoTitle($title),
-            new DisplayOrder($displayOrder),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $videoLink->videoLinkIdentifier()));
@@ -75,7 +72,6 @@ class VideoLinkFactoryTest extends TestCase
         $this->assertSame((string) $url, (string) $videoLink->url());
         $this->assertSame($videoUsage, $videoLink->videoUsage());
         $this->assertSame($title, (string) $videoLink->title());
-        $this->assertSame($displayOrder, $videoLink->displayOrder()->value());
         self::assertNull($videoLink->thumbnailUrl());
         self::assertNull($videoLink->publishedAt());
         self::assertNull($videoLink->durationSeconds());

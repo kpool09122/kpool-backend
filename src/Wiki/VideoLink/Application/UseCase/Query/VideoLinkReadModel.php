@@ -12,12 +12,12 @@ readonly class VideoLinkReadModel
         public string $title,
         public ?string $thumbnailUrl,
         public ?string $publishedAt,
-        public int $displayOrder,
         public string $videoUsage,
+        public ?int $durationSeconds,
     ) {
     }
 
-    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,displayOrder:int,videoUsage:string} */
+    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int} */
     public function toArray(): array
     {
         return [
@@ -26,8 +26,8 @@ readonly class VideoLinkReadModel
             'title' => $this->title,
             'thumbnailUrl' => $this->thumbnailUrl,
             'publishedAt' => $this->publishedAt,
-            'displayOrder' => $this->displayOrder,
             'videoUsage' => $this->videoUsage,
+            'durationSeconds' => $this->durationSeconds,
         ];
     }
 }
