@@ -20,6 +20,9 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
+use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
@@ -49,6 +52,471 @@ use Tests\TestCase;
 
 class TranslationServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->andReturn([])->byDefault();
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+    }
+
+    public function testReusesUnchangedFieldsWithoutCallingTranslationApi(): void
+    {
+        $wiki = $this->createTalentWiki();
+        $translated = new Wiki(
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            $wiki->translationSetIdentifier(),
+            $wiki->slug(),
+            Language::JAPANESE,
+            $wiki->resourceType(),
+            TalentBasic::fromArray(array_replace($wiki->basic()->toArray(), ['name' => '既存の名前', 'real_name' => '既存の本名'])),
+            new SectionContentCollection(),
+            null,
+            new Version(1),
+        );
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->andReturn([$translated]);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $client = Mockery::mock(GoogleTranslateClient::class);
+        $client->shouldNotReceive('translateTexts');
+        $this->app()->instance(GoogleTranslateClient::class, $client);
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        self::assertSame('既存の名前', (string) $result->translatedBasic()->name());
+        self::assertSame('既存の本名', $result->translatedBasic()->toArray()['real_name']);
+    }
+
+    public function testReusesColorLabelsByCodeWhileApplyingCurrentStructuredData(): void
+    {
+        $baseline = $this->createGroupWiki(['official_colors' => [['color_code' => '#ff0000', 'label' => '빨강'], ['color_code' => '#0000ff', 'label' => '파랑']]]);
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(2));
+        $wiki->setBasic(GroupBasic::fromArray(array_replace($wiki->basic()->toArray(), [
+            'normalized_name' => 'new-normalized-value',
+            'official_colors' => [['color_code' => '#0000ff', 'label' => '파랑'], ['color_code' => '#ff0000', 'label' => '새 빨강']],
+        ])));
+        $existing = new Wiki(
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            $wiki->translationSetIdentifier(),
+            $wiki->slug(),
+            Language::JAPANESE,
+            $wiki->resourceType(),
+            GroupBasic::fromArray(array_replace($baseline->basic()->toArray(), [
+                'name' => '保持した名前', 'official_colors' => [['color_code' => '#ff0000', 'label' => '赤'], ['color_code' => '#0000ff', 'label' => '既存の青']],
+            ])),
+            new SectionContentCollection(),
+            null,
+            new Version(1),
+        );
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts(['새 빨강'], ['新しい赤']);
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
+        self::assertSame('new-normalized-value', $result->translatedBasic()->normalizedName());
+        self::assertSame([['color_code' => '#0000ff', 'label' => '既存の青'], ['color_code' => '#ff0000', 'label' => '新しい赤']], $result->translatedBasic()->toArray()['official_colors']);
+    }
+
+    public function testTranslatesOnlyChangedBasicAndSeoFieldsAcrossSeveralVersions(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $baseline->setTitle(new SeoTitle('이전 제목'));
+        $baseline->setMetaDescription(new MetaDescription('설명'));
+        $baseline->setKeywords(new SeoKeywords(['키워드']));
+        $existing = $this->existingTranslation($baseline);
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(5));
+        $wiki->setTitle(new SeoTitle('새 제목'));
+        $wiki->setBasic(TalentBasic::fromArray(array_replace($wiki->basic()->toArray(), ['name' => '새 이름', 'normalized_name' => 'new-search-key'])));
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts(['새 이름', '새 제목'], ['新しい名前', '新しいタイトル']);
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        self::assertSame('新しい名前', (string) $result->translatedBasic()->name());
+        self::assertSame('保持した本名', $result->translatedBasic()->toArray()['real_name']);
+        self::assertSame('new-search-key', $result->translatedBasic()->normalizedName());
+        self::assertSame('新しいタイトル', (string) $result->translatedTitle());
+        self::assertSame('保持した説明', (string) $result->translatedMetaDescription());
+        self::assertSame(['保持したキーワード'], $result->translatedKeywords()?->values());
+    }
+
+    public function testAppliesClearedFieldsWithoutCallingApi(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $baseline->setTitle(new SeoTitle('제목'));
+        $baseline->setMetaDescription(new MetaDescription('설명'));
+        $baseline->setKeywords(new SeoKeywords(['키워드']));
+        $existing = $this->existingTranslation($baseline);
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(2));
+        $wiki->setTitle(null);
+        $wiki->setMetaDescription(new MetaDescription(''));
+        $wiki->setKeywords(new SeoKeywords([]));
+        $wiki->setBasic(TalentBasic::fromArray(array_replace($wiki->basic()->toArray(), ['real_name' => null, 'position' => ''])));
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts([], []);
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        self::assertNull($result->translatedTitle());
+        self::assertSame('', (string) $result->translatedMetaDescription());
+        self::assertSame([], $result->translatedKeywords()?->values());
+        self::assertSame('', $result->translatedBasic()->toArray()['real_name']);
+        self::assertSame('', $result->translatedBasic()->toArray()['position']);
+        self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
+    }
+
+    public function testTranslatesAllWhenSnapshotIsMissing(): void
+    {
+        $baseline = $this->createTalentWiki();
+        $existing = $this->existingTranslation($baseline);
+
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(5));
+        $this->configureComparison($wiki, null, $existing);
+        $this->expectTranslationTexts(['채영', '손채영'], ['名前', '本名']);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        self::assertSame('名前', (string) $result->translatedBasic()->name());
+    }
+
+    public function testReusesNestedAndSameNamedSectionsWhileAddingAndRemovingContent(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('같은 이름', 0, new SectionContentCollection([
+                new TextBlock(0, '첫 내용'),
+                new Section('하위', 1, new SectionContentCollection([new TextBlock(0, '하위 내용')]), 2),
+            ])),
+            new Section('같은 이름', 1, new SectionContentCollection([new TextBlock(0, '둘째 내용')])),
+            new Section('삭제', 2, new SectionContentCollection([new QuoteBlock(0, '삭제 내용')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('同名の一番', 0, new SectionContentCollection([
+                new TextBlock(0, '一番の訳'),
+                new Section('子見出しの訳', 1, new SectionContentCollection([new TextBlock(0, '子本文の訳')]), 2),
+            ])),
+            new Section('同名の二番', 1, new SectionContentCollection([new TextBlock(0, '二番の訳')])),
+            new Section('削除済み', 2, new SectionContentCollection([new QuoteBlock(0, '削除本文')])),
+        ]));
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(3));
+        $second = $baseline->sections()->all()[1];
+        self::assertInstanceOf(Section::class, $second);
+        $wiki->setSections(new SectionContentCollection([
+            new Section('같은 이름', 0, $second->contents()),
+            new Section('하위', 1, new SectionContentCollection([new TextBlock(0, '하위 내용')])),
+            new Section('추가', 2, new SectionContentCollection([new TextBlock(0, '추가 내용')])),
+        ]));
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts(['추가', '추가 내용'], ['追加', '追加内容']);
+        $sections = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE)->translatedSections()->all();
+        self::assertCount(3, $sections);
+        foreach ($sections as $section) {
+            self::assertInstanceOf(Section::class, $section);
+        }
+        self::assertInstanceOf(Section::class, $sections[0]);
+        self::assertInstanceOf(Section::class, $sections[1]);
+        self::assertInstanceOf(Section::class, $sections[2]);
+        self::assertSame(['同名の二番', '子見出しの訳', '追加'], [$sections[0]->title(), $sections[1]->title(), $sections[2]->title()]);
+        self::assertSame(1, $sections[1]->depth());
+        $child = $sections[1]->contents()->all()[0];
+        self::assertInstanceOf(TextBlock::class, $child);
+        self::assertSame('子本文の訳', $child->content());
+    }
+
+    public function testReusesTextButCopiesCurrentNonTranslatedBlockData(): void
+    {
+        $oldImage = new ImageIdentifier(StrTestHelper::generateUuid());
+        $newImage = new ImageIdentifier(StrTestHelper::generateUuid());
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('사진', 0, new SectionContentCollection([new ImageBlock(0, $oldImage, '설명', '대체')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('写真の訳', 0, new SectionContentCollection([new ImageBlock(0, $oldImage, '既存説明', '既存代替')])),
+        ]));
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(2));
+        $wiki->setSections(new SectionContentCollection([
+            new Section('사진', 0, new SectionContentCollection([new ImageBlock(0, $newImage, '설명', '대체')])),
+        ]));
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts([], []);
+        $section = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE)->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        $block = $section->contents()->all()[0];
+        self::assertInstanceOf(ImageBlock::class, $block);
+        self::assertSame($newImage, $block->imageIdentifier());
+        self::assertSame('既存説明', $block->caption());
+        self::assertSame('既存代替', $block->alt());
+    }
+
+    public function testRetranslatesAmbiguousDuplicateSectionsInsteadOfGuessingByPosition(): void
+    {
+        $section = new Section('동일', 0, new SectionContentCollection([new TextBlock(0, '같음')]));
+        $baseline = $this->createTalentWiki(new SectionContentCollection([$section, $section]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('訳一', 0, new SectionContentCollection([new TextBlock(0, '本文一')])),
+            new Section('訳二', 1, new SectionContentCollection([new TextBlock(0, '本文二')])),
+        ]));
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts(['동일', '같음', '동일', '같음'], ['再翻訳', '本文', '再翻訳', '本文']);
+        self::assertCount(2, $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE)->translatedSections()->all());
+    }
+
+    public function testChoosesComparisonVersionIndependentlyForEachLanguage(): void
+    {
+        $old = $this->createTalentWiki();
+        $recent = clone $old;
+        $recent->setVersion(new Version(2));
+        $recent->setBasic(TalentBasic::fromArray(array_replace($recent->basic()->toArray(), ['name' => '새 이름'])));
+        $current = clone $recent;
+        $current->setVersion(new Version(5));
+        $japanese = $this->existingTranslation($old);
+        $english = $this->existingTranslation($recent, language: Language::ENGLISH);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->with($current->translationSetIdentifier(), [Language::JAPANESE])->andReturn([$japanese]);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->with($current->translationSetIdentifier(), [Language::ENGLISH])->andReturn([$english]);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        foreach ([$old, $recent] as $baseline) {
+            $wikiSnapshotRepository->shouldReceive('findByWikiAndVersion')->once()->with($current->wikiIdentifier(), $baseline->version())
+                ->andReturn($this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
+        }
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->expectTranslationTexts(['새 이름'], ['新しい名前']);
+        $service = $this->app()->make(TranslationServiceInterface::class);
+        self::assertSame('新しい名前', (string) $service->translateWiki($current, Language::JAPANESE)->translatedBasic()->name());
+        self::assertSame('保持した名前', (string) $service->translateWiki($current, Language::ENGLISH)->translatedBasic()->name());
+    }
+
+    public function testCompletesMissingTranslationRanges(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([new Section('소개', 0, new SectionContentCollection([new TextBlock(0, '내용')]))]));
+        $baseline->setTitle(new SeoTitle('제목'));
+        $baseline->setKeywords(new SeoKeywords(['키워드']));
+        $existing = $this->existingTranslation($baseline);
+        $existing->setTitle(null);
+        $existing->setKeywords(null);
+        $existing->setBasic(TalentBasic::fromArray(array_replace($existing->basic()->toArray(), ['real_name' => ''])));
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts(['손채영', '소개', '내용', '제목', '키워드'], ['補完本名', '紹介', '本文', '題名', 'キーワード']);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE);
+        self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
+        self::assertSame('補完本名', $result->translatedBasic()->toArray()['real_name']);
+        self::assertSame('題名', (string) $result->translatedTitle());
+        self::assertCount(1, $result->translatedSections()->all());
+    }
+
+    public function testRetranslatesStructurallyAmbiguousTargetSectionsInsteadOfUsingPosition(): void
+    {
+        $sourceSections = new SectionContentCollection([
+            new Section('첫째', 0, new SectionContentCollection([new TextBlock(0, '내용 하나')])),
+            new Section('둘째', 1, new SectionContentCollection([new TextBlock(0, '내용 둘')])),
+        ]);
+        $baseline = $this->createTalentWiki($sourceSections);
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('一番', 0, new SectionContentCollection([new TextBlock(0, '訳一')])),
+            new Section('二番', 1, new SectionContentCollection([new TextBlock(0, '訳二')])),
+        ]));
+        $translatedSections = $existing->sections()->all();
+        $existing->setSections(new SectionContentCollection(array_reverse($translatedSections)));
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts(['첫째', '내용 하나', '둘째', '내용 둘'], ['再翻訳一', '本文一', '再翻訳二', '本文二']);
+        $sections = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE)->translatedSections()->all();
+        self::assertInstanceOf(Section::class, $sections[0]);
+        self::assertInstanceOf(Section::class, $sections[1]);
+        self::assertSame('再翻訳一', $sections[0]->title());
+        self::assertSame('再翻訳二', $sections[1]->title());
+    }
+
+    public function testRetranslatesSectionWhenTargetStructureDiffers(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('원본', 0, new SectionContentCollection([new TextBlock(0, '원문')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('既存訳', 0, new SectionContentCollection([new TextBlock(0, '既存本文')])),
+        ]));
+        $previous = $existing->sections()->all()[0];
+        self::assertInstanceOf(Section::class, $previous);
+        $existing->setSections(new SectionContentCollection([
+            new Section('編集済み見出し', 0, new SectionContentCollection([new QuoteBlock(0, '別の構造')])),
+        ]));
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts(['원본', '원문'], ['再翻訳見出し', '再翻訳本文']);
+        $section = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE)->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        self::assertSame('再翻訳見出し', $section->title());
+
+    }
+
+    public function testReusesStructurallyDistinctSameNamedSectionsAfterTargetReordering(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('같음', 0, new SectionContentCollection([new TextBlock(0, '본문')])),
+            new Section('같음', 1, new SectionContentCollection([new QuoteBlock(0, '인용')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('引用の既存訳', 0, new SectionContentCollection([new QuoteBlock(0, '引用本文の訳')])),
+            new Section('本文の既存訳', 1, new SectionContentCollection([new TextBlock(0, '通常本文の訳')])),
+        ]));
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts([], []);
+
+        $sections = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::JAPANESE)->translatedSections()->all();
+        self::assertInstanceOf(Section::class, $sections[0]);
+        self::assertInstanceOf(Section::class, $sections[1]);
+        self::assertSame('本文の既存訳', $sections[0]->title());
+        self::assertSame('引用の既存訳', $sections[1]->title());
+        self::assertSame(0, $sections[0]->displayOrder());
+        self::assertSame(1, $sections[1]->displayOrder());
+    }
+
+    public function testReusesUnchangedNestedSectionWhenOnlyParentScopeChanges(): void
+    {
+        $child = new Section('하위', 1, new SectionContentCollection([new TextBlock(0, '하위 내용')]), 2);
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('부모', 0, new SectionContentCollection([new TextBlock(0, '부모 내용'), $child])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('親の訳', 0, new SectionContentCollection([
+                new TextBlock(0, '親本文の訳'),
+                new Section('子の既存訳', 1, new SectionContentCollection([new TextBlock(0, '子本文の既存訳')]), 2),
+            ])),
+        ]));
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(2));
+        $wiki->setSections(new SectionContentCollection([
+            new Section('새 부모', 0, new SectionContentCollection([new TextBlock(0, '새 내용'), $child])),
+        ]));
+        $this->configureComparison($wiki, $baseline, $existing);
+        $this->expectTranslationTexts(['새 부모', '새 내용'], ['新しい親', '新しい本文']);
+
+        $parent = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE)->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $parent);
+        self::assertSame('新しい親', $parent->title());
+        $nested = $parent->contents()->all()[1];
+        self::assertInstanceOf(Section::class, $nested);
+        self::assertSame('子の既存訳', $nested->title());
+    }
+
+    public function testCapitalizesNewEnglishHeadingWhenOnlyHeadingTranslationIsMissing(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('소개', 0, new SectionContentCollection([new TextBlock(0, '내용')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('', 0, new SectionContentCollection([new TextBlock(0, 'Kept content')])),
+        ]), Language::ENGLISH);
+        $this->configureComparison($baseline, $baseline, $existing);
+        $this->expectTranslationTexts(['소개'], ['introduction']);
+
+        $section = $this->app()->make(TranslationServiceInterface::class)->translateWiki($baseline, Language::ENGLISH)->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        self::assertSame('Introduction', $section->title());
+        $block = $section->contents()->all()[0];
+        self::assertInstanceOf(TextBlock::class, $block);
+        self::assertSame('Kept content', $block->content());
+    }
+
+    private function existingTranslation(Wiki $baseline, ?SectionContentCollection $sections = null, Language $language = Language::JAPANESE): Wiki
+    {
+        $basic = $baseline->basic();
+
+        return new Wiki(
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            $baseline->translationSetIdentifier(),
+            $baseline->slug(),
+            $language,
+            $baseline->resourceType(),
+            $basic::fromArray(array_replace($basic->toArray(), ['name' => '保持した名前', 'real_name' => '保持した本名'])),
+            $sections ?? new SectionContentCollection(),
+            null,
+            $baseline->version(),
+            title: $baseline->title() === null ? null : new SeoTitle('保持したタイトル'),
+            metaDescription: $baseline->metaDescription() === null ? null : new MetaDescription('保持した説明'),
+            keywords: $baseline->keywords() === null ? null : new SeoKeywords(['保持したキーワード']),
+        );
+    }
+
+    private function configureComparison(Wiki $wiki, ?Wiki $baseline, Wiki $existing): void
+    {
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()
+            ->with($wiki->translationSetIdentifier(), [$existing->language()])->andReturn([$existing]);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        if ($existing->version()->value() < $wiki->version()->value()) {
+            $wikiSnapshotRepository->shouldReceive('findByWikiAndVersion')->once()
+                ->with($wiki->wikiIdentifier(), $existing->version())
+                ->andReturn($baseline === null ? null : $this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
+        }
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+    }
+
+    /**
+     * @param list<string> $texts
+     * @param list<string> $translations
+     */
+    private function expectTranslationTexts(array $texts, array $translations): void
+    {
+        $client = Mockery::mock(GoogleTranslateClient::class);
+        if ($texts === []) {
+            $client->shouldNotReceive('translateTexts');
+        } else {
+            $client->shouldReceive('translateTexts')->once()->withArgs(static fn (TranslateTextsRequest $request): bool => $request->texts() === $texts)
+                ->andReturn(new TranslateTextsResponse($translations));
+        }
+        $this->app()->instance(GoogleTranslateClient::class, $client);
+    }
+
+    public function testReusesMovedSectionAndTranslatesOnlyChangedSection(): void
+    {
+        $first = new Section('첫째', 0, new SectionContentCollection([new TextBlock(0, '하나')]));
+        $second = new Section('둘째', 1, new SectionContentCollection([new QuoteBlock(0, '둘')]));
+        $baseline = $this->createTalentWiki(new SectionContentCollection([$first, $second]));
+        $wiki = clone $baseline;
+        $wiki->setVersion(new Version(3));
+        $wiki->setSections(new SectionContentCollection([
+            new Section('둘째', 0, $second->contents()),
+            new Section('첫째', 1, new SectionContentCollection([new TextBlock(0, '새 내용')])),
+        ]));
+        $translated = new Wiki(
+            new WikiIdentifier(StrTestHelper::generateUuid()),
+            $wiki->translationSetIdentifier(),
+            $wiki->slug(),
+            Language::JAPANESE,
+            $wiki->resourceType(),
+            TalentBasic::fromArray(array_replace($wiki->basic()->toArray(), ['name' => '名前', 'real_name' => '本名'])),
+            new SectionContentCollection([
+                new Section('一番', 0, new SectionContentCollection([new TextBlock(0, '一')])),
+                new Section('二番', 1, new SectionContentCollection([new QuoteBlock(0, '保持する訳')])),
+            ]),
+            null,
+            $baseline->version(),
+        );
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->once()->andReturn([$translated]);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $snapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        $snapshotRepository->shouldReceive('findByWikiAndVersion')->once()->with($wiki->wikiIdentifier(), $baseline->version())
+            ->andReturn($this->app()->make(WikiSnapshotFactoryInterface::class)->create($baseline));
+        $this->app()->instance(WikiSnapshotRepositoryInterface::class, $snapshotRepository);
+        $client = Mockery::mock(GoogleTranslateClient::class);
+        $client->shouldReceive('translateTexts')->once()->withArgs(static fn (TranslateTextsRequest $request): bool => $request->texts() === ['첫째', '새 내용'])
+            ->andReturn(new TranslateTextsResponse(['最初', '新しい内容']));
+        $this->app()->instance(GoogleTranslateClient::class, $client);
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
+        $sections = $result->translatedSections()->all();
+        self::assertInstanceOf(Section::class, $sections[0]);
+        self::assertInstanceOf(Section::class, $sections[1]);
+        self::assertInstanceOf(QuoteBlock::class, $sections[0]->contents()->all()[0]);
+        self::assertInstanceOf(TextBlock::class, $sections[1]->contents()->all()[0]);
+        self::assertSame('二番', $sections[0]->title());
+        self::assertSame(0, $sections[0]->displayOrder());
+        self::assertSame('保持する訳', $sections[0]->contents()->all()[0]->content());
+        self::assertSame('新しい内容', $sections[1]->contents()->all()[0]->content());
+    }
+
     /**
      * 正しくDIが動作していること.
      *
