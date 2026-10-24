@@ -33,6 +33,9 @@ model Video {
   @doc("Video duration in seconds; null when unknown.")
   @minValue(0)
   durationSeconds: int32 | null;
+  creatorPrincipalIdentifier: Uuid | null;
+  @doc("The creator's current Identity user name. Null for automatically collected videos or when the creator's Principal or Identity no longer exists.")
+  creatorIdentityName: string | null;
   videoUsage: "music_video" | "live" | "interview" | "behind_the_scenes" | "cover" | "collaboration" | "short" | "other" | "youtube_auto_view_count" | "youtube_auto_like_count" | "youtube_auto_recent_popular";
 }
 
@@ -44,7 +47,7 @@ model ListVideosResponse {
 interface PublicVideoLinkOperations {
   @get
   @route("/wiki/{language}/{resourceType}/{slug}/videos")
-  @doc("Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.")
+  @doc("Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.")
   listVideos(
     @path language: "ja" | "ko" | "en",
     @path resourceType: "agency" | "group" | "song" | "talent",
@@ -66,4 +69,12 @@ interface VideoLinkOperations {
   createVideoLink(
     @body body: CreateVideoLinkRequestBody,
   ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @delete
+  @route("/{videoLinkId}")
+  @doc("Delete only the specified video link. Requires an authenticated Wiki collaborator with an active Account/Principal and DELETE_VIDEO_LINK permission. Manual videos may be deleted only by their creator; all three automatically collected video categories may be deleted by any Wiki collaborator. Returns 204 without a body, 403 when forbidden, 404 when missing, and 422 for an invalid identifier. Deletion does not prevent future automatic re-collection.")
+  deleteVideoLink(
+    @path videoLinkId: Uuid,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
 }

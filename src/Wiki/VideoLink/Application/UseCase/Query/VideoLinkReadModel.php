@@ -14,10 +14,12 @@ readonly class VideoLinkReadModel
         public ?string $publishedAt,
         public string $videoUsage,
         public ?int $durationSeconds,
+        public ?string $creatorPrincipalIdentifier,
+        public ?string $creatorIdentityName,
     ) {
     }
 
-    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int} */
+    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int,creatorPrincipalIdentifier:?string,creatorIdentityName:?string} */
     public function toArray(): array
     {
         return [
@@ -28,6 +30,8 @@ readonly class VideoLinkReadModel
             'publishedAt' => $this->publishedAt,
             'videoUsage' => $this->videoUsage,
             'durationSeconds' => $this->durationSeconds,
+            'creatorPrincipalIdentifier' => $this->creatorPrincipalIdentifier,
+            'creatorIdentityName' => $this->creatorIdentityName,
         ];
     }
 }

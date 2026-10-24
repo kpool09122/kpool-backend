@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'video_link_already_exists' => '此Wiki已存在使用相同URL的影片。',
+    'video_link_not_found' => '找不到影片連結。',
     'invalid_video_link' => '影片輸入無效。',
     'published_wiki_not_found' => '找不到指定的已發布Wiki。',
     'invalid_video_list_query' => '影片清單查詢條件無效。',

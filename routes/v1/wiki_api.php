@@ -23,6 +23,7 @@ use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\U
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Application\Http\Action\Wiki\VideoLink\Command\CreateVideoLink\CreateVideoLinkAction;
+use Application\Http\Action\Wiki\VideoLink\Command\DeleteVideoLink\DeleteVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListVideos\ListVideosAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
@@ -142,6 +143,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
         Route::post('/image/upload', UploadImageAction::class);
         Route::post('/video-link/create', CreateVideoLinkAction::class);
+        Route::delete('/video-link/{videoLinkId}', DeleteVideoLinkAction::class);
 
         // ImageDeletionRequest
         Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);

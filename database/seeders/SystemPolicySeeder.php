@@ -96,7 +96,7 @@ class SystemPolicySeeder extends Seeder
 
     private function createAgencyScopeActionPolicies(): void
     {
-        foreach ([Action::READ, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS] as $action) {
+        foreach ([Action::READ, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::CREATE_VIDEO_LINK, Action::DELETE_VIDEO_LINK] as $action) {
             $this->createPolicy(
                 name: 'AGENCY_SCOPE_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,
@@ -119,7 +119,7 @@ class SystemPolicySeeder extends Seeder
 
     private function createTalentScopeActionPolicies(): void
     {
-        foreach ([Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS] as $action) {
+        foreach ([Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::CREATE_VIDEO_LINK, Action::DELETE_VIDEO_LINK] as $action) {
             $this->createPolicy(
                 name: 'TALENT_SCOPE_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,

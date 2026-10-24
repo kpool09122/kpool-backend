@@ -10,6 +10,8 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInputPo
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosOutputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\VideoLinkReadModel;
+use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
+use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
 readonly class ListVideos implements ListVideosInterface
@@ -26,8 +28,10 @@ readonly class ListVideos implements ListVideosInterface
             throw new WikiNotFoundException();
         }
         $query = VideoLinkModel::query()
+            ->with(['creatorPrincipal:id,identity_id', 'creatorPrincipal.identity:id,identity_name'])
             ->where('wiki_id', $wiki->id)
-            ->where('resource_type', $input->resourceType()->value);
+            ->where('resource_type', $input->resourceType()->value)
+            ->when(! VideoLinkCollectionPolicy::supports($input->resourceType()), static fn ($query) => $query->whereIn('video_usage', array_map(static fn (VideoUsage $usage): string => $usage->value, array_filter(VideoUsage::cases(), static fn (VideoUsage $usage): bool => $usage->isManual()))));
         if ($input->minDurationSeconds() !== null) {
             $query->where('duration_seconds', '>=', $input->minDurationSeconds());
         }
@@ -43,6 +47,8 @@ readonly class ListVideos implements ListVideosInterface
                 $video->published_at?->toAtomString(),
                 $video->video_usage,
                 $video->duration_seconds,
+                VideoUsage::from($video->video_usage)->isAutoCollected() ? null : $video->creator_principal_id,
+                VideoUsage::from($video->video_usage)->isAutoCollected() ? null : $video->creatorPrincipal?->identity?->identity_name,
             ))->all();
         $output->output(array_values($videos));
     }

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Override;
 
 /**
@@ -22,6 +23,7 @@ use Override;
  * @property int|null $duration_seconds
  * @property string|null $creator_principal_id
  * @property Carbon $created_at
+ * @property-read Principal|null $creatorPrincipal
  */
 #[Fillable([
     'id',
@@ -51,4 +53,10 @@ class VideoLink extends Model
         'published_at' => 'datetime',
         'created_at' => 'datetime',
     ];
+
+    /** @return BelongsTo<Principal, $this> */
+    public function creatorPrincipal(): BelongsTo
+    {
+        return $this->belongsTo(Principal::class, 'creator_principal_id', 'id');
+    }
 }
