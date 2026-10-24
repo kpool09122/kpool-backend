@@ -14,8 +14,12 @@ def fixture():
     o.update(RepositoryUri=ACCOUNT+'.dkr.ecr.ap-northeast-1.amazonaws.com/fixture',DeploymentRoleArn='fixture-deployment-role',ApiUrl='https://api.example.invalid')
     for key in ('AppSecretArn','MigrationSecretArn','CacheSecretArn'):
         o[key]=f'arn:aws:secretsmanager:ap-northeast-1:{ACCOUNT}:secret:fixture-{key}'
-    for kind in ('Api','Worker','Migration'):
-        o.update({kind+'TaskRoleArn':'fixture-'+kind+'-task-role',kind+'ReleaseFamily':'fixture-'+kind+'-release',kind+'BootstrapTaskDefinitionArn':'fixture-'+kind+'-bootstrap'})
+    for kind in ('Api','Worker','Migration','Scheduler'):
+        o.update({kind+'ReleaseFamily':'fixture-'+kind+'-release',kind+'BootstrapTaskDefinitionArn':'fixture-'+kind+'-bootstrap'})
+        if kind != 'Scheduler':
+            o[kind+'TaskRoleArn']='fixture-'+kind+'-task-role'
+    o.update(SchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/monthly',
+             VideoCollectionSchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/video')
     o.update(AppExecutionRoleArn='fixture-app-execution',MigrationExecutionRoleArn='fixture-migration-execution')
     environment={'APP_ENV':'production','APP_DEBUG':'false','DB_CONNECTION':'pgsql','DB_HOST':'fixture-db','QUEUE_CONNECTION':'sqs','SESSION_DRIVER':'redis','CACHE_STORE':'redis','REDIS_DB':'0','REDIS_CACHE_DB':'0','SQS_QUEUE_URL':o['QueueUrl'],'APP_URL':o['ApiUrl'],'FRONTEND_URL':'https://front.example.invalid'}
     config={'paused':False,'region':'ap-northeast-1','account_id':ACCOUNT,'deployment_role_arn':o['DeploymentRoleArn'],
@@ -32,6 +36,18 @@ class FakeAws:
         self.migration_status='STOPPED'; self.migration_exit=0; self.api_status='SUCCESSFUL'; self.wrong_revision=False
         self.worker_failed=False; self.account=ACCOUNT; self.stack_status='CREATE_COMPLETE'; self.alarm_state='OK'
         self.hook_state='Active'; self.ssm_type='String'; self.pending=0; self.template_overrides={}
+        self.registered_definitions={}
+        self.schedules={}
+        for key, state in (('SchedulerArn', 'DISABLED'), ('VideoCollectionSchedulerArn', 'ENABLED')):
+            arn=outputs[key]
+            group,name=arn.split(':schedule/',1)[1].split('/')
+            self.schedules[(group,name)]={'Arn':arn,'Name':name,'GroupName':group,'State':state,
+                'ScheduleExpression':'rate(45 minutes)' if name=='video' else 'cron(0 3 1 * ? *)',
+                'ScheduleExpressionTimezone':'Asia/Tokyo','FlexibleTimeWindow':{'Mode':'OFF'},
+                'Target':{'Arn':'arn:aws:ecs:ap-northeast-1:'+ACCOUNT+':cluster/fixture',
+                          'RoleArn':'arn:aws:iam::'+ACCOUNT+':role/fixture-scheduler',
+                          'EcsParameters':{'TaskDefinitionArn':'fixture-old-Scheduler'},
+                          'Input':'{"containerOverrides":[{"name":"scheduler","command":["php","artisan","video-links:collect"]}]}' if name=='video' else '{}'}}
         self.services={kind:{'serviceName':outputs[kind+'ServiceName'],'status':'ACTIVE','taskDefinition':'fixture-old-'+kind,
                              'desiredCount':2,'runningCount':2,'pendingCount':0,
                              'deployments':[{'status':'PRIMARY','taskDefinition':'fixture-old-'+kind,'rolloutState':'COMPLETED'}]} for kind in ('Api','Worker')}
@@ -56,8 +72,11 @@ class FakeAws:
             import json
             return {'Parameter':{'Type':self.ssm_type,'Value':json.dumps(self.environment)}}
         if operation=='describe-task-definition':
-            kind=next(kind for kind in ('Api','Worker','Migration') if arguments['taskDefinition']==o[kind+'BootstrapTaskDefinitionArn'])
-            template={'family':'fixture-'+kind+'-bootstrap','taskRoleArn':o[kind+'TaskRoleArn'],'executionRoleArn':o['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn'],
+            if arguments['taskDefinition'] in self.registered_definitions:
+                return {'taskDefinition':copy.deepcopy(self.registered_definitions[arguments['taskDefinition']])}
+            kind=next(kind for kind in ('Api','Worker','Migration','Scheduler') if arguments['taskDefinition']==o[kind+'BootstrapTaskDefinitionArn'])
+            role_kind='Worker' if kind=='Scheduler' else kind
+            template={'family':'fixture-'+kind+'-bootstrap','taskRoleArn':o[role_kind+'TaskRoleArn'],'executionRoleArn':o['MigrationExecutionRoleArn' if kind=='Migration' else 'AppExecutionRoleArn'],
                       'networkMode':'awsvpc','requiresCompatibilities':['FARGATE'],'cpu':'512','memory':'1024',
                       'runtimePlatform':{'cpuArchitecture':'ARM64','operatingSystemFamily':'LINUX'},
                       'volumes':[{'name': name, 'host': {}} for name in ('release-tmp','release-storage','release-cache')],
@@ -65,9 +84,20 @@ class FakeAws:
                           'mountPoints':[{'sourceVolume': name, 'containerPath': path, 'readOnly': False} for name, path in
                                          (('release-tmp','/tmp'),('release-storage','/var/www/html/storage'),('release-cache','/var/www/html/bootstrap/cache'))]}]}
             template.update(self.template_overrides)
+            if kind=='Scheduler':
+                template['containerDefinitions'][0]['command']=['php','artisan','wiki:process-role-promotion','--sync']
             return {'taskDefinition':template}
         if operation=='get-queue-attributes': return {'Attributes':{'QueueArn':o['QueueArn'],'ApproximateNumberOfMessages':'0','ApproximateNumberOfMessagesNotVisible':'0'}}
-        if operation=='register-task-definition': return {'taskDefinition':{'taskDefinitionArn':arguments['family']+':7'}}
+        if operation=='register-task-definition':
+            arn=arguments['family']+':7'
+            self.registered_definitions[arn]=copy.deepcopy(arguments)
+            return {'taskDefinition':{'taskDefinitionArn':arn}}
+        if operation=='get-schedule':
+            return copy.deepcopy(self.schedules[(arguments['GroupName'],arguments['Name'])])
+        if operation=='update-schedule':
+            value=self.schedules[(arguments['GroupName'],arguments['Name'])]
+            value.update(copy.deepcopy(arguments))
+            return {'ScheduleArn':value['Arn']}
         if operation=='run-task': return {'tasks':[{'taskArn':'fixture-migration-task'}]}
         if operation=='describe-tasks':
             container={'name':'migration'}

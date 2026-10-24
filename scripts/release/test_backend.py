@@ -76,7 +76,7 @@ class BackendTests(unittest.TestCase):
     def test_full_release_uses_one_digest_distinct_roles_and_native_deployment(self):
         self.run_release()
         definitions=[a for _,op,a in self.aws.calls if op=='register-task-definition']
-        self.assertEqual(len(definitions),3)
+        self.assertEqual(len(definitions),4)
         self.assertEqual({d['containerDefinitions'][0]['image'] for d in definitions},{self.o['RepositoryUri']+'@'+self.manifest['image_digest']})
         self.assertEqual(len({d['taskRoleArn'] for d in definitions}),3)
         operations=[op for _,op,_ in self.aws.calls]

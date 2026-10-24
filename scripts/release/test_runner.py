@@ -15,19 +15,20 @@ class FakeBackend:
     def migration(self): self.stage('migration')
     def api(self): self.stage('api')
     def worker(self): self.stage('worker')
+    def schedulers(self): self.stage('schedulers')
     def smoke(self): self.stage('smoke')
     def observe(self): self.calls.append('observe')
 
 class OrchestrationTests(unittest.TestCase):
     def test_failure_stops_next_stage_and_always_observes(self):
-        for failure in ('preflight','register','migration','api','worker','smoke',None):
+        for failure in ('preflight','register','migration','api','worker','schedulers','smoke',None):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
                 backend=FakeBackend(failure)
                 journal=Journal(Path(directory), {'release_id':'fixture'})
                 if failure:
                     with self.assertRaises(ValueError): execute(backend,journal,'deploy')
-                    expected=['preflight','register','migration','api','worker','smoke']
+                    expected=['preflight','register','migration','api','worker','schedulers','smoke']
                     self.assertEqual(backend.calls,expected[:expected.index(failure)+1]+['observe'])
                 else:
                     execute(backend,journal,'deploy')
-                    self.assertEqual(backend.calls,['preflight','register','migration','api','worker','smoke','observe'])
+                    self.assertEqual(backend.calls,['preflight','register','migration','api','worker','schedulers','smoke','observe'])
