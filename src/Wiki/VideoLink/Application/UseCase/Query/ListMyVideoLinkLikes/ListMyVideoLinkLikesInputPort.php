@@ -11,6 +11,10 @@ interface ListMyVideoLinkLikesInputPort
 {
     public function principalIdentifier(): PrincipalIdentifier;
 
-    /** @return list<VideoLinkIdentifier> */
-    public function videoLinkIdentifiers(): array;
+    /** @return list<VideoLinkIdentifier>|null */
+    public function videoLinkIdentifiers(): ?array;
+
+    public function page(): int;
+
+    public function perPage(): int;
 }

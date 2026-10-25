@@ -13,15 +13,20 @@ readonly class ListMyVideoLinkLikesInput implements ListMyVideoLinkLikesInputPor
     public const int MAX_VIDEO_LINKS = 100;
 
     /**
-     * @param list<VideoLinkIdentifier> $videoLinkIdentifiers
+     * @param list<VideoLinkIdentifier>|null $videoLinkIdentifiers
      * @throws InvalidArgumentException
      */
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
-        private array $videoLinkIdentifiers,
+        private ?array $videoLinkIdentifiers = null,
+        private int $page = 1,
+        private int $perPage = 20,
     ) {
-        if (count($videoLinkIdentifiers) < 1 || count($videoLinkIdentifiers) > self::MAX_VIDEO_LINKS) {
+        if ($videoLinkIdentifiers !== null && (count($videoLinkIdentifiers) < 1 || count($videoLinkIdentifiers) > self::MAX_VIDEO_LINKS)) {
             throw new InvalidArgumentException('Between 1 and 100 video identifiers are required.');
+        }
+        if ($page < 1 || $perPage < 1 || $perPage > 100) {
+            throw new InvalidArgumentException('Page must be positive and perPage must be between 1 and 100.');
         }
     }
 
@@ -30,9 +35,19 @@ readonly class ListMyVideoLinkLikesInput implements ListMyVideoLinkLikesInputPor
         return $this->principalIdentifier;
     }
 
-    /** @return list<VideoLinkIdentifier> */
-    public function videoLinkIdentifiers(): array
+    /** @return list<VideoLinkIdentifier>|null */
+    public function videoLinkIdentifiers(): ?array
     {
         return $this->videoLinkIdentifiers;
+    }
+
+    public function page(): int
+    {
+        return $this->page;
+    }
+
+    public function perPage(): int
+    {
+        return $this->perPage;
     }
 }

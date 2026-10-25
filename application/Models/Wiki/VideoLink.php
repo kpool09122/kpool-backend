@@ -26,6 +26,7 @@ use Override;
  * @property Carbon $created_at
  * @property-read int $likes_count
  * @property-read Principal|null $creatorPrincipal
+ * @property-read Wiki|null $wiki
  */
 #[Fillable([
     'id',
@@ -55,6 +56,12 @@ class VideoLink extends Model
         'published_at' => 'datetime',
         'created_at' => 'datetime',
     ];
+
+    /** @return BelongsTo<Wiki, $this> */
+    public function wiki(): BelongsTo
+    {
+        return $this->belongsTo(Wiki::class, 'wiki_id', 'id');
+    }
 
     /** @return HasMany<VideoLinkLike, $this> */
     public function likes(): HasMany
