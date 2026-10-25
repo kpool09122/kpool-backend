@@ -56,7 +56,7 @@ class CurrentAccountServiceTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000001');
         $exception = new RuntimeException('unavailable');
-        Redis::shouldReceive('del')->once()->with('current-account:' . $identityIdentifier . ':stateless')->andThrow($exception);
+        Redis::shouldReceive('command')->once()->with('del', ['current-account:' . $identityIdentifier . ':stateless'])->andThrow($exception);
         DB::shouldReceive('transactionLevel')->once()->andReturn(0);
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->once())->method('warning')->with('Failed to clear current account context.', ['exception' => $exception]);
@@ -70,7 +70,7 @@ class CurrentAccountServiceTest extends TestCase
         $this->app()['request']->setLaravelSession($session);
         $session->setId(str_repeat('a', 40));
         $state = (object) ['called' => false];
-        Redis::shouldReceive('del')->once()->with('current-account:' . $identityIdentifier . ':' . str_repeat('a', 40))->andReturnUsing(static function () use ($state): void {
+        Redis::shouldReceive('command')->once()->with('del', ['current-account:' . $identityIdentifier . ':' . str_repeat('a', 40)])->andReturnUsing(static function () use ($state): void {
             $state->called = true;
         });
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);

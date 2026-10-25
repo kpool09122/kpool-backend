@@ -57,6 +57,7 @@ class AuthContextCache
     /**
      * @param callable(): AccountContext $dbResolver
      * @throws AccountNotFoundException
+     * @phpstan-impure
      */
     public function resolveAccount(IdentityIdentifier $identityIdentifier, callable $dbResolver): AccountContext
     {

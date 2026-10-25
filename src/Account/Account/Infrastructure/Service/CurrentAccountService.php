@@ -66,7 +66,7 @@ class CurrentAccountService implements CurrentAccountServiceInterface
         $logger = $this->logger;
         $forget = static function () use ($key, $logger): void {
             try {
-                Redis::del($key);
+                Redis::command('del', [$key]);
             } catch (Throwable $exception) {
                 $logger->warning('Failed to clear current account context.', ['exception' => $exception]);
             }

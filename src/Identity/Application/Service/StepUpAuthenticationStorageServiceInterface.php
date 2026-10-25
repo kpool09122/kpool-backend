@@ -12,6 +12,7 @@ interface StepUpAuthenticationStorageServiceInterface
 {
     public function store(StepUpAuthentication $authentication): void;
 
+    /** @phpstan-impure */
     public function requireValid(
         IdentityIdentifier $expectedIdentityIdentifier,
         StepUpAuthenticationScope $expectedScope,
