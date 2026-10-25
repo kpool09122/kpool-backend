@@ -78,17 +78,45 @@ interface VideoLinkLikeOperations {
 
   @get
   @route("/my/video-link-likes")
-  @doc("Return only requested VideoLink IDs liked by the authenticated active Wiki Principal, sorted by identifier. Unknown or unliked IDs are omitted; zero matches returns an empty array. Accepts 1-100 IDs per request; split larger batches. Does not accept a principal ID.")
+  @doc("Return likes of the authenticated active Wiki Principal. With videoLinkIds[], return all matching liked IDs in identifier order without pagination, even for non-public or missing wikis; videos includes only existing videos on published wikis and pagination is null. Omitted IDs list existing videos on published wikis across languages and resource types, sorted by likedAt descending then videoLinkIdentifier ascending, with matching IDs in the same order and pagination metadata. Each VideoLink is counted independently even when URLs match. Empty lists return 200. Explicit empty IDs, invalid UUIDs, more than 100 IDs or invalid pagination return 422. Does not accept a principal ID.")
   listMyVideoLinkLikes(
     @minItems(1)
     @maxItems(100)
-    @query(#{name: "videoLinkIds[]", explode: true}) videoLinkIds: Uuid[],
+    @query(#{name: "videoLinkIds[]", explode: true}) videoLinkIds?: Uuid[],
+    @minValue(1)
+    @query page?: int32 = 1,
+    @minValue(1)
+    @maxValue(100)
+    @query perPage?: int32 = 20,
   ): ListMyVideoLinkLikesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
+model LikedVideoLink {
+  videoLinkIdentifier: Uuid;
+  url: string;
+  title: string;
+  thumbnailUrl: string | null;
+  @minValue(0)
+  durationSeconds: int32 | null;
+  language: "ja" | "ko" | "en";
+  resourceType: "agency" | "group" | "song" | "talent";
+  slug: string;
+  likedAt: string;
+}
+
+model VideoLinkLikesPagination {
+  currentPage: int32;
+  perPage: int32;
+  total: int32;
 }
 
 model ListMyVideoLinkLikesResponse {
   @statusCode statusCode: 200;
-  @body body: { likedVideoLinkIdentifiers: Uuid[]; };
+  @body body: {
+    likedVideoLinkIdentifiers: Uuid[];
+    videos: LikedVideoLink[];
+    pagination: VideoLinkLikesPagination | null;
+  };
 }
 
 @route("/video-link")

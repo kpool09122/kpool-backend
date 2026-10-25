@@ -30,9 +30,12 @@ readonly class ListMyVideoLinkLikesAction
     {
         try {
             try {
+                $ids = $request->videoLinkIds();
                 $input = new ListMyVideoLinkLikesInput(
                     $this->wikiContext->principalIdentifier,
-                    array_map(static fn (string $id): VideoLinkIdentifier => new VideoLinkIdentifier($id), $request->videoLinkIds()),
+                    $ids === null ? null : array_map(static fn (string $id): VideoLinkIdentifier => new VideoLinkIdentifier($id), $ids),
+                    $request->page(),
+                    $request->perPage(),
                 );
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: error_message('invalid_video_link', $request->language()), previous: $e);

@@ -16,14 +16,28 @@ class ListMyVideoLinkLikesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'videoLinkIds' => ['required', 'array', 'list', 'min:1', 'max:100'],
+            'videoLinkIds' => ['sometimes', 'required', 'array', 'list', 'min:1', 'max:100'],
+            'page' => ['sometimes', 'required', 'integer', 'min:1'],
+            'perPage' => ['sometimes', 'required', 'integer', 'min:1', 'max:100'],
             'videoLinkIds.*' => ['required', 'string', 'uuid'],
         ];
     }
 
-    /** @return list<string> */
-    public function videoLinkIds(): array
+    /** @return list<string>|null */
+    public function videoLinkIds(): ?array
     {
-        return RequestValue::strings($this->validated('videoLinkIds'));
+        $ids = $this->validated('videoLinkIds');
+
+        return $ids === null ? null : RequestValue::strings($ids);
+    }
+
+    public function page(): int
+    {
+        return $this->integer('page', 1);
+    }
+
+    public function perPage(): int
+    {
+        return $this->integer('perPage', 20);
     }
 }
