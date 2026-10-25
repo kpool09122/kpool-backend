@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => 'Esta acción no está autorizada.',
     'inconsistent_version' => 'Las versiones de wiki publicadas en el conjunto de traducción no son consistentes.',
+    'published_wiki_required' => 'La publicación en la misma versión requiere una wiki publicada vinculada.',
     'snapshot_not_found' => 'No se encontró la instantánea especificada.',
     'version_mismatch' => 'Se detectó una discrepancia de versión en el conjunto de traducción.',
     'invalid_rollback_target_version' => 'La versión de destino debe ser menor que la versión actual.',

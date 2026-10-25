@@ -61,6 +61,7 @@ use Override;
     'approved_at',
     'source_editor_id',
     'translated_at',
+    'created_at',
 ])]
 #[Table(name: 'wiki_snapshots', keyType: 'string')]
 class WikiSnapshot extends Model

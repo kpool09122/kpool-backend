@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => '此操作未获授权。',
     'inconsistent_version' => '翻译集中已发布的Wiki版本不一致。',
+    'published_wiki_required' => '同版本发布需要关联已发布的Wiki。',
     'snapshot_not_found' => '未找到指定的快照。',
     'version_mismatch' => '翻译集中检测到版本不匹配。',
     'invalid_rollback_target_version' => '目标版本必须小于当前版本。',

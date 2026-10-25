@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => 'This action is not authorized.',
     'inconsistent_version' => 'Published wiki versions in the translation set are not consistent.',
+    'published_wiki_required' => 'Same-version publication requires a linked published wiki.',
     'snapshot_not_found' => 'The specified snapshot was not found.',
     'version_mismatch' => 'Version mismatch detected in translation set.',
     'invalid_rollback_target_version' => 'Target version must be less than current version.',

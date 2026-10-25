@@ -598,8 +598,17 @@ interface WikiOperations {
 
   @post
   @route("/{wikiId}/publish")
-  @doc("Publish a wiki draft.")
+  @doc("Publish an approved wiki draft as the next generation. Translated drafts catch up to the latest published version. Returns 409 when the selected publication version is inconsistent.")
   publishWiki(
+    ...VisitorLocationHeaders,
+    @path wikiId: Uuid,
+    @body body: WikiWorkflowRequestBody,
+  ): CreatePublishedWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @post
+  @route("/{wikiId}/publish-same-version")
+  @doc("Publish an approved draft into its linked published wiki without changing its identifier or version. Other languages are unchanged. wikiId is the draft ID. Returns 409 for an unapproved draft or a draft without a published-wiki link, 404 when the draft or linked published wiki does not exist, and 403 for insufficient publish permission.")
+  publishWikiAtSameVersion(
     ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,

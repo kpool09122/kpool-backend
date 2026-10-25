@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Wiki\Wiki\Application\UseCase\Command\PublishWikiAtSameVersion;
+
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
+
+class PublishWikiAtSameVersionOutput implements PublishWikiAtSameVersionOutputPort
+{
+    private ?Wiki $wiki = null;
+
+    public function setWiki(Wiki $wiki): void
+    {
+        $this->wiki = $wiki;
+    }
+
+    /**
+     * @return array{wikiIdentifier: ?string, language: ?string, name: ?string, resourceType: ?string, version: ?int}
+     */
+    public function toArray(): array
+    {
+        if ($this->wiki === null) {
+            return [
+                'wikiIdentifier' => null,
+                'language' => null,
+                'name' => null,
+                'resourceType' => null,
+                'version' => null,
+            ];
+        }
+
+        return [
+            'wikiIdentifier' => (string) $this->wiki->wikiIdentifier(),
+            'language' => $this->wiki->language()->value,
+            'name' => (string) $this->wiki->basic()->name(),
+            'resourceType' => $this->wiki->resourceType()->value,
+            'version' => $this->wiki->version()->value(),
+        ];
+    }
+}

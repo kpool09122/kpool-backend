@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Application\UseCase\Command\RollbackWiki;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -47,12 +50,51 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
+use Tests\Helper\CreateWiki;
+use Tests\Helper\CreateWikiSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\Helper\VisitorLocationTestHelper;
 use Tests\TestCase;
 
 class RollbackWikiTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testSelectsLatestSameVersionSnapshotIndependentlyForEachWiki(): void
+    {
+        $setId = StrTestHelper::generateUuid();
+        $wikiIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        $snapshotIds = [
+            ['019a1234-0000-7000-8000-000000000011', '019a1234-0000-7000-8000-000000000012'],
+            ['019a1234-0000-7000-8000-000000000013', '019a1234-0000-7000-8000-000000000014'],
+        ];
+        foreach ($wikiIds as $i => $wikiId) {
+            CreateWiki::create($wikiId, 'group', ['translation_set_identifier' => $setId, 'slug' => 'gr-rollback-revisions', 'language' => $i === 0 ? 'ko' : 'ja', 'version' => 3]);
+            foreach ([1, 0] as $revision) {
+                CreateWikiSnapshot::create($snapshotIds[$i][$revision], 'group', [
+                    'wiki_id' => $wikiId,
+                    'translation_set_identifier' => $setId,
+                    'version' => 1,
+                    'created_at' => '2026-01-01 00:00:00',
+                ], ['name' => ($revision === 1 ? 'latest-' : 'old-') . $i]);
+            }
+        }
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $input = new RollbackWikiInput($principalIdentifier, new WikiIdentifier($wikiIds[0]), new Version(1), ResourceType::GROUP);
+        DB::transaction(fn () => $this->app()->make(RollbackWikiInterface::class)->process($input, new RollbackWikiOutput()));
+        foreach ($wikiIds as $i => $wikiId) {
+            $this->assertDatabaseHas('wiki_group_basics', ['wiki_id' => $wikiId, 'name' => 'latest-' . $i]);
+            $this->assertDatabaseHas('wikis', ['id' => $wikiId, 'version' => 4]);
+            $this->assertSame(3, DB::table('wiki_snapshots')->where('wiki_id', $wikiId)->count());
+        }
+    }
+
     /**
      * 正常系: インスタンスが生成されること.
      */

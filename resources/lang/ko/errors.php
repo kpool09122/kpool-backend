@@ -109,6 +109,7 @@ return [
     // Wiki
     'unauthorized' => '이 작업은 인가되지 않았습니다.',
     'inconsistent_version' => '번역 세트 내 공개 위키의 버전이 일치하지 않습니다.',
+    'published_wiki_required' => '동일 버전으로 공개하려면 연결된 공개 위키가 필요합니다.',
     'snapshot_not_found' => '지정된 스냅샷을 찾을 수 없습니다.',
     'version_mismatch' => '번역 세트에서 버전 불일치가 감지되었습니다.',
     'invalid_rollback_target_version' => '롤백 대상 버전이 유효하지 않습니다.',
