@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'video_link_already_exists' => '此Wiki已存在使用相同URL的视频。',
     'video_link_not_found' => '未找到视频链接。',
+    'video_link_already_liked' => '您已点赞此视频链接。',
     'invalid_video_link' => '视频输入无效。',
     'published_wiki_not_found' => '未找到指定的已发布Wiki。',
     'invalid_video_list_query' => '视频列表查询条件无效。',

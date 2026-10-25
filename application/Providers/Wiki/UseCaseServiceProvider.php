@@ -83,7 +83,13 @@ use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
 use Source\Wiki\Principal\Infrastructure\Query\ListPrincipalGroups;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLink;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLink;
+use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLink;
+use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
+use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoLinkLikes;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
@@ -156,6 +162,9 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(LikeVideoLinkInterface::class, LikeVideoLink::class);
+        $this->app->singleton(UnlikeVideoLinkInterface::class, UnlikeVideoLink::class);
+        $this->app->singleton(ListMyVideoLinkLikesInterface::class, ListMyVideoLinkLikes::class);
         $this->app->singleton(ListVideosInterface::class, ListVideos::class);
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(DeleteAccountDataInterface::class, DeleteAccountData::class);

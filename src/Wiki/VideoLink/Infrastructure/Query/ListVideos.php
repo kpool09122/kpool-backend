@@ -28,6 +28,7 @@ readonly class ListVideos implements ListVideosInterface
             throw new WikiNotFoundException();
         }
         $query = VideoLinkModel::query()
+            ->withCount('likes')
             ->with(['creatorPrincipal:id,identity_id', 'creatorPrincipal.identity:id,identity_name'])
             ->where('wiki_id', $wiki->id)
             ->where('resource_type', $input->resourceType()->value)
@@ -49,6 +50,7 @@ readonly class ListVideos implements ListVideosInterface
                 $video->duration_seconds,
                 VideoUsage::from($video->video_usage)->isAutoCollected() ? null : $video->creator_principal_id,
                 VideoUsage::from($video->video_usage)->isAutoCollected() ? null : $video->creatorPrincipal?->identity?->identity_name,
+                $video->likes_count,
             ))->all();
         $output->output(array_values($videos));
     }

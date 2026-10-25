@@ -49,16 +49,49 @@ class ListVideosTest extends TestCase
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
         $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName'], array_keys($payload['videos'][0]));
+        $this->assertSame(['videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);
+        $this->assertSame(0, $payload['videos'][0]['likeCount']);
         $this->assertSame(253, $payload['videos'][0]['durationSeconds']);
         $this->assertNull($payload['videos'][1]['durationSeconds']);
         $this->assertSame($creator, $payload['videos'][0]['creatorPrincipalIdentifier']);
         $this->assertSame('動画の作成者', $payload['videos'][0]['creatorIdentityName']);
         $this->assertNull($payload['videos'][1]['creatorPrincipalIdentifier']);
         $this->assertNull($payload['videos'][1]['creatorIdentityName']);
+    }
+
+    public function testCountsLikesWithoutPerVideoQueriesAndKeepsPersonalStatePrivate(): void
+    {
+        $wiki = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'group', ['slug' => 'gr-likes', 'language' => 'ja', 'published_at' => '2026-01-01']);
+        $ids = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        sort($ids);
+        foreach ($ids as $i => $id) {
+            CreateVideoLink::create($id, ['wiki_id' => $wiki, 'resource_type' => 'group', 'video_usage' => $i === 0 ? 'music_video' : 'youtube_auto_view_count', 'created_at' => '2026-10-01']);
+        }
+        foreach ([0, 1] as $i) {
+            $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+            $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
+            CreateIdentity::create($identity, ['email' => (string) $identity . '@example.com']);
+            CreatePrincipal::create($principal, $identity);
+            foreach (array_slice($ids, 0, $i + 1) as $id) {
+                DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $id, 'principal_id' => (string) $principal, 'created_at' => now()]);
+            }
+        }
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $payload = $this->process('gr-likes', Language::JAPANESE, ResourceType::GROUP);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        self::assertSame([2, 1, 0], array_column($payload['videos'], 'likeCount'));
+        self::assertCount(2, $queries);
+        self::assertStringContainsString('count(*)', $queries[1]['query']);
+        foreach ($payload['videos'] as $video) {
+            self::assertArrayNotHasKey('principal_id', $video);
+            self::assertArrayNotHasKey('liked', $video);
+        }
     }
 
     /** @param list<?int> $expectedDurations */

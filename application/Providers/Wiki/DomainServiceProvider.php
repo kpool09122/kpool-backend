@@ -94,12 +94,16 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
+use Source\Wiki\VideoLink\Domain\Factory\VideoLinkLikeFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoLinkLikeRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkCollectionStatusFactory;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
+use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkLikeFactory;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
+use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkLikeRepository;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkRepository;
 use Source\Wiki\VideoLink\Infrastructure\Service\YouTubeSearchService;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface as WikiTranslationServiceInterface;
@@ -167,6 +171,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftImageRepositoryInterface::class, DraftImageRepository::class);
         $this->app->singleton(ImageSnapshotRepositoryInterface::class, ImageSnapshotRepository::class);
         $this->app->singleton(ImageAuthorizationResourceBuilderInterface::class, ImageAuthorizationResourceBuilder::class);
+        $this->app->singleton(VideoLinkLikeFactoryInterface::class, VideoLinkLikeFactory::class);
+        $this->app->singleton(VideoLinkLikeRepositoryInterface::class, VideoLinkLikeRepository::class);
         $this->app->singleton(VideoLinkFactoryInterface::class, VideoLinkFactory::class);
         $this->app->singleton(VideoLinkRepositoryInterface::class, VideoLinkRepository::class);
         $this->app->singleton(CreateVideoLinkInterface::class, CreateVideoLink::class);

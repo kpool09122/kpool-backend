@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'video_link_already_exists' => '이 위키에 같은 URL의 동영상이 이미 있습니다.',
     'video_link_not_found' => '동영상 링크를 찾을 수 없습니다.',
+    'video_link_already_liked' => '이미 좋아요를 누른 동영상 링크입니다.',
     'invalid_video_link' => '동영상 입력이 올바르지 않습니다.',
     'published_wiki_not_found' => '지정한 공개 위키를 찾을 수 없습니다.',
     'invalid_video_list_query' => '동영상 목록 조회 조건이 올바르지 않습니다.',
