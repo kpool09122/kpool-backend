@@ -15,12 +15,6 @@ interface WikiSnapshotRepositoryInterface
     public function save(WikiSnapshot $snapshot): void;
 
     /**
-     * All revisions within the requested version, ordered by creation time and ID descending.
-     * @return WikiSnapshot[]
-     */
-    public function findAllByWikiAndVersion(WikiIdentifier $wikiIdentifier, Version $version): array;
-
-    /**
      * All revisions, ordered by version, creation time and ID descending.
      * @return WikiSnapshot[]
      */

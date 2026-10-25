@@ -65,15 +65,6 @@ class WikiSnapshotRepositoryTest extends TestCase
             ]);
         }
         $repository = $this->app()->make(WikiSnapshotRepositoryInterface::class);
-        $revisions = $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2));
-        $this->assertSame([$ids[3], $ids[2], $ids[1]], array_map(static fn (WikiSnapshot $snapshot): string => (string) $snapshot->snapshotIdentifier(), $revisions));
-        foreach ($revisions as $revision) {
-            $this->assertSame($wikiId, (string) $revision->wikiIdentifier());
-            $this->assertSame(2, $revision->version()->value());
-            $this->assertInstanceOf(GroupBasic::class, $revision->basic());
-        }
-        $this->assertSame([], $repository->findAllByWikiAndVersion(new WikiIdentifier(StrTestHelper::generateUuid()), new Version(2)));
-        $this->assertSame([], $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(3)));
         $all = $repository->findByWikiIdentifier(new WikiIdentifier($wikiId));
         $this->assertSame([$ids[3], $ids[2], $ids[1], $ids[0]], array_map(static fn (WikiSnapshot $s): string => (string) $s->snapshotIdentifier(), $all));
         $this->assertSame($ids[3], (string) $repository->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2))?->snapshotIdentifier());
@@ -109,7 +100,6 @@ class WikiSnapshotRepositoryTest extends TestCase
         );
         $repository->save($newSnapshot);
         $this->assertDatabaseHas('wiki_snapshots', ['id' => (string) $newId, 'created_at' => '2000-01-01 12:34:56']);
-        $this->assertSame([$ids[3], $ids[2], $ids[1], (string) $newId], array_map(static fn (WikiSnapshot $snapshot): string => (string) $snapshot->snapshotIdentifier(), $repository->findAllByWikiAndVersion(new WikiIdentifier($wikiId), new Version(2))));
 
     }
 

@@ -101,22 +101,6 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
         return $model === null ? null : $this->toDomainEntity($model);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findAllByWikiAndVersion(WikiIdentifier $wikiIdentifier, Version $version): array
-    {
-        $models = WikiSnapshotModel::query()
-            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
-            ->where('wiki_id', (string) $wikiIdentifier)
-            ->where('version', $version->value())
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->get();
-
-        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->all();
-    }
-
     public function findByWikiAndVersion(
         WikiIdentifier $wikiIdentifier,
         Version $version,

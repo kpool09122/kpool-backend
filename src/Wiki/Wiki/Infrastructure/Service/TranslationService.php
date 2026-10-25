@@ -261,12 +261,6 @@ readonly class TranslationService implements TranslationServiceInterface
             return $existing->hasSameVersion($wiki->version()) ? $wiki : null;
         }
 
-        // Multiple revisions share a version but no source-revision identity is stored
-        // on translations. Reuse would risk retaining text from an older revision.
-        if (count($this->wikiSnapshotRepository->findAllByWikiAndVersion($wiki->wikiIdentifier(), $latest->version())) > 1) {
-            return null;
-        }
-
         // A lagging translation cannot be paired with a newer source snapshot.
         return $existing->hasSameVersion($latest->version()) ? $latest : null;
     }
