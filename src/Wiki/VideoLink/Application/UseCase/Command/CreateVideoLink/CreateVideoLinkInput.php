@@ -6,13 +6,13 @@ namespace Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
-use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
+use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
+use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
-use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort

@@ -57,6 +57,7 @@ class SystemPolicySeeder extends Seeder
                 action: $action,
                 resourceTypes: match ($action) {
                     Action::SEARCH_FREE_MATERIALS => [ResourceType::IMAGE],
+                    Action::CREATE_PLAYLIST => [ResourceType::PLAYLIST],
                     Action::LIKE_VIDEO_LINK, Action::UNLIKE_VIDEO_LINK => [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG, ResourceType::TALENT],
                     default => ResourceType::cases(),
                 },

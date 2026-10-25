@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\VideoLink\Domain\ValueObject;
+namespace Source\Wiki\Playlist\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class VideoLinkIdentifier extends StringBaseValue
+class PlaylistItemIdentifier extends StringBaseValue
 {
     public function __construct(string $id)
     {
@@ -19,7 +19,7 @@ class VideoLinkIdentifier extends StringBaseValue
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Invalid VideoLinkIdentifier.');
+            throw new InvalidArgumentException('Invalid PlaylistItemIdentifier.');
         }
     }
 }

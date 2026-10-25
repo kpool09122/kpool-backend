@@ -7,9 +7,9 @@ namespace Source\Wiki\VideoLink\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLinkLike;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkLikeFactoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkLikeIdentifier;
 
 readonly class VideoLinkLikeFactory implements VideoLinkLikeFactoryInterface

@@ -65,4 +65,11 @@ class ResourceTypeTest extends TestCase
 
         ResourceType::PRINCIPAL_GROUP->slugPrefix();
     }
+
+    public function testSlugPrefixThrowsForPlaylist(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PLAYLIST resource type does not support wiki slug prefixes.');
+        ResourceType::PLAYLIST->slugPrefix();
+    }
 }

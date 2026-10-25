@@ -6,7 +6,7 @@ namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkLikeIdentifier;
 
 readonly class VideoLinkLike

@@ -13,6 +13,7 @@ class ActionTest extends TestCase
     {
         $this->assertSame([
             'CREATE' => 'create',
+            'CREATE_PLAYLIST' => 'create_playlist',
             'READ' => 'read',
             'EDIT' => 'edit',
             'SUBMIT' => 'submit',

@@ -8,8 +8,8 @@ use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInput;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ListMyVideoLinkLikesInputTest extends TestCase

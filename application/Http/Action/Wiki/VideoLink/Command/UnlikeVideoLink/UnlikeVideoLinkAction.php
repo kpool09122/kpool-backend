@@ -14,10 +14,10 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

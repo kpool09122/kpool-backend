@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_name' => 'El nombre de la lista debe tener entre 1 y 32 caracteres sin espacios iniciales ni finales.',
+    'playlist_limit_exceeded' => 'Puedes crear hasta tres listas de reproducción.',
     'video_link_already_exists' => 'Ya existe un vídeo con esta URL en este wiki.',
     'video_link_not_found' => 'No se encontró el enlace de vídeo.',
     'video_link_already_liked' => 'Ya has indicado que te gusta este enlace de vídeo.',

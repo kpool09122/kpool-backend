@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_name' => '播放清單名稱去除首尾空白後須為1至32個字元。',
+    'playlist_limit_exceeded' => '最多可建立3個播放清單。',
     'video_link_already_exists' => '此Wiki已存在使用相同URL的影片。',
     'video_link_not_found' => '找不到影片連結。',
     'video_link_already_liked' => '您已對此影片連結按讚。',

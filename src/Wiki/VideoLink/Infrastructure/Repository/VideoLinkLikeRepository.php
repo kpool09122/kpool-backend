@@ -6,9 +6,9 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLinkLike;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkLikeRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkLikeIdentifier;
 
 readonly class VideoLinkLikeRepository implements VideoLinkLikeRepositoryInterface
