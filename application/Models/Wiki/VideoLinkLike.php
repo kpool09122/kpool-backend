@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Override;
 
 /**
@@ -15,6 +16,7 @@ use Override;
  * @property string $video_link_id
  * @property string $principal_id
  * @property Carbon $created_at
+ * @property-read VideoLink|null $videoLink
  */
 #[Fillable(['id', 'video_link_id', 'principal_id', 'created_at'])]
 #[Table(name: 'wiki_video_link_likes', keyType: 'string')]
@@ -28,4 +30,10 @@ class VideoLinkLike extends Model
 
     #[Override]
     protected $casts = ['created_at' => 'datetime'];
+
+    /** @return BelongsTo<VideoLink, $this> */
+    public function videoLink(): BelongsTo
+    {
+        return $this->belongsTo(VideoLink::class, 'video_link_id', 'id');
+    }
 }

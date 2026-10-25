@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLink\Infrastructure\Query;
 
+use Application\Models\Wiki\VideoLink as VideoLinkModel;
+use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -22,6 +24,27 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListMyVideoLinkLikesTest extends TestCase
 {
+    public function testEagerLoadsVideoAndWikiThroughTypedRelationships(): void
+    {
+        self::assertTrue((new VideoLinkLikeModel())->isRelation('videoLink'));
+        self::assertTrue((new VideoLinkModel())->isRelation('wiki'));
+        $principal = $this->createPrincipal();
+        $wikiId = StrTestHelper::generateUuid();
+        $videoId = StrTestHelper::generateUuid();
+        CreateWiki::create($wikiId, 'talent', ['language' => 'ja', 'published_at' => '2026-01-01 00:00:00']);
+        CreateVideoLink::create($videoId, ['wiki_id' => $wikiId, 'title' => 'Related video', 'duration_seconds' => 120]);
+        DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $videoId, 'principal_id' => (string) $principal, 'created_at' => '2026-02-01 00:00:00']);
+        $like = VideoLinkLikeModel::query()->with('videoLink.wiki')->where('video_link_id', $videoId)->firstOrFail();
+        self::assertTrue($like->relationLoaded('videoLink'));
+        self::assertNotNull($like->videoLink);
+        self::assertTrue($like->videoLink->relationLoaded('wiki'));
+        self::assertSame('Related video', $like->videoLink->title);
+        self::assertSame(120, $like->videoLink->duration_seconds);
+        self::assertNotNull($like->videoLink->wiki);
+        self::assertSame($wikiId, $like->videoLink->wiki->id);
+        self::assertSame('ja', $like->videoLink->wiki->language);
+    }
+
     public function testFiltersPrivateMissingAndDeletedVideosAndOtherPrincipalsWithoutChangingBatchIds(): void
     {
         $principal = $this->createPrincipal();
@@ -155,7 +178,7 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame(['currentPage' => 1, 'perPage' => 2, 'total' => 3], $data['pagination']);
         self::assertCount(2, $data['videos']);
         self::assertSame($data['likedVideoLinkIdentifiers'], array_column($data['videos'], 'videoLinkIdentifier'));
-        self::assertCount(2, $queries);
+        self::assertCount(4, $queries);
         foreach ($data['videos'] as $video) {
             self::assertSame('https://www.youtube.com/watch?v=abcdefghijk', $video['url']);
             self::assertSame('Shared video', $video['title']);
