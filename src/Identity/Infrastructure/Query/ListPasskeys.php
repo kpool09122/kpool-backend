@@ -18,6 +18,7 @@ readonly class ListPasskeys implements ListPasskeysInterface
     ) {
     }
 
+    /** @phpstan-impure */
     public function process(ListPasskeysInputPort $input): array
     {
         $this->stepUpAuthenticationStorageService->requireValid(

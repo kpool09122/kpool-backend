@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 final readonly class ImageUrl
 {
+    /** @phpstan-impure */
     public static function fromPath(?string $path): ?string
     {
         if ($path === null || $path === '') {

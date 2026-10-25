@@ -182,6 +182,7 @@ class SiteManagementOperatorPersistenceTest extends TestCase
         return $this->data ?? throw new LogicException('Test data is not initialized.');
     }
 
+    /** @phpstan-impure */
     private function grant(): int
     {
         return Artisan::call('site-management:operator:grant', ['email' => (string) $this->data()->email]);
