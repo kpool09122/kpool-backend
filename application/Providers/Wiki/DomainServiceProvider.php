@@ -51,6 +51,10 @@ use Source\Wiki\OfficialCertification\Infrastructure\Factory\OfficialCertificati
 use Source\Wiki\OfficialCertification\Infrastructure\Repository\OfficialCertificationRepository;
 use Source\Wiki\OfficialCertification\Infrastructure\Service\OfficialResourceUpdater;
 use Source\Wiki\OfficialCertification\Infrastructure\Service\SyncableOwnedWikiResourceQueryService;
+use Source\Wiki\Playlist\Domain\Factory\PlaylistFactoryInterface;
+use Source\Wiki\Playlist\Domain\Repository\PlaylistRepositoryInterface;
+use Source\Wiki\Playlist\Infrastructure\Factory\PlaylistFactory;
+use Source\Wiki\Playlist\Infrastructure\Repository\PlaylistRepository;
 use Source\Wiki\Principal\Application\Service\AffiliationQueryServiceInterface;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Application\Service\PrincipalGroupChangeGuardInterface;
@@ -137,6 +141,8 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(PlaylistFactoryInterface::class, PlaylistFactory::class);
+        $this->app->singleton(PlaylistRepositoryInterface::class, PlaylistRepository::class);
         $this->app->singleton(FreeMaterialSearchServiceInterface::class, FreeMaterialSearchService::class);
         $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
         $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);

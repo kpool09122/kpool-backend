@@ -6,7 +6,7 @@ namespace Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes;
 
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 
 readonly class ListMyVideoLinkLikesInput implements ListMyVideoLinkLikesInputPort
 {

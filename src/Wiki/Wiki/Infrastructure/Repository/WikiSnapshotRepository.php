@@ -181,7 +181,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 $songBasic->groups()->sync(TypedValue::stringArray($groupIdentifiers ?? []));
                 $songBasic->talents()->sync(TypedValue::stringArray($talentIdentifiers ?? []));
             })(),
-            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
+            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP, ResourceType::PLAYLIST => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };
     }
 
@@ -224,7 +224,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             ResourceType::GROUP => $this->buildGroupBasic($model),
             ResourceType::AGENCY => $this->buildAgencyBasic($model),
             ResourceType::SONG => $this->buildSongBasic($model),
-            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
+            ResourceType::IMAGE, ResourceType::PRINCIPAL_GROUP, ResourceType::PLAYLIST => throw new InvalidArgumentException($resourceType->name . ' resource type does not have a Basic.'),
         };
     }
 

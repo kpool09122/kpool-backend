@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\VideoLink\Domain\ValueObject;
+namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 
 class DurationSecondsTest extends TestCase
 {

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_name' => 'プレイリスト名は前後の空白を除いて1〜32文字で入力してください。',
+    'playlist_limit_exceeded' => 'プレイリストは3件まで作成できます。',
     'video_link_already_exists' => 'このWikiには同じURLの動画が登録されています。',
     'video_link_not_found' => '動画リンクが見つかりません。',
     'video_link_already_liked' => 'この動画リンクは既にいいね済みです。',

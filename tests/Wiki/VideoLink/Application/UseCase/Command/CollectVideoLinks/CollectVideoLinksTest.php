@@ -14,6 +14,8 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksOutput;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
@@ -23,8 +25,6 @@ use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryI
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;

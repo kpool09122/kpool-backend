@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Query;
 
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\UseCase\Query\LikedVideoLinkReadModel;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesOutputPort;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 
 readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
 {

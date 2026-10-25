@@ -333,6 +333,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'site management: list my contacts' => ['GET', '/api/v1/site-management/my/contact'],
 
             // Wiki command / review / draft / admin / auxiliary edit APIs
+            'wiki: create playlist' => ['POST', '/api/v1/wiki/my/playlists'],
             'wiki: create wiki' => ['POST', '/api/v1/wiki/wiki/create'],
             'wiki: master search' => ['GET', '/api/v1/wiki/wikis/ja/masters'],
             'wiki: version inconsistencies' => ['GET', '/api/v1/wiki/wikis/version-inconsistencies'],
@@ -383,6 +384,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account list account category change requests resolves actor and account' => ['GET', '/api/v1/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
             'account update resolves actor and account' => ['PATCH', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
             'site management list my contacts resolves actor' => ['GET', '/api/v1/site-management/my/contact', ['resolve.actor']],
+            'wiki create playlist resolves actor and wiki' => ['POST', '/api/v1/wiki/my/playlists', ['resolve.actor', 'resolve.wiki']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/v1/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/v1/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki my owned wikis resolves actor and account' => ['GET', '/api/v1/wiki/my/owned-wikis', ['resolve.actor', 'resolve.account']],

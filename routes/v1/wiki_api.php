@@ -18,6 +18,7 @@ use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertificat
 use Application\Http\Action\Wiki\OfficialCertification\Command\SyncOwnedWikiCertifications\SyncOwnedWikiCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListOfficialCertifications\ListOfficialCertificationsAction;
+use Application\Http\Action\Wiki\Playlist\Command\CreatePlaylist\CreatePlaylistAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
@@ -148,6 +149,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/image/{imageId}/reject', RejectImageAction::class);
         // Disabled by #605: Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
         Route::post('/image/upload', UploadImageAction::class);
+        Route::post('/my/playlists', CreatePlaylistAction::class);
         Route::post('/video-link/create', CreateVideoLinkAction::class);
         Route::delete('/video-link/{videoLinkId}', DeleteVideoLinkAction::class);
         Route::post('/video-link/{videoLinkId}/like', LikeVideoLinkAction::class);

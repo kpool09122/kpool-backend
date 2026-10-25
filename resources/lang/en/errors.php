@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_name' => 'The playlist name must contain 1 to 32 characters after trimming.',
+    'playlist_limit_exceeded' => 'You can create up to three playlists.',
     'video_link_already_exists' => 'A video with this URL already exists for this wiki.',
     'video_link_not_found' => 'Video link not found.',
     'video_link_already_liked' => 'This video link has already been liked.',

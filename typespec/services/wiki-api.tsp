@@ -4,6 +4,7 @@ import "./wiki-api/image.tsp";
 import "./wiki-api/principal.tsp";
 import "./wiki-api/official-certification.tsp";
 import "./wiki-api/video-link.tsp";
+import "./wiki-api/playlist.tsp";
 
 using TypeSpec.Http;
 

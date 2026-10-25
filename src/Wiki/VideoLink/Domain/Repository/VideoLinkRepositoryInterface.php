@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Domain\Repository;
 
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface VideoLinkRepositoryInterface

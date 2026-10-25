@@ -6,8 +6,8 @@ namespace Tests\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink;
 
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInput;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class UnlikeVideoLinkInputTest extends TestCase

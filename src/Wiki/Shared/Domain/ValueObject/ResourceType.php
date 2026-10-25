@@ -14,6 +14,7 @@ enum ResourceType: string
     case SONG = 'song';
     case IMAGE = 'image';
     case PRINCIPAL_GROUP = 'principal-group';
+    case PLAYLIST = 'playlist';
 
     public function slugPrefix(): string
     {
@@ -22,7 +23,7 @@ enum ResourceType: string
             self::GROUP => 'gr',
             self::SONG => 'sg',
             self::TALENT => 'tl',
-            self::IMAGE, self::PRINCIPAL_GROUP => throw new InvalidArgumentException($this->name . ' resource type does not support wiki slug prefixes.'),
+            self::IMAGE, self::PRINCIPAL_GROUP, self::PLAYLIST => throw new InvalidArgumentException($this->name . ' resource type does not support wiki slug prefixes.'),
         };
     }
 

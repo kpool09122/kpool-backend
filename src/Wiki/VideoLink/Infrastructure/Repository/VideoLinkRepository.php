@@ -6,14 +6,14 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\DurationSeconds;
-use Source\Wiki\VideoLink\Domain\ValueObject\ThumbnailUrl;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use UnexpectedValueException;
