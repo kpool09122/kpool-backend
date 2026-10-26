@@ -1132,6 +1132,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/playlists:
+    get:
+      operationId: PlaylistOperations_listMyPlaylists
+      description: List only the authenticated Wiki Principal's private playlists in ascending creation time, then identifier order. Requires an active Account/Principal and Wiki collaborator LIST_MY_PLAYLISTS permission. Returns an empty array when none exist, with no pagination. videoCount counts stored PlaylistItems, including items whose source VideoLink was deleted, unliked or unpublished. The caller cannot specify the owner.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playlists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlaylistListItem'
+                    maxItems: 3
+                required:
+                  - playlists
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     post:
       operationId: PlaylistOperations_createPlaylist
       description: Create an empty private playlist for the authenticated Wiki Principal; the owner cannot be supplied by the caller. Requires an active Account/Principal and Wiki collaborator CREATE_PLAYLIST permission. Accepts a name of 1-32 characters after trimming, including duplicate names. Returns 409 when the owner already has three playlists; deleting one allows creation again. Invalid names return 422. This endpoint never accepts video metadata from the caller. Playlist items store independent server-provided snapshots and retain them when source VideoLinks disappear.
@@ -6897,6 +6952,32 @@ components:
           maxLength: 16
           description: Human-readable color label.
       description: Official color with a HEX color code and display label.
+    PlaylistListItem:
+      type: object
+      required:
+        - playlistIdentifier
+        - name
+        - videoCount
+        - createdAt
+        - updatedAt
+      properties:
+        playlistIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 32
+        videoCount:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 50
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     PolicyCondition:
       type: object
       properties:

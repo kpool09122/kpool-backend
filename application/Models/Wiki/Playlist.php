@@ -8,11 +8,13 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Override;
 
 /**
  * @property string $id
  * @property string $principal_id
+ * @property int $items_count
  * @property string $name
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -26,5 +28,11 @@ class Playlist extends Model
     #[Override]
     public $timestamps = false;
     #[Override]
-    protected $casts = ['created_at' => 'datetime', 'updated_at' => 'datetime'];
+    protected $casts = ['created_at' => 'datetime', 'updated_at' => 'datetime', 'items_count' => 'integer'];
+
+    /** @return HasMany<PlaylistItem, $this> */
+    public function items(): HasMany
+    {
+        return $this->hasMany(PlaylistItem::class, 'playlist_id');
+    }
 }

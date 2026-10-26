@@ -19,6 +19,7 @@ use Application\Http\Action\Wiki\OfficialCertification\Command\SyncOwnedWikiCert
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListMyOfficialCertifications\ListMyOfficialCertificationsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListOfficialCertifications\ListOfficialCertificationsAction;
 use Application\Http\Action\Wiki\Playlist\Command\CreatePlaylist\CreatePlaylistAction;
+use Application\Http\Action\Wiki\Playlist\Query\ListMyPlaylists\ListMyPlaylistsAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
@@ -125,6 +126,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // OfficialCertification
         Route::get('/official-certifications', ListOfficialCertificationsAction::class);
         Route::get('/my/video-link-likes', ListMyVideoLinkLikesAction::class);
+        Route::get('/my/playlists', ListMyPlaylistsAction::class);
     });
 
     Route::middleware('rate-limit:screen,command')->group(function () {
