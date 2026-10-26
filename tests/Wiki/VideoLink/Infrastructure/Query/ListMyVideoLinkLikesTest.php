@@ -9,6 +9,8 @@ use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\Playlist\Domain\Repository\PlaylistRepositoryInterface;
+use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInput;
@@ -18,6 +20,7 @@ use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
 use Tests\Helper\CreateVideoLink;
 use Tests\Helper\CreateWiki;
+use Tests\Helper\PlaylistTestHelper;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -69,7 +72,7 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame(['currentPage' => 1, 'perPage' => 20, 'total' => 2], $output->toArray()['pagination']);
         self::assertSame([
             'videoLinkIdentifier' => $ids['public'], 'url' => DB::table('wiki_video_links')->where('id', $ids['public'])->value('url'), 'title' => 'Test Video',
-            'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'en', 'resourceType' => 'agency', 'slug' => 'ag-public', 'likedAt' => '2026-02-01T00:00:00+00:00',
+            'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'en', 'resourceType' => 'agency', 'slug' => 'ag-public', 'likedAt' => '2026-02-01T00:00:00+00:00', 'playlists' => [],
         ], $output->toArray()['videos'][0]);
         $requested = array_map(static fn (string $id): VideoLinkIdentifier => new VideoLinkIdentifier($id), array_values($ids));
         $query->process(new ListMyVideoLinkLikesInput($principal, $requested, 99, 1), $output);
@@ -109,6 +112,49 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame(array_slice($ids, 0, 20), $output->toArray()['likedVideoLinkIdentifiers']);
         self::assertCount(20, $output->toArray()['videos']);
         self::assertSame(['currentPage' => 1, 'perPage' => 20, 'total' => 100], $output->toArray()['pagination']);
+    }
+
+    public function testIncludesOnlyOwnedPlaylistMembershipsAcrossLanguagesAndDeletedSourcesWithoutNPlusOne(): void
+    {
+        $principal = $this->createPrincipal();
+        $other = $this->createPrincipal();
+        $ids = [];
+        foreach (['ja', 'ko', 'en'] as $language) {
+            $wiki = StrTestHelper::generateUuid();
+            $video = StrTestHelper::generateUuid();
+            $ids[] = $video;
+            CreateWiki::create($wiki, 'group', ['language' => $language, 'published_at' => '2026-01-01 00:00:00']);
+            CreateVideoLink::create($video, ['wiki_id' => $wiki, 'url' => $language === 'en' ? 'https://youtu.be/abcdefghijk' : 'https://www.youtube.com/watch?v=abcdefghijk']);
+            DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $video, 'principal_id' => (string) $principal, 'created_at' => '2026-02-01 00:00:00']);
+        }
+        $repository = $this->app()->make(PlaylistRepositoryInterface::class);
+        $first = new PlaylistIdentifier('019a0000-0000-7000-8000-000000000001');
+        $second = new PlaylistIdentifier('019a0000-0000-7000-8000-000000000002');
+        foreach ([$second, $first] as $playlistId) {
+            $repository->save(PlaylistTestHelper::playlist($playlistId, $principal, [PlaylistTestHelper::item($playlistId, 0, externalId: 'abcdefghijk')]));
+        }
+        $unrelated = new PlaylistIdentifier(StrTestHelper::generateUuid());
+        $repository->save(PlaylistTestHelper::playlist($unrelated, $principal, [PlaylistTestHelper::item($unrelated, 0, externalId: 'lmnopqrstuv')]));
+        $foreign = new PlaylistIdentifier(StrTestHelper::generateUuid());
+        $repository->save(PlaylistTestHelper::playlist($foreign, $other, [PlaylistTestHelper::item($foreign, 0, externalId: 'abcdefghijk')]));
+        $output = new ListMyVideoLinkLikesOutput();
+        $query = $this->app()->make(ListMyVideoLinkLikesInterface::class);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $query->process(new ListMyVideoLinkLikesInput($principal), $output);
+        $playlistQueries = array_filter(DB::getQueryLog(), static fn (array $query): bool => str_contains($query['query'], 'wiki_playlist'));
+        DB::disableQueryLog();
+        self::assertCount(2, $playlistQueries);
+        self::assertCount(3, $output->toArray()['videos']);
+        foreach ($output->toArray()['videos'] as $video) {
+            self::assertSame([
+                ['playlistIdentifier' => (string) $first, 'name' => 'My playlist'],
+                ['playlistIdentifier' => (string) $second, 'name' => 'My playlist'],
+            ], $video['playlists']);
+        }
+        $repository->deleteByIdAndPrincipal($first, $principal);
+        $query->process(new ListMyVideoLinkLikesInput($principal, [new VideoLinkIdentifier($ids[0])]), $output);
+        self::assertSame([['playlistIdentifier' => (string) $second, 'name' => 'My playlist']], $output->toArray()['videos'][0]['playlists']);
     }
 
     private function createPrincipal(): PrincipalIdentifier
@@ -178,7 +224,7 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame(['currentPage' => 1, 'perPage' => 2, 'total' => 3], $data['pagination']);
         self::assertCount(2, $data['videos']);
         self::assertSame($data['likedVideoLinkIdentifiers'], array_column($data['videos'], 'videoLinkIdentifier'));
-        self::assertCount(4, $queries);
+        self::assertCount(5, $queries);
         foreach ($data['videos'] as $video) {
             self::assertSame('https://www.youtube.com/watch?v=abcdefghijk', $video['url']);
             self::assertSame('Shared video', $video['title']);

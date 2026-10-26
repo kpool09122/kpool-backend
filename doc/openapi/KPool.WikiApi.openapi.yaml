@@ -6726,6 +6726,7 @@ components:
         - resourceType
         - slug
         - likedAt
+        - playlists
       properties:
         videoLinkIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -6757,6 +6758,21 @@ components:
         slug:
           type: string
         likedAt:
+          type: string
+        playlists:
+          type: array
+          items:
+            $ref: '#/components/schemas/LikedVideoPlaylist'
+          description: The authenticated Principal's saved playlists containing the same YouTube video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.
+    LikedVideoPlaylist:
+      type: object
+      required:
+        - playlistIdentifier
+        - name
+      properties:
+        playlistIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
           type: string
     ListDraftImagesResponseBody:
       type: object
