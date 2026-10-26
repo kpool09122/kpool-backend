@@ -41,14 +41,18 @@ use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListMyOfficialCe
 use Source\Wiki\OfficialCertification\Application\UseCase\Query\ListOfficialCertifications\ListOfficialCertificationsInterface;
 use Source\Wiki\OfficialCertification\Infrastructure\Query\ListMyOfficialCertifications;
 use Source\Wiki\OfficialCertification\Infrastructure\Query\ListOfficialCertifications;
+use Source\Wiki\Playlist\Application\Service\PlaylistVideoSourceServiceInterface;
 use Source\Wiki\Playlist\Application\UseCase\Command\CreatePlaylist\CreatePlaylist;
 use Source\Wiki\Playlist\Application\UseCase\Command\CreatePlaylist\CreatePlaylistInterface;
 use Source\Wiki\Playlist\Application\UseCase\Command\DeletePlaylist\DeletePlaylist;
 use Source\Wiki\Playlist\Application\UseCase\Command\DeletePlaylist\DeletePlaylistInterface;
+use Source\Wiki\Playlist\Application\UseCase\Command\SavePlaylist\SavePlaylist;
+use Source\Wiki\Playlist\Application\UseCase\Command\SavePlaylist\SavePlaylistInterface;
 use Source\Wiki\Playlist\Application\UseCase\Query\GetMyPlaylist\GetMyPlaylistInterface;
 use Source\Wiki\Playlist\Application\UseCase\Query\ListMyPlaylists\ListMyPlaylistsInterface;
 use Source\Wiki\Playlist\Infrastructure\Query\GetMyPlaylist;
 use Source\Wiki\Playlist\Infrastructure\Query\ListMyPlaylists;
+use Source\Wiki\Playlist\Infrastructure\Service\PlaylistVideoSourceService;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRole;
@@ -175,6 +179,8 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreatePlaylistInterface::class, CreatePlaylist::class);
+        $this->app->singleton(SavePlaylistInterface::class, SavePlaylist::class);
+        $this->app->singleton(PlaylistVideoSourceServiceInterface::class, PlaylistVideoSourceService::class);
         $this->app->singleton(DeletePlaylistInterface::class, DeletePlaylist::class);
         $this->app->singleton(ListMyPlaylistsInterface::class, ListMyPlaylists::class);
         $this->app->singleton(GetMyPlaylistInterface::class, GetMyPlaylist::class);

@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Playlist\Infrastructure\Repository;
 
+use Application\Models\Wiki\PlaylistItem as PlaylistItemModel;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Playlist\Domain\Entity\PlaylistItem;
 use Source\Wiki\Playlist\Domain\Factory\PlaylistFactoryInterface;
 use Source\Wiki\Playlist\Domain\Repository\PlaylistRepositoryInterface;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
+use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItem;
+use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItemPosition;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistName;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -29,6 +32,31 @@ use Tests\TestCase;
 #[Group('useDb')]
 class PlaylistRepositoryTest extends TestCase
 {
+    public function testItemTableHasNoSurrogateIdentifier(): void
+    {
+        self::assertFalse(Schema::hasColumn('wiki_playlist_items', 'id'));
+    }
+
+    public function testModelUpdatesAndDeletesOnlyMatchingCompositeKey(): void
+    {
+        $owner = $this->principal();
+        $first = PlaylistTestHelper::playlist(owner: $owner);
+        $second = PlaylistTestHelper::playlist(owner: $owner);
+        $repository = $this->app()->make(PlaylistRepositoryInterface::class);
+        foreach ([$first, $second] as $playlist) {
+            $repository->save(PlaylistTestHelper::playlist($playlist->playlistIdentifier(), $owner, [PlaylistTestHelper::item($playlist->playlistIdentifier(), 0)]));
+        }
+        $item = PlaylistItemModel::query()->where('playlist_id', (string) $first->playlistIdentifier())->firstOrFail();
+        $item->title = 'Changed';
+        $item->save();
+        $item->refresh();
+        self::assertSame('Changed', $item->title);
+        self::assertSame('Snapshot title', (string) $repository->findByIdAndPrincipal($second->playlistIdentifier(), $owner)?->items()[0]->title());
+        $item->delete();
+        self::assertSame(0, $repository->findByIdAndPrincipal($first->playlistIdentifier(), $owner)?->videoCount());
+        self::assertSame(1, $repository->findByIdAndPrincipal($second->playlistIdentifier(), $owner)?->videoCount());
+    }
+
     public function testCreatesEmptyPlaylistsWithSameNameAndScopesByOwner(): void
     {
         $owner = $this->principal();
@@ -77,7 +105,6 @@ class PlaylistRepositoryTest extends TestCase
         self::assertCount(2, $restored->items());
         foreach ([$items[1], $items[0]] as $index => $expected) {
             $actual = $restored->items()[$index];
-            self::assertSame((string) $expected->playlistItemIdentifier(), (string) $actual->playlistItemIdentifier());
             self::assertSame((string) $id, (string) $actual->playlistIdentifier());
             self::assertNull($actual->videoLinkIdentifier());
             self::assertSame($expected->provider(), $actual->provider());
@@ -86,7 +113,7 @@ class PlaylistRepositoryTest extends TestCase
             self::assertSame((string) $expected->title(), (string) $actual->title());
             self::assertSame((string) $expected->thumbnailUrl(), (string) $actual->thumbnailUrl());
             self::assertEquals($expected->durationSeconds(), $actual->durationSeconds());
-            self::assertSame($index, $actual->position());
+            self::assertSame($index, $actual->position()->value());
         }
     }
 
@@ -96,7 +123,6 @@ class PlaylistRepositoryTest extends TestCase
         $id = new PlaylistIdentifier(StrTestHelper::generateUuid());
         $item = PlaylistTestHelper::item($id, 0);
         $nullableItem = new PlaylistItem(
-            $item->playlistItemIdentifier(),
             $id,
             null,
             $item->provider(),
@@ -105,7 +131,7 @@ class PlaylistRepositoryTest extends TestCase
             $item->title(),
             null,
             null,
-            0,
+            new PlaylistItemPosition(0),
         );
         $repository = $this->app()->make(PlaylistRepositoryInterface::class);
         $repository->save(PlaylistTestHelper::playlist($id, $owner, [$nullableItem]));
@@ -145,12 +171,12 @@ class PlaylistRepositoryTest extends TestCase
         self::assertNotNull($restored);
         self::assertCount(1, $restored->items());
         self::assertNull($restored->items()[0]->videoLinkIdentifier());
-        self::assertSame((string) $item->playlistItemIdentifier(), (string) $restored->items()[0]->playlistItemIdentifier());
+        self::assertSame((string) $item->externalVideoId(), (string) $restored->items()[0]->externalVideoId());
         self::assertSame((string) $item->url(), (string) $restored->items()[0]->url());
         self::assertSame((string) $item->title(), (string) $restored->items()[0]->title());
         self::assertEquals($item->thumbnailUrl(), $restored->items()[0]->thumbnailUrl());
         self::assertEquals($item->durationSeconds(), $restored->items()[0]->durationSeconds());
-        self::assertSame(0, $restored->items()[0]->position());
+        self::assertSame(0, $restored->items()[0]->position()->value());
     }
 
     /** @return array<string, array{string}> */
@@ -187,7 +213,6 @@ class PlaylistRepositoryTest extends TestCase
         $repository = $this->app()->make(PlaylistRepositoryInterface::class);
         $repository->save(PlaylistTestHelper::playlist($id, $owner, [PlaylistTestHelper::item($id, 0)]));
         $row = (array) DB::table('wiki_playlist_items')->where('playlist_id', (string) $id)->first();
-        $row['id'] = StrTestHelper::generateUuid();
         $row['position'] = 1;
         $this->expectException(UniqueConstraintViolationException::class);
         DB::table('wiki_playlist_items')->insert($row);

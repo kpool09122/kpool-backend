@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => '재생목록 편집 내용이 올바르지 않습니다. 이름은 1~32자, 동영상은 중복 없이 최대 50개로 지정해 주세요.',
     'playlist_not_found' => '플레이리스트를 찾을 수 없습니다.',
     'invalid_playlist_identifier' => '플레이리스트 식별자가 올바르지 않습니다.',
     'invalid_playlist_name' => '재생목록 이름은 앞뒤 공백을 제외하고 1~32자로 입력해 주세요.',

@@ -21,9 +21,8 @@ class PlaylistItemReadModelTest extends TestCase
     #[DataProvider('metadata')]
     public function testSerializesSnapshot(?string $source, ?string $thumbnail, ?int $duration): void
     {
-        $model = new PlaylistItemReadModel('item', $source, 'youtube', 'abcdefghijk', 49, 'https://www.youtube.com/watch?v=abcdefghijk', 'Title', $thumbnail, $duration);
+        $model = new PlaylistItemReadModel($source, 'youtube', 'abcdefghijk', 49, 'https://www.youtube.com/watch?v=abcdefghijk', 'Title', $thumbnail, $duration);
         self::assertSame([
-            'playlistItemIdentifier' => 'item',
             'sourceVideoLinkIdentifier' => $source,
             'provider' => 'youtube',
             'externalVideoId' => 'abcdefghijk',

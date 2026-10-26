@@ -6,10 +6,10 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Source\Wiki\Playlist\Domain\Entity\Playlist;
-use Source\Wiki\Playlist\Domain\Entity\PlaylistItem;
 use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
-use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItemIdentifier;
+use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItem;
+use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItemPosition;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistName;
 use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
@@ -33,6 +33,6 @@ class PlaylistTestHelper
     {
         $video = $externalId ?? str_pad((string) $position, 11, '0', STR_PAD_LEFT);
 
-        return new PlaylistItem(new PlaylistItemIdentifier(StrTestHelper::generateUuid()), $id, $source, VideoProvider::YOUTUBE, new ExternalVideoId($video), new YouTubeVideoUrl('https://www.youtube.com/watch?v=' . $video), new VideoTitle('Snapshot title'), new ThumbnailUrl('https://i.ytimg.com/vi/' . $video . '/hqdefault.jpg'), new DurationSeconds(120), $position);
+        return new PlaylistItem($id, $source, VideoProvider::YOUTUBE, new ExternalVideoId($video), new YouTubeVideoUrl('https://www.youtube.com/watch?v=' . $video), new VideoTitle('Snapshot title'), new ThumbnailUrl('https://i.ytimg.com/vi/' . $video . '/hqdefault.jpg'), new DurationSeconds(120), new PlaylistItemPosition($position));
     }
 }

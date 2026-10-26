@@ -16,7 +16,7 @@ readonly class PlaylistDetailReadModel
     ) {
     }
 
-    /** @return array{playlistIdentifier:string,name:string,videoCount:int,createdAt:string,updatedAt:string,items:list<array{playlistItemIdentifier:string,sourceVideoLinkIdentifier:string|null,provider:string,externalVideoId:string,position:int,url:string,title:string,thumbnailUrl:string|null,durationSeconds:int|null}>} */
+    /** @return array{playlistIdentifier:string,name:string,videoCount:int,createdAt:string,updatedAt:string,items:list<array{sourceVideoLinkIdentifier:string|null,provider:string,externalVideoId:string,position:int,url:string,title:string,thumbnailUrl:string|null,durationSeconds:int|null}>} */
     public function toArray(): array
     {
         return [

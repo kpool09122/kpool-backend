@@ -12,7 +12,7 @@ class PlaylistDetailReadModelTest extends TestCase
 {
     public function testSerializesMetadataAndCountsStoredItems(): void
     {
-        $items = [new PlaylistItemReadModel('first', null, 'youtube', 'abcdefghijk', 0, 'https://example.com/first', 'First', null, null), new PlaylistItemReadModel('second', 'source', 'youtube', '01234567890', 1, 'https://example.com/second', 'Second', 'https://example.com/image', 60)];
+        $items = [new PlaylistItemReadModel(null, 'youtube', 'abcdefghijk', 0, 'https://example.com/first', 'First', null, null), new PlaylistItemReadModel('source', 'youtube', '01234567890', 1, 'https://example.com/second', 'Second', 'https://example.com/image', 60)];
         $model = new PlaylistDetailReadModel('playlist', 'Name', 'created', 'updated', $items);
         self::assertSame([
             'playlistIdentifier' => 'playlist',

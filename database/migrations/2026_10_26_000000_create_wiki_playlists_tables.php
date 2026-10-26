@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->index(['principal_id', 'created_at', 'id']);
         });
         Schema::create('wiki_playlist_items', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
             $table->foreignUuid('playlist_id')->constrained('wiki_playlists')->cascadeOnDelete();
             $table->foreignUuid('video_link_id')->nullable()->constrained('wiki_video_links')->nullOnDelete();
             $table->string('provider', 32);
@@ -26,8 +25,8 @@ return new class extends Migration {
             $table->string('thumbnail_url', 255)->nullable();
             $table->unsignedInteger('duration_seconds')->nullable();
             $table->unsignedInteger('position');
-            $table->unique(['playlist_id', 'provider', 'external_video_id']);
-            $table->index(['playlist_id', 'position', 'id']);
+            $table->primary(['playlist_id', 'provider', 'external_video_id']);
+            $table->index(['playlist_id', 'position']);
         });
     }
     public function down(): void

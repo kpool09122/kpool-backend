@@ -15,6 +15,7 @@ class ActionTest extends TestCase
             'CREATE' => 'create',
             'CREATE_PLAYLIST' => 'create_playlist',
             'DELETE_PLAYLIST' => 'delete_playlist',
+            'SAVE_PLAYLIST' => 'save_playlist',
             'GET_MY_PLAYLIST' => 'get_my_playlist',
             'LIST_MY_PLAYLISTS' => 'list_my_playlists',
             'READ' => 'read',

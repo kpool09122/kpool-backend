@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => 'La edición de la lista no es válida. Use un nombre de 1 a 32 caracteres y hasta 50 vídeos distintos.',
     'playlist_not_found' => 'No se encontró la lista de reproducción.',
     'invalid_playlist_identifier' => 'El identificador de la lista de reproducción no es válido.',
     'invalid_playlist_name' => 'El nombre de la lista debe tener entre 1 y 32 caracteres sin espacios iniciales ni finales.',

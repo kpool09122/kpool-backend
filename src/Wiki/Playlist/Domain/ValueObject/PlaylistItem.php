@@ -2,23 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Playlist\Domain\Entity;
+namespace Source\Wiki\Playlist\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
-use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
-use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItemIdentifier;
-use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 
-readonly class PlaylistItem
+final readonly class PlaylistItem
 {
     public function __construct(
-        private PlaylistItemIdentifier $playlistItemIdentifier,
         private PlaylistIdentifier $playlistIdentifier,
         private ?VideoLinkIdentifier $videoLinkIdentifier,
         private VideoProvider $provider,
@@ -27,19 +22,11 @@ readonly class PlaylistItem
         private VideoTitle $title,
         private ?ThumbnailUrl $thumbnailUrl,
         private ?DurationSeconds $durationSeconds,
-        private int $position,
+        private PlaylistItemPosition $position,
     ) {
-        if ($position < 0) {
-            throw new InvalidArgumentException('Playlist item position must be non-negative.');
-        }
         if ((string) $url !== 'https://www.youtube.com/watch?v=' . $externalVideoId) {
             throw new InvalidArgumentException('Video identifier and snapshot URL must match.');
         }
-    }
-
-    public function playlistItemIdentifier(): PlaylistItemIdentifier
-    {
-        return $this->playlistItemIdentifier;
     }
 
     public function playlistIdentifier(): PlaylistIdentifier
@@ -82,7 +69,12 @@ readonly class PlaylistItem
         return $this->durationSeconds;
     }
 
-    public function position(): int
+    public function atPosition(PlaylistItemPosition $position): self
+    {
+        return new self($this->playlistIdentifier, $this->videoLinkIdentifier, $this->provider, $this->externalVideoId, $this->url, $this->title, $this->thumbnailUrl, $this->durationSeconds, $position);
+    }
+
+    public function position(): PlaylistItemPosition
     {
         return $this->position;
     }
