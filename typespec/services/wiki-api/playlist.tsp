@@ -23,7 +23,32 @@ model CreatePlaylistResponse {
   @body body: CreatedPlaylist;
 }
 
+model PlaylistListItem {
+  playlistIdentifier: Uuid;
+  @minLength(1)
+  @maxLength(32)
+  name: string;
+  @minValue(0)
+  @maxValue(50)
+  videoCount: int32;
+  createdAt: utcDateTime;
+  updatedAt: utcDateTime;
+}
+
+model ListMyPlaylistsResponse {
+  @statusCode statusCode: 200;
+  @body body: {
+    @maxItems(3)
+    playlists: PlaylistListItem[];
+  };
+}
+
 interface PlaylistOperations {
+  @get
+  @route("/my/playlists")
+  @doc("List only the authenticated Wiki Principal's private playlists in ascending creation time, then identifier order. Requires an active Account/Principal and Wiki collaborator LIST_MY_PLAYLISTS permission. Returns an empty array when none exist, with no pagination. videoCount counts stored PlaylistItems, including items whose source VideoLink was deleted, unliked or unpublished. The caller cannot specify the owner.")
+  listMyPlaylists(): ListMyPlaylistsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @post
   @route("/my/playlists")
   @doc("Create an empty private playlist for the authenticated Wiki Principal; the owner cannot be supplied by the caller. Requires an active Account/Principal and Wiki collaborator CREATE_PLAYLIST permission. Accepts a name of 1-32 characters after trimming, including duplicate names. Returns 409 when the owner already has three playlists; deleting one allows creation again. Invalid names return 422. This endpoint never accepts video metadata from the caller. Playlist items store independent server-provided snapshots and retain them when source VideoLinks disappear.")

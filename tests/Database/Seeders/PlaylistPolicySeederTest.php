@@ -29,7 +29,7 @@ class PlaylistPolicySeederTest extends TestCase
         self::assertSame($roles, DB::table('wiki_roles')->orderBy('name')->pluck('id', 'name')->all());
         self::assertSame($attachments, DB::table('wiki_role_policy_attachments')->count());
         $policyRepository = $this->app()->make(PolicyRepositoryInterface::class);
-        foreach ([Action::CREATE_PLAYLIST] as $action) {
+        foreach ([Action::CREATE_PLAYLIST, Action::LIST_MY_PLAYLISTS] as $action) {
             $name = 'GLOBAL_' . strtoupper($action->value);
             $policy = $policyRepository->findSystemByName($name);
             self::assertNotNull($policy);

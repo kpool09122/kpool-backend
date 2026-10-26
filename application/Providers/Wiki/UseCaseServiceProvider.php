@@ -43,6 +43,8 @@ use Source\Wiki\OfficialCertification\Infrastructure\Query\ListMyOfficialCertifi
 use Source\Wiki\OfficialCertification\Infrastructure\Query\ListOfficialCertifications;
 use Source\Wiki\Playlist\Application\UseCase\Command\CreatePlaylist\CreatePlaylist;
 use Source\Wiki\Playlist\Application\UseCase\Command\CreatePlaylist\CreatePlaylistInterface;
+use Source\Wiki\Playlist\Application\UseCase\Query\ListMyPlaylists\ListMyPlaylistsInterface;
+use Source\Wiki\Playlist\Infrastructure\Query\ListMyPlaylists;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRole;
@@ -169,6 +171,7 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreatePlaylistInterface::class, CreatePlaylist::class);
+        $this->app->singleton(ListMyPlaylistsInterface::class, ListMyPlaylists::class);
         $this->app->singleton(LikeVideoLinkInterface::class, LikeVideoLink::class);
         $this->app->singleton(UnlikeVideoLinkInterface::class, UnlikeVideoLink::class);
         $this->app->singleton(ListMyVideoLinkLikesInterface::class, ListMyVideoLinkLikes::class);
