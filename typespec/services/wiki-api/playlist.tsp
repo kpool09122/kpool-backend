@@ -68,6 +68,11 @@ model GetMyPlaylistResponse {
 }
 
 interface PlaylistOperations {
+  @delete
+  @route("/my/playlists/{playlistId}")
+  @doc("Delete the authenticated Wiki Principal's private playlist and its items, returning 204 without a body. Requires an active Account/Principal and Wiki collaborator DELETE_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Original VideoLinks and likes are preserved. Deletion is reflected in list/detail queries and frees one of the owner's three creation slots.")
+  deletePlaylist(@path playlistId: Uuid): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @route("/my/playlists/{playlistId}")
   @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position then identifier, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player.")
