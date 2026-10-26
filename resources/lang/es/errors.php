@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'playlist_not_found' => 'No se encontró la lista de reproducción.',
+    'invalid_playlist_identifier' => 'El identificador de la lista de reproducción no es válido.',
     'invalid_playlist_name' => 'El nombre de la lista debe tener entre 1 y 32 caracteres sin espacios iniciales ni finales.',
     'playlist_limit_exceeded' => 'Puedes crear hasta tres listas de reproducción.',
     'video_link_already_exists' => 'Ya existe un vídeo con esta URL en este wiki.',

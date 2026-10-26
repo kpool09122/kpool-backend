@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'playlist_not_found' => '找不到播放清單。',
+    'invalid_playlist_identifier' => '播放清單識別碼無效。',
     'invalid_playlist_name' => '播放清單名稱去除首尾空白後須為1至32個字元。',
     'playlist_limit_exceeded' => '最多可建立3個播放清單。',
     'video_link_already_exists' => '此Wiki已存在使用相同URL的影片。',
