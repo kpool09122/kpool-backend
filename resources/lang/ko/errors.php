@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'playlist_not_found' => '플레이리스트를 찾을 수 없습니다.',
+    'invalid_playlist_identifier' => '플레이리스트 식별자가 올바르지 않습니다.',
     'invalid_playlist_name' => '재생목록 이름은 앞뒤 공백을 제외하고 1~32자로 입력해 주세요.',
     'playlist_limit_exceeded' => '재생목록은 최대 3개까지 만들 수 있습니다.',
     'video_link_already_exists' => '이 위키에 같은 URL의 동영상이 이미 있습니다.',

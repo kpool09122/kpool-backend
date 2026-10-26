@@ -43,7 +43,36 @@ model ListMyPlaylistsResponse {
   };
 }
 
+model PlaylistItem {
+  playlistItemIdentifier: Uuid;
+  sourceVideoLinkIdentifier: Uuid | null;
+  provider: "youtube";
+  externalVideoId: string;
+  @minValue(0)
+  @maxValue(49)
+  position: int32;
+  url: url;
+  title: string;
+  thumbnailUrl: url | null;
+  durationSeconds: int32 | null;
+}
+
+model PlaylistDetail extends PlaylistListItem {
+  @maxItems(50)
+  items: PlaylistItem[];
+}
+
+model GetMyPlaylistResponse {
+  @statusCode statusCode: 200;
+  @body body: PlaylistDetail;
+}
+
 interface PlaylistOperations {
+  @get
+  @route("/my/playlists/{playlistId}")
+  @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position then identifier, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player.")
+  getMyPlaylist(@path playlistId: Uuid): GetMyPlaylistResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @route("/my/playlists")
   @doc("List only the authenticated Wiki Principal's private playlists in ascending creation time, then identifier order. Requires an active Account/Principal and Wiki collaborator LIST_MY_PLAYLISTS permission. Returns an empty array when none exist, with no pagination. videoCount counts stored PlaylistItems, including items whose source VideoLink was deleted, unliked or unpublished. The caller cannot specify the owner.")

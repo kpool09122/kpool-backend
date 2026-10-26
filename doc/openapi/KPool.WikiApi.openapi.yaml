@@ -1258,6 +1258,71 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePlaylistRequestBody'
+  /my/playlists/{playlistId}:
+    get:
+      operationId: PlaylistOperations_getMyPlaylist
+      description: "Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position then identifier, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player."
+      parameters:
+        - name: playlistId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/video-link-likes:
     get:
       operationId: VideoLinkLikeOperations_listMyVideoLinkLikes
@@ -6952,6 +7017,62 @@ components:
           maxLength: 16
           description: Human-readable color label.
       description: Official color with a HEX color code and display label.
+    PlaylistDetail:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaylistItem'
+          maxItems: 50
+      allOf:
+        - $ref: '#/components/schemas/PlaylistListItem'
+    PlaylistItem:
+      type: object
+      required:
+        - playlistItemIdentifier
+        - sourceVideoLinkIdentifier
+        - provider
+        - externalVideoId
+        - position
+        - url
+        - title
+        - thumbnailUrl
+        - durationSeconds
+      properties:
+        playlistItemIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        sourceVideoLinkIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        provider:
+          type: string
+          enum:
+            - youtube
+        externalVideoId:
+          type: string
+        position:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 49
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        durationSeconds:
+          type: integer
+          format: int32
+          nullable: true
     PlaylistListItem:
       type: object
       required:

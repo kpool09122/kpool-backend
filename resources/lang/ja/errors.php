@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'playlist_not_found' => 'プレイリストが見つかりません。',
+    'invalid_playlist_identifier' => 'プレイリスト識別子が不正です。',
     'invalid_playlist_name' => 'プレイリスト名は前後の空白を除いて1〜32文字で入力してください。',
     'playlist_limit_exceeded' => 'プレイリストは3件まで作成できます。',
     'video_link_already_exists' => 'このWikiには同じURLの動画が登録されています。',

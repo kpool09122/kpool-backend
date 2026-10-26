@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'playlist_not_found' => 'Playlist not found.',
+    'invalid_playlist_identifier' => 'The playlist identifier is invalid.',
     'invalid_playlist_name' => 'The playlist name must contain 1 to 32 characters after trimming.',
     'playlist_limit_exceeded' => 'You can create up to three playlists.',
     'video_link_already_exists' => 'A video with this URL already exists for this wiki.',
