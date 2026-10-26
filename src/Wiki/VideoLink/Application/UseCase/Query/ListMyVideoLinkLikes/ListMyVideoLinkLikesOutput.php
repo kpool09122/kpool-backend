@@ -29,7 +29,7 @@ class ListMyVideoLinkLikesOutput implements ListMyVideoLinkLikesOutputPort
         $this->pagination = $pagination;
     }
 
-    /** @return array{likedVideoLinkIdentifiers:list<string>,videos:list<array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string}>,pagination:array{currentPage:int,perPage:int,total:int}|null} */
+    /** @return array{likedVideoLinkIdentifiers:list<string>,videos:list<array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>}>,pagination:array{currentPage:int,perPage:int,total:int}|null} */
     public function toArray(): array
     {
         return [

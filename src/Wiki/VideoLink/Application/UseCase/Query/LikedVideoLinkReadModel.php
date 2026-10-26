@@ -6,6 +6,7 @@ namespace Source\Wiki\VideoLink\Application\UseCase\Query;
 
 readonly class LikedVideoLinkReadModel
 {
+    /** @param list<array{playlistIdentifier:string,name:string}> $playlists */
     public function __construct(
         public string $videoLinkIdentifier,
         public string $url,
@@ -16,10 +17,11 @@ readonly class LikedVideoLinkReadModel
         public string $resourceType,
         public string $slug,
         public string $likedAt,
+        public array $playlists = [],
     ) {
     }
 
-    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string} */
+    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>} */
     public function toArray(): array
     {
         return [
@@ -32,6 +34,7 @@ readonly class LikedVideoLinkReadModel
             'resourceType' => $this->resourceType,
             'slug' => $this->slug,
             'likedAt' => $this->likedAt,
+            'playlists' => $this->playlists,
         ];
     }
 }

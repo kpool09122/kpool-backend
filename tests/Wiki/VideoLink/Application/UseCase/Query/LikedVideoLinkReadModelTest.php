@@ -22,7 +22,7 @@ class LikedVideoLinkReadModelTest extends TestCase
         $video = new LikedVideoLinkReadModel('id', 'https://www.youtube.com/watch?v=abcdefghijk', 'Title', $thumbnail, $duration, 'en', 'song', 'sg-title', '2026-01-01T00:00:00+00:00');
         self::assertSame([
             'videoLinkIdentifier' => 'id', 'url' => 'https://www.youtube.com/watch?v=abcdefghijk', 'title' => 'Title', 'thumbnailUrl' => $thumbnail, 'durationSeconds' => $duration,
-            'language' => 'en', 'resourceType' => 'song', 'slug' => 'sg-title', 'likedAt' => '2026-01-01T00:00:00+00:00',
+            'language' => 'en', 'resourceType' => 'song', 'slug' => 'sg-title', 'likedAt' => '2026-01-01T00:00:00+00:00', 'playlists' => [],
         ], $video->toArray());
     }
 }

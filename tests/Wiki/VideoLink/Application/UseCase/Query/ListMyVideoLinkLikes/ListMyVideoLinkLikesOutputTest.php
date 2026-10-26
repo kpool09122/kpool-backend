@@ -22,7 +22,7 @@ class ListMyVideoLinkLikesOutputTest extends TestCase
             'likedVideoLinkIdentifiers' => ['id1'],
             'videos' => [[
                 'videoLinkIdentifier' => 'id1', 'url' => 'https://www.youtube.com/watch?v=abcdefghijk', 'title' => 'Title',
-                'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'ja', 'resourceType' => 'talent', 'slug' => 'tl-example', 'likedAt' => '2026-01-01T00:00:00+00:00',
+                'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'ja', 'resourceType' => 'talent', 'slug' => 'tl-example', 'likedAt' => '2026-01-01T00:00:00+00:00', 'playlists' => [],
             ]],
             'pagination' => $pagination,
         ], $output->toArray());

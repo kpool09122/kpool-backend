@@ -102,6 +102,13 @@ model LikedVideoLink {
   resourceType: "agency" | "group" | "song" | "talent";
   slug: string;
   likedAt: string;
+  @doc("The authenticated Principal's saved playlists containing the same YouTube video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.")
+  playlists: LikedVideoPlaylist[];
+}
+
+model LikedVideoPlaylist {
+  playlistIdentifier: Uuid;
+  name: string;
 }
 
 model VideoLinkLikesPagination {
