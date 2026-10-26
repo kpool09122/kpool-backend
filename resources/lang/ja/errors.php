@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => 'プレイリストの編集内容が不正です。名前は1〜32文字、動画は重複なく50件以内で指定してください。',
     'playlist_not_found' => 'プレイリストが見つかりません。',
     'invalid_playlist_identifier' => 'プレイリスト識別子が不正です。',
     'invalid_playlist_name' => 'プレイリスト名は前後の空白を除いて1〜32文字で入力してください。',

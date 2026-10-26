@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => '播放列表编辑内容无效。名称须为1至32个字符，视频不得重复且最多50个。',
     'playlist_not_found' => '未找到播放列表。',
     'invalid_playlist_identifier' => '播放列表标识符无效。',
     'invalid_playlist_name' => '播放列表名称去除首尾空格后须为1至32个字符。',

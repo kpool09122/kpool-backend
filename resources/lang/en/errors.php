@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => 'The playlist edit is invalid. Use a name of 1 to 32 characters and at most 50 distinct videos.',
     'playlist_not_found' => 'Playlist not found.',
     'invalid_playlist_identifier' => 'The playlist identifier is invalid.',
     'invalid_playlist_name' => 'The playlist name must contain 1 to 32 characters after trimming.',

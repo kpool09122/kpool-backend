@@ -49,9 +49,8 @@ readonly class GetMyPlaylist implements GetMyPlaylistInterface
         if ($playlist === null) {
             throw new PlaylistNotFoundException();
         }
-        $items = $playlist->items()->orderBy('position')->orderBy('id')->get()
+        $items = $playlist->items()->orderBy('position')->get()
             ->map(static fn (PlaylistItem $item): PlaylistItemReadModel => new PlaylistItemReadModel(
-                $item->id,
                 $item->video_link_id,
                 $item->provider,
                 $item->external_video_id,

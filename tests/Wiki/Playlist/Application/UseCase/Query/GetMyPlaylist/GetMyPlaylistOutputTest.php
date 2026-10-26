@@ -15,7 +15,7 @@ class GetMyPlaylistOutputTest extends TestCase
     {
         $output = new GetMyPlaylistOutput();
         self::assertSame([], $output->toArray());
-        $item = new PlaylistItemReadModel('item', null, 'youtube', 'abcdefghijk', 0, 'https://www.youtube.com/watch?v=abcdefghijk', 'Snapshot', null, null);
+        $item = new PlaylistItemReadModel(null, 'youtube', 'abcdefghijk', 0, 'https://www.youtube.com/watch?v=abcdefghijk', 'Snapshot', null, null);
         $output->output(new PlaylistDetailReadModel('playlist', 'Name', 'created', 'updated', [$item]));
         self::assertSame([
             'playlistIdentifier' => 'playlist',
@@ -24,7 +24,6 @@ class GetMyPlaylistOutputTest extends TestCase
             'createdAt' => 'created',
             'updatedAt' => 'updated',
             'items' => [[
-                'playlistItemIdentifier' => 'item',
                 'sourceVideoLinkIdentifier' => null,
                 'provider' => 'youtube',
                 'externalVideoId' => 'abcdefghijk',

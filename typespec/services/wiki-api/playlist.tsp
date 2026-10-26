@@ -44,9 +44,9 @@ model ListMyPlaylistsResponse {
 }
 
 model PlaylistItem {
-  playlistItemIdentifier: Uuid;
   sourceVideoLinkIdentifier: Uuid | null;
   provider: "youtube";
+  @pattern("^[a-zA-Z0-9_-]{11}$")
   externalVideoId: string;
   @minValue(0)
   @maxValue(49)
@@ -67,7 +67,30 @@ model GetMyPlaylistResponse {
   @body body: PlaylistDetail;
 }
 
+@TypeSpec.OpenAPI.oneOf
+union SavePlaylistItem {
+  existing: {
+    provider: "youtube";
+    @pattern("^[a-zA-Z0-9_-]{11}$")
+    externalVideoId: string;
+  },
+  added: { videoLinkIdentifier: Uuid; },
+}
+
+model SavePlaylistRequestBody {
+  @doc("Name after trimming must contain 1 to 32 characters, as for creation.")
+  name: string;
+  @minItems(0)
+  @maxItems(50)
+  items: SavePlaylistItem[];
+}
+
 interface PlaylistOperations {
+  @put
+  @route("/my/playlists/{playlistId}")
+  @doc("Atomically replace the authenticated Wiki Principal's playlist name, membership and stored order. Each item specifies either an existing provider/externalVideoId pair or a new videoLinkIdentifier. Existing items must belong to this playlist and remain editable after source deletion, unpublication or unlike. New sources must exist in published Wikis (404 otherwise) and be liked by the caller (403 otherwise); all snapshots are resolved by the server. Foreign/missing playlists and foreign/missing items return 404. Invalid names, input shapes, more than 50 entries or duplicate provider/externalVideoId in the final state return 422. Omitting an existing item removes it; an empty array clears the playlist. Repeating a new-source selection reuses an existing item for the same video, preserving its snapshot, but duplicate selections in the same array are rejected. Returns 204 with no body. VideoLinks, likes and other playlists are not modified. Requires active Account/Principal and Wiki collaborator SAVE_PLAYLIST permission. Playback shuffle order is independent of stored order.")
+  savePlaylist(@path playlistId: Uuid, @body body: SavePlaylistRequestBody): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @delete
   @route("/my/playlists/{playlistId}")
   @doc("Delete the authenticated Wiki Principal's private playlist and its items, returning 204 without a body. Requires an active Account/Principal and Wiki collaborator DELETE_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Original VideoLinks and likes are preserved. Deletion is reflected in list/detail queries and frees one of the owner's three creation slots.")
@@ -75,7 +98,7 @@ interface PlaylistOperations {
 
   @get
   @route("/my/playlists/{playlistId}")
-  @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position then identifier, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player.")
+  @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player.")
   getMyPlaylist(@path playlistId: Uuid): GetMyPlaylistResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get

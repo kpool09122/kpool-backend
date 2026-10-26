@@ -89,7 +89,6 @@ class GetMyPlaylistTest extends TestCase
         self::assertCount(50, $result['items']);
         self::assertSame(range(0, 49), array_column($result['items'], 'position'));
         self::assertSame([
-            'playlistItemIdentifier' => (string) $items[49]->playlistItemIdentifier(),
             'sourceVideoLinkIdentifier' => (string) $source,
             'provider' => 'youtube',
             'externalVideoId' => '00000000000',
@@ -99,7 +98,7 @@ class GetMyPlaylistTest extends TestCase
             'thumbnailUrl' => 'https://i.ytimg.com/vi/00000000000/hqdefault.jpg',
             'durationSeconds' => 120,
         ], $result['items'][0]);
-        DB::table('wiki_playlist_items')->where('id', (string) $items[49]->playlistItemIdentifier())->update(['thumbnail_url' => null, 'duration_seconds' => null]);
+        DB::table('wiki_playlist_items')->where('playlist_id', (string) $id)->where('provider', 'youtube')->where('external_video_id', (string) $items[49]->externalVideoId())->update(['thumbnail_url' => null, 'duration_seconds' => null]);
         $query->process(new GetMyPlaylistInput($owner, $id), $output);
         $nullableResult = $output->toArray();
         if ($nullableResult === []) {

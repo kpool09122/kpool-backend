@@ -9,6 +9,7 @@ enum Action: string
     case CREATE = 'create';
     case CREATE_PLAYLIST = 'create_playlist';
     case DELETE_PLAYLIST = 'delete_playlist';
+    case SAVE_PLAYLIST = 'save_playlist';
     case GET_MY_PLAYLIST = 'get_my_playlist';
     case LIST_MY_PLAYLISTS = 'list_my_playlists';
     case READ = 'read';

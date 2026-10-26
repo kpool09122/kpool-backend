@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_playlist_edit' => '播放清單編輯內容無效。名稱須為1至32個字元，影片不得重複且最多50個。',
     'playlist_not_found' => '找不到播放清單。',
     'invalid_playlist_identifier' => '播放清單識別碼無效。',
     'invalid_playlist_name' => '播放清單名稱去除首尾空白後須為1至32個字元。',

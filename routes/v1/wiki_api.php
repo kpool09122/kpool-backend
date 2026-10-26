@@ -20,6 +20,7 @@ use Application\Http\Action\Wiki\OfficialCertification\Query\ListMyOfficialCerti
 use Application\Http\Action\Wiki\OfficialCertification\Query\ListOfficialCertifications\ListOfficialCertificationsAction;
 use Application\Http\Action\Wiki\Playlist\Command\CreatePlaylist\CreatePlaylistAction;
 use Application\Http\Action\Wiki\Playlist\Command\DeletePlaylist\DeletePlaylistAction;
+use Application\Http\Action\Wiki\Playlist\Command\SavePlaylist\SavePlaylistAction;
 use Application\Http\Action\Wiki\Playlist\Query\GetMyPlaylist\GetMyPlaylistAction;
 use Application\Http\Action\Wiki\Playlist\Query\ListMyPlaylists\ListMyPlaylistsAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
@@ -156,6 +157,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/image/upload', UploadImageAction::class);
         Route::post('/my/playlists', CreatePlaylistAction::class);
         Route::delete('/my/playlists/{playlistId}', DeletePlaylistAction::class);
+        Route::put('/my/playlists/{playlistId}', SavePlaylistAction::class);
         Route::post('/video-link/create', CreateVideoLinkAction::class);
         Route::delete('/video-link/{videoLinkId}', DeleteVideoLinkAction::class);
         Route::post('/video-link/{videoLinkId}/like', LikeVideoLinkAction::class);
