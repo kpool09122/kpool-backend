@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkOutput;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -74,7 +75,7 @@ class CreateVideoLinkAuthorizationTest extends TestCase
         $input = new CreateVideoLinkInput($principalId, ResourceType::TALENT, $wikiId, new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DurationSeconds(253));
         if (! $allowed) {
             try {
-                $this->app()->make(CreateVideoLinkInterface::class)->process($input);
+                $this->app()->make(CreateVideoLinkInterface::class)->process($input, new CreateVideoLinkOutput());
                 self::fail('An unauthorized principal created a video.');
             } catch (DisallowedException) {
                 self::assertEquals($before, DB::table('wiki_video_links')->orderBy('id')->get()->toArray());
@@ -82,7 +83,7 @@ class CreateVideoLinkAuthorizationTest extends TestCase
 
             return;
         }
-        $this->app()->make(CreateVideoLinkInterface::class)->process($input);
+        $this->app()->make(CreateVideoLinkInterface::class)->process($input, new CreateVideoLinkOutput());
         self::assertSame(3, DB::table('wiki_video_links')->count());
         /** @var object{id: string} $row */
         foreach ($before as $row) {

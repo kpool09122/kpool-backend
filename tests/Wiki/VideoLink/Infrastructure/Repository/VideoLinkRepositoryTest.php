@@ -25,6 +25,18 @@ use Tests\TestCase;
 class VideoLinkRepositoryTest extends TestCase
 {
     #[Group('useDb')]
+    public function testMatchesTikTokDuplicateAcrossAuthorUrlVariantsWithinTheSameWikiOnly(): void
+    {
+        $wiki = new WikiIdentifier(StrTestHelper::generateUuid());
+        $id = StrTestHelper::generateUuid();
+        CreateVideoLink::create($id, ['wiki_id' => (string) $wiki, 'url' => 'https://www.tiktok.com/@oldname/video/6718335390845095173']);
+        CreateVideoLink::create(StrTestHelper::generateUuid(), ['url' => 'https://www.tiktok.com/@other/video/6718335390845095173']);
+        $videos = $this->app()->make(VideoLinkRepositoryInterface::class)->findByResourceAndUrls(ResourceType::TALENT, $wiki, ['https://www.tiktok.com/@newname/video/6718335390845095173']);
+        self::assertCount(1, $videos);
+        self::assertSame($id, (string) $videos[0]->videoLinkIdentifier());
+    }
+
+    #[Group('useDb')]
     public function testCreatorPrincipalIdentifierIsPersistedAndRestored(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

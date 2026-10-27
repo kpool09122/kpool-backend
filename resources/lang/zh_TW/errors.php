@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => '無法取得或儲存影片資訊或縮圖。請稍後再試。',
     'invalid_playlist_edit' => '播放清單編輯內容無效。名稱須為1至32個字元，影片不得重複且最多50個。',
     'playlist_not_found' => '找不到播放清單。',
     'invalid_playlist_identifier' => '播放清單識別碼無效。',

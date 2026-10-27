@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => 'No se pudieron obtener o guardar los datos o la miniatura del vídeo. Inténtalo de nuevo más tarde.',
     'invalid_playlist_edit' => 'La edición de la lista no es válida. Use un nombre de 1 a 32 caracteres y hasta 50 vídeos distintos.',
     'playlist_not_found' => 'No se encontró la lista de reproducción.',
     'invalid_playlist_identifier' => 'El identificador de la lista de reproducción no es válido.',

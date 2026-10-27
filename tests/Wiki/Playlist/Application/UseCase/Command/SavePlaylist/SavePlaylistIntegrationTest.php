@@ -8,6 +8,7 @@ use Application\Models\Wiki\PlaylistItem as PlaylistItemModel;
 use Database\Seeders\SystemPolicySeeder;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -27,15 +28,18 @@ use Source\Wiki\Playlist\Domain\Entity\Playlist;
 use Source\Wiki\Playlist\Domain\Exception\PlaylistItemLimitExceededException;
 use Source\Wiki\Playlist\Domain\Exception\PlaylistNotFoundException;
 use Source\Wiki\Playlist\Domain\Repository\PlaylistRepositoryInterface;
-use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistName;
 use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInput;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesOutput;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
@@ -51,6 +55,37 @@ use Throwable;
 #[Group('useDb')]
 class SavePlaylistIntegrationTest extends TestCase
 {
+    public function testMixesTikTokAndYouTubeAndExposesStoredLikesAndPlaylistSnapshots(): void
+    {
+        Http::preventStrayRequests();
+        $owner = $this->principal();
+        $youtube = $this->video($owner, 'abcdefghijk');
+        $tiktok = $this->video($owner, 'lmnopqrstuv');
+        DB::table('wiki_video_links')->where('id', (string) $tiktok)->update(['url' => 'https://www.tiktok.com/@scout2015/video/6718335390845095173', 'thumbnail_path' => 'images/tiktok.webp', 'thumbnail_url' => null]);
+        $playlist = PlaylistTestHelper::playlist(owner: $owner);
+        $repository = $this->app()->make(PlaylistRepositoryInterface::class);
+        $repository->save($playlist);
+        $this->save($owner, $playlist, [new SavePlaylistItemInput(videoLinkIdentifier: $tiktok), new SavePlaylistItemInput(videoLinkIdentifier: $youtube)]);
+        $restored = $repository->findByIdAndPrincipal($playlist->playlistIdentifier(), $owner);
+        self::assertNotNull($restored);
+        self::assertSame(['tiktok', 'youtube'], array_map(static fn ($item): string => $item->provider()->value, $restored->items()));
+        self::assertSame('6718335390845095173', (string) $restored->items()[0]->externalVideoId());
+        self::assertSame('images/tiktok.webp', (string) $restored->items()[0]->thumbnailPath());
+        $likes = new ListMyVideoLinkLikesOutput();
+        $this->app()->make(ListMyVideoLinkLikesInterface::class)->process(new ListMyVideoLinkLikesInput($owner, [$tiktok]), $likes);
+        $liked = $likes->toArray()['videos'][0];
+        self::assertSame('tiktok', $liked['provider']);
+        self::assertSame('6718335390845095173', $liked['externalVideoId']);
+        self::assertSame((string) $playlist->playlistIdentifier(), $liked['playlists'][0]['playlistIdentifier']);
+        self::assertStringContainsString('images/tiktok.webp', $liked['thumbnailUrl'] ?? '');
+        $detail = new GetMyPlaylistOutput();
+        $this->app()->make(GetMyPlaylistInterface::class)->process(new GetMyPlaylistInput($owner, $playlist->playlistIdentifier()), $detail);
+        self::assertStringContainsString('images/tiktok.webp', $detail->toArray()['items'][0]['thumbnailUrl'] ?? '');
+        $this->save($owner, $playlist, array_map(static fn ($item): SavePlaylistItemInput => new SavePlaylistItemInput(provider: $item->provider(), externalVideoId: $item->externalVideoId()), array_reverse($restored->items())));
+        self::assertSame('youtube', $repository->findByIdAndPrincipal($playlist->playlistIdentifier(), $owner)?->items()[0]->provider()->value);
+        Http::assertNothingSent();
+    }
+
     public function testSavesNameMembershipOrderAndPreservesSnapshotsOnRetry(): void
     {
         $owner = $this->principal();

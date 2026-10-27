@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
@@ -21,13 +22,16 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
         private PrincipalIdentifier $principalIdentifier,
         private ResourceType $resourceType,
         private WikiIdentifier $wikiIdentifier,
-        private YouTubeVideoUrl $url,
+        private YouTubeVideoUrl|TikTokVideoUrl $url,
         private VideoUsage $videoUsage,
         private VideoTitle $title,
-        private DurationSeconds $durationSeconds,
+        private ?DurationSeconds $durationSeconds,
         private ?ThumbnailUrl $thumbnailUrl = null,
         private ?DateTimeImmutable $publishedAt = null,
     ) {
+        if ($url instanceof YouTubeVideoUrl && $durationSeconds === null) {
+            throw new InvalidArgumentException('YouTube duration is required.');
+        }
         if (! $videoUsage->isManual()) {
             throw new InvalidArgumentException('Invalid manual video input.');
         }
@@ -48,7 +52,7 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
         return $this->wikiIdentifier;
     }
 
-    public function url(): YouTubeVideoUrl
+    public function url(): YouTubeVideoUrl|TikTokVideoUrl
     {
         return $this->url;
     }
@@ -63,7 +67,7 @@ readonly class CreateVideoLinkInput implements CreateVideoLinkInputPort
         return $this->title;
     }
 
-    public function durationSeconds(): DurationSeconds
+    public function durationSeconds(): ?DurationSeconds
     {
         return $this->durationSeconds;
     }

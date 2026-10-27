@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\VideoLink\Command\CreateVideoLink;
 
 use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\BadGatewayHttpException;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -14,15 +15,18 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\Service\VideoUrlBuilderInterface;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
-use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
+use Source\Wiki\VideoLink\Application\Exception\VideoMetadataUnavailableException;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkOutput;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -37,22 +41,27 @@ readonly class CreateVideoLinkAction
         private CreateVideoLinkInterface $createVideoLink,
         private WikiContext $wikiContext,
         private LoggerInterface $logger,
+        private VideoThumbnailServiceInterface $videoThumbnailService,
+        private VideoUrlBuilderInterface $videoUrlBuilder,
     ) {
     }
 
     /** @throws InternalServerErrorHttpException */
     public function __invoke(CreateVideoLinkRequest $request): Response
     {
+        $output = new CreateVideoLinkOutput();
+        $committed = false;
+
         try {
             try {
                 $input = new CreateVideoLinkInput(
                     $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
                     new WikiIdentifier($request->wikiIdentifier()),
-                    new YouTubeVideoUrl($request->url()),
+                    $this->videoUrlBuilder->build($request->url()),
                     VideoUsage::from($request->videoUsage()),
                     new VideoTitle($request->title()),
-                    new DurationSeconds($request->durationSeconds()),
+                    $request->durationSeconds() !== null ? new DurationSeconds($request->durationSeconds()) : null,
                     $request->thumbnailUrl() !== null ? new ThumbnailUrl($request->thumbnailUrl()) : null,
                     $request->publishedAt() !== null ? new DateTimeImmutable($request->publishedAt()) : null,
                 );
@@ -63,8 +72,17 @@ readonly class CreateVideoLinkAction
             DB::beginTransaction();
 
             try {
-                $this->createVideoLink->process($input);
+                $this->createVideoLink->process($input, $output);
                 DB::commit();
+                $committed = true;
+            } catch (VideoMetadataUnavailableException $e) {
+                DB::rollBack();
+
+                throw new BadGatewayHttpException(detail: error_message('video_metadata_unavailable', $request->language()));
+            } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_video_link', $request->language()), previous: $e);
             } catch (DisallowedException $e) {
                 DB::rollBack();
 
@@ -86,6 +104,10 @@ readonly class CreateVideoLinkAction
 
                 throw $e;
             }
+        } catch (BadGatewayHttpException $e) {
+            $this->logger->warning('Video metadata retrieval failed.');
+
+            return response()->json($e->toProblemDetails(), $e->getHttpStatus());
         } catch (ForbiddenHttpException|NotFoundHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
@@ -94,6 +116,15 @@ readonly class CreateVideoLinkAction
             $this->logger->error((string) $e);
 
             throw new InternalServerErrorHttpException(previous: $e);
+        } finally {
+            if (! $committed && $output->thumbnailPath() !== null) {
+                try {
+                    $this->videoThumbnailService->track($output->thumbnailPath());
+                    $this->videoThumbnailService->releaseUnused();
+                } catch (Throwable) {
+                    $this->logger->warning('Failed to compensate a newly stored video thumbnail.');
+                }
+            }
         }
 
         return response()->noContent(Response::HTTP_NO_CONTENT);

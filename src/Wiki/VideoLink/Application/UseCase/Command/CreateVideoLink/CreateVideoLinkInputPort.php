@@ -9,6 +9,7 @@ use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
@@ -22,13 +23,13 @@ interface CreateVideoLinkInputPort
 
     public function wikiIdentifier(): WikiIdentifier;
 
-    public function url(): YouTubeVideoUrl;
+    public function url(): YouTubeVideoUrl|TikTokVideoUrl;
 
     public function videoUsage(): VideoUsage;
 
     public function title(): VideoTitle;
 
-    public function durationSeconds(): DurationSeconds;
+    public function durationSeconds(): ?DurationSeconds;
 
     public function thumbnailUrl(): ?ThumbnailUrl;
 

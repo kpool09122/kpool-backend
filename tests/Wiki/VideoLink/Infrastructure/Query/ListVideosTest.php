@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\VideoLink\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -28,6 +29,26 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListVideosTest extends TestCase
 {
+    public function testReadsStoredTikTokIdentityCoverAndDurationWithoutNetwork(): void
+    {
+        Http::preventStrayRequests();
+        $wiki = StrTestHelper::generateUuid();
+        $video = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'group', ['slug' => 'gr-tiktok', 'language' => 'ja', 'published_at' => '2026-01-01']);
+        CreateVideoLink::create($video, ['wiki_id' => $wiki, 'resource_type' => 'group', 'url' => 'https://www.tiktok.com/@scout2015/video/6718335390845095173', 'duration_seconds' => 12]);
+        DB::table('wiki_video_links')->where('id', $video)->update(['thumbnail_path' => 'images/cover.webp']);
+        $output = new ListVideosOutput();
+        $this->app()->make(ListVideosInterface::class)->process(new ListVideosInput(new Slug('gr-tiktok'), Language::JAPANESE, ResourceType::GROUP, 12, 12), $output);
+        $row = $output->toArray()['videos'][0];
+        self::assertSame('tiktok', $row['provider']);
+        self::assertSame('6718335390845095173', $row['externalVideoId']);
+        self::assertSame(12, $row['durationSeconds']);
+        self::assertStringContainsString('images/cover.webp', $row['thumbnailUrl'] ?? '');
+        $this->app()->make(ListVideosInterface::class)->process(new ListVideosInput(new Slug('gr-tiktok'), Language::JAPANESE, ResourceType::GROUP, 13), $output);
+        self::assertSame([], $output->toArray()['videos']);
+        Http::assertNothingSent();
+    }
+
     public function testReturnsManualAndAutomaticVideosForRequestedPublishedWikiInStableOrder(): void
     {
         $id = StrTestHelper::generateUuid();
@@ -49,7 +70,7 @@ class ListVideosTest extends TestCase
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
         $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount'], array_keys($payload['videos'][0]));
+        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);

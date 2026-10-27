@@ -6,6 +6,8 @@ namespace Source\Wiki\VideoLink\Infrastructure\Query;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Application\Models\Wiki\Wiki as WikiModel;
+use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Shared\Domain\Service\VideoUrlBuilderInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosOutputPort;
@@ -16,6 +18,10 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
 readonly class ListVideos implements ListVideosInterface
 {
+    public function __construct(private VideoUrlBuilderInterface $videoUrlBuilder)
+    {
+    }
+
     /** @throws WikiNotFoundException */
     public function process(ListVideosInputPort $input, ListVideosOutputPort $output): void
     {
@@ -40,11 +46,11 @@ readonly class ListVideos implements ListVideosInterface
             $query->where('duration_seconds', '<=', $input->maxDurationSeconds());
         }
         $videos = $query->orderByDesc('created_at')->orderBy('id')->get()
-            ->map(static fn (VideoLinkModel $video): VideoLinkReadModel => new VideoLinkReadModel(
+            ->map(fn (VideoLinkModel $video): VideoLinkReadModel => new VideoLinkReadModel(
                 $video->id,
-                $video->url,
+                $this->videoUrlBuilder->build($video->url),
                 $video->title,
-                $video->thumbnail_url,
+                $video->thumbnail_path !== null ? ImageUrl::fromPath($video->thumbnail_path) : $video->thumbnail_url,
                 $video->published_at?->toAtomString(),
                 $video->video_usage,
                 $video->duration_seconds,

@@ -6,6 +6,8 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -20,6 +22,10 @@ use UnexpectedValueException;
 
 final class VideoLinkRepository implements VideoLinkRepositoryInterface
 {
+    public function __construct(private readonly VideoThumbnailServiceInterface $videoThumbnailService)
+    {
+    }
+
     public function findById(VideoLinkIdentifier $identifier): ?VideoLink
     {
         $model = VideoLinkModel::query()
@@ -49,12 +55,16 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
 
     public function save(VideoLink $videoLink): void
     {
+        if ($videoLink->thumbnailPath() !== null) {
+            $this->videoThumbnailService->track($videoLink->thumbnailPath());
+        }
         VideoLinkModel::query()->updateOrCreate(
             ['id' => (string) $videoLink->videoLinkIdentifier()],
             [
                 'resource_type' => $videoLink->resourceType()->value,
                 'wiki_id' => (string) $videoLink->wikiIdentifier(),
                 'url' => (string) $videoLink->url(),
+                'thumbnail_path' => $videoLink->thumbnailPath() === null ? null : (string) $videoLink->thumbnailPath(),
                 'video_usage' => $videoLink->videoUsage()->value,
                 'title' => (string) $videoLink->title(),
                 'thumbnail_url' => $videoLink->thumbnailUrl() !== null ? (string) $videoLink->thumbnailUrl() : null,
@@ -71,6 +81,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
         VideoLinkModel::query()
             ->where('id', (string) $identifier)
             ->delete();
+        $this->videoThumbnailService->releaseUnused();
     }
 
     public function deleteByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void
@@ -79,6 +90,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->where('resource_type', $resourceType->value)
             ->where('wiki_id', (string) $resourceIdentifier)
             ->delete();
+        $this->videoThumbnailService->releaseUnused();
     }
 
     public function deleteAutoCollectedByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void
@@ -94,6 +106,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->where('wiki_id', (string) $resourceIdentifier)
             ->whereIn('video_usage', $autoCollectedUsages)
             ->delete();
+        $this->videoThumbnailService->releaseUnused();
     }
 
     /**
@@ -110,7 +123,14 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
         $models = VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
             ->where('wiki_id', (string) $resourceIdentifier)
-            ->whereIn('url', $urls)
+            ->where(function ($query) use ($urls): void {
+                $query->whereIn('url', $urls);
+                foreach ($urls as $url) {
+                    if (preg_match('~^https://www\.tiktok\.com/@[^/]+/video/([1-9][0-9]{14,19})$~D', $url, $matches) === 1) {
+                        $query->orWhereRaw("url ~ ?", ['^https://www\.tiktok\.com/@[^/]+/video/' . $matches[1] . '$']);
+                    }
+                }
+            })
             ->get();
 
         return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->all();
@@ -130,6 +150,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ($model->created_at ?? throw new UnexpectedValueException('Missing creation timestamp.'))->toDateTimeImmutable(),
             $model->duration_seconds !== null ? new DurationSeconds($model->duration_seconds) : null,
             $model->creator_principal_id !== null ? new PrincipalIdentifier($model->creator_principal_id) : null,
+            $model->thumbnail_path !== null ? new ImagePath($model->thumbnail_path) : null,
         );
     }
 }

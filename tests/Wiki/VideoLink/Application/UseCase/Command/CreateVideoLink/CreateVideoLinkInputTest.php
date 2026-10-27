@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInput;
@@ -33,9 +34,23 @@ class CreateVideoLinkInputTest extends TestCase
         self::assertSame($url, $input->url());
         self::assertSame(VideoUsage::MUSIC_VIDEO, $input->videoUsage());
         self::assertSame('Title', (string) $input->title());
-        self::assertSame(0, $input->durationSeconds()->value());
+        self::assertSame(0, $input->durationSeconds()?->value());
         self::assertSame('https://example.com/thumb', (string) $input->thumbnailUrl());
         self::assertSame($publishedAt, $input->publishedAt());
+    }
+
+    public function testTikTokDurationCanBeOmitted(): void
+    {
+        $url = new TikTokVideoUrl('https://vm.tiktok.com/abc/');
+        $input = new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), $url, VideoUsage::SHORT, new VideoTitle('Title'), null);
+        self::assertSame($url, $input->url());
+        self::assertNull($input->durationSeconds());
+    }
+
+    public function testYouTubeDurationIsRequired(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new YouTubeVideoUrl('https://youtu.be/Os_heh8vPfs'), VideoUsage::SHORT, new VideoTitle('Title'), null);
     }
 
     public function testAutomaticUsageIsRejected(): void

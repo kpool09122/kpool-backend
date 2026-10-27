@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => 'The video details or thumbnail could not be retrieved or stored. Please try again later.',
     'invalid_playlist_edit' => 'The playlist edit is invalid. Use a name of 1 to 32 characters and at most 50 distinct videos.',
     'playlist_not_found' => 'Playlist not found.',
     'invalid_playlist_identifier' => 'The playlist identifier is invalid.',

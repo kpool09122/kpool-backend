@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => '동영상 정보 또는 썸네일을 가져오거나 저장할 수 없습니다. 나중에 다시 시도해 주세요.',
     'invalid_playlist_edit' => '재생목록 편집 내용이 올바르지 않습니다. 이름은 1~32자, 동영상은 중복 없이 최대 50개로 지정해 주세요.',
     'playlist_not_found' => '플레이리스트를 찾을 수 없습니다.',
     'invalid_playlist_identifier' => '플레이리스트 식별자가 올바르지 않습니다.',

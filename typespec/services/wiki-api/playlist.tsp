@@ -45,8 +45,8 @@ model ListMyPlaylistsResponse {
 
 model PlaylistItem {
   sourceVideoLinkIdentifier: Uuid | null;
-  provider: "youtube";
-  @pattern("^[a-zA-Z0-9_-]{11}$")
+  provider: "youtube" | "tiktok";
+  @pattern("^([a-zA-Z0-9_-]{11}|[1-9][0-9]{14,19})$")
   externalVideoId: string;
   @minValue(0)
   @maxValue(49)
@@ -69,9 +69,14 @@ model GetMyPlaylistResponse {
 
 @TypeSpec.OpenAPI.oneOf
 union SavePlaylistItem {
-  existing: {
+  existingYouTube: {
     provider: "youtube";
     @pattern("^[a-zA-Z0-9_-]{11}$")
+    externalVideoId: string;
+  },
+  existingTikTok: {
+    provider: "tiktok";
+    @pattern("^[1-9][0-9]{14,19}$")
     externalVideoId: string;
   },
   added: { videoLinkIdentifier: Uuid; },
@@ -98,7 +103,7 @@ interface PlaylistOperations {
 
   @get
   @route("/my/playlists/{playlistId}")
-  @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player.")
+  @doc("Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube/TikTok requests or collection jobs are triggered; playback failures are handled by the player.")
   getMyPlaylist(@path playlistId: Uuid): GetMyPlaylistResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get

@@ -6,13 +6,13 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Source\Wiki\Playlist\Domain\Entity\Playlist;
-use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItem;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistItemPosition;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistName;
 use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\Shared\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;

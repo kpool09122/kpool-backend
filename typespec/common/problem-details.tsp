@@ -70,6 +70,11 @@ model ServiceUnavailableProblemResponse {
   @body body: ProblemDetails;
 }
 
+model BadGatewayProblemResponse {
+  @statusCode statusCode: 502;
+  @body body: ProblemDetails;
+}
+
 model InternalServerErrorProblemResponse {
   @statusCode statusCode: 500;
   @body body: ProblemDetails;

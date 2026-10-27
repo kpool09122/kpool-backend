@@ -1399,7 +1399,7 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     get:
       operationId: PlaylistOperations_getMyPlaylist
-      description: "Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube requests or collection jobs are triggered; playback failures are handled by the player."
+      description: "Return the authenticated Wiki Principal's private playlist with all stored items, ordered by position, without pagination. Requires an active Account/Principal and Wiki collaborator GET_MY_PLAYLIST permission. Other owners and missing identifiers return the same 404; malformed identifiers return 422. Empty playlists return items: []. videoCount equals the stored item count. Snapshots remain available after source deletion (sourceVideoLinkIdentifier becomes null), Wiki unpublication or unlike. No YouTube/TikTok requests or collection jobs are triggered; playback failures are handled by the player."
       parameters:
         - name: playlistId
           in: path
@@ -2943,7 +2943,7 @@ paths:
   /video-link/create:
     post:
       operationId: VideoLinkOperations_createVideoLink
-      description: Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. durationSeconds is a non-negative integer obtained by the frontend player; zero is allowed. The creator principal identifier is determined on the server. Duplicate URLs within the wiki return 409.
+      description: Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. YouTube requires a non-negative frontend-player duration; zero is allowed. TikTok ignores client thumbnail/duration and resolves the selected public video before storing its cover. The creator is determined on the server. Duplicate provider/video IDs within the wiki return 409, including URL variants. Invalid URL or resolved non-video share links return 422. Unavailable, restricted, changed or invalid public metadata/image and storage failures return 502 (video_metadata_unavailable); no video is saved. Successful response is 204 without a body.
       parameters: []
       responses:
         '204':
@@ -2997,6 +2997,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
           description: Server error
           content:
             application/json:
@@ -4097,7 +4103,7 @@ paths:
   /wiki/{language}/{resourceType}/{slug}/videos:
     get:
       operationId: PublicVideoLinkOperations_listVideos
-      description: 'Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.'
+      description: 'Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or TikTok or dispatches collection jobs.'
       parameters:
         - name: language
           in: path
@@ -5833,7 +5839,6 @@ components:
         - url
         - videoUsage
         - title
-        - durationSeconds
       properties:
         resourceType:
           type: string
@@ -5847,7 +5852,7 @@ components:
         url:
           type: string
           maxLength: 255
-          description: HTTPS YouTube video URL. Supports watch, youtu.be, shorts, live and embed URLs; other providers and non-video links are rejected. Stored as a canonical youtube.com/watch URL.
+          description: HTTPS YouTube or TikTok video URL. YouTube supports watch, youtu.be, shorts, live and embed URLs. TikTok supports www.tiktok.com/@user/video/string-id and vm.tiktok.com / vt.tiktok.com share links. Canonicalized by the server; profiles, photos and other hosts return 422.
         videoUsage:
           type: string
           enum:
@@ -5867,11 +5872,13 @@ components:
         durationSeconds:
           type: integer
           format: int32
+          nullable: true
           minimum: 0
+          description: 'Required for YouTube; non-negative player duration including zero. Optional or null for TikTok and ignored there: the server resolves duration from the selected public video.'
         thumbnailUrl:
           type: string
           nullable: true
-          description: Thumbnail image URL.
+          description: 'Optional YouTube thumbnail URL. Ignored for TikTok: the server stores the selected video cover and returns its own public image URL.'
         publishedAt:
           type: string
           nullable: true
@@ -6717,6 +6724,8 @@ components:
     LikedVideoLink:
       type: object
       required:
+        - provider
+        - externalVideoId
         - videoLinkIdentifier
         - url
         - title
@@ -6728,6 +6737,14 @@ components:
         - likedAt
         - playlists
       properties:
+        provider:
+          type: string
+          enum:
+            - youtube
+            - tiktok
+        externalVideoId:
+          type: string
+          description: 'Provider-specific video ID, always a string. YouTube: 11 characters; TikTok: decimal digits.'
         videoLinkIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         url:
@@ -6763,7 +6780,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LikedVideoPlaylist'
-          description: The authenticated Principal's saved playlists containing the same YouTube video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.
+          description: The authenticated Principal's saved playlists containing the same YouTube or TikTok video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.
     LikedVideoPlaylist:
       type: object
       required:
@@ -7204,9 +7221,10 @@ components:
           type: string
           enum:
             - youtube
+            - tiktok
         externalVideoId:
           type: string
-          pattern: ^[a-zA-Z0-9_-]{11}$
+          pattern: ^([a-zA-Z0-9_-]{11}|[1-9][0-9]{14,19})$
         position:
           type: integer
           format: int32
@@ -7666,6 +7684,18 @@ components:
             externalVideoId:
               type: string
               pattern: ^[a-zA-Z0-9_-]{11}$
+          required:
+            - provider
+            - externalVideoId
+        - type: object
+          properties:
+            provider:
+              type: string
+              enum:
+                - tiktok
+            externalVideoId:
+              type: string
+              pattern: ^[1-9][0-9]{14,19}$
           required:
             - provider
             - externalVideoId
@@ -8796,6 +8826,8 @@ components:
     Video:
       type: object
       required:
+        - provider
+        - externalVideoId
         - videoLinkIdentifier
         - likeCount
         - url
@@ -8807,6 +8839,14 @@ components:
         - creatorIdentityName
         - videoUsage
       properties:
+        provider:
+          type: string
+          enum:
+            - youtube
+            - tiktok
+        externalVideoId:
+          type: string
+          description: 'Provider-specific video ID, always a string. YouTube: 11 characters; TikTok: decimal digits.'
         videoLinkIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         likeCount:

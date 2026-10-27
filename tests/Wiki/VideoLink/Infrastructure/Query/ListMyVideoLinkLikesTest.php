@@ -8,6 +8,7 @@ use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Playlist\Domain\Repository\PlaylistRepositoryInterface;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
@@ -71,7 +72,7 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame([$ids['public'], $ids['older']], $output->toArray()['likedVideoLinkIdentifiers']);
         self::assertSame(['currentPage' => 1, 'perPage' => 20, 'total' => 2], $output->toArray()['pagination']);
         self::assertSame([
-            'videoLinkIdentifier' => $ids['public'], 'url' => DB::table('wiki_video_links')->where('id', $ids['public'])->value('url'), 'title' => 'Test Video',
+            'provider' => 'youtube', 'externalVideoId' => substr(TypedValue::string(DB::table('wiki_video_links')->where('id', $ids['public'])->value('url')), -11), 'videoLinkIdentifier' => $ids['public'], 'url' => DB::table('wiki_video_links')->where('id', $ids['public'])->value('url'), 'title' => 'Test Video',
             'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'en', 'resourceType' => 'agency', 'slug' => 'ag-public', 'likedAt' => '2026-02-01T00:00:00+00:00', 'playlists' => [],
         ], $output->toArray()['videos'][0]);
         $requested = array_map(static fn (string $id): VideoLinkIdentifier => new VideoLinkIdentifier($id), array_values($ids));

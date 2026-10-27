@@ -90,8 +90,13 @@ use Source\Wiki\Principal\Infrastructure\Service\PrincipalGroupChangeGuard;
 use Source\Wiki\Principal\Infrastructure\Service\PrincipalWikiScopeResolver;
 use Source\Wiki\Principal\Infrastructure\Service\ReachablePrincipalGroupManager;
 use Source\Wiki\Principal\Infrastructure\Service\WikiContextService;
+use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
+use Source\Wiki\Shared\Domain\Service\VideoUrlBuilder;
+use Source\Wiki\Shared\Domain\Service\VideoUrlBuilderInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
+use Source\Wiki\Shared\Infrastructure\Service\VideoThumbnailService;
+use Source\Wiki\VideoLink\Application\Service\VideoMetadataServiceInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinks;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLink;
@@ -109,6 +114,9 @@ use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkLikeFactory;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkLikeRepository;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkRepository;
+use Source\Wiki\VideoLink\Infrastructure\Service\PublicVideoHostResolver;
+use Source\Wiki\VideoLink\Infrastructure\Service\PublicVideoHostResolverInterface;
+use Source\Wiki\VideoLink\Infrastructure\Service\VideoMetadataService;
 use Source\Wiki\VideoLink\Infrastructure\Service\YouTubeSearchService;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface as WikiTranslationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
@@ -141,6 +149,10 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(VideoUrlBuilderInterface::class, VideoUrlBuilder::class);
+        $this->app->singleton(VideoThumbnailServiceInterface::class, VideoThumbnailService::class);
+        $this->app->singleton(VideoMetadataServiceInterface::class, VideoMetadataService::class);
+        $this->app->singleton(PublicVideoHostResolverInterface::class, PublicVideoHostResolver::class);
         $this->app->singleton(PlaylistFactoryInterface::class, PlaylistFactory::class);
         $this->app->singleton(PlaylistRepositoryInterface::class, PlaylistRepository::class);
         $this->app->singleton(FreeMaterialSearchServiceInterface::class, FreeMaterialSearchService::class);

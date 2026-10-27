@@ -10,11 +10,11 @@ use ValueError;
 
 class VideoProviderTest extends TestCase
 {
-    public function testOnlyYouTubeIsCurrentlySupported(): void
+    public function testSupportsYouTubeAndTikTok(): void
     {
-        self::assertSame([VideoProvider::YOUTUBE], VideoProvider::cases());
+        self::assertSame([VideoProvider::YOUTUBE, VideoProvider::TIKTOK], VideoProvider::cases());
         self::assertSame('youtube', VideoProvider::YOUTUBE->value);
         $this->expectException(ValueError::class);
-        VideoProvider::from('tiktok');
+        VideoProvider::from('unknown');
     }
 }

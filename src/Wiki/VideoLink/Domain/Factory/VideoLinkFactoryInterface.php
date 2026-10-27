@@ -6,6 +6,7 @@ namespace Source\Wiki\VideoLink\Domain\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -27,5 +28,6 @@ interface VideoLinkFactoryInterface
         ?DateTimeImmutable $publishedAt = null,
         ?DurationSeconds $durationSeconds = null,
         ?PrincipalIdentifier $creatorPrincipalIdentifier = null,
+        ?ImagePath $thumbnailPath = null,
     ): VideoLink;
 }

@@ -23,7 +23,7 @@ class CreateVideoLinkRequest extends FormRequest
             'url' => ['required', 'url:https', 'max:255'],
             'videoUsage' => ['required', Rule::in(array_map(static fn (VideoUsage $usage): string => $usage->value, array_filter(VideoUsage::cases(), static fn (VideoUsage $usage): bool => $usage->isManual())))],
             'title' => ['required', 'string', 'max:255'],
-            'durationSeconds' => ['required', 'integer', 'min:0', 'max:2147483647'],
+            'durationSeconds' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
             'thumbnailUrl' => ['nullable', 'url:http,https', 'max:255'],
             'publishedAt' => ['nullable', 'date'],
         ];
@@ -54,9 +54,9 @@ class CreateVideoLinkRequest extends FormRequest
         return RequestValue::string($this->input('title'));
     }
 
-    public function durationSeconds(): int
+    public function durationSeconds(): ?int
     {
-        return RequestValue::integer($this->input('durationSeconds'));
+        return $this->input('durationSeconds') !== null ? RequestValue::integer($this->input('durationSeconds')) : null;
     }
 
     public function thumbnailUrl(): ?string

@@ -7,9 +7,10 @@ namespace Source\Wiki\VideoLink\Infrastructure\Query;
 use Application\Models\Wiki\Playlist as PlaylistModel;
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use InvalidArgumentException;
+use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Shared\Domain\Service\VideoUrlBuilderInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
 use Source\Wiki\VideoLink\Application\UseCase\Query\LikedVideoLinkReadModel;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
@@ -17,6 +18,10 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyV
 
 readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
 {
+    public function __construct(private VideoUrlBuilderInterface $videoUrlBuilder)
+    {
+    }
+
     public function process(ListMyVideoLinkLikesInputPort $input, ListMyVideoLinkLikesOutputPort $output): void
     {
         $likes = VideoLinkLikeModel::query()
@@ -41,7 +46,7 @@ readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
         }
         $likesOnPage = $videosQuery->get();
         $memberships = $this->playlistMemberships(array_values($likesOnPage->map(static fn (VideoLinkLikeModel $like): string => $like->videoLink->url ?? '')->all()), $input->principalIdentifier());
-        $videos = $likesOnPage->map(static function (VideoLinkLikeModel $like) use ($memberships): LikedVideoLinkReadModel {
+        $videos = $likesOnPage->map(function (VideoLinkLikeModel $like) use ($memberships): LikedVideoLinkReadModel {
             $video = $like->videoLink;
             assert($video !== null);
             $wiki = $video->wiki;
@@ -49,9 +54,9 @@ readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
 
             return new LikedVideoLinkReadModel(
                 $like->video_link_id,
-                $video->url,
+                $this->videoUrlBuilder->build($video->url),
                 $video->title,
-                $video->thumbnail_url,
+                $video->thumbnail_path !== null ? ImageUrl::fromPath($video->thumbnail_path) : $video->thumbnail_url,
                 $video->duration_seconds,
                 $wiki->language,
                 $wiki->resource_type,
@@ -75,9 +80,11 @@ readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
         $videoIds = [];
         foreach (array_unique($urls) as $url) {
             try {
-                $videoIds[$url] = str_replace('https://www.youtube.com/watch?v=', '', (string) new YouTubeVideoUrl($url));
+                $identity = $this->videoUrlBuilder->build($url);
+                $videoId = $identity->externalVideoId() ?? throw new InvalidArgumentException('A resolved video URL is required.');
+                $videoIds[$url] = $identity->provider() . ':' . $videoId;
             } catch (InvalidArgumentException) {
-                // Legacy non-YouTube links cannot belong to a playlist.
+                // Unsupported historical URLs have no playlist identity.
             }
         }
         if ($videoIds === []) {
@@ -85,12 +92,12 @@ readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
         }
         $playlists = PlaylistModel::query()
             ->where('principal_id', (string) $principalIdentifier)
-            ->with(['items' => static fn ($query) => $query->where('provider', 'youtube')->whereIn('external_video_id', array_values($videoIds))])
+            ->with(['items' => static fn ($query) => $query->whereIn('external_video_id', array_map(static fn (string $identity): string => explode(':', $identity, 2)[1], array_values($videoIds)))])
             ->orderBy('created_at')->orderBy('id')->get();
         $byVideoId = [];
         foreach ($playlists as $playlist) {
             foreach ($playlist->items as $item) {
-                $byVideoId[$item->external_video_id][] = ['playlistIdentifier' => $playlist->id, 'name' => $playlist->name];
+                $byVideoId[$item->provider . ':' . $item->external_video_id][] = ['playlistIdentifier' => $playlist->id, 'name' => $playlist->name];
             }
         }
         $memberships = [];

@@ -9,10 +9,23 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 
 final class YouTubeVideoUrl extends ExternalContentLink
 {
+    private readonly string $externalVideoId;
+
     public function __construct(string $url)
     {
         $videoId = self::extractVideoId(trim($url));
+        $this->externalVideoId = $videoId;
         parent::__construct('https://www.youtube.com/watch?v=' . $videoId);
+    }
+
+    public function provider(): string
+    {
+        return 'youtube';
+    }
+
+    public function externalVideoId(): string
+    {
+        return $this->externalVideoId;
     }
 
     private static function extractVideoId(string $url): string
@@ -46,7 +59,7 @@ final class YouTubeVideoUrl extends ExternalContentLink
                 $videoId = $matches[1];
             }
         }
-        if ($videoId === null || preg_match('/^[a-zA-Z0-9_-]{11}$/D', $videoId) !== 1) {
+        if ($videoId === null || ! ExternalVideoId::isValidYouTubeId($videoId)) {
             throw new InvalidArgumentException('A valid YouTube video URL is required.');
         }
 

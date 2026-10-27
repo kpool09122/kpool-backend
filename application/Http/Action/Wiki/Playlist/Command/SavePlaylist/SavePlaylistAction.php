@@ -18,12 +18,12 @@ use Source\Wiki\Playlist\Application\UseCase\Command\SavePlaylist\SavePlaylistIn
 use Source\Wiki\Playlist\Application\UseCase\Command\SavePlaylist\SavePlaylistItemInput;
 use Source\Wiki\Playlist\Domain\Exception\PlaylistItemLimitExceededException;
 use Source\Wiki\Playlist\Domain\Exception\PlaylistNotFoundException;
-use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistIdentifier;
 use Source\Wiki\Playlist\Domain\ValueObject\PlaylistName;
 use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
