@@ -14,6 +14,22 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInput;
 
 class ListVideosInputTest extends TestCase
 {
+    public function testWatchConditionsAreIndependentAndDefaultToFalse(): void
+    {
+        foreach ([false, true] as $recent) {
+            foreach ([false, true] as $sort) {
+                $input = new ListVideosInput(new Slug('tl-test'), Language::JAPANESE, ResourceType::TALENT, 29, 30, $recent, $sort);
+                self::assertSame($recent, $input->recentWatchRequestsOnly());
+                self::assertSame($sort, $input->sortByWatchRequests());
+                self::assertSame(29, $input->minDurationSeconds());
+                self::assertSame(30, $input->maxDurationSeconds());
+            }
+        }
+        $input = new ListVideosInput(new Slug('tl-test'), Language::JAPANESE, ResourceType::TALENT);
+        self::assertFalse($input->recentWatchRequestsOnly());
+        self::assertFalse($input->sortByWatchRequests());
+    }
+
     public function testPreservesDurationBounds(): void
     {
         $input = new ListVideosInput(new Slug('gr-test'), Language::JAPANESE, ResourceType::GROUP, 600, 1200);

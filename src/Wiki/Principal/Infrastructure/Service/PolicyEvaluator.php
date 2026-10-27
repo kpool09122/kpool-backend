@@ -183,6 +183,8 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             ConditionKey::RESOURCE_GROUP_ID => $resource->groupIds(),
             ConditionKey::RESOURCE_TALENT_ID => $resource->talentIds(),
             ConditionKey::RESOURCE_IS_OFFICIAL => $resource->isOfficial(),
+            ConditionKey::RESOURCE_WIKI_TYPE => $resource->wikiResourceType()?->value,
+            ConditionKey::RESOURCE_IS_MANUAL_VIDEO => $resource->isManualVideo(),
             ConditionKey::RESOURCE_EDITOR_ID => $resource->editorId(),
             ConditionKey::RESOURCE_OWNER_ACCOUNT_CATEGORY => $resource->ownerAccountCategory()?->value,
             ConditionKey::RESOURCE_REQUESTER_ACCOUNT_CATEGORY => $resource->requesterAccountCategory()?->value,

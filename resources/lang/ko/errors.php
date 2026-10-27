@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => '공식 인증된 탤런트 위키의 사용자 제작 영상만 요청할 수 있습니다.',
+    'video_watch_request_duration_not_eligible' => '30초 이하로 확인된 영상만 요청할 수 있습니다.',
+    'video_watch_request_like_required' => '요청하려면 영상에 좋아요를 눌러야 합니다.',
+    'video_watch_request_resend_not_available' => '같은 영상은 이전 요청으로부터 7일 후 다시 요청할 수 있습니다.',
+    'video_watch_request_weekly_limit_reached' => '같은 탤런트에게는 최근 7일간 최대 3건까지 요청할 수 있습니다.',
+    'video_watch_request_active' => '7일이 지나지 않은 요청이 있어 이 작업을 수행할 수 없습니다.',
     'video_metadata_unavailable' => '동영상 정보 또는 썸네일을 가져오거나 저장할 수 없습니다. 나중에 다시 시도해 주세요.',
     'invalid_playlist_edit' => '재생목록 편집 내용이 올바르지 않습니다. 이름은 1~32자, 동영상은 중복 없이 최대 50개로 지정해 주세요.',
     'playlist_not_found' => '플레이리스트를 찾을 수 없습니다.',

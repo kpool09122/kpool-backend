@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => 'Solo se admiten videos de usuarios en una wiki oficial de talento.',
+    'video_watch_request_duration_not_eligible' => 'Solo se admiten videos confirmados de hasta 30 segundos.',
+    'video_watch_request_like_required' => 'Debes indicar que te gusta el video antes de enviar la solicitud.',
+    'video_watch_request_resend_not_available' => 'Espera siete días para volver a solicitar el mismo video.',
+    'video_watch_request_weekly_limit_reached' => 'Puedes enviar un máximo de tres solicitudes al mismo talento en los últimos siete días.',
+    'video_watch_request_active' => 'Una solicitud activa impide esta operación durante siete días.',
     'video_metadata_unavailable' => 'No se pudieron obtener o guardar los datos o la miniatura del vídeo. Inténtalo de nuevo más tarde.',
     'invalid_playlist_edit' => 'La edición de la lista no es válida. Use un nombre de 1 a 32 caracteres y hasta 50 vídeos distintos.',
     'playlist_not_found' => 'No se encontró la lista de reproducción.',

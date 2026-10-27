@@ -14,6 +14,10 @@ interface ListVideosInputPort
 
     public function maxDurationSeconds(): ?int;
 
+    public function recentWatchRequestsOnly(): bool;
+
+    public function sortByWatchRequests(): bool;
+
     public function slug(): Slug;
 
     public function language(): Language;

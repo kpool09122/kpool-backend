@@ -29,6 +29,8 @@ final readonly class Resource
         private ?string $editorId = null,
         private ?AccountCategory $ownerAccountCategory = null,
         private ?AccountCategory $requesterAccountCategory = null,
+        private ?ResourceType $wikiResourceType = null,
+        private bool $isManualVideo = false,
     ) {
         $this->validate($agencyId, $this->groupIds, $this->talentIds, $editorId);
     }
@@ -77,6 +79,16 @@ final readonly class Resource
     public function requesterAccountCategory(): ?AccountCategory
     {
         return $this->requesterAccountCategory;
+    }
+
+    public function wikiResourceType(): ?ResourceType
+    {
+        return $this->wikiResourceType;
+    }
+
+    public function isManualVideo(): bool
+    {
+        return $this->isManualVideo;
     }
 
     /**

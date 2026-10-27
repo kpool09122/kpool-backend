@@ -170,6 +170,8 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_SAVE_PLAYLIST',
             'GLOBAL_LIKE_VIDEO_LINK',
             'GLOBAL_UNLIKE_VIDEO_LINK',
+            'GLOBAL_SEND_VIDEO_WATCH_REQUEST',
+            'GLOBAL_LIST_MY_VIDEO_WATCH_REQUESTS',
             'GLOBAL_SEARCH_FREE_MATERIALS',
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
@@ -198,6 +200,8 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_SAVE_PLAYLIST',
             'GLOBAL_LIKE_VIDEO_LINK',
             'GLOBAL_UNLIKE_VIDEO_LINK',
+            'GLOBAL_SEND_VIDEO_WATCH_REQUEST',
+            'GLOBAL_LIST_MY_VIDEO_WATCH_REQUESTS',
             'OWN_WIKI_DELETE',
             'OWN_WIKI_WITHDRAW',
         ];

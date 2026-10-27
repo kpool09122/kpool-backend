@@ -100,8 +100,10 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLin
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLink;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoWatchRequests\ListMyVideoWatchRequestsInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoLinkLikes;
+use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoWatchRequests;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
 use Source\Wiki\Wiki\Application\Service\WikiPublicationService;
 use Source\Wiki\Wiki\Application\Service\WikiPublicationServiceInterface;
@@ -187,6 +189,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(LikeVideoLinkInterface::class, LikeVideoLink::class);
         $this->app->singleton(UnlikeVideoLinkInterface::class, UnlikeVideoLink::class);
         $this->app->singleton(ListMyVideoLinkLikesInterface::class, ListMyVideoLinkLikes::class);
+        $this->app->singleton(ListMyVideoWatchRequestsInterface::class, ListMyVideoWatchRequests::class);
         $this->app->singleton(ListVideosInterface::class, ListVideos::class);
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(DeleteAccountDataInterface::class, DeleteAccountData::class);

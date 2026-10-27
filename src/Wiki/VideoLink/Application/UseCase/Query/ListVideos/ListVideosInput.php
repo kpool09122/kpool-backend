@@ -17,6 +17,8 @@ readonly class ListVideosInput implements ListVideosInputPort
         private ResourceType $resourceType,
         private ?int $minDurationSeconds = null,
         private ?int $maxDurationSeconds = null,
+        private bool $recentWatchRequestsOnly = false,
+        private bool $sortByWatchRequests = false,
     ) {
         foreach ([$minDurationSeconds, $maxDurationSeconds] as $seconds) {
             if ($seconds !== null && ($seconds < 0 || $seconds > 2147483647)) {
@@ -36,6 +38,16 @@ readonly class ListVideosInput implements ListVideosInputPort
     public function maxDurationSeconds(): ?int
     {
         return $this->maxDurationSeconds;
+    }
+
+    public function recentWatchRequestsOnly(): bool
+    {
+        return $this->recentWatchRequestsOnly;
+    }
+
+    public function sortByWatchRequests(): bool
+    {
+        return $this->sortByWatchRequests;
     }
 
     public function slug(): Slug

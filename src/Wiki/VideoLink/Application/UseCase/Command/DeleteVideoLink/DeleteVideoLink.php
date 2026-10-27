@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -11,7 +12,10 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
+use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestActiveException;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Service\VideoWatchRequestPolicy;
 
 readonly class DeleteVideoLink implements DeleteVideoLinkInterface
 {
@@ -19,12 +23,14 @@ readonly class DeleteVideoLink implements DeleteVideoLinkInterface
         private VideoLinkRepositoryInterface $videoLinkRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private VideoWatchRequestRepositoryInterface $videoWatchRequestRepository,
     ) {
     }
 
     /**
      * @param DeleteVideoLinkInputPort $input
      * @return void
+     * @throws VideoWatchRequestActiveException
      * @throws DisallowedException
      * @throws VideoLinkNotFoundException
      * @throws PrincipalNotFoundException
@@ -49,6 +55,11 @@ readonly class DeleteVideoLink implements DeleteVideoLinkInterface
             && ($videoLink->creatorPrincipalIdentifier() === null
                 || (string) $videoLink->creatorPrincipalIdentifier() !== (string) $principal->principalIdentifier())) {
             throw new DisallowedException();
+        }
+
+        $lastRequest = $this->videoWatchRequestRepository->findLatestByVideoLink($input->videoLinkIdentifier());
+        if ($lastRequest !== null && VideoWatchRequestPolicy::expiresAt($lastRequest->sentAt()) > new DateTimeImmutable()) {
+            throw new VideoWatchRequestActiveException();
         }
 
         $this->videoLinkRepository->delete($input->videoLinkIdentifier());

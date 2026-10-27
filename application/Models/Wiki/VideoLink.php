@@ -25,6 +25,7 @@ use Override;
  * @property int|null $duration_seconds
  * @property string|null $creator_principal_id
  * @property Carbon $created_at
+ * @property-read int $recent_watch_requests_count
  * @property-read int $likes_count
  * @property-read Principal|null $creatorPrincipal
  * @property-read Wiki|null $wiki
@@ -63,6 +64,12 @@ class VideoLink extends Model
     public function wiki(): BelongsTo
     {
         return $this->belongsTo(Wiki::class, 'wiki_id', 'id');
+    }
+
+    /** @return HasMany<VideoWatchRequest, $this> */
+    public function watchRequests(): HasMany
+    {
+        return $this->hasMany(VideoWatchRequest::class, 'video_link_id', 'id');
     }
 
     /** @return HasMany<VideoLinkLike, $this> */

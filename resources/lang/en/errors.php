@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => 'Only user-created videos on an officially certified talent wiki are eligible.',
+    'video_watch_request_duration_not_eligible' => 'Only videos confirmed to be at most 30 seconds are eligible.',
+    'video_watch_request_like_required' => 'Like the video before sending a request.',
+    'video_watch_request_resend_not_available' => 'Wait seven days before requesting the same video again.',
+    'video_watch_request_weekly_limit_reached' => 'You may send at most three requests to the same talent in any seven-day window.',
+    'video_watch_request_active' => 'An active watch request prevents this operation for seven days.',
     'video_metadata_unavailable' => 'The video details or thumbnail could not be retrieved or stored. Please try again later.',
     'invalid_playlist_edit' => 'The playlist edit is invalid. Use a name of 1 to 32 characters and at most 50 distinct videos.',
     'playlist_not_found' => 'Playlist not found.',

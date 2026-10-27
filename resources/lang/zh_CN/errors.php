@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => '仅可请求官方认证艺人维基中的用户创建视频。',
+    'video_watch_request_duration_not_eligible' => '仅可请求已确认不超过30秒的视频。',
+    'video_watch_request_like_required' => '发送请求前请先点赞该视频。',
+    'video_watch_request_resend_not_available' => '同一视频须在上次请求满7天后才能再次请求。',
+    'video_watch_request_weekly_limit_reached' => '最近7天内最多可向同一艺人发送3个请求。',
+    'video_watch_request_active' => '存在发送未满7天的请求，无法执行此操作。',
     'video_metadata_unavailable' => '无法获取或保存视频信息或缩略图。请稍后重试。',
     'invalid_playlist_edit' => '播放列表编辑内容无效。名称须为1至32个字符，视频不得重复且最多50个。',
     'playlist_not_found' => '未找到播放列表。',
