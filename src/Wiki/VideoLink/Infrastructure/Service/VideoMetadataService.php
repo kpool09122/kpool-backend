@@ -6,12 +6,12 @@ namespace Source\Wiki\VideoLink\Infrastructure\Service;
 
 use CurlHandle;
 use GuzzleHttp\Handler\CurlHandler;
-use GuzzleHttp\Psr7\Utils;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
@@ -28,16 +28,38 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
     public function __construct(
         private PublicVideoHostResolverInterface $publicVideoHostResolver,
         private ImageServiceInterface $imageService,
+        private LoggerInterface $logger,
     ) {
     }
 
     public function resolve(string $url): VideoMetadata
     {
+        $diagnostics = ['stage' => 'page.validate'];
+
+        try {
+            return $this->resolveWithDiagnostics($url, $diagnostics);
+        } catch (Throwable $e) {
+            $this->logger->warning('[debug-log-triage:tiktok-registration] Metadata resolution failed.', [
+                ...$diagnostics,
+                'exception_class' => $e::class,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array<string, scalar|null> $diagnostics
+     * @throws VideoMetadataUnavailableException
+     * @throws InvalidArgumentException
+     */
+    private function resolveWithDiagnostics(string $url, array &$diagnostics): VideoMetadata
+    {
         $url = trim($url);
         $this->validateUrl($url, false);
         $response = null;
         for ($redirect = 0; $redirect <= 3; ++$redirect) {
-            $response = $this->get($url, false);
+            $response = $this->get($url, false, $diagnostics);
             if (! $response->redirect()) {
                 break;
             }
@@ -45,22 +67,28 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
             if (str_starts_with($location, '/') && ! str_starts_with($location, '//')) {
                 $location = 'https://' . parse_url($url, PHP_URL_HOST) . $location;
             }
+            $diagnostics['stage'] = 'page.redirect_validation';
             $this->validateUrl($location, false);
             $url = $location;
         }
         if (! $response->successful()) {
             throw new VideoMetadataUnavailableException();
         }
+        $diagnostics['stage'] = 'page.resolved_url';
         $videoUrl = new TikTokVideoUrl($url);
         if ($videoUrl->externalVideoId() === null) {
             throw new InvalidArgumentException('A resolved TikTok video URL is required.');
         }
+        $diagnostics['stage'] = 'page.body';
         $html = $this->body($response, self::MAX_PAGE_BYTES);
+        $diagnostics['body_bytes'] = strlen($html);
+        $diagnostics['stage'] = 'page.hydration_script';
         if (preg_match('~<script\b[^>]*\bid=["\x27]__UNIVERSAL_DATA_FOR_REHYDRATION__["\x27][^>]*>(.*?)</script\s*>~si', $html, $matches) !== 1) {
             throw new VideoMetadataUnavailableException();
         }
 
         try {
+            $diagnostics['stage'] = 'page.json_decode';
             $data = json_decode($matches[1], true, 64, JSON_THROW_ON_ERROR | JSON_BIGINT_AS_STRING);
         } catch (JsonException) {
             throw new VideoMetadataUnavailableException();
@@ -68,6 +96,7 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
         if (! is_array($data)) {
             throw new VideoMetadataUnavailableException();
         }
+        $diagnostics['stage'] = 'page.video_metadata';
         $scope = $data['__DEFAULT_SCOPE__'] ?? null;
         $detail = is_array($scope) ? ($scope['webapp.video-detail'] ?? null) : null;
         $info = is_array($detail) ? ($detail['itemInfo'] ?? null) : null;
@@ -82,7 +111,7 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
         try {
             $imageUrl = $video['cover'];
             for ($redirect = 0; $redirect <= 3; ++$redirect) {
-                $imageResponse = $this->get($imageUrl, true);
+                $imageResponse = $this->get($imageUrl, true, $diagnostics);
                 if (! $imageResponse->redirect()) {
                     break;
                 }
@@ -91,14 +120,20 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
             if (! $imageResponse->successful()) {
                 throw new VideoMetadataUnavailableException();
             }
+            $diagnostics['stage'] = 'image.body';
             $bytes = $this->body($imageResponse, self::MAX_IMAGE_BYTES);
+            $diagnostics['body_bytes'] = strlen($bytes);
+            $diagnostics['stage'] = 'image.decode';
             $dimensions = @getimagesizefromstring($bytes);
             if ($dimensions === false || ! in_array($dimensions[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG], true)
                 || $dimensions[0] * $dimensions[1] > 20_000_000) {
                 throw new VideoMetadataUnavailableException();
             }
+            $diagnostics['stage'] = 'image.upload';
             $path = $this->imageService->upload(base64_encode($bytes));
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            $diagnostics['cause_class'] ??= $e::class;
+
             // Do not propagate signed image URLs or external response bodies to logs.
             throw new VideoMetadataUnavailableException();
         }
@@ -132,12 +167,18 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
     }
 
     /**
+     * @param array<string, scalar|null> $diagnostics
      * @throws InvalidArgumentException
      * @throws VideoMetadataUnavailableException
      */
-    private function get(string $url, bool $image): Response
+    private function get(string $url, bool $image, array &$diagnostics): Response
     {
+        $phase = $image ? 'image' : 'page';
+        $diagnostics['stage'] = $phase . '.validate';
+        unset($diagnostics['http_status'], $diagnostics['content_type'], $diagnostics['body_bytes']);
         $host = $this->validateUrl($url, $image);
+        $diagnostics['host'] = $host;
+        $diagnostics['stage'] = $phase . '.dns';
         $ip = $this->publicVideoHostResolver->resolve($host);
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_GLOBAL_RANGE) === false) {
             throw new VideoMetadataUnavailableException();
@@ -150,6 +191,7 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
         $received = 0;
 
         try {
+            $diagnostics['stage'] = $phase . '.request';
             $response = Http::connectTimeout(3)->timeout(8)->setHandler(new CurlHandler())->sink($sink)->withOptions([
                 'allow_redirects' => false,
                 'proxy' => '',
@@ -172,8 +214,14 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
                 },
             ])->get($url);
 
-            return new Response($response->toPsrResponse()->withBody(Utils::streamFor($sink)));
-        } catch (Throwable) {
+            $diagnostics['http_status'] = $response->status();
+            $diagnostics['content_type'] = substr($response->header('Content-Type'), 0, 120);
+            $diagnostics['stage'] = $phase . '.http_status';
+
+            return $response;
+        } catch (Throwable $e) {
+            $diagnostics['cause_class'] = $e::class;
+
             throw new VideoMetadataUnavailableException();
         }
     }
@@ -183,6 +231,7 @@ final readonly class VideoMetadataService implements VideoMetadataServiceInterfa
     {
         try {
             $stream = $response->toPsrResponse()->getBody();
+            $stream->rewind();
             $bytes = '';
             while (! $stream->eof()) {
                 $bytes .= $stream->read(min(65536, $limit + 1 - strlen($bytes)));
