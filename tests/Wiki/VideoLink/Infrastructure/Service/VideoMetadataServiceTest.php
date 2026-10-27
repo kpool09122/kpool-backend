@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLink\Infrastructure\Service;
 
+use GuzzleHttp\Psr7\Response as PsrResponse;
+use GuzzleHttp\Psr7\Utils;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Log\NullLogger;
 use RuntimeException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -20,6 +25,44 @@ use Tests\TestCase;
 
 class VideoMetadataServiceTest extends TestCase
 {
+    public function testReadsPageAndImageFromTheTransportOwnedSink(): void
+    {
+        $imageBytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jA0sAAAAASUVORK5CYII=');
+        self::assertIsString($imageBytes);
+        $page = $this->page();
+        // Return fresh responses without the HTTP fake retaining their streams.
+        Http::shouldReceive('connectTimeout')->twice()->with(3)->andReturnUsing(function () use ($page, $imageBytes): PendingRequest {
+            $sink = null;
+            /** @var PendingRequest&Mockery\MockInterface $request */
+            $request = Mockery::mock(PendingRequest::class);
+            $request->shouldReceive('timeout', 'setHandler', 'withOptions')->andReturnSelf();
+            $request->shouldReceive('sink')->once()->andReturnUsing(function ($resource) use (&$sink, $request): PendingRequest {
+                $sink = $resource;
+
+                return $request;
+            });
+            $request->shouldReceive('get')->once()->andReturnUsing(function (string $url) use (&$sink, $page, $imageBytes): Response {
+                self::assertIsResource($sink);
+                $body = str_contains($url, 'www.tiktok.com') ? $page : $imageBytes;
+                self::assertSame(strlen($body), fwrite($sink, $body));
+                self::assertTrue(rewind($sink));
+
+                return new Response(new PsrResponse(200, [], Utils::streamFor($sink)));
+            });
+
+            return $request;
+        });
+        /** @var ImageServiceInterface&Mockery\MockInterface $images */
+        $images = Mockery::mock(ImageServiceInterface::class);
+        $images->shouldReceive('upload')->once()->with(base64_encode($imageBytes))->andReturn(new ImagePath('images/cover.webp'));
+
+        $metadata = $this->service($images)->resolve('https://www.tiktok.com/@scout2015/video/6718335390845095173');
+
+        self::assertSame('6718335390845095173', $metadata->url->externalVideoId());
+        self::assertSame(12, $metadata->durationSeconds->value());
+        self::assertSame('images/cover.webp', (string) $metadata->thumbnailPath);
+    }
+
     public function testRejectsSuccessfulShortUrlResponseWithoutAResolvedVideoUrl(): void
     {
         Http::preventStrayRequests();
@@ -155,7 +198,7 @@ class VideoMetadataServiceTest extends TestCase
         $this->expectException(VideoMetadataUnavailableException::class);
 
         try {
-            (new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class)))->resolve('https://vt.tiktok.com/abc/');
+            (new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class), new NullLogger()))->resolve('https://vt.tiktok.com/abc/');
         } finally {
             Http::assertNothingSent();
         }
@@ -221,7 +264,7 @@ class VideoMetadataServiceTest extends TestCase
         $resolver = Mockery::mock(PublicVideoHostResolverInterface::class);
         $resolver->shouldReceive('resolve')->andReturn('8.8.8.8');
 
-        return new VideoMetadataService($resolver, $images ?? $this->app()->make(ImageServiceInterface::class));
+        return new VideoMetadataService($resolver, $images ?? $this->app()->make(ImageServiceInterface::class), new NullLogger());
     }
 
     private function page(string $cover = 'https://p16.tiktokcdn.com/cover?signature=not-persisted'): string
@@ -248,7 +291,7 @@ class VideoMetadataServiceTest extends TestCase
         /** @var ImageServiceInterface&Mockery\MockInterface $imageService */
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')->once()->andReturn(new ImagePath('images/cover.webp'));
-        $service = new VideoMetadataService($resolver, $imageService);
+        $service = new VideoMetadataService($resolver, $imageService, new NullLogger());
         $metadata = $service->resolve('https://vm.tiktok.com/abc/');
         self::assertSame('6718335390845095173', $metadata->url->externalVideoId());
         self::assertSame(12, $metadata->durationSeconds->value());
@@ -262,7 +305,7 @@ class VideoMetadataServiceTest extends TestCase
         /** @var PublicVideoHostResolverInterface&Mockery\MockInterface $resolver */
         $resolver = Mockery::mock(PublicVideoHostResolverInterface::class);
         $resolver->shouldReceive('resolve')->once()->andReturn('8.8.8.8');
-        $service = new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class));
+        $service = new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class), new NullLogger());
         $this->expectException(InvalidArgumentException::class);
 
         try {
@@ -279,6 +322,6 @@ class VideoMetadataServiceTest extends TestCase
         $resolver = Mockery::mock(PublicVideoHostResolverInterface::class);
         $resolver->shouldReceive('resolve')->once()->andReturn('8.8.8.8');
         $this->expectException(VideoMetadataUnavailableException::class);
-        (new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class)))->resolve('https://www.tiktok.com/@scout2015/video/6718335390845095173');
+        (new VideoMetadataService($resolver, $this->app()->make(ImageServiceInterface::class), new NullLogger()))->resolve('https://www.tiktok.com/@scout2015/video/6718335390845095173');
     }
 }
