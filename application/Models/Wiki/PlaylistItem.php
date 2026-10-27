@@ -14,13 +14,14 @@ use Override;
  * @property ?string $video_link_id
  * @property string $provider
  * @property string $external_video_id
+ * @property ?string $thumbnail_path
  * @property string $url
  * @property string $title
  * @property ?string $thumbnail_url
  * @property ?int $duration_seconds
  * @property int $position
  */
-#[Fillable(['playlist_id', 'video_link_id', 'provider', 'external_video_id', 'url', 'title', 'thumbnail_url', 'duration_seconds', 'position'])]
+#[Fillable(['playlist_id', 'video_link_id', 'provider', 'external_video_id', 'url', 'title', 'thumbnail_url', 'thumbnail_path', 'duration_seconds', 'position'])]
 #[Table(name: 'wiki_playlist_items', keyType: 'string')]
 class PlaylistItem extends Model
 {

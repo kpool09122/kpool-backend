@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Playlist\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
+use Source\Wiki\Shared\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
+use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
@@ -18,13 +21,14 @@ final readonly class PlaylistItem
         private ?VideoLinkIdentifier $videoLinkIdentifier,
         private VideoProvider $provider,
         private ExternalVideoId $externalVideoId,
-        private YouTubeVideoUrl $url,
+        private YouTubeVideoUrl|TikTokVideoUrl $url,
         private VideoTitle $title,
         private ?ThumbnailUrl $thumbnailUrl,
         private ?DurationSeconds $durationSeconds,
         private PlaylistItemPosition $position,
+        private ?ImagePath $thumbnailPath = null,
     ) {
-        if ((string) $url !== 'https://www.youtube.com/watch?v=' . $externalVideoId) {
+        if ($url->provider() !== $provider->value || $url->externalVideoId() !== (string) $externalVideoId) {
             throw new InvalidArgumentException('Video identifier and snapshot URL must match.');
         }
     }
@@ -49,7 +53,7 @@ final readonly class PlaylistItem
         return $this->externalVideoId;
     }
 
-    public function url(): YouTubeVideoUrl
+    public function url(): YouTubeVideoUrl|TikTokVideoUrl
     {
         return $this->url;
     }
@@ -71,7 +75,12 @@ final readonly class PlaylistItem
 
     public function atPosition(PlaylistItemPosition $position): self
     {
-        return new self($this->playlistIdentifier, $this->videoLinkIdentifier, $this->provider, $this->externalVideoId, $this->url, $this->title, $this->thumbnailUrl, $this->durationSeconds, $position);
+        return new self($this->playlistIdentifier, $this->videoLinkIdentifier, $this->provider, $this->externalVideoId, $this->url, $this->title, $this->thumbnailUrl, $this->durationSeconds, $position, $this->thumbnailPath);
+    }
+
+    public function thumbnailPath(): ?ImagePath
+    {
+        return $this->thumbnailPath;
     }
 
     public function position(): PlaylistItemPosition

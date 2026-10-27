@@ -16,6 +16,7 @@ use Override;
  * @property string $id
  * @property string $resource_type
  * @property string $wiki_id
+ * @property ?string $thumbnail_path
  * @property string $url
  * @property string $video_usage
  * @property string $title
@@ -36,6 +37,7 @@ use Override;
     'video_usage',
     'title',
     'thumbnail_url',
+    'thumbnail_path',
     'published_at',
     'duration_seconds',
     'creator_principal_id',

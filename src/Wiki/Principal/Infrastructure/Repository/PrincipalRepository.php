@@ -15,11 +15,12 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalStatus;
+use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
 {
-    public function __construct(private AccountPrincipalRepositoryInterface $accountPrincipalRepository)
+    public function __construct(private AccountPrincipalRepositoryInterface $accountPrincipalRepository, private VideoThumbnailServiceInterface $videoThumbnailService)
     {
     }
 
@@ -39,6 +40,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function deleteByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void
     {
         PrincipalEloquent::query()->where('identity_id', (string) $identityIdentifier)->delete();
+        $this->videoThumbnailService->releaseUnused();
     }
 
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal
@@ -164,6 +166,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         PrincipalEloquent::query()
             ->where('delegation_identifier', (string) $delegationIdentifier)
             ->delete();
+        $this->videoThumbnailService->releaseUnused();
 
         foreach ($identityIds as $identityId) {
             app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier(TypedValue::string($identityId)));

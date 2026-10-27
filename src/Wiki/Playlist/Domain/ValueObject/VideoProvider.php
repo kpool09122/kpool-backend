@@ -7,4 +7,5 @@ namespace Source\Wiki\Playlist\Domain\ValueObject;
 enum VideoProvider: string
 {
     case YOUTUBE = 'youtube';
+    case TIKTOK = 'tiktok';
 }

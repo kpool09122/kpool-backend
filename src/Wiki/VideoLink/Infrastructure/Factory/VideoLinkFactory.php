@@ -7,6 +7,7 @@ namespace Source\Wiki\VideoLink\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -35,6 +36,7 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
         ?DateTimeImmutable $publishedAt = null,
         ?DurationSeconds $durationSeconds = null,
         ?PrincipalIdentifier $creatorPrincipalIdentifier = null,
+        ?ImagePath $thumbnailPath = null,
     ): VideoLink {
         return new VideoLink(
             new VideoLinkIdentifier($this->uuidGenerator->generate()),
@@ -48,6 +50,7 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
             new DateTimeImmutable(),
             $durationSeconds,
             $creatorPrincipalIdentifier,
+            $thumbnailPath,
         );
     }
 }

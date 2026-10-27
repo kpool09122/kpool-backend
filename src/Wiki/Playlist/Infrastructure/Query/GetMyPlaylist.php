@@ -6,6 +6,7 @@ namespace Source\Wiki\Playlist\Infrastructure\Query;
 
 use Application\Models\Wiki\Playlist;
 use Application\Models\Wiki\PlaylistItem;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Playlist\Application\UseCase\Query\GetMyPlaylist\GetMyPlaylistInputPort;
 use Source\Wiki\Playlist\Application\UseCase\Query\GetMyPlaylist\GetMyPlaylistInterface;
 use Source\Wiki\Playlist\Application\UseCase\Query\GetMyPlaylist\GetMyPlaylistOutputPort;
@@ -57,7 +58,7 @@ readonly class GetMyPlaylist implements GetMyPlaylistInterface
                 $item->position,
                 $item->url,
                 $item->title,
-                $item->thumbnail_url,
+                $item->thumbnail_path !== null ? ImageUrl::fromPath($item->thumbnail_path) : $item->thumbnail_url,
                 $item->duration_seconds,
             ))->all();
         $output->output(new PlaylistDetailReadModel(

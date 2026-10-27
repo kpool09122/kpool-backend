@@ -14,7 +14,10 @@ class YouTubeVideoUrlTest extends TestCase
     #[DataProvider('supportedUrls')]
     public function testNormalizesSupportedUrls(string $url): void
     {
-        self::assertSame('https://www.youtube.com/watch?v=Os_heh8vPfs', (string) new YouTubeVideoUrl($url));
+        $video = new YouTubeVideoUrl($url);
+        self::assertSame('https://www.youtube.com/watch?v=Os_heh8vPfs', (string) $video);
+        self::assertSame('youtube', $video->provider());
+        self::assertSame('Os_heh8vPfs', $video->externalVideoId());
     }
 
     /** @return list<array{string}> */

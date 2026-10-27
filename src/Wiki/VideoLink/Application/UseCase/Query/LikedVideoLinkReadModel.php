@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 namespace Source\Wiki\VideoLink\Application\UseCase\Query;
 
+use InvalidArgumentException;
+use Source\Wiki\Shared\Domain\ValueObject\TikTokVideoUrl;
+use Source\Wiki\Shared\Domain\ValueObject\YouTubeVideoUrl;
+
 readonly class LikedVideoLinkReadModel
 {
+    public string $url;
+    public string $provider;
+    public string $externalVideoId;
+
     /** @param list<array{playlistIdentifier:string,name:string}> $playlists */
     public function __construct(
         public string $videoLinkIdentifier,
-        public string $url,
+        YouTubeVideoUrl|TikTokVideoUrl $url,
         public string $title,
         public ?string $thumbnailUrl,
         public ?int $durationSeconds,
@@ -19,12 +27,17 @@ readonly class LikedVideoLinkReadModel
         public string $likedAt,
         public array $playlists = [],
     ) {
+        $this->url = (string) $url;
+        $this->provider = $url->provider();
+        $this->externalVideoId = $url->externalVideoId() ?? throw new InvalidArgumentException('A resolved video URL is required.');
     }
 
-    /** @return array{videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>} */
+    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>} */
     public function toArray(): array
     {
         return [
+            'provider' => $this->provider,
+            'externalVideoId' => $this->externalVideoId,
             'videoLinkIdentifier' => $this->videoLinkIdentifier,
             'url' => $this->url,
             'title' => $this->title,

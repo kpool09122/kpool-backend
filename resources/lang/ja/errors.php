@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => '動画情報またはサムネイルを取得・保存できませんでした。しばらくしてから再度お試しください。',
     'invalid_playlist_edit' => 'プレイリストの編集内容が不正です。名前は1〜32文字、動画は重複なく50件以内で指定してください。',
     'playlist_not_found' => 'プレイリストが見つかりません。',
     'invalid_playlist_identifier' => 'プレイリスト識別子が不正です。',

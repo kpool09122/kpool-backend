@@ -8,8 +8,8 @@ use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Playlist\Application\UseCase\Command\SavePlaylist\SavePlaylistItemInput;
-use Source\Wiki\Playlist\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Playlist\Domain\ValueObject\VideoProvider;
+use Source\Wiki\Shared\Domain\ValueObject\ExternalVideoId;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -27,6 +27,30 @@ class SavePlaylistItemInputTest extends TestCase
         self::assertSame($video, $added->videoLinkIdentifier);
         self::assertNull($added->provider);
         self::assertNull($added->externalVideoId);
+    }
+
+    /** @return array<string, array{VideoProvider, string, bool}> */
+    public static function providerSelections(): array
+    {
+        return [
+            'YouTube ID' => [VideoProvider::YOUTUBE, 'aB_12345-xy', true],
+            'numeric YouTube ID' => [VideoProvider::YOUTUBE, '12345678901', true],
+            'TikTok ID' => [VideoProvider::TIKTOK, '6718335390845095173', true],
+            'YouTube with TikTok ID' => [VideoProvider::YOUTUBE, '6718335390845095173', false],
+            'TikTok with YouTube ID' => [VideoProvider::TIKTOK, 'aB_12345-xy', false],
+            'TikTok with numeric YouTube ID' => [VideoProvider::TIKTOK, '12345678901', false],
+        ];
+    }
+
+    #[DataProvider('providerSelections')]
+    public function testRequiresIdToMatchProvider(VideoProvider $provider, string $value, bool $valid): void
+    {
+        $id = new ExternalVideoId($value);
+        if (! $valid) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $input = new SavePlaylistItemInput(provider: $provider, externalVideoId: $id);
+        self::assertSame($id, $input->externalVideoId);
     }
 
     public function testRejectsNeitherIdentifier(): void

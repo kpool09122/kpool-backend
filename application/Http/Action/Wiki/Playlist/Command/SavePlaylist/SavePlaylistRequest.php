@@ -29,8 +29,8 @@ class SavePlaylistRequest extends FormRequest
             'name' => ['required', 'string', 'min:1', 'max:32'],
             'items' => ['present', 'array', 'list', 'max:50'],
             'items.*' => ['required', 'array:provider,externalVideoId,videoLinkIdentifier'],
-            'items.*.provider' => ['required_without:items.*.videoLinkIdentifier', 'missing_with:items.*.videoLinkIdentifier', 'string', 'in:youtube'],
-            'items.*.externalVideoId' => ['required_without:items.*.videoLinkIdentifier', 'missing_with:items.*.videoLinkIdentifier', 'string', 'regex:/^[a-zA-Z0-9_-]{11}$/D'],
+            'items.*.provider' => ['required_without:items.*.videoLinkIdentifier', 'missing_with:items.*.videoLinkIdentifier', 'string', 'in:youtube,tiktok'],
+            'items.*.externalVideoId' => ['required_without:items.*.videoLinkIdentifier', 'missing_with:items.*.videoLinkIdentifier', 'string', 'max:20'],
             'items.*.videoLinkIdentifier' => ['required_without_all:items.*.provider,items.*.externalVideoId', 'missing_with:items.*.provider,items.*.externalVideoId', 'uuid'],
         ];
     }

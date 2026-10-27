@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_metadata_unavailable' => '无法获取或保存视频信息或缩略图。请稍后重试。',
     'invalid_playlist_edit' => '播放列表编辑内容无效。名称须为1至32个字符，视频不得重复且最多50个。',
     'playlist_not_found' => '未找到播放列表。',
     'invalid_playlist_identifier' => '播放列表标识符无效。',

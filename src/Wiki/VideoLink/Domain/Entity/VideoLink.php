@@ -6,6 +6,7 @@ namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -29,6 +30,7 @@ readonly class VideoLink
         private DateTimeImmutable $createdAt,
         private ?DurationSeconds $durationSeconds,
         private ?PrincipalIdentifier $creatorPrincipalIdentifier = null,
+        private ?ImagePath $thumbnailPath = null,
     ) {
     }
 
@@ -80,6 +82,11 @@ readonly class VideoLink
     public function creatorPrincipalIdentifier(): ?PrincipalIdentifier
     {
         return $this->creatorPrincipalIdentifier;
+    }
+
+    public function thumbnailPath(): ?ImagePath
+    {
+        return $this->thumbnailPath;
     }
 
     public function createdAt(): DateTimeImmutable

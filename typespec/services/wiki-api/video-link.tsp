@@ -7,7 +7,7 @@ namespace KPool.WikiApi;
 model CreateVideoLinkRequestBody {
   resourceType: "agency" | "group" | "song" | "talent";
   wikiIdentifier: Uuid;
-  @doc("HTTPS YouTube video URL. Supports watch, youtu.be, shorts, live and embed URLs; other providers and non-video links are rejected. Stored as a canonical youtube.com/watch URL.")
+  @doc("HTTPS YouTube or TikTok video URL. YouTube supports watch, youtu.be, shorts, live and embed URLs. TikTok supports www.tiktok.com/@user/video/string-id and vm.tiktok.com / vt.tiktok.com share links. Canonicalized by the server; profiles, photos and other hosts return 422.")
   @maxLength(255)
   url: string;
   @doc("Usage category of the video.")
@@ -16,8 +16,9 @@ model CreateVideoLinkRequestBody {
   @maxLength(255)
   title: string;
   @minValue(0)
-  durationSeconds: int32;
-  @doc("Thumbnail image URL.")
+  @doc("Required for YouTube; non-negative player duration including zero. Optional or null for TikTok and ignored there: the server resolves duration from the selected public video.")
+  durationSeconds?: int32 | null;
+  @doc("Optional YouTube thumbnail URL. Ignored for TikTok: the server stores the selected video cover and returns its own public image URL.")
   thumbnailUrl?: string | null;
   @doc("Publication timestamp of the video.")
   publishedAt?: string | null;
@@ -25,6 +26,9 @@ model CreateVideoLinkRequestBody {
 
 @doc("A public wiki video. Includes manually created and automatically collected videos.")
 model Video {
+  provider: "youtube" | "tiktok";
+  @doc("Provider-specific video ID, always a string. YouTube: 11 characters; TikTok: decimal digits.")
+  externalVideoId: string;
   videoLinkIdentifier: Uuid;
   @doc("Number of k-pool likes for this VideoLink, not YouTube likes. No personal state is included.")
   @minValue(0)
@@ -50,7 +54,7 @@ model ListVideosResponse {
 interface PublicVideoLinkOperations {
   @get
   @route("/wiki/{language}/{resourceType}/{slug}/videos")
-  @doc("Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or dispatches collection jobs.")
+  @doc("Public, unauthenticated list of videos for the exact published wiki. Includes manually created and automatically collected videos. creatorPrincipalIdentifier is the saved creator for manual videos and null for automatically collected videos. Agency includes manual videos only. Ordered by creation time descending, then videoLinkIdentifier ascending. A missing published wiki returns 404; zero videos returns videos: []. Viewing never calls YouTube or TikTok or dispatches collection jobs.")
   listVideos(
     @path language: "ja" | "ko" | "en",
     @path resourceType: "agency" | "group" | "song" | "talent",
@@ -92,6 +96,9 @@ interface VideoLinkLikeOperations {
 }
 
 model LikedVideoLink {
+  provider: "youtube" | "tiktok";
+  @doc("Provider-specific video ID, always a string. YouTube: 11 characters; TikTok: decimal digits.")
+  externalVideoId: string;
   videoLinkIdentifier: Uuid;
   url: string;
   title: string;
@@ -102,7 +109,7 @@ model LikedVideoLink {
   resourceType: "agency" | "group" | "song" | "talent";
   slug: string;
   likedAt: string;
-  @doc("The authenticated Principal's saved playlists containing the same YouTube video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.")
+  @doc("The authenticated Principal's saved playlists containing the same YouTube or TikTok video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.")
   playlists: LikedVideoPlaylist[];
 }
 
@@ -130,10 +137,10 @@ model ListMyVideoLinkLikesResponse {
 interface VideoLinkOperations {
   @post
   @route("/create")
-  @doc("Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. durationSeconds is a non-negative integer obtained by the frontend player; zero is allowed. The creator principal identifier is determined on the server. Duplicate URLs within the wiki return 409.")
+  @doc("Create one manual video without replacing existing videos. Requires an authenticated Wiki collaborator. YouTube requires a non-negative frontend-player duration; zero is allowed. TikTok ignores client thumbnail/duration and resolves the selected public video before storing its cover. The creator is determined on the server. Duplicate provider/video IDs within the wiki return 409, including URL variants. Invalid URL or resolved non-video share links return 422. Unavailable, restricted, changed or invalid public metadata/image and storage failures return 502 (video_metadata_unavailable); no video is saved. Successful response is 204 without a body.")
   createVideoLink(
     @body body: CreateVideoLinkRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): KPool.Common.BadGatewayProblemResponse | KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @delete
   @route("/{videoLinkId}")

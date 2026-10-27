@@ -32,7 +32,7 @@ class CreateVideoLink
             'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
             'url' => $overrides['url'] ?? sprintf(
                 'https://www.youtube.com/watch?v=%s',
-                StrTestHelper::generateUuid()
+                substr(hash('sha256', StrTestHelper::generateUuid()), 0, 11)
             ),
             'video_usage' => $overrides['video_usage'] ?? VideoUsage::MUSIC_VIDEO->value,
             'title' => $overrides['title'] ?? 'Test Video',
