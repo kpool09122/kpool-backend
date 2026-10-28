@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -85,7 +86,7 @@ class ListWikisTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessSearchesKeywordByNormalizedNamePrefix(): void
+    public function testProcessSearchesKeywordAcrossResourceTypes(): void
     {
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f401', 'talent', 'tl-chaeyoung', 'Chaeyoung', 'chaeyoung', '2026-05-01 00:00:00');
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f402', 'agency', 'ag-chae-agency', 'Chae Agency', 'chaeagency', '2026-05-02 00:00:00');
@@ -95,6 +96,53 @@ class ListWikisTest extends TestCase
 
         $this->assertSame(2, $payload['total']);
         $this->assertSame(['Chae Agency', 'Chaeyoung'], array_column($payload['wikis'], 'name'));
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('partialMatchKeywordProvider')]
+    public function testProcessSearchesNameOrNormalizedNameByPartialMatch(Language $language, string $name, string $normalizedName, string $keyword): void
+    {
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f411', 'group', 'gr-matching', $name, $normalizedName, '2026-05-01 00:00:00', $language->value);
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f412', 'group', 'gr-unrelated', 'Other Group', 'other group', '2026-05-01 00:00:00', $language->value);
+
+        $payload = $this->process(new ListWikisInput(language: $language, keyword: $keyword))->toArray();
+
+        $this->assertSame(1, $payload['total']);
+        $this->assertSame([$name], array_column($payload['wikis'], 'name'));
+    }
+
+    /** @return array<string, array{Language, string, string, string}> */
+    public static function partialMatchKeywordProvider(): array
+    {
+        return [
+            'Japanese uppercase alphabet' => [Language::JAPANESE, 'YGエンターテインメント', 'ygえんたーていんめんと', 'YG'],
+            'Japanese kanji' => [Language::JAPANESE, '少女時代', 'しょうじょじだい', '少女'],
+            'Japanese katakana' => [Language::JAPANESE, '少女時代', 'しょうじょじだい', 'ショウジョ'],
+            'Korean hangul' => [Language::KOREAN, '소녀시대', 'ㅅㄴㅅㄷ', '소녀'],
+            'English uppercase alphabet' => [Language::ENGLISH, 'YG Entertainment', 'yg entertainment', 'YG'],
+            'Display name with different reading' => [Language::JAPANESE, '日本のグループ', 'にっぽんのぐるーぷ', '日本'],
+            'Display name suffix with different reading' => [Language::JAPANESE, '東日本', 'ひがしにっぽん', '日本'],
+            'Normalized name middle' => [Language::JAPANESE, '少女時代', 'しょうじょじだい', 'ジョジ'],
+            'Normalized name suffix' => [Language::JAPANESE, '少女時代', 'しょうじょじだい', 'ジダイ'],
+            'English middle with uppercase keyword' => [Language::ENGLISH, 'YG Entertainment', 'yg entertainment', 'ENTERTAIN'],
+            'Literal percent' => [Language::ENGLISH, '100% Group', '100% group', '%'],
+            'Literal underscore' => [Language::ENGLISH, 'A_B Group', 'a_b group', '_'],
+        ];
+    }
+
+    #[Group('useDb')]
+    public function testProcessPartialMatchPreservesLanguageAndResourceTypeFilters(): void
+    {
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f421', 'group', 'gr-ja', '少女時代', 'しょうじょじだい', '2026-05-01 00:00:00', 'ja');
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f422', 'agency', 'ag-ja', '少女時代', 'しょうじょじだい', '2026-05-01 00:00:00', 'ja');
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f423', 'group', 'gr-ko', '少女時代', 'しょうじょじだい', '2026-05-01 00:00:00', 'ko');
+
+        foreach (['時代', 'ジダイ'] as $keyword) {
+            $payload = $this->process(new ListWikisInput(language: Language::JAPANESE, resourceType: ResourceType::GROUP, keyword: $keyword))->toArray();
+
+            $this->assertSame(1, $payload['total']);
+            $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f421', $payload['wikis'][0]['wikiIdentifier']);
+        }
     }
 
     #[Group('useDb')]
