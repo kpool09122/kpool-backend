@@ -132,6 +132,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -199,6 +200,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -237,6 +239,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -276,6 +279,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         ));
 
         $sections = $result->sections()->sections();
@@ -367,6 +371,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: $agencyId,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -445,6 +450,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -490,6 +496,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -536,6 +543,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: $agencyId,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -617,6 +625,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: $agencyId,
             groupIdentifiers: [$groupId],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -690,6 +699,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -731,6 +741,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -786,6 +797,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [$groupId1, $groupId2],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -837,6 +849,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [$groupId1, $groupId2],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -868,6 +881,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         ));
 
         $sections = $result->sections()->sections();
@@ -959,6 +973,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: $agencyId,
             groupIdentifiers: [$groupId],
             talentIdentifiers: [$talentId],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -1036,6 +1051,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -1083,6 +1099,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -1134,6 +1151,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [$groupId1, $groupId2],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -1180,6 +1198,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [$talentId],
+            notes: null,
         );
 
         $result = $service->generate($payload);
@@ -1210,6 +1229,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         );
 
         $service->generate($payload);
@@ -1262,6 +1282,7 @@ class AutoWikiCreationServiceTest extends TestCase
             agencyIdentifier: null,
             groupIdentifiers: [],
             talentIdentifiers: [],
+            notes: null,
         ));
 
         $basic = $result->basic();

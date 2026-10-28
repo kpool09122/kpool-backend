@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateTalent;
 
 use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
+use Application\Http\Client\GeminiClient\WikiResearchContextPrompt;
 use Application\Http\Client\GeminiClient\WikiWritingStylePrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -19,12 +20,18 @@ final readonly class GenerateTalentRequest
         private string $language,
         private ?string $agencyName = null,
         private array $groupNames = [],
+        private ?string $notes = null,
     ) {
     }
 
     public function talentName(): string
     {
         return $this->talentName;
+    }
+
+    public function notes(): ?string
+    {
+        return $this->notes;
     }
 
     public function language(): string
@@ -88,6 +95,7 @@ final readonly class GenerateTalentRequest
 
         $affiliationContext = $this->buildAffiliationContext();
 
+        $researchContext = WikiResearchContextPrompt::instructions($this->notes);
         $metadataInstructions = WikiMetadataPrompt::instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
@@ -98,6 +106,8 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 ## Target
 - Talent Name: {$this->talentName}
 - Genre: K-POP / Korean Entertainment
+
+{$researchContext}
 
 ## Output Language
 {$outputLanguage} (except for alphabet_name which must be in English/alphabet only)

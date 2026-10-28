@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateAgency;
 
 use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
+use Application\Http\Client\GeminiClient\WikiResearchContextPrompt;
 use Application\Http\Client\GeminiClient\WikiWritingStylePrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -14,12 +15,18 @@ final readonly class GenerateAgencyRequest
     public function __construct(
         private string $agencyName,
         private string $language,
+        private ?string $notes = null,
     ) {
     }
 
     public function agencyName(): string
     {
         return $this->agencyName;
+    }
+
+    public function notes(): ?string
+    {
+        return $this->notes;
     }
 
     public function language(): string
@@ -68,6 +75,7 @@ final readonly class GenerateAgencyRequest
             default => 'English',
         };
 
+        $researchContext = WikiResearchContextPrompt::instructions($this->notes);
         $metadataInstructions = WikiMetadataPrompt::instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
@@ -78,6 +86,8 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 ## Target
 - Agency Name: {$this->agencyName}
 - Genre: K-POP / Korean Entertainment
+
+{$researchContext}
 
 ## Output Language
 {$outputLanguage} (except for alphabet_name which must be in English/alphabet only)

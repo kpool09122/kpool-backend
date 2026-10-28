@@ -78,6 +78,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateAgencyRequest(
             agencyName: (string) $payload->name(),
             language: $payload->language()->value,
+            notes: $payload->notes(),
         );
 
         try {
@@ -119,6 +120,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateGroupRequest(
             groupName: (string) $payload->name(),
             language: $payload->language()->value,
+            notes: $payload->notes(),
             agencyName: $agencyName,
         );
 
@@ -166,6 +168,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateTalentRequest(
             talentName: (string) $payload->name(),
             language: $payload->language()->value,
+            notes: $payload->notes(),
             agencyName: $agencyName,
             groupNames: $groupNames,
         );
@@ -241,6 +244,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateSongRequest(
             songName: (string) $payload->name(),
             language: $payload->language()->value,
+            notes: $payload->notes(),
             agencyName: $agencyName,
             groupName: $groupName,
             talentName: $talentName,

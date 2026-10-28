@@ -5908,6 +5908,11 @@ components:
         name:
           type: string
           description: Display name of the wiki.
+        notes:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: Optional research context for AI generation, such as former group affiliations.
         agencyIdentifier:
           type: string
           allOf:

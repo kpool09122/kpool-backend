@@ -22,6 +22,7 @@ class AutoCreateWikiRequest extends FormRequest
             'language' => ['required', 'string'],
             'slug' => ['required', 'string'],
             'name' => ['required', 'string'],
+            'notes' => ['nullable', 'string', 'max:2000'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
             'groupIdentifiers.*' => ['uuid'],
@@ -43,6 +44,13 @@ class AutoCreateWikiRequest extends FormRequest
     public function name(): string
     {
         return RequestValue::string($this->input('name'));
+    }
+
+    public function notes(): ?string
+    {
+        $value = $this->input('notes');
+
+        return $value !== null ? RequestValue::string($value) : null;
     }
 
     public function slug(): string
