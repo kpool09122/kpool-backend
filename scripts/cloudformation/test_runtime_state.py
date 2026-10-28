@@ -47,6 +47,14 @@ class RuntimeStateTests(unittest.TestCase):
                     self.assertEqual(result['VideoCollectionSchedulerState'], video_state)
                     self.assertEqual(result['VideoCollectionTaskDefinitionArn'], 'scheduler-release:12')
 
+    def test_digest_activation_is_independent_and_missing_schedule_starts_disabled(self):
+        self.assertEqual(runtime_state.resolve(*fixture())['VideoWatchDigestSchedulerState'], 'DISABLED')
+        for state in ('ENABLED', 'DISABLED'):
+            result = runtime_state.resolve(*fixture(), watch_digest_schedule={'State': state})
+            self.assertEqual(result['VideoWatchDigestSchedulerState'], state)
+        with self.assertRaisesRegex(ValueError, 'watch digest scheduler state'):
+            runtime_state.resolve(*fixture(), watch_digest_schedule={'State': 'UNKNOWN'})
+
     def test_unknown_video_state_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'video collection scheduler state'):
             runtime_state.resolve(*fixture(), {'State': 'UNKNOWN'})

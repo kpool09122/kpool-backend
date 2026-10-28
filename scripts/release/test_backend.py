@@ -86,6 +86,21 @@ class BackendTests(unittest.TestCase):
         record=json.loads((Path(self.directory.name)/'journal.json').read_text())
         self.assertNotIn('fixture-never-log',json.dumps(record))
         self.assertNotIn('fixture-never-log',''.join(p.read_text() for p in Path(self.directory.name).glob('*.json')))
+    def test_release_updates_all_three_schedules_without_disabling_active_digest(self):
+        self.aws.schedules[('fixture', 'digest')]['State'] = 'ENABLED'
+        self.run_release()
+        self.assertEqual(len(self.aws.schedules), 3)
+        for schedule in self.aws.schedules.values():
+            self.assertEqual(schedule['Target']['EcsParameters']['TaskDefinitionArn'], self.backend.tasks['Scheduler'])
+        self.assertEqual(self.aws.schedules[('fixture', 'digest')]['State'], 'ENABLED')
+        self.assertEqual(self.aws.schedules[('fixture', 'monthly')]['State'], 'DISABLED')
+
+    def test_digest_output_is_required_before_release_mutation(self):
+        del self.aws.outputs['VideoWatchDigestSchedulerArn']
+        with self.assertRaisesRegex(ValueError, 'Required infrastructure output'):
+            self.backend.preflight()
+        self.assertFalse(any(op in ('register-task-definition', 'run-task', 'update-service', 'update-schedule') for _, op, _ in self.aws.calls))
+
     def test_existing_bake_and_alarm_policy_is_replaced_with_manual_recovery(self):
         import copy
         self.aws.services['Api']['deploymentConfiguration'].update(
