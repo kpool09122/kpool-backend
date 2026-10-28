@@ -113,13 +113,20 @@ def runtime_snapshot(aws, outputs):
         if len(video_parts) != 2:
             raise ValueError('Unexpected video collection Scheduler ARN')
         video_collection_schedule = aws('scheduler', 'get-schedule', '--group-name', video_parts[0], '--name', video_parts[1])
-    return {'parameters': resolve(outputs, services, rules, schedule, video_collection_schedule),
+    watch_digest_schedule = None
+    if outputs.get('VideoWatchDigestSchedulerArn'):
+        digest_parts = outputs['VideoWatchDigestSchedulerArn'].split(':schedule/', 1)[1].split('/')
+        if len(digest_parts) != 2:
+            raise ValueError('Unexpected watch digest Scheduler ARN')
+        watch_digest_schedule = aws('scheduler', 'get-schedule', '--group-name', digest_parts[0], '--name', digest_parts[1])
+    return {'parameters': resolve(outputs, services, rules, schedule, video_collection_schedule, watch_digest_schedule),
             'nativeHistory': native_history,
             # Track deployment identity too, so an ABA revision change is not silently accepted.
             'deployments': {service['serviceName']: [item.get('id') for item in service['deployments']]
                             for service in services['services']},
             'schedulerModified': schedule.get('LastModificationDate'),
-            'videoCollectionSchedulerModified': (video_collection_schedule or {}).get('LastModificationDate')}
+            'videoCollectionSchedulerModified': (video_collection_schedule or {}).get('LastModificationDate'),
+            'watchDigestSchedulerModified': (watch_digest_schedule or {}).get('LastModificationDate')}
 
 
 def capture(aws, config, paused, allow_created_runtime=False):

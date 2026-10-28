@@ -19,12 +19,32 @@ class AccountNotificationRecipientService implements AccountNotificationRecipien
      */
     public function resolve(array $accountIdentifiers): array
     {
+        return array_values($this->recipients($accountIdentifiers, false));
+    }
+
+    /** @param AccountIdentifier[] $accountIdentifiers
+     * @return array<string, AccountNotificationRecipient> Indexed by Identity identifier.
+     * @phpstan-impure
+     */
+    public function resolveActive(array $accountIdentifiers): array
+    {
+        return $this->recipients($accountIdentifiers, true);
+    }
+
+    /** @param AccountIdentifier[] $accountIdentifiers
+     * @return array<string, AccountNotificationRecipient>
+     */
+    private function recipients(array $accountIdentifiers, bool $activeOnly): array
+    {
         if ($accountIdentifiers === []) {
             return [];
         }
         $accounts = array_map(static fn (AccountIdentifier $id): string => (string) $id, $accountIdentifiers);
         $rows = IdentityEloquent::query()
-            ->whereHas('accountPrincipals', static function (Builder $query) use ($accounts): void {
+            ->whereHas('accountPrincipals', static function (Builder $query) use ($accounts, $activeOnly): void {
+                if ($activeOnly) {
+                    $query->where('status', 'active')->whereHas('account', static fn (Builder $accountQuery) => $accountQuery->where('status', 'active'));
+                }
                 $query->whereIn('account_id', $accounts)
                     ->whereHas('account.notificationRecipients', static function (Builder $query): void {
                         $query->whereColumn('account_notification_recipients.identity_id', 'identities.id');
@@ -32,6 +52,6 @@ class AccountNotificationRecipientService implements AccountNotificationRecipien
             })
             ->orderBy('identities.id')->get(['identities.id', 'identities.email', 'identities.language']);
 
-        return array_values($rows->map(static fn (IdentityEloquent $row): AccountNotificationRecipient => new AccountNotificationRecipient(new Email($row->email), Language::from($row->language)))->all());
+        return $rows->mapWithKeys(static fn (IdentityEloquent $row): array => [$row->id => new AccountNotificationRecipient(new Email($row->email), Language::from($row->language))])->all();
     }
 }

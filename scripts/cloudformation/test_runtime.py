@@ -69,6 +69,17 @@ class RuntimeContracts(unittest.TestCase):
             resolved = resolve_conditions(target['EcsParameters'], self.template, parameters)
             self.assertEqual(resolved['TaskDefinitionArn'], arn or 'SchedulerBootstrapTaskDefinition')
 
+    def test_watch_digest_is_daily_seoul_disabled_and_uses_scheduler_release(self):
+        schedule = self.runtime['VideoWatchDigestSchedule']['Properties']
+        self.assertEqual(schedule['ScheduleExpression'], 'cron(0 9 * * ? *)')
+        self.assertEqual(schedule['ScheduleExpressionTimezone'], 'Asia/Seoul')
+        self.assertEqual(schedule['State'], {'Ref': 'VideoWatchDigestSchedulerState'})
+        self.assertEqual(self.template['Parameters']['VideoWatchDigestSchedulerState']['Default'], 'DISABLED')
+        self.assertEqual(schedule['Target']['EcsParameters'], self.runtime['Schedule']['Properties']['Target']['EcsParameters'])
+        self.assertEqual(json.loads(schedule['Target']['Input'])['containerOverrides'], [
+            {'name': 'scheduler', 'command': ['php', 'artisan', 'video-watch-requests:send-digest']}])
+        self.assertEqual(schedule['Target']['DeadLetterConfig']['Arn'], {'Fn::GetAtt': ['SchedulerDlq', 'Arn']})
+
     def test_target_roles_and_rule_weights_follow_parameters(self):
         # Reconciliation reflects each live value independently, including a test
         # rule that still points to the current production target after a release.

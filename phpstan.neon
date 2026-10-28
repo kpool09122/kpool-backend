@@ -59,6 +59,7 @@ services:
                 - Countable
                 - DateTimeImmutable
                 - DateTimeInterface
+                - DateTimeZone
                 - DomainException
                 - Exception
                 - Generator

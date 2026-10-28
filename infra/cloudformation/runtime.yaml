@@ -120,6 +120,10 @@ Parameters:
   ScheduleExpression:
     Type: String
     Default: cron(0 3 1 * ? *)
+  VideoWatchDigestSchedulerState:
+    Type: String
+    Default: DISABLED
+    AllowedValues: [ENABLED, DISABLED]
   VideoCollectionSchedulerState:
     Type: String
     Description: Initially disabled; preserve the live operator-controlled state on infrastructure updates.
@@ -429,6 +433,11 @@ Rules:
           - Ref: SchedulerTaskDefinitionArn
           - ''
       AssertDescription: Enable only with an approved scheduler release task definition.
+  VideoWatchDigestSchedulerActivation:
+    RuleCondition: !Equals [!Ref VideoWatchDigestSchedulerState, ENABLED]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref SchedulerTaskDefinitionArn, '']]
+        AssertDescription: Enable only after deploying a scheduler release containing the digest command.
   VideoCollectionSchedulerActivation:
     RuleCondition:
       Fn::Equals:
@@ -1900,6 +1909,41 @@ Resources:
           MaximumRetryAttempts: 0
         DeadLetterConfig:
           Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
+  VideoWatchDigestSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !Sub '${ProjectName}-video-watch-digest'
+      Description: Enqueue daily watch request digest at 09:00 KST; enable after frontend and mail setup.
+      GroupName: {Ref: ScheduleGroup}
+      State: {Ref: VideoWatchDigestSchedulerState}
+      ScheduleExpression: cron(0 9 * * ? *)
+      ScheduleExpressionTimezone: Asia/Seoul
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: {Fn::GetAtt: [Cluster, Arn]}
+        RoleArn: {Fn::GetAtt: [SchedulerRole, Arn]}
+        Input: '{"containerOverrides":[{"name":"scheduler","command":["php","artisan","video-watch-requests:send-digest"]}]}'
+        EcsParameters:
+          TaskDefinitionArn:
+            Fn::If:
+            - HasSchedulerRelease
+            - Ref: SchedulerTaskDefinitionArn
+            - Ref: SchedulerBootstrapTaskDefinition
+          TaskCount: 1
+          LaunchType: FARGATE
+          PlatformVersion: 1.4.0
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: {Ref: PublicSubnetIds}
+              SecurityGroups:
+              - Ref: ApplicationSecurityGroupId
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 60
+          MaximumRetryAttempts: 0
+        DeadLetterConfig:
+          Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
   SchedulerFailureRule:
     Type: AWS::Events::Rule
     Properties:
@@ -2210,6 +2254,8 @@ Resources:
       ToPort: 443
       DestinationSecurityGroupId: {Ref: EndpointSecurityGroup}
 Outputs:
+  VideoWatchDigestSchedulerArn:
+    Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${VideoWatchDigestSchedule}'
   SlackNotificationConfigurationArn:
     Condition: HasSlack
     Value: !GetAtt SlackNotifications.Arn

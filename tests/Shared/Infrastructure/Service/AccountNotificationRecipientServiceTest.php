@@ -19,6 +19,24 @@ use Tests\TestCase;
 #[Group('useDb')]
 class AccountNotificationRecipientServiceTest extends TestCase
 {
+    public function testActiveRecipientsHaveStableIdentityKeysAndRequireActiveMembershipAndAccount(): void
+    {
+        $account = new AccountIdentifier(StrTestHelper::generateUuid());
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateAccount::create((string) $account);
+        CreateIdentity::create($identity);
+        DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $account, 'identity_id' => (string) $identity, 'status' => 'active', 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('account_notification_recipients')->insert(['account_id' => (string) $account, 'identity_id' => (string) $identity]);
+        $service = new AccountNotificationRecipientService();
+        self::assertSame([], $service->resolveActive([]));
+        self::assertSame([(string) $identity], array_keys($service->resolveActive([$account])));
+        DB::table('account_principals')->where('account_id', (string) $account)->update(['status' => 'suspended']);
+        self::assertSame([], $service->resolveActive([$account]));
+        DB::table('account_principals')->where('account_id', (string) $account)->update(['status' => 'active']);
+        DB::table('accounts')->where('id', (string) $account)->update(['status' => 'suspended']);
+        self::assertSame([], $service->resolveActive([$account]));
+    }
+
     public function testMembershipInAnotherSelectedAccountDoesNotValidateAStaleRecipient(): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());

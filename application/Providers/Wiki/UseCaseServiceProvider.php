@@ -97,6 +97,8 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLink;
 use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLinkInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Command\SendVideoWatchRequestDigest\SendVideoWatchRequestDigest;
+use Source\Wiki\VideoLink\Application\UseCase\Command\SendVideoWatchRequestDigest\SendVideoWatchRequestDigestInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLink;
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
@@ -180,6 +182,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(SendVideoWatchRequestDigestInterface::class, SendVideoWatchRequestDigest::class);
         $this->app->singleton(CreatePlaylistInterface::class, CreatePlaylist::class);
         $this->app->singleton(SavePlaylistInterface::class, SavePlaylist::class);
         $this->app->singleton(PlaylistVideoSourceServiceInterface::class, PlaylistVideoSourceService::class);

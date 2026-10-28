@@ -14,4 +14,11 @@ interface AccountNotificationRecipientServiceInterface
      * @return list<AccountNotificationRecipient>
      */
     public function resolve(array $accountIdentifiers): array;
+
+    /**
+     * @param AccountIdentifier[] $accountIdentifiers
+     * @return array<string, AccountNotificationRecipient> Indexed by Identity identifier.
+     * @phpstan-impure
+     */
+    public function resolveActive(array $accountIdentifiers): array;
 }

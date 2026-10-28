@@ -69,11 +69,11 @@ class Backend:
         required = ('RepositoryUri ClusterArn ApiServiceName WorkerServiceName ApiReleaseFamily WorkerReleaseFamily MigrationReleaseFamily ApiBootstrapTaskDefinitionArn WorkerBootstrapTaskDefinitionArn MigrationBootstrapTaskDefinitionArn ApiTaskRoleArn WorkerTaskRoleArn MigrationTaskRoleArn AppExecutionRoleArn MigrationExecutionRoleArn LifecycleHookArn HookInvocationRoleArn ServerErrorAlarmName LatencyAlarmName HookCodeSource BlueTargetGroupArn GreenTargetGroupArn ProductionRuleArn TestRuleArn AlbInfrastructureRoleArn PublicSubnetIds MigrationSecurityGroupId RuntimeConfigParameterName AppSecretArn MigrationSecretArn CacheSecretArn ApiUrl QueueUrl').split()
         if self.sync_schedulers:
             required += ['SchedulerBootstrapTaskDefinitionArn', 'SchedulerReleaseFamily',
-                         'SchedulerArn', 'VideoCollectionSchedulerArn']
+                         'SchedulerArn', 'VideoCollectionSchedulerArn', 'VideoWatchDigestSchedulerArn']
         if any(not o.get(key) for key in required):
             raise ValueError('Required infrastructure output is missing')
         if self.sync_schedulers:
-            for key in ('SchedulerArn', 'VideoCollectionSchedulerArn'):
+            for key in ('SchedulerArn', 'VideoCollectionSchedulerArn', 'VideoWatchDigestSchedulerArn'):
                 read_schedule(self.aws, o[key], account)
         registry = f'{account}.dkr.ecr.ap-northeast-1.amazonaws.com/'
         if not o['RepositoryUri'].startswith(registry):
@@ -262,7 +262,7 @@ class Backend:
             self.journal.event('schedulers', 'registered', task_definition=self.tasks['Scheduler'])
             write_json(self.journal.directory/'deployment-manifest.json',
                        dict(self.manifest, task_definitions=self.tasks), exclusive=True)
-        for key in ('SchedulerArn', 'VideoCollectionSchedulerArn'):
+        for key in ('SchedulerArn', 'VideoCollectionSchedulerArn', 'VideoWatchDigestSchedulerArn'):
             update_schedule(self.aws, self.outputs[key], self.configuration['account_id'],
                             self.tasks['Scheduler'], self.journal)
 
