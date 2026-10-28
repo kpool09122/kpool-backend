@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Shared\Infrastructure\Trait\WhereLike;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
@@ -35,6 +36,11 @@ readonly class ListWikis implements ListWikisInterface
         ResourceType::SONG->value => ['relation' => 'songBasic', 'table' => 'wiki_song_basics'],
     ];
 
+    public function __construct(
+        private NormalizationServiceInterface $normalizationService,
+    ) {
+    }
+
     public function process(ListWikisInputPort $input, ListWikisOutputPort $output): void
     {
         $query = WikiModel::query()
@@ -52,7 +58,8 @@ readonly class ListWikis implements ListWikisInterface
         }
 
         if ($input->keyword() !== null && $input->keyword() !== '') {
-            $this->applyKeywordSearch($query, $input->keyword(), $input->resourceType()?->value);
+            $normalizedKeyword = $this->normalizationService->normalize($input->keyword(), $input->language());
+            $this->applyKeywordSearch($query, $input->keyword(), $normalizedKeyword, $input->resourceType()?->value);
         }
 
         $this->applySort($query, $input->sort(), $input->order());
@@ -85,13 +92,17 @@ readonly class ListWikis implements ListWikisInterface
     /**
      * @param Builder<WikiModel> $query
      */
-    private function applyKeywordSearch(Builder $query, string $keyword, ?string $resourceType): void
+    private function applyKeywordSearch(Builder $query, string $keyword, string $normalizedKeyword, ?string $resourceType): void
     {
-        $query->where(function (Builder $query) use ($keyword, $resourceType): void {
+        $query->where(function (Builder $query) use ($keyword, $normalizedKeyword, $resourceType): void {
             foreach ($this->targetBasicTables($resourceType) as $type => $basic) {
-                $query->orWhere(function (Builder $query) use ($type, $basic, $keyword): void {
-                    $query->where('wikis.resource_type', $type);
-                    $this->whereStartsWith($query, "{$basic['table']}.normalized_name", $keyword);
+                $query->orWhere(function (Builder $query) use ($type, $basic, $keyword, $normalizedKeyword): void {
+                    $query->where('wikis.resource_type', $type)
+                        ->where(function (Builder $query) use ($basic, $keyword, $normalizedKeyword): void {
+                            $query
+                                ->where(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.name", $keyword))
+                                ->orWhere(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.normalized_name", $normalizedKeyword));
+                        });
                 });
             }
         });
