@@ -22,6 +22,7 @@ readonly class VideoLinkLikeRepository implements VideoLinkLikeRepositoryInterfa
             new VideoLinkIdentifier($model->video_link_id),
             new PrincipalIdentifier($model->principal_id),
             $model->created_at->toDateTimeImmutable(),
+            $model->is_official_owner,
         );
     }
 
@@ -33,6 +34,7 @@ readonly class VideoLinkLikeRepository implements VideoLinkLikeRepositoryInterfa
                 'video_link_id' => (string) $videoLinkLike->videoLinkIdentifier(),
                 'principal_id' => (string) $videoLinkLike->principalIdentifier(),
                 'created_at' => $videoLinkLike->createdAt(),
+                'is_official_owner' => $videoLinkLike->isOfficialOwner(),
             ],
         );
     }

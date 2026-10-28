@@ -10,5 +10,5 @@ use Source\Wiki\VideoLink\Domain\Entity\VideoLinkLike;
 
 interface VideoLinkLikeFactoryInterface
 {
-    public function create(VideoLinkIdentifier $videoLinkIdentifier, PrincipalIdentifier $principalIdentifier): VideoLinkLike;
+    public function create(VideoLinkIdentifier $videoLinkIdentifier, PrincipalIdentifier $principalIdentifier, bool $isOfficialOwner): VideoLinkLike;
 }

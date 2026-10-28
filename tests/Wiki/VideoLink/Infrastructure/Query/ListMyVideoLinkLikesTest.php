@@ -28,6 +28,25 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListMyVideoLinkLikesTest extends TestCase
 {
+    public function testReturnsOwnOfficialLikeKindInBatchAndPaginatedList(): void
+    {
+        $principal = $this->createPrincipal();
+        $wiki = StrTestHelper::generateUuid();
+        $video = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'talent', ['published_at' => '2026-01-01']);
+        CreateVideoLink::create($video, ['wiki_id' => $wiki]);
+        DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $video, 'principal_id' => (string) $principal, 'is_official_owner' => true, 'created_at' => now()]);
+        $query = $this->app()->make(ListMyVideoLinkLikesInterface::class);
+        $output = new ListMyVideoLinkLikesOutput();
+        foreach ([null, [new VideoLinkIdentifier($video)]] as $ids) {
+            $query->process(new ListMyVideoLinkLikesInput($principal, $ids), $output);
+            self::assertSame([$video], $output->toArray()['likedVideoLinkIdentifiers']);
+            self::assertTrue($output->toArray()['videos'][0]['isOfficialOwnerLike']);
+        }
+        $query->process(new ListMyVideoLinkLikesInput($this->createPrincipal()), $output);
+        self::assertSame([], $output->toArray()['likedVideoLinkIdentifiers']);
+    }
+
     public function testEagerLoadsVideoAndWikiThroughTypedRelationships(): void
     {
         self::assertTrue((new VideoLinkLikeModel())->isRelation('videoLink'));
@@ -73,7 +92,7 @@ class ListMyVideoLinkLikesTest extends TestCase
         self::assertSame(['currentPage' => 1, 'perPage' => 20, 'total' => 2], $output->toArray()['pagination']);
         self::assertSame([
             'provider' => 'youtube', 'externalVideoId' => substr(TypedValue::string(DB::table('wiki_video_links')->where('id', $ids['public'])->value('url')), -11), 'videoLinkIdentifier' => $ids['public'], 'url' => DB::table('wiki_video_links')->where('id', $ids['public'])->value('url'), 'title' => 'Test Video',
-            'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'en', 'resourceType' => 'agency', 'slug' => 'ag-public', 'likedAt' => '2026-02-01T00:00:00+00:00', 'playlists' => [],
+            'thumbnailUrl' => null, 'durationSeconds' => null, 'language' => 'en', 'resourceType' => 'agency', 'slug' => 'ag-public', 'likedAt' => '2026-02-01T00:00:00+00:00', 'playlists' => [], 'isOfficialOwnerLike' => false,
         ], $output->toArray()['videos'][0]);
         $requested = array_map(static fn (string $id): VideoLinkIdentifier => new VideoLinkIdentifier($id), array_values($ids));
         $query->process(new ListMyVideoLinkLikesInput($principal, $requested, 99, 1), $output);

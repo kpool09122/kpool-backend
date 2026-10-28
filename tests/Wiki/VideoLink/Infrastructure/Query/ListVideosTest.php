@@ -86,6 +86,34 @@ class ListVideosTest extends TestCase
         }
     }
 
+    public function testOfficialOwnerLikesAreDisplayedSeparatelyWithoutIncreasingPopularity(): void
+    {
+        $wiki = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'talent', ['slug' => 'tl-official-likes', 'language' => 'ja', 'published_at' => '2026-01-01']);
+        $videos = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        sort($videos);
+        foreach ($videos as $video) {
+            CreateVideoLink::create($video, ['wiki_id' => $wiki]);
+        }
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identity);
+        CreatePrincipal::create($principal, $identity);
+        DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $videos[0], 'principal_id' => (string) $principal, 'is_official_owner' => true, 'created_at' => now()]);
+        DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $videos[1], 'principal_id' => (string) $principal, 'created_at' => now()]);
+        $output = new ListVideosOutput();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->app()->make(ListVideosInterface::class)->process(new ListVideosInput(new Slug('tl-official-likes'), Language::JAPANESE, ResourceType::TALENT, sortByWatchRequests: true), $output);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $rows = $output->toArray()['videos'];
+        self::assertSame([1, 0], array_column($rows, 'likeCount'));
+        self::assertSame([false, true], array_column($rows, 'hasOfficialOwnerLike'));
+        self::assertSame([$videos[1], $videos[0]], array_column($rows, 'videoLinkIdentifier'));
+        self::assertCount(2, $queries);
+    }
+
     public function testReadsStoredTikTokIdentityCoverAndDurationWithoutNetwork(): void
     {
         Http::preventStrayRequests();
@@ -127,7 +155,7 @@ class ListVideosTest extends TestCase
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
         $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount'], array_keys($payload['videos'][0]));
+        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount', 'hasOfficialOwnerLike'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);

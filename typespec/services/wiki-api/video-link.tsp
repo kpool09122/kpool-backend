@@ -30,9 +30,11 @@ model Video {
   @doc("Provider-specific video ID, always a string. YouTube: 11 characters; TikTok: decimal digits.")
   externalVideoId: string;
   videoLinkIdentifier: Uuid;
-  @doc("Number of k-pool likes for this VideoLink, not YouTube likes. No personal state is included.")
+  @doc("Number of ordinary k-pool likes for this VideoLink, excluding official-owner likes and YouTube likes. Only ordinary likes participate in popularity ordering. No caller-specific state is included.")
   @minValue(0)
   likeCount: int32;
+  @doc("Whether any saved like was made by the non-delegated owner of this exact officially certified talent wiki at the time of liking. Independent of likeCount; no owner or liker identifiers are exposed. Classification is retained until unlike, even if certification or ownership later changes.")
+  hasOfficialOwnerLike: boolean;
   url: string;
   title: string;
   thumbnailUrl: string | null;
@@ -67,7 +69,7 @@ interface PublicVideoLinkOperations {
     @query maxDurationSeconds?: int32 | null,
     @doc("Only videos with at least one request sent less than 168 hours ago. Requests exactly 168 hours old are excluded; each video appears only once.")
     @query recentWatchRequestsOnly?: boolean | null,
-    @doc("Order by request count in the last 168 hours descending, then k-pool like count descending, then videoLinkIdentifier ascending. Omitted/false preserves the default creation-time order. Can combine with duration bounds and recentWatchRequestsOnly.")
+    @doc("Order by request count in the last 168 hours descending, then ordinary k-pool like count (excluding official-owner likes) descending, then videoLinkIdentifier ascending. Omitted/false preserves the default creation-time order. Can combine with duration bounds and recentWatchRequestsOnly.")
     @query sortByWatchRequests?: boolean | null,
   ): ListVideosResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
@@ -109,17 +111,17 @@ interface VideoWatchRequestOperations {
 interface VideoLinkLikeOperations {
   @post
   @route("/video-link/{videoLinkId}/like")
-  @doc("Like a manual or automatically collected VideoLink as the authenticated Wiki Principal. Requires LIKE_VIDEO_LINK permission for its resource type. Returns 409 if the Principal has already liked the VideoLink.")
+  @doc("Like a manual or automatically collected VideoLink as the authenticated Wiki Principal. Requires LIKE_VIDEO_LINK permission for its resource type. The server classifies a like as official-owner only when the exact target wiki and video are talent resources, the wiki is official, and the non-delegated Principal belongs to its owner Account. Editing rights, roles, other wiki ownership and delegated owner Accounts do not confer this classification. No caller-supplied owner, sender or kind is accepted. Exactly one record per video/Principal, never counted twice. Returns 409 if the Principal has already liked the VideoLink, regardless of kind; existing classification is not changed by retry.")
   likeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @delete
   @route("/video-link/{videoLinkId}/like")
-  @doc("Remove only the authenticated Wiki Principal's like. Requires UNLIKE_VIDEO_LINK permission. Repeated removal is idempotent (204); a missing VideoLink returns 404. Returns 409 (video_watch_request_active) while the authenticated sender has a request less than 168 hours old. At exactly 168 hours this restriction expires.")
+  @doc("Remove only the authenticated Wiki Principal's like, including official-owner likes; another Principal's like is never removed. Requires UNLIKE_VIDEO_LINK permission. Repeated removal is idempotent (204); a missing VideoLink returns 404. Returns 409 (video_watch_request_active) while the authenticated sender has a request less than 168 hours old. At exactly 168 hours this restriction expires.")
   unlikeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get
   @route("/my/video-link-likes")
-  @doc("Return likes of the authenticated active Wiki Principal. With videoLinkIds[], return all matching liked IDs in identifier order without pagination, even for non-public or missing wikis; videos includes only existing videos on published wikis and pagination is null. Omitted IDs list existing videos on published wikis across languages and resource types, sorted by likedAt descending then videoLinkIdentifier ascending, with matching IDs in the same order and pagination metadata. Each VideoLink is counted independently even when URLs match. Empty lists return 200. Explicit empty IDs, invalid UUIDs, more than 100 IDs or invalid pagination return 422. Does not accept a principal ID.")
+  @doc("Return likes of the authenticated active Wiki Principal. With videoLinkIds[], return all matching liked IDs in identifier order without pagination, even for non-public or missing wikis; videos includes only existing videos on published wikis and pagination is null. Omitted IDs list existing videos on published wikis across languages and resource types, sorted by likedAt descending then videoLinkIdentifier ascending, with matching IDs in the same order and pagination metadata. Each VideoLink is counted independently even when URLs match. Empty lists return 200. Explicit empty IDs, invalid UUIDs, more than 100 IDs or invalid pagination return 422. Does not accept a principal ID or like kind. Both ordinary and official-owner likes appear in likedVideoLinkIdentifiers and videos; isOfficialOwnerLike on each video identifies the saved kind, not current ownership. The usual authenticated active Account/Principal checks and permissions apply to both kinds.")
   listMyVideoLinkLikes(
     @minItems(1)
     @maxItems(100)
@@ -146,6 +148,8 @@ model LikedVideoLink {
   resourceType: "agency" | "group" | "song" | "talent";
   slug: string;
   likedAt: string;
+  @doc("Whether this authenticated Principal's saved like was classified as an official-owner like by the server when created. False for ordinary likes. Not a client input.")
+  isOfficialOwnerLike: boolean;
   @doc("The authenticated Principal's saved playlists containing the same YouTube or TikTok video, matched by provider and external video ID across languages and original VideoLinks. Ordered by playlist creation time then identifier. Empty when not in a playlist. Other Principals' playlists are never included.")
   playlists: LikedVideoPlaylist[];
 }
