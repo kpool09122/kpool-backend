@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -11,8 +12,11 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
+use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestActiveException;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkLikeRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Service\VideoWatchRequestPolicy;
 
 readonly class UnlikeVideoLink implements UnlikeVideoLinkInterface
 {
@@ -20,6 +24,7 @@ readonly class UnlikeVideoLink implements UnlikeVideoLinkInterface
         private VideoLinkRepositoryInterface $videoLinkRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private VideoWatchRequestRepositoryInterface $videoWatchRequestRepository,
         private VideoLinkLikeRepositoryInterface $videoLinkLikeRepository,
     ) {
     }
@@ -27,6 +32,7 @@ readonly class UnlikeVideoLink implements UnlikeVideoLinkInterface
     /**
      * @param UnlikeVideoLinkInputPort $input
      * @return void
+     * @throws VideoWatchRequestActiveException
      * @throws DisallowedException
      * @throws VideoLinkNotFoundException
      * @throws PrincipalNotFoundException
@@ -45,6 +51,11 @@ readonly class UnlikeVideoLink implements UnlikeVideoLinkInterface
 
         if (! $this->policyEvaluator->evaluate($principal, Action::UNLIKE_VIDEO_LINK, new Resource(type: $videoLink->resourceType()))) {
             throw new DisallowedException();
+        }
+
+        $lastRequest = $this->videoWatchRequestRepository->findLatestByVideoLinkAndPrincipal($input->videoLinkIdentifier(), $input->principalIdentifier());
+        if ($lastRequest !== null && VideoWatchRequestPolicy::expiresAt($lastRequest->sentAt()) > new DateTimeImmutable()) {
+            throw new VideoWatchRequestActiveException();
         }
 
         $this->videoLinkLikeRepository->deleteByVideoLinkAndPrincipal($input->videoLinkIdentifier(), $input->principalIdentifier());

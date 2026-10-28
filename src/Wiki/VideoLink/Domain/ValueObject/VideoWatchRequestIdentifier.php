@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Wiki\VideoLink\Domain\ValueObject;
+
+use InvalidArgumentException;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
+
+class VideoWatchRequestIdentifier extends StringBaseValue
+{
+    /** @throws InvalidArgumentException */
+    public function __construct(string $id)
+    {
+        parent::__construct($id);
+        $this->validate($id);
+    }
+
+    /** @throws InvalidArgumentException */
+    protected function validate(string $value): void
+    {
+        if (! UuidValidator::isValid($value)) {
+            throw new InvalidArgumentException('Invalid VideoWatchRequestIdentifier.');
+        }
+    }
+}

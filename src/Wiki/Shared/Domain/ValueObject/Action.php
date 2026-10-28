@@ -27,6 +27,8 @@ enum Action: string
     case CREATE_VIDEO_LINK = 'save_video_links';
     case DELETE_VIDEO_LINK = 'delete_video_link';
     case LIKE_VIDEO_LINK = 'like_video_link';
+    case SEND_VIDEO_WATCH_REQUEST = 'send_video_watch_request';
+    case LIST_MY_VIDEO_WATCH_REQUESTS = 'list_my_video_watch_requests';
     case UNLIKE_VIDEO_LINK = 'unlike_video_link';
     case SEARCH_FREE_MATERIALS = 'search_free_materials';
     case DELETE = 'delete';

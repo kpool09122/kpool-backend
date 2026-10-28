@@ -25,6 +25,7 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -32,6 +33,14 @@ use Tests\TestCase;
 
 class DeleteVideoLinkTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $repository = Mockery::mock(VideoWatchRequestRepositoryInterface::class);
+        $repository->shouldReceive('findLatestByVideoLink')->andReturn(null);
+        $this->app()->instance(VideoWatchRequestRepositoryInterface::class, $repository);
+    }
+
     public function testCreatorCanDeleteManualVideo(): void
     {
         $input = $this->input();

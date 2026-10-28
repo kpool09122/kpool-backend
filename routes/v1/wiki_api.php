@@ -30,8 +30,10 @@ use Application\Http\Action\Wiki\Principal\Query\ListPrincipalGroups\ListPrincip
 use Application\Http\Action\Wiki\VideoLink\Command\CreateVideoLink\CreateVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Command\DeleteVideoLink\DeleteVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Command\LikeVideoLink\LikeVideoLinkAction;
+use Application\Http\Action\Wiki\VideoLink\Command\SendVideoWatchRequest\SendVideoWatchRequestAction;
 use Application\Http\Action\Wiki\VideoLink\Command\UnlikeVideoLink\UnlikeVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesAction;
+use Application\Http\Action\Wiki\VideoLink\Query\ListMyVideoWatchRequests\ListMyVideoWatchRequestsAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListVideos\ListVideosAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
@@ -128,6 +130,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 
         // OfficialCertification
         Route::get('/official-certifications', ListOfficialCertificationsAction::class);
+        Route::get('/my/video-watch-requests', ListMyVideoWatchRequestsAction::class);
         Route::get('/my/video-link-likes', ListMyVideoLinkLikesAction::class);
         Route::get('/my/playlists', ListMyPlaylistsAction::class);
         Route::get('/my/playlists/{playlistId}', GetMyPlaylistAction::class);
@@ -160,6 +163,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::put('/my/playlists/{playlistId}', SavePlaylistAction::class);
         Route::post('/video-link/create', CreateVideoLinkAction::class);
         Route::delete('/video-link/{videoLinkId}', DeleteVideoLinkAction::class);
+        Route::post('/video-link/{videoLinkId}/watch-requests', SendVideoWatchRequestAction::class);
         Route::post('/video-link/{videoLinkId}/like', LikeVideoLinkAction::class);
         Route::delete('/video-link/{videoLinkId}/like', UnlikeVideoLinkAction::class);
 

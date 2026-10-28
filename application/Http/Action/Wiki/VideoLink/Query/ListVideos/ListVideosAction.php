@@ -42,6 +42,8 @@ readonly class ListVideosAction
                     resourceType: ResourceType::from($request->resourceType()),
                     minDurationSeconds: $request->minDurationSeconds(),
                     maxDurationSeconds: $request->maxDurationSeconds(),
+                    recentWatchRequestsOnly: $request->recentWatchRequestsOnly(),
+                    sortByWatchRequests: $request->sortByWatchRequests(),
                 );
             } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: error_message('invalid_video_list_query', $request->language()), previous: $e);

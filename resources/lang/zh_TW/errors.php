@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => '僅可請求官方認證藝人維基中的使用者建立影片。',
+    'video_watch_request_duration_not_eligible' => '僅可請求已確認不超過30秒的影片。',
+    'video_watch_request_like_required' => '傳送請求前請先按讚該影片。',
+    'video_watch_request_resend_not_available' => '同一影片須在上次請求滿7天後才能再次請求。',
+    'video_watch_request_weekly_limit_reached' => '最近7天內最多可向同一藝人傳送3個請求。',
+    'video_watch_request_active' => '存在傳送未滿7天的請求，無法執行此操作。',
     'video_metadata_unavailable' => '無法取得或儲存影片資訊或縮圖。請稍後再試。',
     'invalid_playlist_edit' => '播放清單編輯內容無效。名稱須為1至32個字元，影片不得重複且最多50個。',
     'playlist_not_found' => '找不到播放清單。',

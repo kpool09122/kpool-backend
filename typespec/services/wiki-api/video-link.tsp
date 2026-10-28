@@ -65,9 +65,46 @@ interface PublicVideoLinkOperations {
     @doc("Inclusive maximum duration in seconds; omit for no upper limit. Must be at least minDurationSeconds.")
     @minValue(0)
     @query maxDurationSeconds?: int32 | null,
+    @doc("Only videos with at least one request sent less than 168 hours ago. Requests exactly 168 hours old are excluded; each video appears only once.")
+    @query recentWatchRequestsOnly?: boolean | null,
+    @doc("Order by request count in the last 168 hours descending, then k-pool like count descending, then videoLinkIdentifier ascending. Omitted/false preserves the default creation-time order. Can combine with duration bounds and recentWatchRequestsOnly.")
+    @query sortByWatchRequests?: boolean | null,
   ): ListVideosResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
+
+model VideoWatchRequestStatus {
+  videoLinkIdentifier: Uuid;
+  @doc("Whether this caller has a request for this video less than 168 hours old; never another sender's personal state.")
+  sent: boolean;
+  canSend: boolean;
+  reason: "target_not_eligible" | "duration_not_eligible" | "like_required" | "resend_not_available" | "weekly_limit_reached" | null;
+  lastSentAt: string | null;
+  @doc("Earliest time allowed by same-video cooldown and wiki-wide weekly quota; null when neither restriction applies. Other eligibility requirements still apply.")
+  nextSendAt: string | null;
+  @minValue(0)
+  remainingRequests: int32;
+  @doc("Expiry of this caller's active request, or null. Does not indicate overall UNLIKE permission.")
+  unlikeRestrictedUntil: string | null;
+  @doc("Expiry of the latest active request from any sender, or null. Does not indicate ownership or DELETE permission.")
+  deleteRestrictedUntil: string | null;
+}
+
+interface VideoWatchRequestOperations {
+  @post
+  @route("/video-link/{videoLinkId}/watch-requests")
+  @doc("Send a persistent watch request as an active authenticated Wiki collaborator with SEND_VIDEO_WATCH_REQUEST permission. The video must belong directly to an officially certified talent wiki and be user-created, liked by the caller, and confirmed to be at most 30 seconds (30 inclusive). The send policy requires a talent video on an officially certified talent wiki and user-created usage; policy rejection returns 403. Unknown/long stored durations are rejected with 409. Sender and target wiki are determined on the server. Eligibility uses durationSeconds stored in the database for both YouTube and TikTok; a missing stored duration is ineligible. No external duration lookup is performed. Sender, exact target wiki/video and server timestamp are stored permanently. Maximum three requests per caller/wiki in the last 168 hours; same-video resend, own unlike and any deletion are blocked for 168 hours, expiring exactly at that boundary. Success 204. A missing target wiki returns 409 video_watch_request_target_not_eligible. Other eligibility/limit failures return 409 video_watch_request_duration_not_eligible, video_watch_request_like_required, video_watch_request_resend_not_available or video_watch_request_weekly_limit_reached. Other callers' histories are never returned.")
+  sendVideoWatchRequest(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @get
+  @route("/my/video-watch-requests")
+  @doc("Return personal watch-request state for 1 to 100 explicitly supplied video IDs, ordered by videoLinkIdentifier with duplicate IDs collapsed. All IDs must exist (404 otherwise). Requires LIST_MY_VIDEO_WATCH_REQUESTS permission for every target resource type. Send permission is evaluated per video with its real resource attributes; a rejected send policy returns canSend=false with target_not_eligible, without rejecting the entire batch. No sender identifier input. Uses the same stored database duration and rolling 168-hour eligibility boundary as sending; missing stored duration yields canSend=false with duration_not_eligible. lastSentAt includes historical sends; sent only means an active send. Restrictions are independent: another sender can keep deletion restricted after this caller's unlike restriction expires. remainingRequests is scoped to each video's exact wiki and caller. This is a snapshot; send always revalidates. This endpoint does not send requests. Missing/empty IDs, invalid UUIDs or more than 100 IDs return 422.")
+  listMyVideoWatchRequests(
+    @minItems(1)
+    @maxItems(100)
+    @query(#{name: "videoLinkIds[]", explode: true}) videoLinkIds: Uuid[],
+  ): { @statusCode statusCode: 200; @body body: { videoWatchRequests: VideoWatchRequestStatus[]; }; } | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
 
 interface VideoLinkLikeOperations {
   @post
@@ -77,8 +114,8 @@ interface VideoLinkLikeOperations {
 
   @delete
   @route("/video-link/{videoLinkId}/like")
-  @doc("Remove only the authenticated Wiki Principal's like. Requires UNLIKE_VIDEO_LINK permission. Repeated removal is idempotent (204); a missing VideoLink returns 404.")
-  unlikeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  @doc("Remove only the authenticated Wiki Principal's like. Requires UNLIKE_VIDEO_LINK permission. Repeated removal is idempotent (204); a missing VideoLink returns 404. Returns 409 (video_watch_request_active) while the authenticated sender has a request less than 168 hours old. At exactly 168 hours this restriction expires.")
+  unlikeVideoLink(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get
   @route("/my/video-link-likes")
@@ -144,9 +181,9 @@ interface VideoLinkOperations {
 
   @delete
   @route("/{videoLinkId}")
-  @doc("Delete only the specified video link. Requires an authenticated Wiki collaborator with an active Account/Principal and DELETE_VIDEO_LINK permission. Manual videos may be deleted only by their creator; all three automatically collected video categories may be deleted by any Wiki collaborator. Returns 204 without a body, 403 when forbidden, 404 when missing, and 422 for an invalid identifier. Deletion does not prevent future automatic re-collection.")
+  @doc("Delete only the specified video link. Requires an authenticated Wiki collaborator with an active Account/Principal and DELETE_VIDEO_LINK permission. Manual videos may be deleted only by their creator; all three automatically collected video categories may be deleted by any Wiki collaborator. Returns 204 without a body, 403 when forbidden, 404 when missing, and 422 for an invalid identifier. Deletion does not prevent future automatic re-collection. Any request less than 168 hours old prevents deletion with 409 (video_watch_request_active), regardless of sender. The latest sender determines expiry; at exactly 168 hours that request stops blocking deletion.")
   deleteVideoLink(
     @path videoLinkId: Uuid,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
 }

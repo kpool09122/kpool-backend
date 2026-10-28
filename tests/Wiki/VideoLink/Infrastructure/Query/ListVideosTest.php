@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLink\Infrastructure\Query;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -29,6 +30,62 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListVideosTest extends TestCase
 {
+    public function testRecentRequestsAreDistinctCountedBeforeLikesAndExpireAtExactlySevenDays(): void
+    {
+        CarbonImmutable::setTestNow('2026-10-28 00:00:00 UTC');
+
+        try {
+            $wiki = StrTestHelper::generateUuid();
+            $other = StrTestHelper::generateUuid();
+            CreateWiki::create($wiki, 'talent', ['slug' => 'tl-watch', 'language' => 'ja', 'published_at' => '2026-01-01']);
+            CreateWiki::create($other, 'talent', ['slug' => 'tl-other', 'language' => 'ja', 'published_at' => '2026-01-01']);
+            $ids = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+            sort($ids);
+            foreach ($ids as $i => $id) {
+                CreateVideoLink::create($id, ['wiki_id' => $wiki, 'duration_seconds' => $i === 3 ? 31 : 30]);
+                for ($j = 0; $j < ($i === 0 ? 1 : 2); ++$j) {
+                    DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $id, 'wiki_id' => $wiki, 'principal_id' => StrTestHelper::generateUuid(), 'sent_at' => $i === 2 ? '2026-10-21 00:00:00' : '2026-10-21 00:00:01']);
+                }
+            }
+            // A third, expired request must not put the one-request video ahead of two-request videos.
+            DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $ids[0], 'wiki_id' => $wiki, 'principal_id' => StrTestHelper::generateUuid(), 'sent_at' => '2026-10-20 23:59:59']);
+            foreach ([0, 1, 2, 3] as $i) {
+                $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
+                $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+                CreateIdentity::create($identity, ['email' => (string) $identity . '@example.com']);
+                CreatePrincipal::create($principal, $identity);
+                DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $ids[0], 'principal_id' => (string) $principal, 'created_at' => now()]);
+            }
+            $output = new ListVideosOutput();
+            $query = $this->app()->make(ListVideosInterface::class);
+            $query->process(new ListVideosInput(new Slug('tl-watch'), Language::JAPANESE, ResourceType::TALENT, recentWatchRequestsOnly: true, sortByWatchRequests: true), $output);
+            self::assertSame([$ids[1], $ids[3], $ids[0]], array_column($output->toArray()['videos'], 'videoLinkIdentifier'));
+            $query->process(new ListVideosInput(new Slug('tl-watch'), Language::JAPANESE, ResourceType::TALENT, maxDurationSeconds: 30, recentWatchRequestsOnly: true, sortByWatchRequests: true), $output);
+            self::assertSame([$ids[1], $ids[0]], array_column($output->toArray()['videos'], 'videoLinkIdentifier'));
+            $query->process(new ListVideosInput(new Slug('tl-watch'), Language::JAPANESE, ResourceType::TALENT, sortByWatchRequests: true), $output);
+            self::assertSame([$ids[1], $ids[3], $ids[0], $ids[2]], array_column($output->toArray()['videos'], 'videoLinkIdentifier'));
+            // Equal request counts use like count before the stable identifier tie-breaker.
+            DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => $ids[3], 'principal_id' => (string) $principal, 'created_at' => now()]);
+            DB::enableQueryLog();
+            DB::flushQueryLog();
+            $query->process(new ListVideosInput(new Slug('tl-watch'), Language::JAPANESE, ResourceType::TALENT, minDurationSeconds: 30, maxDurationSeconds: 31, recentWatchRequestsOnly: true, sortByWatchRequests: true), $output);
+            $queries = DB::getQueryLog();
+            DB::disableQueryLog();
+            self::assertCount(2, $queries);
+            self::assertSame([$ids[3], $ids[1], $ids[0]], array_column($output->toArray()['videos'], 'videoLinkIdentifier'));
+            foreach ($output->toArray()['videos'] as $row) {
+                self::assertArrayNotHasKey('sent', $row);
+                self::assertArrayNotHasKey('principalIdentifier', $row);
+                self::assertArrayNotHasKey('nextSendAt', $row);
+            }
+            CarbonImmutable::setTestNow('2026-10-28 00:00:01 UTC');
+            $query->process(new ListVideosInput(new Slug('tl-watch'), Language::JAPANESE, ResourceType::TALENT, recentWatchRequestsOnly: true), $output);
+            self::assertSame([], $output->toArray()['videos']);
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
     public function testReadsStoredTikTokIdentityCoverAndDurationWithoutNetwork(): void
     {
         Http::preventStrayRequests();

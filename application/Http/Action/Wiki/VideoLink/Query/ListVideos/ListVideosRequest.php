@@ -11,6 +11,15 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class ListVideosRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        foreach (['recentWatchRequestsOnly', 'sortByWatchRequests'] as $key) {
+            if (in_array($this->input($key), ['true', 'false'], true)) {
+                $this->merge([$key => $this->input($key) === 'true']);
+            }
+        }
+    }
+
     /**
      * @return array<array-key, mixed>
      */
@@ -30,6 +39,8 @@ class ListVideosRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'recentWatchRequestsOnly' => ['nullable', 'boolean'],
+            'sortByWatchRequests' => ['nullable', 'boolean'],
             'minDurationSeconds' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
             'maxDurationSeconds' => ['nullable', 'integer', 'min:0', 'max:2147483647', ...($this->filled('minDurationSeconds') ? ['gte:minDurationSeconds'] : [])],
             'language' => ['required', 'string', 'in:ja,ko,en'],
@@ -41,6 +52,16 @@ class ListVideosRequest extends FormRequest
                 ResourceType::SONG->value,
             ])],
         ];
+    }
+
+    public function recentWatchRequestsOnly(): bool
+    {
+        return $this->boolean('recentWatchRequestsOnly');
+    }
+
+    public function sortByWatchRequests(): bool
+    {
+        return $this->boolean('sortByWatchRequests');
     }
 
     public function minDurationSeconds(): ?int

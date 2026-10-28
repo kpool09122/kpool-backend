@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'video_watch_request_target_not_eligible' => '公式認証済みタレントWikiのユーザー作成動画のみ送信できます。',
+    'video_watch_request_duration_not_eligible' => '30秒以下と確認できる動画のみ送信できます。',
+    'video_watch_request_like_required' => '送信には動画へのいいねが必要です。',
+    'video_watch_request_resend_not_available' => '同じ動画へ再送できるのは前回送信から7日後です。',
+    'video_watch_request_weekly_limit_reached' => '同じタレントへ直近7日間に送信できるリクエストは3件までです。',
+    'video_watch_request_active' => '送信から7日未満のこれみてリクエストがあるため操作できません。',
     'video_metadata_unavailable' => '動画情報またはサムネイルを取得・保存できませんでした。しばらくしてから再度お試しください。',
     'invalid_playlist_edit' => 'プレイリストの編集内容が不正です。名前は1〜32文字、動画は重複なく50件以内で指定してください。',
     'playlist_not_found' => 'プレイリストが見つかりません。',

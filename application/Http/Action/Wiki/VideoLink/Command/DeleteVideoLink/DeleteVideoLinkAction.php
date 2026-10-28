@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\VideoLink\Command\DeleteVideoLink;
 
 use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -16,6 +17,7 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
+use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestActiveException;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,6 +50,10 @@ readonly class DeleteVideoLinkAction
             try {
                 $this->deleteVideoLink->process($input);
                 DB::commit();
+            } catch (VideoWatchRequestActiveException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('video_watch_request_active', $request->language()), previous: $e);
             } catch (DisallowedException $e) {
                 DB::rollBack();
 
@@ -65,7 +71,7 @@ readonly class DeleteVideoLinkAction
 
                 throw $e;
             }
-        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

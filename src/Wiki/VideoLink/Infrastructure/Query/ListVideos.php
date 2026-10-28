@@ -6,6 +6,9 @@ namespace Source\Wiki\VideoLink\Infrastructure\Query;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Application\Models\Wiki\Wiki as WikiModel;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\Service\VideoUrlBuilderInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInputPort;
@@ -13,6 +16,7 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterfa
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosOutputPort;
 use Source\Wiki\VideoLink\Application\UseCase\Query\VideoLinkReadModel;
 use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
+use Source\Wiki\VideoLink\Domain\Service\VideoWatchRequestPolicy;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
@@ -45,7 +49,17 @@ readonly class ListVideos implements ListVideosInterface
         if ($input->maxDurationSeconds() !== null) {
             $query->where('duration_seconds', '<=', $input->maxDurationSeconds());
         }
-        $videos = $query->orderByDesc('created_at')->orderBy('id')->get()
+        $cutoff = VideoWatchRequestPolicy::cutoff(CarbonImmutable::now()->toDateTimeImmutable());
+        if ($input->recentWatchRequestsOnly()) {
+            $query->whereHas('watchRequests', static fn ($query) => $query->where('sent_at', '>', $cutoff));
+        }
+        if ($input->sortByWatchRequests()) {
+            $query->withCount(['watchRequests as recent_watch_requests_count' => static fn (Builder|HasMany $query) => $query->where('sent_at', '>', $cutoff)])
+                ->orderByDesc('recent_watch_requests_count')->orderByDesc('likes_count');
+        } else {
+            $query->orderByDesc('created_at');
+        }
+        $videos = $query->orderBy('id')->get()
             ->map(fn (VideoLinkModel $video): VideoLinkReadModel => new VideoLinkReadModel(
                 $video->id,
                 $this->videoUrlBuilder->build($video->url),
