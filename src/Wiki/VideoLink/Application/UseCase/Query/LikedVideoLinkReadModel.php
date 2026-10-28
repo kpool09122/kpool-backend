@@ -25,14 +25,15 @@ readonly class LikedVideoLinkReadModel
         public string $resourceType,
         public string $slug,
         public string $likedAt,
-        public array $playlists = [],
+        public array $playlists,
+        public bool $isOfficialOwnerLike,
     ) {
         $this->url = (string) $url;
         $this->provider = $url->provider();
         $this->externalVideoId = $url->externalVideoId() ?? throw new InvalidArgumentException('A resolved video URL is required.');
     }
 
-    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>} */
+    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,durationSeconds:?int,language:string,resourceType:string,slug:string,likedAt:string,playlists:list<array{playlistIdentifier:string,name:string}>,isOfficialOwnerLike:bool} */
     public function toArray(): array
     {
         return [
@@ -48,6 +49,7 @@ readonly class LikedVideoLinkReadModel
             'slug' => $this->slug,
             'likedAt' => $this->likedAt,
             'playlists' => $this->playlists,
+            'isOfficialOwnerLike' => $this->isOfficialOwnerLike,
         ];
     }
 }

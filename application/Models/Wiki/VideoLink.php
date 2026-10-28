@@ -26,6 +26,7 @@ use Override;
  * @property string|null $creator_principal_id
  * @property Carbon $created_at
  * @property-read int $recent_watch_requests_count
+ * @property-read bool $has_official_owner_like
  * @property-read int $likes_count
  * @property-read Principal|null $creatorPrincipal
  * @property-read Wiki|null $wiki

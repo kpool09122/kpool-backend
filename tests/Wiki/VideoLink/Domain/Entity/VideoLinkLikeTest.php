@@ -20,10 +20,12 @@ class VideoLinkLikeTest extends TestCase
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
         $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable('2026-10-01T00:00:00Z');
-        $like = new VideoLinkLike($id, $video, $principal, $createdAt);
+        $like = new VideoLinkLike($id, $video, $principal, $createdAt, false);
         self::assertSame($id, $like->videoLinkLikeIdentifier());
         self::assertSame($video, $like->videoLinkIdentifier());
         self::assertSame($principal, $like->principalIdentifier());
+        self::assertFalse($like->isOfficialOwner());
         self::assertSame($createdAt, $like->createdAt());
+        self::assertTrue((new VideoLinkLike($id, $video, $principal, $createdAt, true))->isOfficialOwner());
     }
 }

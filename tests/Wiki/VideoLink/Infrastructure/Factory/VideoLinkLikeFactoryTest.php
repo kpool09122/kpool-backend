@@ -22,10 +22,11 @@ class VideoLinkLikeFactoryTest extends TestCase
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
         $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $before = new DateTimeImmutable();
-        $like = (new VideoLinkLikeFactory($uuidGenerator))->create($video, $principal);
+        $like = (new VideoLinkLikeFactory($uuidGenerator))->create($video, $principal, false);
         self::assertSame($uuid, (string) $like->videoLinkLikeIdentifier());
         self::assertSame($video, $like->videoLinkIdentifier());
         self::assertSame($principal, $like->principalIdentifier());
+        self::assertFalse($like->isOfficialOwner());
         self::assertGreaterThanOrEqual($before, $like->createdAt());
         self::assertLessThanOrEqual(new DateTimeImmutable(), $like->createdAt());
     }

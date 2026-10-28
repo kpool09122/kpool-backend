@@ -25,13 +25,14 @@ readonly class VideoLinkReadModel
         public ?string $creatorPrincipalIdentifier,
         public ?string $creatorIdentityName,
         public int $likeCount,
+        public bool $hasOfficialOwnerLike,
     ) {
         $this->url = (string) $url;
         $this->provider = $url->provider();
         $this->externalVideoId = $url->externalVideoId() ?? throw new InvalidArgumentException('A resolved video URL is required.');
     }
 
-    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int,creatorPrincipalIdentifier:?string,creatorIdentityName:?string,likeCount:int} */
+    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int,creatorPrincipalIdentifier:?string,creatorIdentityName:?string,likeCount:int,hasOfficialOwnerLike:bool} */
     public function toArray(): array
     {
         return [
@@ -47,6 +48,7 @@ readonly class VideoLinkReadModel
             'creatorPrincipalIdentifier' => $this->creatorPrincipalIdentifier,
             'creatorIdentityName' => $this->creatorIdentityName,
             'likeCount' => $this->likeCount,
+            'hasOfficialOwnerLike' => $this->hasOfficialOwnerLike,
         ];
     }
 }

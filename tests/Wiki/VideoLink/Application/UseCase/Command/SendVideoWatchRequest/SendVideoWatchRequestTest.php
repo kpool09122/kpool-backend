@@ -65,7 +65,14 @@ class SendVideoWatchRequestTest extends TestCase
 
     }
 
-    public function testActiveRequestsPreventOwnUnlikeAndDeletionAndExpiredRequestsAllowThem(): void
+    /** @return array<string, array{bool}> */
+    public static function likeKinds(): array
+    {
+        return ['normal' => [false], 'official owner' => [true]];
+    }
+
+    #[DataProvider('likeKinds')]
+    public function testActiveRequestsPreventOwnUnlikeAndDeletionAndExpiredRequestsAllowThem(bool $official): void
     {
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
         $principal = $this->principal();
@@ -75,7 +82,7 @@ class SendVideoWatchRequestTest extends TestCase
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
         CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'creator_principal_id' => (string) $principal]);
         foreach ([$principal, $other] as $sender) {
-            DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $sender, 'created_at' => now()]);
+            DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $sender, 'is_official_owner' => $official, 'created_at' => now()]);
         }
         DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'wiki_id' => $wiki, 'principal_id' => (string) $principal, 'sent_at' => new DateTimeImmutable('-167 hours')]);
 

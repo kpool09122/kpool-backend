@@ -63,6 +63,7 @@ readonly class ListMyVideoLinkLikes implements ListMyVideoLinkLikesInterface
                 $wiki->slug,
                 $like->created_at->toAtomString(),
                 $memberships[$video->url] ?? [],
+                $like->is_official_owner,
             );
         })->all();
         if ($requestedIds === null) {

@@ -18,8 +18,8 @@ readonly class VideoLinkLikeFactory implements VideoLinkLikeFactoryInterface
     {
     }
 
-    public function create(VideoLinkIdentifier $videoLinkIdentifier, PrincipalIdentifier $principalIdentifier): VideoLinkLike
+    public function create(VideoLinkIdentifier $videoLinkIdentifier, PrincipalIdentifier $principalIdentifier, bool $isOfficialOwner): VideoLinkLike
     {
-        return new VideoLinkLike(new VideoLinkLikeIdentifier($this->uuidGenerator->generate()), $videoLinkIdentifier, $principalIdentifier, new DateTimeImmutable());
+        return new VideoLinkLike(new VideoLinkLikeIdentifier($this->uuidGenerator->generate()), $videoLinkIdentifier, $principalIdentifier, new DateTimeImmutable(), $isOfficialOwner);
     }
 }

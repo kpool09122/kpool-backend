@@ -16,6 +16,7 @@ readonly class VideoLinkLike
         private VideoLinkIdentifier $videoLinkIdentifier,
         private PrincipalIdentifier $principalIdentifier,
         private DateTimeImmutable $createdAt,
+        private bool $isOfficialOwner,
     ) {
     }
 
@@ -32,6 +33,11 @@ readonly class VideoLinkLike
     public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
+    }
+
+    public function isOfficialOwner(): bool
+    {
+        return $this->isOfficialOwner;
     }
 
     public function createdAt(): DateTimeImmutable

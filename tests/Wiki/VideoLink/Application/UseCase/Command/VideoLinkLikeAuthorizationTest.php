@@ -9,6 +9,7 @@ use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -28,12 +29,71 @@ use Tests\Helper\CreatePrincipal;
 use Tests\Helper\CreatePrincipalGroup;
 use Tests\Helper\CreatePrincipalGroupMembership;
 use Tests\Helper\CreateVideoLink;
+use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 #[Group('useDb')]
 class VideoLinkLikeAuthorizationTest extends TestCase
 {
+    public function testOfficialOwnerLikeIsPersistedOnceAndCanBeRemoved(): void
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $principal = $this->principal('TalentActor');
+        $owner = TypedValue::string(DB::table('wiki_principals')->where('id', (string) $principal)->value('account_id'));
+        $wiki = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'talent', ['owner_account_id' => $owner]);
+        $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'resource_type' => 'talent']);
+        $like = $this->app()->make(LikeVideoLinkInterface::class);
+        $like->process(new LikeVideoLinkInput($video, $principal));
+        $this->assertDatabaseHas('wiki_video_link_likes', ['video_link_id' => (string) $video, 'is_official_owner' => true]);
+        DB::table('wikis')->where('id', $wiki)->update(['owner_account_id' => null]);
+
+        try {
+            $like->process(new LikeVideoLinkInput($video, $principal));
+            self::fail('Duplicate accepted');
+        } catch (VideoLinkAlreadyLikedException) {
+            self::assertSame(1, DB::table('wiki_video_link_likes')->count());
+            $this->assertDatabaseHas('wiki_video_link_likes', ['video_link_id' => (string) $video, 'is_official_owner' => true]);
+        }
+        $this->app()->make(UnlikeVideoLinkInterface::class)->process(new UnlikeVideoLinkInput($video, $principal));
+        self::assertSame(0, DB::table('wiki_video_link_likes')->count());
+        $like->process(new LikeVideoLinkInput($video, $principal));
+        $this->assertDatabaseHas('wiki_video_link_likes', ['video_link_id' => (string) $video, 'is_official_owner' => false]);
+    }
+
+    /** @return iterable<string, array{string,bool,bool,bool}> */
+    public static function ownerScenarios(): iterable
+    {
+        yield 'owner collaborator' => ['talent', true, false, true];
+        yield 'general editor' => ['talent', false, false, false];
+        yield 'delegated owner' => ['talent', true, true, false];
+        yield 'unofficial' => ['talent', false, true, false];
+        yield 'group owner' => ['group', true, false, false];
+    }
+
+    #[DataProvider('ownerScenarios')]
+    public function testOnlyExactTalentOwnerWithoutDelegationIsOfficial(string $type, bool $owns, bool $delegated, bool $expected): void
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $principal = $this->principal('Collaborator');
+        $other = $this->principal('TalentActor');
+        $account = TypedValue::string(DB::table('wiki_principals')->where('id', (string) ($owns ? $principal : $other))->value('account_id'));
+        $principalAccount = TypedValue::string(DB::table('wiki_principals')->where('id', (string) $principal)->value('account_id'));
+        CreateWiki::create(StrTestHelper::generateUuid(), 'talent', ['slug' => 'tl-other-owned-wiki', 'owner_account_id' => $principalAccount]);
+        $wiki = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, $type, ['owner_account_id' => ! $owns && $delegated ? null : $account]);
+        if ($delegated) {
+            DB::table('wiki_principals')->where('id', (string) $principal)->update(['delegation_identifier' => StrTestHelper::generateUuid()]);
+        }
+        $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'resource_type' => $type]);
+        $this->app()->make(LikeVideoLinkInterface::class)->process(new LikeVideoLinkInput($video, $principal));
+        $this->assertDatabaseHas('wiki_video_link_likes', ['video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'is_official_owner' => $expected]);
+        self::assertSame(1, DB::table('wiki_video_link_likes')->count());
+    }
+
     /** @return iterable<string, array{string,string,string}> */
     public static function allowedVideos(): iterable
     {

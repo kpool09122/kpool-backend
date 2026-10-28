@@ -25,7 +25,14 @@ use Tests\TestCase;
 #[Group('useDb')]
 class VideoLinkLikeRepositoryTest extends TestCase
 {
-    public function testSaveFindAndDeleteOnlyOwnLike(): void
+    /** @return array<string, array{bool}> */
+    public static function likeKinds(): array
+    {
+        return ['normal' => [false], 'official owner' => [true]];
+    }
+
+    #[DataProvider('likeKinds')]
+    public function testSaveFindAndDeleteOnlyOwnLike(bool $official): void
     {
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
         CreateVideoLink::create((string) $video);
@@ -34,13 +41,14 @@ class VideoLinkLikeRepositoryTest extends TestCase
         $repository = $this->app()->make(VideoLinkLikeRepositoryInterface::class);
         $factory = $this->app()->make(VideoLinkLikeFactoryInterface::class);
         self::assertNull($repository->findByVideoLinkAndPrincipal($video, $principal));
-        $like = $factory->create($video, $principal);
+        $like = $factory->create($video, $principal, $official);
         $repository->save($like);
         $repository->save($like);
-        $repository->save($factory->create($video, $other));
+        $repository->save($factory->create($video, $other, false));
         self::assertSame(2, DB::table('wiki_video_link_likes')->count());
         $restored = $repository->findByVideoLinkAndPrincipal($video, $principal);
         self::assertNotNull($restored);
+        self::assertSame($official, $restored->isOfficialOwner());
         self::assertSame((string) $like->videoLinkLikeIdentifier(), (string) $restored->videoLinkLikeIdentifier());
         self::assertSame((string) $video, (string) $restored->videoLinkIdentifier());
         self::assertSame((string) $principal, (string) $restored->principalIdentifier());
@@ -61,9 +69,9 @@ class VideoLinkLikeRepositoryTest extends TestCase
         $principal = $this->principal();
         $factory = $this->app()->make(VideoLinkLikeFactoryInterface::class);
         $repository = $this->app()->make(VideoLinkLikeRepositoryInterface::class);
-        $repository->save($factory->create($first, $principal));
+        $repository->save($factory->create($first, $principal, false));
         self::assertNull($repository->findByVideoLinkAndPrincipal($second, $principal));
-        $repository->save($factory->create($second, $principal));
+        $repository->save($factory->create($second, $principal, false));
         self::assertSame(2, DB::table('wiki_video_link_likes')->count());
         $repository->deleteByVideoLinkAndPrincipal($first, $principal);
         self::assertNotNull($repository->findByVideoLinkAndPrincipal($second, $principal));
@@ -76,9 +84,9 @@ class VideoLinkLikeRepositoryTest extends TestCase
         $principal = $this->principal();
         $factory = $this->app()->make(VideoLinkLikeFactoryInterface::class);
         $repository = $this->app()->make(VideoLinkLikeRepositoryInterface::class);
-        $repository->save($factory->create($video, $principal));
+        $repository->save($factory->create($video, $principal, false));
         $this->expectException(UniqueConstraintViolationException::class);
-        $repository->save($factory->create($video, $principal));
+        $repository->save($factory->create($video, $principal, false));
     }
 
     /** @return array<string, array{string}> */
@@ -98,8 +106,8 @@ class VideoLinkLikeRepositoryTest extends TestCase
         $principal = $this->principal();
         $factory = $this->app()->make(VideoLinkLikeFactoryInterface::class);
         $repository = $this->app()->make(VideoLinkLikeRepositoryInterface::class);
-        $repository->save($factory->create($video, $principal));
-        $repository->save($factory->create($otherVideo, $principal));
+        $repository->save($factory->create($video, $principal, false));
+        $repository->save($factory->create($otherVideo, $principal, false));
         $videoLinkRepository = $this->app()->make(VideoLinkRepositoryInterface::class);
         match ($path) {
             'single' => $videoLinkRepository->delete($video),

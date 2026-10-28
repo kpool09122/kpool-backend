@@ -15,10 +15,11 @@ use Override;
  * @property string $id
  * @property string $video_link_id
  * @property string $principal_id
+ * @property bool $is_official_owner
  * @property Carbon $created_at
  * @property-read VideoLink|null $videoLink
  */
-#[Fillable(['id', 'video_link_id', 'principal_id', 'created_at'])]
+#[Fillable(['id', 'video_link_id', 'principal_id', 'created_at', 'is_official_owner'])]
 #[Table(name: 'wiki_video_link_likes', keyType: 'string')]
 class VideoLinkLike extends Model
 {
@@ -29,7 +30,7 @@ class VideoLinkLike extends Model
     public $timestamps = false;
 
     #[Override]
-    protected $casts = ['created_at' => 'datetime'];
+    protected $casts = ['created_at' => 'datetime', 'is_official_owner' => 'boolean'];
 
     /** @return BelongsTo<VideoLink, $this> */
     public function videoLink(): BelongsTo
