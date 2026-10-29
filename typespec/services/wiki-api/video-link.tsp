@@ -35,6 +35,8 @@ model Video {
   likeCount: int32;
   @doc("Whether any saved like was made by the non-delegated owner of this exact officially certified talent wiki at the time of liking. Independent of likeCount; no owner or liker identifiers are exposed. Classification is retained until unlike, even if certification or ownership later changes.")
   hasOfficialOwnerLike: boolean;
+  @doc("Whether the current non-delegated official owner has recorded completed playback of this exact video. Independent of likes; no viewer identifiers are exposed.")
+  hasOfficialOwnerWatch?: boolean;
   url: string;
   title: string;
   thumbnailUrl: string | null;
@@ -80,7 +82,7 @@ model VideoWatchRequestStatus {
   @doc("Whether this caller has a request for this video less than 168 hours old; never another sender's personal state.")
   sent: boolean;
   canSend: boolean;
-  reason: "target_not_eligible" | "duration_not_eligible" | "like_required" | "resend_not_available" | "weekly_limit_reached" | null;
+  reason: "target_not_eligible" | "duration_not_eligible" | "like_required" | "resend_not_available" | "weekly_limit_reached" | "already_watched" | null;
   lastSentAt: string | null;
   @doc("Earliest time allowed by same-video cooldown and wiki-wide weekly quota; null when neither restriction applies. Other eligibility requirements still apply.")
   nextSendAt: string | null;
@@ -92,10 +94,17 @@ model VideoWatchRequestStatus {
   deleteRestrictedUntil: string | null;
 }
 
+interface VideoLinkWatchOperations {
+  @post
+  @route("/video-link/{videoLinkId}/watched")
+  @doc("Record completed playback of a video on its exact officially certified talent wiki. Only its active, non-delegated owner Account may record completion; editors, other owners and delegated Principals receive 403. Video, owner, Principal and first completion time are resolved by the server. Idempotent per video and owner Account, returning 204 for repeated completion; does not create a like or request. A current-owner completion permanently prevents new watch requests for this video with 409 video_already_watched, independent of the rolling request window. Manual skips and playback errors must not invoke this endpoint.")
+  recordVideoLinkWatch(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
 interface VideoWatchRequestOperations {
   @post
   @route("/video-link/{videoLinkId}/watch-requests")
-  @doc("Send a persistent watch request as an active authenticated Wiki collaborator with SEND_VIDEO_WATCH_REQUEST permission. The video must belong directly to an officially certified talent wiki and be user-created, liked by the caller, and confirmed to be at most 30 seconds (30 inclusive). The send policy requires a talent video on an officially certified talent wiki and user-created usage; policy rejection returns 403. Unknown/long stored durations are rejected with 409. Sender and target wiki are determined on the server. Eligibility uses durationSeconds stored in the database for both YouTube and TikTok; a missing stored duration is ineligible. No external duration lookup is performed. Sender, exact target wiki/video and server timestamp are stored permanently. Maximum three requests per caller/talent translation set across all languages in the last 168 hours; same-video resend, own unlike and any deletion are blocked for 168 hours, expiring exactly at that boundary. Success 204. A missing target wiki returns 409 video_watch_request_target_not_eligible. Other eligibility/limit failures return 409 video_watch_request_duration_not_eligible, video_watch_request_like_required, video_watch_request_resend_not_available or video_watch_request_weekly_limit_reached. Other callers' histories are never returned.")
+  @doc("A video already watched by its current official owner returns 409 video_already_watched. Send a persistent watch request as an active authenticated Wiki collaborator with SEND_VIDEO_WATCH_REQUEST permission. The video must belong directly to an officially certified talent wiki and be user-created, liked by the caller, and confirmed to be at most 30 seconds (30 inclusive). The send policy requires a talent video on an officially certified talent wiki and user-created usage; policy rejection returns 403. Unknown/long stored durations are rejected with 409. Sender and target wiki are determined on the server. Eligibility uses durationSeconds stored in the database for both YouTube and TikTok; a missing stored duration is ineligible. No external duration lookup is performed. Sender, exact target wiki/video and server timestamp are stored permanently. Maximum three requests per caller/talent translation set across all languages in the last 168 hours; same-video resend, own unlike and any deletion are blocked for 168 hours, expiring exactly at that boundary. Success 204. A missing target wiki returns 409 video_watch_request_target_not_eligible. Other eligibility/limit failures return 409 video_watch_request_duration_not_eligible, video_watch_request_like_required, video_watch_request_resend_not_available or video_watch_request_weekly_limit_reached. Other callers' histories are never returned.")
   sendVideoWatchRequest(@path videoLinkId: Uuid): KPool.Common.NoContentResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get

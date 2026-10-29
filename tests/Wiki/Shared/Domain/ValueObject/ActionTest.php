@@ -32,6 +32,7 @@ class ActionTest extends TestCase
             'CREATE_VIDEO_LINK' => 'save_video_links',
             'DELETE_VIDEO_LINK' => 'delete_video_link',
             'LIKE_VIDEO_LINK' => 'like_video_link',
+            'RECORD_VIDEO_LINK_WATCH' => 'record_video_link_watch',
             'SEND_VIDEO_WATCH_REQUEST' => 'send_video_watch_request',
             'LIST_MY_VIDEO_WATCH_REQUESTS' => 'list_my_video_watch_requests',
             'UNLIKE_VIDEO_LINK' => 'unlike_video_link',

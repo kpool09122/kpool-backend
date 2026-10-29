@@ -12,4 +12,5 @@ enum ConditionValue: string
     case PRINCIPAL_TALENT_WIKI_IDENTIFIERS = '${principal.talentWikiIdentifiers}';
     case PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS = '${principal.affiliatedTalentWikiIdentifiers}';
     case PRINCIPAL_ID = '${principal.id}';
+    case PRINCIPAL_NON_DELEGATED_ACCOUNT_ID = '${principal.nonDelegatedAccountId}';
 }

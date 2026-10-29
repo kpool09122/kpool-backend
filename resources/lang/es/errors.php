@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_already_watched' => 'El titular oficial ya ha visto este video.',
     'video_watch_request_target_not_eligible' => 'Solo se admiten videos de usuarios en una wiki oficial de talento.',
     'video_watch_request_duration_not_eligible' => 'Solo se admiten videos confirmados de hasta 30 segundos.',
     'video_watch_request_like_required' => 'Debes indicar que te gusta el video antes de enviar la solicitud.',

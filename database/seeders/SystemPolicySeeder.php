@@ -58,15 +58,23 @@ class SystemPolicySeeder extends Seeder
                 resourceTypes: match ($action) {
                     Action::SEARCH_FREE_MATERIALS => [ResourceType::IMAGE],
                     Action::CREATE_PLAYLIST, Action::LIST_MY_PLAYLISTS, Action::GET_MY_PLAYLIST, Action::DELETE_PLAYLIST, Action::SAVE_PLAYLIST => [ResourceType::PLAYLIST],
-                    Action::SEND_VIDEO_WATCH_REQUEST, Action::LIST_MY_VIDEO_WATCH_REQUESTS => [ResourceType::TALENT],
+                    Action::RECORD_VIDEO_LINK_WATCH, Action::SEND_VIDEO_WATCH_REQUEST, Action::LIST_MY_VIDEO_WATCH_REQUESTS => [ResourceType::TALENT],
                     Action::LIKE_VIDEO_LINK, Action::UNLIKE_VIDEO_LINK => [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG, ResourceType::TALENT],
                     default => ResourceType::cases(),
                 },
-                condition: $action === Action::SEND_VIDEO_WATCH_REQUEST ? new Condition([
-                    new ConditionClause(ConditionKey::RESOURCE_IS_OFFICIAL, ConditionOperator::EQUALS, true),
-                    new ConditionClause(ConditionKey::RESOURCE_WIKI_TYPE, ConditionOperator::EQUALS, ResourceType::TALENT->value),
-                    new ConditionClause(ConditionKey::RESOURCE_IS_MANUAL_VIDEO, ConditionOperator::EQUALS, true),
-                ]) : null,
+                condition: match ($action) {
+                    Action::SEND_VIDEO_WATCH_REQUEST => new Condition([
+                        new ConditionClause(ConditionKey::RESOURCE_IS_OFFICIAL, ConditionOperator::EQUALS, true),
+                        new ConditionClause(ConditionKey::RESOURCE_WIKI_TYPE, ConditionOperator::EQUALS, ResourceType::TALENT->value),
+                        new ConditionClause(ConditionKey::RESOURCE_IS_MANUAL_VIDEO, ConditionOperator::EQUALS, true),
+                    ]),
+                    Action::RECORD_VIDEO_LINK_WATCH => new Condition([
+                        new ConditionClause(ConditionKey::RESOURCE_IS_OFFICIAL, ConditionOperator::EQUALS, true),
+                        new ConditionClause(ConditionKey::RESOURCE_WIKI_TYPE, ConditionOperator::EQUALS, ResourceType::TALENT->value),
+                        new ConditionClause(ConditionKey::RESOURCE_OWNER_ACCOUNT_ID, ConditionOperator::EQUALS, ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID),
+                    ]),
+                    default => null,
+                },
             );
         }
     }

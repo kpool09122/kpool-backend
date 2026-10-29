@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_already_watched' => 'The official owner has already watched this video.',
     'video_watch_request_target_not_eligible' => 'Only user-created videos on an officially certified talent wiki are eligible.',
     'video_watch_request_duration_not_eligible' => 'Only videos confirmed to be at most 30 seconds are eligible.',
     'video_watch_request_like_required' => 'Like the video before sending a request.',

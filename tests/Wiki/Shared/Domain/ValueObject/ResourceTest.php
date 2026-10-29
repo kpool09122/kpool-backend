@@ -6,6 +6,7 @@ namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
@@ -38,6 +39,13 @@ class ResourceTest extends TestCase
         $this->assertSame($talentIds, $resource->talentIds());
         $this->assertSame($isOfficial, $resource->isOfficial());
         $this->assertNull($resource->requesterAccountCategory());
+    }
+
+    public function testOwnerAccountIdentifier(): void
+    {
+        $owner = new AccountIdentifier(StrTestHelper::generateUuid());
+        self::assertSame($owner, (new Resource(type: ResourceType::TALENT, ownerAccountIdentifier: $owner))->ownerAccountIdentifier());
+        self::assertNull((new Resource(type: ResourceType::TALENT))->ownerAccountIdentifier());
     }
 
     public function testRequesterAccountCategory(): void

@@ -7,6 +7,7 @@ namespace Source\Wiki\Principal\Domain\ValueObject;
 enum ConditionKey: string
 {
     case RESOURCE_IS_OFFICIAL = 'resource:isOfficial';
+    case RESOURCE_OWNER_ACCOUNT_ID = 'resource:ownerAccountId';
     case RESOURCE_WIKI_TYPE = 'resource:wikiType';
     case RESOURCE_IS_MANUAL_VIDEO = 'resource:isManualVideo';
     case RESOURCE_AGENCY_ID = 'resource:agencyId';

@@ -146,7 +146,7 @@ class PolicyEvaluatorTest extends TestCase
         /** @var ConditionValueResolverInterface&Mockery\MockInterface $resolver */
         $resolver = Mockery::mock(ConditionValueResolverInterface::class);
         $resolver->shouldReceive('resolve')
-            ->andReturnUsing(function (ConditionValue|string|bool $value, Principal $principal): string|array|bool {
+            ->andReturnUsing(function (ConditionValue|string|bool $value, Principal $principal): string|array|bool|null {
                 if (! $value instanceof ConditionValue) {
                     return $value;
                 }
@@ -166,6 +166,7 @@ class PolicyEvaluatorTest extends TestCase
                     ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS => $scope['talents'],
                     ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS => $scope['affiliatedTalents'],
                     ConditionValue::PRINCIPAL_ID => (string) $principal->principalIdentifier(),
+                    ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID => $principal->isDelegatedPrincipal() ? null : (string) $principal->accountIdentifier(),
                 };
             });
 

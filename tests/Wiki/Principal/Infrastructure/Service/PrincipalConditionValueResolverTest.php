@@ -6,6 +6,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Service;
 
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -61,6 +62,20 @@ class PrincipalConditionValueResolverTest extends TestCase
 
         $this->assertSame([], $resolver->resolve(ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS, $this->principal()));
         $this->assertSame([], $resolver->resolve(ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS, $this->principal()));
+    }
+
+    public function testNonDelegatedAccountConditionExcludesDelegatedStaff(): void
+    {
+        $owner = $this->principal();
+        $staff = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $owner->accountIdentifier(),
+            new DelegationIdentifier(StrTestHelper::generateUuid()),
+        );
+        $resolver = new PrincipalConditionValueResolver($this->scopeResolver());
+        self::assertSame((string) $owner->accountIdentifier(), $resolver->resolve(ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID, $owner));
+        self::assertNull($resolver->resolve(ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID, $staff));
     }
 
     private function principal(): Principal

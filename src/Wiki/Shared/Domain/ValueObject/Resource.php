@@ -7,6 +7,7 @@ namespace Source\Wiki\Shared\Domain\ValueObject;
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 final readonly class Resource
 {
@@ -31,8 +32,14 @@ final readonly class Resource
         private ?AccountCategory $requesterAccountCategory = null,
         private ?ResourceType $wikiResourceType = null,
         private bool $isManualVideo = false,
+        private ?AccountIdentifier $ownerAccountIdentifier = null,
     ) {
         $this->validate($agencyId, $this->groupIds, $this->talentIds, $editorId);
+    }
+
+    public function ownerAccountIdentifier(): ?AccountIdentifier
+    {
+        return $this->ownerAccountIdentifier;
     }
 
     public function type(): ResourceType

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Query;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
+use Application\Models\Wiki\VideoLinkWatch as VideoLinkWatchModel;
 use Application\Models\Wiki\Wiki as WikiModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,7 +30,7 @@ readonly class ListVideos implements ListVideosInterface
     /** @throws WikiNotFoundException */
     public function process(ListVideosInputPort $input, ListVideosOutputPort $output): void
     {
-        $wiki = WikiModel::query()->select('id')
+        $wiki = WikiModel::query()->select('id', 'owner_account_id')
             ->where('language', $input->language()->value)
             ->where('resource_type', $input->resourceType()->value)
             ->where('slug', (string) $input->slug())
@@ -60,6 +61,10 @@ readonly class ListVideos implements ListVideosInterface
         } else {
             $query->orderByDesc('created_at');
         }
+        $watchedIds = $wiki->owner_account_id === null ? [] : VideoLinkWatchModel::query()
+            ->where('owner_account_id', $wiki->owner_account_id)
+            ->whereIn('video_link_id', VideoLinkModel::query()->select('id')->where('wiki_id', $wiki->id))
+            ->pluck('video_link_id')->all();
         $videos = $query->orderBy('id')->get()
             ->map(fn (VideoLinkModel $video): VideoLinkReadModel => new VideoLinkReadModel(
                 $video->id,
@@ -73,6 +78,7 @@ readonly class ListVideos implements ListVideosInterface
                 VideoUsage::from($video->video_usage)->isAutoCollected() ? null : $video->creatorPrincipal?->identity?->identity_name,
                 $video->likes_count,
                 $video->has_official_owner_like,
+                in_array($video->id, $watchedIds, true),
             ))->all();
         $output->output(array_values($videos));
     }

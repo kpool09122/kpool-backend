@@ -155,7 +155,7 @@ class ListVideosTest extends TestCase
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
         $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount', 'hasOfficialOwnerLike'], array_keys($payload['videos'][0]));
+        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount', 'hasOfficialOwnerLike', 'hasOfficialOwnerWatch'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);
