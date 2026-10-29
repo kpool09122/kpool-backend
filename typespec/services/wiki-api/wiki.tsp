@@ -468,6 +468,39 @@ model VisitorLocationHeaders {
   @header("X-Kpool-Visitor-Signature") visitorSignature?: string | null;
 }
 
+@doc("Lightweight published wiki entry for frontend-owned sitemap URL and XML generation.")
+model SitemapWiki {
+  slug: string;
+  language: string;
+  resourceType: "agency" | "group" | "talent" | "song";
+  @doc("ISO 8601 timestamp from published_at, refreshed on first publication and every republication (including same-version publication). Unrelated database updates do not affect it. Null when the publication time is unknown; do not fall back to updated_at.")
+  lastModifiedAt: utcDateTime | null;
+}
+
+model ListSitemapWikisResponseBody {
+  @maxItems(1000)
+  wikis: SitemapWiki[];
+  @doc("Pass this value as cursor for the next request. Null means enumeration is complete, including an empty result and an exactly full final page.")
+  nextCursor: Uuid | null;
+}
+
+model ListSitemapWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: ListSitemapWikisResponseBody;
+}
+
+@route("/sitemap/wikis")
+interface SitemapWikiOperations {
+  @get
+  @doc("Enumerate published agency/group/talent/song wikis in all languages, ordered by immutable wiki UUID ascending. No authentication is required; the existing screen/query IP rate limit applies (default 300 requests/minute, also subject to the global query limit). Fetch the first page without cursor, then repeat using nextCursor until null. Deleted cursor rows remain valid boundaries. No cross-request snapshot is guaranteed: concurrent publications below an already visited cursor appear on the next enumeration started without cursor. Drafts and history are never included. Only sitemap fields are returned; no content, images or basic information is loaded.")
+  listSitemapWikis(
+    @doc("Maximum entries per response. Default 500; range 1..1000. The server reads at most perPage + 1 lightweight rows to detect the end.")
+    @minValue(1) @maxValue(1000) @query perPage?: int32 | null,
+    @doc("Exclusive UUID boundary returned as nextCursor. Omit or set null to start a new enumeration.")
+    @query cursor?: Uuid | null,
+  ): ListSitemapWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
 @route("/wikis")
 interface WikiListOperations {
   @get
