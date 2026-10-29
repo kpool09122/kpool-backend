@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
+use Source\Wiki\VideoLink\Application\Exception\VideoAlreadyWatchedException;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestDurationNotEligibleException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestLikeRequiredException;
@@ -20,6 +21,7 @@ use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestWeeklyLimitReac
 use Source\Wiki\VideoLink\Domain\Factory\VideoWatchRequestFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkLikeRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoLinkWatchRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\VideoWatchRequestPolicy;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -34,12 +36,14 @@ final readonly class SendVideoWatchRequest implements SendVideoWatchRequestInter
         private VideoLinkLikeRepositoryInterface $videoLinkLikeRepository,
         private VideoWatchRequestRepositoryInterface $videoWatchRequestRepository,
         private VideoWatchRequestFactoryInterface $videoWatchRequestFactory,
+        private VideoLinkWatchRepositoryInterface $videoLinkWatchRepository,
     ) {
     }
 
     /**
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
+     * @throws VideoAlreadyWatchedException
      * @throws VideoLinkNotFoundException
      * @throws VideoWatchRequestTargetNotEligibleException
      * @throws VideoWatchRequestDurationNotEligibleException
@@ -69,6 +73,10 @@ final readonly class SendVideoWatchRequest implements SendVideoWatchRequestInter
         );
         if (! $this->policyEvaluator->evaluate($principal, Action::SEND_VIDEO_WATCH_REQUEST, $resource)) {
             throw new DisallowedException();
+        }
+        $owner = $wiki->ownerAccountIdentifier();
+        if ($owner !== null && $this->videoLinkWatchRepository->findByVideoLinkAndOwnerAccount($video->videoLinkIdentifier(), $owner) !== null) {
+            throw new VideoAlreadyWatchedException();
         }
         $liked = $this->videoLinkLikeRepository->findByVideoLinkAndPrincipal($video->videoLinkIdentifier(), $principal->principalIdentifier()) !== null;
         if (! $liked) {

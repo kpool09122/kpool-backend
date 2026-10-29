@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
+use Source\Wiki\VideoLink\Application\Exception\VideoAlreadyWatchedException;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestDurationNotEligibleException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestLikeRequiredException;
@@ -55,6 +56,10 @@ readonly class SendVideoWatchRequestAction
                 DB::rollBack();
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $request->language()), previous: $e);
+            } catch (VideoAlreadyWatchedException $e) {
+                DB::rollBack();
+
+                throw new ConflictHttpException(detail: error_message('video_already_watched', $request->language()), previous: $e);
             } catch (VideoWatchRequestTargetNotEligibleException $e) {
                 DB::rollBack();
 

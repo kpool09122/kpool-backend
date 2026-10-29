@@ -7,6 +7,7 @@ namespace Source\Wiki\VideoLink\Infrastructure\Query;
 use Application\Models\Wiki\Principal as PrincipalModel;
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
+use Application\Models\Wiki\VideoLinkWatch as VideoLinkWatchModel;
 use Application\Models\Wiki\VideoWatchRequest as VideoWatchRequestModel;
 use Application\Models\Wiki\Wiki as WikiModel;
 use Carbon\CarbonImmutable;
@@ -75,6 +76,11 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
             ->where('principal_id', $model->id)->where('sent_at', '>', VideoWatchRequestPolicy::cutoff($now))
             ->orderBy('sent_at')->orderBy('id')->get()
             ->groupBy(static fn (VideoWatchRequestModel $request): string => $request->wiki->translation_set_identifier ?? '');
+        $watchedIds = VideoLinkWatchModel::query()->from('wiki_video_link_watches as watches')
+            ->join('wiki_video_links as videos', 'videos.id', '=', 'watches.video_link_id')
+            ->join('wikis', 'wikis.id', '=', 'videos.wiki_id')
+            ->whereIn('videos.id', $ids)->whereColumn('watches.owner_account_id', 'wikis.owner_account_id')
+            ->pluck('videos.id')->all();
         $states = [];
         $targetPermissions = [];
         foreach ($videos as $video) {
@@ -107,7 +113,7 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
                 $quotaUntil = VideoWatchRequestPolicy::expiresAt($quotaRequest->sent_at->toDateTimeImmutable());
                 $next = $next === null || $quotaUntil > $next ? $quotaUntil : $next;
             }
-            $reason = ! $target ? 'target_not_eligible' : (! $liked ? 'like_required' : VideoWatchRequestPolicy::rejectionReason($duration, $liked, $recentCount, $last?->toDateTimeImmutable(), $now));
+            $reason = ! $target ? 'target_not_eligible' : (in_array($video->id, $watchedIds, true) ? 'already_watched' : (! $liked ? 'like_required' : VideoWatchRequestPolicy::rejectionReason($duration, $liked, $recentCount, $last?->toDateTimeImmutable(), $now)));
 
             $states[] = new VideoWatchRequestStatusReadModel(
                 $video->id,
@@ -115,7 +121,7 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
                 $reason === null,
                 $reason,
                 $last?->toAtomString(),
-                $next?->format(DATE_ATOM),
+                $reason === 'already_watched' ? null : $next?->format(DATE_ATOM),
                 max(0, VideoWatchRequestPolicy::WEEKLY_LIMIT - $recentCount),
                 $ownUntil !== null && $ownUntil > $now ? $ownUntil->format(DATE_ATOM) : null,
                 $deleteUntil !== null && $deleteUntil > $now ? $deleteUntil->format(DATE_ATOM) : null,

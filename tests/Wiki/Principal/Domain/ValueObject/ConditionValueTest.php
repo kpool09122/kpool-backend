@@ -16,13 +16,14 @@ class ConditionValueTest extends TestCase
     {
         $cases = ConditionValue::cases();
 
-        $this->assertCount(6, $cases);
+        $this->assertCount(7, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_AGENCY_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_GROUP_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_ID, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID, $cases);
     }
 
     /**
@@ -36,5 +37,6 @@ class ConditionValueTest extends TestCase
         $this->assertSame('${principal.talentWikiIdentifiers}', ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS->value);
         $this->assertSame('${principal.affiliatedTalentWikiIdentifiers}', ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS->value);
         $this->assertSame('${principal.id}', ConditionValue::PRINCIPAL_ID->value);
+        $this->assertSame('${principal.nonDelegatedAccountId}', ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID->value);
     }
 }

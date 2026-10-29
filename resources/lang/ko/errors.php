@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_already_watched' => '본인이 이미 시청한 동영상입니다.',
     'video_watch_request_target_not_eligible' => '공식 인증된 탤런트 위키의 사용자 제작 영상만 요청할 수 있습니다.',
     'video_watch_request_duration_not_eligible' => '30초 이하로 확인된 영상만 요청할 수 있습니다.',
     'video_watch_request_like_required' => '요청하려면 영상에 좋아요를 눌러야 합니다.',

@@ -16,9 +16,9 @@ class PrincipalConditionValueResolver implements ConditionValueResolverInterface
     }
 
     /**
-     * @return string|string[]|bool
+     * @return string|string[]|bool|null
      */
-    public function resolve(ConditionValue|string|bool $value, Principal $principal): string|array|bool
+    public function resolve(ConditionValue|string|bool $value, Principal $principal): string|array|bool|null
     {
         if (! $value instanceof ConditionValue) {
             return $value;
@@ -30,6 +30,7 @@ class PrincipalConditionValueResolver implements ConditionValueResolverInterface
             ConditionValue::PRINCIPAL_TALENT_GROUP_WIKI_IDENTIFIERS => $this->principalWikiScopeResolver->talentGroupWikiIdentifiers($principal),
             ConditionValue::PRINCIPAL_TALENT_WIKI_IDENTIFIERS => $this->principalWikiScopeResolver->talentWikiIdentifiers($principal),
             ConditionValue::PRINCIPAL_ID => (string) $principal->principalIdentifier(),
+            ConditionValue::PRINCIPAL_NON_DELEGATED_ACCOUNT_ID => $principal->isDelegatedPrincipal() ? null : (string) $principal->accountIdentifier(),
             ConditionValue::PRINCIPAL_AFFILIATED_TALENT_WIKI_IDENTIFIERS => $this->principalWikiScopeResolver->affiliatedTalentWikiIdentifiers($principal),
         };
     }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_already_watched' => '本人がすでに視聴済みの動画です。',
     'video_watch_request_target_not_eligible' => '公式認証済みタレントWikiのユーザー作成動画のみ送信できます。',
     'video_watch_request_duration_not_eligible' => '30秒以下と確認できる動画のみ送信できます。',
     'video_watch_request_like_required' => '送信には動画へのいいねが必要です。',

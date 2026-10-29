@@ -17,9 +17,9 @@ class AffiliationConditionValueResolver extends PrincipalConditionValueResolver 
     }
 
     /**
-     * @return string|string[]|bool
+     * @return string|string[]|bool|null
      */
-    public function resolve(ConditionValue|string|bool $value, Principal $principal): string|array|bool
+    public function resolve(ConditionValue|string|bool $value, Principal $principal): string|array|bool|null
     {
         return parent::resolve($value, $principal);
     }

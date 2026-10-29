@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'video_already_watched' => '本人已观看此视频。',
     'video_watch_request_target_not_eligible' => '仅可请求官方认证艺人维基中的用户创建视频。',
     'video_watch_request_duration_not_eligible' => '仅可请求已确认不超过30秒的视频。',
     'video_watch_request_like_required' => '发送请求前请先点赞该视频。',

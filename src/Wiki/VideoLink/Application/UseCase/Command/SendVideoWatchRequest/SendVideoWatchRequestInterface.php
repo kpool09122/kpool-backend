@@ -6,6 +6,7 @@ namespace Source\Wiki\VideoLink\Application\UseCase\Command\SendVideoWatchReques
 
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\VideoLink\Application\Exception\VideoAlreadyWatchedException;
 use Source\Wiki\VideoLink\Application\Exception\VideoLinkNotFoundException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestDurationNotEligibleException;
 use Source\Wiki\VideoLink\Application\Exception\VideoWatchRequestLikeRequiredException;
@@ -18,6 +19,7 @@ interface SendVideoWatchRequestInterface
     /**
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
+     * @throws VideoAlreadyWatchedException
      * @throws VideoLinkNotFoundException
      * @throws VideoWatchRequestTargetNotEligibleException
      * @throws VideoWatchRequestDurationNotEligibleException
