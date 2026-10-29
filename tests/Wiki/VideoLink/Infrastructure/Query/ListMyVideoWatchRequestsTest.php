@@ -111,6 +111,45 @@ class ListMyVideoWatchRequestsTest extends TestCase
         }
     }
 
+    public function testQuotaAndNextSendTimeAreSharedAcrossTranslations(): void
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $principal = $this->principal();
+        $translationSet = StrTestHelper::generateUuid();
+        $videos = [];
+        foreach (['ja', 'en', 'ko'] as $index => $language) {
+            $wiki = StrTestHelper::generateUuid();
+            CreateWiki::create($wiki, 'talent', ['language' => $language, 'translation_set_identifier' => $translationSet, 'owner_account_id' => StrTestHelper::generateUuid()]);
+            $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+            DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
+            DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => StrTestHelper::generateUuid(), 'wiki_id' => $wiki, 'principal_id' => (string) $principal, 'sent_at' => '2026-10-' . (22 + $index) . ' 00:00:00']);
+            $videos[] = $video;
+        }
+        CarbonImmutable::setTestNow('2026-10-28 00:00:00 UTC');
+
+        try {
+            $query = $this->app()->make(ListMyVideoWatchRequestsInterface::class);
+            // Quota must include translations whose videos are not in this batch.
+            foreach ($videos as $video) {
+                $state = $query->process(new ListMyVideoWatchRequestsInput([$video], $principal))[0];
+                self::assertSame(0, $state->remainingRequests);
+                self::assertFalse($state->canSend);
+                self::assertSame('weekly_limit_reached', $state->reason);
+                self::assertSame('2026-10-29T00:00:00+00:00', $state->nextSendAt);
+                self::assertNull($state->unlikeRestrictedUntil);
+            }
+            CarbonImmutable::setTestNow('2026-10-29 00:00:00 UTC');
+            foreach ($query->process(new ListMyVideoWatchRequestsInput($videos, $principal)) as $state) {
+                self::assertSame(1, $state->remainingRequests);
+                self::assertTrue($state->canSend);
+                self::assertNull($state->nextSendAt);
+            }
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
     public function testBatchKeepsVideoAndWikiStateSeparateAndDeduplicatesIds(): void
     {
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);

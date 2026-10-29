@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoWatchRequest as VideoWatchRequestModel;
+use Application\Models\Wiki\Wiki as WikiModel;
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\Entity\VideoWatchRequest;
@@ -26,9 +28,9 @@ final readonly class VideoWatchRequestRepository implements VideoWatchRequestRep
         ]);
     }
 
-    public function findByWikiAndPrincipal(WikiIdentifier $wikiIdentifier, PrincipalIdentifier $principalIdentifier, DateTimeImmutable $after): array
+    public function findByTranslationSetAndPrincipal(TranslationSetIdentifier $translationSetIdentifier, PrincipalIdentifier $principalIdentifier, DateTimeImmutable $after): array
     {
-        return array_values(VideoWatchRequestModel::query()->where('wiki_id', (string) $wikiIdentifier)->where('principal_id', (string) $principalIdentifier)->where('sent_at', '>', $after)->orderBy('sent_at')->orderBy('id')->get()->map(fn (VideoWatchRequestModel $model): VideoWatchRequest => $this->restore($model))->all());
+        return array_values(VideoWatchRequestModel::query()->whereIn('wiki_id', WikiModel::query()->select('id')->where('translation_set_identifier', (string) $translationSetIdentifier))->where('principal_id', (string) $principalIdentifier)->where('sent_at', '>', $after)->orderBy('sent_at')->orderBy('id')->get()->map(fn (VideoWatchRequestModel $model): VideoWatchRequest => $this->restore($model))->all());
     }
 
     public function findLatestByVideoLink(VideoLinkIdentifier $videoLinkIdentifier): ?VideoWatchRequest
