@@ -76,7 +76,7 @@ final readonly class SendVideoWatchRequest implements SendVideoWatchRequestInter
         }
         $duration = $video->durationSeconds()?->value();
         $now = new DateTimeImmutable();
-        $recent = $this->videoWatchRequestRepository->findByWikiAndPrincipal($video->wikiIdentifier(), $principal->principalIdentifier(), VideoWatchRequestPolicy::cutoff($now));
+        $recent = $this->videoWatchRequestRepository->findByTranslationSetAndPrincipal($wiki->translationSetIdentifier(), $principal->principalIdentifier(), VideoWatchRequestPolicy::cutoff($now));
         $last = $this->videoWatchRequestRepository->findLatestByVideoLinkAndPrincipal($video->videoLinkIdentifier(), $principal->principalIdentifier());
         $reason = VideoWatchRequestPolicy::rejectionReason($duration, $liked, count($recent), $last?->sentAt(), $now);
         if ($reason !== null) {

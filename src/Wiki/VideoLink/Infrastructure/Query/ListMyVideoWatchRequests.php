@@ -8,6 +8,7 @@ use Application\Models\Wiki\Principal as PrincipalModel;
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Application\Models\Wiki\VideoLinkLike as VideoLinkLikeModel;
 use Application\Models\Wiki\VideoWatchRequest as VideoWatchRequestModel;
+use Application\Models\Wiki\Wiki as WikiModel;
 use Carbon\CarbonImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -67,9 +68,13 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
             ->selectRaw('video_link_id, MAX(sent_at) as last_sent_at')->groupBy('video_link_id')->pluck('last_sent_at', 'video_link_id');
         $latestSends = VideoWatchRequestModel::query()->whereIn('video_link_id', $ids)
             ->selectRaw('video_link_id, MAX(sent_at) as last_sent_at')->groupBy('video_link_id')->pluck('last_sent_at', 'video_link_id');
-        $recentByWiki = VideoWatchRequestModel::query()->whereIn('wiki_id', $videos->pluck('wiki_id')->unique()->all())
+        $translationSetIdentifiers = $videos->pluck('wiki.translation_set_identifier')->filter()->unique()->all();
+        $recentByTranslationSet = VideoWatchRequestModel::query()
+            ->with('wiki:id,translation_set_identifier')
+            ->whereIn('wiki_id', WikiModel::query()->select('id')->whereIn('translation_set_identifier', $translationSetIdentifiers))
             ->where('principal_id', $model->id)->where('sent_at', '>', VideoWatchRequestPolicy::cutoff($now))
-            ->orderBy('sent_at')->orderBy('id')->get()->groupBy('wiki_id');
+            ->orderBy('sent_at')->orderBy('id')->get()
+            ->groupBy(static fn (VideoWatchRequestModel $request): string => $request->wiki->translation_set_identifier ?? '');
         $states = [];
         $targetPermissions = [];
         foreach ($videos as $video) {
@@ -91,7 +96,7 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
             assert($latestSentAt === null || is_string($latestSentAt));
             $last = $lastSentAt === null ? null : CarbonImmutable::parse($lastSentAt);
             $latest = $latestSentAt === null ? null : CarbonImmutable::parse($latestSentAt);
-            $recent = $recentByWiki->get($video->wiki_id);
+            $recent = $recentByTranslationSet->get($wiki->translation_set_identifier ?? '');
             $recentCount = $recent?->count() ?? 0;
             $ownUntil = $last === null ? null : VideoWatchRequestPolicy::expiresAt($last->toDateTimeImmutable());
             $deleteUntil = $latest === null ? null : VideoWatchRequestPolicy::expiresAt($latest->toDateTimeImmutable());

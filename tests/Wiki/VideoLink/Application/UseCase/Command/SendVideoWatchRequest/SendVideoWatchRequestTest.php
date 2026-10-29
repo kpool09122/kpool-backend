@@ -65,6 +65,48 @@ class SendVideoWatchRequestTest extends TestCase
 
     }
 
+    public function testQuotaIsSharedAcrossTranslationsButSeparateForOtherTalentsAndSenders(): void
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $principal = $this->principal();
+        $other = $this->principal();
+        $translationSet = StrTestHelper::generateUuid();
+        $videos = [];
+        $firstWiki = StrTestHelper::generateUuid();
+        foreach (['ja', 'en', 'ko', 'ja'] as $index => $language) {
+            $wiki = $index === 0 || $index === 3 ? $firstWiki : StrTestHelper::generateUuid();
+            if ($index !== 3) {
+                CreateWiki::create($wiki, 'talent', ['language' => $language, 'translation_set_identifier' => $translationSet, 'owner_account_id' => StrTestHelper::generateUuid()]);
+            }
+            $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+            foreach ([$principal, $other] as $sender) {
+                DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $sender, 'created_at' => now()]);
+            }
+            $videos[] = $video;
+        }
+        $sendVideoWatchRequest = $this->app()->make(SendVideoWatchRequestInterface::class);
+        foreach (array_slice($videos, 0, 3) as $video) {
+            $sendVideoWatchRequest->process(new SendVideoWatchRequestInput($video, $principal));
+        }
+
+        try {
+            $sendVideoWatchRequest->process(new SendVideoWatchRequestInput($videos[3], $principal));
+            self::fail('The fourth request across translations must be rejected');
+        } catch (VideoWatchRequestWeeklyLimitReachedException) {
+            self::assertSame(3, DB::table('wiki_video_watch_requests')->where('principal_id', (string) $principal)->count());
+        }
+        $sendVideoWatchRequest->process(new SendVideoWatchRequestInput($videos[3], $other));
+        $otherWiki = StrTestHelper::generateUuid();
+        CreateWiki::create($otherWiki, 'talent', ['slug' => 'tl-' . $otherWiki, 'owner_account_id' => StrTestHelper::generateUuid()]);
+        $otherVideo = new VideoLinkIdentifier(StrTestHelper::generateUuid());
+        CreateVideoLink::create((string) $otherVideo, ['wiki_id' => $otherWiki, 'duration_seconds' => 30]);
+        DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $otherVideo, 'principal_id' => (string) $principal, 'created_at' => now()]);
+        $sendVideoWatchRequest->process(new SendVideoWatchRequestInput($otherVideo, $principal));
+        $this->assertDatabaseHas('wiki_video_watch_requests', ['video_link_id' => (string) $otherVideo, 'principal_id' => (string) $principal]);
+        $this->assertDatabaseHas('wiki_video_watch_requests', ['video_link_id' => (string) $videos[3], 'principal_id' => (string) $other]);
+    }
+
     /** @return array<string, array{bool}> */
     public static function likeKinds(): array
     {
