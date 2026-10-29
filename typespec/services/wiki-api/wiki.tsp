@@ -42,6 +42,9 @@ model AutoCreateWikiRequestBody {
   slug: string;
   @doc("Display name of the wiki.")
   name: string;
+  @doc("Optional research context for AI generation, such as former group affiliations.")
+  @maxLength(2000)
+  notes?: string | null;
   @doc("Associated agency identifier.")
   agencyIdentifier?: Uuid | null;
   @doc("Associated group identifiers.")

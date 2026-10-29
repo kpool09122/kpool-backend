@@ -23,7 +23,13 @@ final readonly class AutoWikiCreationPayload
         private ?WikiIdentifier  $agencyIdentifier,
         private array            $groupIdentifiers,
         private array            $talentIdentifiers,
+        private ?string          $notes,
     ) {
+    }
+
+    public function notes(): ?string
+    {
+        return $this->notes;
     }
 
     public function language(): Language

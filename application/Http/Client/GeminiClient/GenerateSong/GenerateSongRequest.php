@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateSong;
 
 use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
+use Application\Http\Client\GeminiClient\WikiResearchContextPrompt;
 use Application\Http\Client\GeminiClient\WikiWritingStylePrompt;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -17,12 +18,18 @@ final readonly class GenerateSongRequest
         private ?string $agencyName = null,
         private ?string $groupName = null,
         private ?string $talentName = null,
+        private ?string $notes = null,
     ) {
     }
 
     public function songName(): string
     {
         return $this->songName;
+    }
+
+    public function notes(): ?string
+    {
+        return $this->notes;
     }
 
     public function language(): string
@@ -88,6 +95,7 @@ final readonly class GenerateSongRequest
 
         $affiliationContext = $this->buildAffiliationContext();
 
+        $researchContext = WikiResearchContextPrompt::instructions($this->notes);
         $metadataInstructions = WikiMetadataPrompt::instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
@@ -98,6 +106,8 @@ Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki
 ## Target
 - Song Name: {$this->songName}
 - Genre: K-POP / Korean Entertainment
+
+{$researchContext}
 
 ## Output Language
 {$outputLanguage} (except for alphabet_name which must be in English/alphabet only)

@@ -24,7 +24,7 @@ class AutoWikiCreationPayloadTest extends TestCase
         $groupIdentifiers = [];
         $talentIdentifiers = [];
 
-        $subject = new AutoWikiCreationPayload($language, $resourceType, $name, $slug, $agencyIdentifier, $groupIdentifiers, $talentIdentifiers);
+        $subject = new AutoWikiCreationPayload($language, $resourceType, $name, $slug, $agencyIdentifier, $groupIdentifiers, $talentIdentifiers, '元グループのメンバー');
 
         $this->assertSame($language, $subject->language());
         $this->assertSame($resourceType, $subject->resourceType());
@@ -33,11 +33,13 @@ class AutoWikiCreationPayloadTest extends TestCase
         $this->assertSame($agencyIdentifier, $subject->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $subject->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $subject->talentIdentifiers());
+        $this->assertSame('元グループのメンバー', $subject->notes());
     }
 
     public function testAllowsAbsentOptionalValues(): void
     {
-        $subject = new AutoWikiCreationPayload(Language::JAPANESE, ResourceType::AGENCY, new Name('sample-value'), new Slug('ag-sample'), null, [], []);
+        $subject = new AutoWikiCreationPayload(Language::JAPANESE, ResourceType::AGENCY, new Name('sample-value'), new Slug('ag-sample'), null, [], [], null);
         $this->assertNull($subject->agencyIdentifier());
+        $this->assertNull($subject->notes());
     }
 }

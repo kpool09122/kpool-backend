@@ -111,6 +111,7 @@ class AutoWikiCreationMetadataTest extends TestCase
             null,
             [],
             [],
+            null,
         ));
     }
 }

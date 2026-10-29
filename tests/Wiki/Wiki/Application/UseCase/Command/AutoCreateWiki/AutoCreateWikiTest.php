@@ -296,6 +296,7 @@ class AutoCreateWikiTest extends TestCase
             new WikiIdentifier(StrTestHelper::generateUuid()),
             [],
             [],
+            null,
         );
     }
 

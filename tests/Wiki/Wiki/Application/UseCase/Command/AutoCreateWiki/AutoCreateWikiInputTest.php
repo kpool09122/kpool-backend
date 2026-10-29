@@ -27,6 +27,7 @@ class AutoCreateWikiInputTest extends TestCase
             null,
             [],
             [],
+            null,
         );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -57,6 +58,7 @@ class AutoCreateWikiInputTest extends TestCase
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
+            null,
         );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
