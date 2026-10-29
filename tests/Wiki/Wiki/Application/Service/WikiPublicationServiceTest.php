@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\Service;
 
 use Illuminate\Support\Facades\DB;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use RuntimeException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -64,6 +65,78 @@ class WikiPublicationServiceTest extends TestCase
         $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
         $contributionPointService->shouldReceive('grantPoints');
         $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
+    }
+
+    /** @return array<string, array{ResourceType, bool}> */
+    public static function translationCertificationProvider(): array
+    {
+        $cases = [];
+        foreach ([ResourceType::AGENCY, ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG] as $type) {
+            $cases[$type->value . ' official'] = [$type, true];
+            $cases[$type->value . ' unofficial'] = [$type, false];
+        }
+
+        return $cases;
+    }
+
+    #[DataProvider('translationCertificationProvider')]
+    public function testNewTranslationInheritsCurrentOfficialOwner(ResourceType $type, bool $official): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $setId = StrTestHelper::generateUuid();
+        $ownerId = StrTestHelper::generateUuid();
+        $slug = $type->slugPrefix() . '-certified-translation';
+        CreateWiki::create($wikiId, $type->value, [
+            'translation_set_identifier' => $setId,
+            'slug' => $slug,
+            'owner_account_id' => $official ? $ownerId : null,
+        ]);
+        // 別の翻訳セットの公式Wikiからは引き継がない。
+        CreateWiki::create(StrTestHelper::generateUuid(), $type->value, ['owner_account_id' => StrTestHelper::generateUuid()]);
+        $draftId = StrTestHelper::generateUuid();
+        CreateDraftWiki::create($draftId, $type->value, [
+            'translation_set_identifier' => $setId,
+            'slug' => $slug,
+            'language' => 'ja',
+            'status' => 'approved',
+            'editor_id' => (string) $this->principalIdentifier(),
+            'approver_id' => (string) $this->principalIdentifier(),
+            'source_editor_id' => (string) $this->principalIdentifier(),
+            'translated_at' => '2026-10-29 00:00:00',
+        ]);
+
+        $output = new PublishWikiOutput();
+        DB::transaction(fn () => $this->app()->make(PublishWikiInterface::class)->process(
+            new PublishWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), $type),
+            $output,
+        ));
+
+        $publishedId = $output->toArray()['wikiIdentifier'];
+        $this->assertNotSame($wikiId, $publishedId);
+        $this->assertDatabaseHas('wikis', [
+            'id' => $publishedId,
+            'translation_set_identifier' => $setId,
+            'language' => 'ja',
+            'owner_account_id' => $official ? $ownerId : null,
+        ]);
+        $this->assertDatabaseHas('wikis', ['id' => $wikiId, 'owner_account_id' => $official ? $ownerId : null]);
+        $this->assertDatabaseMissing('draft_wikis', ['id' => $draftId]);
+    }
+
+    public function testUpdatingOfficialWikiPreservesItsOwner(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $setId = StrTestHelper::generateUuid();
+        $ownerId = StrTestHelper::generateUuid();
+        CreateWiki::create($wikiId, 'group', ['translation_set_identifier' => $setId, 'owner_account_id' => $ownerId]);
+        $draftId = $this->createDraft($wikiId, $setId, 'updated-official');
+
+        DB::transaction(fn () => $this->app()->make(PublishWikiInterface::class)->process(
+            new PublishWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), ResourceType::GROUP),
+            new PublishWikiOutput(),
+        ));
+
+        $this->assertDatabaseHas('wikis', ['id' => $wikiId, 'owner_account_id' => $ownerId, 'version' => 2]);
     }
 
     public function testRepeatedCorrectionsThenNextGenerationAndRollbackPreserveEverySnapshot(): void

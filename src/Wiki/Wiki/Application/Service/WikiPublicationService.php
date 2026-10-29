@@ -62,6 +62,17 @@ readonly class WikiPublicationService implements WikiPublicationServiceInterface
                 $wiki->basic(),
                 $publishVersion,
             );
+            $translations = $this->wikiRepository->findByTranslationSetIdentifier($wiki->translationSetIdentifier());
+            foreach ($translations as $translation) {
+                $ownerAccountIdentifier = $translation->ownerAccountIdentifier();
+                if ($translation->resourceType() !== $wiki->resourceType() || $ownerAccountIdentifier === null) {
+                    continue;
+                }
+
+                $publishedWiki->markOfficial($ownerAccountIdentifier);
+
+                break;
+            }
         }
         $publishedWiki->setSections($wiki->sections());
         $publishedWiki->setThemeColor($wiki->themeColor());

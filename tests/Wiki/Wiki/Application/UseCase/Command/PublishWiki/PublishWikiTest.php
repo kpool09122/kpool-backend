@@ -380,6 +380,10 @@ class PublishWikiTest extends TestCase
             ->once()
             ->with($dummyPublishWiki->createdWiki)
             ->andReturn(null);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($dummyPublishWiki->translationSetIdentifier)
+            ->andReturn([]);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -481,6 +485,10 @@ class PublishWikiTest extends TestCase
             ->once()
             ->with($dummyPublishWiki->createdWiki)
             ->andReturn(null);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($dummyPublishWiki->translationSetIdentifier)
+            ->andReturn([]);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -919,6 +927,10 @@ class PublishWikiTest extends TestCase
             ->once()
             ->with($dummyPublishWiki->createdWiki)
             ->andReturn(null);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($dummyPublishWiki->translationSetIdentifier)
+            ->andReturn([]);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -1031,6 +1043,10 @@ class PublishWikiTest extends TestCase
             ->once()
             ->with($dummyPublishWiki->createdWiki)
             ->andReturn(null);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($dummyPublishWiki->translationSetIdentifier)
+            ->andReturn([]);
 
         $wikiFactory = Mockery::mock(WikiFactoryInterface::class);
         $wikiFactory->shouldReceive('create')
