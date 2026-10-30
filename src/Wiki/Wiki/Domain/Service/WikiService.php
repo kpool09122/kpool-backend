@@ -74,25 +74,19 @@ readonly class WikiService implements WikiServiceInterface
 
         $latestVersion = $this->latestVersion($publishedWikis);
         $targetWiki = $this->targetPublishedWiki($publishedWikis, $draftWiki);
-        $isTranslationDraft = $draftWiki->translatedAt() !== null;
-
-        if (! $isTranslationDraft) {
-            if (! $this->hasSameVersions($publishedWikis)) {
-                return null;
-            }
-
-            return $targetWiki ? Version::nextVersion($targetWiki->version()) : $latestVersion;
-        }
-
-        if ($targetWiki === null) {
+        if ($targetWiki !== null && $targetWiki->version()->value() < $latestVersion->value()) {
             return $latestVersion;
         }
 
-        if ($targetWiki->isVersionGreaterThan($latestVersion) || $targetWiki->hasSameVersion($latestVersion)) {
+        if ($draftWiki->translatedAt() !== null) {
+            return $targetWiki === null ? $latestVersion : null;
+        }
+
+        if (! $this->hasSameVersions($publishedWikis)) {
             return null;
         }
 
-        return $latestVersion;
+        return $targetWiki ? Version::nextVersion($targetWiki->version()) : $latestVersion;
     }
 
     /**
