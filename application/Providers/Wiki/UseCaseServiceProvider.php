@@ -152,6 +152,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikis
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyOwnedWikis\ListMyOwnedWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListRelatedProfiles\ListRelatedProfilesInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListRelatedWikis\ListRelatedWikisInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListSitemapWikis\ListSitemapWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\SearchMasterWikis\SearchMasterWikisInterface;
@@ -173,6 +174,7 @@ use Source\Wiki\Wiki\Infrastructure\Query\ListMyDraftWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListMyOwnedWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListRelatedProfiles;
 use Source\Wiki\Wiki\Infrastructure\Query\ListRelatedWikis;
+use Source\Wiki\Wiki\Infrastructure\Query\ListSitemapWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListVersionInconsistentWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\SearchMasterWikis;
@@ -267,6 +269,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListRelatedWikisInterface::class, ListRelatedWikis::class);
         $this->app->singleton(ListVersionInconsistentWikisInterface::class, ListVersionInconsistentWikis::class);
         $this->app->singleton(ListWikisInterface::class, ListWikis::class);
+        $this->app->singleton(ListSitemapWikisInterface::class, ListSitemapWikis::class);
         $this->app->singleton(SearchMasterWikisInterface::class, SearchMasterWikis::class);
         $this->app->singleton(SearchTranslationSetMasterWikisInterface::class, SearchTranslationSetMasterWikis::class);
     }

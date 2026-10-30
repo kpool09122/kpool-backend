@@ -3016,6 +3016,69 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AttachPolicyToRoleRequestBody'
+  /sitemap/wikis:
+    get:
+      operationId: SitemapWikiOperations_listSitemapWikis
+      description: 'Enumerate published agency/group/talent/song wikis in all languages, ordered by immutable wiki UUID ascending. No authentication is required; the existing screen/query IP rate limit applies (default 300 requests/minute, also subject to the global query limit). Fetch the first page without cursor, then repeat using nextCursor until null. Deleted cursor rows remain valid boundaries. No cross-request snapshot is guaranteed: concurrent publications below an already visited cursor appear on the next enumeration started without cursor. Drafts and history are never included. Only sitemap fields are returned; no content, images or basic information is loaded.'
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          description: Maximum entries per response. Default 500; range 1..1000. The server reads at most perPage + 1 lightweight rows to detect the end.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+            maximum: 1000
+          explode: false
+        - name: cursor
+          in: query
+          required: false
+          description: Exclusive UUID boundary returned as nextCursor. Omit or set null to start a new enumeration.
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSitemapWikisResponseBody'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /video-link/create:
     post:
       operationId: VideoLinkOperations_createVideoLink
@@ -7215,6 +7278,23 @@ components:
             $ref: '#/components/schemas/WikiListItem'
           description: Related published wikis.
       description: Response body for the related wikis endpoint.
+    ListSitemapWikisResponseBody:
+      type: object
+      required:
+        - wikis
+        - nextCursor
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/SitemapWiki'
+          maxItems: 1000
+        nextCursor:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Pass this value as cursor for the next request. Null means enumeration is complete, including an empty result and an exactly full final page.
     ListUploadedImagesResponseBody:
       type: object
       required:
@@ -8045,6 +8125,31 @@ components:
       type: string
       maxLength: 40
       description: SEO title text. Must be 40 characters or less.
+    SitemapWiki:
+      type: object
+      required:
+        - slug
+        - language
+        - resourceType
+        - lastModifiedAt
+      properties:
+        slug:
+          type: string
+        language:
+          type: string
+        resourceType:
+          type: string
+          enum:
+            - agency
+            - group
+            - talent
+            - song
+        lastModifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 timestamp from published_at, refreshed on first publication and every republication (including same-version publication). Unrelated database updates do not affect it. Null when the publication time is unknown; do not fall back to updated_at.
+      description: Lightweight published wiki entry for frontend-owned sitemap URL and XML generation.
     SongDraftWikiBasic:
       type: object
       required:

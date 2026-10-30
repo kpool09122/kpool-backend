@@ -248,6 +248,14 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $this->assertSame($expected, $actualPublicIdentityRouteUris);
     }
 
+    public function testSitemapRouteIsReadOnlyAndUsesPublicQueryRateLimit(): void
+    {
+        $route = $this->routeFor('GET', '/api/v1/wiki/sitemap/wikis');
+        $this->assertSame(['GET', 'HEAD'], $route->methods());
+        $this->assertNotContains('auth.api', $route->gatherMiddleware());
+        $this->assertContains('rate-limit:screen,query', $route->gatherMiddleware());
+    }
+
     public function testWikiRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
     {
         $actualPublicWikiRouteUris = [];
@@ -498,6 +506,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'api/v1/wiki/wiki/{language}/song/{slug}',
             'api/v1/wiki/wiki/{language}/talent/{slug}',
             'api/v1/wiki/wikis/{language}',
+            'api/v1/wiki/sitemap/wikis',
         ];
     }
 

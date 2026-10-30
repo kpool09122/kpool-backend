@@ -64,6 +64,7 @@ use Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis\ListMyDraftWikisAct
 use Application\Http\Action\Wiki\Wiki\Query\ListMyOwnedWikis\ListMyOwnedWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfilesAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListRelatedWikis\ListRelatedWikisAction;
+use Application\Http\Action\Wiki\Wiki\Query\ListSitemapWikis\ListSitemapWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisAction;
@@ -208,6 +209,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 
 Route::middleware('rate-limit:screen,query')->group(function () {
     // Wiki
+    Route::get('/sitemap/wikis', ListSitemapWikisAction::class);
     Route::get('/wikis/{language}', ListWikisAction::class);
     Route::get('/wiki/{language}/{resourceType}/{slug}/videos', ListVideosAction::class);
     Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
