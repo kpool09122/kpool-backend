@@ -493,27 +493,43 @@ class WikiServiceTest extends TestCase
         $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
     }
 
-    public function testResolvePublishVersionRejectsNormalDraftWhenVersionsAreInconsistent(): void
+    /** @return array<string, array{int, int, bool, ?int}> */
+    public static function normalDraftWithInconsistentVersions(): array
     {
+        return [
+            '遅れている言語は最新版に追随する' => [1, 2, true, 2],
+            '公開先IDがなくても言語から追随先を判定する' => [1, 2, false, 2],
+            '先行言語をさらに進めない' => [2, 1, true, null],
+            '公開先IDがなくても先行言語をさらに進めない' => [2, 1, false, null],
+        ];
+    }
+
+    #[DataProvider('normalDraftWithInconsistentVersions')]
+    public function testResolvePublishVersionForNormalDraftWhenVersionsAreInconsistent(
+        int $targetVersion,
+        int $otherVersion,
+        bool $hasPublishedWikiIdentifier,
+        ?int $expectedVersion,
+    ): void {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $koreanWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $koreanWiki = $this->createDummyWiki(
             $translationSetIdentifier,
             Language::KOREAN,
-            new Version(1),
+            new Version($targetVersion),
             $koreanWikiIdentifier,
         );
-        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version($otherVersion));
         $draftWiki = $this->createDummyDraftWiki(
             $translationSetIdentifier,
             Language::KOREAN,
             ApprovalStatus::UnderReview,
-            publishedWikiIdentifier: $koreanWikiIdentifier,
+            publishedWikiIdentifier: $hasPublishedWikiIdentifier ? $koreanWikiIdentifier : null,
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->once()
+            ->times($hasPublishedWikiIdentifier ? 1 : 2)
             ->with($translationSetIdentifier)
             ->andReturn([$koreanWiki, $englishWiki]);
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
@@ -522,8 +538,8 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $this->assertTrue($wikiService->canApproveDraftWiki($draftWiki));
-        $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
+        $this->assertSame($hasPublishedWikiIdentifier || $expectedVersion !== null, $wikiService->canApproveDraftWiki($draftWiki));
+        $this->assertSame($expectedVersion, $wikiService->resolvePublishVersion($draftWiki)?->value());
     }
 
     public function testResolvePublishVersionRejectsTranslatedDraftForLatestLanguage(): void
@@ -560,16 +576,31 @@ class WikiServiceTest extends TestCase
         $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
     }
 
-    public function testResolvePublishVersionUsesLatestVersionForNewTranslatedLanguage(): void
+    /** @return array<string, array{bool, int, ?int}> */
+    public static function newLanguageDraftVersions(): array
     {
+        return [
+            '版が揃っている翻訳下書き' => [true, 2, 2],
+            '版が揃っていない翻訳下書き' => [true, 1, 2],
+            '版が揃っている通常下書き' => [false, 2, 2],
+            '版が揃っていない通常下書き' => [false, 1, null],
+        ];
+    }
+
+    #[DataProvider('newLanguageDraftVersions')]
+    public function testResolvePublishVersionForNewLanguage(
+        bool $isTranslated,
+        int $otherVersion,
+        ?int $expectedVersion,
+    ): void {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $japaneseWiki = $this->createDummyWiki($translationSetIdentifier, Language::JAPANESE, new Version(2));
-        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version($otherVersion));
         $draftWiki = $this->createDummyDraftWiki(
             $translationSetIdentifier,
             Language::KOREAN,
             ApprovalStatus::UnderReview,
-            translatedAt: new DateTimeImmutable('2024-01-01 00:00:00'),
+            translatedAt: $isTranslated ? new DateTimeImmutable('2024-01-01 00:00:00') : null,
         );
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -583,7 +614,7 @@ class WikiServiceTest extends TestCase
         $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $wikiService = $this->app()->make(WikiServiceInterface::class);
 
-        $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
+        $this->assertSame($expectedVersion, $wikiService->resolvePublishVersion($draftWiki)?->value());
     }
 
     public function testResolvePublishVersionAllowsNormalDraftWhenVersionsAreConsistent(): void
