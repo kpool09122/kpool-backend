@@ -7,11 +7,12 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyConta
 use DateTimeImmutable;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ReplyNumberServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -29,6 +30,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
         private ContactRepositoryInterface $contactRepository,
         private ReplyContactFactoryInterface $replyContactFactory,
         private ReplyContactRepositoryInterface $replyContactRepository,
+        private ReplyNumberServiceInterface $replyNumberService,
         private ContactEmailServiceInterface $contactEmailService,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
@@ -59,7 +61,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
             $content,
             null,
             null,
-            $this->replyContactRepository->nextReplyNumber($contact->contactIdentifier()),
+            $this->replyNumberService->next($contact->contactIdentifier()),
         );
         $this->replyContactRepository->save($reply);
 
@@ -68,7 +70,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
         } catch (Throwable $e) {
             $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
                 ?? throw new UnexpectedValueException('Saved contact reply is missing.');
-            $this->replyContactRepository->save(new ReplyCotact(
+            $this->replyContactRepository->save(new Reply(
                 $persisted->replyIdentifier(),
                 $persisted->contactIdentifier(),
                 $persisted->principalIdentifier(),
@@ -85,7 +87,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
 
         $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
             ?? throw new UnexpectedValueException('Saved contact reply is missing.');
-        $this->replyContactRepository->save(new ReplyCotact(
+        $this->replyContactRepository->save(new Reply(
             $persisted->replyIdentifier(),
             $persisted->contactIdentifier(),
             $persisted->principalIdentifier(),

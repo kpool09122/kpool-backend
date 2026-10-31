@@ -6,7 +6,7 @@ namespace Source\SiteManagement\Contact\Domain\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
@@ -21,5 +21,5 @@ interface ReplyContactFactoryInterface
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
         int $replyNumber,
-    ): ReplyCotact;
+    ): Reply;
 }
