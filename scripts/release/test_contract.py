@@ -25,6 +25,28 @@ class ExternalServiceConfigurationTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 runtime_environment({name: 'fixture-never-export'})
 
+class RuntimeEnvironmentTests(unittest.TestCase):
+    def test_new_nonsecret_keys_are_forwarded_without_registration(self):
+        from contract import runtime_environment
+        settings = {'CONTACT_REPLY_TO_ADDRESS': 'support@example.com',
+                    'SUPPORT_PORTAL_URL': 'https://support.example.com',
+                    'SENTRY_LARAVEL_DSN': 'https://public@example.com/1'}
+        self.assertEqual({item['name']: item['value'] for item in runtime_environment(settings)}, settings)
+
+    def test_secrets_and_invalid_keys_or_values_are_rejected_without_values(self):
+        from contract import runtime_environment
+        for name in ('APP_KEY', 'APP_PREVIOUS_KEYS', 'DATABASE_URL', 'MAIL_URL',
+                     'DB_PASSWORD', 'NEW_SERVICE_CLIENT_SECRET', 'NEW_SERVICE_API_KEY',
+                     'NEW_SERVICE_TOKEN', 'NEW_SERVICE_CREDENTIALS', 'NEW_SERVICE_PRIVATE_KEY',
+                     'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN',
+                     'INVALID-KEY', 'lowercase', '', 123):
+            with self.subTest(name=name), self.assertRaises(ValueError) as error:
+                runtime_environment({name: 'private-value'})
+            self.assertNotIn('private-value', str(error.exception))
+        for config in ([], None, {'SETTING': 123}, {'SETTING': 'first\nsecond'}, {'SETTING': 'a' * 4097}):
+            with self.subTest(config_type=type(config).__name__), self.assertRaises(ValueError):
+                runtime_environment(config)
+
 class DefinitionTests(unittest.TestCase):
     def test_template_is_preserved_and_runtime_config_is_nonsecret(self):
         from contract import task_definition

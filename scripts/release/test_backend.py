@@ -44,6 +44,22 @@ class BackendTests(unittest.TestCase):
             'lifecycleStages': ['POST_TEST_TRAFFIC_SHIFT'],
         }])
 
+    def test_new_nonsecret_configuration_reaches_every_registered_task(self):
+        self.config['runtime_environment'].update({
+            'CONTACT_REPLY_TO_ADDRESS': 'support@example.com',
+            'SUPPORT_PORTAL_URL': 'https://support.example.com',
+        })
+        self.backend.preflight()
+        self.backend.register()
+        definitions = [args for _, operation, args in self.aws.calls if operation == 'register-task-definition']
+        self.assertEqual(len(definitions), 4)
+        for definition in definitions:
+            container = definition['containerDefinitions'][0]
+            environment = {item['name']: item['value'] for item in container['environment']}
+            with self.subTest(container=container['name']):
+                self.assertEqual(environment['CONTACT_REPLY_TO_ADDRESS'], 'support@example.com')
+                self.assertEqual(environment['SUPPORT_PORTAL_URL'], 'https://support.example.com')
+
     def test_visitor_location_secret_is_injected_from_app_secret_into_api_and_worker(self):
         self.config['app_secret_keys']=['WIKI_VISITOR_LOCATION_SECRET']
         self.backend.preflight()
