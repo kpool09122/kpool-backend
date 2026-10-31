@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact as ReplyContactEntity;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
@@ -57,7 +57,7 @@ class ReplyContactRepositoryTest extends TestCase
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $sentAt = new DateTimeImmutable('2026-01-01 12:34:56');
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $reply = new ReplyContactEntity(
+        $reply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
@@ -98,7 +98,7 @@ class ReplyContactRepositoryTest extends TestCase
 
         // 同じ履歴の送信状態を更新しても、保存・復元した連番を維持する。
         $failedAt = new DateTimeImmutable('2026-01-01 12:35:00');
-        $updated = new ReplyContactEntity(
+        $updated = new Reply(
             $restored->replyIdentifier(),
             $restored->contactIdentifier(),
             $restored->principalIdentifier(),
@@ -151,7 +151,7 @@ class ReplyContactRepositoryTest extends TestCase
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $failedAt = new DateTimeImmutable('2026-01-01 12:34:58');
-        $reply = new ReplyContactEntity(
+        $reply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),

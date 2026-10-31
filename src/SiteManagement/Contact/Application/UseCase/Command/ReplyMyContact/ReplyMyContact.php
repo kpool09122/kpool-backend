@@ -7,7 +7,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyConta
 use DateTimeImmutable;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact as ReplyContactEntity;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
@@ -70,7 +70,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
         } catch (Throwable $e) {
             $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
                 ?? throw new UnexpectedValueException('Saved contact reply is missing.');
-            $this->replyContactRepository->save(new ReplyContactEntity(
+            $this->replyContactRepository->save(new Reply(
                 $persisted->replyIdentifier(),
                 $persisted->contactIdentifier(),
                 $persisted->principalIdentifier(),
@@ -87,7 +87,7 @@ readonly class ReplyMyContact implements ReplyMyContactInterface
 
         $persisted = $this->replyContactRepository->findById($reply->replyIdentifier())
             ?? throw new UnexpectedValueException('Saved contact reply is missing.');
-        $this->replyContactRepository->save(new ReplyContactEntity(
+        $this->replyContactRepository->save(new Reply(
             $persisted->replyIdentifier(),
             $persisted->contactIdentifier(),
             $persisted->principalIdentifier(),

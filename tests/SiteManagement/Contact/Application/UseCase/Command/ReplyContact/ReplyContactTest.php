@@ -18,7 +18,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\Reply
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact as ReplyContactEntity;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
@@ -101,7 +101,7 @@ class ReplyContactTest extends TestCase
             })
             ->andReturnNull();
 
-        $unsentReply = new ReplyContactEntity(
+        $unsentReply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
@@ -147,7 +147,7 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyContactEntity $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
+            ->withArgs(function (Reply $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
                     && (string)$saved->principalIdentifier() === (string)$principalIdentifier
@@ -309,7 +309,7 @@ class ReplyContactTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('send failed'));
 
-        $unsentReply = new ReplyContactEntity(
+        $unsentReply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
@@ -355,7 +355,7 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyContactEntity $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
+            ->withArgs(function (Reply $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
                     && (string)$saved->principalIdentifier() === (string)$principalIdentifier

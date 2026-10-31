@@ -7,7 +7,7 @@ namespace Tests\SiteManagement\Contact\Domain\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
@@ -15,7 +15,7 @@ use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ReplyContactTest extends TestCase
+class ReplyTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -38,7 +38,7 @@ class ReplyContactTest extends TestCase
         $failedAt = null;
         $createdAt = new DateTimeImmutable('2026-01-01 12:34:57');
 
-        $reply = new ReplyContact(
+        $reply = new Reply(
             $replyIdentifier,
             $contactIdentifier,
             $principalIdentifier,
@@ -72,7 +72,7 @@ class ReplyContactTest extends TestCase
 実装可否や時期が決まり次第、サイト内のお知らせ等でご案内いたします。
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
-        $reply = new ReplyContact(
+        $reply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             new ContactIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),

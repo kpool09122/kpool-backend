@@ -7,7 +7,7 @@ namespace Source\SiteManagement\Contact\Infrastructure\Adapters\Repository;
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact as ReplyContactEntity;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
@@ -21,27 +21,27 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
     ) {
     }
 
-    public function save(ReplyContactEntity $replyContact): void
+    public function save(Reply $reply): void
     {
         ContactReplyModel::query()->updateOrCreate(
             [
-                'id' => (string)$replyContact->replyIdentifier(),
+                'id' => (string)$reply->replyIdentifier(),
             ],
             [
-                'contact_id' => (string)$replyContact->contactIdentifier(),
-                'reply_number' => $replyContact->replyNumber(),
-                'principal_identifier' => $replyContact->principalIdentifier() !== null
-                    ? (string)$replyContact->principalIdentifier()
+                'contact_id' => (string)$reply->contactIdentifier(),
+                'reply_number' => $reply->replyNumber(),
+                'principal_identifier' => $reply->principalIdentifier() !== null
+                    ? (string)$reply->principalIdentifier()
                     : null,
-                'to_email' => $this->encryptionService->encrypt((string)$replyContact->toEmail()),
-                'content' => (string)$replyContact->content(),
-                'sent_at' => $replyContact->sentAt(),
-                'failed_at' => $replyContact->failedAt(),
+                'to_email' => $this->encryptionService->encrypt((string)$reply->toEmail()),
+                'content' => (string)$reply->content(),
+                'sent_at' => $reply->sentAt(),
+                'failed_at' => $reply->failedAt(),
             ]
         );
     }
 
-    public function findById(ContactReplyIdentifier $contactReplyIdentifier): ?ReplyContactEntity
+    public function findById(ContactReplyIdentifier $contactReplyIdentifier): ?Reply
     {
         $model = ContactReplyModel::query()
             ->whereKey((string)$contactReplyIdentifier)
@@ -50,7 +50,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             return null;
         }
 
-        return new ReplyContactEntity(
+        return new Reply(
             new ContactReplyIdentifier((string)$model->id),
             new ContactIdentifier((string)$model->contact_id),
             $model->principal_identifier !== null

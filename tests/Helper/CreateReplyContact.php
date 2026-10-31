@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyContact;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
@@ -26,11 +26,11 @@ class CreateReplyContact
         string $content,
         EncryptionServiceInterface $encryptionService,
         ?int $replyNumber = null,
-    ): ReplyContact {
+    ): Reply {
         /** @var int|null $lastReplyNumber */
         $lastReplyNumber = DB::table('site_management_contact_replies')->where('contact_id', (string) $contactIdentifier)->max('reply_number');
         $replyNumber ??= ($lastReplyNumber ?? 0) + 1;
-        $reply = new ReplyContact(
+        $reply = new Reply(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
