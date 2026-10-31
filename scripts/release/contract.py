@@ -16,15 +16,21 @@ def validate_source(repository, sha):
         raise ValueError('Repository or full source SHA is not permitted')
     return sha
 
-# Explicit nonsecret allowlist prevents accidental SSM/GitHub-variable secret export.
-ENV_KEYS = set('APP_ENV APP_DEBUG APP_URL FRONTEND_URL LOG_CHANNEL LOG_LEVEL AWS_DEFAULT_REGION DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_SSLMODE DB_SSLROOTCERT REDIS_HOST REDIS_PORT REDIS_DB REDIS_CACHE_DB REDIS_USERNAME REDIS_SCHEME QUEUE_CONNECTION SQS_QUEUE_URL IMAGE_STORAGE_DISK VERIFICATION_DOCUMENTS_DRIVER AWS_PUBLIC_IMAGES_BUCKET AWS_PRIVATE_FILES_BUCKET IMAGE_BASE_URL CACHE_STORE SESSION_DRIVER SESSION_DOMAIN SESSION_SECURE_COOKIE SESSION_SAME_SITE MAIL_MAILER MAIL_HOST MAIL_PORT MAIL_FROM_ADDRESS WEBAUTHN_RP_ID WEBAUTHN_ALLOWED_ORIGINS GOOGLE_CLIENT_ID GOOGLE_REDIRECT_URI LINE_CLIENT_ID LINE_REDIRECT_URI KAKAO_CLIENT_ID KAKAO_REDIRECT_URI STRIPE_PUBLISHABLE_KEY GEMINI_MODEL GOOGLE_PROJECT_ID QUEUE_FAILED_DRIVER SENTRY_LARAVEL_DSN'.split())
 SECRET_KEYS = set('APP_KEY DATABASE_URL DB_USERNAME DB_PASSWORD REDIS_PASSWORD REDIS_URL MAIL_USERNAME MAIL_PASSWORD STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET OPENAI_API_KEY GOOGLE_CLIENT_SECRET LINE_CLIENT_SECRET KAKAO_CLIENT_SECRET GENERATIVE_LANGUAGE_API_KEY GOOGLE_APPLICATION_CREDENTIALS YOUTUBE_API_KEY DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET SENTRY_LARAVEL_DSN WIKI_VISITOR_LOCATION_SECRET'.split())
+ENV_KEY = re.compile(r'[A-Z][A-Z0-9_]*\Z')
+# The public Sentry DSN may stay in plain configuration; credentials use ECS secrets.
+PLAIN_SECRET_KEYS = (SECRET_KEYS - {'SENTRY_LARAVEL_DSN'}) | {'APP_PREVIOUS_KEYS', 'MAIL_URL'}
+SECRET_KEY_PATTERN = re.compile(r'(?:^|_)(?:SECRET|PASSWORD|TOKEN|CREDENTIALS?|PRIVATE_KEY|API_KEY|ACCESS_KEY)(?:_|$)')
 SECRET_REF = re.compile(r'arn:aws:secretsmanager:ap-northeast-1:[0-9]{12}:secret:[A-Za-z0-9/_+=.@-]+:[A-Za-z0-9_]+::\Z')
 
 
 def runtime_environment(config):
-    if not isinstance(config, dict) or not set(config) <= ENV_KEYS:
-        raise ValueError('Unknown or secret runtime configuration key')
+    if not isinstance(config, dict):
+        raise ValueError('Runtime configuration must be an object')
+    for key in config:
+        if (not isinstance(key, str) or not ENV_KEY.fullmatch(key)
+                or key in PLAIN_SECRET_KEYS or SECRET_KEY_PATTERN.search(key)):
+            raise ValueError('Invalid or secret runtime configuration key')
     if any(not isinstance(v, str) or '\n' in v or len(v) > 4096 for v in config.values()):
         raise ValueError('Runtime configuration must contain bounded string values')
     return [{'name': k, 'value': v} for k, v in sorted(config.items())]

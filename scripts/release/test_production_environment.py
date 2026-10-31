@@ -27,8 +27,13 @@ class ProductionEnvironmentTests(unittest.TestCase):
                              '$(do-not-execute)')
             shell.assert_not_called()
 
+    def test_new_nonsecret_configuration_is_accepted_without_registration(self):
+        self.assertEqual(self.load_text('CONTACT_REPLY_TO_ADDRESS=support@example.com\nSUPPORT_PORTAL_URL=https://support.example.com'),
+                         {'CONTACT_REPLY_TO_ADDRESS': 'support@example.com',
+                          'SUPPORT_PORTAL_URL': 'https://support.example.com'})
+
     def test_secrets_duplicates_placeholders_and_malformed_lines_are_rejected_without_values(self):
-        for text in ('GOOGLE_CLIENT_SECRET=private-value', 'UNKNOWN=private-value', 'APP_ENV=production\nAPP_ENV=private-value',
+        for text in ('GOOGLE_CLIENT_SECRET=private-value', 'NEW_SERVICE_API_KEY=private-value', 'APP_ENV=production\nAPP_ENV=private-value',
                      'GOOGLE_REDIRECT_URI=https://<backend-domain>/private-value',
                      'GOOGLE_CLIENT_ID=${private-value}', 'source private-value',
                      'GEMINI_MODEL="private-value', 'GEMINI_MODEL=private-value with spaces'):

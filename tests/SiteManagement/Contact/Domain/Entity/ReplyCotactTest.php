@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Domain\Entity;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
@@ -19,7 +20,8 @@ class ReplyCotactTest extends TestCase
     /**
      * 正常系: インスタンスが生成されること
      */
-    public function test__construct(): void
+    #[DataProvider('replyNumberProvider')]
+    public function test__construct(int $replyNumber): void
     {
         $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -45,8 +47,10 @@ class ReplyCotactTest extends TestCase
             $sentAt,
             $failedAt,
             $createdAt,
+            $replyNumber,
         );
 
+        $this->assertSame($replyNumber, $reply->replyNumber());
         $this->assertSame((string)$replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame((string)$contactIdentifier, (string)$reply->contactIdentifier());
         $this->assertSame((string)$principalIdentifier, (string)$reply->principalIdentifier());
@@ -77,9 +81,19 @@ class ReplyCotactTest extends TestCase
             null,
             new DateTimeImmutable('2026-01-01 12:34:58'),
             new DateTimeImmutable('2026-01-01 12:34:57'),
+            1,
         );
 
         $this->assertNull($reply->sentAt());
         $this->assertNotNull($reply->failedAt());
+    }
+
+    /** @return array<string, array{int}> */
+    public static function replyNumberProvider(): array
+    {
+        return [
+            'first' => [1],
+            'later' => [7],
+        ];
     }
 }

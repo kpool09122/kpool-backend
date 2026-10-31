@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Infrastructure\Service;
 
-use Application\Mail\ContactAcceptedMail;
 use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
+use Application\Mail\ContactSubmitterReplyMail;
 use Illuminate\Support\Facades\Mail;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
@@ -17,14 +17,18 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
 {
     public function __construct(
         private Email $administratorEmail,
+        private Email $contactReplyToAddress,
     ) {
     }
 
-    public function sendContactToUser(Contact $contact): void
+    public function administratorEmail(): Email
     {
-        Mail::to((string) $contact->email())->send(
-            new ContactAcceptedMail($contact)
-        );
+        return $this->administratorEmail;
+    }
+
+    public function sendReplyToAdministrator(Contact $contact, ReplyContent $content): void
+    {
+        Mail::to((string) $this->administratorEmail)->send(new ContactSubmitterReplyMail($contact, $content));
     }
 
     public function sendContactToAdministrator(Contact $contact): void
@@ -37,7 +41,7 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
     public function sendReplyToUser(Contact $contact, ReplyContent $content): void
     {
         Mail::to((string) $contact->email())->send(
-            new ContactReplyMail($content, $contact->language())
+            new ContactReplyMail($contact, $content, $this->contactReplyToAddress)
         );
     }
 }

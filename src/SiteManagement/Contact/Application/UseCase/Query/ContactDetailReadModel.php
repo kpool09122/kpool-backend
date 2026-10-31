@@ -6,7 +6,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Query;
 
 readonly class ContactDetailReadModel
 {
-    /** @param array<int, array{replyIdentifier: string, content: string, sentAt: string, principalIdentifier?: ?string, name?: ?string}> $replies */
+    /** @param array<int, array{replyIdentifier: string, replyNumber: int, principalIdentifier: ?string, name: ?string, content: string, sentAt: ?string, createdAt: string}> $replies */
     public function __construct(
         private string $contactIdentifier,
         private ?string $principalIdentifier,
@@ -18,7 +18,7 @@ readonly class ContactDetailReadModel
     ) {
     }
 
-    /** @return array{contactIdentifier: string, principalIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, content: string, sentAt: string, principalIdentifier?: ?string, name?: ?string}>} */
+    /** @return array{contactIdentifier: string, principalIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, replyNumber: int, principalIdentifier: ?string, name: ?string, content: string, sentAt: ?string, createdAt: string}>} */
     public function toArray(): array
     {
         return [

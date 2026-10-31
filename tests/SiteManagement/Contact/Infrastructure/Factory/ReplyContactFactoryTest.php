@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Contact\Infrastructure\Factory;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
@@ -23,7 +24,8 @@ class ReplyContactFactoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
-    public function testCreate(): void
+    #[DataProvider('replyNumberProvider')]
+    public function testCreate(int $replyNumber): void
     {
         $replyIdentifier = StrTestHelper::generateUuid();
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -49,11 +51,13 @@ class ReplyContactFactoryTest extends TestCase
             $content,
             $sentAt,
             $failedAt,
+            $replyNumber,
         );
         $after = new DateTimeImmutable('now');
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame($contactIdentifier, $reply->contactIdentifier());
+        $this->assertSame($replyNumber, $reply->replyNumber());
         $this->assertSame($principalIdentifier, $reply->principalIdentifier());
         $this->assertSame($toEmail, $reply->toEmail());
         $this->assertSame($content, $reply->content());
@@ -89,10 +93,20 @@ class ReplyContactFactoryTest extends TestCase
             new ReplyContent('返信本文'),
             null,
             new DateTimeImmutable('2026-01-01 12:34:56'),
+            1,
         );
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertNull($reply->sentAt());
         $this->assertNotNull($reply->failedAt());
+    }
+
+    /** @return array<string, array{int}> */
+    public static function replyNumberProvider(): array
+    {
+        return [
+            'first' => [1],
+            'later' => [7],
+        ];
     }
 }

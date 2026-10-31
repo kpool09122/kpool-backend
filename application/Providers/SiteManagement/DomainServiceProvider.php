@@ -84,7 +84,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(
             ContactEmailServiceInterface::class,
             fn (): ContactEmailService => new ContactEmailService(
-                new Email((string) config('mail.from.address'))
+                new Email((string) config('mail.from.address')),
+                new Email((string) config('mail.contact_reply_to_address', 'kpool09122@gmail.com')),
             )
         );
     }

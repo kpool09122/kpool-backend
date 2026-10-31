@@ -25,7 +25,7 @@ use Tests\TestCase;
 class GetMyContactDetailTest extends TestCase
 {
     #[Group('useDb')]
-    public function testProcessReturnsContactAndOnlySuccessfullySentRepliesForOwner(): void
+    public function testProcessReturnsContactAndAllSavedRepliesForOwner(): void
     {
         $principalIdentifier = SiteManagementAuthorization::bind(new IdentityIdentifier(StrTestHelper::generateUuid()));
         $contactIdentifier = StrTestHelper::generateUuid();
@@ -41,7 +41,7 @@ class GetMyContactDetailTest extends TestCase
             '送信成功した返信',
             $encryptionService,
         );
-        CreateReplyContact::create(
+        $failedReply = CreateReplyContact::create(
             new ContactIdentifier($contactIdentifier),
             new Email('contact@example.com'),
             $principalIdentifier,
@@ -62,10 +62,10 @@ class GetMyContactDetailTest extends TestCase
 
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
-        $this->assertCount(0, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"') || str_contains($query['query'], 'from "site_management_principals"')));
-        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"') || str_contains($query['query'], 'from "site_management_principals"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_contact_replies"')));
         $this->assertCount(1, $replyQueries);
-        $this->assertStringNotContainsString('principal_identifier', $replyQueries[0]['query']);
+        $this->assertStringContainsString('principal_identifier', $replyQueries[0]['query']);
 
         $this->assertSame([
             'contactIdentifier' => $contactIdentifier,
@@ -74,11 +74,15 @@ class GetMyContactDetailTest extends TestCase
             'name' => '問い合わせ者',
             'createdAt' => (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
             'content' => 'お問い合わせ内容',
-            'replies' => [[
-                'replyIdentifier' => (string) $sentReply->replyIdentifier(),
-                'content' => '送信成功した返信',
-                'sentAt' => (new DateTimeImmutable('2026-08-17 10:00:00'))->format(DateTimeInterface::ATOM),
-            ]],
+            'replies' => array_map(static fn ($reply): array => [
+                'replyIdentifier' => (string) $reply->replyIdentifier(),
+                'content' => (string) $reply->content(),
+                'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
+                'replyNumber' => $reply->replyNumber(),
+                'createdAt' => $reply->createdAt()->format(DateTimeInterface::ATOM),
+                'principalIdentifier' => (string) $principalIdentifier,
+                'name' => null,
+            ], [$sentReply, $failedReply]),
         ], $output->toArray());
     }
 
@@ -100,7 +104,7 @@ class GetMyContactDetailTest extends TestCase
 
     private function insertContact(string $id, string $principalIdentifier, string $content): void
     {
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => $id,
             'principal_identifier' => $principalIdentifier,
             'category' => Category::SUGGESTIONS->value,

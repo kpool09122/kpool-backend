@@ -20,5 +20,6 @@ interface ReplyContactFactoryInterface
         ReplyContent $content,
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
+        int $replyNumber,
     ): ReplyCotact;
 }

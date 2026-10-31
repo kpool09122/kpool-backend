@@ -64,6 +64,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $content,
             null,
             null,
+            $this->replyContactRepository->nextReplyNumber($contact->contactIdentifier()),
         );
         $this->replyContactRepository->save($reply);
 
@@ -84,6 +85,7 @@ readonly class ReplyContact implements ReplyContactInterface
                 null,
                 new DateTimeImmutable('now'),
                 $persisted->createdAt(),
+                $persisted->replyNumber(),
             );
             $this->replyContactRepository->save($failed);
 
@@ -103,6 +105,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $sentAt,
             null,
             $persisted->createdAt(),
+            $persisted->replyNumber(),
         );
         $this->replyContactRepository->save($sent);
     }

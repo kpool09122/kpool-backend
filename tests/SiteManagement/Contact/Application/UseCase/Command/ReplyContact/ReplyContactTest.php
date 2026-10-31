@@ -109,6 +109,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            1,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -120,17 +121,20 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                int $replyNumber,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyNumber === 1
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
         $replyContactRepository->shouldReceive('findById')
             ->once()
             ->with($unsentReply->replyIdentifier())
@@ -149,6 +153,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() instanceof DateTimeImmutable
                     && $saved->failedAt() === null
+                    && $saved->replyNumber() === 1
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
@@ -193,6 +198,7 @@ class ReplyContactTest extends TestCase
         $replyContactFactory->shouldNotReceive('create');
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
         $replyContactRepository->shouldNotReceive('save');
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
@@ -242,6 +248,7 @@ class ReplyContactTest extends TestCase
         $replyContactFactory->shouldNotReceive('create');
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
         $replyContactRepository->shouldNotReceive('save');
 
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
@@ -304,6 +311,7 @@ class ReplyContactTest extends TestCase
             null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
+            1,
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
         $replyContactFactory->shouldReceive('create')
@@ -315,17 +323,20 @@ class ReplyContactTest extends TestCase
                 ReplyContent $content,
                 ?DateTimeImmutable $sentAt,
                 ?DateTimeImmutable $failedAt,
+                int $replyNumber,
             ) use ($contactIdentifier, $contact, $expectedContent, $principalIdentifier): bool {
                 return $ci === $contactIdentifier
                     && (string) $ii === (string) $principalIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
                     && $sentAt === null
+                    && $replyNumber === 1
                     && $failedAt === null;
             })
             ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
         $replyContactRepository->shouldReceive('findById')
             ->once()
             ->with($unsentReply->replyIdentifier())
@@ -344,6 +355,7 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->content() === $expectedContent
                     && $saved->sentAt() === null
                     && $saved->failedAt() instanceof DateTimeImmutable
+                    && $saved->replyNumber() === 1
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();

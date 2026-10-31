@@ -21,6 +21,16 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
     ) {
     }
 
+    public function nextReplyNumber(ContactIdentifier $contactIdentifier): int
+    {
+        /** @var int|null $lastReplyNumber */
+        $lastReplyNumber = ContactReplyModel::query()
+            ->where('contact_id', (string) $contactIdentifier)
+            ->max('reply_number');
+
+        return ($lastReplyNumber ?? 0) + 1;
+    }
+
     public function save(ReplyCotact $replyCotact): void
     {
         ContactReplyModel::query()->updateOrCreate(
@@ -29,6 +39,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             ],
             [
                 'contact_id' => (string)$replyCotact->contactIdentifier(),
+                'reply_number' => $replyCotact->replyNumber(),
                 'principal_identifier' => $replyCotact->principalIdentifier() !== null
                     ? (string)$replyCotact->principalIdentifier()
                     : null,
@@ -60,6 +71,7 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
             $model->sent_at?->toDateTimeImmutable(),
             $model->failed_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
+            $model->reply_number,
         );
     }
 }

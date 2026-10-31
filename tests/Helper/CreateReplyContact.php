@@ -24,8 +24,12 @@ class CreateReplyContact
         ?DateTimeImmutable $failedAt,
         DateTimeImmutable $createdAt,
         string $content,
-        EncryptionServiceInterface $encryptionService
+        EncryptionServiceInterface $encryptionService,
+        ?int $replyNumber = null,
     ): ReplyCotact {
+        /** @var int|null $lastReplyNumber */
+        $lastReplyNumber = DB::table('site_management_contact_replies')->where('contact_id', (string) $contactIdentifier)->max('reply_number');
+        $replyNumber ??= ($lastReplyNumber ?? 0) + 1;
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
@@ -35,11 +39,13 @@ class CreateReplyContact
             $sentAt,
             $failedAt,
             $createdAt,
+            $replyNumber,
         );
 
-        DB::table('contact_replies')->insert([
+        DB::table('site_management_contact_replies')->insert([
             'id' => (string) $reply->replyIdentifier(),
             'contact_id' => (string) $reply->contactIdentifier(),
+            'reply_number' => $reply->replyNumber(),
             'principal_identifier' => $reply->principalIdentifier() !== null ? (string) $reply->principalIdentifier() : null,
             'to_email' => $encryptionService->encrypt((string) $reply->toEmail()),
             'content' => (string) $reply->content(),

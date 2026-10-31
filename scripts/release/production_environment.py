@@ -2,7 +2,7 @@
 import re
 import shlex
 
-from contract import ENV_KEYS, runtime_environment
+from contract import runtime_environment
 
 
 def load_production_environment(path):
@@ -15,8 +15,8 @@ def load_production_environment(path):
         if not match:
             raise ValueError(f'Invalid production environment assignment at line {number}')
         key, raw = match.groups()
-        if key not in ENV_KEYS or key in values:
-            raise ValueError('Unknown, secret or duplicate production environment key: ' + key)
+        if key in values:
+            raise ValueError('Duplicate production environment key: ' + key)
         try:
             tokens = shlex.split(raw, comments=True)
         except ValueError:

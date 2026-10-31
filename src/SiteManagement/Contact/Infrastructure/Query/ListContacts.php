@@ -49,20 +49,14 @@ readonly class ListContacts implements ListContactsInterface
             ])
             ->with([
                 'replies' => static function (Relation $query): void {
-                    $query->select(['id', 'contact_id'])
-                        ->whereNotNull('sent_at')
-                        ->whereNull('failed_at')
-                        ->orderBy('created_at')
-                        ->orderBy('id');
+                    $query->select(['id', 'contact_id', 'reply_number', 'principal_identifier', 'content', 'sent_at', 'created_at'])
+                        ->orderBy('reply_number')
+                        ->with(['principal:id,identity_id', 'principal.identity:id,identity_name']);
                 },
             ])
             ->when($input->targetPrincipalIdentifier() !== null, fn ($query) => $query->where('principal_identifier', (string) $input->targetPrincipalIdentifier()))
-            ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies', static fn ($replyQuery) => $replyQuery
-                ->whereNotNull('sent_at')
-                ->whereNull('failed_at')))
-            ->when($input->hasReply() === false, fn ($query) => $query->whereDoesntHave('replies', static fn ($replyQuery) => $replyQuery
-                ->whereNotNull('sent_at')
-                ->whereNull('failed_at')))
+            ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies'))
+            ->when($input->hasReply() === false, fn ($query) => $query->whereDoesntHave('replies'))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
@@ -82,6 +76,7 @@ readonly class ListContacts implements ListContactsInterface
             replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
             createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
             content: (string) $contact->content,
+            replies: $contact->replies->map(static fn (ContactReply $reply): array => ContactReplyMapper::toArray($reply))->all(),
         ), $paginator->items());
 
         $output->output(

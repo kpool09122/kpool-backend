@@ -12,6 +12,7 @@ use Application\Http\Action\SiteManagement\Announcement\Query\GetDraftAnnounceme
 use Application\Http\Action\SiteManagement\Announcement\Query\ListAnnouncements\ListAnnouncementsAction;
 use Application\Http\Action\SiteManagement\Announcement\Query\ListDraftAnnouncements\ListDraftAnnouncementsAction;
 use Application\Http\Action\SiteManagement\Contact\Command\ReplyContact\ReplyContactAction;
+use Application\Http\Action\SiteManagement\Contact\Command\ReplyMyContact\ReplyMyContactAction;
 use Application\Http\Action\SiteManagement\Contact\Command\SubmitContact\SubmitContactAction;
 use Application\Http\Action\SiteManagement\Contact\Query\GetContactDetail\GetContactDetailAction;
 use Application\Http\Action\SiteManagement\Contact\Query\GetMyContactDetail\GetMyContactDetailAction;
@@ -39,6 +40,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::delete('/draft-announcements/{announcementIdentifier}', DeleteAnnouncementAction::class);
         Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
         Route::post('/contacts/{contactIdentifier}/replies', ReplyContactAction::class);
+        Route::post('/my/contact/{contactIdentifier}/replies', ReplyMyContactAction::class);
     });
 
     Route::middleware('rate-limit:screen,query')->group(function () {

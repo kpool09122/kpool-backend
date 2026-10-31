@@ -44,12 +44,6 @@ readonly class SubmitContact implements SubmitContactInterface
             throw new FailedToSendEmailException($e->getMessage());
         }
 
-        try {
-            $this->contactEmailService->sendContactToUser($contact);
-        } catch (Throwable $e) {
-            throw new FailedToSendEmailException($e->getMessage());
-        }
-
         $output->setContact($contact);
     }
 }

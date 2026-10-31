@@ -56,24 +56,14 @@ readonly class GetContactDetail implements GetContactDetailInterface
 
         $contact->load([
             'replies' => static function (Relation $query): void {
-                $query->select(['id', 'contact_id', 'content', 'sent_at', 'principal_identifier'])
-                    ->whereNotNull('sent_at')
-                    ->whereNull('failed_at')
-                    ->orderBy('created_at')
-                    ->orderBy('id')
+                $query->select(['id', 'contact_id', 'reply_number', 'principal_identifier', 'content', 'sent_at', 'created_at'])
+                    ->orderBy('reply_number')
                     ->with(['principal:id,identity_id', 'principal.identity:id,identity_name']);
             },
         ]);
 
         $replies = $contact->replies
-            ->map(static fn (ContactReplyModel $reply): array => [
-                'replyIdentifier' => (string) $reply->id,
-                'content' => (string) $reply->content,
-                'sentAt' => ($reply->sent_at ?? throw new UnexpectedValueException('Sent reply timestamp is missing.'))
-                    ->format(DateTimeInterface::ATOM),
-                'principalIdentifier' => $reply->principal_identifier,
-                'name' => $reply->principal?->identity?->identity_name,
-            ])
+            ->map(static fn (ContactReplyModel $reply): array => ContactReplyMapper::toArray($reply))
             ->all();
 
         $output->output(new ContactDetailReadModel(

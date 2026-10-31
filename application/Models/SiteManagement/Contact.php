@@ -19,7 +19,7 @@ use Override;
     'content',
     'language',
 ])]
-#[Table(name: 'contacts', keyType: 'string')]
+#[Table(name: 'site_management_contacts', keyType: 'string')]
 class Contact extends Model
 {
     #[Override]

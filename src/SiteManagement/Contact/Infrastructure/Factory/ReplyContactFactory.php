@@ -28,6 +28,7 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
         ReplyContent $content,
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
+        int $replyNumber,
     ): ReplyCotact {
         return new ReplyCotact(
             new ContactReplyIdentifier($this->generator->generate()),
@@ -38,6 +39,7 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
             $sentAt,
             $failedAt,
             new DateTimeImmutable('now'),
+            $replyNumber,
         );
     }
 }

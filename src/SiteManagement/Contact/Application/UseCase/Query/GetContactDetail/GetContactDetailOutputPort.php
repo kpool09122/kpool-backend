@@ -10,6 +10,6 @@ interface GetContactDetailOutputPort
 {
     public function output(ContactDetailReadModel $contact): void;
 
-    /** @return array{contactIdentifier: string, principalIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, content: string, sentAt: string, principalIdentifier?: ?string, name?: ?string}>} */
+    /** @return array{contactIdentifier: string, principalIdentifier: ?string, category: int, name: string, createdAt: string, content: string, replies: array<int, array{replyIdentifier: string, replyNumber: int, principalIdentifier: ?string, name: ?string, content: string, sentAt: ?string, createdAt: string}>} */
     public function toArray(): array;
 }

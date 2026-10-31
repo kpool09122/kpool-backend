@@ -10,35 +10,30 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 
-class ContactAcceptedMail extends Mailable
+class ContactSubmitterReplyMail extends Mailable
 {
     use Queueable;
     use SerializesModels;
 
-    private const array SUBJECTS = [
-        'ja' => 'お問い合わせを受け付けました',
-        'en' => 'We Have Received Your Inquiry',
-        'ko' => '문의가 접수되었습니다',
-    ];
-
     public function __construct(
         public readonly Contact $contact,
+        public readonly ReplyContent $replyContent,
     ) {
     }
 
     public function envelope(): Envelope
     {
-        return new Envelope(
-            subject: self::SUBJECTS[$this->contact->language()->value],
-        );
+        return new Envelope(subject: ContactMailCopy::forContact($this->contact)['submitterSubject']);
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact.accepted_' . $this->contact->language()->value,
-            text: 'emails.contact.text.accepted_' . $this->contact->language()->value,
+            view: 'emails.contact.submitter_reply',
+            text: 'emails.contact.text.submitter_reply',
+            with: ['copy' => ContactMailCopy::forContact($this->contact)],
         );
     }
 }

@@ -57,22 +57,33 @@ model MyContactSummary {
   category: int32;
   @doc("Name of the person submitting the inquiry.")
   name: string;
-  @doc("Identifiers of replies sent successfully for this inquiry.")
+  @doc("Identifiers of all saved replies, ordered by replyNumber ascending, regardless of notification delivery status.")
   replyIdentifiers: Uuid[];
+  @doc("All saved replies ordered by replyNumber ascending. The client determines reply status from the last entry and its principalIdentifier.")
+  replies: ContactReplyDetail[];
   @doc("Timestamp when the inquiry was created.")
   createdAt: Timestamp;
   @doc("Full inquiry content.")
   content: string;
 }
 
-@doc("A successfully sent reply to a contact inquiry.")
+@doc("A saved conversation entry, including pending or failed email notifications. No recipient information is returned.")
 model ContactReplyDetail {
   replyIdentifier: Uuid;
+  @doc("Positive sequence number within this inquiry. Assigned on first save and preserved on delivery updates.")
+  @minValue(1)
+  replyNumber: int32;
+  @doc("Principal ID stored on the reply. Null only for historical replies without a stored author.")
+  principalIdentifier: Uuid | null;
+  @doc("Current display name of the stored author, or null if unavailable.")
+  name: string | null;
   content: string;
-  sentAt: Timestamp;
+  @doc("Email notification delivery timestamp. Null when delivery has not succeeded.")
+  sentAt: Timestamp | null;
+  createdAt: Timestamp;
 }
 
-@doc("Contact inquiry detail.")
+@doc("Contact inquiry detail with all saved replies. Reply status is determined by the client.")
 model ContactDetail {
   contactIdentifier: Uuid;
   principalIdentifier?: Uuid | null;
@@ -80,22 +91,8 @@ model ContactDetail {
   name: string;
   createdAt: Timestamp;
   content: string;
+  @doc("All saved replies ordered by replyNumber ascending, regardless of notification delivery status.")
   replies: ContactReplyDetail[];
-}
-
-@doc("A successfully sent reply including author information, returned when contact:reply permission is granted.")
-model ContactReplyDetailWithAuthor {
-  ...ContactReplyDetail;
-  @doc("SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.")
-  principalIdentifier: Uuid | null;
-  @doc("Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.")
-  name: string | null;
-}
-
-@doc("Contact detail with author information on each successfully sent reply, returned when contact:reply permission is granted. No email addresses are returned.")
-model ContactDetailWithReplyAuthors {
-  ...OmitProperties<ContactDetail, "replies">;
-  replies: ContactReplyDetailWithAuthor[];
 }
 
 @doc("Response containing contact inquiries associated with the signed-in principal.")
@@ -106,6 +103,15 @@ model ListMyContactsResponse {
 
 @route("/my/contact")
 interface MyContactOperations {
+  @useAuth(SessionCookieAuth)
+  @post
+  @route("/{contactIdentifier}/replies")
+  @doc("Post a reply to the authenticated principal's own inquiry. Requires own-contact contact:view permission and an active principal; does not grant contact:reply. Only content is accepted; author and replyNumber are assigned server-side. Saves the post before notifying the configured administrator. Notification failure retains the post in the conversation and returns 500. Other or anonymous ownership is forbidden; a missing inquiry returns 404.")
+  replyMyContact(
+    @path contactIdentifier: Uuid,
+    @body body: ReplyContactRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @route("/{contactIdentifier}")
   @doc("Get a contact inquiry associated with the signed-in principal.")
@@ -150,10 +156,10 @@ interface ContactListOperations {
   @useAuth(SessionCookieAuth)
   @get
   @route("/{contactIdentifier}")
-  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Reply author information is included for every authorized caller. No email addresses are returned.")
+  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. All authorized callers receive the stored reply author and replyNumber for every saved entry. No email addresses are returned.")
   getContactDetailByIdentifier(
     @path contactIdentifier: Uuid,
-  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @useAuth(SessionCookieAuth)
   @post
@@ -169,7 +175,7 @@ interface ContactListOperations {
   @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.")
   listContacts(
     @query principalIdentifier?: Uuid | null,
-    @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
+    @doc("Filter by saved reply existence: 1 for at least one reply, 0 for none. Includes every author and notification delivery status. Omitted/null does not filter.")
     @query hasReply?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
     @minValue(1)
@@ -185,11 +191,11 @@ interface ContactListOperations {
 interface ContactOperations {
   @get
   @route("/principals/{principalIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. Reply author information is included for every authorized caller.")
+  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. All authorized callers receive the stored reply author and replyNumber for every saved entry.")
   getContactDetail(
     @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,
-  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
 
   @post

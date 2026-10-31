@@ -71,7 +71,7 @@ class ContactDetailErrorsTest extends TestCase
             DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact']], JSON_THROW_ON_ERROR)]);
         }
         if ($exists) {
-            DB::table('contacts')->insert(['id' => $contact, 'principal_identifier' => $owner, 'category' => 1, 'name' => 'Other', 'email' => 'encrypted', 'content' => 'history', 'language' => 'ja']);
+            DB::table('site_management_contacts')->insert(['id' => $contact, 'principal_identifier' => $owner, 'category' => 1, 'name' => 'Other', 'email' => 'encrypted', 'content' => 'history', 'language' => 'ja']);
         }
         $uri = '/principals/'.$owner.'/contacts/'.$contact;
         $request = $mine ? GetMyContactDetailRequest::create($uri, 'GET') : GetContactDetailRequest::create($uri, 'GET');
