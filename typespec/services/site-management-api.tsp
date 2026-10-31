@@ -118,12 +118,6 @@ interface MyContactOperations {
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
-@doc("Response containing contact inquiries for an principal.")
-model ListContactsByPrincipalResponse {
-  @statusCode statusCode: 200;
-  @body body: MyContactSummary[];
-}
-
 @doc("Paginated contact inquiries and page metadata.")
 model ListContactsPage {
   @doc("Contact inquiries on the requested page.")
@@ -197,13 +191,6 @@ interface ContactOperations {
     @path contactIdentifier: Uuid,
   ): ContactDetail | OperatorContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
-
-  @get
-  @route("/principals/{principalIdentifier}")
-  @doc("List contact inquiries for the specified principal. Requires a site-management Operator.")
-  listContactsByPrincipal(
-    @path principalIdentifier: Uuid,
-  ): ListContactsByPrincipalResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
   @route("/submit")

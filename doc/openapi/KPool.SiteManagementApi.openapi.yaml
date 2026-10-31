@@ -181,61 +181,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /contact/principals/{principalIdentifier}:
-    get:
-      operationId: ContactOperations_listContactsByPrincipal
-      description: List contact inquiries for the specified principal. Requires a site-management Operator.
-      parameters:
-        - name: principalIdentifier
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '200':
-          description: Response containing contact inquiries for an principal.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MyContactSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '403':
-          description: Access is forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '429':
-          description: Client error
-          headers:
-            Retry-After:
-              required: true
-              schema:
-                type: integer
-                format: int32
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '503':
-          description: Service unavailable.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /contact/principals/{principalIdentifier}/{contactIdentifier}:
     get:
       operationId: ContactOperations_getContactDetail

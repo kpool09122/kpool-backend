@@ -16,7 +16,6 @@ use Application\Http\Action\SiteManagement\Contact\Command\SubmitContact\SubmitC
 use Application\Http\Action\SiteManagement\Contact\Query\GetContactDetail\GetContactDetailAction;
 use Application\Http\Action\SiteManagement\Contact\Query\GetMyContactDetail\GetMyContactDetailAction;
 use Application\Http\Action\SiteManagement\Contact\Query\ListContacts\ListContactsAction;
-use Application\Http\Action\SiteManagement\Contact\Query\ListContactsByPrincipal\ListContactsByPrincipalAction;
 use Application\Http\Action\SiteManagement\Contact\Query\ListMyContacts\ListMyContactsAction;
 use Application\Http\Action\SiteManagement\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\SiteManagement\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
@@ -48,7 +47,6 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::get('/principal-groups', ListPrincipalGroupsAction::class);
         Route::get('/my/contact', ListMyContactsAction::class);
         Route::get('/my/contact/{contactIdentifier}', GetMyContactDetailAction::class);
-        Route::get('/contact/principals/{principalIdentifier}', ListContactsByPrincipalAction::class);
         Route::get('/contact/principals/{principalIdentifier}/{contactIdentifier}', GetContactDetailAction::class);
         Route::get('/contacts', ListContactsAction::class);
         Route::get('/contacts/{contactIdentifier}', GetContactDetailAction::class);
