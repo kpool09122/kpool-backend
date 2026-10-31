@@ -57,10 +57,8 @@ readonly class ListContacts implements ListContactsInterface
                 },
             ])
             ->when($input->targetPrincipalIdentifier() !== null, fn ($query) => $query->where('principal_identifier', (string) $input->targetPrincipalIdentifier()))
-            ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies'))
-            ->when($input->hasReply() === false, fn ($query) => $query->whereDoesntHave('replies'))
-            ->when($input->lastReplyByMe() !== null, static function (Builder $query) use ($input): void {
-                $lastReplyByMe = static function (Builder $replies) use ($input): void {
+            ->when($input->replyStatus() !== null, static function (Builder $query) use ($input): void {
+                $latestReplyByActor = static function (Builder $replies) use ($input): void {
                     $replies->where('principal_identifier', (string) $input->principalIdentifier())
                         ->where('reply_number', static function (QueryBuilder $latest): void {
                             $latest->selectRaw('MAX(latest_reply.reply_number)')
@@ -68,10 +66,10 @@ readonly class ListContacts implements ListContactsInterface
                                 ->whereColumn('latest_reply.contact_id', 'site_management_contact_replies.contact_id');
                         });
                 };
-                if ($input->lastReplyByMe()) {
-                    $query->whereHas('replies', $lastReplyByMe);
+                if ($input->replyStatus() === 'replied') {
+                    $query->whereHas('replies', $latestReplyByActor);
                 } else {
-                    $query->whereDoesntHave('replies', $lastReplyByMe);
+                    $query->whereDoesntHave('replies', $latestReplyByActor);
                 }
             })
             ->orderByDesc('created_at')

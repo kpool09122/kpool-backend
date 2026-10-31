@@ -17,11 +17,14 @@ readonly class ListContactsInput implements ListContactsInputPort
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
         private ?PrincipalIdentifier $targetPrincipalIdentifier,
-        private ?bool $hasReply,
+        private ?string $replyStatus = null,
         ?int $perPage = null,
         private int $page = 1,
-        private ?bool $lastReplyByMe = null,
     ) {
+        if ($this->replyStatus !== null && ! in_array($this->replyStatus, ['pending', 'replied'], true)) {
+            throw new InvalidArgumentException('Reply status must be pending or replied.');
+        }
+
         if ($perPage !== null && ($perPage < 1 || $perPage > self::MAX_PER_PAGE)) {
             throw new InvalidArgumentException('Per page must be between 1 and 100.');
         }
@@ -43,14 +46,9 @@ readonly class ListContactsInput implements ListContactsInputPort
         return $this->targetPrincipalIdentifier;
     }
 
-    public function hasReply(): ?bool
+    public function replyStatus(): ?string
     {
-        return $this->hasReply;
-    }
-
-    public function lastReplyByMe(): ?bool
-    {
-        return $this->lastReplyByMe;
+        return $this->replyStatus;
     }
 
     public function perPage(): int

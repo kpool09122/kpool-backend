@@ -13,8 +13,7 @@ class ListContactsRequest extends FormRequest
     {
         return [
             'principalIdentifier' => ['nullable', 'uuid'],
-            'hasReply' => ['nullable', 'string', 'in:0,1'],
-            'lastReplyByMe' => ['nullable', 'string', 'in:0,1'],
+            'replyStatus' => ['sometimes', 'required', 'string', 'in:pending,replied'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
@@ -25,14 +24,9 @@ class ListContactsRequest extends FormRequest
         return $this->query('principalIdentifier') !== null ? (string) $this->query('principalIdentifier') : null;
     }
 
-    public function hasReply(): ?bool
+    public function replyStatus(): ?string
     {
-        return $this->query('hasReply') !== null ? $this->boolean('hasReply') : null;
-    }
-
-    public function lastReplyByMe(): ?bool
-    {
-        return $this->query('lastReplyByMe') !== null ? $this->boolean('lastReplyByMe') : null;
+        return $this->query('replyStatus') !== null ? (string) $this->query('replyStatus') : null;
     }
 
     public function perPage(): ?int

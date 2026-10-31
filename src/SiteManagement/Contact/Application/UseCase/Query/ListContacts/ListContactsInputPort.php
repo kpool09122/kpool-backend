@@ -12,9 +12,7 @@ interface ListContactsInputPort
 
     public function targetPrincipalIdentifier(): ?PrincipalIdentifier;
 
-    public function hasReply(): ?bool;
-
-    public function lastReplyByMe(): ?bool;
+    public function replyStatus(): ?string;
 
     public function perPage(): int;
 

@@ -17,11 +17,11 @@ class ListContactsInputTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $targetPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $input = new ListContactsInput($principalIdentifier, $targetPrincipalIdentifier, true);
+        $input = new ListContactsInput($principalIdentifier, $targetPrincipalIdentifier, 'replied');
 
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($targetPrincipalIdentifier, $input->targetPrincipalIdentifier());
-        $this->assertTrue($input->hasReply());
+        $this->assertSame('replied', $input->replyStatus());
         $this->assertSame(50, $input->perPage());
         $this->assertSame(1, $input->page());
     }
@@ -33,7 +33,7 @@ class ListContactsInputTest extends TestCase
         $input = new ListContactsInput($principalIdentifier, null, null);
 
         $this->assertNull($input->targetPrincipalIdentifier());
-        $this->assertNull($input->hasReply());
+        $this->assertNull($input->replyStatus());
     }
 
     public function testConstructAcceptsPaginationValues(): void
@@ -44,6 +44,21 @@ class ListContactsInputTest extends TestCase
 
         $this->assertSame(20, $input->perPage());
         $this->assertSame(3, $input->page());
+    }
+
+    public function testConstructAcceptsPendingStatus(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $input = new ListContactsInput($principalIdentifier, null, 'pending');
+
+        $this->assertSame('pending', $input->replyStatus());
+    }
+
+    public function testConstructRejectsUnknownReplyStatus(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new ListContactsInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), null, 'unknown');
     }
 
     public function testConstructRejectsPerPageOutsideAllowedRange(): void

@@ -313,27 +313,15 @@ paths:
               - $ref: '#/components/schemas/KPool.Common.Uuid'
             nullable: true
           explode: false
-        - name: hasReply
+        - name: replyStatus
           in: query
           required: false
-          description: 'Filter by saved reply existence: 1 for at least one reply, 0 for none. Includes every author and notification delivery status. Omitted/null does not filter.'
+          description: 'Filter by reply status relative to the authenticated operator: replied when they authored the latest saved reply (highest replyNumber), pending when the latest author is someone else or unknown, or no replies exist. Independent of notification delivery status. Omit to include all contacts.'
           schema:
             type: string
             enum:
-              - '0'
-              - '1'
-            nullable: true
-          explode: false
-        - name: lastReplyByMe
-          in: query
-          required: false
-          description: 'Filter by whether the last saved reply (highest replyNumber) was authored by the authenticated principal: 1 for yes; 0 for another author, an unknown author or no replies. Independent of notification delivery status. Omitted/null does not filter.'
-          schema:
-            type: string
-            enum:
-              - '0'
-              - '1'
-            nullable: true
+              - pending
+              - replied
           explode: false
         - name: perPage
           in: query

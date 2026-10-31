@@ -35,10 +35,9 @@ readonly class ListContactsAction
             $this->listContacts->process(new ListContactsInput(
                 $this->siteManagementContext->principalIdentifier,
                 $request->principalIdentifier() === null ? null : new PrincipalIdentifier($request->principalIdentifier()),
-                $request->hasReply(),
+                $request->replyStatus(),
                 $request->perPage(),
                 $request->page(),
-                $request->lastReplyByMe(),
             ), $output);
         } catch (UnauthorizedException $e) {
             $this->logger->error((string) $e);
