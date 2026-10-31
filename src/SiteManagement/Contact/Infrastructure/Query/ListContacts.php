@@ -8,7 +8,9 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Application\Models\SiteManagement\ContactReply;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ContactReadModel;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInputPort;
 use Source\SiteManagement\Contact\Application\UseCase\Query\ListContacts\ListContactsInterface;
@@ -55,8 +57,21 @@ readonly class ListContacts implements ListContactsInterface
                 },
             ])
             ->when($input->targetPrincipalIdentifier() !== null, fn ($query) => $query->where('principal_identifier', (string) $input->targetPrincipalIdentifier()))
-            ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies'))
-            ->when($input->hasReply() === false, fn ($query) => $query->whereDoesntHave('replies'))
+            ->when($input->replyStatus() !== null, static function (Builder $query) use ($input): void {
+                $latestReplyByActor = static function (Builder $replies) use ($input): void {
+                    $replies->where('principal_identifier', (string) $input->principalIdentifier())
+                        ->where('reply_number', static function (QueryBuilder $latest): void {
+                            $latest->selectRaw('MAX(latest_reply.reply_number)')
+                                ->from('site_management_contact_replies as latest_reply')
+                                ->whereColumn('latest_reply.contact_id', 'site_management_contact_replies.contact_id');
+                        });
+                };
+                if ($input->replyStatus() === 'replied') {
+                    $query->whereHas('replies', $latestReplyByActor);
+                } else {
+                    $query->whereDoesntHave('replies', $latestReplyByActor);
+                }
+            })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());

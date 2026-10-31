@@ -19,11 +19,15 @@ class ContactReplyMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public readonly string $previousMessage;
+
     public function __construct(
         public readonly Contact $contact,
         public readonly ReplyContent $content,
         public readonly Email $replyToAddress,
+        ?string $previousMessage = null,
     ) {
+        $this->previousMessage = $previousMessage ?? (string) $contact->content();
     }
 
     public function envelope(): Envelope
@@ -41,7 +45,9 @@ class ContactReplyMail extends Mailable
         return new Content(
             view: 'emails.contact.reply',
             text: 'emails.contact.text.reply',
-            with: ['copy' => ContactMailCopy::forContact($this->contact)],
+            with: [
+                'copy' => ContactMailCopy::forContact($this->contact),
+            ],
         );
     }
 }

@@ -235,7 +235,7 @@ class ReplyMyContactTest extends TestCase
         $ownerReply->process(new ReplyMyContactInput($id, $owner->principalIdentifier(), '追加質問'));
         $operatorReply->process(new ReplyContactInput($id, $operator->principalIdentifier(), '追加回答'));
         $management = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($operator->principalIdentifier(), null, true), $management);
+        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($operator->principalIdentifier(), null, 'replied'), $management);
         $mine = new ListMyContactsOutput();
         $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($owner->principalIdentifier()), $mine);
         $expectedAuthors = [(string) $operator->principalIdentifier(), (string) $owner->principalIdentifier(), (string) $operator->principalIdentifier()];

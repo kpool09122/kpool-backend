@@ -175,8 +175,8 @@ interface ContactListOperations {
   @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.")
   listContacts(
     @query principalIdentifier?: Uuid | null,
-    @doc("Filter by saved reply existence: 1 for at least one reply, 0 for none. Includes every author and notification delivery status. Omitted/null does not filter.")
-    @query hasReply?: "0" | "1" | null,
+    @doc("Filter by reply status relative to the authenticated operator: replied when they authored the latest saved reply (highest replyNumber), pending when the latest author is someone else or unknown, or no replies exist. Independent of notification delivery status. Omit to include all contacts.")
+    @query replyStatus?: "pending" | "replied",
     @doc("Maximum number of inquiries per page (1-100, default 50).")
     @minValue(1)
     @maxValue(100)

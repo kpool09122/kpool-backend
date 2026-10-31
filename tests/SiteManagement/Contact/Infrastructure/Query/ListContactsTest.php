@@ -123,7 +123,7 @@ class ListContactsTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessFiltersContactsBySavedReplyExistenceRegardlessOfDeliveryStatus(): void
+    public function testProcessReturnsAllSavedRepliesRegardlessOfDeliveryStatus(): void
     {
         $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($requester);
@@ -143,24 +143,12 @@ class ListContactsTest extends TestCase
         $failedReply = StrTestHelper::generateUuid();
         $this->insertReply($failedReply, $failedContact, '2026-08-16 11:00:00', '2026-08-16 11:01:00');
 
-        $hasReplyOutput = new ListContactsOutput();
+        $allContactsOutput = new ListContactsOutput();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, true), $hasReplyOutput);
-
-        $this->assertCount(3, DB::getQueryLog());
-        $this->assertSame([$sentContact, $failedContact], array_column($hasReplyOutput->toArray()['contacts'], 'contactIdentifier'));
-        $this->assertSame([[$sentReply, $laterReply, $pendingReply], [$failedReply]], array_column($hasReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
-
-        $hasNoReplyOutput = new ListContactsOutput();
-        $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, false), $hasNoReplyOutput);
-
-        $this->assertSame([$unrepliedContact], array_column($hasNoReplyOutput->toArray()['contacts'], 'contactIdentifier'));
-        $this->assertSame([[]], array_column($hasNoReplyOutput->toArray()['contacts'], 'replyIdentifiers'));
-
-        $allContactsOutput = new ListContactsOutput();
         $this->app()->make(ListContactsInterface::class)->process(new ListContactsInput($principalIdentifier, null, null), $allContactsOutput);
 
+        $this->assertCount(3, DB::getQueryLog());
         $this->assertSame([$sentContact, $failedContact, $unrepliedContact], array_column($allContactsOutput->toArray()['contacts'], 'contactIdentifier'));
         $this->assertSame([[$sentReply, $laterReply, $pendingReply], [$failedReply], []], array_column($allContactsOutput->toArray()['contacts'], 'replyIdentifiers'));
     }
@@ -217,6 +205,37 @@ class ListContactsTest extends TestCase
         $this->assertSame(2, $output->toArray()['total']);
     }
 
+    #[Group('useDb')]
+    public function testReplyStatusUsesLatestSavedAuthorBeforePagination(): void
+    {
+        $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($requester);
+        $actor = SiteManagementAuthorization::bind($requester, true);
+        $other = StrTestHelper::generateUuid();
+        $contacts = [];
+        foreach ([[], [(string) $actor], [(string) $actor, $other], [(string) $actor, null], [$other, (string) $actor]] as $index => $authors) {
+            $id = StrTestHelper::generateUuid();
+            $contacts[] = $id;
+            $this->insertContact($id, null, 'contact@example.com', '2026-08-1' . ($index + 1) . ' 10:00:00');
+            foreach ($authors as $author) {
+                $this->insertReply(StrTestHelper::generateUuid(), $id, null, null, '2026-08-17 10:00:00', $author);
+            }
+        }
+        $query = $this->app()->make(ListContactsInterface::class);
+        $replied = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, 'replied'), $replied);
+        $this->assertSame([$contacts[4], $contacts[1]], array_column($replied->toArray()['contacts'], 'contactIdentifier'));
+
+        $pending = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, 'pending'), $pending);
+        $this->assertSame([$contacts[3], $contacts[2], $contacts[0]], array_column($pending->toArray()['contacts'], 'contactIdentifier'));
+
+        $page = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, 'pending', 1, 2), $page);
+        $this->assertSame([$contacts[2]], array_column($page->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame(3, $page->toArray()['total']);
+    }
+
     private function insertContact(string $id, ?string $principalIdentifier, string $email, string $createdAt): void
     {
         DB::table('site_management_contacts')->insert([
@@ -232,13 +251,13 @@ class ListContactsTest extends TestCase
         ]);
     }
 
-    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00'): void
+    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00', ?string $principalIdentifier = null): void
     {
         DB::table('site_management_contact_replies')->insert([
             'reply_number' => DB::table('site_management_contact_replies')->where('contact_id', $contactIdentifier)->count() + 1,
             'id' => $id,
             'contact_id' => $contactIdentifier,
-            'principal_identifier' => null,
+            'principal_identifier' => $principalIdentifier,
             'to_email' => 'encrypted@example.com',
             'content' => '返信内容',
             'sent_at' => $sentAt,

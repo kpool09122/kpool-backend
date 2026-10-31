@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 
 class ContactReceivedMail extends Mailable
@@ -24,7 +25,7 @@ class ContactReceivedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: ContactMailCopy::forContact($this->contact)['receivedSubject'],
+            subject: ContactMailCopy::forContact($this->contact, Language::JAPANESE)['receivedSubject'],
         );
     }
 
@@ -33,7 +34,7 @@ class ContactReceivedMail extends Mailable
         return new Content(
             view: 'emails.contact.received',
             text: 'emails.contact.text.received',
-            with: ['copy' => ContactMailCopy::forContact($this->contact)],
+            with: ['copy' => ContactMailCopy::forContact($this->contact, Language::JAPANESE)],
         );
     }
 }

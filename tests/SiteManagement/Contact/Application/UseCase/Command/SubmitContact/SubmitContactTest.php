@@ -20,6 +20,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmai
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
@@ -93,7 +94,7 @@ class SubmitContactTest extends TestCase
             ->with($category, $name, $email, $content, $principalIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
-        $emailService = new ContactEmailService(new Email('admin@example.com'), new Email('support@example.com'));
+        $emailService = new ContactEmailService(new Email('admin@example.com'), new Email('support@example.com'), $this->app()->make(ReplyContactRepositoryInterface::class));
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('save')

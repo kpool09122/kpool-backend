@@ -10,6 +10,7 @@ use Application\Mail\ContactSubmitterReplyMail;
 use Illuminate\Support\Facades\Mail;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 
@@ -18,6 +19,7 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
     public function __construct(
         private Email $administratorEmail,
         private Email $contactReplyToAddress,
+        private ReplyContactRepositoryInterface $replyContactRepository,
     ) {
     }
 
@@ -28,7 +30,14 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
 
     public function sendReplyToAdministrator(Contact $contact, ReplyContent $content): void
     {
-        Mail::to((string) $this->administratorEmail)->send(new ContactSubmitterReplyMail($contact, $content));
+        $previousReply = $contact->principalIdentifier() === null ? null
+            : $this->replyContactRepository->findLatestFromOperator($contact->contactIdentifier(), $contact->principalIdentifier());
+
+        Mail::to((string) $this->administratorEmail)->send(new ContactSubmitterReplyMail(
+            $contact,
+            $content,
+            $previousReply === null ? null : (string) $previousReply->content(),
+        ));
     }
 
     public function sendContactToAdministrator(Contact $contact): void
@@ -40,8 +49,11 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
 
     public function sendReplyToUser(Contact $contact, ReplyContent $content): void
     {
+        $previousReply = $contact->principalIdentifier() === null ? null
+            : $this->replyContactRepository->findLatestFromSubmitter($contact->contactIdentifier(), $contact->principalIdentifier());
+
         Mail::to((string) $contact->email())->send(
-            new ContactReplyMail($contact, $content, $this->contactReplyToAddress)
+            new ContactReplyMail($contact, $content, $this->contactReplyToAddress, $previousReply === null ? null : (string) $previousReply->content())
         );
     }
 }

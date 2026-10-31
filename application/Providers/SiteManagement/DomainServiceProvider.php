@@ -89,6 +89,7 @@ class DomainServiceProvider extends ServiceProvider
             fn (): ContactEmailService => new ContactEmailService(
                 new Email((string) config('mail.from.address')),
                 new Email((string) config('mail.contact_reply_to_address', 'kpool09122@gmail.com')),
+                $this->app->make(ReplyContactRepositoryInterface::class),
             )
         );
     }

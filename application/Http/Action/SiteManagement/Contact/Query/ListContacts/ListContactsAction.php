@@ -35,7 +35,7 @@ readonly class ListContactsAction
             $this->listContacts->process(new ListContactsInput(
                 $this->siteManagementContext->principalIdentifier,
                 $request->principalIdentifier() === null ? null : new PrincipalIdentifier($request->principalIdentifier()),
-                $request->hasReply(),
+                $request->replyStatus(),
                 $request->perPage(),
                 $request->page(),
             ), $output);
