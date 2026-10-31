@@ -6,18 +6,24 @@ namespace Tests\SiteManagement\Contact\Infrastructure\Service;
 
 use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
+use Application\Mail\ContactSubmitterReplyMail;
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Support\Facades\Mail;
+use Mockery;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
+use Source\SiteManagement\Contact\Domain\Entity\Reply;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
@@ -31,6 +37,9 @@ class ContactEmailServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findLatestFromSubmitter', 'findLatestFromOperator')->andReturnNull()->byDefault();
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
 
         $this->app()['view']->addLocation(dirname(__DIR__, 5) . '/resources/views');
     }
@@ -49,14 +58,14 @@ class ContactEmailServiceTest extends TestCase
             ],
             '英語' => [
                 Language::ENGLISH,
-                'A New Inquiry Has Been Received',
-                'Name:',
-                'Reply to Your Inquiry',
+                'お問い合わせが届きました',
+                '名前:',
+                'Reply to Your Contact Message',
             ],
             '韓国語' => [
                 Language::KOREAN,
-                '새 문의가 도착했습니다',
-                '이름:',
+                'お問い合わせが届きました',
+                '名前:',
                 '문의에 대한 답변',
             ],
         ];
@@ -93,7 +102,7 @@ class ContactEmailServiceTest extends TestCase
         $mail = new ContactReceivedMail($contact);
         $mail->assertSeeInHtml((string) $contact->name());
         $mail->assertSeeInText($expectedBody);
-        $service = new ContactEmailService($administratorEmail, new Email('support@example.com'));
+        $service = new ContactEmailService($administratorEmail, new Email('support@example.com'), $this->app()->make(ReplyContactRepositoryInterface::class));
 
         $service->sendContactToAdministrator($contact);
 
@@ -142,7 +151,7 @@ class ContactEmailServiceTest extends TestCase
         return [
             'Japanese signed in' => [Language::JAPANESE, true, '管理画面のお問い合わせ履歴'],
             'Japanese anonymous' => [Language::JAPANESE, false, '追加のご質問がございましたら'],
-            'English signed in' => [Language::ENGLISH, true, 'inquiry history in the dashboard'],
+            'English signed in' => [Language::ENGLISH, true, 'Contact history in the dashboard'],
             'English anonymous' => [Language::ENGLISH, false, 'For follow-up questions'],
             'Korean signed in' => [Language::KOREAN, true, '관리 화면의 문의 내역'],
             'Korean anonymous' => [Language::KOREAN, false, '추가 문의는'],
@@ -166,18 +175,71 @@ class ContactEmailServiceTest extends TestCase
             $mail->assertDontSeeInText((string) $address);
             $this->assertSame([], $mail->envelope()->replyTo);
         } else {
-            $mail->assertSeeInHtml('mailto:' . (string) $address, false);
+            $mail->assertSeeInHtml((string) $address);
+            $mail->assertDontSeeInHtml('mailto:');
+            $mail->assertDontSeeInHtml('<a ', false);
             $mail->assertSeeInText((string) $address);
             $replyTo = $mail->envelope()->replyTo;
             $this->assertCount(1, $replyTo);
             $this->assertInstanceOf(Address::class, $replyTo[0]);
             $this->assertSame((string) $address, $replyTo[0]->address);
         }
-        $service = new ContactEmailService(new Email('notifications@example.com'), $address);
+        $service = new ContactEmailService(new Email('notifications@example.com'), $address, $this->app()->make(ReplyContactRepositoryInterface::class));
         $service->sendReplyToUser($contact, $content);
         Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $sent): bool => $sent->contact === $contact
             && $sent->hasTo((string) $contact->email())
             && (string) $sent->replyToAddress === (string) $address);
+    }
+
+    public function testReplyToUserQuotesTheLatestSubmitterMessage(): void
+    {
+        Mail::fake();
+        $contact = $this->createContact(Language::JAPANESE);
+        $previousReply = $this->createPreviousReply($contact, $contact->principalIdentifier());
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findLatestFromSubmitter')->once()
+            ->with($contact->contactIdentifier(), $contact->principalIdentifier())->andReturn($previousReply);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $service = $this->app()->make(ContactEmailServiceInterface::class);
+
+        $service->sendReplyToUser($contact, new ReplyContent('Current operator response'));
+
+        Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $mail): bool =>
+            $mail->previousMessage === (string) $previousReply->content()
+            && (string) $mail->content === 'Current operator response');
+    }
+
+    public function testReplyToAdministratorQuotesTheLatestOperatorMessage(): void
+    {
+        Mail::fake();
+        $contact = $this->createContact(Language::JAPANESE);
+        $previousReply = $this->createPreviousReply($contact, null);
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findLatestFromOperator')->once()
+            ->with($contact->contactIdentifier(), $contact->principalIdentifier())->andReturn($previousReply);
+        $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $service = $this->app()->make(ContactEmailServiceInterface::class);
+
+        $service->sendReplyToAdministrator($contact, new ReplyContent('Current submitter response'));
+
+        Mail::assertSent(ContactSubmitterReplyMail::class, static fn (ContactSubmitterReplyMail $mail): bool =>
+            $mail->previousMessage === (string) $previousReply->content()
+            && (string) $mail->replyContent === 'Current submitter response');
+    }
+
+    private function createPreviousReply(Contact $contact, ?PrincipalIdentifier $principalIdentifier): Reply
+    {
+        return new Reply(
+            new ContactReplyIdentifier(StrTestHelper::generateUuid()),
+            $contact->contactIdentifier(),
+            $principalIdentifier,
+            $contact->email(),
+            new ReplyContent('Latest message from the other participant'),
+            null,
+            null,
+            new DateTimeImmutable('2026-01-01'),
+            3,
+        );
     }
 
     private function createContact(Language $language, bool $signedIn = true): Contact

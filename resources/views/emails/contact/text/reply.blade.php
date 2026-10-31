@@ -2,8 +2,9 @@
 
 {{ $copy['replyIntro'] }}
 
-{{ $copy['idLabel'] }}: {{ $contact->contactIdentifier() }}
-{{ $copy['categoryLabel'] }}: {{ $copy['category'] }}
+
+{{ $copy['previousMessageLabel'] }}:
+{!! $previousMessage !!}
 
 {{ $copy['replyLabel'] }}:
 {!! (string) $content !!}
@@ -13,7 +14,7 @@
 {!! (string) $replyToAddress !!}
 @else
 {{ $copy['replyNext'] }}
-{!! $copy['siteUrl'] !!}
+{!! $copy['historyUrl'] !!}
 @endif
 
 k-pool

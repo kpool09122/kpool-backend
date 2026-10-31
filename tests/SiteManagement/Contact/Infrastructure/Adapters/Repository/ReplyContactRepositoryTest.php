@@ -294,6 +294,49 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertNull($reply);
     }
 
+    #[Group('useDb')]
+    public function testLatestParticipantRepliesReturnNullWithoutHistory(): void
+    {
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $submitter = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $this->assertNull($repository->findLatestFromSubmitter($contactIdentifier, $submitter));
+        $this->assertNull($repository->findLatestFromOperator($contactIdentifier, $submitter));
+    }
+
+    #[Group('useDb')]
+    public function testLatestParticipantRepliesAreScopedAndOrderedBySequenceIncludingUnsentEntries(): void
+    {
+        $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
+        $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $otherContactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $submitter = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $operator = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $email = new Email('member@example.com');
+        $now = new DateTimeImmutable('2026-01-01');
+        foreach ([$contactIdentifier, $otherContactIdentifier] as $identifier) {
+            DB::table('site_management_contacts')->insert([
+                'id' => (string) $identifier,
+                'category' => Category::SUGGESTIONS->value,
+                'name' => 'Member',
+                'email' => $encryptionService->encrypt((string) $email),
+                'content' => 'Original inquiry',
+                'created_at' => $now->format('Y-m-d H:i:s'),
+                'updated_at' => $now->format('Y-m-d H:i:s'),
+            ]);
+        }
+        CreateReplyContact::create($contactIdentifier, $email, $submitter, $now, null, $now->modify('+1 day'), 'Older submitter reply', $encryptionService, 1);
+        CreateReplyContact::create($contactIdentifier, $email, $operator, $now, null, $now->modify('+1 day'), 'Older operator reply', $encryptionService, 2);
+        $latestSubmitter = CreateReplyContact::create($contactIdentifier, $email, $submitter, null, null, $now, 'Unsent submitter reply', $encryptionService, 3);
+        $latestOperator = CreateReplyContact::create($contactIdentifier, $email, null, null, $now, $now, 'Historical operator reply with failed delivery', $encryptionService, 4);
+        CreateReplyContact::create($otherContactIdentifier, $email, $operator, $now, null, $now, 'Other conversation', $encryptionService, 99);
+        CreateReplyContact::create($otherContactIdentifier, $email, $submitter, $now, null, $now, 'Other submitter conversation', $encryptionService, 100);
+
+        $this->assertSame((string) $latestSubmitter->replyIdentifier(), (string) $repository->findLatestFromSubmitter($contactIdentifier, $submitter)?->replyIdentifier());
+        $this->assertSame((string) $latestOperator->replyIdentifier(), (string) $repository->findLatestFromOperator($contactIdentifier, $submitter)?->replyIdentifier());
+    }
+
     /** @return array<string, array{int}> */
     public static function replyNumberProvider(): array
     {

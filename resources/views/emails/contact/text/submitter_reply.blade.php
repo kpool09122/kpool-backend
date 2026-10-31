@@ -2,15 +2,16 @@
 
 {{ $copy['submitterIntro'] }}
 
-{{ $copy['idLabel'] }}: {{ $contact->contactIdentifier() }}
-{{ $copy['categoryLabel'] }}: {{ $copy['category'] }}
 {{ $copy['nameLabel'] }}: {!! (string) $contact->name() !!}
 {{ $copy['emailLabel'] }}: {!! (string) $contact->email() !!}
+
+{{ $copy['previousMessageLabel'] }}:
+{!! $previousMessage !!}
 
 {{ $copy['replyLabel'] }}:
 {!! (string) $replyContent !!}
 
 {{ $copy['managementNext'] }}
-{!! $copy['siteUrl'] !!}
+{!! $copy['managementUrl'] !!}
 
 k-pool

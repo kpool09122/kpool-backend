@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Infrastructure\Adapters\Repository;
 
 use Application\Models\SiteManagement\ContactReply as ContactReplyModel;
+use Illuminate\Database\Eloquent\Builder;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Reply;
@@ -46,10 +47,37 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
         $model = ContactReplyModel::query()
             ->whereKey((string)$contactReplyIdentifier)
             ->first();
-        if ($model === null) {
-            return null;
-        }
 
+        return $model === null ? null : $this->toEntity($model);
+    }
+
+    public function findLatestFromSubmitter(ContactIdentifier $contactIdentifier, PrincipalIdentifier $principalIdentifier): ?Reply
+    {
+        $model = ContactReplyModel::query()
+            ->where('contact_id', (string) $contactIdentifier)
+            ->where('principal_identifier', (string) $principalIdentifier)
+            ->orderByDesc('reply_number')
+            ->first();
+
+        return $model === null ? null : $this->toEntity($model);
+    }
+
+    public function findLatestFromOperator(ContactIdentifier $contactIdentifier, PrincipalIdentifier $principalIdentifier): ?Reply
+    {
+        $model = ContactReplyModel::query()
+            ->where('contact_id', (string) $contactIdentifier)
+            ->where(static function (Builder $query) use ($principalIdentifier): void {
+                $query->where('principal_identifier', '!=', (string) $principalIdentifier)
+                    ->orWhereNull('principal_identifier');
+            })
+            ->orderByDesc('reply_number')
+            ->first();
+
+        return $model === null ? null : $this->toEntity($model);
+    }
+
+    private function toEntity(ContactReplyModel $model): Reply
+    {
         return new Reply(
             new ContactReplyIdentifier((string)$model->id),
             new ContactIdentifier((string)$model->contact_id),
