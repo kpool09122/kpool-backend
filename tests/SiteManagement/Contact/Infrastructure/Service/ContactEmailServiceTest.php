@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Infrastructure\Service;
 
-use Application\Mail\ContactAcceptedMail;
 use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -37,31 +36,25 @@ class ContactEmailServiceTest extends TestCase
     }
 
     /**
-     * @return array<string, array{Language, string, string, string, string, string}>
+     * @return array<string, array{Language, string, string, string}>
      */
     public static function languageProvider(): array
     {
         return [
             '日本語' => [
                 Language::JAPANESE,
-                'お問い合わせを受け付けました',
-                'お問い合わせありがとうございます。',
                 'お問い合わせが届きました',
                 '名前:',
                 'お問い合わせへの返信',
             ],
             '英語' => [
                 Language::ENGLISH,
-                'We Have Received Your Inquiry',
-                'Thank you for contacting us.',
                 'A New Inquiry Has Been Received',
                 'Name:',
                 'Reply to Your Inquiry',
             ],
             '韓国語' => [
                 Language::KOREAN,
-                '문의가 접수되었습니다',
-                '문의해 주셔서 감사합니다.',
                 '새 문의가 도착했습니다',
                 '이름:',
                 '문의에 대한 답변',
@@ -82,45 +75,11 @@ class ContactEmailServiceTest extends TestCase
     }
 
     /**
-     * 正常系: 問い合わせ受付メールがユーザーへ送信されること
-     */
-    #[DataProvider('languageProvider')]
-    public function testSendContactToUser(
-        Language $language,
-        string $expectedSubject,
-        string $expectedBody,
-        string $_receivedSubject,
-        string $_receivedBody,
-        string $_replySubject,
-    ): void {
-        Mail::fake();
-
-        $contact = $this->createContact($language);
-        $view = 'emails.contact.accepted_' . $language->value;
-        $textView = 'emails.contact.text.accepted_' . $language->value;
-        $mail = new ContactAcceptedMail($contact);
-        $mail->assertSeeInHtml($expectedBody);
-        $mail->assertSeeInText($expectedBody);
-
-        $service = $this->app()->make(ContactEmailServiceInterface::class);
-        $service->sendContactToUser($contact);
-
-        Mail::assertSent(ContactAcceptedMail::class, static fn (ContactAcceptedMail $mail): bool => $mail->hasTo((string) $contact->email())
-            && $mail->contact === $contact
-            && $mail->contact->language() === $language
-            && $mail->envelope()->subject === $expectedSubject
-            && $mail->content()->view === $view
-            && $mail->content()->text === $textView);
-    }
-
-    /**
      * 正常系: 問い合わせ通知メールが管理者へ送信されること
      */
     #[DataProvider('languageProvider')]
     public function testSendContactToAdministrator(
         Language $language,
-        string $_acceptedSubject,
-        string $_acceptedBody,
         string $expectedSubject,
         string $expectedBody,
         string $_replySubject,
@@ -129,8 +88,8 @@ class ContactEmailServiceTest extends TestCase
 
         $administratorEmail = new Email('admin@example.com');
         $contact = $this->createContact($language);
-        $view = 'emails.contact.received_' . $language->value;
-        $textView = 'emails.contact.text.received_' . $language->value;
+        $view = 'emails.contact.received';
+        $textView = 'emails.contact.text.received';
         $mail = new ContactReceivedMail($contact);
         $mail->assertSeeInHtml((string) $contact->name());
         $mail->assertSeeInText($expectedBody);
@@ -152,8 +111,6 @@ class ContactEmailServiceTest extends TestCase
     #[DataProvider('languageProvider')]
     public function testSendReplyToUser(
         Language $language,
-        string $_acceptedSubject,
-        string $_acceptedBody,
         string $_receivedSubject,
         string $_receivedBody,
         string $expectedSubject,
@@ -162,8 +119,8 @@ class ContactEmailServiceTest extends TestCase
 
         $content = new ReplyContent('返信内容');
         $contact = $this->createContact($language);
-        $view = 'emails.contact.reply_' . $language->value;
-        $textView = 'emails.contact.text.reply_' . $language->value;
+        $view = 'emails.contact.reply';
+        $textView = 'emails.contact.text.reply';
         $mail = new ContactReplyMail($contact, $content, new Email('admin@example.com'));
         $mail->assertSeeInHtml((string) $content);
         $mail->assertSeeInText((string) $content);
@@ -184,7 +141,7 @@ class ContactEmailServiceTest extends TestCase
     {
         return [
             'Japanese signed in' => [Language::JAPANESE, true, '管理画面のお問い合わせ履歴'],
-            'Japanese anonymous' => [Language::JAPANESE, false, '追加のご質問は'],
+            'Japanese anonymous' => [Language::JAPANESE, false, '追加のご質問がございましたら'],
             'English signed in' => [Language::ENGLISH, true, 'inquiry history in the dashboard'],
             'English anonymous' => [Language::ENGLISH, false, 'For follow-up questions'],
             'Korean signed in' => [Language::KOREAN, true, '관리 화면의 문의 내역'],

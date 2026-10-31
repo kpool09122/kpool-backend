@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Infrastructure\Service;
 
-use Application\Mail\ContactAcceptedMail;
 use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
 use Application\Mail\ContactSubmitterReplyMail;
@@ -30,13 +29,6 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
     public function sendReplyToAdministrator(Contact $contact, ReplyContent $content): void
     {
         Mail::to((string) $this->administratorEmail)->send(new ContactSubmitterReplyMail($contact, $content));
-    }
-
-    public function sendContactToUser(Contact $contact): void
-    {
-        Mail::to((string) $contact->email())->send(
-            new ContactAcceptedMail($contact)
-        );
     }
 
     public function sendContactToAdministrator(Contact $contact): void

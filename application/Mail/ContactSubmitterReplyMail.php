@@ -25,11 +25,15 @@ class ContactSubmitterReplyMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'お問い合わせに本人から返信が届きました');
+        return new Envelope(subject: ContactMailCopy::forContact($this->contact)['submitterSubject']);
     }
 
     public function content(): Content
     {
-        return new Content(text: 'emails.contact.text.submitter_reply');
+        return new Content(
+            view: 'emails.contact.submitter_reply',
+            text: 'emails.contact.text.submitter_reply',
+            with: ['copy' => ContactMailCopy::forContact($this->contact)],
+        );
     }
 }

@@ -19,12 +19,6 @@ class ContactReplyMail extends Mailable
     use Queueable;
     use SerializesModels;
 
-    private const array SUBJECTS = [
-        'ja' => 'お問い合わせへの返信',
-        'en' => 'Reply to Your Inquiry',
-        'ko' => '문의에 대한 답변',
-    ];
-
     public function __construct(
         public readonly Contact $contact,
         public readonly ReplyContent $content,
@@ -35,7 +29,7 @@ class ContactReplyMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: self::SUBJECTS[$this->contact->language()->value],
+            subject: ContactMailCopy::forContact($this->contact)['replySubject'],
             replyTo: $this->contact->principalIdentifier() === null
                 ? [new Address((string) $this->replyToAddress)]
                 : [],
@@ -45,8 +39,9 @@ class ContactReplyMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact.reply_' . $this->contact->language()->value,
-            text: 'emails.contact.text.reply_' . $this->contact->language()->value,
+            view: 'emails.contact.reply',
+            text: 'emails.contact.text.reply',
+            with: ['copy' => ContactMailCopy::forContact($this->contact)],
         );
     }
 }

@@ -14,10 +14,6 @@ interface ContactEmailServiceInterface
 
     public function sendReplyToAdministrator(Contact $contact, ReplyContent $content): void;
 
-    public function sendContactToUser(
-        Contact $contact,
-    ): void;
-
     public function sendContactToAdministrator(
         Contact $contact,
     ): void;
