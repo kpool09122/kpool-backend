@@ -20,6 +20,7 @@ readonly class ListContactsInput implements ListContactsInputPort
         private ?bool $hasReply,
         ?int $perPage = null,
         private int $page = 1,
+        private ?bool $lastReplyByMe = null,
     ) {
         if ($perPage !== null && ($perPage < 1 || $perPage > self::MAX_PER_PAGE)) {
             throw new InvalidArgumentException('Per page must be between 1 and 100.');
@@ -45,6 +46,11 @@ readonly class ListContactsInput implements ListContactsInputPort
     public function hasReply(): ?bool
     {
         return $this->hasReply;
+    }
+
+    public function lastReplyByMe(): ?bool
+    {
+        return $this->lastReplyByMe;
     }
 
     public function perPage(): int

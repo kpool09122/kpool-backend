@@ -324,6 +324,17 @@ paths:
               - '1'
             nullable: true
           explode: false
+        - name: lastReplyByMe
+          in: query
+          required: false
+          description: 'Filter by whether the last saved reply (highest replyNumber) was authored by the authenticated principal: 1 for yes; 0 for another author, an unknown author or no replies. Independent of notification delivery status. Omitted/null does not filter.'
+          schema:
+            type: string
+            enum:
+              - '0'
+              - '1'
+            nullable: true
+          explode: false
         - name: perPage
           in: query
           required: false

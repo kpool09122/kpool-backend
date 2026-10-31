@@ -217,6 +217,37 @@ class ListContactsTest extends TestCase
         $this->assertSame(2, $output->toArray()['total']);
     }
 
+    #[Group('useDb')]
+    public function testLastReplyByMeUsesLatestSavedAuthorBeforePagination(): void
+    {
+        $requester = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($requester);
+        $actor = SiteManagementAuthorization::bind($requester, true);
+        $other = StrTestHelper::generateUuid();
+        $contacts = [];
+        foreach ([[], [(string) $actor], [(string) $actor, $other], [(string) $actor, null], [$other, (string) $actor]] as $index => $authors) {
+            $id = StrTestHelper::generateUuid();
+            $contacts[] = $id;
+            $this->insertContact($id, null, 'contact@example.com', '2026-08-1' . ($index + 1) . ' 10:00:00');
+            foreach ($authors as $author) {
+                $this->insertReply(StrTestHelper::generateUuid(), $id, null, null, '2026-08-17 10:00:00', $author);
+            }
+        }
+        $query = $this->app()->make(ListContactsInterface::class);
+        $replied = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, null, 50, 1, true), $replied);
+        $this->assertSame([$contacts[4], $contacts[1]], array_column($replied->toArray()['contacts'], 'contactIdentifier'));
+
+        $pending = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, null, 50, 1, false), $pending);
+        $this->assertSame([$contacts[3], $contacts[2], $contacts[0]], array_column($pending->toArray()['contacts'], 'contactIdentifier'));
+
+        $page = new ListContactsOutput();
+        $query->process(new ListContactsInput($actor, null, null, 1, 2, false), $page);
+        $this->assertSame([$contacts[2]], array_column($page->toArray()['contacts'], 'contactIdentifier'));
+        $this->assertSame(3, $page->toArray()['total']);
+    }
+
     private function insertContact(string $id, ?string $principalIdentifier, string $email, string $createdAt): void
     {
         DB::table('site_management_contacts')->insert([
@@ -232,13 +263,13 @@ class ListContactsTest extends TestCase
         ]);
     }
 
-    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00'): void
+    private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00', ?string $principalIdentifier = null): void
     {
         DB::table('site_management_contact_replies')->insert([
             'reply_number' => DB::table('site_management_contact_replies')->where('contact_id', $contactIdentifier)->count() + 1,
             'id' => $id,
             'contact_id' => $contactIdentifier,
-            'principal_identifier' => null,
+            'principal_identifier' => $principalIdentifier,
             'to_email' => 'encrypted@example.com',
             'content' => '返信内容',
             'sent_at' => $sentAt,

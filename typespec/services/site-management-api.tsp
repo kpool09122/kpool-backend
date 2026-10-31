@@ -177,6 +177,8 @@ interface ContactListOperations {
     @query principalIdentifier?: Uuid | null,
     @doc("Filter by saved reply existence: 1 for at least one reply, 0 for none. Includes every author and notification delivery status. Omitted/null does not filter.")
     @query hasReply?: "0" | "1" | null,
+    @doc("Filter by whether the last saved reply (highest replyNumber) was authored by the authenticated principal: 1 for yes; 0 for another author, an unknown author or no replies. Independent of notification delivery status. Omitted/null does not filter.")
+    @query lastReplyByMe?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
     @minValue(1)
     @maxValue(100)
