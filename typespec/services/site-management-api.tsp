@@ -83,6 +83,21 @@ model ContactDetail {
   replies: ContactReplyDetail[];
 }
 
+@doc("A successfully sent reply including author information, returned when contact:reply permission is granted.")
+model ContactReplyDetailWithAuthor {
+  ...ContactReplyDetail;
+  @doc("SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.")
+  principalIdentifier: Uuid | null;
+  @doc("Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.")
+  name: string | null;
+}
+
+@doc("Contact detail with author information on each successfully sent reply, returned when contact:reply permission is granted. No email addresses are returned.")
+model ContactDetailWithReplyAuthors {
+  ...OmitProperties<ContactDetail, "replies">;
+  replies: ContactReplyDetailWithAuthor[];
+}
+
 @doc("Response containing contact inquiries associated with the signed-in principal.")
 model ListMyContactsResponse {
   @statusCode statusCode: 200;
@@ -101,12 +116,6 @@ interface MyContactOperations {
   @get
   @doc("List contact inquiries associated with the signed-in principal, newest first.")
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
-}
-
-@doc("Response containing contact inquiries for an principal.")
-model ListContactsByPrincipalResponse {
-  @statusCode statusCode: 200;
-  @body body: MyContactSummary[];
 }
 
 @doc("Paginated contact inquiries and page metadata.")
@@ -141,10 +150,10 @@ interface ContactListOperations {
   @useAuth(SessionCookieAuth)
   @get
   @route("/{contactIdentifier}")
-  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Returns the existing detail without an email address.")
+  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Reply author information is included for every authorized caller. No email addresses are returned.")
   getContactDetailByIdentifier(
     @path contactIdentifier: Uuid,
-  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @useAuth(SessionCookieAuth)
   @post
@@ -176,19 +185,12 @@ interface ContactListOperations {
 interface ContactOperations {
   @get
   @route("/principals/{principalIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds.")
+  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. Reply author information is included for every authorized caller.")
   getContactDetail(
     @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,
-  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
-
-  @get
-  @route("/principals/{principalIdentifier}")
-  @doc("List contact inquiries for the specified principal. Requires a site-management Operator.")
-  listContactsByPrincipal(
-    @path principalIdentifier: Uuid,
-  ): ListContactsByPrincipalResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
   @route("/submit")
