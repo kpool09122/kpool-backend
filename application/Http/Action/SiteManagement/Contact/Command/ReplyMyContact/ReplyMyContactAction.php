@@ -6,7 +6,6 @@ namespace Application\Http\Action\SiteManagement\Contact\Command\ReplyMyContact;
 
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\SiteManagementContext;
-use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -16,7 +15,6 @@ use Psr\Log\LoggerInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyContact\ReplyMyContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyContact\ReplyMyContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
-use Source\SiteManagement\Contact\Domain\Exception\ContactNotRepliedByOperatorException;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,8 +49,6 @@ readonly class ReplyMyContactAction
             throw new ForbiddenHttpException(detail: error_message('unauthorized', $this->actorContext->language->value), previous: $e);
         } catch (ContactNotFoundException $e) {
             throw new NotFoundHttpException(detail: error_message('contact_not_found', $this->actorContext->language->value), previous: $e);
-        } catch (ContactNotRepliedByOperatorException $e) {
-            throw new ConflictHttpException(detail: error_message('contact_not_replied_by_operator', $this->actorContext->language->value), previous: $e);
         } catch (UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 

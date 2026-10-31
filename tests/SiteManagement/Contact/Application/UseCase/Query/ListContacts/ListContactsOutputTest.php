@@ -32,6 +32,7 @@ class ListContactsOutputTest extends TestCase
                 'replyIdentifiers' => [],
                 'createdAt' => '2026-08-27T12:00:00+00:00',
                 'content' => '本文',
+            'replies' => [],
             ]],
             'current_page' => 2,
             'last_page' => 5,

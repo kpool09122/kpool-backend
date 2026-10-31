@@ -86,7 +86,7 @@ class ListMyContactsTest extends TestCase
             '送信成功した返信',
             $encryptionService,
         );
-        CreateReplyContact::create(
+        $failedReply = CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
             $principalIdentifier,
@@ -96,7 +96,7 @@ class ListMyContactsTest extends TestCase
             '送信失敗した返信',
             $encryptionService,
         );
-        CreateReplyContact::create(
+        $pendingReply = CreateReplyContact::create(
             new ContactIdentifier($newerContactIdentifier),
             new Email('newer@example.com'),
             $principalIdentifier,
@@ -112,7 +112,7 @@ class ListMyContactsTest extends TestCase
         DB::enableQueryLog();
         $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($principalIdentifier), $output);
 
-        $this->assertCount(2, DB::getQueryLog());
+        $this->assertCount(3, DB::getQueryLog());
 
         $this->assertSame([
             [
@@ -120,9 +120,18 @@ class ListMyContactsTest extends TestCase
                 'principalIdentifier' => (string) $principalIdentifier,
                 'category' => Category::ISSUES->value,
                 'name' => '新しい問い合わせ',
-                'replyIdentifiers' => [(string) $sentReply->replyIdentifier()],
+                'replyIdentifiers' => array_map(static fn ($reply): string => (string) $reply->replyIdentifier(), [$sentReply, $failedReply, $pendingReply]),
                 'createdAt' => (new DateTimeImmutable('2026-08-16 10:00:00'))->format(DateTimeInterface::ATOM),
                 'content' => '新しい内容',
+                'replies' => array_map(static fn ($reply): array => [
+                    'replyIdentifier' => (string) $reply->replyIdentifier(),
+                    'content' => (string) $reply->content(),
+                    'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
+                    'replyNumber' => $reply->replyNumber(),
+                    'createdAt' => $reply->createdAt()->format(DateTimeInterface::ATOM),
+                    'principalIdentifier' => (string) $principalIdentifier,
+                    'name' => null,
+                ], [$sentReply, $failedReply, $pendingReply]),
             ],
             [
                 'contactIdentifier' => $olderContactIdentifier,
@@ -132,6 +141,7 @@ class ListMyContactsTest extends TestCase
                 'replyIdentifiers' => [],
                 'createdAt' => (new DateTimeImmutable('2026-08-15 10:00:00'))->format(DateTimeInterface::ATOM),
                 'content' => '古い内容',
+                'replies' => [],
             ],
         ], $output->toArray());
     }

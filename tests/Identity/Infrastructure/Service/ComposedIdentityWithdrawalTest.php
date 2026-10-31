@@ -162,7 +162,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $contact = StrTestHelper::generateUuid();
         $reply = StrTestHelper::generateUuid();
         DB::table('contacts')->insert(['id' => $contact, 'principal_identifier' => $subject['site_management_principals'], 'category' => 1, 'name' => 'History', 'email' => 'encrypted', 'content' => 'contact history', 'language' => 'ja']);
-        DB::table('contact_replies')->insert(['id' => $reply, 'contact_id' => $contact, 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history', 'to_email' => 'encrypted']);
+        DB::table('contact_replies')->insert(['id' => $reply, 'contact_id' => $contact, 'reply_number' => 1, 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history', 'to_email' => 'encrypted']);
 
         return ['contact' => $contact, 'reply' => $reply];
     }

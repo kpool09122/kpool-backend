@@ -34,6 +34,7 @@ class ListMyContactsOutputTest extends TestCase
                 'replyIdentifiers' => ['00000000-0000-0000-0000-000000000003'],
                 'createdAt' => '2026-08-27T12:00:00+00:00',
                 'content' => '本文',
+            'replies' => [],
             ],
         ], $output->toArray());
     }

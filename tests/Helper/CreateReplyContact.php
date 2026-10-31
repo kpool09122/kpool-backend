@@ -12,7 +12,6 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 class CreateReplyContact
@@ -26,8 +25,11 @@ class CreateReplyContact
         DateTimeImmutable $createdAt,
         string $content,
         EncryptionServiceInterface $encryptionService,
-        ReplyType $replyType = ReplyType::OPERATOR,
+        ?int $replyNumber = null,
     ): ReplyCotact {
+        /** @var int|null $lastReplyNumber */
+        $lastReplyNumber = DB::table('contact_replies')->where('contact_id', (string) $contactIdentifier)->max('reply_number');
+        $replyNumber ??= ($lastReplyNumber ?? 0) + 1;
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
@@ -37,13 +39,13 @@ class CreateReplyContact
             $sentAt,
             $failedAt,
             $createdAt,
-            $replyType,
+            $replyNumber,
         );
 
         DB::table('contact_replies')->insert([
             'id' => (string) $reply->replyIdentifier(),
             'contact_id' => (string) $reply->contactIdentifier(),
-            'reply_type' => $reply->replyType()->value,
+            'reply_number' => $reply->replyNumber(),
             'principal_identifier' => $reply->principalIdentifier() !== null ? (string) $reply->principalIdentifier() : null,
             'to_email' => $encryptionService->encrypt((string) $reply->toEmail()),
             'content' => (string) $reply->content(),

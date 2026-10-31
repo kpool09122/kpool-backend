@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ReplyCotact
@@ -23,8 +23,11 @@ readonly class ReplyCotact
         private ?DateTimeImmutable $sentAt,
         private ?DateTimeImmutable $failedAt,
         private DateTimeImmutable $createdAt,
-        private ReplyType $replyType,
+        private int $replyNumber,
     ) {
+        if ($replyNumber < 1) {
+            throw new InvalidArgumentException('Reply number must be positive.');
+        }
     }
 
     public function replyIdentifier(): ContactReplyIdentifier
@@ -32,9 +35,9 @@ readonly class ReplyCotact
         return $this->replyIdentifier;
     }
 
-    public function replyType(): ReplyType
+    public function replyNumber(): int
     {
-        return $this->replyType;
+        return $this->replyNumber;
     }
 
     public function contactIdentifier(): ContactIdentifier

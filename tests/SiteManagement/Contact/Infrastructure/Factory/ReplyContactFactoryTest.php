@@ -13,7 +13,6 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -25,8 +24,8 @@ class ReplyContactFactoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
-    #[DataProvider('replyTypeProvider')]
-    public function testCreate(ReplyType $replyType): void
+    #[DataProvider('replyNumberProvider')]
+    public function testCreate(int $replyNumber): void
     {
         $replyIdentifier = StrTestHelper::generateUuid();
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -52,13 +51,13 @@ class ReplyContactFactoryTest extends TestCase
             $content,
             $sentAt,
             $failedAt,
-            $replyType,
+            $replyNumber,
         );
         $after = new DateTimeImmutable('now');
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame($contactIdentifier, $reply->contactIdentifier());
-        $this->assertSame($replyType, $reply->replyType());
+        $this->assertSame($replyNumber, $reply->replyNumber());
         $this->assertSame($principalIdentifier, $reply->principalIdentifier());
         $this->assertSame($toEmail, $reply->toEmail());
         $this->assertSame($content, $reply->content());
@@ -94,7 +93,7 @@ class ReplyContactFactoryTest extends TestCase
             new ReplyContent('返信本文'),
             null,
             new DateTimeImmutable('2026-01-01 12:34:56'),
-            ReplyType::OPERATOR,
+            1,
         );
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
@@ -102,12 +101,12 @@ class ReplyContactFactoryTest extends TestCase
         $this->assertNotNull($reply->failedAt());
     }
 
-    /** @return array<string, array{ReplyType}> */
-    public static function replyTypeProvider(): array
+    /** @return array<string, array{int}> */
+    public static function replyNumberProvider(): array
     {
         return [
-            'operator' => [ReplyType::OPERATOR],
-            'submitter' => [ReplyType::SUBMITTER],
+            'first' => [1],
+            'later' => [7],
         ];
     }
 }

@@ -74,7 +74,6 @@ return [
     'invalid_delegation' => '委托操作无效。',
     'identity_not_found' => '找不到指定的身份。',
     'contact_not_found' => '找不到指定的咨询。',
-    'contact_not_replied_by_operator' => '只有收到运营方回复后才能回复咨询。',
     'already_user_exists' => '用户已存在。',
     'unauthorized_email' => '邮箱地址尚未验证。',
     'auth_code_session_not_found' => '找不到验证码会话。',

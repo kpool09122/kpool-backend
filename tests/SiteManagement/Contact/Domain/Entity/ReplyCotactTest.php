@@ -11,7 +11,6 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -21,8 +20,8 @@ class ReplyCotactTest extends TestCase
     /**
      * 正常系: インスタンスが生成されること
      */
-    #[DataProvider('replyTypeProvider')]
-    public function test__construct(string $replyType): void
+    #[DataProvider('replyNumberProvider')]
+    public function test__construct(int $replyNumber): void
     {
         $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -48,10 +47,10 @@ class ReplyCotactTest extends TestCase
             $sentAt,
             $failedAt,
             $createdAt,
-            ReplyType::from($replyType),
+            $replyNumber,
         );
 
-        $this->assertSame($replyType, $reply->replyType()->value);
+        $this->assertSame($replyNumber, $reply->replyNumber());
         $this->assertSame((string)$replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertSame((string)$contactIdentifier, (string)$reply->contactIdentifier());
         $this->assertSame((string)$principalIdentifier, (string)$reply->principalIdentifier());
@@ -82,19 +81,19 @@ class ReplyCotactTest extends TestCase
             null,
             new DateTimeImmutable('2026-01-01 12:34:58'),
             new DateTimeImmutable('2026-01-01 12:34:57'),
-            ReplyType::OPERATOR,
+            1,
         );
 
         $this->assertNull($reply->sentAt());
         $this->assertNotNull($reply->failedAt());
     }
 
-    /** @return array<string, array{string}> */
-    public static function replyTypeProvider(): array
+    /** @return array<string, array{int}> */
+    public static function replyNumberProvider(): array
     {
         return [
-            'operator' => ['operator'],
-            'submitter' => ['submitter'],
+            'first' => [1],
+            'later' => [7],
         ];
     }
 }

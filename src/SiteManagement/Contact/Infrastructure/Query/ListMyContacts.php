@@ -45,12 +45,9 @@ readonly class ListMyContacts implements ListMyContactsInterface
             ])
             ->with([
                 'replies' => static function (Relation $query): void {
-                    $query->select(['id', 'contact_id'])
-                        ->where('reply_type', 'operator')
-                        ->whereNotNull('sent_at')
-                        ->whereNull('failed_at')
-                        ->orderBy('created_at')
-                        ->orderBy('id');
+                    $query->select(['id', 'contact_id', 'reply_number', 'principal_identifier', 'content', 'sent_at', 'created_at'])
+                        ->orderBy('reply_number')
+                        ->with(['principal:id,identity_id', 'principal.identity:id,identity_name']);
                 },
             ])
             ->where('principal_identifier', (string) $principal->principalIdentifier())
@@ -74,6 +71,7 @@ readonly class ListMyContacts implements ListMyContactsInterface
                 replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
                 createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
                 content: (string) $contact->content,
+                replies: $contact->replies->map(static fn (ContactReply $reply): array => ContactReplyMapper::toArray($reply))->all(),
             ))
             ->all();
 

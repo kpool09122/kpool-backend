@@ -186,7 +186,7 @@ class GetContactDetailTest extends TestCase
 
     #[Group('useDb')]
     #[DataProvider('owners')]
-    public function testReturnsExistingDetailContractWithOnlySuccessfullySentReplies(bool $signedIn, bool $scoped): void
+    public function testReturnsAllPersistedRepliesInNumberOrder(bool $signedIn, bool $scoped): void
     {
         $principal = $this->provisionPrincipal();
         SiteManagementAuthorization::grantOperator($principal);
@@ -207,11 +207,8 @@ class GetContactDetailTest extends TestCase
                 '返信内容',
                 $encryptionService,
             );
-            if ($sent && ! $failed) {
-                $replies[] = $reply;
-            }
+            $replies[] = $reply;
         }
-        usort($replies, static fn ($a, $b): int => $a->createdAt() <=> $b->createdAt() ?: strcmp((string) $a->replyIdentifier(), (string) $b->replyIdentifier()));
         $otherId = StrTestHelper::generateUuid();
         $this->insertContact($otherId, null);
         CreateReplyContact::create(new ContactIdentifier($otherId), new Email('contact@example.com'), null, new DateTimeImmutable('2026-08-17 09:00:00'), null, new DateTimeImmutable('2026-08-17 09:00:00'), '別の問い合わせへの返信', $encryptionService);
@@ -246,7 +243,7 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => (string) $reply->content(),
                 'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
-                'replyType' => 'operator',
+                'replyNumber' => $reply->replyNumber(),
                 'createdAt' => $reply->createdAt()->format(DateTimeInterface::ATOM),
                 'principalIdentifier' => (string) $principal->principalIdentifier(),
                 'name' => 'test-identity',
@@ -418,7 +415,7 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => '返信' . $index,
                 'sentAt' => $at->format(DateTimeInterface::ATOM),
-                'replyType' => 'operator',
+                'replyNumber' => $reply->replyNumber(),
                 'createdAt' => $at->format(DateTimeInterface::ATOM),
                 'principalIdentifier' => $author === null ? null : (string) $author,
                 'name' => $names[$index],
@@ -455,7 +452,7 @@ class GetContactDetailTest extends TestCase
 
     #[Group('useDb')]
     #[DataProvider('detailRoutes')]
-    public function testNonOperatorWithReplyPermissionReceivesAuthorFields(bool $scoped): void
+    public function testNonOperatorWithReplyPermissionReceivesReplyAuthors(bool $scoped): void
     {
         $viewer = $this->provisionPrincipal();
         $author = $this->provisionPrincipal();
@@ -478,10 +475,10 @@ class GetContactDetailTest extends TestCase
             'replyIdentifier' => (string) $reply->replyIdentifier(),
             'content' => '返信内容',
             'sentAt' => $at->format(DateTimeInterface::ATOM),
+            'replyNumber' => $reply->replyNumber(),
+            'createdAt' => $at->format(DateTimeInterface::ATOM),
             'principalIdentifier' => (string) $author->principalIdentifier(),
             'name' => 'test-identity',
-            'replyType' => 'operator',
-            'createdAt' => $at->format(DateTimeInterface::ATOM),
         ]], $output->toArray()['replies']);
         $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
         $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
@@ -591,8 +588,10 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => '本人向け返信',
                 'sentAt' => $at->format(DateTimeInterface::ATOM),
-                'replyType' => 'operator',
+                'replyNumber' => $reply->replyNumber(),
                 'createdAt' => $at->format(DateTimeInterface::ATOM),
+                'principalIdentifier' => (string) $principal->principalIdentifier(),
+                'name' => 'test-identity',
             ]], $output->toArray()['replies']);
         }
     }

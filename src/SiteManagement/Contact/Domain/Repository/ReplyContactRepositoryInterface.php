@@ -10,7 +10,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 
 interface ReplyContactRepositoryInterface
 {
-    public function hasSuccessfulOperatorReply(ContactIdentifier $contactIdentifier): bool;
+    public function nextReplyNumber(ContactIdentifier $contactIdentifier): int;
 
     public function save(ReplyCotact $replyCotact): void;
 

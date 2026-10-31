@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 interface ReplyContactFactoryInterface
@@ -21,6 +20,6 @@ interface ReplyContactFactoryInterface
         ReplyContent $content,
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
-        ReplyType $replyType,
+        int $replyNumber,
     ): ReplyCotact;
 }

@@ -20,6 +20,7 @@ class ContactReadModelTest extends TestCase
             'replyIdentifiers' => ['reply-1', 'reply-2'],
             'createdAt' => 'createdAt-value',
             'content' => '本文',
+            'replies' => [],
         ], $subject->toArray());
     }
 
@@ -34,6 +35,7 @@ class ContactReadModelTest extends TestCase
             'replyIdentifiers' => ['reply-1', 'reply-2'],
             'createdAt' => 'createdAt-value',
             'content' => '本文',
+            'replies' => [],
         ], $subject->toArray());
     }
 }

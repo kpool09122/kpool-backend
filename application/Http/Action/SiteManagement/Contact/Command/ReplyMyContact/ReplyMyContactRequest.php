@@ -16,7 +16,6 @@ class ReplyMyContactRequest extends FormRequest
             'contactIdentifier' => ['required', 'uuid'],
             'content' => ['required', 'string'],
             'principalIdentifier' => ['prohibited'],
-            'replyType' => ['prohibited'],
             'name' => ['prohibited'],
             'toEmail' => ['prohibited'],
         ];

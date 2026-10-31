@@ -12,7 +12,6 @@ use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class ReplyContactFactory implements ReplyContactFactoryInterface
@@ -29,7 +28,7 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
         ReplyContent $content,
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
-        ReplyType $replyType,
+        int $replyNumber,
     ): ReplyCotact {
         return new ReplyCotact(
             new ContactReplyIdentifier($this->generator->generate()),
@@ -40,7 +39,7 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
             $sentAt,
             $failedAt,
             new DateTimeImmutable('now'),
-            $replyType,
+            $replyNumber,
         );
     }
 }

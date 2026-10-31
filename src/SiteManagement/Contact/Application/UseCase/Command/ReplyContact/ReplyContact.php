@@ -13,7 +13,6 @@ use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyType;
 use Source\SiteManagement\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\SiteManagement\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\SiteManagement\Principal\Domain\ValueObject\Action;
@@ -65,7 +64,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $content,
             null,
             null,
-            ReplyType::OPERATOR,
+            $this->replyContactRepository->nextReplyNumber($contact->contactIdentifier()),
         );
         $this->replyContactRepository->save($reply);
 
@@ -86,7 +85,7 @@ readonly class ReplyContact implements ReplyContactInterface
                 null,
                 new DateTimeImmutable('now'),
                 $persisted->createdAt(),
-                $persisted->replyType(),
+                $persisted->replyNumber(),
             );
             $this->replyContactRepository->save($failed);
 
@@ -106,7 +105,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $sentAt,
             null,
             $persisted->createdAt(),
-            $persisted->replyType(),
+            $persisted->replyNumber(),
         );
         $this->replyContactRepository->save($sent);
     }

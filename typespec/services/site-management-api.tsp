@@ -57,32 +57,33 @@ model MyContactSummary {
   category: int32;
   @doc("Name of the person submitting the inquiry.")
   name: string;
-  @doc("Identifiers of successfully sent operator replies only, ordered by persisted creation timestamp then reply identifier. Submitter posts and failed operator deliveries are excluded.")
+  @doc("Identifiers of all saved replies, ordered by replyNumber ascending, regardless of notification delivery status.")
   replyIdentifiers: Uuid[];
+  @doc("All saved replies ordered by replyNumber ascending. The client determines reply status from the last entry and its principalIdentifier.")
+  replies: ContactReplyDetail[];
   @doc("Timestamp when the inquiry was created.")
   createdAt: Timestamp;
   @doc("Full inquiry content.")
   content: string;
 }
 
-enum ContactReplyType {
-  operator: "operator",
-  submitter: "submitter",
-}
-
-@doc("Conversation entry: successfully sent operator replies and all submitter posts, including failed administrator notifications. No recipient information is returned.")
+@doc("A saved conversation entry, including pending or failed email notifications. No recipient information is returned.")
 model ContactReplyDetail {
   replyIdentifier: Uuid;
+  @doc("Positive sequence number within this inquiry. Assigned on first save and preserved on delivery updates.")
+  @minValue(1)
+  replyNumber: int32;
+  @doc("Principal ID stored on the reply. Null only for historical replies without a stored author.")
+  principalIdentifier: Uuid | null;
+  @doc("Current display name of the stored author, or null if unavailable.")
+  name: string | null;
   content: string;
-  @doc("Persisted delivery timestamp. For operator replies this retains the existing successful user-email delivery meaning. For submitter posts this records successful administrator notification. Null when not successfully delivered.")
+  @doc("Email notification delivery timestamp. Null when delivery has not succeeded.")
   sentAt: Timestamp | null;
-  @doc("Persisted reply_type; existing historical replies are operator, not inferred from authors.")
-  replyType: ContactReplyType;
-  @doc("Persisted database post creation timestamp, not the delivery timestamp.")
   createdAt: Timestamp;
 }
 
-@doc("Contact inquiry detail.")
+@doc("Contact inquiry detail with all saved replies. Reply status is determined by the client.")
 model ContactDetail {
   contactIdentifier: Uuid;
   principalIdentifier?: Uuid | null;
@@ -90,23 +91,8 @@ model ContactDetail {
   name: string;
   createdAt: Timestamp;
   content: string;
-  @doc("Oldest first by display timestamp (operator sentAt; submitter createdAt), then replyIdentifier ascending to break equal timestamps consistently with pending status. Author and recipient information is not exposed to submitters.")
+  @doc("All saved replies ordered by replyNumber ascending, regardless of notification delivery status.")
   replies: ContactReplyDetail[];
-}
-
-@doc("A successfully sent reply including author information, returned when contact:reply permission is granted.")
-model ContactReplyDetailWithAuthor {
-  ...ContactReplyDetail;
-  @doc("SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.")
-  principalIdentifier: Uuid | null;
-  @doc("Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.")
-  name: string | null;
-}
-
-@doc("Contact detail with author information on each successfully sent reply, returned when contact:reply permission is granted. No email addresses are returned.")
-model ContactDetailWithReplyAuthors {
-  ...OmitProperties<ContactDetail, "replies">;
-  replies: ContactReplyDetailWithAuthor[];
 }
 
 @doc("Response containing contact inquiries associated with the signed-in principal.")
@@ -120,11 +106,11 @@ interface MyContactOperations {
   @useAuth(SessionCookieAuth)
   @post
   @route("/{contactIdentifier}/replies")
-  @doc("Post a reply to the authenticated principal's own non-anonymous inquiry after at least one successfully sent operator reply. Uses existing own-contact contact:view policy and requires an active principal in the existing authenticated/active-account route group; does not grant contact:reply. Only content is accepted: author and type are resolved server-side. Sends a distinct notification to the existing configured administrator recipient, never to the submitter. Returns 204 on successful notification. Notification failure retains the submitter post with failedAt internally, keeps it visible and pending, and returns 500 as for existing operator replies; do not blindly retry. A present inquiry with no successful operator reply returns 409; other/anonymous ownership is forbidden, missing inquiry is 404. Domain input rejection returns the existing 422 response.")
+  @doc("Post a reply to the authenticated principal's own inquiry. Requires own-contact contact:view permission and an active principal; does not grant contact:reply. Only content is accepted; author and replyNumber are assigned server-side. Saves the post before notifying the configured administrator. Notification failure retains the post in the conversation and returns 500. Other or anonymous ownership is forbidden; a missing inquiry returns 404.")
   replyMyContact(
     @path contactIdentifier: Uuid,
     @body body: ReplyContactRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get
   @route("/{contactIdentifier}")
@@ -138,16 +124,10 @@ interface MyContactOperations {
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
-model ManagedContactSummary {
-  ...MyContactSummary;
-  @doc("True initially or when a submitter post (including failed notifications) sorts after every successfully sent operator reply. Compare (submitter createdAt, replyIdentifier) with (operator sentAt, replyIdentifier). Equal timestamps use replyIdentifier ascending (UUIDv7 order), so operator then submitter is pending and submitter then operator is resolved. Failed operator deliveries never resolve the inquiry. Computed from replies, not a separately persisted status.")
-  isPending: boolean;
-}
-
 @doc("Paginated contact inquiries and page metadata.")
 model ListContactsPage {
   @doc("Contact inquiries on the requested page.")
-  contacts: ManagedContactSummary[];
+  contacts: MyContactSummary[];
   @doc("Current page number.")
   current_page: int32;
   @doc("Last available page number.")
@@ -176,10 +156,10 @@ interface ContactListOperations {
   @useAuth(SessionCookieAuth)
   @get
   @route("/{contactIdentifier}")
-  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Reply author information is included for every authorized caller. No email addresses are returned.")
+  @doc("Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. All authorized callers receive the stored reply author and replyNumber for every saved entry. No email addresses are returned.")
   getContactDetailByIdentifier(
     @path contactIdentifier: Uuid,
-  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @useAuth(SessionCookieAuth)
   @post
@@ -195,10 +175,8 @@ interface ContactListOperations {
   @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.")
   listContacts(
     @query principalIdentifier?: Uuid | null,
-    @doc("Operator reply-status filter: 1 for at least one successfully sent operator reply, 0 for none. Submitter posts never count. When omitted (null), no reply-status filter is applied; existing defaults are unchanged.")
+    @doc("Filter by saved reply existence: 1 for at least one reply, 0 for none. Includes every author and notification delivery status. Omitted/null does not filter.")
     @query hasReply?: "0" | "1" | null,
-    @doc("Conversation pending filter: 1 for pending, 0 for resolved (see isPending). Omitted/null does not filter. Applied in SQL before pagination, combined with hasReply and principalIdentifier using AND.")
-    @query isPending?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
     @minValue(1)
     @maxValue(100)
@@ -213,11 +191,11 @@ interface ContactListOperations {
 interface ContactOperations {
   @get
   @route("/principals/{principalIdentifier}/{contactIdentifier}")
-  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. Reply author information is included for every authorized caller.")
+  @doc("Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. All authorized callers receive the stored reply author and replyNumber for every saved entry.")
   getContactDetail(
     @path principalIdentifier: Uuid,
     @path contactIdentifier: Uuid,
-  ): ContactDetailWithReplyAuthors | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ContactDetail | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
 
   @post

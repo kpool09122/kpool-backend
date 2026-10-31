@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $contact_id
- * @property string $reply_type
+ * @property int $reply_number
  * @property string|null $principal_identifier
  * @property-read Principal|null $principal
  * @property string $to_email
@@ -35,7 +35,7 @@ class ContactReply extends Model
     protected $fillable = [
         'id',
         'contact_id',
-        'reply_type',
+        'reply_number',
         'principal_identifier',
         'to_email',
         'content',
@@ -52,6 +52,7 @@ class ContactReply extends Model
     protected function casts(): array
     {
         return [
+            'reply_number' => 'integer',
             'sent_at' => 'datetime',
             'failed_at' => 'datetime',
             'created_at' => 'datetime',
