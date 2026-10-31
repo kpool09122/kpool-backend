@@ -8,6 +8,7 @@ use Application\Mail\ContactAcceptedMail;
 use Application\Mail\ContactReceivedMail;
 use Application\Mail\ContactReplyMail;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Support\Facades\Mail;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -133,7 +134,7 @@ class ContactEmailServiceTest extends TestCase
         $mail = new ContactReceivedMail($contact);
         $mail->assertSeeInHtml((string) $contact->name());
         $mail->assertSeeInText($expectedBody);
-        $service = new ContactEmailService($administratorEmail);
+        $service = new ContactEmailService($administratorEmail, new Email('support@example.com'));
 
         $service->sendContactToAdministrator($contact);
 
@@ -163,7 +164,7 @@ class ContactEmailServiceTest extends TestCase
         $contact = $this->createContact($language);
         $view = 'emails.contact.reply_' . $language->value;
         $textView = 'emails.contact.text.reply_' . $language->value;
-        $mail = new ContactReplyMail($content, $language);
+        $mail = new ContactReplyMail($contact, $content, new Email('admin@example.com'));
         $mail->assertSeeInHtml((string) $content);
         $mail->assertSeeInText((string) $content);
 
@@ -172,17 +173,61 @@ class ContactEmailServiceTest extends TestCase
 
         Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $mail): bool => $mail->hasTo((string) $contact->email())
             && $mail->content === $content
-            && $mail->language === $language
+            && $mail->contact->language() === $language
             && $mail->envelope()->subject === $expectedSubject
             && $mail->content()->view === $view
             && $mail->content()->text === $textView);
     }
 
-    private function createContact(Language $language): Contact
+    /** @return array<string, array{Language, bool, string}> */
+    public static function replyGuidance(): array
+    {
+        return [
+            'Japanese signed in' => [Language::JAPANESE, true, '管理画面のお問い合わせ履歴'],
+            'Japanese anonymous' => [Language::JAPANESE, false, '追加のご質問は'],
+            'English signed in' => [Language::ENGLISH, true, 'inquiry history in the dashboard'],
+            'English anonymous' => [Language::ENGLISH, false, 'For follow-up questions'],
+            'Korean signed in' => [Language::KOREAN, true, '관리 화면의 문의 내역'],
+            'Korean anonymous' => [Language::KOREAN, false, '추가 문의는'],
+        ];
+    }
+
+    #[DataProvider('replyGuidance')]
+    public function testReplyGuidanceAndReplyToFollowContactOwnership(Language $language, bool $signedIn, string $guidance): void
+    {
+        Mail::fake();
+        $address = new Email('support@example.com');
+        $contact = $this->createContact($language, $signedIn);
+        $content = new ReplyContent('返信内容 <tag>& "引用"');
+        $mail = new ContactReplyMail($contact, $content, $address);
+        $mail->assertSeeInHtml($guidance);
+        $mail->assertSeeInText($guidance);
+        $mail->assertSeeInHtml((string) $content);
+        $mail->assertSeeInText((string) $content);
+        if ($signedIn) {
+            $mail->assertDontSeeInHtml('mailto:');
+            $mail->assertDontSeeInText((string) $address);
+            $this->assertSame([], $mail->envelope()->replyTo);
+        } else {
+            $mail->assertSeeInHtml('mailto:' . (string) $address, false);
+            $mail->assertSeeInText((string) $address);
+            $replyTo = $mail->envelope()->replyTo;
+            $this->assertCount(1, $replyTo);
+            $this->assertInstanceOf(Address::class, $replyTo[0]);
+            $this->assertSame((string) $address, $replyTo[0]->address);
+        }
+        $service = new ContactEmailService(new Email('notifications@example.com'), $address);
+        $service->sendReplyToUser($contact, $content);
+        Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $sent): bool => $sent->contact === $contact
+            && $sent->hasTo((string) $contact->email())
+            && (string) $sent->replyToAddress === (string) $address);
+    }
+
+    private function createContact(Language $language, bool $signedIn = true): Contact
     {
         return new Contact(
             new ContactIdentifier(StrTestHelper::generateUuid()),
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            $signedIn ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : null,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),

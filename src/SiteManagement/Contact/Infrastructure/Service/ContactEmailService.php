@@ -18,6 +18,7 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
 {
     public function __construct(
         private Email $administratorEmail,
+        private Email $contactReplyToAddress,
     ) {
     }
 
@@ -48,7 +49,7 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
     public function sendReplyToUser(Contact $contact, ReplyContent $content): void
     {
         Mail::to((string) $contact->email())->send(
-            new ContactReplyMail($content, $contact->language())
+            new ContactReplyMail($contact, $content, $this->contactReplyToAddress)
         );
     }
 }

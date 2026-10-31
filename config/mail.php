@@ -5,6 +5,8 @@ declare(strict_types=1);
 return [
     'default' => env('MAIL_MAILER', 'smtp'),
 
+    'contact_reply_to_address' => env('CONTACT_REPLY_TO_ADDRESS', 'kpool09122@gmail.com'),
+
     'mailers' => [
         'ses' => [
             'transport' => 'ses',
