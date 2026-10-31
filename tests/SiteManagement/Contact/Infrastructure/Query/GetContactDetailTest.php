@@ -224,7 +224,7 @@ class GetContactDetailTest extends TestCase
         } else {
             $output = $this->processWithoutTarget($principal->principalIdentifier(), $id);
         }
-        $contactQueries = array_values(array_filter(DB::getQueryLog(), static fn (array $query): bool => str_contains($query['query'], 'from "contacts"') || str_contains($query['query'], 'from "contact_replies"')));
+        $contactQueries = array_values(array_filter(DB::getQueryLog(), static fn (array $query): bool => str_contains($query['query'], 'from "site_management_contacts"') || str_contains($query['query'], 'from "site_management_contact_replies"')));
         DB::disableQueryLog();
         $this->assertCount(2, $contactQueries);
         foreach ($contactQueries as $query) {
@@ -430,7 +430,7 @@ class GetContactDetailTest extends TestCase
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
         $this->assertSame($expected, $output->toArray()['replies']);
-        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_contact_replies"')));
         $this->assertCount(1, $replyQueries);
         $principalQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_principals"') && str_contains($query['query'], ' in (')));
         $identityQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
@@ -481,7 +481,7 @@ class GetContactDetailTest extends TestCase
             'name' => 'test-identity',
         ]], $output->toArray()['replies']);
         $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
-        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_contact_replies"')));
         $this->assertCount(1, $replyQueries);
         $this->assertStringContainsString('principal_identifier', $replyQueries[0]['query']);
     }
@@ -647,6 +647,6 @@ class GetContactDetailTest extends TestCase
 
     private function insertContact(string $id, ?string $principalIdentifier): void
     {
-        DB::table('contacts')->insert(['id' => $id, 'principal_identifier' => $principalIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
+        DB::table('site_management_contacts')->insert(['id' => $id, 'principal_identifier' => $principalIdentifier, 'category' => Category::SUGGESTIONS->value, 'name' => '問い合わせ者', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('contact@example.com'), 'content' => 'お問い合わせ内容', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
     }
 }

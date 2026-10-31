@@ -67,7 +67,7 @@ class ReplyMyContactTest extends TestCase
         $this->operatorReply($contactIdentifier);
         $this->app()->make(ReplyMyContactInterface::class)->process(new ReplyMyContactInput($contactIdentifier, $principal->principalIdentifier(), 'ご回答ありがとうございます。追加で確認したいことがあります。'));
 
-        $reply = DB::table('contact_replies')->where('contact_id', (string) $contactIdentifier)->where('principal_identifier', (string) $principal->principalIdentifier())->sole();
+        $reply = DB::table('site_management_contact_replies')->where('contact_id', (string) $contactIdentifier)->where('principal_identifier', (string) $principal->principalIdentifier())->sole();
         $this->assertSame((string) $principal->principalIdentifier(), $reply->principal_identifier);
         $this->assertNotNull($reply->sent_at);
         $this->assertNull($reply->failed_at);
@@ -86,7 +86,7 @@ class ReplyMyContactTest extends TestCase
         $query = $this->app()->make(ReplyMyContactInterface::class);
         $query->process(new ReplyMyContactInput($id, $owner->principalIdentifier(), '追加の情報'));
         $query->process(new ReplyMyContactInput($id, $owner->principalIdentifier(), '続き'));
-        $this->assertSame([1, 2], DB::table('contact_replies')->where('contact_id', (string) $id)->orderBy('reply_number')->pluck('reply_number')->all());
+        $this->assertSame([1, 2], DB::table('site_management_contact_replies')->where('contact_id', (string) $id)->orderBy('reply_number')->pluck('reply_number')->all());
         Mail::assertSentCount(2);
     }
 
@@ -149,20 +149,20 @@ class ReplyMyContactTest extends TestCase
         $id = $this->contact($principal);
         $this->operatorReply($id);
         if ($case === 'other' || $case === 'anonymous') {
-            DB::table('contacts')->where('id', (string) $id)->update(['principal_identifier' => $case === 'other' ? StrTestHelper::generateUuid() : null]);
+            DB::table('site_management_contacts')->where('id', (string) $id)->update(['principal_identifier' => $case === 'other' ? StrTestHelper::generateUuid() : null]);
         } elseif ($case === 'stopped') {
             DB::table('site_management_principals')->where('id', (string) $principal->principalIdentifier())->update(['status' => PrincipalStatus::SUSPENDED->value]);
         } elseif ($case === 'denied') {
             DB::table('site_management_policies')->where('id', SiteManagementAuthorizationSeeder::GENERAL_ROLE)->update(['statements' => json_encode([['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => 'own_contact']], JSON_THROW_ON_ERROR)]);
         }
-        $before = DB::table('contact_replies')->count();
+        $before = DB::table('site_management_contact_replies')->count();
 
         try {
             $this->app()->make(ReplyMyContactInterface::class)->process(new ReplyMyContactInput($case === 'missing' ? new ContactIdentifier(StrTestHelper::generateUuid()) : $id, $case === 'unknown' ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : $principal->principalIdentifier(), '返信'));
             $this->fail('Unauthorized reply must be rejected.');
         } catch (UnauthorizedException|ContactNotFoundException $e) {
             $this->assertInstanceOf($case === 'missing' ? ContactNotFoundException::class : UnauthorizedException::class, $e);
-            $this->assertSame($before, DB::table('contact_replies')->count());
+            $this->assertSame($before, DB::table('site_management_contact_replies')->count());
             Mail::assertNothingSent();
         }
     }
@@ -179,7 +179,7 @@ class ReplyMyContactTest extends TestCase
             $this->app()->make(ReplyMyContactInterface::class)->process(new ReplyMyContactInput($id, $principal->principalIdentifier(), '通知に失敗しても本文を保持 <>&'));
             $this->fail('Existing delivery-failure exception contract must be preserved.');
         } catch (FailedToSendEmailException) {
-            $reply = DB::table('contact_replies')->where('contact_id', (string) $id)->where('principal_identifier', (string) $principal->principalIdentifier())->sole();
+            $reply = DB::table('site_management_contact_replies')->where('contact_id', (string) $id)->where('principal_identifier', (string) $principal->principalIdentifier())->sole();
             $this->assertSame((string) $principal->principalIdentifier(), $reply->principal_identifier);
             $this->assertSame('通知に失敗しても本文を保持 <>&', $reply->content);
             $this->assertIsString($reply->to_email);
@@ -247,7 +247,7 @@ class ReplyMyContactTest extends TestCase
         }
         $secondId = $this->contact($owner);
         $ownerReply->process(new ReplyMyContactInput($secondId, $owner->principalIdentifier(), '別の問い合わせの返信'));
-        $this->assertSame([1], DB::table('contact_replies')->where('contact_id', (string) $secondId)->pluck('reply_number')->all());
+        $this->assertSame([1], DB::table('site_management_contact_replies')->where('contact_id', (string) $secondId)->pluck('reply_number')->all());
     }
 
     private function principal(): Principal
@@ -268,7 +268,7 @@ class ReplyMyContactTest extends TestCase
     private function contact(Principal $principal): ContactIdentifier
     {
         $id = new ContactIdentifier(StrTestHelper::generateUuid());
-        DB::table('contacts')->insert(['id' => (string) $id, 'principal_identifier' => (string) $principal->principalIdentifier(), 'category' => 1, 'name' => '山田 花子', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('owner@example.com'), 'content' => '初回のお問い合わせ本文', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
+        DB::table('site_management_contacts')->insert(['id' => (string) $id, 'principal_identifier' => (string) $principal->principalIdentifier(), 'category' => 1, 'name' => '山田 花子', 'email' => $this->app()->make(EncryptionServiceInterface::class)->encrypt('owner@example.com'), 'content' => '初回のお問い合わせ本文', 'language' => 'ja', 'created_at' => '2026-08-16 10:00:00', 'updated_at' => '2026-08-16 10:00:00']);
 
         return $id;
     }

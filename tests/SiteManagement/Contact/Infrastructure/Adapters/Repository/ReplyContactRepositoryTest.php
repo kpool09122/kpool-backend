@@ -34,12 +34,12 @@ class ReplyContactRepositoryTest extends TestCase
     public function testSave(int $replyNumber): void
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
-        // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
+        // 外部キー制約を満たす最小限の site_management_contacts レコードはDBへ直接作成する。
         $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => (string)$contactIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => 'お名前',
@@ -72,7 +72,7 @@ class ReplyContactRepositoryTest extends TestCase
         $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $repository->save($reply);
 
-        $record = DB::table('contact_replies')
+        $record = DB::table('site_management_contact_replies')
             ->where('id', (string)$reply->replyIdentifier())
             ->first();
 
@@ -117,7 +117,7 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertNull($updatedReply->sentAt());
         $this->assertEquals($failedAt, $updatedReply->failedAt());
         $this->assertEquals($restored->createdAt(), $updatedReply->createdAt());
-        $this->assertSame(1, DB::table('contact_replies')->where('id', (string) $reply->replyIdentifier())->count());
+        $this->assertSame(1, DB::table('site_management_contact_replies')->where('id', (string) $reply->replyIdentifier())->count());
     }
 
     /**
@@ -129,12 +129,12 @@ class ReplyContactRepositoryTest extends TestCase
     public function testSaveWithFailedAt(): void
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
-        // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
+        // 外部キー制約を満たす最小限の site_management_contacts レコードはDBへ直接作成する。
         $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => (string)$contactIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => 'お名前',
@@ -166,7 +166,7 @@ class ReplyContactRepositoryTest extends TestCase
         $repository = $this->app()->make(ReplyContactRepositoryInterface::class);
         $repository->save($reply);
 
-        $record = DB::table('contact_replies')
+        $record = DB::table('site_management_contact_replies')
             ->where('id', (string)$reply->replyIdentifier())
             ->first();
 
@@ -186,12 +186,12 @@ class ReplyContactRepositoryTest extends TestCase
     public function testFindById(int $replyNumber): void
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
-        // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
+        // 外部キー制約を満たす最小限の site_management_contacts レコードはDBへ直接作成する。
         $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => (string)$contactIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => 'お名前',
@@ -239,12 +239,12 @@ class ReplyContactRepositoryTest extends TestCase
     public function testFindByIdWithNullIdentityAndNullSentAt(): void
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
-        // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
+        // 外部キー制約を満たす最小限の site_management_contacts レコードはDBへ直接作成する。
         $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $now = new DateTimeImmutable('2026-01-01 00:00:00');
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => (string)$contactIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => 'お名前',

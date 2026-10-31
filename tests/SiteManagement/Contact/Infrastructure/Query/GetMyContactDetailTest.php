@@ -63,7 +63,7 @@ class GetMyContactDetailTest extends TestCase
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
         $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"') || str_contains($query['query'], 'from "site_management_principals"')));
-        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
+        $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "site_management_contact_replies"')));
         $this->assertCount(1, $replyQueries);
         $this->assertStringContainsString('principal_identifier', $replyQueries[0]['query']);
 
@@ -104,7 +104,7 @@ class GetMyContactDetailTest extends TestCase
 
     private function insertContact(string $id, string $principalIdentifier, string $content): void
     {
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => $id,
             'principal_identifier' => $principalIdentifier,
             'category' => Category::SUGGESTIONS->value,

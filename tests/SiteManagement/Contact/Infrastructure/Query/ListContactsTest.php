@@ -210,7 +210,7 @@ class ListContactsTest extends TestCase
             $this->fail('A denied contact must reject the whole page');
         } catch (UnauthorizedException) {
         }
-        DB::table('contacts')->where('id', $own)->delete();
+        DB::table('site_management_contacts')->where('id', $own)->delete();
         $output = new ListContactsOutput();
         $query->process(new ListContactsInput($identifier, null, null), $output);
         $this->assertCount(2, $output->toArray()['contacts']);
@@ -219,7 +219,7 @@ class ListContactsTest extends TestCase
 
     private function insertContact(string $id, ?string $principalIdentifier, string $email, string $createdAt): void
     {
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => $id,
             'principal_identifier' => $principalIdentifier,
             'category' => Category::SUGGESTIONS->value,
@@ -234,8 +234,8 @@ class ListContactsTest extends TestCase
 
     private function insertReply(string $id, string $contactIdentifier, ?string $sentAt, ?string $failedAt, string $createdAt = '2026-08-17 10:00:00'): void
     {
-        DB::table('contact_replies')->insert([
-            'reply_number' => DB::table('contact_replies')->where('contact_id', $contactIdentifier)->count() + 1,
+        DB::table('site_management_contact_replies')->insert([
+            'reply_number' => DB::table('site_management_contact_replies')->where('contact_id', $contactIdentifier)->count() + 1,
             'id' => $id,
             'contact_id' => $contactIdentifier,
             'principal_identifier' => null,

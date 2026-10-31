@@ -161,8 +161,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
     {
         $contact = StrTestHelper::generateUuid();
         $reply = StrTestHelper::generateUuid();
-        DB::table('contacts')->insert(['id' => $contact, 'principal_identifier' => $subject['site_management_principals'], 'category' => 1, 'name' => 'History', 'email' => 'encrypted', 'content' => 'contact history', 'language' => 'ja']);
-        DB::table('contact_replies')->insert(['id' => $reply, 'contact_id' => $contact, 'reply_number' => 1, 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history', 'to_email' => 'encrypted']);
+        DB::table('site_management_contacts')->insert(['id' => $contact, 'principal_identifier' => $subject['site_management_principals'], 'category' => 1, 'name' => 'History', 'email' => 'encrypted', 'content' => 'contact history', 'language' => 'ja']);
+        DB::table('site_management_contact_replies')->insert(['id' => $reply, 'contact_id' => $contact, 'reply_number' => 1, 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history', 'to_email' => 'encrypted']);
 
         return ['contact' => $contact, 'reply' => $reply];
     }
@@ -172,8 +172,8 @@ class ComposedIdentityWithdrawalTest extends TestCase
      */
     private function assertSiteHistory(array $subject, array $history): void
     {
-        $this->assertDatabaseHas('contacts', ['id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'contact history']);
-        $this->assertDatabaseHas('contact_replies', ['id' => $history['reply'], 'contact_id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history']);
+        $this->assertDatabaseHas('site_management_contacts', ['id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'contact history']);
+        $this->assertDatabaseHas('site_management_contact_replies', ['id' => $history['reply'], 'contact_id' => $history['contact'], 'principal_identifier' => $subject['site_management_principals'], 'content' => 'reply history']);
         $this->assertDatabaseCount('site_management_roles', 3);
         $this->assertDatabaseCount('site_management_policies', 3);
         $this->assertDatabaseCount('site_management_role_policy_attachments', 3);

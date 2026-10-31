@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  */
 class ContactReply extends Model
 {
-    protected $table = 'contact_replies';
+    protected $table = 'site_management_contact_replies';
 
     protected $keyType = 'string';
 

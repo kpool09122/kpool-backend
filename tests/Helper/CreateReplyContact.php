@@ -28,7 +28,7 @@ class CreateReplyContact
         ?int $replyNumber = null,
     ): ReplyCotact {
         /** @var int|null $lastReplyNumber */
-        $lastReplyNumber = DB::table('contact_replies')->where('contact_id', (string) $contactIdentifier)->max('reply_number');
+        $lastReplyNumber = DB::table('site_management_contact_replies')->where('contact_id', (string) $contactIdentifier)->max('reply_number');
         $replyNumber ??= ($lastReplyNumber ?? 0) + 1;
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
@@ -42,7 +42,7 @@ class CreateReplyContact
             $replyNumber,
         );
 
-        DB::table('contact_replies')->insert([
+        DB::table('site_management_contact_replies')->insert([
             'id' => (string) $reply->replyIdentifier(),
             'contact_id' => (string) $reply->contactIdentifier(),
             'reply_number' => $reply->replyNumber(),

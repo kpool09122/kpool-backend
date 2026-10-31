@@ -76,8 +76,8 @@ class PrincipalLifecycleTest extends TestCase
         $evaluator = $this->app()->make(PolicyEvaluatorInterface::class);
         $this->assertTrue($evaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP)));
         $contactId = StrTestHelper::generateUuid();
-        DB::table('contacts')->insert(['id' => $contactId, 'principal_identifier' => $id, 'category' => 1, 'name' => 'Owner inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
-        DB::table('contacts')->insert(['id' => StrTestHelper::generateUuid(), 'principal_identifier' => StrTestHelper::generateUuid(), 'category' => 1, 'name' => 'Other inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
+        DB::table('site_management_contacts')->insert(['id' => $contactId, 'principal_identifier' => $id, 'category' => 1, 'name' => 'Owner inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
+        DB::table('site_management_contacts')->insert(['id' => StrTestHelper::generateUuid(), 'principal_identifier' => StrTestHelper::generateUuid(), 'category' => 1, 'name' => 'Other inquiry', 'email' => 'encrypted', 'content' => 'Inquiry', 'language' => 'ja', 'created_at' => now()]);
         $contacts = new ListMyContactsOutput();
         $this->app()->make(ListMyContactsInterface::class)->process(new ListMyContactsInput($principal->principalIdentifier()), $contacts);
         $this->assertCount(1, $contacts->toArray());

@@ -18,6 +18,18 @@ class ContactReplyNumberMigrationTest extends TestCase
 {
     public function testChangesSchemaAndRollsBackOnEmptyTable(): void
     {
+        $rename = require __DIR__ . '/../../../../../../database/migrations/2026_10_31_000002_rename_site_management_contact_tables.php';
+        $this->assertInstanceOf(Migration::class, $rename);
+        $renameDown = [$rename, 'down'];
+        $renameUp = [$rename, 'up'];
+        $this->assertIsCallable($renameDown);
+        $this->assertIsCallable($renameUp);
+        $renameDown();
+        $this->assertTrue(Schema::hasTable('contacts'));
+        $this->assertTrue(Schema::hasTable('contact_replies'));
+        $this->assertFalse(Schema::hasTable('site_management_contacts'));
+        $this->assertFalse(Schema::hasTable('site_management_contact_replies'));
+
         $migration = require __DIR__ . '/../../../../../../database/migrations/2026_10_31_000001_replace_contact_reply_type_with_reply_number.php';
         $this->assertInstanceOf(Migration::class, $migration);
         $down = [$migration, 'down'];
@@ -36,6 +48,11 @@ class ContactReplyNumberMigrationTest extends TestCase
 
         $this->assertTrue(Schema::hasColumn('contact_replies', 'reply_number'));
         $this->assertFalse(Schema::hasColumn('contact_replies', 'reply_type'));
+        $renameUp();
+        $this->assertTrue(Schema::hasTable('site_management_contacts'));
+        $this->assertTrue(Schema::hasTable('site_management_contact_replies'));
+        $this->assertFalse(Schema::hasTable('contacts'));
+        $this->assertFalse(Schema::hasTable('contact_replies'));
     }
 
     /** @return array<string, array{?int, string}> */
@@ -49,11 +66,11 @@ class ContactReplyNumberMigrationTest extends TestCase
     {
         $contact = $this->contact();
         $record = ['id' => StrTestHelper::generateUuid(), 'contact_id' => $contact, 'reply_number' => 1, 'content' => '本文', 'to_email' => 'encrypted'];
-        DB::table('contact_replies')->insert($record);
+        DB::table('site_management_contact_replies')->insert($record);
 
         try {
             DB::transaction(static function () use ($record, $number): void {
-                DB::table('contact_replies')->insert(array_replace($record, ['id' => StrTestHelper::generateUuid(), 'reply_number' => $number]));
+                DB::table('site_management_contact_replies')->insert(array_replace($record, ['id' => StrTestHelper::generateUuid(), 'reply_number' => $number]));
             });
             $this->fail('Invalid reply number was accepted.');
         } catch (QueryException $exception) {
@@ -64,7 +81,7 @@ class ContactReplyNumberMigrationTest extends TestCase
     private function contact(): string
     {
         $id = StrTestHelper::generateUuid();
-        DB::table('contacts')->insert(['id' => $id, 'category' => 1, 'name' => '本人', 'email' => 'encrypted', 'content' => '問い合わせ']);
+        DB::table('site_management_contacts')->insert(['id' => $id, 'category' => 1, 'name' => '本人', 'email' => 'encrypted', 'content' => '問い合わせ']);
 
         return $id;
     }

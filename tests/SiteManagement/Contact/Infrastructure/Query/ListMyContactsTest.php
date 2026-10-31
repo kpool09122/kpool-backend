@@ -199,7 +199,7 @@ class ListMyContactsTest extends TestCase
     ): void {
         $encryptionService = $this->app()->make(EncryptionServiceInterface::class);
 
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => $id,
             'principal_identifier' => $principalIdentifier,
             'category' => $category->value,

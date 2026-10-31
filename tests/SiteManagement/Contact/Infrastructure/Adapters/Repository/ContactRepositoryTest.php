@@ -46,7 +46,7 @@ class ContactRepositoryTest extends TestCase
         $repository = $this->app()->make(ContactRepositoryInterface::class);
         $repository->save($contact);
 
-        $record = DB::table('contacts')
+        $record = DB::table('site_management_contacts')
             ->where('id', (string)$contact->contactIdentifier())
             ->first();
 
@@ -81,7 +81,7 @@ class ContactRepositoryTest extends TestCase
         $email = new Email('john.doe@example.com');
         $createdAt = new DateTimeImmutable('2026-01-01 00:00:00');
 
-        DB::table('contacts')->insert([
+        DB::table('site_management_contacts')->insert([
             'id' => (string)$contactIdentifier,
             'category' => Category::SUGGESTIONS->value,
             'name' => 'お名前',
