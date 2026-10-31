@@ -26,11 +26,13 @@ use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ReplyNumberServiceInterface;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ReplyContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ReplyContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
+use Source\SiteManagement\Contact\Infrastructure\Service\ReplyNumberService;
 use Source\SiteManagement\Principal\Application\EventHandler\IdentityWithdrawingHandler;
 use Source\SiteManagement\Principal\Application\EventHandler\PrincipalCreatedHandler;
 use Source\SiteManagement\Principal\Application\Service\ReachablePrincipalGroupManagerInterface;
@@ -80,6 +82,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftAnnouncementFactoryInterface::class, DraftAnnouncementFactory::class);
         $this->app->singleton(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->singleton(ReplyContactRepositoryInterface::class, ReplyContactRepository::class);
+        $this->app->singleton(ReplyNumberServiceInterface::class, ReplyNumberService::class);
         $this->app->singleton(EncryptionServiceInterface::class, EncryptionService::class);
         $this->app->singleton(
             ContactEmailServiceInterface::class,

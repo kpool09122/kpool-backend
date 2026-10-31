@@ -12,7 +12,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Principal\Domain\ValueObject\PrincipalIdentifier;
 
-readonly class ReplyCotact
+readonly class ReplyContact
 {
     public function __construct(
         private ContactReplyIdentifier $replyIdentifier,

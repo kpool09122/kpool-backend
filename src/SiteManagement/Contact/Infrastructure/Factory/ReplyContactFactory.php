@@ -7,7 +7,7 @@ namespace Source\SiteManagement\Contact\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Entity\ReplyContact;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
@@ -29,8 +29,8 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
         ?DateTimeImmutable $sentAt,
         ?DateTimeImmutable $failedAt,
         int $replyNumber,
-    ): ReplyCotact {
-        return new ReplyCotact(
+    ): ReplyContact {
+        return new ReplyContact(
             new ContactReplyIdentifier($this->generator->generate()),
             $contactIdentifier,
             $principalIdentifier,

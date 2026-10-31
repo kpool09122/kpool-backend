@@ -18,11 +18,12 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\Reply
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
-use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Entity\ReplyContact as ReplyContactEntity;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ReplyNumberServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -100,7 +101,7 @@ class ReplyContactTest extends TestCase
             })
             ->andReturnNull();
 
-        $unsentReply = new ReplyCotact(
+        $unsentReply = new ReplyContactEntity(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
@@ -134,7 +135,8 @@ class ReplyContactTest extends TestCase
             ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
-        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
+        $replyNumberService = Mockery::mock(ReplyNumberServiceInterface::class);
+        $replyNumberService->shouldReceive('next')->with($contactIdentifier)->andReturn(1);
         $replyContactRepository->shouldReceive('findById')
             ->once()
             ->with($unsentReply->replyIdentifier())
@@ -145,7 +147,7 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
+            ->withArgs(function (ReplyContactEntity $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
                     && (string)$saved->principalIdentifier() === (string)$principalIdentifier
@@ -161,6 +163,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ReplyNumberServiceInterface::class, $replyNumberService);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $useCase = $this->app()->make(ReplyContactInterface::class);
@@ -198,7 +201,8 @@ class ReplyContactTest extends TestCase
         $replyContactFactory->shouldNotReceive('create');
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
-        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
+        $replyNumberService = Mockery::mock(ReplyNumberServiceInterface::class);
+        $replyNumberService->shouldReceive('next')->with($contactIdentifier)->andReturn(1);
         $replyContactRepository->shouldNotReceive('save');
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
@@ -208,6 +212,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ReplyNumberServiceInterface::class, $replyNumberService);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(UnauthorizedException::class);
@@ -248,12 +253,14 @@ class ReplyContactTest extends TestCase
         $replyContactFactory->shouldNotReceive('create');
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
-        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
+        $replyNumberService = Mockery::mock(ReplyNumberServiceInterface::class);
+        $replyNumberService->shouldReceive('next')->with($contactIdentifier)->andReturn(1);
         $replyContactRepository->shouldNotReceive('save');
 
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ReplyNumberServiceInterface::class, $replyNumberService);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(ContactNotFoundException::class);
@@ -302,7 +309,7 @@ class ReplyContactTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('send failed'));
 
-        $unsentReply = new ReplyCotact(
+        $unsentReply = new ReplyContactEntity(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $principalIdentifier,
@@ -336,7 +343,8 @@ class ReplyContactTest extends TestCase
             ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
-        $replyContactRepository->shouldReceive('nextReplyNumber')->andReturn(1);
+        $replyNumberService = Mockery::mock(ReplyNumberServiceInterface::class);
+        $replyNumberService->shouldReceive('next')->with($contactIdentifier)->andReturn(1);
         $replyContactRepository->shouldReceive('findById')
             ->once()
             ->with($unsentReply->replyIdentifier())
@@ -347,7 +355,7 @@ class ReplyContactTest extends TestCase
             ->andReturnNull();
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
+            ->withArgs(function (ReplyContactEntity $saved) use ($unsentReply, $contact, $expectedContent, $principalIdentifier): bool {
                 return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
                     && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
                     && (string)$saved->principalIdentifier() === (string)$principalIdentifier
@@ -363,6 +371,7 @@ class ReplyContactTest extends TestCase
         $this->app()->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app()->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app()->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app()->instance(ReplyNumberServiceInterface::class, $replyNumberService);
         $this->app()->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(FailedToSendEmailException::class);
