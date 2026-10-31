@@ -50,6 +50,7 @@ readonly class ListContacts implements ListContactsInterface
             ->with([
                 'replies' => static function (Relation $query): void {
                     $query->select(['id', 'contact_id'])
+                        ->where('reply_type', 'operator')
                         ->whereNotNull('sent_at')
                         ->whereNull('failed_at')
                         ->orderBy('created_at')
@@ -58,11 +59,16 @@ readonly class ListContacts implements ListContactsInterface
             ])
             ->when($input->targetPrincipalIdentifier() !== null, fn ($query) => $query->where('principal_identifier', (string) $input->targetPrincipalIdentifier()))
             ->when($input->hasReply() === true, fn ($query) => $query->whereHas('replies', static fn ($replyQuery) => $replyQuery
+                ->where('reply_type', 'operator')
                 ->whereNotNull('sent_at')
                 ->whereNull('failed_at')))
             ->when($input->hasReply() === false, fn ($query) => $query->whereDoesntHave('replies', static fn ($replyQuery) => $replyQuery
+                ->where('reply_type', 'operator')
                 ->whereNotNull('sent_at')
                 ->whereNull('failed_at')))
+            ->withExists('resolvingReplies')
+            ->when($input->isPending() === true, static fn ($query) => $query->whereDoesntHave('resolvingReplies'))
+            ->when($input->isPending() === false, static fn ($query) => $query->whereHas('resolvingReplies'))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
@@ -82,6 +88,7 @@ readonly class ListContacts implements ListContactsInterface
             replyIdentifiers: $contact->replies->map(static fn (ContactReply $reply): string => $reply->id)->values()->all(),
             createdAt: ($contact->created_at ?? throw new UnexpectedValueException('Persisted creation timestamp is missing.'))->format(DateTimeInterface::ATOM),
             content: (string) $contact->content,
+            isPending: ! (bool) $contact->getAttribute('resolving_replies_exists'),
         ), $paginator->items());
 
         $output->output(

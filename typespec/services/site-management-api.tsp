@@ -57,7 +57,7 @@ model MyContactSummary {
   category: int32;
   @doc("Name of the person submitting the inquiry.")
   name: string;
-  @doc("Identifiers of replies sent successfully for this inquiry.")
+  @doc("Identifiers of successfully sent operator replies only, ordered by persisted creation timestamp then reply identifier. Submitter posts and failed operator deliveries are excluded.")
   replyIdentifiers: Uuid[];
   @doc("Timestamp when the inquiry was created.")
   createdAt: Timestamp;
@@ -65,11 +65,21 @@ model MyContactSummary {
   content: string;
 }
 
-@doc("A successfully sent reply to a contact inquiry.")
+enum ContactReplyType {
+  operator: "operator",
+  submitter: "submitter",
+}
+
+@doc("Conversation entry: successfully sent operator replies and all submitter posts, including failed administrator notifications. No recipient information is returned.")
 model ContactReplyDetail {
   replyIdentifier: Uuid;
   content: string;
-  sentAt: Timestamp;
+  @doc("Persisted delivery timestamp. For operator replies this retains the existing successful user-email delivery meaning. For submitter posts this records successful administrator notification. Null when not successfully delivered.")
+  sentAt: Timestamp | null;
+  @doc("Persisted reply_type; existing historical replies are operator, not inferred from authors.")
+  replyType: ContactReplyType;
+  @doc("Persisted database post creation timestamp, not the delivery timestamp.")
+  createdAt: Timestamp;
 }
 
 @doc("Contact inquiry detail.")
@@ -80,6 +90,7 @@ model ContactDetail {
   name: string;
   createdAt: Timestamp;
   content: string;
+  @doc("Oldest first by display timestamp (operator sentAt; submitter createdAt), then replyIdentifier ascending to break equal timestamps consistently with pending status. Author and recipient information is not exposed to submitters.")
   replies: ContactReplyDetail[];
 }
 
@@ -106,6 +117,15 @@ model ListMyContactsResponse {
 
 @route("/my/contact")
 interface MyContactOperations {
+  @useAuth(SessionCookieAuth)
+  @post
+  @route("/{contactIdentifier}/replies")
+  @doc("Post a reply to the authenticated principal's own non-anonymous inquiry after at least one successfully sent operator reply. Uses existing own-contact contact:view policy and requires an active principal in the existing authenticated/active-account route group; does not grant contact:reply. Only content is accepted: author and type are resolved server-side. Sends a distinct notification to the existing configured administrator recipient, never to the submitter. Returns 204 on successful notification. Notification failure retains the submitter post with failedAt internally, keeps it visible and pending, and returns 500 as for existing operator replies; do not blindly retry. A present inquiry with no successful operator reply returns 409; other/anonymous ownership is forbidden, missing inquiry is 404. Domain input rejection returns the existing 422 response.")
+  replyMyContact(
+    @path contactIdentifier: Uuid,
+    @body body: ReplyContactRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
   @get
   @route("/{contactIdentifier}")
   @doc("Get a contact inquiry associated with the signed-in principal.")
@@ -118,10 +138,16 @@ interface MyContactOperations {
   listMyContacts(): ListMyContactsResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
+model ManagedContactSummary {
+  ...MyContactSummary;
+  @doc("True initially or when a submitter post (including failed notifications) sorts after every successfully sent operator reply. Compare (submitter createdAt, replyIdentifier) with (operator sentAt, replyIdentifier). Equal timestamps use replyIdentifier ascending (UUIDv7 order), so operator then submitter is pending and submitter then operator is resolved. Failed operator deliveries never resolve the inquiry. Computed from replies, not a separately persisted status.")
+  isPending: boolean;
+}
+
 @doc("Paginated contact inquiries and page metadata.")
 model ListContactsPage {
   @doc("Contact inquiries on the requested page.")
-  contacts: MyContactSummary[];
+  contacts: ManagedContactSummary[];
   @doc("Current page number.")
   current_page: int32;
   @doc("Last available page number.")
@@ -169,8 +195,10 @@ interface ContactListOperations {
   @doc("List all contact inquiries, optionally filtered by principal. Requires a site-management Operator.")
   listContacts(
     @query principalIdentifier?: Uuid | null,
-    @doc("Reply-status filter: 1 for at least one successfully sent reply, 0 for none. When omitted (null), no reply-status filter is applied.")
+    @doc("Operator reply-status filter: 1 for at least one successfully sent operator reply, 0 for none. Submitter posts never count. When omitted (null), no reply-status filter is applied; existing defaults are unchanged.")
     @query hasReply?: "0" | "1" | null,
+    @doc("Conversation pending filter: 1 for pending, 0 for resolved (see isPending). Omitted/null does not filter. Applied in SQL before pagination, combined with hasReply and principalIdentifier using AND.")
+    @query isPending?: "0" | "1" | null,
     @doc("Maximum number of inquiries per page (1-100, default 50).")
     @minValue(1)
     @maxValue(100)

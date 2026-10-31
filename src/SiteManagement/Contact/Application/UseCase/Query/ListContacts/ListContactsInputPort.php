@@ -14,6 +14,8 @@ interface ListContactsInputPort
 
     public function hasReply(): ?bool;
 
+    public function isPending(): ?bool;
+
     public function perPage(): int;
 
     public function page(): int;

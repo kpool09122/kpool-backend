@@ -46,6 +46,7 @@ readonly class ListMyContacts implements ListMyContactsInterface
             ->with([
                 'replies' => static function (Relation $query): void {
                     $query->select(['id', 'contact_id'])
+                        ->where('reply_type', 'operator')
                         ->whereNotNull('sent_at')
                         ->whereNull('failed_at')
                         ->orderBy('created_at')

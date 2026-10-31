@@ -56,10 +56,10 @@ readonly class GetContactDetail implements GetContactDetailInterface
 
         $contact->load([
             'replies' => static function (Relation $query): void {
-                $query->select(['id', 'contact_id', 'content', 'sent_at', 'principal_identifier'])
-                    ->whereNotNull('sent_at')
-                    ->whereNull('failed_at')
-                    ->orderBy('created_at')
+                $query->select(['id', 'contact_id', 'content', 'sent_at', 'principal_identifier', 'reply_type', 'created_at'])
+                    ->where(static fn ($query) => $query->where('reply_type', 'submitter')
+                        ->orWhere(static fn ($query) => $query->where('reply_type', 'operator')->whereNotNull('sent_at')->whereNull('failed_at')))
+                    ->orderByRaw("CASE WHEN reply_type = 'operator' THEN sent_at ELSE created_at END")
                     ->orderBy('id')
                     ->with(['principal:id,identity_id', 'principal.identity:id,identity_name']);
             },
@@ -69,8 +69,9 @@ readonly class GetContactDetail implements GetContactDetailInterface
             ->map(static fn (ContactReplyModel $reply): array => [
                 'replyIdentifier' => (string) $reply->id,
                 'content' => (string) $reply->content,
-                'sentAt' => ($reply->sent_at ?? throw new UnexpectedValueException('Sent reply timestamp is missing.'))
-                    ->format(DateTimeInterface::ATOM),
+                'sentAt' => $reply->sent_at?->format(DateTimeInterface::ATOM),
+                'replyType' => $reply->reply_type,
+                'createdAt' => $reply->created_at->format(DateTimeInterface::ATOM),
                 'principalIdentifier' => $reply->principal_identifier,
                 'name' => $reply->principal?->identity?->identity_name,
             ])

@@ -74,6 +74,7 @@ return [
     'invalid_delegation' => 'La operación de delegación no es válida.',
     'identity_not_found' => 'No se encontró la identidad especificada.',
     'contact_not_found' => 'No se encontró la consulta de contacto especificada.',
+    'contact_not_replied_by_operator' => 'Solo puede responder después de recibir una respuesta del operador.',
     'already_user_exists' => 'El usuario ya existe.',
     'unauthorized_email' => 'La dirección de correo electrónico no ha sido verificada.',
     'auth_code_session_not_found' => 'No se encontró la sesión del código de autenticación.',

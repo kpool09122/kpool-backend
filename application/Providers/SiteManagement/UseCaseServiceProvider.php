@@ -25,6 +25,8 @@ use Source\SiteManagement\Announcement\Infrastructure\Query\ListAnnouncements;
 use Source\SiteManagement\Announcement\Infrastructure\Query\ListDraftAnnouncements;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyContact\ReplyMyContact;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyMyContact\ReplyMyContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Query\GetContactDetail\GetContactDetailInterface;
@@ -68,6 +70,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeleteAnnouncementInterface::class, DeleteAnnouncement::class);
         $this->app->singleton(SubmitContactInterface::class, SubmitContact::class);
         $this->app->singleton(ReplyContactInterface::class, ReplyContact::class);
+        $this->app->singleton(ReplyMyContactInterface::class, ReplyMyContact::class);
         $this->app->singleton(ListContactsInterface::class, ListContacts::class);
         $this->app->singleton(ListMyContactsInterface::class, ListMyContacts::class);
         $this->app->singleton(GetMyContactDetailInterface::class, GetMyContactDetail::class);

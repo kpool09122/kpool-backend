@@ -246,6 +246,8 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => (string) $reply->content(),
                 'sentAt' => $reply->sentAt()?->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $reply->createdAt()->format(DateTimeInterface::ATOM),
                 'principalIdentifier' => (string) $principal->principalIdentifier(),
                 'name' => 'test-identity',
             ], $replies),
@@ -416,6 +418,8 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => '返信' . $index,
                 'sentAt' => $at->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $at->format(DateTimeInterface::ATOM),
                 'principalIdentifier' => $author === null ? null : (string) $author,
                 'name' => $names[$index],
             ];
@@ -476,6 +480,8 @@ class GetContactDetailTest extends TestCase
             'sentAt' => $at->format(DateTimeInterface::ATOM),
             'principalIdentifier' => (string) $author->principalIdentifier(),
             'name' => 'test-identity',
+            'replyType' => 'operator',
+            'createdAt' => $at->format(DateTimeInterface::ATOM),
         ]], $output->toArray()['replies']);
         $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
         $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
@@ -585,6 +591,8 @@ class GetContactDetailTest extends TestCase
                 'replyIdentifier' => (string) $reply->replyIdentifier(),
                 'content' => '本人向け返信',
                 'sentAt' => $at->format(DateTimeInterface::ATOM),
+                'replyType' => 'operator',
+                'createdAt' => $at->format(DateTimeInterface::ATOM),
             ]], $output->toArray()['replies']);
         }
     }

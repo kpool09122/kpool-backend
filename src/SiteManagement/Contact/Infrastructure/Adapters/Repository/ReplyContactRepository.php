@@ -22,6 +22,16 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
     ) {
     }
 
+    public function hasSuccessfulOperatorReply(ContactIdentifier $contactIdentifier): bool
+    {
+        return ContactReplyModel::query()
+            ->where('contact_id', (string) $contactIdentifier)
+            ->where('reply_type', ReplyType::OPERATOR->value)
+            ->whereNotNull('sent_at')
+            ->whereNull('failed_at')
+            ->exists();
+    }
+
     public function save(ReplyCotact $replyCotact): void
     {
         ContactReplyModel::query()->updateOrCreate(
