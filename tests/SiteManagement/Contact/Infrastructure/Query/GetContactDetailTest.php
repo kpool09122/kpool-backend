@@ -451,7 +451,7 @@ class GetContactDetailTest extends TestCase
 
     #[Group('useDb')]
     #[DataProvider('detailRoutes')]
-    public function testNonOperatorWithReplyPermissionReceivesNoAuthorFieldsOrAuthorQueries(bool $scoped): void
+    public function testNonOperatorWithReplyPermissionReceivesAuthorFields(bool $scoped): void
     {
         $viewer = $this->provisionPrincipal();
         $author = $this->provisionPrincipal();
@@ -474,11 +474,13 @@ class GetContactDetailTest extends TestCase
             'replyIdentifier' => (string) $reply->replyIdentifier(),
             'content' => '返信内容',
             'sentAt' => $at->format(DateTimeInterface::ATOM),
+            'principalIdentifier' => (string) $author->principalIdentifier(),
+            'name' => 'test-identity',
         ]], $output->toArray()['replies']);
-        $this->assertCount(0, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
+        $this->assertCount(1, array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "identities"')));
         $replyQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], 'from "contact_replies"')));
         $this->assertCount(1, $replyQueries);
-        $this->assertStringNotContainsString('principal_identifier', $replyQueries[0]['query']);
+        $this->assertStringContainsString('principal_identifier', $replyQueries[0]['query']);
     }
 
     /** @return array<string, array{bool, string, string, bool, string}> */

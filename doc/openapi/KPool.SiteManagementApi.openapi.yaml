@@ -184,7 +184,7 @@ paths:
   /contact/principals/{principalIdentifier}/{contactIdentifier}:
     get:
       operationId: ContactOperations_getContactDetail
-      description: "Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. Only Operators receive reply author information; other authorized principals receive the original three reply fields."
+      description: "Get the specified contact inquiry for a principal. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted owner. No Operator role is required independently of this policy; General contact:view permission alone does not grant access, even to the caller's own inquiry. An ownerless denial returns 403 before lookup; a missing inquiry or principal mismatch returns 404 after that check succeeds. Reply author information is included for every authorized caller."
       parameters:
         - name: principalIdentifier
           in: path
@@ -202,9 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ContactDetail'
-                  - $ref: '#/components/schemas/OperatorContactDetail'
+                $ref: '#/components/schemas/ContactDetailWithReplyAuthors'
         '401':
           description: Access is unauthorized.
           content:
@@ -393,7 +391,7 @@ paths:
   /contacts/{contactIdentifier}:
     get:
       operationId: ContactListOperations_getContactDetailByIdentifier
-      description: 'Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Only Operators receive reply author information; other authorized principals receive the original three reply fields. No email addresses are returned.'
+      description: 'Get a contact inquiry by identifier, including anonymous submissions. Uses the same contact:reply policy checks as replying: evaluate without an owner before lookup, then against the persisted nullable owner. No Operator role is required independently of this policy. An ownerless denial returns 403 before lookup; a missing inquiry returns 404 after that check succeeds. Reply author information is included for every authorized caller. No email addresses are returned.'
       parameters:
         - name: contactIdentifier
           in: path
@@ -406,9 +404,7 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ContactDetail'
-                  - $ref: '#/components/schemas/OperatorContactDetail'
+                $ref: '#/components/schemas/ContactDetailWithReplyAuthors'
         '401':
           description: Access is unauthorized.
           content:
@@ -1370,6 +1366,37 @@ components:
           items:
             $ref: '#/components/schemas/ContactReplyDetail'
       description: Contact inquiry detail.
+    ContactDetailWithReplyAuthors:
+      type: object
+      required:
+        - contactIdentifier
+        - category
+        - name
+        - createdAt
+        - content
+        - replies
+      properties:
+        contactIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        principalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        category:
+          type: integer
+          format: int32
+        name:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        content:
+          type: string
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactReplyDetailWithAuthor'
+      description: Contact detail with author information on each successfully sent reply, returned when contact:reply permission is granted. No email addresses are returned.
     ContactReplyDetail:
       type: object
       required:
@@ -1384,6 +1411,32 @@ components:
         sentAt:
           $ref: '#/components/schemas/KPool.Common.Timestamp'
       description: A successfully sent reply to a contact inquiry.
+    ContactReplyDetailWithAuthor:
+      type: object
+      required:
+        - replyIdentifier
+        - content
+        - sentAt
+        - principalIdentifier
+        - name
+      properties:
+        replyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        content:
+          type: string
+        sentAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        principalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.
+        name:
+          type: string
+          nullable: true
+          description: Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.
+      description: A successfully sent reply including author information, returned when contact:reply permission is granted.
     ContactSummary:
       type: object
       required:
@@ -1675,63 +1728,6 @@ components:
           type: string
           description: Full inquiry content.
       description: Contact inquiry summary returned to its submitter.
-    OperatorContactDetail:
-      type: object
-      required:
-        - contactIdentifier
-        - category
-        - name
-        - createdAt
-        - content
-        - replies
-      properties:
-        contactIdentifier:
-          $ref: '#/components/schemas/KPool.Common.Uuid'
-        principalIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-        category:
-          type: integer
-          format: int32
-        name:
-          type: string
-        createdAt:
-          $ref: '#/components/schemas/KPool.Common.Timestamp'
-        content:
-          type: string
-        replies:
-          type: array
-          items:
-            $ref: '#/components/schemas/OperatorContactReplyDetail'
-      description: Contact detail returned to an Operator, with author information on each successfully sent reply. No email addresses are returned.
-    OperatorContactReplyDetail:
-      type: object
-      required:
-        - replyIdentifier
-        - content
-        - sentAt
-        - principalIdentifier
-        - name
-      properties:
-        replyIdentifier:
-          $ref: '#/components/schemas/KPool.Common.Uuid'
-        content:
-          type: string
-        sentAt:
-          $ref: '#/components/schemas/KPool.Common.Timestamp'
-        principalIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: SiteManagement Principal ID stored on this reply, retained even if the Principal no longer exists. Null when no ID was saved.
-        name:
-          type: string
-          nullable: true
-          description: Current Identity.identity_name of the stored Principal, not a historical name snapshot. Null if the Principal or Identity is unavailable; never supplemented with submitter, Account or viewer information.
-      description: A successfully sent reply including author information, returned only to a site-management Operator.
     PrincipalGroup:
       type: object
       required:
