@@ -80,7 +80,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
 
         // Load collaborators once
         $seniorCollaborators = $this->getPrincipalsByRole($seniorCollaboratorRole);
-        $collaborators = $this->getPrincipalsByRole($collaboratorRole);
+        $collaborators = array_values(array_diff($this->getPrincipalsByRole($collaboratorRole), $seniorCollaborators));
 
         // Step 4: Evaluate senior collaborators before promotions
         [$demoted, $warned] = $this->evaluateSeniorCollaborators(
@@ -235,18 +235,12 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                 if ($warning->warningCount()->isExceedDemotionThreshold()) {
                     $principalIdentifier = new PrincipalIdentifier($principalId);
                     $principalGroups = $this->principalGroupRepository->findByPrincipalId($principalIdentifier);
-                    $defaultGroup = $this->findDefaultGroupForPrincipalGroups($principalGroups);
 
                     foreach ($principalGroups as $group) {
                         if ($group->hasRole($seniorCollaboratorRole->roleIdentifier())) {
                             $group->removeMember($principalIdentifier);
                             $this->principalGroupRepository->save($group);
                         }
-                    }
-
-                    if ($defaultGroup !== null && ! $defaultGroup->hasMember($principalIdentifier)) {
-                        $defaultGroup->addMember($principalIdentifier);
-                        $this->principalGroupRepository->save($defaultGroup);
                     }
 
                     $history = $this->promotionHistoryFactory->create(
@@ -311,11 +305,6 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                     $seniorCollaboratorGroup->addRole($seniorCollaboratorRole);
                 }
 
-                if ($defaultGroup->hasMember($principalIdentifier)) {
-                    $defaultGroup->removeMember($principalIdentifier);
-                    $this->principalGroupRepository->save($defaultGroup);
-                }
-
                 if (! $seniorCollaboratorGroup->hasMember($principalIdentifier)) {
                     $seniorCollaboratorGroup->addMember($principalIdentifier);
                     $this->principalGroupRepository->save($seniorCollaboratorGroup);
@@ -346,23 +335,6 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
             if ($group->isDefault()) {
                 return $group;
             }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array<PrincipalGroup> $principalGroups
-     */
-    private function findDefaultGroupForPrincipalGroups(array $principalGroups): ?PrincipalGroup
-    {
-        $defaultGroup = $this->findDefaultGroup($principalGroups);
-        if ($defaultGroup !== null) {
-            return $defaultGroup;
-        }
-
-        foreach ($principalGroups as $group) {
-            return $this->principalGroupRepository->findDefaultByAccountId($group->accountIdentifier());
         }
 
         return null;

@@ -37,10 +37,10 @@ class PlaylistPolicySeederTest extends TestCase
             $statement = $policy->statements()[0];
             self::assertSame([$action], $statement->actions());
             self::assertSame([ResourceType::PLAYLIST], $statement->resourceTypes());
-            foreach (['Collaborator', 'SeniorCollaborator', 'Operator', 'AgencyActor', 'TalentActor'] as $role) {
+            foreach (['Collaborator', 'Operator'] as $role) {
                 self::assertSame(1, DB::table('wiki_role_policy_attachments')->where('role_id', $roles[$role])->where('policy_id', $policies[$name])->count());
             }
-            foreach (['None', 'Administrator'] as $role) {
+            foreach (['SeniorCollaborator', 'AgencyActor', 'TalentActor', 'None', 'Administrator'] as $role) {
                 self::assertSame(0, DB::table('wiki_role_policy_attachments')->where('role_id', $roles[$role])->where('policy_id', $policies[$name])->count());
             }
         }
