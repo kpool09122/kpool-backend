@@ -17,6 +17,7 @@ readonly class PrincipalGroupReadModel
         private array $roleIdentifiers,
         private bool $isDefault,
         private array $members,
+        private bool $isMembershipEditable,
         private ?string $description = null,
     ) {
     }
@@ -68,6 +69,7 @@ readonly class PrincipalGroupReadModel
             'description' => $this->description,
             'roleIdentifiers' => $this->roleIdentifiers,
             'isDefault' => $this->isDefault,
+            'isMembershipEditable' => $this->isMembershipEditable,
             'members' => array_map(static fn (PrincipalGroupMemberReadModel $member): array => $member->toArray(), $this->members),
         ];
     }

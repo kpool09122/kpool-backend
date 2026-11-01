@@ -12,6 +12,7 @@ use Source\Wiki\Principal\Application\Exception\CannotRemoveLastWikiAdministrato
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\Exception\PrincipalNotFoundException;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -51,7 +52,13 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             $principalGroupsById[(string) $principalGroup->principalGroupIdentifier()] = $principalGroup;
         }
 
-        $operatorRole = $this->roleRepository->findSystemByName('Operator');
+        $protectedRoles = [];
+        foreach (['Operator', 'Collaborator', 'SeniorCollaborator'] as $roleName) {
+            $role = $this->roleRepository->findSystemByName($roleName);
+            if ($role !== null) {
+                $protectedRoles[] = $role;
+            }
+        }
 
         $requestedPrincipalIdentifiers = [];
         $statusIdentifiers = [];
@@ -73,15 +80,19 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
                 throw new PrincipalGroupNotFoundException();
             }
 
-            if ($operatorRole !== null && $principalGroupsById[$principalGroupId]->hasRole($operatorRole->roleIdentifier())) {
+            $principalGroup = $principalGroupsById[$principalGroupId];
+            if (array_any($protectedRoles, static fn (Role $role): bool => $principalGroup->hasRole($role->roleIdentifier()))) {
                 throw new AccountUpdateForbiddenException();
             }
 
-            $principalGroupsById[$principalGroupId]->replaceMembers($principalGroupInput->principalIdentifiers());
             $requestedGroupIds[$principalGroupId] = true;
             foreach ($principalGroupInput->principalIdentifiers() as $principalIdentifier) {
                 $requestedPrincipalIdentifiers[(string) $principalIdentifier] = $principalIdentifier;
             }
+        }
+
+        foreach ($input->principalGroups() as $principalGroupInput) {
+            $principalGroupsById[(string) $principalGroupInput->principalGroupIdentifier()]->replaceMembers($principalGroupInput->principalIdentifiers());
         }
 
         $allIdentifiers = $requestedPrincipalIdentifiers;

@@ -20,7 +20,7 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
     {
         /** @var Collection<int, PrincipalGroupModel> $groups */
         $groups = PrincipalGroupModel::query()
-            ->with(['memberships.principal.identity', 'roleAttachments'])
+            ->with(['memberships.principal.identity', 'roleAttachments.role'])
             ->where('account_id', (string) $input->accountIdentifier())
             ->whereDoesntHave('roleAttachments', static fn ($attachments) => $attachments->whereIn('role_id', RoleModel::query()->select('id')->whereNull('account_id')->where('name', 'Operator')))
             ->orderBy('created_at')
@@ -34,6 +34,9 @@ readonly class ListPrincipalGroups implements ListPrincipalGroupsInterface
             description: $group->description,
             roleIdentifiers: $group->roleAttachments->map(static fn ($attachment): string => $attachment->role_id)->values()->all(),
             isDefault: $group->is_default,
+            isMembershipEditable: ! $group->roleAttachments->contains(static fn ($attachment): bool => $attachment->role !== null
+                && $attachment->role->account_id === null
+                && in_array($attachment->role->name, ['Operator', 'Collaborator', 'SeniorCollaborator'], true)),
             members: $group->memberships->map(static function ($membership): PrincipalGroupMemberReadModel {
                 $principal = $membership->principal ?? throw new UnexpectedValueException('Missing membership principal.');
                 $identity = $principal->identity ?? throw new UnexpectedValueException('Missing principal identity.');
