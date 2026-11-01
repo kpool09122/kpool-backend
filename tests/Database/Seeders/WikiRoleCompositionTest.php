@@ -7,9 +7,11 @@ namespace Tests\Database\Seeders;
 use Database\Seeders\SystemPolicySeeder;
 use Database\Seeders\SystemRoleSeeder;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\Service\PrincipalWikiScopeResolverInterface;
@@ -92,6 +94,52 @@ class WikiRoleCompositionTest extends TestCase
             self::assertNotNull($seniorRole);
             $additionalGroup->addRole($seniorRole);
             self::assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, new Resource(ResourceType::AGENCY, agencyId: $agencyId), $groups));
+        }
+    }
+
+    public function testReseedingRemovesLegacyCertificationRequestGrantsAndOnlyActorsCanRequest(): void
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $roleRepository = $this->app()->make(RoleRepositoryInterface::class);
+        $policyRepository = $this->app()->make(PolicyRepositoryInterface::class);
+        $legacyPolicy = $policyRepository->findSystemByName('GLOBAL_OFFICIAL_CERTIFICATION_REQUEST');
+        self::assertNotNull($legacyPolicy);
+        foreach (['SeniorCollaborator', 'Operator'] as $name) {
+            $role = $roleRepository->findSystemByName($name);
+            self::assertNotNull($role);
+            self::assertNotContains((string) $legacyPolicy->policyIdentifier(), array_map(strval(...), $role->policies()));
+            DB::table('wiki_role_policy_attachments')->insert([
+                'role_id' => (string) $role->roleIdentifier(),
+                'policy_id' => (string) $legacyPolicy->policyIdentifier(),
+            ]);
+        }
+        $this->seed(SystemRoleSeeder::class);
+        $this->seed(SystemRoleSeeder::class);
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        );
+        $policyEvaluator = $this->app()->make(PolicyEvaluatorInterface::class);
+        foreach (['Collaborator', 'SeniorCollaborator', 'Operator', 'AgencyActor', 'TalentActor'] as $name) {
+            $role = $roleRepository->findSystemByName($name);
+            self::assertNotNull($role);
+            self::assertNotContains((string) $legacyPolicy->policyIdentifier(), array_map(strval(...), $role->policies()));
+            $group = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $principal->accountIdentifier(), $name, false, new DateTimeImmutable());
+            $group->addMember($principal->principalIdentifier());
+            $group->addRole($role);
+            self::assertSame($name === 'AgencyActor', $policyEvaluator->evaluate(
+                $principal,
+                Action::OFFICIAL_CERTIFICATION_REQUEST,
+                new Resource(ResourceType::AGENCY, requesterAccountCategory: AccountCategory::AGENCY),
+                [$group],
+            ), $name . ' agency request');
+            self::assertSame($name === 'TalentActor', $policyEvaluator->evaluate(
+                $principal,
+                Action::OFFICIAL_CERTIFICATION_REQUEST,
+                new Resource(ResourceType::TALENT, requesterAccountCategory: AccountCategory::TALENT),
+                [$group],
+            ), $name . ' talent request');
         }
     }
 

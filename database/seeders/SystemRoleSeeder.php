@@ -165,7 +165,6 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
             'GLOBAL_UNHIDE',
-            'GLOBAL_OFFICIAL_CERTIFICATION_REQUEST',
         ];
     }
 
