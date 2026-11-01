@@ -107,6 +107,25 @@ class RoleRepository implements RoleRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /**
+     * @param string[] $names
+     * @return Role[]
+     */
+    public function findSystemByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $eloquents = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->whereIn('name', $names)
+            ->whereNull('account_id')
+            ->get();
+
+        return $eloquents->map(fn (RoleEloquent $eloquent): Role => $this->toDomainEntity($eloquent))->all();
+    }
+
     public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role
     {
         $eloquent = RoleEloquent::query()

@@ -89,9 +89,8 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findSystemByNames')->once()->with(['Operator', 'Collaborator', 'SeniorCollaborator'])->andReturn([$this->role('SeniorCollaborator')]);
         $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturnNull();
-        $roleRepository->shouldReceive('findSystemByName')->with('Collaborator')->andReturnNull();
-        $roleRepository->shouldReceive('findSystemByName')->with('SeniorCollaborator')->andReturn($this->role('SeniorCollaborator'));
         $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -167,8 +166,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturnNull();
-        $roleRepository->shouldReceive('findSystemByName')->with('Collaborator')->andReturnNull();
-        $roleRepository->shouldReceive('findSystemByName')->with('SeniorCollaborator')->andReturnNull();
+        $roleRepository->shouldReceive('findSystemByNames')->once()->with(['Operator', 'Collaborator', 'SeniorCollaborator'])->andReturn([]);
         $roleRepository->shouldReceive('findSystemByName')->once()->with('Administrator')->andReturn($wikiAdministratorRole);
 
         /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
@@ -222,9 +220,8 @@ class UpdatePrincipalGroupMembersTest extends TestCase
                 $principalRepository->shouldNotReceive('findByIds');
                 /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
                 $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-                $roleRepository->shouldReceive('findSystemByName')->with('Operator')->andReturn($roleName === 'Operator' ? $protectedRole : null);
-                $roleRepository->shouldReceive('findSystemByName')->with('Collaborator')->andReturn($roleName === 'Collaborator' ? $protectedRole : null);
-                $roleRepository->shouldReceive('findSystemByName')->with('SeniorCollaborator')->andReturn($roleName === 'SeniorCollaborator' ? $protectedRole : null);
+                $roleRepository->shouldReceive('findSystemByNames')->once()->with(['Operator', 'Collaborator', 'SeniorCollaborator'])->andReturn([$protectedRole]);
+                $roleRepository->shouldNotReceive('findSystemByName');
                 /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
                 $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
                 $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();

@@ -52,13 +52,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             $principalGroupsById[(string) $principalGroup->principalGroupIdentifier()] = $principalGroup;
         }
 
-        $protectedRoles = [];
-        foreach (['Operator', 'Collaborator', 'SeniorCollaborator'] as $roleName) {
-            $role = $this->roleRepository->findSystemByName($roleName);
-            if ($role !== null) {
-                $protectedRoles[] = $role;
-            }
-        }
+        $protectedRoles = $this->roleRepository->findSystemByNames(['Operator', 'Collaborator', 'SeniorCollaborator']);
 
         $requestedPrincipalIdentifiers = [];
         $statusIdentifiers = [];

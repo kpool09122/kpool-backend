@@ -6,12 +6,14 @@ namespace Tests\Wiki\Principal\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Principal\Infrastructure\Repository\RoleRepository;
+use Tests\Helper\CreateAccount;
 use Tests\Helper\CreatePolicy;
 use Tests\Helper\CreateRole;
 use Tests\Helper\StrTestHelper;
@@ -490,5 +492,53 @@ class RoleRepositoryTest extends TestCase
         $policyIds = array_map(static fn ($p) => (string) $p, $result->policies());
         $this->assertContains($policyId1, $policyIds);
         $this->assertContains($policyId2, $policyIds);
+    }
+
+    public function testFindSystemByNamesWithEmptyNames(): void
+    {
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        self::assertSame([], $repository->findSystemByNames([]));
+    }
+
+    #[Group('useDb')]
+    public function testFindSystemByNamesLoadsOnlyRequestedSystemRolesAndTheirPoliciesInTwoQueries(): void
+    {
+        $names = ['Operator', 'Collaborator', 'SeniorCollaborator'];
+        $policyId = new PolicyIdentifier(StrTestHelper::generateUuid());
+        CreatePolicy::create($policyId);
+        $roleIds = [];
+        foreach ($names as $name) {
+            $roleId = new RoleIdentifier(StrTestHelper::generateUuid());
+            $roleIds[$name] = (string) $roleId;
+            CreateRole::create($roleId, ['name' => $name, 'policies' => [(string) $policyId]]);
+        }
+        $accountId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+        CreateRole::create(new RoleIdentifier(StrTestHelper::generateUuid()), ['name' => 'Operator', 'account_id' => $accountId]);
+        CreateRole::create(new RoleIdentifier(StrTestHelper::generateUuid()), ['name' => 'Administrator']);
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $roles = $repository->findSystemByNames([...$names, 'Missing', 'Operator']);
+            self::assertCount(3, $roles);
+            foreach ($roles as $role) {
+                self::assertTrue($role->isSystemRole());
+                self::assertSame($roleIds[$role->name()], (string) $role->roleIdentifier());
+                self::assertSame([(string) $policyId], array_map(strval(...), $role->policies()));
+            }
+            self::assertCount(2, DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    }
+
+    #[Group('useDb')]
+    public function testFindSystemByNamesWhenNoneExist(): void
+    {
+        $repository = $this->app()->make(RoleRepositoryInterface::class);
+        self::assertSame([], $repository->findSystemByNames(['Missing']));
     }
 }
