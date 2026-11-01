@@ -233,7 +233,13 @@ class VideoLinkLikeAuthorizationTest extends TestCase
         CreatePrincipal::create($principal, $identity, $account);
         CreatePrincipalGroup::create($group, $account);
         CreatePrincipalGroupMembership::create((string) $group, (string) $principal);
-        DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $group, 'role_id' => DB::table('wiki_roles')->where('name', $role)->value('id')]);
+        // 追加ロールの基本権限は、通常の利用者と同じくCollaboratorから取得する。
+        $roles = in_array($role, ['SeniorCollaborator', 'AgencyActor', 'TalentActor'], true)
+            ? ['Collaborator', $role]
+            : [$role];
+        foreach (DB::table('wiki_roles')->whereIn('name', $roles)->pluck('id') as $roleId) {
+            DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $group, 'role_id' => $roleId]);
+        }
 
         return $principal;
     }
