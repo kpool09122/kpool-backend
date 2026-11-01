@@ -740,6 +740,7 @@ class PublishWikiAtSameVersionTest extends TestCase
                 $dummyPublishWikiAtSameVersion->resourceType,
                 (string) $dummyPublishWikiAtSameVersion->publishedWiki->wikiIdentifier(),
                 false, // isNewCreation = false for update
+                false, // isTranslation
             )
             ->andReturn(null);
 
