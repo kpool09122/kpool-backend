@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Service;
 
 use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsRequest;
-use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Carbon\CarbonImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
+use Source\Wiki\VideoLink\Domain\Service\VideoTitleFilterServiceInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
@@ -18,7 +18,7 @@ use Throwable;
 
 class YouTubeSearchService implements YouTubeSearchServiceInterface
 {
-    private const int MAX_RESULTS_PER_SEARCH = 30;
+    private const int MAX_RESULTS_PER_SEARCH = 50;
 
     private const int MIN_LIKE_COUNT = 10;
 
@@ -26,19 +26,21 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
 
     private const int MIN_VIEW_COUNT_FOR_LIKE_RATE = 10000;
 
-    private const int TOP_COUNT = 3;
+    private const int TOP_COUNT = 5;
 
     public function __construct(
         private readonly YouTubeClient $youTubeClient,
         private readonly LoggerInterface $logger,
+        private readonly VideoTitleFilterServiceInterface $videoTitleFilterService,
     ) {
     }
 
     /**
+     * @param array<string, list<string>> $titleNames
      * @return YouTubeVideoInfo[]
      * @throws VideoSearchFailedException
      */
-    public function searchVideos(string $keyword): array
+    public function searchVideos(string $keyword, array $titleNames): array
     {
         if (! $this->youTubeClient->isConfigured()) {
             $this->logger->warning('YouTube API key is not configured');
@@ -53,11 +55,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
             $relevanceVideoIds = $this->youTubeClient->searchVideoIds(
                 new SearchVideoIdsRequest($keyword, 'relevance', self::MAX_RESULTS_PER_SEARCH),
             )->videoIds();
-            $recentVideoIds = $this->youTubeClient->searchRecentVideoIds(
-                new SearchRecentVideoIdsRequest($keyword, self::MAX_RESULTS_PER_SEARCH, CarbonImmutable::now()->subMonth()),
-            )->videoIds();
-
-            $allVideoIds = array_unique(array_merge($viewCountVideoIds, $relevanceVideoIds, $recentVideoIds));
+            $allVideoIds = array_unique(array_merge($viewCountVideoIds, $relevanceVideoIds));
 
             if (empty($allVideoIds)) {
                 return [];
@@ -71,11 +69,16 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
                 throw new VideoSearchFailedException();
             }
 
+            $matchingTitles = $this->videoTitleFilterService->filter(
+                array_map(static fn (array $video): string => $video['title'], $videoDetails),
+                $titleNames,
+            );
+            $videoDetails = array_intersect_key($videoDetails, $matchingTitles);
+
             $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, false);
             $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, true);
-            $recentVideos = $this->selectTopVideos($videoDetails, $recentVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, false);
 
-            return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos, ...$recentVideos]);
+            return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos]);
         } catch (Throwable $exception) {
             $this->logger->error('Video search failed; existing collection is unchanged');
 

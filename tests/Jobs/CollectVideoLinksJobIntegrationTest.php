@@ -50,6 +50,42 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
         CreateVideoLinkCollectionStatus::create($this->statusId, ['wiki_id' => $this->wikiId,'resource_type' => 'group','last_collected_at' => '2020-01-01 00:00:00']);
     }
 
+    public function testRealSearchCollectsRelatedMultilingualTitleAndExcludesUnrelatedVideo(): void
+    {
+        CreateWiki::create(StrTestHelper::generateUuid(), 'talent', ['language' => 'en'], [
+            'name' => 'MOMO',
+            'group_identifiers' => json_encode([$this->wikiId], JSON_THROW_ON_ERROR),
+        ]);
+        $searchBody = json_encode(['items' => [
+            ['id' => ['videoId' => 'abcdefghijk']],
+            ['id' => ['videoId' => '01234567890']],
+        ]], JSON_THROW_ON_ERROR);
+        $items = [];
+        foreach (['abcdefghijk' => 'momo fancam', '01234567890' => 'Unrelated video'] as $id => $title) {
+            $items[] = [
+                'id' => $id,
+                'snippet' => [
+                    'title' => $title,
+                    'publishedAt' => '2026-01-01T00:00:00Z',
+                    'thumbnails' => ['high' => ['url' => 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg']],
+                ],
+                'statistics' => ['viewCount' => '100000', 'likeCount' => '10000'],
+                'contentDetails' => ['duration' => 'PT3M'],
+            ];
+        }
+        /** @var ClientInterface&MockInterface $http */
+        $http = Mockery::mock(ClientInterface::class);
+        foreach ([$searchBody, $searchBody, json_encode(['items' => $items], JSON_THROW_ON_ERROR)] as $body) {
+            $http->shouldReceive('sendRequest')->once()->ordered()->andReturn(new Response(200, [], $body));
+        }
+        $this->app()->instance(YouTubeClient::class, YouTubeClientTestHelper::create($http));
+
+        $this->collect();
+
+        self::assertSame(['momo fancam'], DB::table('wiki_video_links')->where('wiki_id', $this->wikiId)->pluck('title')->all());
+        self::assertNotNull(DB::table('video_link_collection_statuses')->where('id', $this->statusId)->value('last_collected_at'));
+    }
+
     /** @param list<array{int,string}> $responses */
     #[DataProvider('providerFailures')]
     public function testRealProviderFailurePreservesStoredCollection(array $responses): void
@@ -86,8 +122,8 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
         return [
             'total search failure' => [[[503, 'provider response']]],
             'partial search failure' => [[$found, [503, 'provider response']]],
-            'details failure' => [[$found, $empty, $empty, [503, 'provider response']]],
-            'missing details' => [[$found, $empty, $empty, $empty]],
+            'details failure' => [[$found, $empty, [503, 'provider response']]],
+            'missing details' => [[$found, $empty, $empty]],
             'malformed JSON' => [[[200, '{']]],
             'missing items' => [[[200, '{}']]],
         ];

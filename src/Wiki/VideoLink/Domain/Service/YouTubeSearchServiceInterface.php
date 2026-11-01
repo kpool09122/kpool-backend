@@ -10,8 +10,9 @@ use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 interface YouTubeSearchServiceInterface
 {
     /**
+     * @param array<string, list<string>> $titleNames Names grouped by language code.
      * @return YouTubeVideoInfo[]
      * @throws VideoSearchFailedException
      */
-    public function searchVideos(string $keyword): array;
+    public function searchVideos(string $keyword, array $titleNames): array;
 }

@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Application\Service\VideoSearchKeywordBuilder;
+use Source\Wiki\VideoLink\Application\Service\VideoTitleNameQueryServiceInterface;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkCollectionFailedException;
 use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
@@ -29,6 +30,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         private VideoLinkRepositoryInterface $videoLinkRepository,
         private VideoLinkFactoryInterface $videoLinkFactory,
         private VideoSearchKeywordBuilder $videoSearchKeywordBuilder,
+        private VideoTitleNameQueryServiceInterface $videoTitleNameQueryService,
         private LoggerInterface $logger,
     ) {
     }
@@ -88,7 +90,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             'search_keyword' => $keyword,
         ]);
 
-        $videos = $this->youTubeSearchService->searchVideos($keyword);
+        $videos = $this->youTubeSearchService->searchVideos($keyword, $this->videoTitleNameQueryService->findNames($wiki));
 
         try {
             $this->videoLinkRepository->deleteAutoCollectedByResource(
