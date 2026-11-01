@@ -19,7 +19,6 @@ readonly class ListMyOwnedWikisAction
     public function __construct(
         private ListMyOwnedWikisInterface $listMyOwnedWikis,
         private AccountContext $accountContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

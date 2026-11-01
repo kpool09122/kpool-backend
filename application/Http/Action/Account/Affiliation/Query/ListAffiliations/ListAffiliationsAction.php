@@ -23,7 +23,6 @@ readonly class ListAffiliationsAction
     public function __construct(
         private ListAffiliationsInterface $listAffiliations,
         private AccountContext $accountContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

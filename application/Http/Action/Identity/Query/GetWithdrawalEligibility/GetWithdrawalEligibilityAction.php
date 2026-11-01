@@ -16,7 +16,6 @@ readonly class GetWithdrawalEligibilityAction
     public function __construct(
         private WithdrawalEligibilityServiceInterface $withdrawalEligibilityService,
         private ActorContext $actorContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }
