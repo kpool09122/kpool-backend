@@ -213,6 +213,28 @@ tasks:
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan operations:revoke "$OPERATIONS_EMAIL"'
 
+  wiki:collaborator:promote:
+    desc: "Promote Wiki user to SeniorCollaborator. Usage: task wiki:collaborator:promote email=user@example.com"
+    requires:
+      vars: [email]
+    env:
+      WIKI_COLLABORATOR_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan wiki:collaborator:promote "$WIKI_COLLABORATOR_EMAIL"'
+
+  wiki:collaborator:demote:
+    desc: "Demote Wiki user to Collaborator. Usage: task wiki:collaborator:demote email=user@example.com"
+    requires:
+      vars: [email]
+    env:
+      WIKI_COLLABORATOR_EMAIL: '{{.email}}'
+    cmds:
+      - docker-compose up -d db redis
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan wiki:collaborator:demote "$WIKI_COLLABORATOR_EMAIL"'
+
   wiki:operator:grant:
     desc: "Grant Wiki Operator permissions. Usage: task wiki:operator:grant email=admin@example.com"
     requires:

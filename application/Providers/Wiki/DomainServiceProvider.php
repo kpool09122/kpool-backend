@@ -6,6 +6,10 @@ namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Wiki\Grading\Application\Service\CollaboratorRoleTransitionService;
+use Source\Wiki\Grading\Application\Service\CollaboratorRoleTransitionServiceInterface;
+use Source\Wiki\Grading\Application\UseCase\Command\ChangeCollaboratorRole\ChangeCollaboratorRole;
+use Source\Wiki\Grading\Application\UseCase\Command\ChangeCollaboratorRole\ChangeCollaboratorRoleInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotion;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummary;
@@ -228,6 +232,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PromotionHistoryRepositoryInterface::class, PromotionHistoryRepository::class);
         $this->app->singleton(DemotionWarningRepositoryInterface::class, DemotionWarningRepository::class);
         $this->app->singleton(ContributionPointServiceInterface::class, ContributionPointService::class);
+        $this->app->singleton(CollaboratorRoleTransitionServiceInterface::class, CollaboratorRoleTransitionService::class);
+        $this->app->singleton(ChangeCollaboratorRoleInterface::class, ChangeCollaboratorRole::class);
         $this->app->singleton(ProcessRolePromotionInterface::class, ProcessRolePromotion::class);
         $this->app->singleton(UpdateContributionPointSummaryInterface::class, UpdateContributionPointSummary::class);
         $this->app->singleton(AutoWikiCreationServiceInterface::class, AutoWikiCreationService::class);
