@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Application\Console\Commands;
 
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
-use DateTimeImmutable;
-use DateTimeZone;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Override;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
@@ -22,7 +21,7 @@ class ProcessRolePromotionCommand extends Command
 {
     #[Override]
     protected $signature = 'wiki:process-role-promotion
-                            {--month= : 処理対象月（YYYY-MM形式、指定がなければ今月）}
+                            {--month= : 処理対象月（YYYY-MM形式、指定がなければ前月）}
                             {--sync : ジョブをキューに入れず同期実行}';
 
     #[Override]
@@ -43,7 +42,7 @@ class ProcessRolePromotionCommand extends Command
             }
             $yearMonth = YearMonth::fromString($monthString);
         } else {
-            $yearMonth = YearMonth::fromDateTime(new DateTimeImmutable('now', new DateTimeZone('Asia/Tokyo')));
+            $yearMonth = YearMonth::fromDateTime(CarbonImmutable::now('Asia/Tokyo'))->subtract(1);
         }
 
         $this->info("Processing role promotion for: {$yearMonth}");
