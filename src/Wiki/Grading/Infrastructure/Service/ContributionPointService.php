@@ -34,17 +34,19 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         ResourceType         $resourceType,
         WikiIdentifier       $wikiIdentifier,
         bool                 $isNewCreation,
+        bool                 $isTranslation,
     ): void {
         $now = new DateTimeImmutable();
         $yearMonth = YearMonth::fromDateTime($now);
 
-        // Grant editor points (if not a translation article)
+        // Grant editor points with the same cooldown for original and translated articles.
         if ($editorIdentifier !== null) {
             $editorPoints = $this->calculateEditorPoints(
                 $editorIdentifier,
                 $resourceType,
                 $wikiIdentifier,
                 $isNewCreation,
+                $isTranslation,
             );
 
             if ($editorPoints->isGreaterThenZero()) {
@@ -63,28 +65,24 @@ readonly class ContributionPointService implements ContributionPointServiceInter
             }
         }
 
-        // Grant approver points (if not a translation article)
-        if ($editorIdentifier !== null) {
-            $approverPoints = $isNewCreation ? new Point(Point::NEW_APPROVER) : new Point(Point::UPDATE_APPROVER);
+        $approverPoints = new Point($isTranslation ? Point::TRANSLATION : ($isNewCreation ? Point::NEW_APPROVER : Point::UPDATE_APPROVER));
 
-            $this->recordPointHistory(
-                $approverIdentifier,
-                $yearMonth,
-                $approverPoints,
-                $resourceType,
-                $wikiIdentifier,
-                ContributorType::APPROVER,
-                $isNewCreation,
-                $now,
-            );
+        $this->recordPointHistory(
+            $approverIdentifier,
+            $yearMonth,
+            $approverPoints,
+            $resourceType,
+            $wikiIdentifier,
+            ContributorType::APPROVER,
+            $isNewCreation,
+            $now,
+        );
 
-            $this->updateSummary($approverIdentifier, $yearMonth, $approverPoints);
-        }
-
+        $this->updateSummary($approverIdentifier, $yearMonth, $approverPoints);
 
         if ($mergerIdentifier !== null) {
-            // Grant merger points (always, including translation articles)
-            $mergerPoints = $isNewCreation ? new Point(Point::NEW_MERGER) : new Point(Point::UPDATE_MERGER);
+            // Grant merger points when a merger is assigned.
+            $mergerPoints = new Point($isTranslation ? Point::TRANSLATION : ($isNewCreation ? Point::NEW_MERGER : Point::UPDATE_MERGER));
 
             $this->recordPointHistory(
                 $mergerIdentifier,
@@ -106,6 +104,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         ResourceType        $resourceType,
         WikiIdentifier      $wikiIdentifier,
         bool                $isNewCreation,
+        bool                $isTranslation,
     ): Point {
         // Check cooldown for editor only
         $lastPublishDate = $this->contributionPointHistoryRepository->findLastPublishDate(
@@ -122,7 +121,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
             }
         }
 
-        return $isNewCreation ? new Point(Point::NEW_EDITOR) : new Point(Point::UPDATE_EDITOR);
+        return new Point($isTranslation ? Point::TRANSLATION : ($isNewCreation ? Point::NEW_EDITOR : Point::UPDATE_EDITOR));
     }
 
     private function recordPointHistory(

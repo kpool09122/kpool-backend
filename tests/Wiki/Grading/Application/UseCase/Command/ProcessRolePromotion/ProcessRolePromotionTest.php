@@ -91,6 +91,11 @@ class ProcessRolePromotionTest extends TestCase
 
         $summaryRepository = Mockery::mock(ContributionPointSummaryRepositoryInterface::class);
         $summaryRepository->shouldReceive('findByYearMonths')
+            ->with(Mockery::on(static fn (array $months): bool => $months == [
+                new YearMonth('2026-01'),
+                new YearMonth('2025-12'),
+                new YearMonth('2025-11'),
+            ]))
             ->andReturn([$summary]);
 
         $demotionWarningRepository = Mockery::mock(DemotionWarningRepositoryInterface::class);
@@ -101,17 +106,22 @@ class ProcessRolePromotionTest extends TestCase
         $promotionHistoryRepository->shouldReceive('save')
             ->once();
 
+        $seniorGroups = [];
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByRole')
             ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $collaboratorRoleId))
             ->andReturn([$principalGroup]);
         $principalGroupRepository->shouldReceive('findByRole')
             ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
-            ->andReturn([]);
-        $principalGroupRepository->shouldReceive('findByPrincipalId')
+            ->andReturnUsing(static function () use (&$seniorGroups): array {
+                return $seniorGroups;
+            });
+        $principalGroupRepository->shouldReceive('findByPrincipalId')->once()
             ->andReturn([$principalGroup]);
-        $principalGroupRepository->shouldReceive('save')
-            ->twice();
+        $principalGroupRepository->shouldReceive('save')->once()
+            ->andReturnUsing(static function (PrincipalGroup $group) use (&$seniorGroups): void {
+                $seniorGroups = [$group];
+            });
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findSystemByName')
@@ -159,6 +169,13 @@ class ProcessRolePromotionTest extends TestCase
 
         $this->assertCount(1, $output->promoted());
         $this->assertSame($principalId, (string) $output->promoted()[0]);
+        $this->assertTrue($principalGroup->hasMember(new PrincipalIdentifier($principalId)));
+        $this->assertTrue($seniorGroups[0]->hasMember(new PrincipalIdentifier($principalId)));
+
+        $rerunOutput = new ProcessRolePromotionOutput();
+        $useCase->process($input, $rerunOutput);
+        $this->assertSame([], $rerunOutput->promoted());
+        $this->assertSame([], $rerunOutput->demoted());
     }
 
     /**
@@ -338,6 +355,11 @@ class ProcessRolePromotionTest extends TestCase
         $this->assertCount(0, $output->demoted());
         // 警告がリセットされていることを確認
         $this->assertSame(0, $warning->warningCount()->value());
+        $rerunOutput = new ProcessRolePromotionOutput();
+        $useCase->process($input, $rerunOutput);
+        $this->assertSame('2026-01', (string) $warning->lastWarningMonth());
+        $this->assertSame([], $rerunOutput->demoted());
+        $this->assertSame([], $rerunOutput->warned());
     }
 
     /**
@@ -396,14 +418,19 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$summary]);
 
         $demotionWarningRepository = Mockery::mock(DemotionWarningRepositoryInterface::class);
-        // 既存の警告がない
+        $savedWarnings = [];
         $demotionWarningRepository->shouldReceive('findAll')
-            ->andReturn([]);
+            ->andReturnUsing(static function () use (&$savedWarnings): array {
+                return $savedWarnings;
+            });
         // 新規警告が作成されて保存されることを確認
         $demotionWarningRepository->shouldReceive('save')
             ->with(Mockery::on(static fn (DemotionWarning $w) => (string) $w->principalIdentifier() === $principalId
                 && $w->warningCount()->value() === 1))
-            ->once();
+            ->once()
+            ->andReturnUsing(static function (DemotionWarning $warning) use (&$savedWarnings): void {
+                $savedWarnings = [$warning];
+            });
 
         $promotionHistoryRepository = Mockery::mock(PromotionHistoryRepositoryInterface::class);
 
@@ -446,12 +473,18 @@ class ProcessRolePromotionTest extends TestCase
         $this->assertCount(0, $output->demoted());
         // 警告対象になっていないことを確認（warningCount=1はisReachedWarningThresholdがfalse）
         $this->assertCount(0, $output->warned());
+        $rerunOutput = new ProcessRolePromotionOutput();
+        $useCase->process($input, $rerunOutput);
+        $this->assertSame(1, $savedWarnings[0]->warningCount()->value());
+        $this->assertSame('2026-01', (string) $savedWarnings[0]->lastWarningMonth());
+        $this->assertSame([], $rerunOutput->demoted());
+        $this->assertSame([], $rerunOutput->warned());
     }
 
     /**
      * 正常系: Collaboratorロールが存在しない場合、昇格・降格処理がスキップされること
      *
-     * processDemotionsとprocessPromotionsの両方でCollaboratorロールのnullチェックによりearly returnされる
+     * evaluateSeniorCollaboratorsとprocessPromotionsの両方でCollaboratorロールのnullチェックによりearly returnされる
      *
      * @return void
      * @throws BindingResolutionException
@@ -491,13 +524,13 @@ class ProcessRolePromotionTest extends TestCase
         $promotionHistoryRepository = Mockery::mock(PromotionHistoryRepositoryInterface::class);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
-        // processWarningsでgetSeniorCollaboratorsが呼ばれるため、findByRoleが必要
+        // Senior Collaboratorの取得にfindByRoleが必要
         $principalGroupRepository->shouldReceive('findByRole')
             ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([]);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
-        // Collaboratorロールが見つからない → processDemotionsとprocessPromotionsでearly return
+        // Collaboratorロールが見つからない → evaluateSeniorCollaboratorsとprocessPromotionsでearly return
         $roleRepository->shouldReceive('findSystemByName')
             ->with('Collaborator')
             ->andReturn(null);
@@ -568,6 +601,7 @@ class ProcessRolePromotionTest extends TestCase
             new DateTimeImmutable(),
         );
         $defaultGroup->addRole($collaboratorRole);
+        $defaultGroup->addMember(new PrincipalIdentifier($principalId));
 
         $seniorGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($seniorGroupId),
@@ -621,13 +655,10 @@ class ProcessRolePromotionTest extends TestCase
             ->with(Mockery::on(static fn (RoleIdentifier $r) => (string) $r === $seniorCollaboratorRoleId))
             ->andReturn([$seniorGroup]);
         $principalGroupRepository->shouldReceive('findByPrincipalId')
-            ->andReturn([$seniorGroup]);
-        $principalGroupRepository->shouldReceive('findDefaultByAccountId')
-            ->with(Mockery::on(static fn (AccountIdentifier $accountIdentifier) => (string) $accountIdentifier === $accountId))
-            ->once()
-            ->andReturn($defaultGroup);
+            ->andReturn([$defaultGroup, $seniorGroup]);
+        $principalGroupRepository->shouldNotReceive('findDefaultByAccountId');
         $principalGroupRepository->shouldReceive('save')
-            ->twice();
+            ->once()->with($seniorGroup);
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
         $roleRepository->shouldReceive('findSystemByName')
@@ -682,8 +713,8 @@ class ProcessRolePromotionTest extends TestCase
     /**
      * 正常系: 2回目の警告を受けたSenior Collaboratorに対してDemotionWarningsBatchIssuedイベントが発行されること
      *
-     * processDemotionsでwarningCountが1から2にincrementされ、
-     * processWarningsでisReachedWarningThreshold（warningCount === 2）がtrueとなり、
+     * evaluateSeniorCollaboratorsでwarningCountが1から2にincrementされ、
+     * isReachedWarningThreshold（warningCount === 2）がtrueとなり、
      * DemotionWarningsBatchIssuedイベントがディスパッチされる。
      *
      * @return void
@@ -725,7 +756,7 @@ class ProcessRolePromotionTest extends TestCase
         $principalGroup->addMember(new PrincipalIdentifier($principalId));
         $principalGroup->addRole($seniorCollaboratorRole);
 
-        // WarningCount=1の既存警告（processDemotionsでincrementされて2になり、isReachedWarningThreshold=trueになる）
+        // WarningCount=1の既存警告（evaluateSeniorCollaboratorsでincrementされて2になり、isReachedWarningThreshold=trueになる）
         $warning = new DemotionWarning(
             new DemotionWarningIdentifier($warningId),
             new PrincipalIdentifier($principalId),
@@ -814,5 +845,15 @@ class ProcessRolePromotionTest extends TestCase
         $this->assertSame($principalId, (string) $output->warned()[0]);
         // 降格されていないことを確認（warningCount=2なので降格閾値の3に達していない）
         $this->assertCount(0, $output->demoted());
+        $rerunOutput = new ProcessRolePromotionOutput();
+        $useCase->process($input, $rerunOutput);
+        $this->assertSame(2, $warning->warningCount()->value());
+        $this->assertSame([], $rerunOutput->demoted());
+        $this->assertSame([], $rerunOutput->warned());
+
+        // Replaying an older month must not move the evaluation backwards either.
+        $useCase->process(new ProcessRolePromotionInput(new YearMonth('2025-12')), new ProcessRolePromotionOutput());
+        $this->assertSame(2, $warning->warningCount()->value());
+        $this->assertSame('2026-01', (string) $warning->lastWarningMonth());
     }
 }

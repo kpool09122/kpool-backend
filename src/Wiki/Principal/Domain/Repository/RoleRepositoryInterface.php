@@ -29,6 +29,12 @@ interface RoleRepositoryInterface
 
     public function findSystemByName(string $name): ?Role;
 
+    /**
+     * @param string[] $names
+     * @return Role[]
+     */
+    public function findSystemByNames(array $names): array;
+
     public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?Role;
 
     public function delete(Role $role): void;

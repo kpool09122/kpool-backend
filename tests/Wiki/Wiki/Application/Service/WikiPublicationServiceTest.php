@@ -105,6 +105,18 @@ class WikiPublicationServiceTest extends TestCase
             'translated_at' => '2026-10-29 00:00:00',
         ]);
 
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')->once()->with(
+            Mockery::type(PrincipalIdentifier::class),
+            Mockery::type(PrincipalIdentifier::class),
+            null,
+            $type,
+            Mockery::type(WikiIdentifier::class),
+            true,
+            true,
+        );
+        $this->app()->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
         $output = new PublishWikiOutput();
         DB::transaction(fn () => $this->app()->make(PublishWikiInterface::class)->process(
             new PublishWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), $type),

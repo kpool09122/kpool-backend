@@ -28,6 +28,7 @@ class PrincipalGroupReadModelTest extends TestCase
             roleIdentifiers: [$roleIdentifier],
             isDefault: false,
             members: $members,
+            isMembershipEditable: true,
         );
 
         $this->assertSame($principalGroupIdentifier, $readModel->principalGroupIdentifier());
@@ -43,6 +44,7 @@ class PrincipalGroupReadModelTest extends TestCase
             'description' => 'Manages group memberships.',
             'roleIdentifiers' => [$roleIdentifier],
             'isDefault' => false,
+            'isMembershipEditable' => true,
             'members' => [[
                 'status' => 'suspended',
                 'principalIdentifier' => $principalIdentifier,

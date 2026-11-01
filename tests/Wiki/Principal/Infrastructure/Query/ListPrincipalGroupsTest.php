@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -75,6 +76,7 @@ class ListPrincipalGroupsTest extends TestCase
             'description' => null,
             'roleIdentifiers' => [(string) $roleIdentifier],
             'isDefault' => true,
+            'isMembershipEditable' => true,
             'members' => [[
                 'status' => 'active',
                 'principalIdentifier' => (string) $principalIdentifier,
@@ -85,27 +87,47 @@ class ListPrincipalGroupsTest extends TestCase
         ], $groups[0]->toArray());
     }
 
+    /** @return array<string, array{string}> */
+    public static function protectedRoleNames(): array
+    {
+        return ['operator' => ['Operator'], 'collaborator' => ['Collaborator'], 'senior collaborator' => ['SeniorCollaborator']];
+    }
+
     #[Group('useDb')]
-    public function testSystemOperatorRoleProtectsMixedGroupsButNotAccountRolesWithSameName(): void
+    #[DataProvider('protectedRoleNames')]
+    public function testSystemManagedGroupsRemainVisibleButCannotEditMemberships(string $roleName): void
     {
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
         CreateAccount::create((string) $account);
-        $systemOperator = new RoleIdentifier(StrTestHelper::generateUuid());
+        $systemRole = new RoleIdentifier(StrTestHelper::generateUuid());
         $administrator = new RoleIdentifier(StrTestHelper::generateUuid());
-        $customOperator = new RoleIdentifier(StrTestHelper::generateUuid());
-        CreateRole::create($systemOperator, ['name' => 'Operator']);
+        $customRole = new RoleIdentifier(StrTestHelper::generateUuid());
+        CreateRole::create($systemRole, ['name' => $roleName]);
         CreateRole::create($administrator, ['name' => 'Administrator']);
-        CreateRole::create($customOperator, ['name' => 'Operator', 'account_id' => (string) $account]);
+        CreateRole::create($customRole, ['name' => $roleName, 'account_id' => (string) $account]);
         $visible = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        foreach ([[$systemOperator], [$systemOperator, $administrator], [$customOperator]] as $index => $roles) {
+        $managedGroupIds = [];
+        foreach ([[$systemRole], [$systemRole, $administrator], [$customRole]] as $index => $roles) {
             $id = $index === 2 ? $visible : new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-            CreatePrincipalGroup::create($id, $account);
+            CreatePrincipalGroup::create($id, $account, ['is_default' => $roleName === 'Collaborator']);
+            if ($index !== 2) {
+                $managedGroupIds[] = (string) $id;
+            }
             foreach ($roles as $role) {
                 DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $id, 'role_id' => (string) $role]);
             }
         }
         $groups = (new ListPrincipalGroups())->process(new ListPrincipalGroupsInput($account));
-        self::assertCount(1, $groups);
-        self::assertSame((string) $visible, $groups[0]->principalGroupIdentifier());
+        self::assertCount($roleName === 'Operator' ? 1 : 3, $groups);
+        $groupsById = [];
+        foreach ($groups as $group) {
+            $groupsById[$group->principalGroupIdentifier()] = $group->toArray();
+        }
+        self::assertTrue($groupsById[(string) $visible]['isMembershipEditable']);
+        if ($roleName !== 'Operator') {
+            foreach ($managedGroupIds as $id) {
+                self::assertFalse($groupsById[$id]['isMembershipEditable']);
+            }
+        }
     }
 }

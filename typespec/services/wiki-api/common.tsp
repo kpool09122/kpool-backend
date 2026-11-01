@@ -787,6 +787,8 @@ model PrincipalGroupManagementSummary {
   isDefault: boolean;
   @doc("Members of the principal group.")
   members: PrincipalGroupMemberSummary[];
+  @doc("Whether users may change this group membership. System-managed Collaborator and SeniorCollaborator groups are visible but not editable.")
+  isMembershipEditable: boolean;
 }
 
 @doc("Summary of a role.")

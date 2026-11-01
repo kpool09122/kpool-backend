@@ -14,6 +14,7 @@ readonly class Point
     public const int UPDATE_APPROVER = 1;
     public const int NEW_MERGER = 3;
     public const int UPDATE_MERGER = 2;
+    public const int TRANSLATION = 1;
     public const int COOLDOWN_DAYS = 7;
 
     public const int PROMOTION_THRESHOLD = 50;

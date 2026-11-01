@@ -76,8 +76,9 @@ class SystemRoleSeeder extends Seeder
         $this->saveRole(
             name: 'Operator',
             policies: $this->getPolicyIdentifiers([
-                ...$this->globalPolicyNames(),
-                'GLOBAL_OFFICIAL_CERTIFICATION_READ',
+                ...$this->basicGlobalPolicyNames(),
+                ...$this->seniorCollaboratorPolicyNames(),
+                ...$this->operatorOnlyPolicyNames(),
             ]),
         );
     }
@@ -86,7 +87,10 @@ class SystemRoleSeeder extends Seeder
     {
         $this->saveRole(
             name: 'SeniorCollaborator',
-            policies: $this->getPolicyIdentifiers([...$this->globalPolicyNames(), 'DENY_ROLLBACK']),
+            policies: $this->getPolicyIdentifiers([
+                ...$this->seniorCollaboratorPolicyNames(),
+                'DENY_ROLLBACK',
+            ]),
         );
     }
 
@@ -94,7 +98,7 @@ class SystemRoleSeeder extends Seeder
     {
         $this->saveRole(
             name: 'AgencyActor',
-            policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->agencyManagementPolicyNames()]),
+            policies: $this->getPolicyIdentifiers($this->agencyManagementPolicyNames()),
         );
     }
 
@@ -102,7 +106,7 @@ class SystemRoleSeeder extends Seeder
     {
         $this->saveRole(
             name: 'TalentActor',
-            policies: $this->getPolicyIdentifiers([...$this->basicEditingPolicyNames(), ...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
+            policies: $this->getPolicyIdentifiers([...$this->talentManagementPolicyNames(), ...$this->denyAgencyApprovalPolicyNames()]),
         );
     }
 
@@ -146,38 +150,32 @@ class SystemRoleSeeder extends Seeder
     /**
      * @return string[]
      */
-    private function globalPolicyNames(): array
+    private function seniorCollaboratorPolicyNames(): array
     {
         return [
-            'GLOBAL_CREATE',
             'GLOBAL_READ',
-            'GLOBAL_EDIT',
-            'GLOBAL_SUBMIT',
             'GLOBAL_WITHDRAW',
             'GLOBAL_APPROVE',
             'GLOBAL_REJECT',
             'GLOBAL_TRANSLATE',
             'GLOBAL_PUBLISH',
-            'GLOBAL_ROLLBACK',
             'GLOBAL_MERGE',
             'GLOBAL_AUTOMATIC_CREATE',
-            'GLOBAL_SAVE_VIDEO_LINKS',
-            'GLOBAL_DELETE_VIDEO_LINK',
-            'GLOBAL_CREATE_PLAYLIST',
-            'GLOBAL_LIST_MY_PLAYLISTS',
-            'GLOBAL_GET_MY_PLAYLIST',
-            'GLOBAL_DELETE_PLAYLIST',
-            'GLOBAL_SAVE_PLAYLIST',
-            'GLOBAL_LIKE_VIDEO_LINK',
-            'GLOBAL_RECORD_VIDEO_LINK_WATCH',
-            'GLOBAL_UNLIKE_VIDEO_LINK',
-            'GLOBAL_SEND_VIDEO_WATCH_REQUEST',
-            'GLOBAL_LIST_MY_VIDEO_WATCH_REQUESTS',
             'GLOBAL_SEARCH_FREE_MATERIALS',
             'GLOBAL_DELETE',
             'GLOBAL_HIDE',
             'GLOBAL_UNHIDE',
-            'GLOBAL_OFFICIAL_CERTIFICATION_REQUEST',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function operatorOnlyPolicyNames(): array
+    {
+        return [
+            'GLOBAL_ROLLBACK',
+            'GLOBAL_OFFICIAL_CERTIFICATION_READ',
             'GLOBAL_OFFICIAL_CERTIFICATION_APPROVE',
             'GLOBAL_OFFICIAL_CERTIFICATION_REJECT',
         ];
@@ -189,6 +187,18 @@ class SystemRoleSeeder extends Seeder
     private function basicEditingPolicyNames(): array
     {
         return [
+            ...$this->basicGlobalPolicyNames(),
+            'OWN_WIKI_DELETE',
+            'OWN_WIKI_WITHDRAW',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function basicGlobalPolicyNames(): array
+    {
+        return [
             'GLOBAL_CREATE',
             'GLOBAL_EDIT',
             'GLOBAL_SUBMIT',
@@ -204,8 +214,6 @@ class SystemRoleSeeder extends Seeder
             'GLOBAL_UNLIKE_VIDEO_LINK',
             'GLOBAL_SEND_VIDEO_WATCH_REQUEST',
             'GLOBAL_LIST_MY_VIDEO_WATCH_REQUESTS',
-            'OWN_WIKI_DELETE',
-            'OWN_WIKI_WITHDRAW',
         ];
     }
 
@@ -222,8 +230,6 @@ class SystemRoleSeeder extends Seeder
             'AGENCY_SCOPE_PUBLISH',
             'AGENCY_SCOPE_MERGE',
             'AGENCY_SCOPE_AUTOMATIC_CREATE',
-            'AGENCY_SCOPE_SAVE_VIDEO_LINKS',
-            'AGENCY_SCOPE_DELETE_VIDEO_LINK',
             'AGENCY_SCOPE_IMAGE_APPROVE',
             'AGENCY_SCOPE_IMAGE_REJECT',
             'AGENCY_SCOPE_IMAGE_DELETE',
@@ -241,15 +247,12 @@ class SystemRoleSeeder extends Seeder
     {
         return [
             'TALENT_SCOPE_READ',
-            'TALENT_SCOPE_EDIT',
             'TALENT_SCOPE_APPROVE',
             'TALENT_SCOPE_REJECT',
             'TALENT_SCOPE_TRANSLATE',
             'TALENT_SCOPE_PUBLISH',
             'TALENT_SCOPE_MERGE',
             'TALENT_SCOPE_AUTOMATIC_CREATE',
-            'TALENT_SCOPE_SAVE_VIDEO_LINKS',
-            'TALENT_SCOPE_DELETE_VIDEO_LINK',
             'TALENT_SCOPE_IMAGE_APPROVE',
             'TALENT_SCOPE_IMAGE_REJECT',
             'TALENT_SCOPE_IMAGE_DELETE',

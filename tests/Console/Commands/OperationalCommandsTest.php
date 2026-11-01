@@ -10,6 +10,7 @@ use Application\Console\Commands\ProcessRolePromotionCommand;
 use Application\Jobs\ExecuteTransferJob;
 use Application\Jobs\Wiki\CollectVideoLinksJob;
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
+use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
@@ -86,6 +87,31 @@ class OperationalCommandsTest extends TestCase
         Queue::assertPushed(ProcessRolePromotionJob::class, static fn (ProcessRolePromotionJob $job): bool => (string) $job->yearMonth === '2026-02');
         $this->assertSame(0, $this->runCommand('video-links:collect'));
         Queue::assertPushed(CollectVideoLinksJob::class);
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function monthlyRunDates(): array
+    {
+        return [
+            'November run' => ['2026-11-01T03:00:00+09:00', '2026-10'],
+            'year boundary' => ['2026-01-01T03:00:00+09:00', '2025-12'],
+            'month end' => ['2026-03-31T03:00:00+09:00', '2026-02'],
+            'Tokyo month ahead of UTC' => ['2026-10-31T18:00:00+00:00', '2026-10'],
+        ];
+    }
+
+    #[DataProvider('monthlyRunDates')]
+    public function testMonthlyRunDefaultsToPreviousCompletedMonth(string $now, string $expectedMonth): void
+    {
+        Queue::fake();
+        CarbonImmutable::setTestNow($now);
+
+        try {
+            $this->assertSame(0, $this->runCommand('wiki:process-role-promotion'));
+            Queue::assertPushed(ProcessRolePromotionJob::class, static fn (ProcessRolePromotionJob $job): bool => (string) $job->yearMonth === $expectedMonth);
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
     }
 
     public function testInvalidMonthFailsWithoutDispatch(): void

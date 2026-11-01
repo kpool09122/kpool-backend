@@ -59,24 +59,10 @@ readonly class AccountCategoryChangedHandler
         $principalGroup->addRole($role);
 
         $principals = $this->principalRepository->findAccountOwnersByAccountId($event->accountIdentifier());
-        $defaultPrincipalGroup = empty($principals)
-            ? null
-            : $this->principalGroupRepository->findDefaultByAccountId($event->accountIdentifier());
-        $defaultPrincipalGroupChanged = false;
-
         foreach ($principals as $principal) {
             if (! $principalGroup->hasMember($principal->principalIdentifier())) {
                 $principalGroup->addMember($principal->principalIdentifier());
             }
-
-            if ($defaultPrincipalGroup !== null && $defaultPrincipalGroup->hasMember($principal->principalIdentifier())) {
-                $defaultPrincipalGroup->removeMember($principal->principalIdentifier());
-                $defaultPrincipalGroupChanged = true;
-            }
-        }
-
-        if ($defaultPrincipalGroupChanged && $defaultPrincipalGroup !== null) {
-            $this->principalGroupRepository->save($defaultPrincipalGroup);
         }
 
         $this->principalGroupRepository->save($principalGroup);

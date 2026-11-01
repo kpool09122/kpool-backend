@@ -121,6 +121,7 @@ readonly class WikiPublicationService implements WikiPublicationServiceInterface
                 resourceType: $wiki->resourceType(),
                 wikiIdentifier: $publishedWiki->wikiIdentifier(),
                 isNewCreation: $isNewCreation,
+                isTranslation: $wiki->translatedAt() !== null,
             );
         }
 
