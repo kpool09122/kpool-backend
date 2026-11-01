@@ -32,11 +32,6 @@ class CollectVideoLinksOutputTest extends TestCase
         $this->assertNull($output->resourceType);
         $this->assertNull($output->wikiIdentifier);
         $this->assertSame('No target resource found for video link collection', $output->message);
-        $output->recentlyCollected(ResourceType::TALENT, $identifier);
-        $this->assertFalse($output->processed);
-        $this->assertSame($identifier, $output->wikiIdentifier);
-        $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame('Resource was collected within the last month', $output->message);
         $output->resourceNotFound(ResourceType::TALENT, $identifier);
         $this->assertFalse($output->processed);
         $this->assertSame($identifier, $output->wikiIdentifier);

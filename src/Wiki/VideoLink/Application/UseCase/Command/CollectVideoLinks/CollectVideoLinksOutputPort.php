@@ -11,8 +11,6 @@ interface CollectVideoLinksOutputPort
 {
     public function noTargetResource(): void;
 
-    public function recentlyCollected(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void;
-
     public function resourceNotFound(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void;
 
     public function success(ResourceType $resourceType, WikiIdentifier $wikiIdentifier, int $collectedCount): void;
