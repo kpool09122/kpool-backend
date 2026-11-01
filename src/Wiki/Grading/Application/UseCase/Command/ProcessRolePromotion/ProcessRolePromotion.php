@@ -82,8 +82,8 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         $seniorCollaborators = $this->getPrincipalsByRole($seniorCollaboratorRole);
         $collaborators = $this->getPrincipalsByRole($collaboratorRole);
 
-        // Step 4: Process demotions first
-        $demoted = $this->processDemotions(
+        // Step 4: Evaluate senior collaborators before promotions
+        [$demoted, $warned] = $this->evaluateSeniorCollaborators(
             $top10Percent,
             $warningByPrincipalId,
             $seniorCollaborators,
@@ -93,12 +93,9 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
             $now,
         );
         $output->setDemoted($demoted);
-
-        // Step 5: Process warnings
-        $warned = $this->processWarnings($top10Percent, $warningByPrincipalId, $seniorCollaborators);
         $output->setWarned($warned);
 
-        // Step 6: Process promotions
+        // Step 5: Process promotions
         $promoted = $this->processPromotions(
             $top10Percent,
             $cumulativePoints,
@@ -108,7 +105,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         );
         $output->setPromoted($promoted);
 
-        // Step 7: Dispatch batch events
+        // Step 6: Dispatch batch events
         if (! empty($promoted)) {
             $this->eventDispatcher->dispatch(new PrincipalsBatchPromoted(
                 $this->toAccountIdentifiers($promoted),
@@ -183,9 +180,9 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
      * @param string[] $top10Percent
      * @param array<string, DemotionWarning> $warningByPrincipalId
      * @param string[] $seniorCollaborators
-     * @return PrincipalIdentifier[]
+     * @return array{PrincipalIdentifier[], PrincipalIdentifier[]}
      */
-    private function processDemotions(
+    private function evaluateSeniorCollaborators(
         array $top10Percent,
         array $warningByPrincipalId,
         array $seniorCollaborators,
@@ -195,14 +192,20 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
         DateTimeImmutable $now,
     ): array {
         $demoted = [];
+        $warned = [];
 
         if ($seniorCollaboratorRole === null || $collaboratorRole === null) {
-            return $demoted;
+            return [$demoted, $warned];
         }
 
         foreach ($seniorCollaborators as $principalId) {
             $isInTop10 = in_array($principalId, $top10Percent, true);
             $warning = $warningByPrincipalId[$principalId] ?? null;
+
+            // Do not evaluate the same month twice or move an evaluation backwards.
+            if ($warning !== null && (string) $warning->lastWarningMonth() >= (string) $yearMonth) {
+                continue;
+            }
 
             if ($isInTop10) {
                 if ($warning !== null) {
@@ -224,6 +227,10 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
                 }
 
                 $this->demotionWarningRepository->save($warning);
+
+                if ($warning->warningCount()->isReachedWarningThreshold()) {
+                    $warned[] = new PrincipalIdentifier($principalId);
+                }
 
                 if ($warning->warningCount()->isExceedDemotionThreshold()) {
                     $principalIdentifier = new PrincipalIdentifier($principalId);
@@ -257,35 +264,7 @@ readonly class ProcessRolePromotion implements ProcessRolePromotionInterface
             }
         }
 
-        return $demoted;
-    }
-
-    /**
-     * @param string[] $top10Percent
-     * @param array<string, DemotionWarning> $warningByPrincipalId
-     * @param string[] $seniorCollaborators
-     * @return PrincipalIdentifier[]
-     */
-    private function processWarnings(
-        array $top10Percent,
-        array $warningByPrincipalId,
-        array $seniorCollaborators,
-    ): array {
-        $warned = [];
-
-        foreach ($seniorCollaborators as $principalId) {
-            $isInTop10 = in_array($principalId, $top10Percent, true);
-
-            if (! $isInTop10) {
-                $warning = $warningByPrincipalId[$principalId] ?? null;
-
-                if ($warning !== null && $warning->warningCount()->isReachedWarningThreshold()) {
-                    $warned[] = new PrincipalIdentifier($principalId);
-                }
-            }
-        }
-
-        return $warned;
+        return [$demoted, $warned];
     }
 
     /**
