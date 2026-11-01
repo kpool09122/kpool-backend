@@ -1097,6 +1097,7 @@ class PublishWikiTest extends TestCase
                 $dummyPublishWiki->resourceType,
                 (string) $dummyPublishWiki->createdWiki->wikiIdentifier(),
                 true, // isNewCreation = true for first time publish
+                false, // isTranslation
             )
             ->andReturn(null);
 
@@ -1222,6 +1223,7 @@ class PublishWikiTest extends TestCase
                 $dummyPublishWiki->resourceType,
                 (string) $dummyPublishWiki->publishedWiki->wikiIdentifier(),
                 false, // isNewCreation = false for update
+                false, // isTranslation
             )
             ->andReturn(null);
 

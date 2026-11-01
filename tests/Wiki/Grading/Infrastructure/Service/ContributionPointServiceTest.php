@@ -7,6 +7,7 @@ namespace Tests\Wiki\Grading\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Wiki\Grading\Domain\Entity\ContributionPointHistory;
 use Source\Wiki\Grading\Domain\Entity\ContributionPointSummary;
 use Source\Wiki\Grading\Domain\Facotory\ContributionPointHistoryFactoryInterface;
@@ -156,50 +157,76 @@ class ContributionPointServiceTest extends TestCase
         );
     }
 
-    /**
-     * 正常系: 翻訳記事（editorIdentifier=null）ではマージ者のみにポイントが付与されること
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testGrantPointsForTranslationOnlyMerger(): void
+    /** @return array<string, array{bool, bool, bool, bool, bool, array<string, int>}> */
+    public static function pointScenarios(): array
     {
-        $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
+        return [
+            'original creation' => [true, false, true, true, false, ['editor' => 10, 'approver' => 2, 'merger' => 3]],
+            'original update' => [false, false, true, true, false, ['editor' => 5, 'approver' => 1, 'merger' => 2]],
+            'translation creation' => [true, true, true, true, false, ['editor' => 1, 'approver' => 1, 'merger' => 1]],
+            'translation update' => [false, true, true, true, false, ['editor' => 1, 'approver' => 1, 'merger' => 1]],
+            'translation cooldown' => [false, true, true, true, true, ['approver' => 1, 'merger' => 1]],
+            'translation without editor' => [true, true, false, true, false, ['approver' => 1, 'merger' => 1]],
+            'translation without merger' => [true, true, true, false, false, ['editor' => 1, 'approver' => 1]],
+        ];
+    }
 
-        $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
-        $historyRepository->shouldReceive('save')
-            ->once();
+    /** @param array<string, int> $expectedPoints */
+    #[DataProvider('pointScenarios')]
+    public function testRecordsExpectedPointsForEachContributor(
+        bool $isNewCreation,
+        bool $isTranslation,
+        bool $hasEditor,
+        bool $hasMerger,
+        bool $withinCooldown,
+        array $expectedPoints,
+    ): void {
+        $editorIdentifier = $hasEditor ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : null;
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = $hasMerger ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : null;
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $histories = [];
+        $summaries = [];
 
-        $summaryRepository = Mockery::mock(ContributionPointSummaryRepositoryInterface::class);
-        $summaryRepository->shouldReceive('findByPrincipalAndYearMonth')->andReturn(null);
-        $summaryRepository->shouldReceive('save')->once();
+        $contributionPointHistoryRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
+        if ($hasEditor) {
+            $contributionPointHistoryRepository->shouldReceive('findLastPublishDate')->once()
+                ->with($editorIdentifier, ResourceType::AGENCY, $wikiIdentifier, ContributorType::EDITOR)
+                ->andReturn($withinCooldown ? new DateTimeImmutable('-3 days') : null);
+        }
+        $contributionPointHistoryRepository->shouldReceive('save')->times(count($expectedPoints))
+            ->andReturnUsing(static function (ContributionPointHistory $history) use (&$histories): void {
+                $histories[$history->contributorType()->value] = $history;
+            });
+        $contributionPointSummaryRepository = Mockery::mock(ContributionPointSummaryRepositoryInterface::class);
+        $contributionPointSummaryRepository->shouldReceive('findByPrincipalAndYearMonth')->andReturn(null);
+        $contributionPointSummaryRepository->shouldReceive('save')->times(count($expectedPoints))
+            ->andReturnUsing(static function (ContributionPointSummary $summary) use (&$summaries): void {
+                $summaries[(string) $summary->principalIdentifier()] = $summary->points()->value();
+            });
+        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $contributionPointHistoryRepository);
+        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $contributionPointSummaryRepository);
 
-        $historyFactory = Mockery::mock(ContributionPointHistoryFactoryInterface::class);
-        $historyFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($this->createHistory());
-
-        $summaryFactory = Mockery::mock(ContributionPointSummaryFactoryInterface::class);
-        $summaryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($this->createSummary());
-
-        $this->app()->instance(ContributionPointHistoryRepositoryInterface::class, $historyRepository);
-        $this->app()->instance(ContributionPointSummaryRepositoryInterface::class, $summaryRepository);
-        $this->app()->instance(ContributionPointHistoryFactoryInterface::class, $historyFactory);
-        $this->app()->instance(ContributionPointSummaryFactoryInterface::class, $summaryFactory);
-
-        $service = $this->app()->make(ContributionPointServiceInterface::class);
-        $service->grantPoints(
-            null,
-            $approverId,
-            $mergerId,
+        $this->app()->make(ContributionPointServiceInterface::class)->grantPoints(
+            $editorIdentifier,
+            $approverIdentifier,
+            $mergerIdentifier,
             ResourceType::AGENCY,
-            $wikiId,
-            true,
+            $wikiIdentifier,
+            $isNewCreation,
+            $isTranslation,
         );
+
+        $identifiers = ['editor' => $editorIdentifier, 'approver' => $approverIdentifier, 'merger' => $mergerIdentifier];
+        $this->assertSame(array_keys($expectedPoints), array_keys($histories));
+        foreach ($expectedPoints as $type => $points) {
+            $history = $histories[$type];
+            $this->assertSame((string) $identifiers[$type], (string) $history->principalIdentifier());
+            $this->assertSame((string) $wikiIdentifier, (string) $history->wikiIdentifier());
+            $this->assertSame($isNewCreation, $history->isNewCreation());
+            $this->assertSame($points, $history->points()->value());
+            $this->assertSame($points, $summaries[(string) $identifiers[$type]]);
+        }
     }
 
     /**

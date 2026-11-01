@@ -19,6 +19,7 @@ interface ContributionPointServiceInterface
      * @param ResourceType $resourceType agency, talent, group, or song
      * @param WikiIdentifier $wikiIdentifier the ID of the wiki resource
      * @param bool $isNewCreation true for new creation, false for update
+     * @param bool $isTranslation whether the published draft was created by translation
      */
     public function grantPoints(
         ?PrincipalIdentifier $editorIdentifier,
@@ -27,5 +28,6 @@ interface ContributionPointServiceInterface
         ResourceType         $resourceType,
         WikiIdentifier       $wikiIdentifier,
         bool                 $isNewCreation,
+        bool                 $isTranslation = false,
     ): void;
 }
