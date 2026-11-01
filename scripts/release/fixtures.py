@@ -43,7 +43,7 @@ class FakeAws:
             arn=outputs[key]
             group,name=arn.split(':schedule/',1)[1].split('/')
             self.schedules[(group,name)]={'Arn':arn,'Name':name,'GroupName':group,'State':state,
-                'ScheduleExpression':'rate(45 minutes)' if name=='video' else 'cron(0 3 1 * ? *)',
+                'ScheduleExpression':'rate(30 minutes)' if name=='video' else 'cron(0 3 1 * ? *)',
                 'ScheduleExpressionTimezone':'Asia/Tokyo','FlexibleTimeWindow':{'Mode':'OFF'},
                 'Target':{'Arn':'arn:aws:ecs:ap-northeast-1:'+ACCOUNT+':cluster/fixture',
                           'RoleArn':'arn:aws:iam::'+ACCOUNT+':role/fixture-scheduler',

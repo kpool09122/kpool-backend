@@ -62,12 +62,12 @@ ShouldBeUnique は **dispatch 時の共有 cache lock** であり永続冪等性
 | コマンド | 引数・対象 | 0 の意味 | Scheduler 契約 |
 |---|---|---|---|
 | `wiki:process-role-promotion` | `--month=YYYY-MM`（01〜12）、省略時 Asia/Tokyo の現在月。`--sync`可 | 通常: enqueue 成功（unique 抑止時は新規送信しない）。sync: 集計と昇降格完了 | `cron(0 3 1 * ? *)`、timezone Asia/Tokyo |
-| `video-links:collect` | 引数なし、既存 Job を dispatch | enqueue 成功（unique 抑止可）、YouTube未設定時は job が skip | `rate(45 minutes)` |
+| `video-links:collect` | 引数なし、既存 Job を dispatch | enqueue 成功（unique 抑止可）、YouTube未設定時は job が skip | `rate(30 minutes)` |
 | `settlement:process-due-transfers` | `--date=YYYY-MM-DD`、省略時 Asia/Tokyo の今日00:00、`--dry-run`可 | 全対象 enqueue、対象なし、dry-run | 頻度は未合意。#157 が決定、勝手に追加しない |
 
 不正引数・依存障害・enqueue 失敗・sync 失敗は非0（1）。複数送金の途中 enqueue 失敗は既送信分を取り消さない。通常の command 成功は業務完了ではない。
 production の Laravel Schedule は月次を登録しない。local/testing/staging/preview は公開月次コマンド経由で毎月1日03:00 JST。非productionで外部Schedulerを使う場合は Laravel schedule:run と併用しない。
-CloudFormationは月次と動画収集の2つのSchedulerを初期DISABLED・FlexibleTimeWindow=OFFで作成する。動画収集は `${ProjectName}-video-links-collect`、`rate(45 minutes)` で、schedulerコンテナのcommandを `php artisan video-links:collect` に上書きする。API配備後の `infra:operate configure` は月次を初回有効化し、動画収集の実行先も同じrelease taskへ更新する。動画収集は設定後もDISABLEDを維持し、YouTube APIキーとworkerの稼働・動作を確認して本番では手動でONにする。再設定時と `infra:operate` によるCloudFormation再適用時は、月次と動画それぞれの現在のON/OFFを保持する。送金を追加する場合も初期DISABLED。
+CloudFormationは月次と動画収集の2つのSchedulerを初期DISABLED・FlexibleTimeWindow=OFFで作成する。動画収集は `${ProjectName}-video-links-collect`、`rate(30 minutes)` で、schedulerコンテナのcommandを `php artisan video-links:collect` に上書きする。API配備後の `infra:operate configure` は月次を初回有効化し、動画収集の実行先も同じrelease taskへ更新する。動画収集は設定後もDISABLEDを維持し、YouTube APIキーとworkerの稼働・動作を確認して本番では手動でONにする。再設定時と `infra:operate` によるCloudFormation再適用時は、月次と動画それぞれの現在のON/OFFを保持する。送金を追加する場合も初期DISABLED。
 
 確認は3段階:
 - Scheduler: TargetErrorCount/InvocationDroppedCount と Scheduler delivery DLQ（RunTask API/IAM/容量失敗）。Scheduler の retry/DLQ はアプリ work queue DLQ と別。

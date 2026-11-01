@@ -51,9 +51,9 @@ class RuntimeContracts(unittest.TestCase):
         self.assertEqual(self.template['Outputs']['VideoCollectionSchedulerArn']['Value'], {'Fn::Sub':
             'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${VideoCollectionSchedule}'})
 
-    def test_video_schedule_enqueues_every_45_minutes_and_starts_disabled(self):
+    def test_video_schedule_enqueues_every_30_minutes_and_starts_disabled(self):
         schedule = self.runtime['VideoCollectionSchedule']['Properties']
-        self.assertEqual(schedule['ScheduleExpression'], 'rate(45 minutes)')
+        self.assertEqual(schedule['ScheduleExpression'], 'rate(30 minutes)')
         self.assertEqual(schedule['State'], {'Ref': 'VideoCollectionSchedulerState'})
         self.assertEqual(self.template['Parameters']['VideoCollectionSchedulerState']['Default'], 'DISABLED')
         self.assertEqual(schedule['FlexibleTimeWindow'], {'Mode': 'OFF'})
