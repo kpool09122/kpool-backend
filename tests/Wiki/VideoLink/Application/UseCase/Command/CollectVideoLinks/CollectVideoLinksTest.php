@@ -7,6 +7,7 @@ namespace Tests\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
@@ -442,12 +443,10 @@ class CollectVideoLinksTest extends TestCase
     }
 
     /**
-     * 正常系：最終収集日が直近1ヶ月以内の場合、recentlyCollectedが返ること.
-     *
-     * @return void
-     * @throws BindingResolutionException
+     * 最終収集日時にかかわらず、選ばれたWikiを再収集すること.
      */
-    public function testProcessReturnsRecentlyCollectedWhenCollectedWithinOneMonth(): void
+    #[DataProvider('lastCollectedDates')]
+    public function testProcessCollectsVideosRegardlessOfLastCollectedDate(string $lastCollectedDate): void
     {
         $statusId = StrTestHelper::generateUuid();
         $resourceId = StrTestHelper::generateUuid();
@@ -456,47 +455,7 @@ class CollectVideoLinksTest extends TestCase
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
             new WikiIdentifier($resourceId),
-            new DateTimeImmutable('-2 weeks'),
-            new DateTimeImmutable(),
-        );
-
-        $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
-        $collectionStatusRepository->shouldReceive('findNextTargetResource')
-            ->once()
-            ->andReturn($status);
-
-        $this->app()->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app()->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
-        $this->app()->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
-        $this->app()->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
-        $this->app()->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
-
-        $useCase = $this->app()->make(CollectVideoLinksInterface::class);
-        $output = new CollectVideoLinksOutput();
-        $useCase->process($output);
-
-        $this->assertFalse($output->processed);
-        $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
-        $this->assertSame('Resource was collected within the last month', $output->message);
-    }
-
-    /**
-     * 正常系：最終収集日が1ヶ月以上前の場合、通常通り収集処理が行われること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testProcessCollectsVideosWhenLastCollectedMoreThanOneMonthAgo(): void
-    {
-        $statusId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
-
-        $status = new VideoLinkCollectionStatus(
-            new VideoLinkCollectionStatusIdentifier($statusId),
-            ResourceType::TALENT,
-            new WikiIdentifier($resourceId),
-            new DateTimeImmutable('-2 months'),
+            new DateTimeImmutable($lastCollectedDate),
             new DateTimeImmutable(),
         );
 
@@ -519,7 +478,8 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($status);
         $collectionStatusRepository->shouldReceive('save')
-            ->once();
+            ->once()
+            ->with(Mockery::on(static fn (VideoLinkCollectionStatus $saved): bool => $saved->lastCollectedAt() > $status->lastCollectedAt()));
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
@@ -556,6 +516,16 @@ class CollectVideoLinksTest extends TestCase
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
         $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(1, $output->collectedCount);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function lastCollectedDates(): array
+    {
+        return [
+            'months ago' => ['-2 months'],
+            'within one month' => ['-2 weeks'],
+            'just collected' => ['-1 minute'],
+        ];
     }
 
     /**

@@ -25,14 +25,6 @@ class CollectVideoLinksOutput implements CollectVideoLinksOutputPort
         $this->message = 'No target resource found for video link collection';
     }
 
-    public function recentlyCollected(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void
-    {
-        $this->processed = false;
-        $this->resourceType = $resourceType;
-        $this->wikiIdentifier = $wikiIdentifier;
-        $this->message = 'Resource was collected within the last month';
-    }
-
     public function resourceNotFound(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void
     {
         $this->processed = false;
