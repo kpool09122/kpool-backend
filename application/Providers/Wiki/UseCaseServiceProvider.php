@@ -93,6 +93,7 @@ use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurre
 use Source\Wiki\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
 use Source\Wiki\Principal\Infrastructure\Query\GetCurrentPrincipal;
 use Source\Wiki\Principal\Infrastructure\Query\ListPrincipalGroups;
+use Source\Wiki\VideoLink\Application\Service\VideoTitleNameQueryServiceInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLink;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\LikeVideoLink\LikeVideoLink;
@@ -107,6 +108,7 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterfa
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoLinkLikes;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoWatchRequests;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
+use Source\Wiki\VideoLink\Infrastructure\Service\VideoTitleNameQueryService;
 use Source\Wiki\Wiki\Application\Service\WikiPublicationService;
 use Source\Wiki\Wiki\Application\Service\WikiPublicationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
@@ -184,6 +186,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(VideoTitleNameQueryServiceInterface::class, VideoTitleNameQueryService::class);
         $this->app->singleton(SendVideoWatchRequestDigestInterface::class, SendVideoWatchRequestDigest::class);
         $this->app->singleton(CreatePlaylistInterface::class, CreatePlaylist::class);
         $this->app->singleton(SavePlaylistInterface::class, SavePlaylist::class);

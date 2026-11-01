@@ -121,6 +121,8 @@ use Source\Wiki\VideoLink\Domain\Repository\VideoLinkLikeRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkWatchRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
+use Source\Wiki\VideoLink\Domain\Service\VideoTitleFilterService;
+use Source\Wiki\VideoLink\Domain\Service\VideoTitleFilterServiceInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkCollectionStatusFactory;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
@@ -224,6 +226,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(CreateVideoLinkInterface::class, CreateVideoLink::class);
         $this->app->singleton(VideoLinkCollectionStatusFactoryInterface::class, VideoLinkCollectionStatusFactory::class);
         $this->app->singleton(VideoLinkCollectionStatusRepositoryInterface::class, VideoLinkCollectionStatusRepository::class);
+        $this->app->singleton(VideoTitleFilterServiceInterface::class, VideoTitleFilterService::class);
         $this->app->singleton(YouTubeSearchServiceInterface::class, YouTubeSearchService::class);
         $this->app->singleton(VideoLinkCollectionRegistrationServiceInterface::class, VideoLinkCollectionRegistrationService::class);
         $this->app->singleton(CollectVideoLinksInterface::class, CollectVideoLinks::class);
