@@ -239,7 +239,7 @@ class WikiScheduleTests(unittest.TestCase):
         for state in ('DISABLED', 'ENABLED'):
             with self.subTest(state=state):
                 monthly = {'Target': {'EcsParameters': {'TaskDefinitionArn': 'scheduler-release:3'}}}
-                current = dict(Name='video', GroupName='project', State=state, ScheduleExpression='rate(45 minutes)',
+                current = dict(Name='video', GroupName='project', State=state, ScheduleExpression='rate(30 minutes)',
                                FlexibleTimeWindow={'Mode': 'OFF'},
                                Target={'EcsParameters': {'TaskDefinitionArn': 'scheduler-bootstrap:1'},
                                        'Input': json.dumps({'containerOverrides': [{'name': 'scheduler', 'command': ['php', 'artisan', 'video-links:collect']}]})})
@@ -255,7 +255,7 @@ class WikiScheduleTests(unittest.TestCase):
                     self.fail('Unexpected AWS request')
                 configuration.configure_video_collection_schedule(aws, outputs)
                 self.assertEqual(current['State'], state)
-                self.assertEqual(current['ScheduleExpression'], 'rate(45 minutes)')
+                self.assertEqual(current['ScheduleExpression'], 'rate(30 minutes)')
                 self.assertEqual(current['Target']['Input'], original['Target']['Input'])
                 self.assertEqual(current['Target']['EcsParameters']['TaskDefinitionArn'], 'scheduler-release:3')
                 self.assertEqual(len(mutations), 1)

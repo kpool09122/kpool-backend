@@ -1878,10 +1878,10 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: !Sub '${ProjectName}-video-links-collect'
-      Description: Enqueue YouTube video collection every 45 minutes; enable manually after configuration.
+      Description: Enqueue YouTube video collection every 30 minutes; enable manually after configuration.
       GroupName: {Ref: ScheduleGroup}
       State: {Ref: VideoCollectionSchedulerState}
-      ScheduleExpression: rate(45 minutes)
+      ScheduleExpression: rate(30 minutes)
       ScheduleExpressionTimezone: Asia/Tokyo
       FlexibleTimeWindow:
         Mode: 'OFF'
