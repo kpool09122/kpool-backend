@@ -34,7 +34,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         ResourceType         $resourceType,
         WikiIdentifier       $wikiIdentifier,
         bool                 $isNewCreation,
-        bool                 $isTranslation = false,
+        bool                 $isTranslation,
     ): void {
         $now = new DateTimeImmutable();
         $yearMonth = YearMonth::fromDateTime($now);

@@ -104,6 +104,7 @@ class ContributionPointServiceTest extends TestCase
             ResourceType::AGENCY,
             $wikiId,
             true,
+            false,
         );
     }
 
@@ -153,6 +154,7 @@ class ContributionPointServiceTest extends TestCase
             $mergerId,
             ResourceType::AGENCY,
             $wikiId,
+            false,
             false,
         );
     }
@@ -278,6 +280,7 @@ class ContributionPointServiceTest extends TestCase
             ResourceType::AGENCY,
             $wikiId,
             true,
+            false,
         );
     }
 
@@ -329,6 +332,7 @@ class ContributionPointServiceTest extends TestCase
             $mergerId,
             ResourceType::AGENCY,
             $wikiId,
+            false,
             false,
         );
     }
@@ -384,6 +388,7 @@ class ContributionPointServiceTest extends TestCase
             ResourceType::AGENCY,
             $wikiId,
             true,
+            false,
         );
 
         $expectedPoints = $initialPoints + Point::NEW_EDITOR + Point::NEW_APPROVER + Point::NEW_MERGER;

@@ -28,6 +28,6 @@ interface ContributionPointServiceInterface
         ResourceType         $resourceType,
         WikiIdentifier       $wikiIdentifier,
         bool                 $isNewCreation,
-        bool                 $isTranslation = false,
+        bool                 $isTranslation,
     ): void;
 }
