@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -15,7 +16,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class GroupBasic implements BasicInterface
 {

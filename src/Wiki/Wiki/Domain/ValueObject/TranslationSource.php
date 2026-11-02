@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Domain\ValueObject;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 final readonly class TranslationSource

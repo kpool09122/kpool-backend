@@ -9,6 +9,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -37,7 +38,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

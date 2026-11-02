@@ -17,6 +17,7 @@ use BackedEnum;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\GeneratedWikiData;
@@ -49,7 +50,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Throwable;
 
 readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterface

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class WithdrawWikiInput implements WithdrawWikiInputPort
 {

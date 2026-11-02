@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
@@ -19,7 +20,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Repository\SectionContentMapper;
 use Tests\Helper\StrTestHelper;
 

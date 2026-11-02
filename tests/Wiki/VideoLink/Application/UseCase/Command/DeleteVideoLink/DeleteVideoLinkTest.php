@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -27,7 +28,6 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

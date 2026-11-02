@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -18,7 +19,6 @@ use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class SubmitWiki implements SubmitWikiInterface
 {

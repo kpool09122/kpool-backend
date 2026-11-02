@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Song;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Arranger;
@@ -15,7 +16,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\ReleaseDate;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongGenre;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class SongBasicTest extends TestCase

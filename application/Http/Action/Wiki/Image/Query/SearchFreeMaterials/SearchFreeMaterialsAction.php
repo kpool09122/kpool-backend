@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Image\Application\Exception\MaterialSearchFailedException;
 use Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials\RelatedWikiInput;
 use Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials\SearchFreeMaterialsInput;
@@ -22,7 +23,6 @@ use Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials\SearchFreeMa
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Throwable;
 use ValueError;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -15,7 +16,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class EditWiki implements EditWikiInterface
 {

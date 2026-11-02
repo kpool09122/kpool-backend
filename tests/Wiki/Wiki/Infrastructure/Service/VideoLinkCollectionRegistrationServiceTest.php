@@ -7,13 +7,13 @@ namespace Tests\Wiki\Wiki\Infrastructure\Service;
 use DateTimeImmutable;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
@@ -32,7 +33,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

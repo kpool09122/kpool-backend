@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -22,7 +23,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftWiki
 {

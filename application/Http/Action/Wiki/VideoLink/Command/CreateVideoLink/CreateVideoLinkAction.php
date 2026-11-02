@@ -15,6 +15,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -30,7 +31,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVide
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;

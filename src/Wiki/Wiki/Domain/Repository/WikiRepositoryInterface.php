@@ -7,11 +7,11 @@ namespace Source\Wiki\Wiki\Domain\Repository;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface WikiRepositoryInterface
 {

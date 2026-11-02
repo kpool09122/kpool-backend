@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Infrastructure\Service;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\VideoLinkCollectionPolicy;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class VideoLinkCollectionRegistrationService implements VideoLinkCollectionRegistrationServiceInterface
 {

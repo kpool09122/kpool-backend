@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Talent;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
@@ -20,7 +21,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\ZodiacSign;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class TalentBasicTest extends TestCase

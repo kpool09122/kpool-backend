@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class VideoLinkCollectionStatus
 {

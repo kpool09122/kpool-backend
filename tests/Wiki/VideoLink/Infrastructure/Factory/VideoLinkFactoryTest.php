@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -16,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

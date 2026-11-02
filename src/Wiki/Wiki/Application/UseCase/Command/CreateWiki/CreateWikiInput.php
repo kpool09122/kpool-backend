@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -16,7 +17,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class CreateWikiInput implements CreateWikiInputPort
 {

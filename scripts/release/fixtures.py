@@ -20,7 +20,9 @@ def fixture():
             o[kind+'TaskRoleArn']='fixture-'+kind+'-task-role'
     o.update(SchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/monthly',
              VideoCollectionSchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/video',
-             VideoWatchDigestSchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/digest')
+             VideoWatchDigestSchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/digest',
+             AnalyzeAppDailySummarySchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/analyze-app',
+             AnalyzeWikiDailySummarySchedulerArn=f'arn:aws:scheduler:ap-northeast-1:{ACCOUNT}:schedule/fixture/analyze-wiki')
     o.update(AppExecutionRoleArn='fixture-app-execution',MigrationExecutionRoleArn='fixture-migration-execution')
     environment={'APP_ENV':'production','APP_DEBUG':'false','DB_CONNECTION':'pgsql','DB_HOST':'fixture-db','QUEUE_CONNECTION':'sqs','SESSION_DRIVER':'redis','CACHE_STORE':'redis','REDIS_DB':'0','REDIS_CACHE_DB':'0','SQS_QUEUE_URL':o['QueueUrl'],'APP_URL':o['ApiUrl'],'FRONTEND_URL':'https://front.example.invalid'}
     config={'paused':False,'region':'ap-northeast-1','account_id':ACCOUNT,'deployment_role_arn':o['DeploymentRoleArn'],
@@ -39,7 +41,8 @@ class FakeAws:
         self.hook_state='Active'; self.ssm_type='String'; self.pending=0; self.template_overrides={}
         self.registered_definitions={}
         self.schedules={}
-        for key, state in (('SchedulerArn', 'DISABLED'), ('VideoCollectionSchedulerArn', 'ENABLED'), ('VideoWatchDigestSchedulerArn', 'DISABLED')):
+        for key, state in (('SchedulerArn', 'DISABLED'), ('VideoCollectionSchedulerArn', 'ENABLED'), ('VideoWatchDigestSchedulerArn', 'DISABLED'),
+                           ('AnalyzeAppDailySummarySchedulerArn', 'DISABLED'), ('AnalyzeWikiDailySummarySchedulerArn', 'ENABLED')):
             arn=outputs[key]
             group,name=arn.split(':schedule/',1)[1].split('/')
             self.schedules[(group,name)]={'Arn':arn,'Name':name,'GroupName':group,'State':state,
@@ -49,6 +52,12 @@ class FakeAws:
                           'RoleArn':'arn:aws:iam::'+ACCOUNT+':role/fixture-scheduler',
                           'EcsParameters':{'TaskDefinitionArn':'fixture-old-Scheduler'},
                           'Input':'{"containerOverrides":[{"name":"scheduler","command":["php","artisan","video-links:collect"]}]}' if name=='video' else '{}'}}
+        for domain in ('app', 'wiki'):
+            schedule = self.schedules[('fixture', 'analyze-' + domain)]
+            schedule['ScheduleExpression'] = 'cron(0 4 * * ? *)'
+            schedule['ScheduleExpressionTimezone'] = 'UTC'
+            schedule['Target']['Input'] = ('{"containerOverrides":[{"name":"scheduler","command":["php","artisan",'
+                                           '"analyze:import-' + domain + '-daily-summary"]}]}')
         self.services={kind:{'serviceName':outputs[kind+'ServiceName'],'status':'ACTIVE','taskDefinition':'fixture-old-'+kind,
                              'desiredCount':2,'runningCount':2,'pendingCount':0,
                              'deployments':[{'status':'PRIMARY','taskDefinition':'fixture-old-'+kind,'rolloutState':'COMPLETED'}]} for kind in ('Api','Worker')}

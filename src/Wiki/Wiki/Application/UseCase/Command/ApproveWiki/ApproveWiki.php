@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
@@ -25,7 +26,6 @@ use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\WikiServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ApproveWiki implements ApproveWikiInterface
 {

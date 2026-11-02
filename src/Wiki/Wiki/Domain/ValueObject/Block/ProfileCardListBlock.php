@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Domain\ValueObject\Block;
 
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 
 final readonly class ProfileCardListBlock implements BlockInterface
 {

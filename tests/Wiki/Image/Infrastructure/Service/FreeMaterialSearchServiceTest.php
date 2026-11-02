@@ -12,12 +12,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Image\Application\DTO\MaterialSearchContext;
 use Source\Wiki\Image\Application\DTO\RelatedWikiContext;
 use Source\Wiki\Image\Application\Exception\MaterialSearchFailedException;
 use Source\Wiki\Image\Application\Service\FreeMaterialSearchServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

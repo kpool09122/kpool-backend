@@ -20,6 +20,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInput;
@@ -41,7 +42,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

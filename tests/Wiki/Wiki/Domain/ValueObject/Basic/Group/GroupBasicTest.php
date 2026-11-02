@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\DebutDate;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\DisbandDate;
@@ -20,7 +21,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class GroupBasicTest extends TestCase

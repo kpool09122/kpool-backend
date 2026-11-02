@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -26,7 +27,6 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

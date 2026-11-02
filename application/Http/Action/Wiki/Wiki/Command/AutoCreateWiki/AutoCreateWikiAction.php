@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -22,7 +23,6 @@ use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiIn
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

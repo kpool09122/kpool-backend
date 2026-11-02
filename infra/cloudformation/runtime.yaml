@@ -120,6 +120,14 @@ Parameters:
   ScheduleExpression:
     Type: String
     Default: cron(0 3 1 * ? *)
+  AnalyzeAppDailySummarySchedulerState:
+    Type: String
+    Default: DISABLED
+    AllowedValues: [ENABLED, DISABLED]
+  AnalyzeWikiDailySummarySchedulerState:
+    Type: String
+    Default: DISABLED
+    AllowedValues: [ENABLED, DISABLED]
   VideoWatchDigestSchedulerState:
     Type: String
     Default: DISABLED
@@ -433,6 +441,16 @@ Rules:
           - Ref: SchedulerTaskDefinitionArn
           - ''
       AssertDescription: Enable only with an approved scheduler release task definition.
+  AnalyzeAppDailySummarySchedulerActivation:
+    RuleCondition: !Equals [!Ref AnalyzeAppDailySummarySchedulerState, ENABLED]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref SchedulerTaskDefinitionArn, '']]
+        AssertDescription: Enable only after deploying and configuring the Analyze daily import scheduler release.
+  AnalyzeWikiDailySummarySchedulerActivation:
+    RuleCondition: !Equals [!Ref AnalyzeWikiDailySummarySchedulerState, ENABLED]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref SchedulerTaskDefinitionArn, '']]
+        AssertDescription: Enable only after deploying and configuring the Analyze daily import scheduler release.
   VideoWatchDigestSchedulerActivation:
     RuleCondition: !Equals [!Ref VideoWatchDigestSchedulerState, ENABLED]
     Assertions:
@@ -1944,11 +1962,81 @@ Resources:
           MaximumRetryAttempts: 0
         DeadLetterConfig:
           Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
+  AnalyzeAppDailySummarySchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !Sub '${ProjectName}-analyze-import-app-daily-summary'
+      Description: Import daily App summaries at 04:00 UTC; enable after Analyze configuration and release deployment.
+      GroupName: {Ref: ScheduleGroup}
+      State: {Ref: AnalyzeAppDailySummarySchedulerState}
+      ScheduleExpression: cron(0 4 * * ? *)
+      ScheduleExpressionTimezone: UTC
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: {Fn::GetAtt: [Cluster, Arn]}
+        RoleArn: {Fn::GetAtt: [SchedulerRole, Arn]}
+        Input: '{"containerOverrides":[{"name":"scheduler","command":["php","artisan","analyze:import-app-daily-summary"]}]}'
+        EcsParameters:
+          TaskDefinitionArn:
+            Fn::If:
+            - HasSchedulerRelease
+            - Ref: SchedulerTaskDefinitionArn
+            - Ref: SchedulerBootstrapTaskDefinition
+          TaskCount: 1
+          LaunchType: FARGATE
+          PlatformVersion: 1.4.0
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: {Ref: PublicSubnetIds}
+              SecurityGroups:
+              - Ref: ApplicationSecurityGroupId
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 60
+          MaximumRetryAttempts: 0
+        DeadLetterConfig:
+          Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
+  AnalyzeWikiDailySummarySchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !Sub '${ProjectName}-analyze-import-wiki-daily-summary'
+      Description: Import daily Wiki summaries at 04:00 UTC; enable after Analyze configuration and release deployment.
+      GroupName: {Ref: ScheduleGroup}
+      State: {Ref: AnalyzeWikiDailySummarySchedulerState}
+      ScheduleExpression: cron(0 4 * * ? *)
+      ScheduleExpressionTimezone: UTC
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: {Fn::GetAtt: [Cluster, Arn]}
+        RoleArn: {Fn::GetAtt: [SchedulerRole, Arn]}
+        Input: '{"containerOverrides":[{"name":"scheduler","command":["php","artisan","analyze:import-wiki-daily-summary"]}]}'
+        EcsParameters:
+          TaskDefinitionArn:
+            Fn::If:
+            - HasSchedulerRelease
+            - Ref: SchedulerTaskDefinitionArn
+            - Ref: SchedulerBootstrapTaskDefinition
+          TaskCount: 1
+          LaunchType: FARGATE
+          PlatformVersion: 1.4.0
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: {Ref: PublicSubnetIds}
+              SecurityGroups:
+              - Ref: ApplicationSecurityGroupId
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 60
+          MaximumRetryAttempts: 0
+        DeadLetterConfig:
+          Arn: {Fn::GetAtt: [SchedulerDlq, Arn]}
   SchedulerFailureRule:
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub '${ProjectName}-scheduler-failure'
-      Description: Notify on Wiki batch task start failures or nonzero exits.
+      Description: Notify on scheduler task start failures or nonzero exits.
       EventPattern:
         source: [aws.ecs]
         detail-type: [ECS Task State Change]
@@ -2254,6 +2342,10 @@ Resources:
       ToPort: 443
       DestinationSecurityGroupId: {Ref: EndpointSecurityGroup}
 Outputs:
+  AnalyzeAppDailySummarySchedulerArn:
+    Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${AnalyzeAppDailySummarySchedule}'
+  AnalyzeWikiDailySummarySchedulerArn:
+    Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${AnalyzeWikiDailySummarySchedule}'
   VideoWatchDigestSchedulerArn:
     Value: !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${VideoWatchDigestSchedule}'
   SlackNotificationConfigurationArn:

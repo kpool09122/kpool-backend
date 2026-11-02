@@ -8,12 +8,12 @@ use Application\Models\Wiki\VideoWatchRequest as VideoWatchRequestModel;
 use Application\Models\Wiki\Wiki as WikiModel;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\Entity\VideoWatchRequest;
 use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoWatchRequestIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class VideoWatchRequestRepository implements VideoWatchRequestRepositoryInterface
 {

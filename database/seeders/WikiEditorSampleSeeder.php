@@ -13,7 +13,7 @@ use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincip
 use Source\SiteManagement\Principal\Application\UseCase\Command\ProvisionPrincipal\ProvisionPrincipalOutput;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 
 class WikiEditorSampleSeeder extends Seeder
 {

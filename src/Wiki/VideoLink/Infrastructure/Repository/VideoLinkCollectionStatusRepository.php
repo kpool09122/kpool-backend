@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLinkCollectionStatus as VideoLinkCollectionStatusModel;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use UnexpectedValueException;
 
 final class VideoLinkCollectionStatusRepository implements VideoLinkCollectionStatusRepositoryInterface

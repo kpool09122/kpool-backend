@@ -6,11 +6,11 @@ namespace Source\Wiki\VideoLink\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class VideoLinkCollectionStatusFactory implements VideoLinkCollectionStatusFactoryInterface
 {

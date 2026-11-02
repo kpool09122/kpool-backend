@@ -380,6 +380,46 @@ class OperationsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Live runtime values changed'):
             operations.verify_runtime_transition(before, after, runtime_updated=True)
 
+    def test_analyze_schedule_snapshot_preserves_activation_and_detects_changes(self):
+        outputs, services, rules, monthly = fixture()
+        outputs.update(ClusterArn='cluster',
+                       SchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/monthly',
+                       AnalyzeAppDailySummarySchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/app',
+                       AnalyzeWikiDailySummarySchedulerArn='arn:aws:scheduler:ap-northeast-1:123456789012:schedule/group/wiki')
+        daily = {'app': dict(State='ENABLED', LastModificationDate='before'),
+                 'wiki': dict(State='DISABLED', LastModificationDate='before')}
+        def aws(service, operation, *args):
+            if operation == 'describe-services':
+                return services
+            if operation == 'list-service-deployments':
+                return {'serviceDeployments': []}
+            if operation == 'describe-rules':
+                return rules
+            if operation == 'get-schedule':
+                self.assertEqual(args[:2], ('--group-name', 'group'))
+                return monthly if args[-1] == 'monthly' else daily[args[-1]]
+            self.fail('Unexpected AWS request')
+        before = operations.runtime_snapshot(aws, outputs)
+        self.assertEqual(before['parameters']['AnalyzeAppDailySummarySchedulerState'], 'ENABLED')
+        self.assertEqual(before['parameters']['AnalyzeWikiDailySummarySchedulerState'], 'DISABLED')
+        daily['app']['LastModificationDate'] = 'after'
+        changed = operations.runtime_snapshot(aws, outputs)
+        self.assertNotEqual(before, changed)
+        with self.assertRaisesRegex(ValueError, 'Runtime changed'):
+            operations.verify_runtime_transition(before, changed, runtime_updated=False)
+        daily['wiki']['State'] = 'ENABLED'
+        changed = operations.runtime_snapshot(aws, outputs)
+        with self.assertRaisesRegex(ValueError, 'Live runtime values changed'):
+            operations.verify_runtime_transition(before, changed, runtime_updated=True)
+
+    def test_adding_disabled_analyze_schedules_preserves_existing_runtime(self):
+        outputs, services, rules, monthly = fixture()
+        before = {'parameters': operations.resolve(outputs, services, rules, monthly), 'nativeHistory': {}}
+        after = {'parameters': operations.resolve(outputs, services, rules, monthly,
+                  app_daily_summary_schedule={'State': 'DISABLED'}, wiki_daily_summary_schedule={'State': 'DISABLED'}),
+                 'nativeHistory': {}}
+        operations.verify_runtime_transition(before, after, runtime_updated=True)
+
     def test_adding_disabled_video_schedule_preserves_existing_live_runtime(self):
         outputs, services, rules, monthly = fixture()
         before = {'parameters': operations.resolve(outputs, services, rules, monthly), 'nativeHistory': {}}

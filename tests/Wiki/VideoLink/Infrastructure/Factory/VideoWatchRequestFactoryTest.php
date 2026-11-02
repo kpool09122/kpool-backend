@@ -7,10 +7,10 @@ namespace Tests\Wiki\VideoLink\Infrastructure\Factory;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoWatchRequestFactory;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class VideoWatchRequestFactoryTest extends TestCase

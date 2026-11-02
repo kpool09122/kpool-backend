@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki;
 use DateTimeImmutable;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -23,7 +24,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class TranslateWiki implements TranslateWikiInterface
 {

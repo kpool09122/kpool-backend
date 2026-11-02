@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -45,7 +46,6 @@ use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInterf
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;

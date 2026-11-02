@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
@@ -23,7 +24,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkOutput;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;

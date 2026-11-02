@@ -7,8 +7,8 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Query\ListSitemapWikis;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListSitemapWikis\ListSitemapWikisInput;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class ListSitemapWikisInputTest extends TestCase
 {

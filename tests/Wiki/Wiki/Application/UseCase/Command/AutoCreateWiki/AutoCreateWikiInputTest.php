@@ -6,13 +6,13 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AutoCreateWikiInputTest extends TestCase

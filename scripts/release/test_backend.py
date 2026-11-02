@@ -102,20 +102,38 @@ class BackendTests(unittest.TestCase):
         record=json.loads((Path(self.directory.name)/'journal.json').read_text())
         self.assertNotIn('fixture-never-log',json.dumps(record))
         self.assertNotIn('fixture-never-log',''.join(p.read_text() for p in Path(self.directory.name).glob('*.json')))
-    def test_release_updates_all_three_schedules_without_disabling_active_digest(self):
+    def test_release_updates_all_schedules_without_changing_activation_or_commands(self):
         self.aws.schedules[('fixture', 'digest')]['State'] = 'ENABLED'
         self.run_release()
-        self.assertEqual(len(self.aws.schedules), 3)
+        self.assertEqual(len(self.aws.schedules), 5)
         for schedule in self.aws.schedules.values():
             self.assertEqual(schedule['Target']['EcsParameters']['TaskDefinitionArn'], self.backend.tasks['Scheduler'])
         self.assertEqual(self.aws.schedules[('fixture', 'digest')]['State'], 'ENABLED')
         self.assertEqual(self.aws.schedules[('fixture', 'monthly')]['State'], 'DISABLED')
+        for domain, state in (('app', 'DISABLED'), ('wiki', 'ENABLED')):
+            schedule = self.aws.schedules[('fixture', 'analyze-' + domain)]
+            self.assertEqual(schedule['State'], state)
+            self.assertEqual(schedule['ScheduleExpression'], 'cron(0 4 * * ? *)')
+            self.assertEqual(schedule['ScheduleExpressionTimezone'], 'UTC')
+            self.assertEqual(json.loads(schedule['Target']['Input'])['containerOverrides'][0]['command'],
+                             ['php', 'artisan', 'analyze:import-' + domain + '-daily-summary'])
 
     def test_digest_output_is_required_before_release_mutation(self):
         del self.aws.outputs['VideoWatchDigestSchedulerArn']
         with self.assertRaisesRegex(ValueError, 'Required infrastructure output'):
             self.backend.preflight()
         self.assertFalse(any(op in ('register-task-definition', 'run-task', 'update-service', 'update-schedule') for _, op, _ in self.aws.calls))
+
+    def test_analyze_outputs_are_required_before_release_mutation(self):
+        for domain in ('App', 'Wiki'):
+            self.backend.outputs.clear()
+            key = 'Analyze' + domain + 'DailySummarySchedulerArn'
+            arn = self.aws.outputs.pop(key)
+            with self.assertRaisesRegex(ValueError, 'Required infrastructure output'):
+                self.backend.preflight()
+            self.assertFalse(any(op in ('register-task-definition', 'run-task', 'update-service', 'update-schedule')
+                                 for _, op, _ in self.aws.calls))
+            self.aws.outputs[key] = arn
 
     def test_existing_bake_and_alarm_policy_is_replaced_with_manual_recovery(self):
         import copy

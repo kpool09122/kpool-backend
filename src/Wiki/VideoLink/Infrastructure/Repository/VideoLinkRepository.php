@@ -7,6 +7,7 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Application\Service\VideoThumbnailServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\DurationSeconds;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -17,7 +18,6 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use UnexpectedValueException;
 
 final class VideoLinkRepository implements VideoLinkRepositoryInterface
