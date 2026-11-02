@@ -32,7 +32,7 @@ class ApiVersionRoutingTest extends TestCase
                 continue;
             }
 
-            $this->assertMatchesRegularExpression('#^api/v1/(identity|account|wiki|monetization|site-management)/#', $route->uri());
+            $this->assertMatchesRegularExpression('#^api/v1/(identity|account|wiki|monetization|site-management|analyze)/#', $route->uri());
             $contexts[] = explode('/', $route->uri())[2];
             $this->assertContains('api', $route->gatherMiddleware());
             $this->assertContains('session', $route->gatherMiddleware());
@@ -41,8 +41,8 @@ class ApiVersionRoutingTest extends TestCase
         $contexts = array_values(array_unique($contexts));
         sort($contexts);
         // Monetization currently has no enabled endpoints; moving its file must not enable them.
-        $this->assertSame(['account', 'identity', 'site-management', 'wiki'], $contexts);
-        foreach (['identity', 'account', 'wiki', 'monetization', 'site_management'] as $context) {
+        $this->assertSame(['account', 'analyze', 'identity', 'site-management', 'wiki'], $contexts);
+        foreach (['identity', 'account', 'wiki', 'monetization', 'site_management', 'analyze'] as $context) {
             $this->assertFileExists(__DIR__ . '/../../routes/v1/' . $context . '_api.php');
             $this->assertFileDoesNotExist(__DIR__ . '/../../routes/' . $context . '_api.php');
         }

@@ -8,6 +8,9 @@ use Application\Models\Identity\Identity;
 use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
 use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
 use Application\Providers\Account\UseCaseServiceProvider as AccountUseCaseServiceProvider;
+use Application\Providers\Analyze\DomainServiceProvider as AnalyzeDomainServiceProvider;
+use Application\Providers\Analyze\EventServiceProvider as AnalyzeEventServiceProvider;
+use Application\Providers\Analyze\UseCaseServiceProvider as AnalyzeUseCaseServiceProvider;
 use Application\Providers\ClientServiceProvider;
 use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
@@ -57,6 +60,9 @@ abstract class TestCase extends OrchestraTestCase
             UseCaseServiceProvider::class,
             EventServiceProvider::class,
             SharedServiceProvider::class,
+            AnalyzeDomainServiceProvider::class,
+            AnalyzeUseCaseServiceProvider::class,
+            AnalyzeEventServiceProvider::class,
             SiteManagementDomainServiceProvider::class,
             SiteManagementUseCaseServiceProvider::class,
             IdentityUseCaseServiceProvider::class,
