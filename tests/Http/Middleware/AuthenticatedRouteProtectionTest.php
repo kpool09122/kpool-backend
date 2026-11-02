@@ -62,8 +62,27 @@ class AuthenticatedRouteProtectionTest extends TestCase
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/v1/site-management')
             ->group($routePath('site_management_api.php'));
+        RouteFacade::middleware(['api', 'session'])->prefix('api/v1/analyze')->group($routePath('analyze_api.php'));
         RouteFacade::prefix('webhook')
             ->group(__DIR__ . '/../../../routes/webhook.php');
+    }
+
+    public function testAnalyzeRoutesAreProtectedAndEnrollmentDoesNotRequirePriorActivation(): void
+    {
+        $routes = array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/analyze/'));
+        self::assertNotEmpty($routes);
+        foreach ($routes as $route) {
+            foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $middleware) {
+                self::assertContains($middleware, $route->gatherMiddleware());
+            }
+        }
+        $snapshot = $this->routeFor('GET', '/api/v1/analyze/principal/me');
+        self::assertSame(['api', 'session', 'auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'], $snapshot->gatherMiddleware());
+        $enrollment = $this->routeFor('POST', '/api/v1/analyze/principals');
+        self::assertContains('account.active', $enrollment->gatherMiddleware());
+        self::assertContains('principal.active', $enrollment->gatherMiddleware());
+        self::assertContains('rate-limit:screen,command', $enrollment->gatherMiddleware());
+        self::assertNotContains('resolve.analyze', $enrollment->gatherMiddleware());
     }
 
     public function testSessionApisShareCsrfProtection(): void

@@ -6,6 +6,7 @@ import "./common/core.tsp";
 import "./common/auth.tsp";
 import "./common/problem-details.tsp";
 import "./services/account-api.tsp";
+import "./services/analyze-api.tsp";
 import "./services/identity-api.tsp";
 import "./services/monetization-api.tsp";
 import "./services/site-management-api.tsp";

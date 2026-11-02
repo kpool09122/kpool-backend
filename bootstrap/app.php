@@ -10,12 +10,16 @@ use Application\Http\Middleware\EnsureAuthenticated;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
+use Application\Http\Middleware\ResolveAnalyzeContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Application\Http\Middleware\ResolveSiteManagementContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
 use Application\Providers\Account\EventServiceProvider as AccountEventServiceProvider;
 use Application\Providers\Account\UseCaseServiceProvider as AccountUseCaseServiceProvider;
+use Application\Providers\Analyze\DomainServiceProvider as AnalyzeDomainServiceProvider;
+use Application\Providers\Analyze\EventServiceProvider as AnalyzeEventServiceProvider;
+use Application\Providers\Analyze\UseCaseServiceProvider as AnalyzeUseCaseServiceProvider;
 use Application\Providers\ClientServiceProvider;
 use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
@@ -46,6 +50,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
                     ->group(base_path('routes/v1/monetization_api.php'));
                 Route::prefix('account')->group(base_path('routes/v1/account_api.php'));
                 Route::prefix('site-management')->group(base_path('routes/v1/site_management_api.php'));
+                Route::prefix('analyze')->group(base_path('routes/v1/analyze_api.php'));
                 Route::prefix('wiki')->group(base_path('routes/v1/wiki_api.php'));
             });
             Route::prefix('webhook')
@@ -67,6 +72,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // Shared
         SharedServiceProvider::class,
         ClientServiceProvider::class,
+
+        AnalyzeDomainServiceProvider::class,
+        AnalyzeUseCaseServiceProvider::class,
+        AnalyzeEventServiceProvider::class,
 
         // Account
         AccountDomainServiceProvider::class,
@@ -106,6 +115,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'principal.active' => EnsurePrincipalActive::class,
             'resolve.actor' => ResolveActorContext::class,
             'resolve.account' => ResolveAccountContext::class,
+            'resolve.analyze' => ResolveAnalyzeContext::class,
             'resolve.wiki' => ResolveWikiContext::class,
             'resolve.site-management' => ResolveSiteManagementContext::class,
             'rate-limit' => EnforceApiRateLimit::class,

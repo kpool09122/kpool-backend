@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+  title: k-pool Analyze API
+  version: 0.0.0
+tags: []
+paths:
+  /principal/me:
+    get:
+      operationId: PrincipalOperations_getCurrentPrincipal
+      description: Inspect the authenticated identity's Analyze principal in the current account, including suspended/forced-stop states. Returns 404 before Analyze enrollment. Returns the principal status and effective policies.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSnapshot'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /principals:
+    post:
+      operationId: PrincipalOperations_createPrincipal
+      description: Enable Analyze for the authenticated identity and current account. No caller-supplied identity or account is accepted. Requires active direct account membership, joins the account's General group. General's default role allows viewing every analysis, including other owners' Wikis and ALL, but suspended/forced-stop principals, missing grants and explicit Deny are rejected. Duplicate enrollment returns 409 without restoring permissions. Authorization cleanup never deletes analysis data.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+components:
+  schemas:
+    KPool.Common.PrincipalStatusConflictProblem:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - last_active_manager
+            - principal_status_change_forbidden
+          description: 'last_active_manager: the final state loses the last reachable active permission manager. principal_status_change_forbidden: a forced-stop lifecycle transition was requested.'
+      allOf:
+        - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      description: Atomic Principal membership/status save rejected. No submitted group or Principal change is committed.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
+        code:
+          type: string
+          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
+    PolicyStatement:
+      type: object
+      required:
+        - effect
+        - actions
+        - resourceTypes
+      properties:
+        effect:
+          type: string
+          enum:
+            - allow
+            - deny
+        actions:
+          type: array
+          items:
+            type: string
+            enum:
+              - analysis:view
+        resourceTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - analysis
+    PolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - statements
+      properties:
+        policyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyStatement'
+    PrincipalSnapshot:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - status
+        - policies
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - forced_stop
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicySummary'
+    PrincipalSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+      description: New Analyze principal for the authenticated identity in the current account.
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: k-pool_session
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/v1/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
+servers:
+  - url: /api/v1/analyze
+    description: Laravel route prefix from bootstrap/app.php.
+    variables: {}

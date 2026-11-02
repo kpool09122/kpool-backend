@@ -17,6 +17,7 @@ class MasterDataSeeder extends Seeder
                 SystemRoleSeeder::class,
                 AccountAuthorizationSeeder::class,
                 SiteManagementAuthorizationSeeder::class,
+                AnalyzeAuthorizationSeeder::class,
             ]);
         });
     }

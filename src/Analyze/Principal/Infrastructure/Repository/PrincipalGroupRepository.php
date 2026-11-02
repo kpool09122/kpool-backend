@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Analyze\Principal\Infrastructure\Repository;
+
+use Application\Models\Analyze\PrincipalGroup as PrincipalGroupEloquent;
+use Application\Models\Analyze\PrincipalGroupMembership as MembershipEloquent;
+use Application\Models\Analyze\PrincipalGroupRoleAttachment as AttachmentEloquent;
+use Source\Analyze\Principal\Domain\Entity\PrincipalGroup;
+use Source\Analyze\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Analyze\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Analyze\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\Analyze\Principal\Domain\ValueObject\RoleIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\PrincipalGroupDescription;
+
+class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
+{
+    /** @return PrincipalGroup[] */
+    public function findByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        $models = PrincipalGroupEloquent::query()->with(['roleAttachments', 'memberships'])->where('account_id', (string) $accountIdentifier)->orderBy('created_at')->orderBy('id')->get();
+        $result = [];
+        foreach ($models as $model) {
+            $group = new PrincipalGroup(
+                new PrincipalGroupIdentifier($model->id),
+                $model->name,
+                $model->roleAttachments->map(static fn (AttachmentEloquent $attachment): RoleIdentifier => new RoleIdentifier($attachment->role_id))->all(),
+                new AccountIdentifier($model->account_id),
+                $model->is_default,
+                $model->description === null ? null : new PrincipalGroupDescription($model->description),
+                $model->memberships->map(static fn (MembershipEloquent $membership): PrincipalIdentifier => new PrincipalIdentifier($membership->principal_id))->all(),
+            );
+            $result[] = $group;
+        }
+
+        return $result;
+    }
+
+    public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
+    {
+        $model = PrincipalGroupEloquent::query()->find((string) $principalGroupIdentifier);
+        if ($model === null) {
+            return null;
+        }
+        $roles = AttachmentEloquent::query()->where('principal_group_id', $model->id)->get()->map(static fn (AttachmentEloquent $attachment): RoleIdentifier => new RoleIdentifier($attachment->role_id))->all();
+        $members = MembershipEloquent::query()->where('principal_group_id', $model->id)->get()->map(static fn (MembershipEloquent $membership): PrincipalIdentifier => new PrincipalIdentifier($membership->principal_id))->all();
+
+        return new PrincipalGroup($principalGroupIdentifier, $model->name, $roles, new AccountIdentifier($model->account_id), $model->is_default, $model->description === null ? null : new PrincipalGroupDescription($model->description), $members);
+    }
+
+    public function findDefaultByAccountIdentifier(AccountIdentifier $accountIdentifier): ?PrincipalGroup
+    {
+        $model = PrincipalGroupEloquent::query()->where('account_id', (string) $accountIdentifier)->where('is_default', true)->first();
+
+        return $model === null ? null : $this->findById(new PrincipalGroupIdentifier($model->id));
+    }
+
+    public function findByAccountIdAndName(AccountIdentifier $accountIdentifier, string $name): ?PrincipalGroup
+    {
+        $model = PrincipalGroupEloquent::query()->where('account_id', (string) $accountIdentifier)->where('name', $name)->first();
+
+        return $model === null ? null : $this->findById(new PrincipalGroupIdentifier($model->id));
+    }
+
+    public function delete(PrincipalGroup $principalGroup): void
+    {
+        PrincipalGroupEloquent::query()->where('id', (string) $principalGroup->principalGroupIdentifier())->delete();
+    }
+
+    public function save(PrincipalGroup $principalGroup): void
+    {
+        PrincipalGroupEloquent::query()->updateOrCreate(['id' => (string) $principalGroup->principalGroupIdentifier()], ['name' => $principalGroup->name(), 'description' => $principalGroup->description() !== null ? (string) $principalGroup->description() : null, 'account_id' => (string) $principalGroup->accountIdentifier(), 'is_default' => $principalGroup->isDefault()]);
+        AttachmentEloquent::query()->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())->delete();
+        foreach ($principalGroup->roles() as $identifier) {
+            AttachmentEloquent::query()->insert(['principal_group_id' => (string) $principalGroup->principalGroupIdentifier(), 'role_id' => (string) $identifier]);
+        }
+        MembershipEloquent::query()->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())->delete();
+        foreach ($principalGroup->members() as $member) {
+            MembershipEloquent::query()->insert(['principal_group_id' => (string) $principalGroup->principalGroupIdentifier(), 'principal_id' => (string) $member, 'created_at' => now(), 'updated_at' => now()]);
+        }
+    }
+
+    /** @return PrincipalGroup[] */
+    public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
+    {
+        $ids = MembershipEloquent::query()->where('principal_id', (string) $principalIdentifier)->pluck('principal_group_id');
+        $models = PrincipalGroupEloquent::query()->whereIn('id', $ids)->get();
+        $attachments = AttachmentEloquent::query()->whereIn('principal_group_id', $models->pluck('id'))->get();
+        $memberships = MembershipEloquent::query()->whereIn('principal_group_id', $models->pluck('id'))->get();
+        $result = [];
+        foreach ($models as $model) {
+            $entity = new PrincipalGroup(new PrincipalGroupIdentifier($model->id), $model->name, $attachments->where('principal_group_id', $model->id)->map(static fn (AttachmentEloquent $attachment): RoleIdentifier => new RoleIdentifier($attachment->role_id))->all(), new AccountIdentifier($model->account_id), $model->is_default, $model->description === null ? null : new PrincipalGroupDescription($model->description), $memberships->where('principal_group_id', $model->id)->map(static fn (MembershipEloquent $membership): PrincipalIdentifier => new PrincipalIdentifier($membership->principal_id))->all());
+            $result[] = $entity;
+        }
+
+        return $result;
+    }
+}
