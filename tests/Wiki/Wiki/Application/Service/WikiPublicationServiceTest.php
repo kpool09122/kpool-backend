@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Application\Service;
 
+use Application\Models\Wiki\WikiHistory as WikiHistoryModel;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,6 +19,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\Service\VideoLinkCollectionRegistrationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInput;
@@ -29,6 +31,9 @@ use Source\Wiki\Wiki\Application\UseCase\Command\PublishWikiAtSameVersion\Publis
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiOutput;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInput;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutput;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
@@ -133,6 +138,7 @@ class WikiPublicationServiceTest extends TestCase
         ]);
         $this->assertDatabaseHas('wikis', ['id' => $wikiId, 'owner_account_id' => $official ? $ownerId : null]);
         $this->assertDatabaseMissing('draft_wikis', ['id' => $draftId]);
+        $this->assertDatabaseHas('wiki_histories', ['draft_wiki_id' => $draftId, 'translation_set_identifier' => $setId, 'language' => 'ja', 'resource_type' => $type->value]);
     }
 
     public function testUpdatingOfficialWikiPreservesItsOwner(): void
@@ -167,6 +173,7 @@ class WikiPublicationServiceTest extends TestCase
             $this->assertSame($wikiId, $output->toArray()['wikiIdentifier']);
             $this->assertSame(1, $output->toArray()['version']);
             $this->assertSame($i, DB::table('wiki_snapshots')->where('wiki_id', $wikiId)->count());
+            $this->assertDatabaseHas('wiki_histories', ['draft_wiki_id' => $draftId, 'translation_set_identifier' => $setId, 'language' => 'ko', 'resource_type' => 'group']);
             $this->assertDatabaseMissing('draft_wikis', ['id' => $draftId]);
             $this->assertEquals($otherBefore, DB::table('wikis')->where('id', $otherWikiId)->first());
             $this->assertEquals($otherBasicBefore, DB::table('wiki_group_basics')->where('wiki_id', $otherWikiId)->first());
@@ -215,6 +222,47 @@ class WikiPublicationServiceTest extends TestCase
         $this->assertDatabaseHas('wiki_group_basics', ['wiki_id' => $wikiId, 'name' => 'TWICE']);
         $this->assertSame(0, DB::table('wiki_snapshots')->where('wiki_id', $wikiId)->count());
         $this->assertDatabaseHas('draft_wikis', ['id' => $draftId]);
+    }
+
+    public function testSubmissionAndPublicationRetainOperationContextAfterDraftDeletion(): void
+    {
+        $draftId = StrTestHelper::generateUuid();
+        $setId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
+        CreateDraftWiki::create($draftId, 'group', [
+            'translation_set_identifier' => $setId,
+            'language' => 'ja',
+            'editor_id' => $editorId,
+        ]);
+        $input = new SubmitWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), ResourceType::GROUP, visitorLocation: new VisitorLocation('JP', '13'));
+        $this->app()->make(SubmitWikiInterface::class)->process($input, new SubmitWikiOutput());
+        $submission = WikiHistoryModel::query()->where('draft_wiki_id', $draftId)->firstOrFail();
+        $this->assertSame($setId, $submission->getAttribute('translation_set_identifier'));
+        $principal = $this->app()->make(PrincipalRepositoryInterface::class)->findById($this->principalIdentifier());
+        $this->assertNotNull($principal);
+        $this->assertSame((string) $principal->identityIdentifier(), $submission->getAttribute('actor_identity_id'));
+        $this->assertSame($editorId, $submission->submitter_id);
+        $this->assertNull($submission->wiki_id);
+
+        DB::table('draft_wikis')->where('id', $draftId)->update(['status' => 'rejected']);
+        $this->app()->make(SubmitWikiInterface::class)->process($input, new SubmitWikiOutput());
+        DB::table('draft_wikis')->where('id', $draftId)->update(['status' => 'approved']);
+        $output = new PublishWikiOutput();
+        $this->app()->make(PublishWikiInterface::class)->process(
+            new PublishWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), ResourceType::GROUP, visitorLocation: new VisitorLocation()),
+            $output,
+        );
+        $this->assertDatabaseMissing('draft_wikis', ['id' => $draftId]);
+        $histories = WikiHistoryModel::query()->where('draft_wiki_id', $draftId)->get();
+        $this->assertCount(3, $histories);
+        foreach ($histories as $history) {
+            $this->assertSame($setId, $history->translation_set_identifier);
+            $this->assertSame('ja', $history->language);
+            $this->assertSame('group', $history->resource_type);
+            $this->assertSame((string) $principal->identityIdentifier(), $history->actor_identity_id);
+            $this->assertSame($editorId, $history->submitter_id);
+            $this->assertSame($history->action_type === 'publish' ? null : 'JP', $history->visitor_country);
+        }
     }
 
     private function createDraft(string $wikiId, string $setId, string $name, string $language = 'ko', bool $translated = false): string

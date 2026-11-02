@@ -6,9 +6,13 @@ namespace Source\Wiki\Wiki\Domain\Entity;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -32,6 +36,10 @@ readonly class WikiHistory
         private Name                  $subjectName,
         private DateTimeImmutable     $recordedAt,
         private VisitorLocation       $visitorLocation,
+        private ?TranslationSetIdentifier $translationSetIdentifier = null,
+        private ?Language $language = null,
+        private ?ResourceType $resourceType = null,
+        private ?IdentityIdentifier $actorIdentityIdentifier = null,
     ) {
         $this->validate($wikiIdentifier, $draftWikiIdentifier);
     }
@@ -41,6 +49,26 @@ readonly class WikiHistory
         if ($wikiIdentifier === null && $draftWikiIdentifier === null) {
             throw new InvalidArgumentException('At least one of wiki identifier or draft identifier must be provided.');
         }
+    }
+
+    public function translationSetIdentifier(): ?TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
+    }
+
+    public function language(): ?Language
+    {
+        return $this->language;
+    }
+
+    public function resourceType(): ?ResourceType
+    {
+        return $this->resourceType;
+    }
+
+    public function actorIdentityIdentifier(): ?IdentityIdentifier
+    {
+        return $this->actorIdentityIdentifier;
     }
 
     public function historyIdentifier(): WikiHistoryIdentifier

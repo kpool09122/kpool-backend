@@ -9,9 +9,13 @@ use Mockery;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -96,6 +100,8 @@ class WikiHistoryFactoryTest extends TestCase
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new Name('NewJeans');
+        $setId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
 
         $wikiHistoryFactory = $this->app()->make(WikiHistoryFactoryInterface::class);
         $wikiHistory = $wikiHistoryFactory->create(
@@ -110,7 +116,15 @@ class WikiHistoryFactoryTest extends TestCase
             null,
             $subjectName,
             new VisitorLocation(),
+            $setId,
+            Language::ENGLISH,
+            ResourceType::GROUP,
+            $identityId,
         );
+        $this->assertSame($setId, $wikiHistory->translationSetIdentifier());
+        $this->assertSame(Language::ENGLISH, $wikiHistory->language());
+        $this->assertSame(ResourceType::GROUP, $wikiHistory->resourceType());
+        $this->assertSame($identityId, $wikiHistory->actorIdentityIdentifier());
 
         $this->assertTrue(UuidValidator::isValid((string)$wikiHistory->historyIdentifier()));
         $this->assertSame($actionType, $wikiHistory->actionType());
@@ -193,6 +207,10 @@ class WikiHistoryFactoryTest extends TestCase
             new Name('TWICE'),
             $location,
         );
+        self::assertNull($history->translationSetIdentifier());
+        self::assertNull($history->language());
+        self::assertNull($history->resourceType());
+        self::assertNull($history->actorIdentityIdentifier());
         self::assertSame($location, $history->visitorLocation());
         self::assertSame($location->country(), $history->visitorLocation()->country());
         self::assertSame($location->region(), $history->visitorLocation()->region());

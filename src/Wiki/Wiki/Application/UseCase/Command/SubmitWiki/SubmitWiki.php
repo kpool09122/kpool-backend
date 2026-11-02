@@ -92,6 +92,10 @@ readonly class SubmitWiki implements SubmitWikiInterface
             toVersion: null,
             subjectName: $wiki->basic()->name(),
             visitorLocation: $input->visitorLocation(),
+            translationSetIdentifier: $wiki->translationSetIdentifier(),
+            language: $wiki->language(),
+            resourceType: $wiki->resourceType(),
+            actorIdentityIdentifier: $principal->identityIdentifier(),
         );
         $this->wikiHistoryRepository->save($history);
 

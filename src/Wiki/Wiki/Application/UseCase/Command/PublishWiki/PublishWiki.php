@@ -79,6 +79,6 @@ readonly class PublishWiki implements PublishWikiInterface
             throw new InconsistentVersionException();
         }
 
-        $output->setWiki($this->wikiPublicationService->publish($wiki, $publishVersion, $input->principalIdentifier(), $input->visitorLocation()));
+        $output->setWiki($this->wikiPublicationService->publish($wiki, $publishVersion, $input->principalIdentifier(), $input->visitorLocation(), $principal->identityIdentifier()));
     }
 }
