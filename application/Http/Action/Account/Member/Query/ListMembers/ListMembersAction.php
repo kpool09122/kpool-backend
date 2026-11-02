@@ -21,8 +21,6 @@ readonly class ListMembersAction
     public function __construct(
         private ListMembersInterface $listMembers,
         private AccountContext $accountContext,
-        // 防御的catch内でのみ利用され、PHPStanのchecked exception解析では未到達扱いになるため。
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

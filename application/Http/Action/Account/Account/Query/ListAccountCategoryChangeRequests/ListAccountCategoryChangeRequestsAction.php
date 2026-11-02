@@ -23,7 +23,6 @@ readonly class ListAccountCategoryChangeRequestsAction
     public function __construct(
         private ListAccountCategoryChangeRequestsInterface $listAccountCategoryChangeRequests,
         private AccountContext $accountContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

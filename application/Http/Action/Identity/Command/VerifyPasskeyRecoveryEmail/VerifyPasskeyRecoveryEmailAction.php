@@ -22,8 +22,6 @@ readonly class VerifyPasskeyRecoveryEmailAction
 {
     public function __construct(
         private VerifyPasskeyRecoveryEmailInterface $useCase,
-        // 防御的catch内でのみ利用され、PHPStanのchecked exception解析では未到達扱いになるため。
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

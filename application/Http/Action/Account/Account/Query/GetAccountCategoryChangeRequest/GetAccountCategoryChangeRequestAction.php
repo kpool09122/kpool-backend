@@ -27,7 +27,6 @@ readonly class GetAccountCategoryChangeRequestAction
     public function __construct(
         private GetAccountCategoryChangeRequestInterface $getAccountCategoryChangeRequest,
         private AccountContext $accountContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

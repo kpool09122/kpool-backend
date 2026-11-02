@@ -23,7 +23,6 @@ readonly class ListDelegationsAction
     public function __construct(
         private ListDelegationsInterface $listDelegations,
         private AccountContext $accountContext,
-        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }
