@@ -6,9 +6,13 @@ namespace Source\Wiki\Wiki\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
@@ -37,6 +41,10 @@ readonly class WikiHistoryFactory implements WikiHistoryFactoryInterface
         ?Version             $toVersion,
         Name                 $subjectName,
         VisitorLocation      $visitorLocation,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
+        ?Language $language = null,
+        ?ResourceType $resourceType = null,
+        ?IdentityIdentifier $actorIdentityIdentifier = null,
     ): WikiHistory {
         return new WikiHistory(
             new WikiHistoryIdentifier($this->generator->generate()),
@@ -52,6 +60,10 @@ readonly class WikiHistoryFactory implements WikiHistoryFactoryInterface
             $subjectName,
             new DateTimeImmutable('now'),
             $visitorLocation,
+            $translationSetIdentifier,
+            $language,
+            $resourceType,
+            $actorIdentityIdentifier,
         );
     }
 }

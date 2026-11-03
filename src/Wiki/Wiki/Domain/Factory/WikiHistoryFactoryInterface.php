@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Domain\Factory;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
@@ -28,5 +32,9 @@ interface WikiHistoryFactoryInterface
         ?Version             $toVersion,
         Name                 $subjectName,
         VisitorLocation      $visitorLocation,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
+        ?Language $language = null,
+        ?ResourceType $resourceType = null,
+        ?IdentityIdentifier $actorIdentityIdentifier = null,
     ): WikiHistory;
 }

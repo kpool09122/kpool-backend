@@ -11,6 +11,10 @@ use Illuminate\Support\Carbon;
 use Override;
 
 /**
+ * @property ?string $translation_set_identifier
+ * @property ?string $language
+ * @property ?string $resource_type
+ * @property ?string $actor_identity_id
  * @property string $id
  * @property string $action_type
  * @property string $actor_id
@@ -29,6 +33,10 @@ use Override;
 #[Fillable([
     'id',
     'action_type',
+    'translation_set_identifier',
+    'language',
+    'resource_type',
+    'actor_identity_id',
     'actor_id',
     'submitter_id',
     'wiki_id',

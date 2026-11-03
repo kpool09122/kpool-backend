@@ -288,6 +288,10 @@ class PublishWikiAtSameVersionTest extends TestCase
                 null,
                 $dummyPublishWikiAtSameVersion->name,
                 $input->visitorLocation(),
+                $dummyPublishWikiAtSameVersion->draftWiki->translationSetIdentifier(),
+                $dummyPublishWikiAtSameVersion->draftWiki->language(),
+                $dummyPublishWikiAtSameVersion->draftWiki->resourceType(),
+                $principal->identityIdentifier(),
             )
             ->andReturn($dummyPublishWikiAtSameVersion->history);
 

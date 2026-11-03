@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\Service;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -39,7 +40,7 @@ readonly class WikiPublicationService implements WikiPublicationServiceInterface
     }
 
     /** @throws WikiNotFoundException */
-    public function publish(DraftWiki $wiki, Version $publishVersion, PrincipalIdentifier $principalIdentifier, VisitorLocation $visitorLocation, ?Wiki $publishedWiki = null): Wiki
+    public function publish(DraftWiki $wiki, Version $publishVersion, PrincipalIdentifier $principalIdentifier, VisitorLocation $visitorLocation, IdentityIdentifier $actorIdentityIdentifier, ?Wiki $publishedWiki = null): Wiki
     {
         if ($wiki->publishedWikiIdentifier()) {
             $publishedWiki ??= $this->wikiRepository->findById($wiki->publishedWikiIdentifier());
@@ -108,6 +109,10 @@ readonly class WikiPublicationService implements WikiPublicationServiceInterface
             toVersion: null,
             subjectName: $wiki->basic()->name(),
             visitorLocation: $visitorLocation,
+            translationSetIdentifier: $wiki->translationSetIdentifier(),
+            language: $wiki->language(),
+            resourceType: $wiki->resourceType(),
+            actorIdentityIdentifier: $actorIdentityIdentifier,
         );
         $this->wikiHistoryRepository->save($history);
 

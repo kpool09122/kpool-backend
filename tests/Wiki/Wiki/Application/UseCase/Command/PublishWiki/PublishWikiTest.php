@@ -296,6 +296,10 @@ class PublishWikiTest extends TestCase
                 null,
                 $dummyPublishWiki->name,
                 $input->visitorLocation(),
+                $dummyPublishWiki->draftWiki->translationSetIdentifier(),
+                $dummyPublishWiki->draftWiki->language(),
+                $dummyPublishWiki->draftWiki->resourceType(),
+                $principal->identityIdentifier(),
             )
             ->andReturn($dummyPublishWiki->history);
 

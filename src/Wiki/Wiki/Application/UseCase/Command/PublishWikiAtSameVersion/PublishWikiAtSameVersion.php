@@ -84,6 +84,6 @@ readonly class PublishWikiAtSameVersion implements PublishWikiAtSameVersionInter
         }
         $publishVersion = $publishedWiki->version();
 
-        $output->setWiki($this->wikiPublicationService->publish($wiki, $publishVersion, $input->principalIdentifier(), $input->visitorLocation(), $publishedWiki));
+        $output->setWiki($this->wikiPublicationService->publish($wiki, $publishVersion, $input->principalIdentifier(), $input->visitorLocation(), $principal->identityIdentifier(), $publishedWiki));
     }
 }

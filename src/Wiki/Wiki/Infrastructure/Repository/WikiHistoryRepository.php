@@ -44,6 +44,10 @@ readonly class WikiHistoryRepository implements WikiHistoryRepositoryInterface
             'visitor_country' => $wikiHistory->visitorLocation()->country(),
             'visitor_region' => $wikiHistory->visitorLocation()->region(),
             'recorded_at' => $wikiHistory->recordedAt(),
+            'translation_set_identifier' => $wikiHistory->translationSetIdentifier() ? (string) $wikiHistory->translationSetIdentifier() : null,
+            'language' => $wikiHistory->language()?->value,
+            'resource_type' => $wikiHistory->resourceType()?->value,
+            'actor_identity_id' => $wikiHistory->actorIdentityIdentifier() ? (string) $wikiHistory->actorIdentityIdentifier() : null,
         ]);
     }
 }
