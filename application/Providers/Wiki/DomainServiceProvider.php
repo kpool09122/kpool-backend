@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 use Source\Wiki\Grading\Application\Service\CollaboratorRoleTransitionService;
 use Source\Wiki\Grading\Application\Service\CollaboratorRoleTransitionServiceInterface;
 use Source\Wiki\Grading\Application\UseCase\Command\ChangeCollaboratorRole\ChangeCollaboratorRole;
@@ -251,7 +251,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(WikiWorkflowNotificationServiceInterface::class, fn ($app) => new WikiWorkflowNotificationService(
             $app->make(WikiHistoryRepositoryInterface::class),
             $app->make(PrincipalRepositoryInterface::class),
-            $app->make(IdentityRepositoryInterface::class),
+            $app->make(AccountNotificationRecipientServiceInterface::class),
             config('app.frontend_url', 'http://localhost:3000'),
         ));
         $this->app->singleton(WikiSnapshotFactoryInterface::class, WikiSnapshotFactory::class);

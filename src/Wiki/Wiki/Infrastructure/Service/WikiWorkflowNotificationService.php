@@ -8,7 +8,7 @@ use Application\Mail\WikiWorkflowMail;
 use Application\Mail\WikiWorkflowMailType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -23,7 +23,7 @@ readonly class WikiWorkflowNotificationService implements WikiWorkflowNotificati
     public function __construct(
         private WikiHistoryRepositoryInterface $wikiHistoryRepository,
         private PrincipalRepositoryInterface $principalRepository,
-        private IdentityRepositoryInterface $identityRepository,
+        private AccountNotificationRecipientServiceInterface $accountNotificationRecipientService,
         private string $frontendBaseUrl,
     ) {
     }
@@ -56,15 +56,16 @@ readonly class WikiWorkflowNotificationService implements WikiWorkflowNotificati
             if ($principal === null) {
                 return;
             }
-            $identity = $this->identityRepository->findById($principal->identityIdentifier());
-            if ($identity === null) {
+            $recipients = $this->accountNotificationRecipientService->resolveActive([$principal->accountIdentifier()]);
+            $recipient = $recipients[(string) $principal->identityIdentifier()] ?? null;
+            if ($recipient === null) {
                 return;
             }
-            Mail::to((string) $identity->email())->queue(new WikiWorkflowMail(
+            Mail::to((string) $recipient->email())->queue(new WikiWorkflowMail(
                 $type,
                 $wikiName,
                 $path === null ? null : rtrim($this->frontendBaseUrl, '/') . $path,
-                $identity->language(),
+                $recipient->language(),
                 $rejectionReason,
             ));
         };
