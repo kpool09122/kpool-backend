@@ -33,6 +33,32 @@ class EnsureAuthenticatedTest extends TestCase
         }
     }
 
+    public function testInvalidSessionIsLoggedOutAndRequiresAuthentication(): void
+    {
+        Auth::shouldReceive('check')->once()->andReturn(true);
+        Auth::shouldReceive('id')->once()->andReturn('01965bb2-bcc9-7c6f-8b90-89f7f217f001');
+        /** @var AuthServiceInterface&MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldReceive('isCurrentSessionValid')->once()->andReturn(false);
+        $authService->shouldReceive('logout')->once();
+        $middleware = new EnsureAuthenticated($authService);
+        $request = Request::create('/api/v1/identity/auth/me', 'GET');
+        $called = false;
+
+        try {
+            $middleware->handle($request, function () use (&$called) {
+                $called = true;
+
+                return response('ok');
+            });
+            $this->fail('An expired session must be rejected.');
+        } catch (UnauthorizedHttpException $exception) {
+            $this->assertSame(401, $exception->getHttpStatus());
+            $this->assertSame('authentication_required', $exception->toProblemDetails()['code']);
+            $this->assertFalse($called);
+        }
+    }
+
     public function testPassesWhenAuthenticated(): void
     {
         Auth::shouldReceive('check')->once()->andReturn(true);

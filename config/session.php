@@ -4,7 +4,8 @@ use Illuminate\Support\Str;
 
 return [
     'driver' => 'redis',
-    'lifetime' => 120,
+    'lifetime' => 10080,
+    'absolute_lifetime' => 43200,
     'expire_on_close' => false,
     'encrypt' => false,
     'files' => storage_path('framework/sessions'),
