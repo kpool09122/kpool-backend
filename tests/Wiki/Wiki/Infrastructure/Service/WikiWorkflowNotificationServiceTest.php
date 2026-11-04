@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Source\Identity\Domain\Entity\Identity;
-use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\IdentityName;
+use Source\Shared\Application\Service\AccountNotificationRecipient;
+use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -65,14 +66,31 @@ class WikiWorkflowNotificationServiceTest extends TestCase
         }
     }
 
-    public function testDoesNotQueueForMissingSubmissionPrincipalOrIdentity(): void
+    public function testDoesNotQueueForMissingSubmissionPrincipalOrRecipient(): void
     {
-        foreach (['submission', 'principal', 'identity'] as $missing) {
+        foreach (['submission', 'principal', 'recipient'] as $missing) {
             Mail::fake();
             $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
             [$service] = $this->service($id, Language::JAPANESE, $missing);
             $service->notifyApproved($id, 'Example');
             Mail::assertNothingOutgoing();
+        }
+    }
+
+    public function testDoesNotQueueAnyOutcomeWhenSubmitterIsNotSelected(): void
+    {
+        foreach (['recipient', 'other-recipient'] as $missing) {
+            foreach (WikiWorkflowMailType::cases() as $type) {
+                Mail::fake();
+                $id = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+                [$service] = $this->service($id, Language::JAPANESE, $missing);
+                match ($type) {
+                    WikiWorkflowMailType::APPROVED => $service->notifyApproved($id, 'Example'),
+                    WikiWorkflowMailType::REJECTED => $service->notifyRejected($id, 'Example', ResourceType::GROUP, new DraftWikiRejectionReason('Please add sources.')),
+                    WikiWorkflowMailType::PUBLISHED => $service->notifyPublished($id, 'Example', new Slug('gr-example'), Language::KOREAN),
+                };
+                Mail::assertNothingOutgoing();
+            }
         }
     }
 
@@ -103,11 +121,12 @@ class WikiWorkflowNotificationServiceTest extends TestCase
         $wikiHistoryRepository->shouldNotReceive('findLatestSubmissionActor');
         /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        /** @var IdentityRepositoryInterface&Mockery\MockInterface $identityRepository */
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        /** @var AccountNotificationRecipientServiceInterface&Mockery\MockInterface $accountNotificationRecipientService */
+        $accountNotificationRecipientService = Mockery::mock(AccountNotificationRecipientServiceInterface::class);
+        $accountNotificationRecipientService->shouldNotReceive('resolveActive');
         DB::shouldReceive('transactionLevel')->once()->andReturn(1);
         DB::shouldReceive('afterCommit')->once()->with(Mockery::type(Closure::class));
-        (new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $identityRepository, 'https://frontend.example.com'))
+        (new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $accountNotificationRecipientService, 'https://frontend.example.com'))
             ->notifyPublished(new DraftWikiIdentifier(StrTestHelper::generateUuid()), 'Example', new Slug('gr-example'), Language::KOREAN);
         Mail::assertNothingOutgoing();
     }
@@ -123,15 +142,24 @@ class WikiWorkflowNotificationServiceTest extends TestCase
         $wikiHistoryRepository->shouldReceive('findLatestSubmissionActor')->once()->with($draftWikiIdentifier)->andReturn($missing === 'submission' ? null : $principalId);
         /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        /** @var IdentityRepositoryInterface&Mockery\MockInterface $identityRepository */
-        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        /** @var AccountNotificationRecipientServiceInterface&Mockery\MockInterface $accountNotificationRecipientService */
+        $accountNotificationRecipientService = Mockery::mock(AccountNotificationRecipientServiceInterface::class);
         if ($missing !== 'submission') {
             $principalRepository->shouldReceive('findById')->once()->with($principalId)->andReturn($missing === 'principal' ? null : $principal);
         }
         if ($missing !== 'submission' && $missing !== 'principal') {
-            $identityRepository->shouldReceive('findById')->once()->with($identity->identityIdentifier())->andReturn($missing === 'identity' ? null : $identity);
+            $accountNotificationRecipientService->shouldReceive('resolveActive')->once()
+                ->with(Mockery::on(static fn (array $accounts): bool => count($accounts) === 1 && $accounts[0] === $principal->accountIdentifier()))
+                ->andReturn(match ($missing) {
+                    'recipient' => [],
+                    'other-recipient' => [StrTestHelper::generateUuid() => new AccountNotificationRecipient(new Email('other@example.com'), Language::ENGLISH)],
+                    default => [
+                        (string) $identity->identityIdentifier() => new AccountNotificationRecipient($identity->email(), $identity->language()),
+                        StrTestHelper::generateUuid() => new AccountNotificationRecipient(new Email('other@example.com'), Language::ENGLISH),
+                    ],
+                });
         }
 
-        return [new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $identityRepository, 'https://frontend.example.com/'), $identity];
+        return [new WikiWorkflowNotificationService($wikiHistoryRepository, $principalRepository, $accountNotificationRecipientService, 'https://frontend.example.com/'), $identity];
     }
 }
