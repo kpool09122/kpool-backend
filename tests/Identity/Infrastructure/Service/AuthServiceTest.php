@@ -28,6 +28,7 @@ class AuthServiceTest extends TestCase
 
         // テスト用にセッションドライバーをarrayに設定
         $this->app()['config']->set('session.driver', 'array');
+        $this->app()['config']->set('session.absolute_lifetime', 43200);
 
         // セッションマネージャーを再作成してドライバー設定を反映
         $this->app()->forgetInstance('session');
@@ -156,6 +157,7 @@ class AuthServiceTest extends TestCase
 
         try {
             $this->app()['session']->put('identity_session_generation', 0);
+            $this->app()['session']->put('identity_authenticated_at', now()->getTimestamp());
             $this->assertTrue($authService->isCurrentSessionValid($identityIdentifier));
 
             Redis::incr($generationKey);

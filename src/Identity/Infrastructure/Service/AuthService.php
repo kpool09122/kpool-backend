@@ -30,6 +30,7 @@ readonly class AuthService implements AuthServiceInterface
         Auth::loginUsingId((string) $identity->identityIdentifier());
 
         $this->request->session()->regenerate();
+        $this->request->session()->put('identity_authenticated_at', now()->getTimestamp());
         $this->request->session()->put(
             'identity_session_generation',
             $this->generation($identity->identityIdentifier()),
@@ -81,6 +82,14 @@ readonly class AuthService implements AuthServiceInterface
 
     public function isCurrentSessionValid(IdentityIdentifier $identityIdentifier): bool
     {
+        $authenticatedAt = $this->request->session()->get('identity_authenticated_at');
+        $now = now()->getTimestamp();
+        if (! is_int($authenticatedAt)
+            || $authenticatedAt > $now
+            || $now - $authenticatedAt >= config()->integer('session.absolute_lifetime') * 60) {
+            return false;
+        }
+
         $generation = $this->request->session()->get('identity_session_generation', 0);
 
         return is_int($generation) && $generation
