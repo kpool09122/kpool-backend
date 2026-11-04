@@ -17,7 +17,6 @@ use Source\Identity\Domain\Exception\SocialLinkingSessionInvalidException;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
@@ -42,7 +41,6 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         private EventDispatcherInterface           $eventDispatcher,
         private StepUpOAuthSessionStorageServiceInterface $stepUpOAuthSessionStorageService,
         private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
-        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private ImageServiceInterface              $imageService,
         private LoggerInterface                    $logger,
         private SocialLinkingSessionStorageServiceInterface $socialLinkingSessionStorageService,
@@ -75,8 +73,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             $connection = new SocialConnection($input->provider(), $profile->providerUserId());
             $identity = $this->identityRepository->findBySocialConnection($connection->provider(), $connection->providerUserId());
             if ($identity === null
-                || (string) $identity->identityIdentifier() !== (string) $stepUpSession->identityIdentifier
-                || $this->passkeyCredentialRepository->findByIdentityIdentifier($stepUpSession->identityIdentifier) !== []) {
+                || (string) $identity->identityIdentifier() !== (string) $stepUpSession->identityIdentifier) {
                 throw new StepUpSocialAuthenticationFailedException();
             }
 

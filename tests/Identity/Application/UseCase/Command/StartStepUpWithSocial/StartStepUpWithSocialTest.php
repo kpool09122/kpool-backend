@@ -96,14 +96,16 @@ class StartStepUpWithSocialTest extends TestCase
         $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
     }
 
-    public function testItRejectsSocialStepUpWhenAPasskeyAlreadyExists(): void
+    public function testItAllowsLinkedSocialStepUpWhenAPasskeyAlreadyExists(): void
     {
         /** @var MockInterface&PasskeyCredential $credential */
         $credential = Mockery::mock(PasskeyCredential::class);
         $this->bindDependencies($this->identity(), [$credential]);
 
-        $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), new StartStepUpWithSocialOutput());
+        $output = new StartStepUpWithSocialOutput();
+        $this->app()->make(StartStepUpWithSocialInterface::class)->process($this->input(), $output);
+
+        $this->assertArrayHasKey('redirectUrl', $output->toArray());
     }
 
     /** @param PasskeyCredential[] $credentials */

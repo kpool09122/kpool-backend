@@ -598,17 +598,22 @@ class SocialLoginCallbackTest extends TestCase
         $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
     }
 
-    public function testStepUpRejectsSsoCompletionIfAPasskeyWasRegisteredAfterTheFlowStarted(): void
+    public function testStepUpAllowsSsoCompletionWhenAPasskeyExists(): void
     {
         /** @var MockInterface&PasskeyCredential $credential */
         $credential = Mockery::mock(PasskeyCredential::class);
         /** @var MockInterface&StepUpAuthenticationStorageServiceInterface $stepUp */
         $stepUp = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
-        $stepUp->shouldNotReceive('store');
+        $stepUp->shouldReceive('store')->once()->with(Mockery::on(
+            static fn (StepUpAuthentication $authentication): bool => (string) $authentication->identityIdentifier === self::STEP_UP_IDENTITY_ID
+                && $authentication->method === StepUpAuthenticationMethod::SSO,
+        ));
         $this->bindStepUpDependencies($this->stepUpIdentity(self::STEP_UP_IDENTITY_ID), [$credential], $stepUp);
 
-        $this->expectException(StepUpSocialAuthenticationFailedException::class);
-        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), new SocialLoginCallbackOutput());
+        $output = new SocialLoginCallbackOutput();
+        $this->app()->make(SocialLoginCallbackInterface::class)->process($this->stepUpInput(), $output);
+
+        $this->assertSame('/settings/withdrawal?stepUp=complete', $output->redirectUrl());
     }
 
     public function testStepUpRejectsAMissingOrExpiredSessionBeforeFetchingProfile(): void
