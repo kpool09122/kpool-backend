@@ -10,7 +10,6 @@ use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Domain\Exception\StepUpSocialAuthenticationFailedException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
@@ -21,7 +20,6 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
 {
     public function __construct(
         private IdentityRepositoryInterface $identityRepository,
-        private PasskeyCredentialRepositoryInterface $passkeyCredentialRepository,
         private SocialOAuthServiceInterface $socialOAuthService,
         private OAuthStateGeneratorInterface $oauthStateGenerator,
         private OAuthStateStorageServiceInterface $oAuthStateStorageService,
@@ -34,9 +32,6 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         $identity = $this->identityRepository->findById($input->identityIdentifier());
         if ($identity === null || ! array_any($identity->socialConnections(), static fn ($connection) => $connection->provider() === $input->provider())) {
             throw new StepUpSocialAuthenticationFailedException('The selected provider is not linked to this identity.');
-        }
-        if ($this->passkeyCredentialRepository->findByIdentityIdentifier($input->identityIdentifier()) !== []) {
-            throw new StepUpSocialAuthenticationFailedException('An existing passkey must be used for step-up authentication.');
         }
         $generatedSession = $this->oauthStateGenerator->generate();
         $state = new OAuthState('step-up-' . $generatedSession->state);
