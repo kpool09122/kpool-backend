@@ -58,11 +58,57 @@ class DailyMetricsFetchServiceTest extends TestCase
         self::assertStringNotContainsString('page_view', (string) $http->requests[2]->getBody());
         self::assertStringContainsString('pagePath', (string) $http->requests[2]->getBody());
         foreach ($http->requests as $request) {
-            self::assertStringContainsString(json_encode('^/wiki/.*$', JSON_THROW_ON_ERROR), (string) $request->getBody());
+            self::assertStringContainsString(json_encode('^/((ja|en|ko)/wiki|wiki/(ja|en|ko))/[^/]+/?$', JSON_THROW_ON_ERROR), (string) $request->getBody());
             self::assertStringContainsString('FULL_REGEXP', (string) $request->getBody());
             self::assertStringContainsString('public.example.test', (string) $request->getBody());
             self::assertStringNotContainsString('8443', (string) $request->getBody());
             self::assertStringNotContainsString('lang=ja', (string) $request->getBody());
+        }
+    }
+
+    /** @return iterable<string, array{string, bool}> */
+    public static function publicWikiPaths(): iterable
+    {
+        foreach (['ja', 'en', 'ko'] as $language) {
+            yield "create {$language}" => ["/wiki/{$language}/edit", false];
+            yield "create {$language} trailing slash" => ["/wiki/{$language}/edit/", false];
+            foreach (["/{$language}/wiki/gr-example", "/wiki/{$language}/gr-example"] as $path) {
+                yield $path => [$path, true];
+                yield $path . '/' => [$path . '/', true];
+                yield $path . '/edit' => [$path . '/edit', false];
+                yield $path . '/preview' => [$path . '/preview', false];
+                yield $path . '/diff' => [$path . '/diff', false];
+            }
+        }
+        foreach (['/wiki/draft-identifier/edit', '/wiki/ja/edit', '/wiki/ja/edit/', '/admin/wiki/ja/gr-example', '/admin/wiki', '/ja/wiki', '/wiki/ja', '/wiki/gr-example', '/fr/wiki/gr-example', '/wiki/fr/gr-example', '/ja/wiki/gr-example/extra', '/JA/wiki/gr-example'] as $path) {
+            yield $path => [$path, false];
+        }
+    }
+
+    #[DataProvider('publicWikiPaths')]
+    public function testPublicWikiPathFiltersMatchOnlyPublicDetailRoutes(string $path, bool $expected): void
+    {
+        $http = new AnalyticsHttpStub();
+        $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeWikiMetrics::now(), 1);
+        self::assertCount(3, $http->requests);
+        foreach ($http->requests as $request) {
+            /** @var array{dimensionFilter: array{andGroup: array{expressions: list<array{filter?: array{fieldName: string, stringFilter: array{value: string, caseSensitive: bool}}, notExpression?: array{filter: array{fieldName: string, stringFilter: array{value: string, caseSensitive: bool}}}}>}}} $body */
+            $body = json_decode((string) $request->getBody(), true, flags: JSON_THROW_ON_ERROR);
+            $matches = true;
+            $pathFilters = 0;
+            foreach ($body['dimensionFilter']['andGroup']['expressions'] as $expression) {
+                $negated = isset($expression['notExpression']);
+                $filter = $expression['notExpression']['filter'] ?? $expression['filter'] ?? null;
+                if ($filter === null || $filter['fieldName'] !== 'pagePath') {
+                    continue;
+                }
+                $pathFilters++;
+                self::assertTrue($filter['stringFilter']['caseSensitive']);
+                $matched = preg_match('~' . $filter['stringFilter']['value'] . '~D', $path) === 1;
+                $matches = $matches && ($negated ? ! $matched : $matched);
+            }
+            self::assertGreaterThan(0, $pathFilters);
+            self::assertSame($expected, $matches, $path);
         }
     }
 
