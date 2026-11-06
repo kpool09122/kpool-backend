@@ -6034,7 +6034,7 @@ components:
           description: Language of the wiki.
         slug:
           type: string
-          description: Unique slug for the wiki.
+          description: Slug must be unique within the resource type among published wikis, regardless of language. Duplicates return 409 before AI generation.
         name:
           type: string
           description: Display name of the wiki.
@@ -6212,7 +6212,7 @@ components:
           description: Language of the wiki.
         slug:
           type: string
-          description: Unique slug for the wiki.
+          description: Slug must be unique within the resource type among published wikis, regardless of language. When branching from a published wiki, its translation set is excluded.
         basic:
           description: Basic wiki content payload.
         imageIdentifier:

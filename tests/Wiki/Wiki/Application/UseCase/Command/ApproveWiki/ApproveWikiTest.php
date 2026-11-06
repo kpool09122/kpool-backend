@@ -35,6 +35,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -135,10 +136,10 @@ class ApproveWikiTest extends TestCase
             ->andReturn($dummyApproveWiki->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')
             ->once()
-            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
-            ->andReturn(false);
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->resourceType)
+            ->andReturn([]);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
         $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')
@@ -439,11 +440,14 @@ class ApproveWikiTest extends TestCase
             ->with($dummyApproveWiki->wikiIdentifier)
             ->andReturn($dummyApproveWiki->draftWiki);
 
+        $conflictingWiki = Mockery::mock(Wiki::class);
+        $conflictingWiki->shouldReceive('translationSetIdentifier')->once()
+            ->andReturn(new TranslationSetIdentifier(StrTestHelper::generateUuid()));
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')
             ->once()
-            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->resourceType)
+            ->andReturn([$conflictingWiki]);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
@@ -507,10 +511,10 @@ class ApproveWikiTest extends TestCase
             ->andReturn($dummyApproveWiki->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')
             ->once()
-            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
-            ->andReturn(false);
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->resourceType)
+            ->andReturn([]);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
         $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')
@@ -580,10 +584,10 @@ class ApproveWikiTest extends TestCase
         $draftWikiRepository->shouldNotReceive('save');
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')
             ->once()
-            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
-            ->andReturn(false);
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->resourceType)
+            ->andReturn([]);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
         $wikiService->shouldReceive('existsConflictingApprovedDraftWiki')

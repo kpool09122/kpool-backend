@@ -44,6 +44,27 @@ use Tests\TestCase;
 
 class WikiRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testFindBySlugAndResourceTypeReturnsAllLanguages(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $wikiIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        foreach (['ko', 'ja'] as $index => $language) {
+            CreateWiki::create($wikiIds[$index], 'group', [
+                'slug' => 'gr-duplicate',
+                'language' => $language,
+                'translation_set_identifier' => $translationSetIdentifier,
+            ]);
+        }
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
+        $slug = new Slug('gr-duplicate');
+        $wikis = $repository->findBySlugAndResourceType($slug, ResourceType::GROUP);
+
+        $this->assertEqualsCanonicalizing($wikiIds, array_map(static fn (Wiki $wiki) => (string) $wiki->wikiIdentifier(), $wikis));
+        $this->assertSame([], $repository->findBySlugAndResourceType($slug, ResourceType::TALENT));
+        $this->assertSame([], $repository->findBySlugAndResourceType(new Slug('gr-unused'), ResourceType::GROUP));
+    }
+
     /**
      * 正常系：指定したIDのWiki情報が存在しない場合、nullが返却されること.
      *
@@ -539,86 +560,6 @@ class WikiRepositoryTest extends TestCase
         $found = $repository->findBySlugAndLanguage(new Slug('gr-not-exist'), Language::KOREAN);
 
         $this->assertNull($found);
-    }
-
-    /**
-     * 正常系：existsBySlugでSlugが存在する場合、trueが返却されること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testExistsBySlugWhenExist(): void
-    {
-        $wikiId = StrTestHelper::generateUuid();
-
-        CreateWiki::create($wikiId, 'group', [
-            'slug' => 'gr-exists-slug',
-        ]);
-
-        $repository = $this->app()->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlug(new Slug('gr-exists-slug'));
-
-        $this->assertTrue($exists);
-    }
-
-    /**
-     * 正常系：existsBySlugでSlugが存在しない場合、falseが返却されること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testExistsBySlugWhenNotExist(): void
-    {
-        $repository = $this->app()->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlug(new Slug('gr-not-exist-slug'));
-
-        $this->assertFalse($exists);
-    }
-
-    /**
-     * 正常系：existsBySlugExcludingTranslationSetIdentifierで同じ翻訳セットのSlugは除外されること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testExistsBySlugExcludingTranslationSetIdentifierIgnoresSameTranslationSet(): void
-    {
-        $translationSetId = StrTestHelper::generateUuid();
-
-        CreateWiki::create(StrTestHelper::generateUuid(), 'group', [
-            'slug' => 'gr-same-translation-set-slug',
-            'translation_set_identifier' => $translationSetId,
-        ]);
-
-        $repository = $this->app()->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
-            new Slug('gr-same-translation-set-slug'),
-            new TranslationSetIdentifier($translationSetId),
-        );
-
-        $this->assertFalse($exists);
-    }
-
-    /**
-     * 正常系：existsBySlugExcludingTranslationSetIdentifierで別翻訳セットのSlugは存在扱いになること.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testExistsBySlugExcludingTranslationSetIdentifierDetectsOtherTranslationSet(): void
-    {
-        CreateWiki::create(StrTestHelper::generateUuid(), 'group', [
-            'slug' => 'gr-other-translation-set-slug',
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-        ]);
-
-        $repository = $this->app()->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
-            new Slug('gr-other-translation-set-slug'),
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-        );
-
-        $this->assertTrue($exists);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki;
 
 use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -14,6 +15,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -71,6 +73,11 @@ readonly class AutoCreateWikiAction
             try {
                 $this->autoCreateWiki->process($input, $output);
                 DB::commit();
+            } catch (DuplicateSlugException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new ConflictHttpException(detail: error_message('duplicate_slug', $language), previous: $e);
             } catch (DisallowedException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);
@@ -87,7 +94,7 @@ readonly class AutoCreateWikiAction
 
                 throw $e;
             }
-        } catch (ForbiddenHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|ForbiddenHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());
