@@ -36,7 +36,9 @@ use Throwable;
 
 readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInterface
 {
-    private const string PUBLIC_WIKI_PATH_REGEX = '^/wiki/.*$';
+    private const string PUBLIC_WIKI_PATH_REGEX = '^/((ja|en|ko)/wiki|wiki/(ja|en|ko))/[^/]+/?$';
+
+    private const string WIKI_CREATE_PATH_REGEX = '^/wiki/(ja|en|ko)/edit/?$';
 
     public function __construct(
         private GoogleAnalyticsClientInterface $googleAnalyticsClient,
@@ -127,6 +129,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
     {
         $filters = [FilterExpression::exact('hostName', $host),
             FilterExpression::fullRegexp('pagePath', self::PUBLIC_WIKI_PATH_REGEX),
+            FilterExpression::negate(FilterExpression::fullRegexp('pagePath', self::WIKI_CREATE_PATH_REGEX)),
             FilterExpression::negate(FilterExpression::inList('customEvent:wiki_id', ['', '(not set)']))];
         if ($pageViewsOnly) {
             $filters[] = FilterExpression::exact('eventName', 'page_view');
