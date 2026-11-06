@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Analyze\Wiki\Application\UseCase\Query\GetWikiDailySummaryReport;
 
-use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
 
 readonly class GetWikiDailySummaryReportInput implements GetWikiDailySummaryReportInputPort
 {
     public function __construct(
-        private MetricDefinition $definition,
         private ReportingPeriod $period,
         private ?string $wikiIdentifier = null,
         private ?string $translationSetIdentifier = null,
@@ -18,11 +16,6 @@ readonly class GetWikiDailySummaryReportInput implements GetWikiDailySummaryRepo
         private ?string $country = null,
     ) {
 
-    }
-
-    public function definition(): MetricDefinition
-    {
-        return $this->definition;
     }
 
     public function period(): ReportingPeriod

@@ -15,9 +15,9 @@ use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 
 class AnalyzeAppMetrics
 {
-    public static function definition(Metric $metric = Metric::APPLICATION_USERS, string $source = 'test'): MetricDefinition
+    public static function definition(Metric $metric = Metric::APPLICATION_USERS, ?string $source = null): MetricDefinition
     {
-        return new MetricDefinition($source, $metric, 'application_day', '1');
+        return new MetricDefinition($source ?? ($metric === Metric::REGISTERED_USERS ? 'identity_history' : 'ga4'), $metric, 'application_day', '1');
     }
 
     /** @return list<MetricDefinition> */

@@ -7,7 +7,6 @@ namespace Tests\Analyze\Wiki\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Analyze\Wiki\Application\Exception\WikiOperationHistoryUnavailableException;
 use Source\Analyze\Wiki\Infrastructure\Service\DailyWikiOperationsQueryService;
 use Tests\Helper\AnalyzeSourceRecords;
 use Tests\Helper\StrTestHelper;
@@ -42,7 +41,7 @@ class DailyWikiOperationsQueryServiceTest extends TestCase
         self::assertSame('1', $counts[0]->submissions());
     }
 
-    public function testMultipleDraftsAndRepeatedSubmissionsUseThreeQueries(): void
+    public function testMultipleDraftsAndRepeatedSubmissionsUseThreeBoundedQueries(): void
     {
         $expectedWikiIdentifiers = [];
         for ($index = 0; $index < 5; ++$index) {
@@ -64,7 +63,7 @@ class DailyWikiOperationsQueryServiceTest extends TestCase
             DB::flushQueryLog();
         }
         self::assertCount(5, $counts);
-        self::assertEqualsCanonicalizing($expectedWikiIdentifiers, array_map(static fn ($count): string => $count->wikiIdentifier(), $counts));
+        self::assertEqualsCanonicalizing($expectedWikiIdentifiers, array_map(static fn ($count): ?string => $count->wikiIdentifier(), $counts));
         foreach ($counts as $count) {
             self::assertSame('2', $count->submissions());
             self::assertSame('0', $count->publications());
@@ -74,7 +73,8 @@ class DailyWikiOperationsQueryServiceTest extends TestCase
     public function testUnresolvedDraftDoesNotDisappearAsZero(): void
     {
         AnalyzeSourceRecords::history('draft_status_change', '2020-01-01', wiki: null, draft: StrTestHelper::generateUuid());
-        $this->expectException(WikiOperationHistoryUnavailableException::class);
-        (new DailyWikiOperationsQueryService())->find(new DateTimeImmutable('2020-01-01T00:00:00Z'), new DateTimeImmutable('2020-01-02T00:00:00Z'));
+        $counts = (new DailyWikiOperationsQueryService())->find(new DateTimeImmutable('2020-01-01T00:00:00Z'), new DateTimeImmutable('2020-01-02T00:00:00Z'));
+        self::assertSame('1', $counts[0]->submissions());
+        self::assertNull($counts[0]->wikiIdentifier());
     }
 }

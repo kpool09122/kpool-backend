@@ -9,7 +9,6 @@ use Application\Models\Wiki\WikiHistory;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Source\Analyze\Wiki\Application\Exception\WikiOperationHistoryUnavailableException;
 use Source\Analyze\Wiki\Application\Service\DailyWikiOperationCount;
 use Source\Analyze\Wiki\Application\Service\DailyWikiOperationsQueryServiceInterface;
 
@@ -17,7 +16,6 @@ readonly class DailyWikiOperationsQueryService implements DailyWikiOperationsQue
 {
     /**
      * @return list<DailyWikiOperationCount>
-     * @throws WikiOperationHistoryUnavailableException
      */
     public function find(DateTimeImmutable $start, DateTimeImmutable $endExclusive): array
     {
@@ -31,7 +29,7 @@ readonly class DailyWikiOperationsQueryService implements DailyWikiOperationsQue
         $unresolvedDraftIdentifiers = $draftIdentifiers->diff($publishedWikiIdentifiers->keys());
         /** @var Collection<string, string> $publicationWikiIdentifiers */
         $publicationWikiIdentifiers = $unresolvedDraftIdentifiers->isEmpty() ? collect() : WikiHistory::query()->whereIn('draft_wiki_id', $unresolvedDraftIdentifiers)
-            ->where('action_type', 'publish')->whereNotNull('wiki_id')->orderBy('recorded_at')
+            ->where('action_type', 'publish')->whereNotNull('wiki_id')->orderBy('recorded_at')->orderBy('id')
             ->get(['draft_wiki_id', 'wiki_id'])->unique('draft_wiki_id')->pluck('wiki_id', 'draft_wiki_id');
         /** @var array<string, DailyWikiOperationCount> $counts */
         $counts = [];
@@ -40,15 +38,10 @@ readonly class DailyWikiOperationsQueryService implements DailyWikiOperationsQue
             if ($wikiIdentifier === null && $history->draft_wiki_id !== null) {
                 $wikiIdentifier = $publishedWikiIdentifiers->get($history->draft_wiki_id) ?? $publicationWikiIdentifiers->get($history->draft_wiki_id);
             }
-            if ($wikiIdentifier === null || $history->translation_set_identifier === null || $history->language === null) {
-                throw new WikiOperationHistoryUnavailableException();
-            }
             $country = $history->visitor_country ?? '';
-            $key = $wikiIdentifier . "\0" . $history->language . "\0" . $country;
+            $key = implode("\0", [$wikiIdentifier ?? $history->draft_wiki_id ?? '', $history->translation_set_identifier ?? '', $history->language ?? '', $country]);
             if (! isset($counts[$key])) {
                 $counts[$key] = new DailyWikiOperationCount($wikiIdentifier, $history->translation_set_identifier, $history->language, $country);
-            } elseif ($counts[$key]->translationSetIdentifier() !== $history->translation_set_identifier) {
-                throw new WikiOperationHistoryUnavailableException();
             }
             if ($history->action_type === 'publish') {
                 $counts[$key]->recordPublication();

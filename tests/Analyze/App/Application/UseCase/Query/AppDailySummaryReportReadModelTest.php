@@ -6,17 +6,20 @@ namespace Tests\Analyze\App\Application\UseCase\Query;
 
 use PHPUnit\Framework\TestCase;
 use Source\Analyze\App\Application\UseCase\Query\AppDailySummaryReportReadModel;
+use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Tests\Helper\AnalyzeAppMetrics;
 
 class AppDailySummaryReportReadModelTest extends TestCase
 {
-    public function testEmptyReportDoesNotInventZero(): void
+    public function testReturnsAllNamedMetricResults(): void
     {
-        $definition = AnalyzeAppMetrics::definition();
-        $report = new AppDailySummaryReportReadModel($definition, null, [], null);
-        self::assertSame($definition, $report->definition());
-        self::assertNull($report->revision());
-        self::assertSame([], $report->days());
-        self::assertNull($report->total());
+        $definitions = AnalyzeAppMetrics::definitions();
+        $metrics = [];
+        foreach ($definitions as $index => $definition) {
+            $metrics[] = new MetricReportReadModel($definition, null, [], (string) $index, null);
+        }
+        $report = new AppDailySummaryReportReadModel(...$metrics);
+        self::assertSame($metrics[0], $report->applicationUsers());
+        self::assertSame($metrics[1], $report->registeredUsers());
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Analyze\App\Infrastructure\Query;
 
 use Application\Models\Analyze\App\AppDailySummary as SummaryModel;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Analyze\App\Application\UseCase\Query\GetAppDailySummaryReport\GetAppDailySummaryReportInput;
@@ -13,7 +14,6 @@ use Source\Analyze\App\Domain\ValueObject\RegisteredUserSnapshot;
 use Source\Analyze\App\Infrastructure\Factory\AppDailySummaryFactory;
 use Source\Analyze\App\Infrastructure\Query\GetAppDailySummaryReport;
 use Source\Analyze\App\Infrastructure\Repository\AppDailySummaryRepository;
-use Source\Analyze\Shared\Domain\Exception\MetricDefinitionMismatchException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
@@ -32,11 +32,20 @@ class GetAppDailySummaryReportTest extends TestCase
         $this->save($first, ['application_users' => '5', 'registered_users' => '100']);
         $this->save($first->next(), ['application_users' => '7', 'registered_users' => '110']);
         $query = new GetAppDailySummaryReport();
-        $definitions = AnalyzeAppMetrics::definitions();
         $period = new ReportingPeriod($first, $first->next(), AnalyzeAppMetrics::now());
-        self::assertSame('12.000000000', $query->process(new GetAppDailySummaryReportInput($definitions[0], $period))->total());
-        self::assertSame('110.000000000', $query->process(new GetAppDailySummaryReportInput($definitions[1], $period))->total());
-        self::assertNull($query->process(new GetAppDailySummaryReportInput($definitions[1], new ReportingPeriod($first, $first->next()->next(), AnalyzeAppMetrics::now())))->total());
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $report = $query->process(new GetAppDailySummaryReportInput($period));
+            self::assertCount(1, DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+        self::assertSame('12.000000000', $report->applicationUsers()->total());
+        self::assertSame('110.000000000', $report->registeredUsers()->total());
+        self::assertNull($query->process(new GetAppDailySummaryReportInput(new ReportingPeriod($first, $first->next()->next(), AnalyzeAppMetrics::now())))->registeredUsers()->total());
     }
 
     public function testUnknownAndMeasuredZeroRemainDistinct(): void
@@ -44,7 +53,7 @@ class GetAppDailySummaryReportTest extends TestCase
         $first = new UtcDate('2020-01-01');
         $definition = AnalyzeAppMetrics::definitions()[0];
         $this->save($first, ['application_users' => '0']);
-        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput($definition, new ReportingPeriod($first, $first->next(), AnalyzeAppMetrics::now())));
+        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(new ReportingPeriod($first, $first->next(), AnalyzeAppMetrics::now())))->applicationUsers();
         self::assertSame(['0.000000000', null], array_column($report->days(), 'value'));
         self::assertSame(['measured', 'missing'], array_column($report->days(), 'availability'));
     }
@@ -54,47 +63,49 @@ class GetAppDailySummaryReportTest extends TestCase
         $day = new UtcDate('2020-01-01');
         $factory = new AppDailySummaryFactory(new UuidGenerator());
         $appDailySummaryRepository = new AppDailySummaryRepository();
-        foreach ([['a', '1', '2'], ['a', '2', '3'], ['b', '1', '7']] as $index => [$source, $version, $count]) {
+        foreach ([['ga4', '1', '2'], ['ga4', '2', '3'], ['other', '1', '7']] as $index => [$source, $version, $count]) {
             $targetDay = new UtcDate('2020-01-0' . ($index + 1));
             $definition = new MetricDefinition($source, Metric::APPLICATION_USERS, 'application_day', $version);
             $values = AnalyzeAppMetrics::analysisValues($targetDay);
             $values[0] = new ApplicationUserCount($count, new MetricProvenance($definition, $targetDay, AnalyzeAppMetrics::now()));
             $appDailySummaryRepository->save($factory->create($values[0], $values[1]));
         }
-        foreach ([['a', '1', '2'], ['a', '2', '3'], ['b', '1', '7']] as [$source, $version, $count]) {
-            $definition = new MetricDefinition($source, Metric::APPLICATION_USERS, 'application_day', $version);
-            $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput($definition, new ReportingPeriod($day, new UtcDate('2020-01-03'), AnalyzeAppMetrics::now())));
-            self::assertSame($count . '.000000000', $report->total());
-        }
+        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(new ReportingPeriod($day, new UtcDate('2020-01-03'), AnalyzeAppMetrics::now())))->applicationUsers();
+        self::assertSame('2.000000000', $report->total());
     }
 
     public function testReportRevisionTracksItsOwnSummaryRows(): void
     {
         $day = new UtcDate('2020-01-01');
         $this->save($day);
-        $input = new GetAppDailySummaryReportInput(AnalyzeAppMetrics::definitions()[0], new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
+        $input = new GetAppDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
         $query = new GetAppDailySummaryReport();
-        $revision = $query->process($input)->revision();
+        $revision = $query->process($input)->applicationUsers()->revision();
         self::assertNotNull($revision);
-        self::assertSame($revision, $query->process($input)->revision());
+        self::assertSame($revision, $query->process($input)->applicationUsers()->revision());
         $this->save($day->next());
-        self::assertSame($revision, $query->process($input)->revision());
+        self::assertSame($revision, $query->process($input)->applicationUsers()->revision());
         $repository = new AppDailySummaryRepository();
         $summary = $repository->findByDay($day);
         self::assertNotNull($summary);
         $values = AnalyzeAppMetrics::analysisValues($day, ['application_users' => '9']);
         $summary->replaceAnalysis(...$values);
         $repository->save($summary);
-        self::assertNotSame($revision, $query->process($input)->revision());
-        self::assertSame('9.000000000', $query->process($input)->total());
+        self::assertNotSame($revision, $query->process($input)->applicationUsers()->revision());
+        self::assertSame('9.000000000', $query->process($input)->applicationUsers()->total());
     }
 
     #[DataProvider('differentDefinitions')]
-    public function testDifferentDefinitionValuesAreMissing(MetricDefinition $definition): void
+    public function testDifferentStoredDefinitionValuesAreMissing(MetricDefinition $definition): void
     {
         $day = new UtcDate('2020-01-01');
         $this->save($day);
-        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput($definition, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now())));
+        $row = SummaryModel::query()->firstOrFail();
+        $measurements = $row->measurements;
+        $measurements[$definition->metric->value]['source'] = $definition->source;
+        $measurements[$definition->metric->value]['version'] = $definition->version;
+        $row->forceFill(['measurements' => $measurements])->save();
+        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeAppMetrics::now())))->applicationUsers();
         self::assertNull($report->total());
         self::assertNull($report->revision());
         self::assertSame('missing', $report->days()[0]['availability']);
@@ -105,7 +116,7 @@ class GetAppDailySummaryReportTest extends TestCase
     {
         return [
             'source' => [new MetricDefinition('other', Metric::APPLICATION_USERS, 'application_day', '1')],
-            'version' => [new MetricDefinition('test', Metric::APPLICATION_USERS, 'application_day', '2')],
+            'version' => [new MetricDefinition('ga4', Metric::APPLICATION_USERS, 'application_day', '2')],
         ];
     }
 
@@ -126,7 +137,7 @@ class GetAppDailySummaryReportTest extends TestCase
         $values[0] = new ApplicationUserCount('5', new MetricProvenance($definition, $day, $now, ['sampled']));
         $summary = (new AppDailySummaryFactory(new UuidGenerator()))->create($values[0], $values[1]);
         (new AppDailySummaryRepository())->save($summary);
-        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput($definition, new ReportingPeriod($day, $day, $now)));
+        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(new ReportingPeriod($day, $day, $now)))->applicationUsers();
         self::assertSame('5.000000000', $report->total());
         self::assertSame('5.000000000', $report->days()[0]['value']);
         self::assertSame('measured', $report->days()[0]['availability']);
@@ -148,8 +159,8 @@ class GetAppDailySummaryReportTest extends TestCase
         self::assertNotNull($summary);
         $summary->replaceAnalysis($values[0], $values[1]);
         $appDailySummaryRepository->save($summary);
-        $input = new GetAppDailySummaryReportInput($definition, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
-        self::assertSame('9.000000000', (new GetAppDailySummaryReport())->process($input)->total());
+        $input = new GetAppDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
+        self::assertSame('9.000000000', (new GetAppDailySummaryReport())->process($input)->applicationUsers()->total());
     }
 
     public function testReadModelDoesNotRequireEntityProvenanceReconstruction(): void
@@ -160,18 +171,9 @@ class GetAppDailySummaryReportTest extends TestCase
         $measurements = $row->measurements;
         $measurements[Metric::APPLICATION_USERS->value]['updated_at'] = 'not-a-domain-timestamp';
         $row->forceFill(['measurements' => $measurements])->save();
-        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(AnalyzeAppMetrics::definitions()[0], new ReportingPeriod($day, $day, AnalyzeAppMetrics::now())));
+        $report = (new GetAppDailySummaryReport())->process(new GetAppDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeAppMetrics::now())))->applicationUsers();
         self::assertSame('5.000000000', $report->total());
         self::assertSame('measured', $report->days()[0]['availability']);
         self::assertNotNull($report->days()[0]['updatedAt']);
-    }
-
-    public function testRejectsMetricsOutsideItsSubdomain(): void
-    {
-        $definition = new MetricDefinition('ga4', Metric::VIEWS, 'wiki_language_country', '1');
-        $day = new UtcDate('2020-01-01');
-        $input = new GetAppDailySummaryReportInput($definition, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
-        $this->expectException(MetricDefinitionMismatchException::class);
-        (new GetAppDailySummaryReport())->process($input);
     }
 }
