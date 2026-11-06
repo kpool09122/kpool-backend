@@ -80,6 +80,28 @@ class RuntimeContracts(unittest.TestCase):
             {'name': 'scheduler', 'command': ['php', 'artisan', 'video-watch-requests:send-digest']}])
         self.assertEqual(schedule['Target']['DeadLetterConfig']['Arn'], {'Fn::GetAtt': ['SchedulerDlq', 'Arn']})
 
+    def test_analyze_daily_schedules_run_at_four_utc_with_existing_task_and_failure_handling(self):
+        for domain in ('App', 'Wiki'):
+            with self.subTest(domain=domain):
+                prefix = 'Analyze' + domain + 'DailySummary'
+                schedule = self.runtime[prefix + 'Schedule']['Properties']
+                self.assertEqual(schedule['ScheduleExpression'], 'cron(0 4 * * ? *)')
+                self.assertEqual(schedule['ScheduleExpressionTimezone'], 'UTC')
+                self.assertEqual(schedule['State'], {'Ref': prefix + 'SchedulerState'})
+                self.assertEqual(self.template['Parameters'][prefix + 'SchedulerState']['Default'], 'DISABLED')
+                self.assertEqual(schedule['FlexibleTimeWindow'], {'Mode': 'OFF'})
+                self.assertEqual(schedule['Target']['EcsParameters'], self.runtime['Schedule']['Properties']['Target']['EcsParameters'])
+                self.assertEqual(schedule['Target']['RoleArn'], {'Fn::GetAtt': ['SchedulerRole', 'Arn']})
+                self.assertEqual(schedule['Target']['DeadLetterConfig']['Arn'], {'Fn::GetAtt': ['SchedulerDlq', 'Arn']})
+                self.assertEqual(schedule['Target']['RetryPolicy']['MaximumRetryAttempts'], 0)
+                self.assertEqual(json.loads(schedule['Target']['Input'])['containerOverrides'], [
+                    {'name': 'scheduler', 'command': ['php', 'artisan', 'analyze:import-' + domain.lower() + '-daily-summary']}])
+                self.assertEqual(self.template['Outputs'][prefix + 'SchedulerArn']['Value'], {'Fn::Sub':
+                    'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/${' + prefix + 'Schedule}'})
+                base = {'CertificateArn': 'certificate', prefix + 'SchedulerState': 'ENABLED'}
+                self.assertFalse(rules_accept(self.template, base))
+                self.assertTrue(rules_accept(self.template, {**base, 'SchedulerTaskDefinitionArn': 'scheduler-release:1'}))
+
     def test_target_roles_and_rule_weights_follow_parameters(self):
         # Reconciliation reflects each live value independently, including a test
         # rule that still points to the current production target after a release.

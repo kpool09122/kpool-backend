@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Infrastructure\Repository;
 
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
@@ -23,7 +24,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class SectionContentMapper
 {

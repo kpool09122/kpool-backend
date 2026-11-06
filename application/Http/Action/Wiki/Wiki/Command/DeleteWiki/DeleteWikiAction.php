@@ -13,6 +13,7 @@ use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -21,7 +22,6 @@ use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiOutput;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

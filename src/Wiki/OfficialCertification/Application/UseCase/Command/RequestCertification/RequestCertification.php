@@ -6,6 +6,7 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestC
 
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
@@ -22,7 +23,6 @@ use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class RequestCertification implements RequestCertificationInterface
 {

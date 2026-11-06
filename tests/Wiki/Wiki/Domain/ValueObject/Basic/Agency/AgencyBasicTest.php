@@ -7,13 +7,13 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Agency;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyStatus;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AgencyBasicTest extends TestCase

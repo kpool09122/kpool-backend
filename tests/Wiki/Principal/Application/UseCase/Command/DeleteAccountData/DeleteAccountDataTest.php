@@ -6,11 +6,11 @@ namespace Tests\Wiki\Principal\Application\UseCase\Command\DeleteAccountData;
 
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\DeleteAccountData\DeleteAccountDataInput;
 use Source\Wiki\Principal\Application\UseCase\Command\DeleteAccountData\DeleteAccountDataInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeleteAccountData\DeleteAccountDataOutput;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;

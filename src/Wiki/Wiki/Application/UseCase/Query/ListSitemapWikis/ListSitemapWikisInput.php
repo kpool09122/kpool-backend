@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Query\ListSitemapWikis;
 
 use InvalidArgumentException;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 
 readonly class ListSitemapWikisInput implements ListSitemapWikisInputPort
 {

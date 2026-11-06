@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface CollectVideoLinksOutputPort
 {

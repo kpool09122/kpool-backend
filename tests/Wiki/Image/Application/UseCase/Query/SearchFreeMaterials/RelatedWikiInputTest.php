@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials\RelatedWikiInput;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class RelatedWikiInputTest extends TestCase

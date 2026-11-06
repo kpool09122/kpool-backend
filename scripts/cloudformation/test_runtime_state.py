@@ -55,6 +55,16 @@ class RuntimeStateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'watch digest scheduler state'):
             runtime_state.resolve(*fixture(), watch_digest_schedule={'State': 'UNKNOWN'})
 
+    def test_analyze_activation_is_preserved_independently_and_new_schedules_start_disabled(self):
+        for domain, argument in (('App', 'app_daily_summary_schedule'), ('Wiki', 'wiki_daily_summary_schedule')):
+            key = 'Analyze' + domain + 'DailySummarySchedulerState'
+            self.assertEqual(runtime_state.resolve(*fixture())[key], 'DISABLED')
+            for state in ('ENABLED', 'DISABLED'):
+                result = runtime_state.resolve(*fixture(), **{argument: {'State': state}})
+                self.assertEqual(result[key], state)
+            with self.assertRaisesRegex(ValueError, 'Analyze daily summary scheduler state'):
+                runtime_state.resolve(*fixture(), **{argument: {'State': 'UNKNOWN'}})
+
     def test_unknown_video_state_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'video collection scheduler state'):
             runtime_state.resolve(*fixture(), {'State': 'UNKNOWN'})

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Wiki\Domain\ValueObject;
+namespace Tests\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class WikiIdentifierTest extends TestCase

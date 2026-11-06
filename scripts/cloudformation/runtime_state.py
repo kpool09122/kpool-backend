@@ -1,7 +1,8 @@
 """Translate stable ECS/ALB/Scheduler state into CloudFormation parameters."""
 
 
-def resolve(outputs, services, rules, schedule, video_collection_schedule=None, watch_digest_schedule=None):
+def resolve(outputs, services, rules, schedule, video_collection_schedule=None, watch_digest_schedule=None,
+            app_daily_summary_schedule=None, wiki_daily_summary_schedule=None):
     if services.get('failures'):
         raise ValueError('ECS reported service lookup failures')
     by_name = {service['serviceName']: service for service in services['services']}
@@ -65,4 +66,8 @@ def resolve(outputs, services, rules, schedule, video_collection_schedule=None, 
     if watch_digest_schedule is not None and watch_digest_schedule['State'] not in {'ENABLED', 'DISABLED'}:
         raise ValueError('Unknown watch digest scheduler state')
     values['VideoWatchDigestSchedulerState'] = watch_digest_schedule['State'] if watch_digest_schedule else 'DISABLED'
+    for domain, daily_schedule in (('App', app_daily_summary_schedule), ('Wiki', wiki_daily_summary_schedule)):
+        if daily_schedule is not None and daily_schedule['State'] not in {'ENABLED', 'DISABLED'}:
+            raise ValueError('Unknown Analyze daily summary scheduler state')
+        values['Analyze' + domain + 'DailySummarySchedulerState'] = daily_schedule['State'] if daily_schedule else 'DISABLED'
     return values

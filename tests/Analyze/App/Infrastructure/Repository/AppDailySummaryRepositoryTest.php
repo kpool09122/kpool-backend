@@ -1,0 +1,108 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Analyze\App\Infrastructure\Repository;
+
+use Application\Models\Analyze\App\AppDailySummary as SummaryModel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Group;
+use RuntimeException;
+use Source\Analyze\App\Domain\ValueObject\ApplicationUserCount;
+use Source\Analyze\App\Infrastructure\Factory\AppDailySummaryFactory;
+use Source\Analyze\App\Infrastructure\Repository\AppDailySummaryRepository;
+use Source\Analyze\Shared\Domain\ValueObject\Metric;
+use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
+use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
+use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
+use Tests\Helper\AnalyzeAppMetrics;
+use Tests\TestCase;
+
+#[Group('useDb')]
+class AppDailySummaryRepositoryTest extends TestCase
+{
+    public function testRoundTripPreservesIdentityAndEveryAnalyticalValue(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $values = AnalyzeAppMetrics::analysisValues($day);
+        $factory = new AppDailySummaryFactory(new UuidGenerator());
+        $summary = $factory->create($values[0], $values[1]);
+        $appDailySummaryRepository = new AppDailySummaryRepository();
+        self::assertNull($appDailySummaryRepository->findByDay($day));
+        $appDailySummaryRepository->save($summary);
+        $appDailySummaryRepository->save($summary);
+        $restored = $appDailySummaryRepository->findByDay($day);
+        self::assertNotNull($restored);
+        self::assertSame((string) $summary->identifier(), (string) $restored->identifier());
+        self::assertEquals($values[0], $restored->applicationUsers());
+        self::assertEquals($values[1], $restored->registeredUsers());
+        $updated = AnalyzeAppMetrics::analysisValues($day, ['application_users' => '9']);
+        $restored->replaceAnalysis(...$updated);
+        $appDailySummaryRepository->save($restored);
+        self::assertSame(1, SummaryModel::query()->count());
+        $again = $appDailySummaryRepository->findByDay($day);
+        self::assertNotNull($again);
+        self::assertSame((string) $summary->identifier(), (string) $again->identifier());
+        self::assertSame('9', $again->applicationUsers()->count());
+    }
+
+    public function testDefinitionMetadataLivesInTheSameRowAndCanChangeWithoutChangingIdentity(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $values = AnalyzeAppMetrics::analysisValues($day);
+        $factory = new AppDailySummaryFactory(new UuidGenerator());
+        $summary = $factory->create($values[0], $values[1]);
+        $repository = new AppDailySummaryRepository();
+        $repository->save($summary);
+        $definition = new MetricDefinition('new-source', Metric::APPLICATION_USERS, 'application_day', '2');
+        $updated = new ApplicationUserCount('9', new MetricProvenance($definition, $day, AnalyzeAppMetrics::now(), ['verified']));
+        $summary->replaceAnalysis($updated, $values[1]);
+        $repository->save($summary);
+        $restored = $repository->findByDay($day);
+        self::assertNotNull($restored);
+        self::assertSame((string) $summary->identifier(), (string) $restored->identifier());
+        self::assertEquals($updated, $restored->applicationUsers());
+        self::assertSame(1, SummaryModel::query()->count());
+        $metadata = SummaryModel::query()->firstOrFail()->measurements[Metric::APPLICATION_USERS->value];
+        self::assertSame('new-source', $metadata['source']);
+        self::assertSame('2', $metadata['version']);
+        self::assertSame(['verified'], $metadata['quality']);
+        self::assertFalse(Schema::hasTable('analyze_app_metric_definitions'));
+    }
+
+    public function testFailureSavingASecondEntityRollsBackTheFirst(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $values = AnalyzeAppMetrics::analysisValues($day);
+        $factory = new AppDailySummaryFactory(new UuidGenerator());
+        $first = $factory->create($values[0], $values[1]);
+        $appDailySummaryRepository = new AppDailySummaryRepository();
+        $appDailySummaryRepository->save($first);
+        $first->replaceAnalysis(...AnalyzeAppMetrics::analysisValues($day, ['application_users' => '9']));
+        $values = AnalyzeAppMetrics::analysisValues($day->next());
+        $second = $factory->create($values[0], $values[1]);
+        $writes = 0;
+        SummaryModel::saving(static function () use (&$writes): void {
+            if (++$writes === 2) {
+                throw new RuntimeException('Injected failure');
+            }
+        });
+
+        try {
+            DB::transaction(function () use ($appDailySummaryRepository, $first, $second): void {
+                $appDailySummaryRepository->save($first);
+                $appDailySummaryRepository->save($second);
+            });
+            self::fail('Expected failure');
+        } catch (RuntimeException) {
+            $restored = $appDailySummaryRepository->findByDay($day);
+            self::assertNotNull($restored);
+            self::assertSame('5', $restored->applicationUsers()->count());
+            self::assertSame(1, SummaryModel::query()->count());
+        } finally {
+            SummaryModel::flushEventListeners();
+        }
+    }
+}

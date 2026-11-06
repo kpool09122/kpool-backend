@@ -6,6 +6,10 @@ namespace Application\Providers;
 
 use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\GeminiClient\GeminiClient;
+use Application\Http\Client\GoogleAnalyticsClient\Exceptions\GoogleAnalyticsRequestFailedException;
+use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClient;
+use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClientInterface;
+use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsCredentials;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateCredentials;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
@@ -17,6 +21,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Psr\Http\Client\ClientInterface;
 use Psr\Log\LoggerInterface;
+use Source\Analyze\Shared\Infrastructure\Client\MockGoogleAnalyticsClient;
 
 class ClientServiceProvider extends ServiceProvider
 {
@@ -31,6 +36,24 @@ class ClientServiceProvider extends ServiceProvider
                 $httpFactory,
                 $httpFactory,
                 $httpFactory,
+            );
+        });
+
+        $this->app->singleton(GoogleAnalyticsClientInterface::class, function (Application $app) {
+            if ($app->environment('local', 'testing')) {
+                return new MockGoogleAnalyticsClient();
+            }
+            $property = config('analyze.ga4_property_id');
+            $credentials = config('google.credentials');
+            if (! is_string($property)) {
+                throw new GoogleAnalyticsRequestFailedException();
+            }
+
+            return new GoogleAnalyticsClient(
+                $property,
+                GoogleAnalyticsCredentials::create(is_string($credentials) ? $credentials : ''),
+                new GuzzleClient(['connect_timeout' => 5, 'timeout' => 30, 'http_errors' => false]),
+                $app->make(PsrFactories::class)
             );
         });
 

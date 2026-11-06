@@ -6,6 +6,7 @@ namespace Source\Wiki\Grading\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Grading\Domain\Entity\ContributionPointHistory;
 use Source\Wiki\Grading\Domain\Facotory\ContributionPointHistoryFactoryInterface;
 use Source\Wiki\Grading\Domain\ValueObject\ContributionPointHistoryIdentifier;
@@ -14,7 +15,6 @@ use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ContributionPointHistoryFactory implements ContributionPointHistoryFactoryInterface
 {

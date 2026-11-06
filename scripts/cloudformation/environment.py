@@ -9,6 +9,7 @@ RUNTIME_STATE = frozenset({
     'ApiTaskDefinitionArn', 'WorkerTaskDefinitionArn', 'SchedulerTaskDefinitionArn',
     'ApiDesiredCount', 'WorkerDesiredCount', 'SchedulerState', 'PrimaryTargetGroup',
     'ProductionTargetGroup', 'TestTargetGroup',
+    'AnalyzeAppDailySummarySchedulerState', 'AnalyzeWikiDailySummarySchedulerState',
     'VideoCollectionSchedulerState', 'VideoCollectionTaskDefinitionArn', 'VideoWatchDigestSchedulerState',
 })
 

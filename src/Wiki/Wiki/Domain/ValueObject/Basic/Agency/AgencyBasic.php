@@ -7,10 +7,10 @@ namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency;
 use DateTimeImmutable;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class AgencyBasic implements BasicInterface
 {

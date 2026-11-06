@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\DTO;
 
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class RelatedWikiContext
 {

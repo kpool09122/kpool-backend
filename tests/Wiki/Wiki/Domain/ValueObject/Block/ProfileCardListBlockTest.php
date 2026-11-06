@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Domain\ValueObject\Block;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ProfileCardListBlockTest extends TestCase

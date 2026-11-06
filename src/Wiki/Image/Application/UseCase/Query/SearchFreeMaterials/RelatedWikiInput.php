@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials;
 
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class RelatedWikiInput
 {

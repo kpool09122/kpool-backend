@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class CollectVideoLinksOutputTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Wiki\Domain\ValueObject;
+namespace Source\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;

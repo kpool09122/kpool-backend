@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Image\Application\DTO\MaterialSearchContext;
 use Source\Wiki\Image\Application\Service\FreeMaterialSearchServiceInterface;
 use Source\Wiki\Image\Application\UseCase\Query\FreeMaterialSiteReadModel;
@@ -26,7 +27,6 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

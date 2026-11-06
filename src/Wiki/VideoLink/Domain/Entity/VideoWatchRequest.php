@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoWatchRequestIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class VideoWatchRequest
 {
