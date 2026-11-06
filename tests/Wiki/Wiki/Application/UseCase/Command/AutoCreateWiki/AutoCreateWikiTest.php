@@ -12,6 +12,8 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
@@ -23,7 +25,9 @@ use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiIn
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\GeneratedWikiData;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
@@ -43,6 +47,42 @@ use Tests\TestCase;
 
 class AutoCreateWikiTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')->andReturn([])->byDefault();
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+    }
+
+    public function testPublishedWikiWithDuplicateSlugPreventsCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $payload = $this->makePayload();
+        $input = new AutoCreateWikiInput($payload, $principalIdentifier);
+        $slug = $payload->slug();
+        $resourceType = $payload->resourceType();
+        $autoWikiCreationService = Mockery::mock(AutoWikiCreationServiceInterface::class);
+        $autoWikiCreationService->shouldNotReceive('generate');
+        $this->app()->instance(AutoWikiCreationServiceInterface::class, $autoWikiCreationService);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')->once()->with($slug, $resourceType)->andReturn([Mockery::mock(Wiki::class)]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldNotReceive('save');
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $this->app()->make(AutoCreateWikiInterface::class)->process($input, new AutoCreateWikiOutput());
+    }
+
     /**
      * 正常系: ActorがAdministratorの場合、正しく自動作成されること.
      *

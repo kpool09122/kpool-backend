@@ -87,11 +87,10 @@ readonly class ApproveWiki implements ApproveWikiInterface
             throw new DisallowedException();
         }
 
-        if ($this->wikiRepository->existsBySlugExcludingTranslationSetIdentifier(
-            $wiki->slug(),
-            $wiki->translationSetIdentifier(),
-        )) {
-            throw new DuplicateSlugException();
+        foreach ($this->wikiRepository->findBySlugAndResourceType($wiki->slug(), $wiki->resourceType()) as $existingWiki) {
+            if ((string) $existingWiki->translationSetIdentifier() !== (string) $wiki->translationSetIdentifier()) {
+                throw new DuplicateSlugException();
+            }
         }
 
         // 同じ翻訳元の別言語版を除き、承認済み下書きとの競合を確認する

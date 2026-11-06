@@ -7,10 +7,12 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -18,7 +20,7 @@ use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 readonly class CreateWiki implements CreateWikiInterface
 {
     public function __construct(
-        private DraftWikiFactoryInterface    $wikiFactory,
+        private DraftWikiFactoryInterface    $draftWikiFactory,
         private WikiRepositoryInterface      $wikiRepository,
         private DraftWikiRepositoryInterface $draftWikiRepository,
         private PrincipalRepositoryInterface $principalRepository,
@@ -30,6 +32,7 @@ readonly class CreateWiki implements CreateWikiInterface
      * @param CreateWikiInputPort $input
      * @param CreateWikiOutputPort $output
      * @return void
+     * @throws DuplicateSlugException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
@@ -61,7 +64,14 @@ readonly class CreateWiki implements CreateWikiInterface
             ? $this->wikiRepository->findById($input->publishedWikiIdentifier())
             : null;
 
-        $wiki = $this->wikiFactory->create(
+        foreach ($this->wikiRepository->findBySlugAndResourceType($input->slug(), ResourceType::fromSlug($input->slug())) as $existingWiki) {
+            if ($publishedWiki === null
+                || (string) $existingWiki->translationSetIdentifier() !== (string) $publishedWiki->translationSetIdentifier()) {
+                throw new DuplicateSlugException();
+            }
+        }
+
+        $wiki = $this->draftWikiFactory->create(
             $input->principalIdentifier(),
             $input->language(),
             $input->basic(),

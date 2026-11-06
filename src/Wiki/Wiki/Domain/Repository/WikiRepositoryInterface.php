@@ -22,14 +22,10 @@ interface WikiRepositoryInterface
 
     public function findById(WikiIdentifier $wikiIdentifier): ?Wiki;
 
+    /** @return Wiki[] */
+    public function findBySlugAndResourceType(Slug $slug, ResourceType $resourceType): array;
+
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?Wiki;
-
-    public function existsBySlug(Slug $slug): bool;
-
-    public function existsBySlugExcludingTranslationSetIdentifier(
-        Slug $slug,
-        TranslationSetIdentifier $translationSetIdentifier,
-    ): bool;
 
     /**
      * @return Wiki[]

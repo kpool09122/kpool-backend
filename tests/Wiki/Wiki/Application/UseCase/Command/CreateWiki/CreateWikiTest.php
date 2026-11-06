@@ -14,6 +14,7 @@ use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -46,6 +47,40 @@ use Tests\TestCase;
 
 class CreateWikiTest extends TestCase
 {
+    public function testPublishedWikiWithDuplicateSlugPreventsCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $testData = $this->createDummyCreateWiki();
+        $input = new CreateWikiInput(
+            null,
+            $testData->language,
+            $testData->resourceType,
+            $testData->basic,
+            $testData->sections,
+            $testData->themeColor,
+            $testData->slug,
+            $principalIdentifier,
+        );
+        $slug = $input->slug();
+        $resourceType = $input->resourceType();
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')->once()->with($slug, $resourceType)->andReturn([$testData->publishedWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldNotReceive('save');
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $this->app()->make(CreateWikiInterface::class)->process($input, new CreateWikiOutput());
+    }
+
     /**
      * 正常系: インスタンスが生成されること
      *
@@ -226,6 +261,10 @@ class CreateWikiTest extends TestCase
             ->andReturn($testData->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')
+            ->once()
+            ->with($testData->slug, $testData->resourceType)
+            ->andReturn([$testData->publishedWiki]);
         $wikiRepository->shouldReceive('findById')
             ->once()
             ->with($testData->publishedWikiIdentifier)
@@ -255,6 +294,41 @@ class CreateWikiTest extends TestCase
         $this->assertSame($title, $testData->draftWiki->title());
         $this->assertSame($metaDescription, $testData->draftWiki->metaDescription());
         $this->assertSame($keywords, $testData->draftWiki->keywords());
+    }
+
+    public function testNewWikiWithUnusedSlugIsCreated(): void
+    {
+        $testData = $this->createDummyCreateWiki();
+        $input = new CreateWikiInput(
+            null,
+            $testData->language,
+            $testData->resourceType,
+            $testData->basic,
+            $testData->sections,
+            $testData->themeColor,
+            $testData->slug,
+            $testData->editorIdentifier,
+        );
+        $principal = new Principal($testData->editorIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($testData->editorIdentifier)->andReturn($principal);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')->once()->with($testData->slug, $testData->resourceType)->andReturn([]);
+        $wikiRepository->shouldNotReceive('findById');
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (DraftWiki $draftWiki) => $draftWiki->publishedWikiIdentifier() === null
+                && (string) $draftWiki->slug() === (string) $testData->slug,
+        ));
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $output = new CreateWikiOutput();
+        $this->app()->make(CreateWikiInterface::class)->process($input, $output);
+
+        $this->assertNotNull($output->toArray()['wikiIdentifier']);
+        $this->assertSame((string) $testData->basic->name(), $output->toArray()['name']);
     }
 
     /**

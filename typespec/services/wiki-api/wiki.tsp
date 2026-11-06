@@ -9,7 +9,7 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   resourceType: string;
   @doc("Language of the wiki.")
   language: string;
-  @doc("Unique slug for the wiki.")
+  @doc("Slug must be unique within the resource type among published wikis, regardless of language. When branching from a published wiki, its translation set is excluded.")
   slug: string;
   @doc("Basic wiki content payload.")
   basic: unknown;
@@ -38,7 +38,7 @@ model AutoCreateWikiRequestBody {
   resourceType: string;
   @doc("Language of the wiki.")
   language: string;
-  @doc("Unique slug for the wiki.")
+  @doc("Slug must be unique within the resource type among published wikis, regardless of language. Duplicates return 409 before AI generation.")
   slug: string;
   @doc("Display name of the wiki.")
   name: string;

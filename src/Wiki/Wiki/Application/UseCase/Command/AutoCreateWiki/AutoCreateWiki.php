@@ -8,13 +8,16 @@ use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
 
 readonly class AutoCreateWiki implements AutoCreateWikiInterface
@@ -23,6 +26,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         private AutoWikiCreationServiceInterface $autoWikiCreationService,
         private DraftWikiFactoryInterface        $draftWikiFactory,
         private DraftWikiRepositoryInterface     $draftWikiRepository,
+        private WikiRepositoryInterface          $wikiRepository,
         private NormalizationServiceInterface    $normalizationService,
         private PrincipalRepositoryInterface     $principalRepository,
         private PolicyEvaluatorInterface         $policyEvaluator,
@@ -33,6 +37,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
      * @param AutoCreateWikiInputPort $input
      * @param AutoCreateWikiOutputPort $output
      * @return void
+     * @throws DuplicateSlugException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
@@ -60,6 +65,10 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
 
         if (! $this->policyEvaluator->evaluate($principal, Action::AUTOMATIC_CREATE, $resource)) {
             throw new DisallowedException();
+        }
+
+        if ($this->wikiRepository->findBySlugAndResourceType($payload->slug(), ResourceType::fromSlug($payload->slug())) !== []) {
+            throw new DuplicateSlugException();
         }
 
         $generatedData = $this->autoWikiCreationService->generate($payload);

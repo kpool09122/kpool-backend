@@ -59,6 +59,18 @@ readonly class WikiRepository implements WikiRepositoryInterface
         return $this->toDomainEntity($model);
     }
 
+    /** @return Wiki[] */
+    public function findBySlugAndResourceType(Slug $slug, ResourceType $resourceType): array
+    {
+        $models = WikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('slug', (string) $slug)
+            ->where('resource_type', $resourceType->value)
+            ->get();
+
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->all();
+    }
+
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?Wiki
     {
         $model = WikiModel::query()
@@ -72,23 +84,6 @@ readonly class WikiRepository implements WikiRepositoryInterface
         }
 
         return $this->toDomainEntity($model);
-    }
-
-    public function existsBySlug(Slug $slug): bool
-    {
-        return WikiModel::query()
-            ->where('slug', (string) $slug)
-            ->exists();
-    }
-
-    public function existsBySlugExcludingTranslationSetIdentifier(
-        Slug $slug,
-        TranslationSetIdentifier $translationSetIdentifier,
-    ): bool {
-        return WikiModel::query()
-            ->where('slug', (string) $slug)
-            ->where('translation_set_identifier', '!=', (string) $translationSetIdentifier)
-            ->exists();
     }
 
     /**
