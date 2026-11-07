@@ -23,9 +23,9 @@ use Source\Shared\Domain\ValueObject\WikiIdentifier;
 
 class AnalyzeWikiMetrics
 {
-    public static function definition(Metric $metric = Metric::VIEWS, string $source = 'test'): MetricDefinition
+    public static function definition(Metric $metric = Metric::VIEWS, ?string $source = null): MetricDefinition
     {
-        return new MetricDefinition($source, $metric, 'wiki_language_country', '1');
+        return new MetricDefinition($source ?? (in_array($metric, [Metric::SUBMISSIONS, Metric::PUBLICATIONS], true) ? 'wiki_history' : 'ga4'), $metric, 'wiki_language_country', '1');
     }
 
     /** @return list<MetricDefinition> */

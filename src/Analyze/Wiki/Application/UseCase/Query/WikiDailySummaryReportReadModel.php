@@ -4,49 +4,41 @@ declare(strict_types=1);
 
 namespace Source\Analyze\Wiki\Application\UseCase\Query;
 
-use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
+use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 
-/**
- * @phpstan-type DailyResult array{day: string, availability: string, value: ?string, denominator: ?int, quality: list<string>, updatedAt: ?string}
- */
 readonly class WikiDailySummaryReportReadModel
 {
-    /**
-     * @param list<DailyResult> $days
-     * @param ?string $total Additive total over the selected daily Wiki summaries, including extended viewers.
-     */
     public function __construct(
-        private MetricDefinition $definition,
-        private ?string $revision,
-        private array $days,
-        private ?string $total,
-        private ?int $denominator,
+        private MetricReportReadModel $views,
+        private MetricReportReadModel $viewers,
+        private MetricReportReadModel $engagementTime,
+        private MetricReportReadModel $submissions,
+        private MetricReportReadModel $publications,
     ) {
     }
 
-    public function definition(): MetricDefinition
+    public function views(): MetricReportReadModel
     {
-        return $this->definition;
+        return $this->views;
     }
 
-    public function revision(): ?string
+    public function viewers(): MetricReportReadModel
     {
-        return $this->revision;
+        return $this->viewers;
     }
 
-    /** @return list<DailyResult> */
-    public function days(): array
+    public function engagementTime(): MetricReportReadModel
     {
-        return $this->days;
+        return $this->engagementTime;
     }
 
-    public function total(): ?string
+    public function submissions(): MetricReportReadModel
     {
-        return $this->total;
+        return $this->submissions;
     }
 
-    public function denominator(): ?int
+    public function publications(): MetricReportReadModel
     {
-        return $this->denominator;
+        return $this->publications;
     }
 }

@@ -9,7 +9,7 @@ class DailyWikiOperationCount
     private int $submissions = 0;
     private int $publications = 0;
 
-    public function __construct(private readonly string $wikiIdentifier, private readonly string $translationSetIdentifier, private readonly string $language, private readonly string $country)
+    public function __construct(private readonly ?string $wikiIdentifier, private readonly ?string $translationSetIdentifier, private readonly ?string $language, private readonly string $country)
     {
     }
 
@@ -23,17 +23,17 @@ class DailyWikiOperationCount
         $this->publications++;
     }
 
-    public function wikiIdentifier(): string
+    public function wikiIdentifier(): ?string
     {
         return $this->wikiIdentifier;
     }
 
-    public function translationSetIdentifier(): string
+    public function translationSetIdentifier(): ?string
     {
         return $this->translationSetIdentifier;
     }
 
-    public function language(): string
+    public function language(): ?string
     {
         return $this->language;
     }

@@ -75,6 +75,10 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
             $submissions = [];
             $publications = [];
             foreach ($this->dailyWikiOperationsQueryService->find($day->instant(), $day->next()->instant()) as $count) {
+                // Operations without a published target are reported directly from Wiki history.
+                if ($count->wikiIdentifier() === null || $count->translationSetIdentifier() === null || $count->language() === null) {
+                    continue;
+                }
                 $submission = new MetricObservation($count->wikiIdentifier(), $count->translationSetIdentifier(), $count->language(), $count->country(), $count->submissions());
                 $publication = new MetricObservation($count->wikiIdentifier(), $count->translationSetIdentifier(), $count->language(), $count->country(), $count->publications());
                 $submission->validateFor($submissionsDefinition, $day);

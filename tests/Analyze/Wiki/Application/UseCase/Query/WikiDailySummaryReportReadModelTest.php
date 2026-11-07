@@ -5,19 +5,24 @@ declare(strict_types=1);
 namespace Tests\Analyze\Wiki\Application\UseCase\Query;
 
 use PHPUnit\Framework\TestCase;
+use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Wiki\Application\UseCase\Query\WikiDailySummaryReportReadModel;
 use Tests\Helper\AnalyzeWikiMetrics;
 
 class WikiDailySummaryReportReadModelTest extends TestCase
 {
-    public function testEmptyReportDoesNotInventZero(): void
+    public function testReturnsAllNamedMetricResults(): void
     {
-        $definition = AnalyzeWikiMetrics::definition();
-        $report = new WikiDailySummaryReportReadModel($definition, null, [], null, null);
-        self::assertSame($definition, $report->definition());
-        self::assertNull($report->revision());
-        self::assertSame([], $report->days());
-        self::assertNull($report->total());
-        self::assertNull($report->denominator());
+        $definitions = AnalyzeWikiMetrics::definitions();
+        $metrics = [];
+        foreach ($definitions as $index => $definition) {
+            $metrics[] = new MetricReportReadModel($definition, null, [], (string) $index, null);
+        }
+        $report = new WikiDailySummaryReportReadModel(...$metrics);
+        self::assertSame($metrics[0], $report->views());
+        self::assertSame($metrics[1], $report->viewers());
+        self::assertSame($metrics[2], $report->engagementTime());
+        self::assertSame($metrics[3], $report->submissions());
+        self::assertSame($metrics[4], $report->publications());
     }
 }
