@@ -9,18 +9,35 @@ use Illuminate\Support\Collection;
 use Source\Analyze\App\Application\UseCase\Query\AppDailySummaryReportReadModel;
 use Source\Analyze\App\Application\UseCase\Query\GetAppDailySummaryReport\GetAppDailySummaryReportInputPort;
 use Source\Analyze\App\Application\UseCase\Query\GetAppDailySummaryReport\GetAppDailySummaryReportInterface;
+use Source\Analyze\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Analyze\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Analyze\Principal\Domain\ValueObject\Action;
+use Source\Analyze\Principal\Domain\ValueObject\Resource;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
+use Source\Analyze\Shared\Domain\Exception\UnauthorizedException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 
 /**
- * @phpstan-type MetricAggregate array{value: ?string, denominator: ?int, quality: list<list<string>>, revision: ?string, updatedAt: ?string}
+ * @phpstan-type MetricAggregate array{invalid: int, value: ?string, denominator: ?int, quality: list<list<string>>, revision: ?string, updatedAt: ?string}
  * @phpstan-type SummaryAggregate SummaryModel&object{report_day: ?string}
  */
 readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInterface
 {
+    public function __construct(
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
+    ) {
+    }
+
+    /** @throws UnauthorizedException */
     public function process(GetAppDailySummaryReportInputPort $input): AppDailySummaryReportReadModel
     {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::ANALYSIS_VIEW, new Resource())) {
+            throw new UnauthorizedException();
+        }
+
         [$applicationUsers, $registeredUsers] = $this->summaries($input);
 
         return new AppDailySummaryReportReadModel($applicationUsers, $registeredUsers);
@@ -29,6 +46,7 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
     /** @return array{MetricReportReadModel, MetricReportReadModel} */
     private function summaries(GetAppDailySummaryReportInputPort $input): array
     {
+        /** @var list<array{literal-string, MetricDefinition}> $metrics */
         $metrics = [
             ['application_users', new MetricDefinition('ga4', Metric::APPLICATION_USERS, 'application_day', '1')],
             ['registered_users', new MetricDefinition('identity_history', Metric::REGISTERED_USERS, 'application_day', '1')],
@@ -50,6 +68,7 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
             $alias = $column . '_report';
             $query->selectRaw("JSONB_BUILD_OBJECT(
                 'value', (SUM($column) FILTER (WHERE $valid))::text,
+                'invalid', COUNT(*) FILTER (WHERE NOT COALESCE($valid, FALSE)),
                 'denominator', NULL,
                 'quality', COALESCE(JSONB_AGG(DISTINCT measurements->'$key'->'quality') FILTER (WHERE $valid), '[]'::jsonb),
                 'revision', MD5(STRING_AGG(CONCAT(id, ':', revision), ',' ORDER BY id) FILTER (WHERE $valid)),
@@ -72,10 +91,10 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
                 $values = $daily->get((string) $day)?->getAttribute($alias);
                 $days[] = [
                     'day' => (string) $day,
-                    'availability' => ($values['value'] ?? null) === null ? 'missing' : 'measured',
+                    'availability' => ($values['value'] ?? null) === null ? ($values === null ? 'not_collected' : 'missing') : (($values['invalid'] ?? 0) > 0 ? 'incomplete' : 'measured'),
                     'value' => $values['value'] ?? null,
                     'denominator' => $values['denominator'] ?? null,
-                    'quality' => array_values(array_unique(array_merge(...($values['quality'] ?? [])))),
+                    'quality' => array_values(array_unique(array_merge(array_merge(...($values['quality'] ?? [])), ($values['invalid'] ?? 0) > 0 ? ['metric_definition_missing'] : []))),
                     'updatedAt' => $values['updatedAt'] ?? null,
                 ];
             }

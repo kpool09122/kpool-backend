@@ -27,6 +27,7 @@ mkdir -p "${OUTPUT_DIR}"
 
 declare -a GENERATION_TARGETS=(
   "KPool.AccountApi.openapi.yaml:account-api.ts:accountApi"
+  "KPool.AnalyzeApi.openapi.yaml:analyze-api.ts:analyzeApi"
   "KPool.IdentityApi.openapi.yaml:identity-api.ts:identityApi"
   "KPool.MonetizationApi.openapi.yaml:monetization-api.ts:monetizationApi"
   "KPool.SiteManagementApi.openapi.yaml:site-management-api.ts:siteManagementApi"

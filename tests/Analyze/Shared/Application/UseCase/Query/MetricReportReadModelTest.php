@@ -17,6 +17,16 @@ class MetricReportReadModelTest extends TestCase
         self::assertSame('2', $report->actorCount());
     }
 
+    public function testSerializationPreservesNullableMetricContract(): void
+    {
+        $definition = AnalyzeWikiMetrics::definition();
+        $report = new MetricReportReadModel($definition, null, [], null, null);
+        self::assertSame([
+            'definition' => ['source' => $definition->source, 'metric' => $definition->metric->value, 'grain' => $definition->grain, 'version' => $definition->version],
+            'revision' => null, 'days' => [], 'total' => null, 'denominator' => null, 'actorCount' => null, 'countries' => [],
+        ], $report->toArray());
+    }
+
     public function testEmptyReportDoesNotInventZero(): void
     {
         $definition = AnalyzeWikiMetrics::definition();

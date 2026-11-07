@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_analysis_period' => '請指定包含起迄日期、最長一個曆年且結束日期不晚於UTC D-3的期間。',
     'video_already_watched' => '本人已觀看此影片。',
     'video_watch_request_target_not_eligible' => '僅可請求官方認證藝人維基中的使用者建立影片。',
     'video_watch_request_duration_not_eligible' => '僅可請求已確認不超過30秒的影片。',

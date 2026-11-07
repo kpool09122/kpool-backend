@@ -6,8 +6,10 @@ namespace Tests\Analyze\Wiki\Infrastructure\Query;
 
 use Application\Models\Analyze\Wiki\WikiDailySummary as SummaryModel;
 use Illuminate\Support\Facades\DB;
+use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Analyze\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
@@ -27,11 +29,23 @@ use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 use Tests\Helper\AnalyzeSourceRecords;
 use Tests\Helper\AnalyzeWikiMetrics;
+use Tests\Helper\CreateAnalyzePrincipal;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 #[Group('useDb')]
 class GetWikiDailySummaryReportTest extends TestCase
 {
+    /** @phpstan-ignore property.uninitialized (setUp で初期化) */
+    private PrincipalIdentifier $principalIdentifier;
+
+    #[Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
+    }
+
     public function testReturnsAllMetricsTogetherAndKeepsTheirAvailabilityIndependent(): void
     {
         $first = new UtcDate('2020-01-01');
@@ -42,8 +56,8 @@ class GetWikiDailySummaryReportTest extends TestCase
         DB::enableQueryLog();
 
         try {
-            $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())));
-            self::assertCount(2, DB::getQueryLog());
+            $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())));
+            self::assertCount(10, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();
@@ -56,7 +70,7 @@ class GetWikiDailySummaryReportTest extends TestCase
         self::assertSame('1', $report->submissions()->actorCount());
         self::assertSame('1', $report->publications()->total());
         self::assertSame('1', $report->publications()->actorCount());
-        self::assertSame('missing', $report->views()->days()[1]['availability']);
+        self::assertSame('not_collected', $report->views()->days()[1]['availability']);
         self::assertSame('measured', $report->submissions()->days()[1]['availability']);
     }
 
@@ -77,13 +91,44 @@ class GetWikiDailySummaryReportTest extends TestCase
             }
             $row->forceFill(['measurements' => $measurements])->save();
         }
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())));
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())));
         self::assertSame('5.000000000', $report->views()->total());
-        self::assertSame(['sampled'], $report->views()->days()[0]['quality']);
+        self::assertSame('incomplete', $report->views()->days()[0]['availability']);
+        self::assertSame(['sampled', 'metric_definition_missing'], $report->views()->days()[0]['quality']);
         self::assertSame('10.000000000', $report->viewers()->total());
         self::assertSame('10.000000000', $report->engagementTime()->total());
         self::assertNull($report->engagementTime()->denominator());
         self::assertNull($report->engagementTime()->days()[0]['denominator']);
+    }
+
+    public function testPublicationOutsideThePeriodInvalidatesEarlierSubmissionAttribution(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $draft = StrTestHelper::generateUuid();
+        $wiki = StrTestHelper::generateUuid();
+        AnalyzeSourceRecords::history('draft_status_change', '2020-01-01', wiki: null, draft: $draft);
+        $input = new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()), wikiIdentifier: $wiki);
+        $query = $this->app()->make(GetWikiDailySummaryReport::class);
+        self::assertSame('0', $query->process($input)->submissions()->total());
+        AnalyzeSourceRecords::history('publish', '2020-02-01', wiki: $wiki, draft: $draft);
+        self::assertSame('1', $query->process($input)->submissions()->total());
+        self::assertSame('0', $query->process($input)->publications()->total());
+    }
+
+    public function testCountryTotalsIncludeUnknownAndNeverSumDistinctActors(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $this->save($day, ['wiki_views' => '2'], country: 'JP');
+        $this->save($day, ['wiki_views' => '3'], country: '');
+        $first = AnalyzeSourceRecords::history('publish', '2020-01-01', 'JP');
+        $second = AnalyzeSourceRecords::history('publish', '2020-01-01', null);
+        $second->forceFill(['actor_id' => $first->actor_id])->save();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())));
+        self::assertSame('5.000000000', $report->views()->total());
+        self::assertSame([null, 'JP'], array_column($report->views()->countries(), 'country'));
+        self::assertSame(['3.000000000', '2.000000000'], array_column($report->views()->countries(), 'value'));
+        self::assertSame('1', $report->publications()->actorCount());
+        self::assertSame(['1', '1'], array_column($report->publications()->countries(), 'actorCount'));
     }
 
     public function testAllWikiCellsAndDaysSumIncludingExtendedViewers(): void
@@ -94,19 +139,19 @@ class GetWikiDailySummaryReportTest extends TestCase
             $this->save($day, ['wiki_views' => '3', 'wiki_viewers' => '2'], '69200000-0000-7000-8000-000000000015', 'en', 'US', '69200000-0000-7000-8000-000000000003');
         }
         $period = new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now());
-        $query = new GetWikiDailySummaryReport();
-        self::assertSame('10.000000000', $query->process(new GetWikiDailySummaryReportInput($period))->views()->total());
-        self::assertSame('6.000000000', $query->process(new GetWikiDailySummaryReportInput($period))->viewers()->total());
-        self::assertSame('4.000000000', $query->process(new GetWikiDailySummaryReportInput($period, language: 'ja', country: 'JP'))->views()->total());
-        self::assertSame('6.000000000', $query->process(new GetWikiDailySummaryReportInput($period, translationSetIdentifier: '69200000-0000-7000-8000-000000000003'))->views()->total());
+        $query = $this->app()->make(GetWikiDailySummaryReport::class);
+        self::assertSame('10.000000000', $query->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, $period))->views()->total());
+        self::assertSame('6.000000000', $query->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, $period))->viewers()->total());
+        self::assertSame('4.000000000', $query->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, $period, language: 'ja', country: 'JP'))->views()->total());
+        self::assertSame('6.000000000', $query->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, $period, translationSetIdentifier: '69200000-0000-7000-8000-000000000003'))->views()->total());
     }
 
     public function testNoPersistedEntityDoesNotInventMeasuredZero(): void
     {
         $day = new UtcDate('2020-01-01');
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()), wikiIdentifier: '69200000-0000-7000-8000-000000000099'))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()), wikiIdentifier: '69200000-0000-7000-8000-000000000099'))->views();
         self::assertNull($report->total());
-        self::assertSame('missing', $report->days()[0]['availability']);
+        self::assertSame('not_collected', $report->days()[0]['availability']);
         self::assertNull($report->days()[0]['value']);
     }
 
@@ -120,7 +165,7 @@ class GetWikiDailySummaryReportTest extends TestCase
             $summary = (new WikiDailySummaryFactory(new UuidGenerator()))->create(new WikiIdentifier('69200000-0000-7000-8000-000000000001'), new TranslationSetIdentifier('69200000-0000-7000-8000-000000000002'), Language::JAPANESE, CountryCode::JAPAN, $values[0], $values[1], $values[2], $values[3], $values[4]);
             (new WikiDailySummaryRepository())->save($summary);
         }
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())))->engagementTime();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())))->engagementTime();
         self::assertSame('20.123456790', $report->total());
         self::assertSame(11, $report->denominator());
     }
@@ -130,9 +175,9 @@ class GetWikiDailySummaryReportTest extends TestCase
         $first = new UtcDate('2020-01-01');
         $definition = AnalyzeWikiMetrics::definitions()[0];
         $this->save($first, ['wiki_views' => '0']);
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())))->views();
         self::assertSame(['0.000000000', null], array_column($report->days(), 'value'));
-        self::assertSame(['measured', 'missing'], array_column($report->days(), 'availability'));
+        self::assertSame(['measured', 'not_collected'], array_column($report->days(), 'availability'));
     }
 
     public function testSourceAndDefinitionVersionsNeverMix(): void
@@ -147,7 +192,7 @@ class GetWikiDailySummaryReportTest extends TestCase
             $values[0] = new WikiViewCount($count, new MetricProvenance($definition, $targetDay, AnalyzeWikiMetrics::now()));
             $wikiDailySummaryRepository->save($factory->create(new WikiIdentifier('69200000-0000-7000-8000-000000000001'), new TranslationSetIdentifier('69200000-0000-7000-8000-000000000002'), Language::JAPANESE, CountryCode::JAPAN, $values[0], $values[1], $values[2], $values[3], $values[4]));
         }
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, new UtcDate('2020-01-03'), AnalyzeWikiMetrics::now())))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, new UtcDate('2020-01-03'), AnalyzeWikiMetrics::now())))->views();
         self::assertSame('2.000000000', $report->total());
     }
 
@@ -155,8 +200,8 @@ class GetWikiDailySummaryReportTest extends TestCase
     {
         $day = new UtcDate('2020-01-01');
         $this->save($day);
-        $input = new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()));
-        $query = new GetWikiDailySummaryReport();
+        $input = new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()));
+        $query = $this->app()->make(GetWikiDailySummaryReport::class);
         $revision = $query->process($input)->views()->revision();
         self::assertNotNull($revision);
         self::assertSame($revision, $query->process($input)->views()->revision());
@@ -182,7 +227,7 @@ class GetWikiDailySummaryReportTest extends TestCase
         $measurements[$definition->metric->value]['source'] = $definition->source;
         $measurements[$definition->metric->value]['version'] = $definition->version;
         $row->forceFill(['measurements' => $measurements])->save();
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())))->views();
         self::assertNull($report->total());
         self::assertNull($report->revision());
         self::assertSame('missing', $report->days()[0]['availability']);
@@ -214,7 +259,7 @@ class GetWikiDailySummaryReportTest extends TestCase
         $values[0] = new WikiViewCount('5', new MetricProvenance($definition, $day, $now, ['sampled']));
         $summary = (new WikiDailySummaryFactory(new UuidGenerator()))->create(new WikiIdentifier('69200000-0000-7000-8000-000000000001'), new TranslationSetIdentifier('69200000-0000-7000-8000-000000000002'), Language::JAPANESE, CountryCode::JAPAN, $values[0], $values[1], $values[2], $values[3], $values[4]);
         (new WikiDailySummaryRepository())->save($summary);
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, $now)))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, $now)))->views();
         self::assertSame('5.000000000', $report->total());
         self::assertSame('5.000000000', $report->days()[0]['value']);
         self::assertSame('measured', $report->days()[0]['availability']);
@@ -235,8 +280,8 @@ class GetWikiDailySummaryReportTest extends TestCase
         $summary = $wikiDailySummaryRepository->findAllByDay($day)[0];
         $summary->replaceAnalysis($values[0], $values[1], $values[2], $values[3], $values[4]);
         $wikiDailySummaryRepository->save($summary);
-        $input = new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()));
-        self::assertSame('9.000000000', (new GetWikiDailySummaryReport())->process($input)->views()->total());
+        $input = new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now()));
+        self::assertSame('9.000000000', ($this->app()->make(GetWikiDailySummaryReport::class))->process($input)->views()->total());
     }
 
     public function testReadModelDoesNotRequireEntityProvenanceReconstruction(): void
@@ -247,7 +292,7 @@ class GetWikiDailySummaryReportTest extends TestCase
         $measurements = $row->measurements;
         $measurements[Metric::VIEWS->value]['updated_at'] = 'not-a-domain-timestamp';
         $row->forceFill(['measurements' => $measurements])->save();
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())))->views();
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeWikiMetrics::now())))->views();
         self::assertSame('5.000000000', $report->total());
         self::assertSame('measured', $report->days()[0]['availability']);
         self::assertNotNull($report->days()[0]['updatedAt']);

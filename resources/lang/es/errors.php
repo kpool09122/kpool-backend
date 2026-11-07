@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_analysis_period' => 'Especifique un período UTC inclusivo de un año natural como máximo que termine a más tardar en UTC D-3.',
     'video_already_watched' => 'El titular oficial ya ha visto este video.',
     'video_watch_request_target_not_eligible' => 'Solo se admiten videos de usuarios en una wiki oficial de talento.',
     'video_watch_request_duration_not_eligible' => 'Solo se admiten videos confirmados de hasta 30 segundos.',
