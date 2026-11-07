@@ -4,43 +4,23 @@ declare(strict_types=1);
 
 namespace Source\Analyze\App\Application\UseCase\Query;
 
-use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
+use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 
-/**
- * @phpstan-type DailyResult array{day: string, availability: string, value: ?string, quality: list<string>, updatedAt: ?string}
- */
 readonly class AppDailySummaryReportReadModel
 {
-    /**
-     * @param list<DailyResult> $days
-     * @param ?string $total Closing balance for registered users; extended daily-user sum for application usage.
-     */
     public function __construct(
-        private MetricDefinition $definition,
-        private ?string $revision,
-        private array $days,
-        private ?string $total,
+        private MetricReportReadModel $applicationUsers,
+        private MetricReportReadModel $registeredUsers,
     ) {
     }
 
-    public function definition(): MetricDefinition
+    public function applicationUsers(): MetricReportReadModel
     {
-        return $this->definition;
+        return $this->applicationUsers;
     }
 
-    public function revision(): ?string
+    public function registeredUsers(): MetricReportReadModel
     {
-        return $this->revision;
-    }
-
-    /** @return list<DailyResult> */
-    public function days(): array
-    {
-        return $this->days;
-    }
-
-    public function total(): ?string
-    {
-        return $this->total;
+        return $this->registeredUsers;
     }
 }

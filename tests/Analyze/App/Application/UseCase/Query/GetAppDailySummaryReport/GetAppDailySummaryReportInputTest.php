@@ -14,10 +14,8 @@ class GetAppDailySummaryReportInputTest extends TestCase
 {
     public function testInputPreservesObjectsAndFilters(): void
     {
-        $definition = AnalyzeAppMetrics::definition();
         $period = new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-01'), AnalyzeAppMetrics::now());
-        $input = new GetAppDailySummaryReportInput($definition, $period);
-        self::assertSame($definition, $input->definition());
+        $input = new GetAppDailySummaryReportInput($period);
         self::assertSame($period, $input->period());
     }
 }
