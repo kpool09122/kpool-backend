@@ -42,16 +42,20 @@ class ImportAppDailySummaryCommand extends Command
             foreach ($period->days() as $day) {
                 try {
                     $output = new ImportAppDailySummaryOutput();
-                    DB::transaction(fn () => $importAppDailySummary->process(new ImportAppDailySummaryInput($day, Carbon::now('UTC')->toDateTimeImmutable(), $maxPages), $output));
+                    DB::transaction(function () use ($importAppDailySummary, $day, $maxPages, $output): void {
+                        $importAppDailySummary->process(new ImportAppDailySummaryInput($day, Carbon::now('UTC')->toDateTimeImmutable(), $maxPages), $output);
+                    });
                     $this->line($day . ' complete summaries=' . $output->summaryCount());
-                } catch (Throwable) {
+                } catch (Throwable $exception) {
+                    report($exception);
                     $this->error($day . ' summary import failed; published values retained.');
                     $failed = true;
                 }
             }
 
             return $failed ? self::FAILURE : self::SUCCESS;
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            report($exception);
             $this->error('Analyze App daily summary import failed. Check date range, API and history configuration.');
 
             return self::FAILURE;

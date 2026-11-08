@@ -19,6 +19,7 @@ class AppDailySummaryReportReadModelTest extends TestCase
             $metrics[] = new MetricReportReadModel($definition, null, [], (string) $index, null);
         }
         $report = new AppDailySummaryReportReadModel(...$metrics);
+        self::assertSame(['applicationUsers' => $metrics[0]->toArray(),'registeredUsers' => $metrics[1]->toArray()], $report->toArray());
         self::assertSame($metrics[0], $report->applicationUsers());
         self::assertSame($metrics[1], $report->registeredUsers());
     }

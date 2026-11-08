@@ -9,6 +9,7 @@ use Application\Models\Analyze\App\AppDailySummary as SummaryModel;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Mockery;
 use Mockery\MockInterface;
 use Override;
@@ -18,17 +19,27 @@ use Source\Analyze\App\Application\Exception\MetricsFetchFailedException;
 use Source\Analyze\App\Application\Service\AppDailySummaryData;
 use Source\Analyze\App\Application\Service\DailyMetricsFetchServiceInterface;
 use Source\Analyze\App\Application\UseCase\Command\ImportAppDailySummary\ImportAppDailySummaryInterface;
+use Source\Analyze\App\Application\UseCase\Query\GetAppDailySummaryReport\GetAppDailySummaryReportInput;
+use Source\Analyze\App\Infrastructure\Query\GetAppDailySummaryReport;
+use Source\Analyze\Principal\Domain\ValueObject\PrincipalIdentifier;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Tests\Helper\AnalyzeAppMetrics;
+use Tests\Helper\CreateAnalyzePrincipal;
 use Tests\TestCase;
 
 #[Group('useDb')]
 class ImportAppDailySummaryCommandTest extends TestCase
 {
+    /** @phpstan-ignore property.uninitialized (setUp で初期化) */
+    private PrincipalIdentifier $principalIdentifier;
+
     #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+        $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
+        Exceptions::fake();
         config(['analyze.reimport_days' => 3, 'analyze.max_pages_per_day' => 1000]);
     }
 
@@ -47,6 +58,10 @@ class ImportAppDailySummaryCommandTest extends TestCase
         $this->registerFetchService(['2012-02-29']);
         self::assertSame(0, $this->runDay());
         $row = SummaryModel::query()->firstOrFail();
+        $day = new UtcDate('2012-02-29');
+        $query = $this->app()->make(GetAppDailySummaryReport::class);
+        $input = new GetAppDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
+        $before = $query->process($input)->toArray();
         $outside = DB::transactionLevel();
         $inside = null;
         $service = $this->registerFetchService([]);
@@ -56,10 +71,19 @@ class ImportAppDailySummaryCommandTest extends TestCase
             throw new MetricsFetchFailedException();
         });
         self::assertSame(1, $this->runDay());
+        Exceptions::assertReported(MetricsFetchFailedException::class);
+        Exceptions::assertReportedCount(1);
         self::assertNotNull($inside);
         self::assertGreaterThan($outside, $inside);
         self::assertSame($row->id, SummaryModel::query()->firstOrFail()->id);
         self::assertSame($row->revision, SummaryModel::query()->firstOrFail()->revision);
+        $report = $query->process($input);
+        self::assertSame($before, $report->toArray());
+        self::assertSame('measured', $report->applicationUsers()->days()[0]['availability']);
+        self::assertArrayNotHasKey('attemptedAt', $report->applicationUsers()->days()[0]);
+        self::assertSame($row->application_users, $report->applicationUsers()->days()[0]['value']);
+        self::assertSame('measured', $report->registeredUsers()->days()[0]['availability']);
+        self::assertSame($row->registered_users, $report->registeredUsers()->total());
         $this->registerFetchService(['2012-02-29'], '9');
         self::assertSame(0, $this->runDay());
         self::assertSame($row->id, SummaryModel::query()->firstOrFail()->id);
@@ -85,6 +109,8 @@ class ImportAppDailySummaryCommandTest extends TestCase
         } finally {
             SummaryModel::flushEventListeners();
         }
+        Exceptions::assertReported(RuntimeException::class);
+        Exceptions::assertReportedCount(1);
         self::assertSame($ids, SummaryModel::query()->orderBy('id')->pluck('id')->all());
         self::assertSame($revisions, SummaryModel::query()->orderBy('id')->pluck('revision')->all());
         foreach (SummaryModel::query()->get() as $row) {
@@ -93,6 +119,23 @@ class ImportAppDailySummaryCommandTest extends TestCase
         $this->registerFetchService(['2012-02-29'], '9');
         self::assertSame(0, $this->runDay());
         self::assertSame(1, SummaryModel::query()->count());
+    }
+
+    public function testInitialFailureIsReportedAndLaterDaysContinueBeforeManualRetry(): void
+    {
+        $service = $this->registerFetchService(['2012-03-01']);
+        $exception = new MetricsFetchFailedException();
+        $service->shouldReceive('fetchSummary')->once()
+            ->withArgs(static fn (UtcDate $day): bool => (string) $day === '2012-02-29')
+            ->andThrow($exception);
+        self::assertSame(1, Artisan::call('analyze:import-app-daily-summary', ['--from' => '2012-02-29', '--to' => '2012-03-01']));
+        Exceptions::assertReported(static fn (MetricsFetchFailedException $reported): bool => $reported === $exception);
+        Exceptions::assertReportedCount(1);
+        self::assertSame(['2012-03-01'], SummaryModel::query()->orderBy('day')->pluck('day')->all());
+        $this->registerFetchService(['2012-02-29']);
+        self::assertSame(0, $this->runDay());
+        self::assertSame(['2012-02-29', '2012-03-01'], SummaryModel::query()->orderBy('day')->pluck('day')->all());
+        Exceptions::assertReportedCount(1);
     }
 
     public function testDefaultWindowEndsAtUtcDMinusThree(): void
@@ -114,6 +157,7 @@ class ImportAppDailySummaryCommandTest extends TestCase
         self::assertSame(1, Artisan::call('analyze:import-app-daily-summary', ['--from' => 'invalid', '--to' => 'invalid']));
         config(['analyze.max_pages_per_day' => 0]);
         self::assertSame(1, Artisan::call('analyze:import-app-daily-summary'));
+        Exceptions::assertReportedCount(3);
     }
 
     /** @impure */

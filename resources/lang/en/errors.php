@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_analysis_period' => 'Specify an inclusive UTC period of at most one calendar year ending no later than UTC D-3.',
     'video_already_watched' => 'The official owner has already watched this video.',
     'video_watch_request_target_not_eligible' => 'Only user-created videos on an officially certified talent wiki are eligible.',
     'video_watch_request_duration_not_eligible' => 'Only videos confirmed to be at most 30 seconds are eligible.',

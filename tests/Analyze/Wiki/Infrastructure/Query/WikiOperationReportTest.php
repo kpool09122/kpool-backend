@@ -7,7 +7,9 @@ namespace Tests\Analyze\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\DraftWiki;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Override;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Analyze\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
@@ -23,6 +25,7 @@ use Source\Analyze\Wiki\Infrastructure\Service\DailyWikiOperationsQueryService;
 use Tests\Helper\AnalyticsHttpStub;
 use Tests\Helper\AnalyzeSourceRecords;
 use Tests\Helper\AnalyzeWikiMetrics;
+use Tests\Helper\CreateAnalyzePrincipal;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -30,6 +33,16 @@ use Tests\TestCase;
 #[Group('useDb')]
 class WikiOperationReportTest extends TestCase
 {
+    /** @phpstan-ignore property.uninitialized (setUp で初期化) */
+    private PrincipalIdentifier $principalIdentifier;
+
+    #[Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
+    }
+
     public function testUnpublishedSubmissionIsReportedWithoutImportAndRepeatedImportsDoNotDuplicateIt(): void
     {
         AnalyzeSourceRecords::history('draft_status_change', '2020-01-01', wiki: null, draft: StrTestHelper::generateUuid());
@@ -96,7 +109,7 @@ class WikiOperationReportTest extends TestCase
 
         try {
             $report = $this->report(wiki: $first->wiki_id);
-            self::assertCount(2, DB::getQueryLog());
+            self::assertCount(10, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();
@@ -185,7 +198,8 @@ class WikiOperationReportTest extends TestCase
     /** @phpstan-impure */
     private function report(Metric $metric = Metric::SUBMISSIONS, ?string $wiki = null, ?string $country = null, ?string $translationSet = null, ?string $language = null): MetricReportReadModel
     {
-        $report = (new GetWikiDailySummaryReport())->process(new GetWikiDailySummaryReportInput(
+        $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput(
+            $this->principalIdentifier,
             new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-03'), new DateTimeImmutable('2026-11-06T00:00:00Z')),
             wikiIdentifier: $wiki,
             translationSetIdentifier: $translationSet,

@@ -6,6 +6,7 @@ namespace Source\Analyze\Wiki\Application\UseCase\Query;
 
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 
+/** @phpstan-import-type SerializedMetricReport from MetricReportReadModel */
 readonly class WikiDailySummaryReportReadModel
 {
     public function __construct(
@@ -15,6 +16,18 @@ readonly class WikiDailySummaryReportReadModel
         private MetricReportReadModel $submissions,
         private MetricReportReadModel $publications,
     ) {
+    }
+
+    /** @return array{views: SerializedMetricReport, viewers: SerializedMetricReport, engagementTime: SerializedMetricReport, submissions: SerializedMetricReport, publications: SerializedMetricReport} */
+    public function toArray(): array
+    {
+        return [
+            'views' => $this->views->toArray(),
+            'viewers' => $this->viewers->toArray(),
+            'engagementTime' => $this->engagementTime->toArray(),
+            'submissions' => $this->submissions->toArray(),
+            'publications' => $this->publications->toArray(),
+        ];
     }
 
     public function views(): MetricReportReadModel

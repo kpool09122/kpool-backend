@@ -33,6 +33,7 @@ use Source\Analyze\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Analyze\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Analyze\Principal\Infrastructure\Service\AccountMembershipService;
 use Source\Analyze\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\Analyze\Shared\Infrastructure\Service\ReportRevisionService;
 use Source\Analyze\Wiki\Application\Service\DailyMetricsFetchServiceInterface as WikiDailyMetricsFetchServiceInterface;
 use Source\Analyze\Wiki\Application\Service\DailyWikiOperationsQueryServiceInterface;
 use Source\Analyze\Wiki\Domain\Factory\WikiDailySummaryFactoryInterface;
@@ -46,6 +47,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(ReportRevisionService::class);
         $this->app->singleton(AppDailyMetricsFetchServiceInterface::class, AppDailyMetricsFetchService::class);
         $this->app->singleton(WikiDailyMetricsFetchServiceInterface::class, WikiDailyMetricsFetchService::class);
         $this->app->singleton(RegisteredIdentityCountQueryServiceInterface::class, RegisteredIdentityCountQueryService::class);

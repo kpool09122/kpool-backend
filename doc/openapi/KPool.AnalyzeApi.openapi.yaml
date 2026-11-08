@@ -4,6 +4,82 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /app/daily-summary:
+    get:
+      operationId: AnalysisOperations_getAppDailySummaryReport
+      description: 'Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.'
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppDailySummaryReport'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /principal/me:
     get:
       operationId: PrincipalOperations_getCurrentPrincipal
@@ -116,8 +192,160 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
+  /wiki/daily-summary:
+    get:
+      operationId: AnalysisOperations_getWikiDailySummaryReport
+      description: Get all Wiki metrics under the App period/authorization rules, including other owners' Wikis. Omit both target identifiers for ALL; specify either Wiki or translation set, never both. language/country filter all Wiki metrics. country=unknown selects unknown; omitted/null selects all. Stored zero values are measured zero; no summary rows means not_collected, including complete empty imports. Import failures leave published measurements unchanged and are handled through error monitoring and period-specific command retries. Operations read histories independently of imports. Counts, time and viewer-days sum; actor counts are period-distinct Principals. Country unknown is null. Countries without summary/history rows are omitted; absence alone does not prove measured zero. Authorization is re-evaluated on every request.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: wikiIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: translationSetIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ja
+              - ko
+              - en
+            nullable: true
+          explode: false
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WikiDailySummaryReport'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
 components:
   schemas:
+    AppDailySummaryReport:
+      type: object
+      required:
+        - applicationUsers
+        - registeredUsers
+      properties:
+        applicationUsers:
+          allOf:
+            - $ref: '#/components/schemas/MetricReport'
+          description: Sum of independently acquired daily application users (person-days). No country projection.
+        registeredUsers:
+          allOf:
+            - $ref: '#/components/schemas/MetricReport'
+          description: Identity closing balance on the final selected day; never filtered by Wiki/language/country. No country projection.
+    CountryMetric:
+      type: object
+      required:
+        - country
+        - value
+        - denominator
+        - quality
+      properties:
+        country:
+          type: string
+          nullable: true
+        value:
+          type: string
+          nullable: true
+        denominator:
+          type: integer
+          format: int64
+          nullable: true
+        quality:
+          type: array
+          items:
+            type: string
+        actorCount:
+          type: string
+          nullable: true
+      description: World-map period aggregation, sorted by code with unknown first. Null country means unknown (empty string in storage). Country actor counts are distinct within that country; do not sum them for the global actor count.
     KPool.Common.PrincipalStatusConflictProblem:
       type: object
       required:
@@ -159,6 +387,97 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    MetricDay:
+      type: object
+      required:
+        - day
+        - availability
+        - value
+        - denominator
+        - quality
+        - updatedAt
+      properties:
+        day:
+          type: string
+          format: date
+        availability:
+          type: string
+          enum:
+            - measured
+            - not_collected
+            - missing
+            - incomplete
+        value:
+          type: string
+          nullable: true
+        denominator:
+          type: integer
+          format: int64
+          nullable: true
+        quality:
+          type: array
+          items:
+            type: string
+        updatedAt:
+          type: string
+          nullable: true
+        actorCount:
+          type: string
+          nullable: true
+      description: UTC day. Availability describes stored measurements, not import execution. not_collected means no summary rows in the selected scope; it does not distinguish an empty import from an uncollected day. missing means an expected metric/definition is absent; incomplete also marks partial summary definitions. Direct history uses measured zero when empty, incomplete for missing attribution and null updatedAt. Import errors are reported operationally and leave published values and updatedAt unchanged.
+    MetricDefinition:
+      type: object
+      required:
+        - source
+        - metric
+        - grain
+        - version
+      properties:
+        source:
+          type: string
+        metric:
+          type: string
+        grain:
+          type: string
+        version:
+          type: string
+      description: Metric definition selected by the server; callers cannot mix sources or versions.
+    MetricReport:
+      type: object
+      required:
+        - definition
+        - revision
+        - days
+        - total
+        - denominator
+        - actorCount
+        - countries
+      properties:
+        definition:
+          $ref: '#/components/schemas/MetricDefinition'
+        revision:
+          type: string
+          nullable: true
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricDay'
+        total:
+          type: string
+          nullable: true
+          description: "Additive total except registeredUsers: final selected UTC day's Identity closing balance. Null is not zero. May be a partial known total: inspect all daily states/quality."
+        denominator:
+          type: integer
+          format: int64
+          nullable: true
+        actorCount:
+          type: string
+          nullable: true
+          description: Distinct operation Principals over the full selection, never a sum of daily/country actors. Null for other metrics or incomplete attribution.
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryMetric'
     PolicyStatement:
       type: object
       required:
@@ -231,6 +550,25 @@ components:
         identityIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
       description: New Analyze principal for the authenticated identity in the current account.
+    WikiDailySummaryReport:
+      type: object
+      required:
+        - views
+        - viewers
+        - engagementTime
+        - submissions
+        - publications
+      properties:
+        views:
+          $ref: '#/components/schemas/MetricReport'
+        viewers:
+          $ref: '#/components/schemas/MetricReport'
+        engagementTime:
+          $ref: '#/components/schemas/MetricReport'
+        submissions:
+          $ref: '#/components/schemas/MetricReport'
+        publications:
+          $ref: '#/components/schemas/MetricReport'
   securitySchemes:
     SessionCookieAuth:
       type: apiKey

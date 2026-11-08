@@ -12,6 +12,7 @@ use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\PreventRequestForgery;
 use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
+use Application\Http\Middleware\ResolveAnalyzeContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -37,6 +38,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router->aliasMiddleware('account.active', EnsureAccountActive::class);
         $router->aliasMiddleware('principal.active', EnsurePrincipalActive::class);
         $router->aliasMiddleware('resolve.actor', ResolveActorContext::class);
+        $router->aliasMiddleware('resolve.analyze', ResolveAnalyzeContext::class);
         $router->aliasMiddleware('resolve.account', ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', ResolveWikiContext::class);
         $router->aliasMiddleware('rate-limit', EnforceApiRateLimit::class);
@@ -83,6 +85,11 @@ class AuthenticatedRouteProtectionTest extends TestCase
         self::assertContains('principal.active', $enrollment->gatherMiddleware());
         self::assertContains('rate-limit:screen,command', $enrollment->gatherMiddleware());
         self::assertNotContains('resolve.analyze', $enrollment->gatherMiddleware());
+        foreach (['/api/v1/analyze/app/daily-summary', '/api/v1/analyze/wiki/daily-summary'] as $path) {
+            $report = $this->routeFor('GET', $path);
+            self::assertSame(['api', 'session', 'auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.analyze', 'rate-limit:screen,query'], $report->gatherMiddleware());
+            self::assertContains(ResolveAnalyzeContext::class, $this->app()->make('router')->gatherRouteMiddleware($report));
+        }
     }
 
     public function testSessionApisShareCsrfProtection(): void

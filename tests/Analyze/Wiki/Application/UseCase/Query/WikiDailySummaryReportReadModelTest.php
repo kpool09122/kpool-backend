@@ -19,6 +19,7 @@ class WikiDailySummaryReportReadModelTest extends TestCase
             $metrics[] = new MetricReportReadModel($definition, null, [], (string) $index, null);
         }
         $report = new WikiDailySummaryReportReadModel(...$metrics);
+        self::assertSame(['views' => $metrics[0]->toArray(),'viewers' => $metrics[1]->toArray(),'engagementTime' => $metrics[2]->toArray(),'submissions' => $metrics[3]->toArray(),'publications' => $metrics[4]->toArray()], $report->toArray());
         self::assertSame($metrics[0], $report->views());
         self::assertSame($metrics[1], $report->viewers());
         self::assertSame($metrics[2], $report->engagementTime());

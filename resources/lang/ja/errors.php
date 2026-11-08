@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'invalid_analysis_period' => '分析期間はUTC D-3以前を終了日とする、開始日・終了日を含む最長暦年1年で指定してください。',
     'video_already_watched' => '本人がすでに視聴済みの動画です。',
     'video_watch_request_target_not_eligible' => '公式認証済みタレントWikiのユーザー作成動画のみ送信できます。',
     'video_watch_request_duration_not_eligible' => '30秒以下と確認できる動画のみ送信できます。',

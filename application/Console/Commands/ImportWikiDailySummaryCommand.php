@@ -42,16 +42,20 @@ class ImportWikiDailySummaryCommand extends Command
             foreach ($period->days() as $day) {
                 try {
                     $output = new ImportWikiDailySummaryOutput();
-                    DB::transaction(fn () => $importWikiDailySummary->process(new ImportWikiDailySummaryInput($day, Carbon::now('UTC')->toDateTimeImmutable(), $maxPages), $output));
+                    DB::transaction(function () use ($importWikiDailySummary, $day, $maxPages, $output): void {
+                        $importWikiDailySummary->process(new ImportWikiDailySummaryInput($day, Carbon::now('UTC')->toDateTimeImmutable(), $maxPages), $output);
+                    });
                     $this->line($day . ' complete summaries=' . $output->summaryCount());
-                } catch (Throwable) {
+                } catch (Throwable $exception) {
+                    report($exception);
                     $this->error($day . ' summary import failed; published values retained.');
                     $failed = true;
                 }
             }
 
             return $failed ? self::FAILURE : self::SUCCESS;
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            report($exception);
             $this->error('Analyze Wiki daily summary import failed. Check date range, API and history configuration.');
 
             return self::FAILURE;
