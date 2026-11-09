@@ -217,6 +217,8 @@ model WikiDetail {
   slug: string;
   @doc("Language of the wiki.")
   language: string;
+  @doc("Published languages in the same translation set and resource type, including this wiki language.")
+  availableLanguages: string[];
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Published version number.")
@@ -359,6 +361,8 @@ model TalentWikiDetail {
   slug: string;
   @doc("Language of the wiki.")
   language: string;
+  @doc("Published languages in the same translation set and resource type, including this wiki language.")
+  availableLanguages: string[];
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Published version number.")
@@ -539,6 +543,8 @@ model SongWikiDetail {
   slug: string;
   @doc("Language of the wiki.")
   language: string;
+  @doc("Published languages in the same translation set and resource type, including this wiki language.")
+  availableLanguages: string[];
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Published version number.")
@@ -631,6 +637,8 @@ model AgencyWikiDetail {
   slug: string;
   @doc("Language of the wiki.")
   language: string;
+  @doc("Published languages in the same translation set and resource type, including this wiki language.")
+  availableLanguages: string[];
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Published version number.")

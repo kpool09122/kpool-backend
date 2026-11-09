@@ -33,6 +33,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
                 'wiki_images.source_name as hero_image_source_name',
                 'wiki_images.is_hidden as hero_image_is_hidden',
             )
+            ->withAvailableLanguages()
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
             ->with(['talentBasic.groups.groupBasic'])
             ->where('wikis.resource_type', ResourceType::TALENT->value)
@@ -54,6 +55,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
+            availableLanguages: $model->available_languages,
             resourceType: ResourceType::TALENT->value,
             version: $model->version,
             isOfficial: $model->owner_account_id !== null,

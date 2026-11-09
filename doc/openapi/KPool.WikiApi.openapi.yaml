@@ -5919,6 +5919,7 @@ components:
         - translationSetIdentifier
         - slug
         - language
+        - availableLanguages
         - resourceType
         - version
         - isOfficial
@@ -5945,6 +5946,11 @@ components:
         language:
           type: string
           description: Language of the wiki.
+        availableLanguages:
+          type: array
+          items:
+            type: string
+          description: Published languages in the same translation set and resource type, including this wiki language.
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
@@ -8503,6 +8509,7 @@ components:
         - translationSetIdentifier
         - slug
         - language
+        - availableLanguages
         - resourceType
         - version
         - isOfficial
@@ -8529,6 +8536,11 @@ components:
         language:
           type: string
           description: Language of the wiki.
+        availableLanguages:
+          type: array
+          items:
+            type: string
+          description: Published languages in the same translation set and resource type, including this wiki language.
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
@@ -8871,6 +8883,7 @@ components:
         - translationSetIdentifier
         - slug
         - language
+        - availableLanguages
         - resourceType
         - version
         - isOfficial
@@ -8897,6 +8910,11 @@ components:
         language:
           type: string
           description: Language of the wiki.
+        availableLanguages:
+          type: array
+          items:
+            type: string
+          description: Published languages in the same translation set and resource type, including this wiki language.
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
@@ -9381,6 +9399,7 @@ components:
         - translationSetIdentifier
         - slug
         - language
+        - availableLanguages
         - resourceType
         - version
         - isOfficial
@@ -9407,6 +9426,11 @@ components:
         language:
           type: string
           description: Language of the wiki.
+        availableLanguages:
+          type: array
+          items:
+            type: string
+          description: Published languages in the same translation set and resource type, including this wiki language.
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.

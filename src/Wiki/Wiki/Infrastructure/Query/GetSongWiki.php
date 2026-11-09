@@ -35,6 +35,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
                 'wiki_images.source_name as hero_image_source_name',
                 'wiki_images.is_hidden as hero_image_is_hidden',
             )
+            ->withAvailableLanguages()
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
             ->with(['songBasic.groups.groupBasic', 'songBasic.talents.talentBasic'])
             ->where('wikis.resource_type', ResourceType::SONG->value)
@@ -53,6 +54,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
             translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
+            availableLanguages: $model->available_languages,
             resourceType: ResourceType::SONG->value,
             version: $model->version,
             isOfficial: $model->owner_account_id !== null,

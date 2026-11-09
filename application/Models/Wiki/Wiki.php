@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
@@ -15,6 +17,7 @@ use Override;
  * @property string $id
  * @property string $translation_set_identifier
  * @property string $slug
+ * @property-read list<string> $available_languages
  * @property string $language
  * @property string $resource_type
  * @property ?string $image_identifier
@@ -71,6 +74,7 @@ class Wiki extends Model
 
     #[Override]
     protected $casts = [
+        'available_languages' => 'array',
         'sections' => 'array',
         'keywords' => 'array',
         'version' => 'integer',
@@ -79,6 +83,21 @@ class Wiki extends Model
         'translated_at' => 'datetime',
         'published_at' => 'datetime',
     ];
+
+    /** @param Builder<self> $query */
+    #[Scope]
+    protected function withAvailableLanguages(Builder $query): void
+    {
+        // Public translations live in wikis, including legacy rows without a
+        // publication timestamp. Aggregate them in the detail SELECT itself.
+        $query->addSelect([
+            'available_languages' => self::query()
+                ->from('wikis as translations')
+                ->selectRaw('json_agg(DISTINCT translations.language ORDER BY translations.language)')
+                ->whereColumn('translations.translation_set_identifier', 'wikis.translation_set_identifier')
+                ->whereColumn('translations.resource_type', 'wikis.resource_type'),
+        ]);
+    }
 
     /**
      * @return HasOne<WikiTalentBasic>
