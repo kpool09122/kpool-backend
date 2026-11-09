@@ -72,6 +72,7 @@ readonly class RegisterWithPasskey implements RegisterWithPasskeyInterface
             $input->identityName(),
             $challenge->email,
             $input->language(),
+            $input->registrationCountry(),
         );
         $identity->markEmailVerified(new DateTimeImmutable());
         if ($input->base64EncodedImage() !== null) {

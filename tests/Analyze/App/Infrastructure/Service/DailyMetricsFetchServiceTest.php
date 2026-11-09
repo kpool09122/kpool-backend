@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mockery;
 use Mockery\MockInterface;
 use Override;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Source\Analyze\App\Application\Exception\IncompleteDailyMetricsException;
 use Source\Analyze\App\Application\Exception\MetricsFetchFailedException;
@@ -34,12 +35,17 @@ class DailyMetricsFetchServiceTest extends TestCase
         $day = new UtcDate('2020-01-01');
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
-        $query->shouldReceive('countBefore')->once()->withArgs(static fn (DateTimeImmutable $end): bool => $end == $day->next()->instant())->andReturn('1234');
+        $query->shouldReceive('countByCountryBefore')->once()->withArgs(static fn (DateTimeImmutable $end): bool => $end == $day->next()->instant())->andReturn(['JP' => '1200', '' => '34']);
         $data = (new DailyMetricsFetchService($http->client(), $query))->fetchSummary($day, AnalyzeAppMetrics::now(), 1);
         self::assertSame('250', $data->applicationUsers()->count());
         self::assertSame('1234', $data->registeredUsers()->count());
         self::assertEquals($day->next()->instant(), $data->registeredUsers()->asOf());
         self::assertSame('ga4', $data->applicationUsers()->provenance()->definition()->source);
+        self::assertSame('JP', $data->countries()[0]->countryKey());
+        self::assertSame('60', $data->countries()[0]->applicationUsers->count());
+        self::assertSame('1200', $data->countries()[0]->registeredUsers->count());
+        self::assertSame('', $data->countries()[1]->countryKey());
+        self::assertSame('34', $data->countries()[1]->registeredUsers->count());
         $body = (string) $http->requests[0]->getBody();
         self::assertStringContainsString('totalUsers', $body);
         self::assertStringContainsString('public.example.test', $body);
@@ -48,6 +54,29 @@ class DailyMetricsFetchServiceTest extends TestCase
         self::assertStringNotContainsString('lang=ja', $body);
         self::assertStringNotContainsString('pagePath', $body);
         self::assertStringNotContainsString('wiki_id', $body);
+    }
+
+    /** @param array<string, string> $countries */
+    #[DataProvider('registrationCounts')]
+    public function testRegistrationTotalIsDerivedFromCountriesWithoutLosingIntegerPrecision(array $countries, string $expected): void
+    {
+        $http = new AnalyticsHttpStub();
+        /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
+        $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
+        $query->shouldReceive('countByCountryBefore')->once()->andReturn($countries);
+        $data = (new DailyMetricsFetchService($http->client(), $query))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
+        self::assertSame($expected, $data->registeredUsers()->count());
+    }
+
+    /** @return array<string, array{array<string, string>, string}> */
+    public static function registrationCounts(): array
+    {
+        return [
+            'unknown registrations included' => [['JP' => '12', 'US' => '7', '' => '4'], '23'],
+            'zero registrations' => [['' => '0'], '0'],
+            'empty result' => [[], '0'],
+            'twenty digit count' => [['JP' => '99999999999999999990', '' => '9'], '99999999999999999999'],
+        ];
     }
 
     public function testCompleteEmptyApiReportMeansZeroUsers(): void
@@ -80,7 +109,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $http = new AnalyticsHttpStub();
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
-        $query->shouldReceive('countBefore')->once()->andThrow(new RuntimeException('History query failed.'));
+        $query->shouldReceive('countByCountryBefore')->once()->andThrow(new RuntimeException('History query failed.'));
         $this->expectException(MetricsFetchFailedException::class);
         (new DailyMetricsFetchService($http->client(), $query))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
     }
@@ -93,7 +122,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $data = $this->service($http)->fetchSummary(new UtcDate('2009-12-31'), AnalyzeAppMetrics::now(), 1);
         self::assertSame('250', $data->applicationUsers()->count());
         self::assertSame('1234', $data->registeredUsers()->count());
-        self::assertCount(1, $http->requests);
+        self::assertCount(2, $http->requests);
     }
 
     public function testInvalidFrontendUrlDoesNotCallTheApi(): void
@@ -113,7 +142,7 @@ class DailyMetricsFetchServiceTest extends TestCase
     {
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
-        $query->shouldReceive('countBefore')->andReturn('1234');
+        $query->shouldReceive('countByCountryBefore')->andReturn(['JP' => '1200', '' => '34']);
 
         return new DailyMetricsFetchService($http->client(), $query);
     }

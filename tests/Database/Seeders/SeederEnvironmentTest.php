@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Database\Seeders;
 
+use Database\Seeders\AnalyzeSampleSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\MasterDataSeeder;
 use Database\Seeders\TestAccountSeeder;
@@ -20,7 +21,7 @@ class SeederEnvironmentTest extends TestCase
     {
         $this->app()->instance('env', $environment);
 
-        foreach ([MasterDataSeeder::class, TestAccountSeeder::class, WikiEditorSampleSeeder::class] as $class) {
+        foreach ([MasterDataSeeder::class, TestAccountSeeder::class, WikiEditorSampleSeeder::class, AnalyzeSampleSeeder::class] as $class) {
             $seeder = Mockery::mock($class)->makePartial();
             $seeder->shouldReceive('run')->times($class === MasterDataSeeder::class || $samplesAllowed ? 1 : 0);
             $this->app()->instance($class, $seeder);
@@ -39,6 +40,7 @@ class SeederEnvironmentTest extends TestCase
 
         $this->app()->make(TestAccountSeeder::class)->run();
         $this->app()->make(WikiEditorSampleSeeder::class)->run();
+        $this->app()->make(AnalyzeSampleSeeder::class)->run();
     }
 
     /**

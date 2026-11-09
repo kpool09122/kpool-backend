@@ -7,6 +7,7 @@ namespace Source\Analyze\App\Infrastructure\Service;
 use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClientInterface;
 use Application\Http\Client\GoogleAnalyticsClient\RunReport\FilterExpression;
 use Application\Http\Client\GoogleAnalyticsClient\RunReport\RunReportRequest;
+use Brick\Math\BigInteger;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Analyze\App\Application\Exception\IncompleteDailyMetricsException;
@@ -14,12 +15,14 @@ use Source\Analyze\App\Application\Exception\MetricsFetchFailedException;
 use Source\Analyze\App\Application\Service\AppDailySummaryData;
 use Source\Analyze\App\Application\Service\DailyMetricsFetchServiceInterface;
 use Source\Analyze\App\Application\Service\RegisteredIdentityCountQueryServiceInterface;
+use Source\Analyze\App\Domain\ValueObject\AppCountryMetrics;
 use Source\Analyze\App\Domain\ValueObject\ApplicationUserCount;
 use Source\Analyze\App\Domain\ValueObject\RegisteredUserSnapshot;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Throwable;
 
 readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInterface
@@ -55,16 +58,67 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
             }
             $rows = $response->rows();
             $registeredAt = $day->next()->instant();
-            $registeredUsers = $this->registeredIdentityCountQueryService->countBefore($registeredAt);
+            $countryUsers = $this->fetchCountryUsers($day, $maxPages, $host);
+            $countryRegistered = $this->registeredIdentityCountQueryService->countByCountryBefore($registeredAt);
+            $countries = [];
+            foreach (array_unique([...array_keys($countryUsers), ...array_keys($countryRegistered)]) as $country) {
+                $countries[] = new AppCountryMetrics(
+                    $country === '' ? null : CountryCode::from($country),
+                    new ApplicationUserCount($countryUsers[$country] ?? '0', new MetricProvenance($applicationUsersDefinition, $day, $now)),
+                    new RegisteredUserSnapshot($countryRegistered[$country] ?? '0', $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
+                );
+            }
 
             return new AppDailySummaryData(
                 new ApplicationUserCount($rows === [] ? '0' : $rows[0]->metric('totalUsers'), new MetricProvenance($applicationUsersDefinition, $day, $now)),
-                new RegisteredUserSnapshot($registeredUsers, $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
+                new RegisteredUserSnapshot((string) BigInteger::sum(0, ...array_values($countryRegistered)), $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
+                $countries,
             );
         } catch (IncompleteDailyMetricsException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             throw new MetricsFetchFailedException($exception);
         }
+    }
+
+    /** @return array<string, string>
+     * @throws IncompleteDailyMetricsException
+     */
+    private function fetchCountryUsers(UtcDate $day, int $maxPages, string $host): array
+    {
+        $offset = 0;
+        $expectedRows = null;
+        $countries = [];
+        for ($page = 0; $page < $maxPages; $page++) {
+            $response = $this->googleAnalyticsClient->runReport(new RunReportRequest(
+                (string) $day,
+                ['totalUsers'],
+                ['date', 'countryId'],
+                FilterExpression::exact('hostName', $host),
+                $offset,
+            ));
+            if (! in_array($response->params()->timeZone(), ['UTC', 'Etc/UTC', 'Etc/GMT', 'GMT'], true)
+                || ($expectedRows !== null && $expectedRows !== $response->rowCount())) {
+                throw new IncompleteDailyMetricsException('App country users require complete, stable UTC reports.');
+            }
+            $expectedRows = $response->rowCount();
+            foreach ($response->rows() as $row) {
+                $raw = $row->dimension('countryId');
+                $country = in_array($raw, ['', '(not set)', 'ZZ'], true) ? '' : $raw;
+                if (($country !== '' && CountryCode::tryFrom($country) === null) || isset($countries[$country])) {
+                    throw new IncompleteDailyMetricsException('Invalid or duplicate App country attribution.');
+                }
+                $countries[$country] = $row->metric('totalUsers');
+            }
+            $offset += count($response->rows());
+            if ($offset === $expectedRows) {
+                return $countries;
+            }
+            if ($response->rows() === []) {
+                throw new IncompleteDailyMetricsException('The App country dataset is incomplete.');
+            }
+        }
+
+        throw new IncompleteDailyMetricsException('App country daily page limit exceeded.');
     }
 }

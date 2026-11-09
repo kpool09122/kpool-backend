@@ -10,6 +10,7 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -25,6 +26,7 @@ readonly class IdentityFactory implements IdentityFactoryInterface
         IdentityName $identityName,
         Email $email,
         Language $language,
+        ?CountryCode $registrationCountry = null,
     ): Identity {
         return new Identity(
             new IdentityIdentifier($this->ulidGenerator->generate()),
@@ -33,10 +35,11 @@ readonly class IdentityFactory implements IdentityFactoryInterface
             $language,
             null,
             null,
+            registrationCountry: $registrationCountry,
         );
     }
 
-    public function createFromSocialProfile(SocialProfile $profile): Identity
+    public function createFromSocialProfile(SocialProfile $profile, ?CountryCode $registrationCountry = null): Identity
     {
         $identityName = $this->buildIdentityName($profile);
 
@@ -48,6 +51,7 @@ readonly class IdentityFactory implements IdentityFactoryInterface
             null,
             null,
             [new SocialConnection($profile->provider(), $profile->providerUserId())],
+            registrationCountry: $registrationCountry,
         );
     }
 

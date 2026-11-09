@@ -7,10 +7,13 @@ namespace Source\Identity\Application\UseCase\Command\RegisterWithPasskey;
 use Source\Identity\Domain\ValueObject\ChallengeSessionKey;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Language;
 
 interface RegisterWithPasskeyInputPort
 {
+    public function registrationCountry(): ?CountryCode;
+
     public function challengeKey(): ChallengeSessionKey;
 
     public function identityName(): IdentityName;

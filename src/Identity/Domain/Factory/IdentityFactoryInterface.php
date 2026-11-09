@@ -7,6 +7,7 @@ namespace Source\Identity\Domain\Factory;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialProfile;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
@@ -16,7 +17,8 @@ interface IdentityFactoryInterface
         IdentityName $identityName,
         Email $email,
         Language $language,
+        ?CountryCode $registrationCountry = null,
     ): Identity;
 
-    public function createFromSocialProfile(SocialProfile $profile): Identity;
+    public function createFromSocialProfile(SocialProfile $profile, ?CountryCode $registrationCountry = null): Identity;
 }

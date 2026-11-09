@@ -11,6 +11,7 @@ use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\ValueObject\AuthCodeSession;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -36,7 +37,13 @@ class Identity
         private ?DateTimeImmutable $emailVerifiedAt,
         private array $socialConnections = [],
         private readonly ?DateTimeImmutable $createdAt = null,
+        private readonly ?CountryCode $registrationCountry = null,
     ) {
+    }
+
+    public function registrationCountry(): ?CountryCode
+    {
+        return $this->registrationCountry;
     }
 
     public function createdAt(): ?DateTimeImmutable

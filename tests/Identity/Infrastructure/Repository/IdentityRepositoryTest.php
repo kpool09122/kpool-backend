@@ -13,6 +13,7 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -23,6 +24,20 @@ use Tests\TestCase;
 
 class IdentityRepositoryTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testRegistrationCountrySurvivesProfileUpdates(): void
+    {
+        $identity = new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Origin'), new Email('origin@example.test'), Language::ENGLISH, null, null, registrationCountry: CountryCode::JAPAN);
+        $repository = $this->app()->make(IdentityRepositoryInterface::class);
+        $repository->save($identity);
+        $restored = $repository->findById($identity->identityIdentifier());
+        self::assertNotNull($restored);
+        self::assertSame(CountryCode::JAPAN, $restored->registrationCountry());
+        $restored->setLanguage(Language::KOREAN);
+        $repository->save($restored);
+        self::assertSame(CountryCode::JAPAN, $repository->findById($identity->identityIdentifier())?->registrationCountry());
+    }
+
     /**
      * 正しくDIが動作していること.
      *

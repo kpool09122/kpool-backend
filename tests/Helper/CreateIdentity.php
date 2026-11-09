@@ -17,6 +17,7 @@ class CreateIdentity
      *     identity_name?: string,
      *     email?: string,
      *     language?: string,
+     *     registration_country?: ?string,
      *     profile_image?: ?string,
      *     email_verified_at?: ?DateTimeImmutable
      * } $overrides
@@ -28,6 +29,7 @@ class CreateIdentity
             'identity_name' => $overrides['identity_name'] ?? $overrides['identityName'] ?? 'test-identity',
             'email' => $overrides['email'] ?? 'test@example.com',
             'language' => $overrides['language'] ?? 'ja',
+            'registration_country' => $overrides['registration_country'] ?? null,
             'profile_image' => $overrides['profile_image'] ?? null,
             'email_verified_at' => isset($overrides['email_verified_at'])
                 ? $overrides['email_verified_at']->format('Y-m-d H:i:s')

@@ -7,10 +7,18 @@ namespace Application\Http\Support;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 
 readonly class VisitorLocationVerifier
 {
+    public function country(Request $request): ?CountryCode
+    {
+        $country = $this->verify($request)->country();
+
+        return $country !== null ? CountryCode::tryFrom($country) : null;
+    }
+
     public function verify(Request $request): VisitorLocation
     {
         $secret = config('wiki.visitor_location_secret');

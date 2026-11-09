@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 TestAccountSeeder::class,
                 WikiEditorSampleSeeder::class,
+                AnalyzeSampleSeeder::class,
             ]);
         }
     }

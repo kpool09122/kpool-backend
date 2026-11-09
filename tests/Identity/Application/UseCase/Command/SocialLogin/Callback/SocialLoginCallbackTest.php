@@ -43,6 +43,7 @@ use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
 use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Domain\ValueObject\StepUpOAuthSession;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -268,7 +269,7 @@ class SocialLoginCallbackTest extends TestCase
         $email = new Email('kakao-user@example.com');
         $profile = new SocialProfile($provider, 'provider-user-3', $email, 'Kakao User');
         $newUser = $this->createIdentity($email);
-        $signupSession = new SignupSession(AccountType::CORPORATION, returnTo: '/mypage/wiki');
+        $signupSession = new SignupSession(AccountType::CORPORATION, returnTo: '/mypage/wiki', registrationCountry: CountryCode::JAPAN);
 
         $oAuthStateStorageService = Mockery::mock(OAuthStateStorageServiceInterface::class);
         $oAuthStateStorageService->shouldReceive('consume')
@@ -300,7 +301,7 @@ class SocialLoginCallbackTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('createFromSocialProfile')
             ->once()
-            ->with($profile)
+            ->with($profile, CountryCode::JAPAN)
             ->andReturn($newUser);
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
@@ -394,7 +395,7 @@ class SocialLoginCallbackTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('createFromSocialProfile')
             ->once()
-            ->with($profile)
+            ->with($profile, null)
             ->andReturn($newUser);
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
@@ -483,7 +484,7 @@ class SocialLoginCallbackTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('createFromSocialProfile')
             ->once()
-            ->with($profile)
+            ->with($profile, null)
             ->andReturn($newUser);
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);

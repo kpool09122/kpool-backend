@@ -6,6 +6,7 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Source\Analyze\App\Application\Service\AppDailySummaryData;
+use Source\Analyze\App\Domain\ValueObject\AppCountryMetrics;
 use Source\Analyze\App\Domain\ValueObject\ApplicationUserCount;
 use Source\Analyze\App\Domain\ValueObject\RegisteredUserSnapshot;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
@@ -40,10 +41,20 @@ class AnalyzeAppMetrics
         ];
     }
 
+    /** @param array<string, string> $values
+     * @return array{ApplicationUserCount, RegisteredUserSnapshot, list<AppCountryMetrics>}
+     */
+    public static function summaryValues(UtcDate $day, array $values = []): array
+    {
+        [$users, $registered] = self::analysisValues($day, $values);
+
+        return [$users, $registered, [new AppCountryMetrics(null, $users, $registered)]];
+    }
+
     /** @param array<string, string> $values */
     public static function data(UtcDate $day, array $values = []): AppDailySummaryData
     {
-        return new AppDailySummaryData(...self::analysisValues($day, $values));
+        return new AppDailySummaryData(...self::summaryValues($day, $values));
     }
 
     public static function now(): DateTimeImmutable

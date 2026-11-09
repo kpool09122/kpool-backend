@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Override;
 
 /**
+ * @property ?string $registration_country
  * @property string $id
+ * @property ?string $registration_country
  * @property string $identity_id
  * @property string $language
  * @property CarbonImmutable|null $identity_created_at
@@ -21,6 +23,7 @@ use Override;
     'id',
     'identity_id',
     'language',
+    'registration_country',
     'identity_created_at',
     'archived_at',
 ])]

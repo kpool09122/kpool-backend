@@ -6,6 +6,7 @@ namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Identity\Domain\ValueObject\ArchivedIdentityIdentifier;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 
@@ -17,6 +18,7 @@ readonly class ArchivedIdentity
         private Language $language,
         private ?DateTimeImmutable $identityCreatedAt,
         private DateTimeImmutable $archivedAt,
+        private ?CountryCode $registrationCountry = null,
     ) {
     }
 
@@ -38,6 +40,11 @@ readonly class ArchivedIdentity
     public function identityCreatedAt(): ?DateTimeImmutable
     {
         return $this->identityCreatedAt;
+    }
+
+    public function registrationCountry(): ?CountryCode
+    {
+        return $this->registrationCountry;
     }
 
     public function archivedAt(): DateTimeImmutable

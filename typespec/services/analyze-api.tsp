@@ -95,9 +95,9 @@ model MetricReport {
 }
 
 model AppDailySummaryReport {
-  @doc("Sum of independently acquired daily application users (person-days). No country projection.")
+  @doc("Sum of independently acquired daily application users (person-days), with separately acquired country breakdowns. Global users are not the sum of countries.")
   applicationUsers: MetricReport;
-  @doc("Identity closing balance on the final selected day; never filtered by Wiki/language/country. No country projection.")
+  @doc("Identity closing balance on the final selected day, grouped by immutable registration-time access country. Missing registration country is unknown; account addresses are never used. Wiki/language filters do not apply.")
   registeredUsers: MetricReport;
 }
 
@@ -128,8 +128,8 @@ interface AnalysisOperations {
   @route("/app/daily-summary")
   @useAuth(SessionCookieAuth)
   @get
-  @doc("Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.")
-  getAppDailySummaryReport(@query from: plainDate, @query to: plainDate): AppDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+  @doc("Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. country=unknown selects unknown; omitted/null selects all. Country breakdowns are unavailable for imports predating country collection. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.")
+  getAppDailySummaryReport(@query from: plainDate, @query to: plainDate, @query country?: string | null): AppDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 
   @route("/wiki/daily-summary")
   @useAuth(SessionCookieAuth)
