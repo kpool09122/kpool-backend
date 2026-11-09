@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\CountryCode;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 
 readonly class VisitorLocationVerifier
@@ -17,6 +18,21 @@ readonly class VisitorLocationVerifier
         $country = $this->verify($request)->country();
 
         return $country !== null ? CountryCode::tryFrom($country) : null;
+    }
+
+    public function region(Request $request): ?SubdivisionCode
+    {
+        $location = $this->verify($request);
+        $country = $location->country() !== null ? CountryCode::tryFrom($location->country()) : null;
+        if ($country === null || $location->region() === null) {
+            return null;
+        }
+
+        try {
+            return new SubdivisionCode($country, $country->value . '-' . $location->region());
+        } catch (InvalidArgumentException) {
+            return null;
+        }
     }
 
     public function verify(Request $request): VisitorLocation

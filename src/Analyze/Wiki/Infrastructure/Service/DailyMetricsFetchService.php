@@ -12,7 +12,9 @@ use InvalidArgumentException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
+use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
 use Source\Analyze\Wiki\Application\Collection\CompleteWikiMetric;
 use Source\Analyze\Wiki\Application\Exception\IncompleteDailyMetricsException;
 use Source\Analyze\Wiki\Application\Exception\MetricsFetchFailedException;
@@ -43,6 +45,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
     public function __construct(
         private GoogleAnalyticsClientInterface $googleAnalyticsClient,
         private DailyWikiOperationsQueryServiceInterface $dailyWikiOperationsQueryService,
+        private RegionalMetricsFetchService $regionalMetricsFetchService,
     ) {
     }
 
@@ -119,12 +122,23 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
                 );
             }
 
-            return new WikiDailySummaryDataset($summaries, $viewsOrigin, $viewersOrigin, $engagementTimeOrigin, $submissionsOrigin, $publicationsOrigin);
+            return new WikiDailySummaryDataset($summaries, $viewsOrigin, $viewersOrigin, $engagementTimeOrigin, $submissionsOrigin, $publicationsOrigin, $this->fetchRegions($day, $maxPages));
         } catch (IncompleteDailyMetricsException|InvalidDailySummaryException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             throw new MetricsFetchFailedException($exception);
         }
+    }
+
+    /** @return list<RegionalMetricObservation> */
+    private function fetchRegions(UtcDate $day, int $maxPages): array
+    {
+        $rows = [];
+        foreach (['views' => 'eventCount', 'viewers' => 'totalUsers', 'engagement_seconds' => 'userEngagementDuration'] as $metric => $gaMetric) {
+            array_push($rows, ...$this->regionalMetricsFetchService->fetch('wiki', $metric, $gaMetric, $day, $maxPages));
+        }
+
+        return $rows;
     }
 
     /** @throws IncompleteDailyMetricsException

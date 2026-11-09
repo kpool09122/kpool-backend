@@ -54,7 +54,7 @@ class AnalyzeAppMetrics
     /** @param array<string, string> $values */
     public static function data(UtcDate $day, array $values = []): AppDailySummaryData
     {
-        return new AppDailySummaryData(...self::summaryValues($day, $values));
+        return new AppDailySummaryData(...self::summaryValues($day, $values), regions: []);
     }
 
     public static function now(): DateTimeImmutable

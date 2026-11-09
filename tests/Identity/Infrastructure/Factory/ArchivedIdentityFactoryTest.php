@@ -8,8 +8,10 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Infrastructure\Factory\ArchivedIdentityFactory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 class ArchivedIdentityFactoryTest extends TestCase
 {
@@ -23,11 +25,13 @@ class ArchivedIdentityFactoryTest extends TestCase
         $language = Language::JAPANESE;
         $identityCreatedAt = new DateTimeImmutable('2026-10-03T01:02:03+00:00');
         $before = new DateTimeImmutable();
-        $entity = $factory->create($identityIdentifier, $language, $identityCreatedAt);
+        $region = new SubdivisionCode(CountryCode::GERMANY, 'DE-BE');
+        $entity = $factory->create($identityIdentifier, $language, $identityCreatedAt, $region->country(), $region);
         $after = new DateTimeImmutable();
 
         $this->assertSame($uuid, (string) $entity->archivedIdentityIdentifier());
         $this->assertSame($identityIdentifier, $entity->identityIdentifier());
+        self::assertSame($region, $entity->registrationRegion());
         $this->assertSame($language, $entity->language());
         $this->assertSame($identityCreatedAt, $entity->identityCreatedAt());
         $this->assertGreaterThanOrEqual($before, $entity->archivedAt());

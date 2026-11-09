@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Analyze\Wiki\Domain\Entity;
 
 use PHPUnit\Framework\TestCase;
+use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Wiki\Domain\Entity\WikiDailySummary;
 use Source\Analyze\Wiki\Domain\Exception\InvalidDailySummaryException;
@@ -17,6 +18,24 @@ use Tests\Helper\AnalyzeWikiMetrics;
 
 class WikiDailySummaryTest extends TestCase
 {
+    public function testInvalidRegionalReplacementPreservesTheCurrentSnapshot(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $summary = new WikiDailySummary(new WikiDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, new WikiIdentifier('69200000-0000-7000-8000-000000000001'), new TranslationSetIdentifier('69200000-0000-7000-8000-000000000002'), Language::JAPANESE, CountryCode::JAPAN, ...AnalyzeWikiMetrics::analysisValues($day));
+        $row = new RegionalMetricObservation('JP', 'JP-13', 'views', '7', wikiIdentifier: '69200000-0000-7000-8000-000000000001', language: 'ja');
+        $summary->replaceRegions([$row]);
+        foreach ([[$row, $row], [new RegionalMetricObservation('DE', 'DE-BE', 'views', '7', wikiIdentifier: '69200000-0000-7000-8000-000000000001', language: 'ja')]] as $invalid) {
+            try {
+                $summary->replaceRegions($invalid);
+                self::fail('Invalid regional ownership or duplicate grain must be rejected.');
+            } catch (InvalidDailySummaryException) {
+                self::assertSame([$row], $summary->regions());
+            }
+        }
+        $summary->replaceRegions([]);
+        self::assertSame([], $summary->regions());
+    }
+
     public function testAllAnalyticalValuesExistAtConstructionAndAreReplacedTogether(): void
     {
         $day = new UtcDate('2020-01-01');

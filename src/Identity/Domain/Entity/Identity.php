@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
@@ -16,6 +17,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 class Identity
 {
@@ -38,7 +40,16 @@ class Identity
         private array $socialConnections = [],
         private readonly ?DateTimeImmutable $createdAt = null,
         private readonly ?CountryCode $registrationCountry = null,
+        private readonly ?SubdivisionCode $registrationRegion = null,
     ) {
+        if ($registrationRegion !== null && $registrationRegion->country() !== $registrationCountry) {
+            throw new InvalidArgumentException('Registration region must belong to registration country.');
+        }
+    }
+
+    public function registrationRegion(): ?SubdivisionCode
+    {
+        return $this->registrationRegion;
     }
 
     public function registrationCountry(): ?CountryCode

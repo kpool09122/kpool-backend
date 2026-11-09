@@ -87,6 +87,95 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
+  /app/regional-daily-summary:
+    get:
+      operationId: RegionalAnalysisOperations_getAppRegionalDailySummaryReport
+      description: Country required (ISO 3166-1 alpha-2). region omitted/null returns the country trend and exact-region breakdown; region=unknown selects unknown, otherwise a complete country-prefixed known subdivision code, e.g. JP-13 or DE-BE (valid even though DE is not in map coverage). Mismatched/invalid codes and missing country return 422. Same inclusive UTC period (at most one calendar year, ending no later than D-3; invalid period 400) and fresh analysis:view authorization as the country endpoint. Registered users are final-day closing balances attributed to immutable verified registration-time region, including archives, never account addresses. Old API remains unchanged. No raw viewer/actor identifiers are returned.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: country
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppRegionalDailySummaryReport'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /principal/me:
     get:
       operationId: PrincipalOperations_getCurrentPrincipal
@@ -311,6 +400,124 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
+  /wiki/regional-daily-summary:
+    get:
+      operationId: RegionalAnalysisOperations_getWikiRegionalDailySummaryReport
+      description: Same country/region/period/authorization contract as the App regional endpoint. Wiki and translation set are mutually exclusive; omit both for ALL. language, target and region apply to every Wiki metric. Views/viewers are additive daily measurements, not globally deduplicated users. Engagement is the summed numerator and denominator (derive weighted average, never average regional averages). Operation actors are distinct Principals across the full selected period; never sum daily/region actor counts. Direct-history measured zero is distinct from missing/uncollected GA4 rows; missing history attribution is incomplete. Existing country endpoint never reads regional projections.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: country
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
+        - name: wikiIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: translationSetIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ja
+              - ko
+              - en
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WikiRegionalDailySummaryReport'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
 components:
   schemas:
     AppDailySummaryReport:
@@ -327,6 +534,16 @@ components:
           allOf:
             - $ref: '#/components/schemas/MetricReport'
           description: Identity closing balance on the final selected day, grouped by immutable registration-time access country. Missing registration country is unknown; account addresses are never used. Wiki/language filters do not apply.
+    AppRegionalDailySummaryReport:
+      type: object
+      required:
+        - applicationUsers
+        - registeredUsers
+      properties:
+        applicationUsers:
+          $ref: '#/components/schemas/RegionalMetricReport'
+        registeredUsers:
+          $ref: '#/components/schemas/RegionalMetricReport'
     CountryMetric:
       type: object
       required:
@@ -557,6 +774,70 @@ components:
         identityIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
       description: New Analyze principal for the authenticated identity in the current account.
+    RegionMetric:
+      type: object
+      required:
+        - region
+        - mapSupported
+        - value
+        - denominator
+        - quality
+      properties:
+        region:
+          type: string
+          nullable: true
+        mapSupported:
+          type: boolean
+        value:
+          type: string
+          nullable: true
+        denominator:
+          type: integer
+          format: int64
+          nullable: true
+        quality:
+          type: array
+          items:
+            type: string
+        actorCount:
+          type: string
+          nullable: true
+      description: An exact source subdivision, never a synthetic parent roll-up. region is a country-prefixed ISO 3166-2/display-aligned code, or null for unknown. mapSupported only describes the AdministrativeAreaCode map enum, not storage/API validity. Names are not required. PH parent regions and provinces retain their original codes as separate grains; never add parent and child as if disjoint, or sum regional users into country users. CN/TW use their existing country-prefixed code conventions.
+    RegionalMetricReport:
+      type: object
+      required:
+        - definition
+        - revision
+        - days
+        - total
+        - denominator
+        - actorCount
+        - regions
+      properties:
+        definition:
+          $ref: '#/components/schemas/MetricDefinition'
+        revision:
+          type: string
+          nullable: true
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricDay'
+        total:
+          type: string
+          nullable: true
+        denominator:
+          type: integer
+          format: int64
+          nullable: true
+        actorCount:
+          type: string
+          nullable: true
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionMetric'
+      description: Same daily/total/snapshot/denominator/actor semantics as MetricReport, with regions instead of countries. With region omitted totals/days are independently acquired country measurements, NOT a sum of regions. With region selected they are exact-region measurements (definition grain suffix _region for GA4/Identity). Unknown and unmapped source region names use null region, with region_unknown / region_unmapped quality respectively; valid codes outside map coverage remain normal measurements. No stored regional row means not_collected/null, not measured zero. Import failure preserves published measurements and is not an availability state.
     WikiDailySummaryReport:
       type: object
       required:
@@ -576,6 +857,25 @@ components:
           $ref: '#/components/schemas/MetricReport'
         publications:
           $ref: '#/components/schemas/MetricReport'
+    WikiRegionalDailySummaryReport:
+      type: object
+      required:
+        - views
+        - viewers
+        - engagementTime
+        - submissions
+        - publications
+      properties:
+        views:
+          $ref: '#/components/schemas/RegionalMetricReport'
+        viewers:
+          $ref: '#/components/schemas/RegionalMetricReport'
+        engagementTime:
+          $ref: '#/components/schemas/RegionalMetricReport'
+        submissions:
+          $ref: '#/components/schemas/RegionalMetricReport'
+        publications:
+          $ref: '#/components/schemas/RegionalMetricReport'
   securitySchemes:
     SessionCookieAuth:
       type: apiKey

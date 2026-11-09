@@ -9,6 +9,7 @@ use Source\Identity\Domain\Entity\ArchivedIdentity;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 interface ArchivedIdentityFactoryInterface
 {
@@ -17,5 +18,6 @@ interface ArchivedIdentityFactoryInterface
         Language $language,
         ?DateTimeImmutable $identityCreatedAt,
         ?CountryCode $registrationCountry = null,
+        ?SubdivisionCode $registrationRegion = null,
     ): ArchivedIdentity;
 }

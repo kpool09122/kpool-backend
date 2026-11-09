@@ -11,6 +11,8 @@ use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Shared\Infrastructure\Client\MockGoogleAnalyticsClient;
+use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
+use Source\Analyze\Shared\Infrastructure\Service\RegionNormalizer;
 use Source\Analyze\Wiki\Application\Exception\IncompleteDailyMetricsException;
 use Source\Analyze\Wiki\Application\Exception\MetricsFetchFailedException;
 use Source\Analyze\Wiki\Application\Exception\WikiOperationHistoryUnavailableException;
@@ -41,7 +43,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $query = Mockery::mock(DailyWikiOperationsQueryServiceInterface::class);
         $query->shouldReceive('find')->once()->withArgs(static fn (DateTimeImmutable $start, DateTimeImmutable $end): bool => $start == $day->instant() && $end == $day->next()->instant())
             ->andReturn($this->operationCounts());
-        $data = (new DailyMetricsFetchService($http->client(), $query))->fetchSummary($day, AnalyzeWikiMetrics::now(), 10)->remaining();
+        $data = (new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer())))->fetchSummary($day, AnalyzeWikiMetrics::now(), 10)->remaining();
         self::assertCount(1, $data);
         self::assertSame('ga4', $data[0]->views()->provenance()->definition()->source);
         self::assertSame('ga4', $data[0]->viewers()->provenance()->definition()->source);
@@ -52,7 +54,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         self::assertSame(60, $data[0]->engagementTime()->sampleCount());
         self::assertSame('2', $data[0]->submissions()->count());
         self::assertSame('1', $data[0]->publications()->count());
-        self::assertCount(3, $http->requests);
+        self::assertCount(6, $http->requests);
         self::assertStringContainsString('page_view', (string) $http->requests[0]->getBody());
         self::assertStringContainsString('page_view', (string) $http->requests[1]->getBody());
         self::assertStringNotContainsString('page_view', (string) $http->requests[2]->getBody());
@@ -64,6 +66,14 @@ class DailyMetricsFetchServiceTest extends TestCase
             self::assertStringNotContainsString('8443', (string) $request->getBody());
             self::assertStringNotContainsString('lang=ja', (string) $request->getBody());
         }
+    }
+
+    public function testRegionalFailurePreventsReturningAPartialSummary(): void
+    {
+        $http = new AnalyticsHttpStub();
+        $http->regionalFailureDays = ['2020-01-01'];
+        $this->expectException(MetricsFetchFailedException::class);
+        $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeWikiMetrics::now(), 1);
     }
 
     /** @return iterable<string, array{string, bool}> */
@@ -90,7 +100,7 @@ class DailyMetricsFetchServiceTest extends TestCase
     {
         $http = new AnalyticsHttpStub();
         $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeWikiMetrics::now(), 1);
-        self::assertCount(3, $http->requests);
+        self::assertCount(6, $http->requests);
         foreach ($http->requests as $request) {
             /** @var array{dimensionFilter: array{andGroup: array{expressions: list<array{filter?: array{fieldName: string, stringFilter: array{value: string, caseSensitive: bool}}, notExpression?: array{filter: array{fieldName: string, stringFilter: array{value: string, caseSensitive: bool}}}}>}}} $body */
             $body = json_decode((string) $request->getBody(), true, flags: JSON_THROW_ON_ERROR);
@@ -118,7 +128,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $http->paginate = true;
         $data = $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeWikiMetrics::now(), 2)->remaining();
         self::assertCount(2, $data);
-        self::assertCount(6, $http->requests);
+        self::assertCount(12, $http->requests);
         self::assertSame(CountryCode::JAPAN, $data[0]->country());
         self::assertSame(CountryCode::UNITED_STATES, $data[1]->country());
         self::assertSame('0', $data[1]->submissions()->count());
@@ -152,7 +162,7 @@ class DailyMetricsFetchServiceTest extends TestCase
 
             return $counts;
         });
-        $service = new DailyMetricsFetchService($http->client(), $query);
+        $service = new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer()));
 
         try {
             $service->fetchSummary($day, AnalyzeWikiMetrics::now(), 10);
@@ -161,7 +171,7 @@ class DailyMetricsFetchServiceTest extends TestCase
             self::assertCount(3, $http->requests);
         }
         self::assertCount(1, $service->fetchSummary($day, AnalyzeWikiMetrics::now(), 10)->remaining());
-        self::assertCount(6, $http->requests);
+        self::assertCount(9, $http->requests);
     }
 
     public function testPageLimitCannotPublishAPartialDataset(): void
@@ -246,7 +256,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         config(['app.frontend_url' => 'https://example.test']);
         $http = new AnalyticsHttpStub();
         $dataset = $this->service($http)->fetchSummary(new UtcDate('2009-12-31'), AnalyzeWikiMetrics::now(), 1);
-        self::assertCount(3, $http->requests);
+        self::assertCount(6, $http->requests);
         self::assertNotEmpty($dataset->remaining());
     }
 
@@ -269,7 +279,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $query = Mockery::mock(DailyWikiOperationsQueryServiceInterface::class);
         $query->shouldReceive('find')->andReturn($this->operationCounts());
 
-        return new DailyMetricsFetchService($http->client(), $query);
+        return new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer()));
     }
 
     /** @return array{DailyWikiOperationCount} */

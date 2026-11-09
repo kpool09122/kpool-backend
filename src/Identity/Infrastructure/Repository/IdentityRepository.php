@@ -19,6 +19,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 readonly class IdentityRepository implements IdentityRepositoryInterface
 {
@@ -67,6 +68,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 'email' => (string) $identity->email(),
                 'language' => $identity->language()->value,
                 'registration_country' => $identity->registrationCountry()?->value,
+                'registration_region' => $identity->registrationRegion() !== null ? (string) $identity->registrationRegion() : null,
                 'profile_image' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,
                 'email_verified_at' => $identity->emailVerifiedAt() !== null
                     ? Carbon::createFromImmutable($identity->emailVerifiedAt())
@@ -157,6 +159,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
             $socialConnections,
             $eloquent->created_at?->toDateTimeImmutable(),
             $eloquent->registration_country !== null ? CountryCode::from($eloquent->registration_country) : null,
+            $eloquent->registration_region !== null && $eloquent->registration_country !== null ? new SubdivisionCode(CountryCode::from($eloquent->registration_country), $eloquent->registration_region) : null,
         );
     }
 }

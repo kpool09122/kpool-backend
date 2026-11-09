@@ -10,6 +10,7 @@ use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 interface IdentityFactoryInterface
 {
@@ -18,7 +19,8 @@ interface IdentityFactoryInterface
         Email $email,
         Language $language,
         ?CountryCode $registrationCountry = null,
+        ?SubdivisionCode $registrationRegion = null,
     ): Identity;
 
-    public function createFromSocialProfile(SocialProfile $profile, ?CountryCode $registrationCountry = null): Identity;
+    public function createFromSocialProfile(SocialProfile $profile, ?CountryCode $registrationCountry = null, ?SubdivisionCode $registrationRegion = null): Identity;
 }

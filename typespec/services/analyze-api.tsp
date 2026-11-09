@@ -137,3 +137,61 @@ interface AnalysisOperations {
   @doc("Get all Wiki metrics under the App period/authorization rules, including other owners' Wikis. Omit both target identifiers for ALL; specify either Wiki or translation set, never both. language/country filter all Wiki metrics. country=unknown selects unknown; omitted/null selects all. Stored zero values are measured zero; no summary rows means not_collected, including complete empty imports. Import failures leave published measurements unchanged and are handled through error monitoring and period-specific command retries. Operations read histories independently of imports. Counts, time and viewer-days sum; actor counts are period-distinct Principals. Country unknown is null. Countries without summary/history rows are omitted; absence alone does not prove measured zero. Authorization is re-evaluated on every request.")
   getWikiDailySummaryReport(@query from: plainDate, @query to: plainDate, @query wikiIdentifier?: Uuid | null, @query translationSetIdentifier?: Uuid | null, @query language?: "ja" | "ko" | "en" | null, @query country?: string | null): WikiDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 }
+
+@doc("An exact source subdivision, never a synthetic parent roll-up. region is a country-prefixed ISO 3166-2/display-aligned code, or null for unknown. mapSupported only describes the AdministrativeAreaCode map enum, not storage/API validity. Names are not required. PH parent regions and provinces retain their original codes as separate grains; never add parent and child as if disjoint, or sum regional users into country users. CN/TW use their existing country-prefixed code conventions.")
+model RegionMetric {
+  region: string | null;
+  mapSupported: boolean;
+  value: string | null;
+  denominator: int64 | null;
+  quality: string[];
+  actorCount?: string | null;
+}
+
+@doc("Same daily/total/snapshot/denominator/actor semantics as MetricReport, with regions instead of countries. With region omitted totals/days are independently acquired country measurements, NOT a sum of regions. With region selected they are exact-region measurements (definition grain suffix _region for GA4/Identity). Unknown and unmapped source region names use null region, with region_unknown / region_unmapped quality respectively; valid codes outside map coverage remain normal measurements. No stored regional row means not_collected/null, not measured zero. Import failure preserves published measurements and is not an availability state.")
+model RegionalMetricReport {
+  definition: MetricDefinition;
+  revision: string | null;
+  days: MetricDay[];
+  total: string | null;
+  denominator: int64 | null;
+  actorCount: string | null;
+  regions: RegionMetric[];
+}
+
+model AppRegionalDailySummaryReport {
+  applicationUsers: RegionalMetricReport;
+  registeredUsers: RegionalMetricReport;
+}
+
+model WikiRegionalDailySummaryReport {
+  views: RegionalMetricReport;
+  viewers: RegionalMetricReport;
+  engagementTime: RegionalMetricReport;
+  submissions: RegionalMetricReport;
+  publications: RegionalMetricReport;
+}
+
+model AppRegionalDailySummaryResponse {
+  @statusCode statusCode: 200;
+  @body body: AppRegionalDailySummaryReport;
+}
+
+model WikiRegionalDailySummaryResponse {
+  @statusCode statusCode: 200;
+  @body body: WikiRegionalDailySummaryReport;
+}
+
+interface RegionalAnalysisOperations {
+  @route("/app/regional-daily-summary")
+  @useAuth(SessionCookieAuth)
+  @get
+  @doc("Country required (ISO 3166-1 alpha-2). region omitted/null returns the country trend and exact-region breakdown; region=unknown selects unknown, otherwise a complete country-prefixed known subdivision code, e.g. JP-13 or DE-BE (valid even though DE is not in map coverage). Mismatched/invalid codes and missing country return 422. Same inclusive UTC period (at most one calendar year, ending no later than D-3; invalid period 400) and fresh analysis:view authorization as the country endpoint. Registered users are final-day closing balances attributed to immutable verified registration-time region, including archives, never account addresses. Old API remains unchanged. No raw viewer/actor identifiers are returned.")
+  getAppRegionalDailySummaryReport(@query from: plainDate, @query to: plainDate, @query country: string, @query region?: string | null): AppRegionalDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @route("/wiki/regional-daily-summary")
+  @useAuth(SessionCookieAuth)
+  @get
+  @doc("Same country/region/period/authorization contract as the App regional endpoint. Wiki and translation set are mutually exclusive; omit both for ALL. language, target and region apply to every Wiki metric. Views/viewers are additive daily measurements, not globally deduplicated users. Engagement is the summed numerator and denominator (derive weighted average, never average regional averages). Operation actors are distinct Principals across the full selected period; never sum daily/region actor counts. Direct-history measured zero is distinct from missing/uncollected GA4 rows; missing history attribution is incomplete. Existing country endpoint never reads regional projections.")
+  getWikiRegionalDailySummaryReport(@query from: plainDate, @query to: plainDate, @query country: string, @query region?: string | null, @query wikiIdentifier?: Uuid | null, @query translationSetIdentifier?: Uuid | null, @query language?: "ja" | "ko" | "en" | null): WikiRegionalDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+}

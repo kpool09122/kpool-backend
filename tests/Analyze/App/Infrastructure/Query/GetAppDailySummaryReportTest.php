@@ -147,7 +147,7 @@ class GetAppDailySummaryReportTest extends TestCase
         $input = new GetAppDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
         $query = $this->app()->make(GetAppDailySummaryReport::class);
         self::assertSame('10.000000000', $query->process($input)->registeredUsers()->total());
-        $summary->replaceAnalysis(...AnalyzeAppMetrics::summaryValues($day, ['application_users' => '5', 'registered_users' => '22']));
+        $summary->replaceAnalysis(...AnalyzeAppMetrics::summaryValues($day, ['application_users' => '5', 'registered_users' => '22']), regions: $summary->regions());
         $repository->save($summary);
         self::assertSame('22.000000000', $query->process($input)->registeredUsers()->total());
         self::assertSame('5.000000000', $query->process($input)->applicationUsers()->total());
@@ -168,7 +168,7 @@ class GetAppDailySummaryReportTest extends TestCase
         $summary = $repository->findByDay($day);
         self::assertNotNull($summary);
         $values = AnalyzeAppMetrics::summaryValues($day, ['application_users' => '9']);
-        $summary->replaceAnalysis(...$values);
+        $summary->replaceAnalysis(...$values, regions: $summary->regions());
         $repository->save($summary);
         self::assertNotSame($revision, $query->process($input)->applicationUsers()->revision());
         self::assertSame('9.000000000', $query->process($input)->applicationUsers()->total());
@@ -236,7 +236,7 @@ class GetAppDailySummaryReportTest extends TestCase
         $values[1] = new RegisteredUserSnapshot('11', $day->next()->instant(), new MetricProvenance($other, $day, AnalyzeAppMetrics::now()));
         $summary = $appDailySummaryRepository->findByDay($day);
         self::assertNotNull($summary);
-        $summary->replaceAnalysis($values[0], $values[1], $values[2]);
+        $summary->replaceAnalysis($values[0], $values[1], $values[2], regions: $summary->regions());
         $appDailySummaryRepository->save($summary);
         $input = new GetAppDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($day, $day, AnalyzeAppMetrics::now()));
         self::assertSame('9.000000000', ($this->app()->make(GetAppDailySummaryReport::class))->process($input)->applicationUsers()->total());

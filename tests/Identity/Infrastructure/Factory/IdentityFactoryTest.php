@@ -12,8 +12,10 @@ use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 use Tests\TestCase;
 
 class IdentityFactoryTest extends TestCase
@@ -24,6 +26,17 @@ class IdentityFactoryTest extends TestCase
      * @throws BindingResolutionException
      * @return void
      */
+    public function testPreservesRegistrationRegionWithoutDependingOnMapCoverage(): void
+    {
+        $region = new SubdivisionCode(CountryCode::GERMANY, 'DE-BE');
+        $factory = $this->app()->make(IdentityFactoryInterface::class);
+        $identity = $factory->create(new IdentityName('user'), new Email('region@example.test'), Language::JAPANESE, $region->country(), $region);
+        self::assertSame($region, $identity->registrationRegion());
+        $social = $factory->createFromSocialProfile(new SocialProfile(SocialProvider::GOOGLE, 'subject', new Email('social@example.test'), 'user', null), $region->country(), $region);
+        self::assertSame($region, $social->registrationRegion());
+        self::assertNull($factory->create(new IdentityName('user'), new Email('unknown@example.test'), Language::JAPANESE)->registrationRegion());
+    }
+
     public function test__construct(): void
     {
         $identityFactory = $this->app()->make(IdentityFactoryInterface::class);

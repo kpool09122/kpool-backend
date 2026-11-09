@@ -15,6 +15,8 @@ use Source\Analyze\App\Application\Exception\MetricsFetchFailedException;
 use Source\Analyze\App\Application\Service\RegisteredIdentityCountQueryServiceInterface;
 use Source\Analyze\App\Infrastructure\Service\DailyMetricsFetchService;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
+use Source\Analyze\Shared\Infrastructure\Service\RegionNormalizer;
 use Tests\Helper\AnalyticsHttpStub;
 use Tests\Helper\AnalyzeAppMetrics;
 use Tests\TestCase;
@@ -35,8 +37,9 @@ class DailyMetricsFetchServiceTest extends TestCase
         $day = new UtcDate('2020-01-01');
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
+        $query->shouldReceive('countByRegionBefore')->andReturn([]);
         $query->shouldReceive('countByCountryBefore')->once()->withArgs(static fn (DateTimeImmutable $end): bool => $end == $day->next()->instant())->andReturn(['JP' => '1200', '' => '34']);
-        $data = (new DailyMetricsFetchService($http->client(), $query))->fetchSummary($day, AnalyzeAppMetrics::now(), 1);
+        $data = (new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer())))->fetchSummary($day, AnalyzeAppMetrics::now(), 1);
         self::assertSame('250', $data->applicationUsers()->count());
         self::assertSame('1234', $data->registeredUsers()->count());
         self::assertEquals($day->next()->instant(), $data->registeredUsers()->asOf());
@@ -46,6 +49,9 @@ class DailyMetricsFetchServiceTest extends TestCase
         self::assertSame('1200', $data->countries()[0]->registeredUsers->count());
         self::assertSame('', $data->countries()[1]->countryKey());
         self::assertSame('34', $data->countries()[1]->registeredUsers->count());
+        self::assertCount(2, $data->regions());
+        self::assertSame('JP-13', $data->regions()[0]->region);
+        self::assertSame('60', $data->regions()[0]->value);
         $body = (string) $http->requests[0]->getBody();
         self::assertStringContainsString('totalUsers', $body);
         self::assertStringContainsString('public.example.test', $body);
@@ -63,8 +69,9 @@ class DailyMetricsFetchServiceTest extends TestCase
         $http = new AnalyticsHttpStub();
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
+        $query->shouldReceive('countByRegionBefore')->andReturn([]);
         $query->shouldReceive('countByCountryBefore')->once()->andReturn($countries);
-        $data = (new DailyMetricsFetchService($http->client(), $query))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
+        $data = (new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer())))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
         self::assertSame($expected, $data->registeredUsers()->count());
     }
 
@@ -96,6 +103,14 @@ class DailyMetricsFetchServiceTest extends TestCase
         $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
     }
 
+    public function testRegionalFailurePreventsReturningAPartialSummary(): void
+    {
+        $http = new AnalyticsHttpStub();
+        $http->regionalFailureDays = ['2020-01-01'];
+        $this->expectException(MetricsFetchFailedException::class);
+        $this->service($http)->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
+    }
+
     public function testApiFailureIsNotConvertedToZero(): void
     {
         $http = new AnalyticsHttpStub();
@@ -109,9 +124,10 @@ class DailyMetricsFetchServiceTest extends TestCase
         $http = new AnalyticsHttpStub();
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
+        $query->shouldReceive('countByRegionBefore')->andReturn([]);
         $query->shouldReceive('countByCountryBefore')->once()->andThrow(new RuntimeException('History query failed.'));
         $this->expectException(MetricsFetchFailedException::class);
-        (new DailyMetricsFetchService($http->client(), $query))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
+        (new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer())))->fetchSummary(new UtcDate('2020-01-01'), AnalyzeAppMetrics::now(), 1);
     }
 
     public function testHistoricalDayNeedsNoStartDateConfiguration(): void
@@ -122,7 +138,7 @@ class DailyMetricsFetchServiceTest extends TestCase
         $data = $this->service($http)->fetchSummary(new UtcDate('2009-12-31'), AnalyzeAppMetrics::now(), 1);
         self::assertSame('250', $data->applicationUsers()->count());
         self::assertSame('1234', $data->registeredUsers()->count());
-        self::assertCount(2, $http->requests);
+        self::assertCount(3, $http->requests);
     }
 
     public function testInvalidFrontendUrlDoesNotCallTheApi(): void
@@ -142,8 +158,9 @@ class DailyMetricsFetchServiceTest extends TestCase
     {
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);
+        $query->shouldReceive('countByRegionBefore')->andReturn([]);
         $query->shouldReceive('countByCountryBefore')->andReturn(['JP' => '1200', '' => '34']);
 
-        return new DailyMetricsFetchService($http->client(), $query);
+        return new DailyMetricsFetchService($http->client(), $query, new RegionalMetricsFetchService($http->client(), new RegionNormalizer()));
     }
 }

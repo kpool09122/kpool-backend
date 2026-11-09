@@ -15,6 +15,7 @@ use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 use Tests\TestCase;
 
 class SignupSessionRepositoryTest extends TestCase
@@ -61,7 +62,7 @@ class SignupSessionRepositoryTest extends TestCase
     public function testStoreAndFind(): void
     {
         $state = new OAuthState('test-state-token');
-        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN);
+        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN, registrationRegion: new SubdivisionCode(CountryCode::JAPAN, 'JP-13'));
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
         $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
@@ -71,6 +72,7 @@ class SignupSessionRepositoryTest extends TestCase
         $this->assertNotNull($foundSession);
         $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
         $this->assertSame(CountryCode::JAPAN, $foundSession->registrationCountry());
+        $this->assertSame('JP-13', (string) $foundSession->registrationRegion());
     }
 
     public function testStoreAndFindWithReturnTo(): void
@@ -132,7 +134,7 @@ class SignupSessionRepositoryTest extends TestCase
     public function testDelete(): void
     {
         $state = new OAuthState('test-state-token');
-        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN);
+        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN, registrationRegion: new SubdivisionCode(CountryCode::JAPAN, 'JP-13'));
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
         $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));

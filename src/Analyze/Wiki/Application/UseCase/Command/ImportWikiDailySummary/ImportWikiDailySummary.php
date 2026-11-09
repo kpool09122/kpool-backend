@@ -38,6 +38,7 @@ readonly class ImportWikiDailySummary implements ImportWikiDailySummaryInterface
             }
             $summary->replaceAnalysis($data->views(), $data->viewers(), $data->engagementTime(), $data->submissions(), $data->publications());
             $summary->correctTranslationSet($data->translationSetIdentifier());
+            $summary->replaceRegions($dataset->regionsFor($summary));
             $this->wikiDailySummaryRepository->save($summary);
             $summaryCount++;
         }
@@ -53,6 +54,7 @@ readonly class ImportWikiDailySummary implements ImportWikiDailySummaryInterface
                 $data->submissions(),
                 $data->publications(),
             );
+            $summary->replaceRegions($dataset->regionsFor($summary));
             $this->wikiDailySummaryRepository->save($summary);
             $summaryCount++;
         }

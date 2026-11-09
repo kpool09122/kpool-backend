@@ -19,7 +19,14 @@ class MockGoogleAnalyticsClient implements GoogleAnalyticsClientInterface
     public function runReport(RunReportRequest $request): RunReportResponse
     {
         $day = str_replace('-', '', $request->day());
-        if ($request->dimensions() === ['date'] && $request->metrics() === ['totalUsers']) {
+        if (in_array('region', $request->dimensions(), true)) {
+            $dimensions = ['date' => $day, 'countryId' => 'JP', 'region' => 'Tokyo', 'customEvent:wiki_id' => self::WIKI_IDENTIFIER, 'customEvent:wiki_translation_set_id' => self::TRANSLATION_SET_IDENTIFIER, 'customEvent:wiki_language' => 'ja'];
+            $values = [];
+            foreach ($request->metrics() as $metric) {
+                $values[$metric] = $metric === 'userEngagementDuration' ? '1800.250000001' : '60';
+            }
+            $rows = [new AnalyticsReportRow($dimensions, $values)];
+        } elseif ($request->dimensions() === ['date'] && $request->metrics() === ['totalUsers']) {
             $rows = [new AnalyticsReportRow(['date' => $day], ['totalUsers' => '250'])];
         } elseif ($request->dimensions() === ['date', 'countryId'] && $request->metrics() === ['totalUsers']) {
             $rows = [new AnalyticsReportRow(['date' => $day, 'countryId' => 'JP'], ['totalUsers' => '180']), new AnalyticsReportRow(['date' => $day, 'countryId' => 'US'], ['totalUsers' => '90'])];

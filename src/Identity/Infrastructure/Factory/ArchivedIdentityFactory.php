@@ -12,6 +12,7 @@ use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 readonly class ArchivedIdentityFactory implements ArchivedIdentityFactoryInterface
 {
@@ -24,6 +25,7 @@ readonly class ArchivedIdentityFactory implements ArchivedIdentityFactoryInterfa
         Language $language,
         ?DateTimeImmutable $identityCreatedAt,
         ?CountryCode $registrationCountry = null,
+        ?SubdivisionCode $registrationRegion = null,
     ): ArchivedIdentity {
         return new ArchivedIdentity(
             new ArchivedIdentityIdentifier($this->uuidGenerator->generate()),
@@ -32,6 +34,7 @@ readonly class ArchivedIdentityFactory implements ArchivedIdentityFactoryInterfa
             $identityCreatedAt,
             new DateTimeImmutable(),
             $registrationCountry,
+            $registrationRegion,
         );
     }
 }

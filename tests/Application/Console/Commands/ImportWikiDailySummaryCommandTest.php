@@ -40,6 +40,7 @@ class ImportWikiDailySummaryCommandTest extends TestCase
         parent::setUp();
         $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
         Exceptions::fake();
+
         config(['analyze.reimport_days' => 3, 'analyze.max_pages_per_day' => 1000]);
     }
 

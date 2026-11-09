@@ -18,6 +18,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -27,12 +28,13 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testRegistrationCountrySurvivesProfileUpdates(): void
     {
-        $identity = new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Origin'), new Email('origin@example.test'), Language::ENGLISH, null, null, registrationCountry: CountryCode::JAPAN);
+        $identity = new Identity(new IdentityIdentifier(StrTestHelper::generateUuid()), new IdentityName('Origin'), new Email('origin@example.test'), Language::ENGLISH, null, null, registrationCountry: CountryCode::JAPAN, registrationRegion: new SubdivisionCode(CountryCode::JAPAN, 'JP-13'));
         $repository = $this->app()->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
         $restored = $repository->findById($identity->identityIdentifier());
         self::assertNotNull($restored);
         self::assertSame(CountryCode::JAPAN, $restored->registrationCountry());
+        self::assertSame('JP-13', (string) $restored->registrationRegion());
         $restored->setLanguage(Language::KOREAN);
         $repository->save($restored);
         self::assertSame(CountryCode::JAPAN, $repository->findById($identity->identityIdentifier())?->registrationCountry());

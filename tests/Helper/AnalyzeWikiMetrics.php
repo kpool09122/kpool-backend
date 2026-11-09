@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
+use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Wiki\Application\Service\WikiDailySummaryData;
 use Source\Analyze\Wiki\Application\Service\WikiDailySummaryDataset;
@@ -53,8 +54,9 @@ class AnalyzeWikiMetrics
 
     /** @param array<string, string> $values
      * @param list<string> $wikiIdentifiers
+     * @param list<RegionalMetricObservation> $regions
      */
-    public static function dataset(UtcDate $day, array $values = [], array $wikiIdentifiers = ['69200000-0000-7000-8000-000000000001']): WikiDailySummaryDataset
+    public static function dataset(UtcDate $day, array $values = [], array $wikiIdentifiers = ['69200000-0000-7000-8000-000000000001'], array $regions = []): WikiDailySummaryDataset
     {
         [$views, $viewers, $engagement, $submissions, $publications] = self::analysisValues($day, $values);
         $data = [];
@@ -62,7 +64,7 @@ class AnalyzeWikiMetrics
             $data[] = new WikiDailySummaryData(new WikiIdentifier($wikiIdentifier), new TranslationSetIdentifier('69200000-0000-7000-8000-000000000002'), Language::JAPANESE, CountryCode::JAPAN, $views, $viewers, $engagement, $submissions, $publications);
         }
 
-        return new WikiDailySummaryDataset($data, $views->provenance(), $viewers->provenance(), $engagement->provenance(), $submissions->provenance(), $publications->provenance());
+        return new WikiDailySummaryDataset($data, $views->provenance(), $viewers->provenance(), $engagement->provenance(), $submissions->provenance(), $publications->provenance(), $regions);
     }
 
     public static function now(): DateTimeImmutable

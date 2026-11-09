@@ -52,6 +52,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 use Tests\TestCase;
 
 class RegisterWithPasskeyTest extends TestCase
@@ -111,12 +112,14 @@ class RegisterWithPasskeyTest extends TestCase
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityRepository->shouldReceive('findByEmail')->once()->with($email)->andReturnNull();
         $identityRepository->shouldReceive('save')->once()->with($identity);
+        $region = new SubdivisionCode(CountryCode::JAPAN, 'JP-13');
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')->once()->with(
             Mockery::on(static fn (IdentityName $name): bool => (string) $name === 'Passkey User'),
             $email,
             Language::ENGLISH,
             CountryCode::JAPAN,
+            $region,
         )->andReturn($identity);
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->with(Mockery::on(
@@ -177,6 +180,7 @@ class RegisterWithPasskeyTest extends TestCase
             '{"id":"Y3JlZGVudGlhbA"}',
             null,
             registrationCountry: CountryCode::JAPAN,
+            registrationRegion: $region,
         ), $output);
 
         self::assertTrue(array_key_exists('identityIdentifier', $output->toArray()));

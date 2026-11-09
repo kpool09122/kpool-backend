@@ -9,10 +9,13 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 interface RegisterWithPasskeyInputPort
 {
     public function registrationCountry(): ?CountryCode;
+
+    public function registrationRegion(): ?SubdivisionCode;
 
     public function challengeKey(): ChallengeSessionKey;
 

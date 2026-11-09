@@ -14,6 +14,8 @@ use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
+use Source\Analyze\Shared\Infrastructure\Service\RegionNormalizer;
 use Source\Analyze\Wiki\Application\Service\DailyMetricsFetchServiceInterface;
 use Source\Analyze\Wiki\Application\UseCase\Command\ImportWikiDailySummary\ImportWikiDailySummary;
 use Source\Analyze\Wiki\Application\UseCase\Command\ImportWikiDailySummary\ImportWikiDailySummaryInput;
@@ -190,7 +192,7 @@ class WikiOperationReportTest extends TestCase
         $http = new AnalyticsHttpStub();
         $http->empty = true;
         config(['app.frontend_url' => 'https://example.test']);
-        $this->app()->instance(DailyMetricsFetchServiceInterface::class, new DailyMetricsFetchService($http->client(), new DailyWikiOperationsQueryService()));
+        $this->app()->instance(DailyMetricsFetchServiceInterface::class, new DailyMetricsFetchService($http->client(), new DailyWikiOperationsQueryService(), new RegionalMetricsFetchService($http->client(), new RegionNormalizer())));
         $usecase = $this->app()->make(ImportWikiDailySummary::class);
         DB::transaction(fn () => $usecase->process(new ImportWikiDailySummaryInput(new UtcDate($day), AnalyzeWikiMetrics::now()), new ImportWikiDailySummaryOutput()));
     }

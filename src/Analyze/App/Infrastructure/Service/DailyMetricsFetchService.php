@@ -21,7 +21,9 @@ use Source\Analyze\App\Domain\ValueObject\RegisteredUserSnapshot;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
+use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Throwable;
 
@@ -30,6 +32,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
     public function __construct(
         private GoogleAnalyticsClientInterface $googleAnalyticsClient,
         private RegisteredIdentityCountQueryServiceInterface $registeredIdentityCountQueryService,
+        private RegionalMetricsFetchService $regionalMetricsFetchService,
     ) {
     }
 
@@ -73,12 +76,39 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
                 new ApplicationUserCount($rows === [] ? '0' : $rows[0]->metric('totalUsers'), new MetricProvenance($applicationUsersDefinition, $day, $now)),
                 new RegisteredUserSnapshot((string) BigInteger::sum(0, ...array_values($countryRegistered)), $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
                 $countries,
+                $this->fetchRegions($day, $maxPages),
             );
         } catch (IncompleteDailyMetricsException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             throw new MetricsFetchFailedException($exception);
         }
+    }
+
+    /** @return list<RegionalMetricObservation> */
+    private function fetchRegions(UtcDate $day, int $maxPages): array
+    {
+        $rows = $this->regionalMetricsFetchService->fetch('app', 'application_users', 'totalUsers', $day, $maxPages);
+        foreach ($this->registeredIdentityCountQueryService->countByRegionBefore($day->next()->instant()) as $count) {
+            $rows[] = new RegionalMetricObservation($count['country'], $count['region'], 'registered_users', $count['total']);
+        }
+        $grains = [];
+        foreach ($rows as $row) {
+            $key = $row->country . ':' . $row->region;
+            $grains[$key]['country'] = $row->country;
+            $grains[$key]['region'] = $row->region;
+            $grains[$key]['metrics'][$row->metric] = true;
+        }
+        // Both acquisitions are complete: missing metrics on known grains are measured zero.
+        foreach ($grains as $grain) {
+            foreach (['application_users', 'registered_users'] as $metric) {
+                if (! isset($grain['metrics'][$metric])) {
+                    $rows[] = new RegionalMetricObservation($grain['country'], $grain['region'], $metric, '0');
+                }
+            }
+        }
+
+        return $rows;
     }
 
     /** @return array<string, string>
