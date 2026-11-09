@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Application\Console\Commands;
 
 use Application\Console\Commands\ImportAppDailySummaryCommand;
+use Application\Models\Analyze\App\AppCountryDailySummary as CountryModel;
 use Application\Models\Analyze\App\AppDailySummary as SummaryModel;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Artisan;
@@ -83,7 +84,7 @@ class ImportAppDailySummaryCommandTest extends TestCase
         self::assertArrayNotHasKey('attemptedAt', $report->applicationUsers()->days()[0]);
         self::assertSame($row->application_users, $report->applicationUsers()->days()[0]['value']);
         self::assertSame('measured', $report->registeredUsers()->days()[0]['availability']);
-        self::assertSame($row->registered_users, $report->registeredUsers()->total());
+        self::assertSame((string) CountryModel::query()->where('day', $row->day)->sum('registered_users'), $report->registeredUsers()->total());
         $this->registerFetchService(['2012-02-29'], '9');
         self::assertSame(0, $this->runDay());
         self::assertSame($row->id, SummaryModel::query()->firstOrFail()->id);

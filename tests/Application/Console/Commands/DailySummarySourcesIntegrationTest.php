@@ -8,6 +8,7 @@ use Application\Console\Commands\ImportAppDailySummaryCommand;
 use Application\Console\Commands\ImportWikiDailySummaryCommand;
 use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClient;
 use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClientInterface;
+use Application\Models\Analyze\App\AppCountryDailySummary;
 use Application\Models\Analyze\App\AppDailySummary;
 use Application\Models\Analyze\Wiki\WikiDailySummary;
 use Application\Models\Identity\Identity;
@@ -71,7 +72,7 @@ class DailySummarySourcesIntegrationTest extends TestCase
         $this->runBoth();
         $app = AppDailySummary::query()->firstOrFail();
         self::assertSame('250.000000000', $app->application_users);
-        self::assertSame('0.000000000', $app->registered_users);
+        self::assertSame('0.000000000', (string) AppCountryDailySummary::query()->sum('registered_users'));
         self::assertSame(2, WikiDailySummary::query()->count());
         $jp = WikiDailySummary::query()->where('country', 'JP')->firstOrFail();
         $us = WikiDailySummary::query()->where('country', 'US')->firstOrFail();
@@ -89,7 +90,7 @@ class DailySummarySourcesIntegrationTest extends TestCase
         AnalyzeSourceRecords::history('draft_status_change', '2020-01-01 01:00:00');
         AnalyzeSourceRecords::history('publish', '2020-01-01 02:00:00');
         $this->runBoth();
-        self::assertSame('1.000000000', AppDailySummary::query()->firstOrFail()->registered_users);
+        self::assertSame('1.000000000', (string) AppCountryDailySummary::query()->sum('registered_users'));
         $updatedJp = WikiDailySummary::query()->where('country', 'JP')->firstOrFail();
         self::assertSame('1.000000000', $updatedJp->submissions);
         self::assertSame('1.000000000', $updatedJp->publications);
@@ -109,7 +110,7 @@ class DailySummarySourcesIntegrationTest extends TestCase
         $this->commands();
         $this->runBoth();
         self::assertSame('250.000000000', AppDailySummary::query()->firstOrFail()->application_users);
-        self::assertSame('1.000000000', AppDailySummary::query()->firstOrFail()->registered_users);
+        self::assertSame('1.000000000', (string) AppCountryDailySummary::query()->sum('registered_users'));
         self::assertSame(2, WikiDailySummary::query()->count());
         self::assertSame('120.000000000', WikiDailySummary::query()->where('country', 'JP')->firstOrFail()->views);
         self::assertSame('0.000000000', WikiDailySummary::query()->where('country', 'US')->firstOrFail()->views);

@@ -28,12 +28,4 @@ readonly class RegisteredIdentityCountQueryService implements RegisteredIdentity
 
         return $counts;
     }
-
-    public function countBefore(DateTimeImmutable $endExclusive): string
-    {
-        $active = Identity::query()->where('created_at', '<', $endExclusive)->count();
-        $subsequentlyWithdrawn = ArchivedIdentity::query()->where('identity_created_at', '<', $endExclusive)->where('archived_at', '>=', $endExclusive)->count();
-
-        return (string) ($active + $subsequentlyWithdrawn);
-    }
 }

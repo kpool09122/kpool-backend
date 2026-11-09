@@ -74,7 +74,7 @@ class ImportAppDailySummaryTest extends TestCase
     public function testReimportUpdatesTheExistingEntity(): void
     {
         $day = new UtcDate('2020-01-01');
-        $summary = (new AppDailySummaryFactory(new UuidGenerator()))->create(...AnalyzeAppMetrics::analysisValues($day));
+        $summary = (new AppDailySummaryFactory(new UuidGenerator()))->create(...AnalyzeAppMetrics::summaryValues($day));
         (new AppDailySummaryRepository())->save($summary);
         $service = $this->service();
         $service->shouldReceive('fetchSummary')->once()->andReturn(AnalyzeAppMetrics::data($day, ['application_users' => '9']));

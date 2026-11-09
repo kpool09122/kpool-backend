@@ -32,11 +32,10 @@ readonly class ImportAppDailySummary implements ImportAppDailySummaryInterface
         $data = $this->dailyMetricsFetchService->fetchSummary($input->day(), $input->now(), $input->maxPages());
         $summary = $this->appDailySummaryRepository->findByDay($input->day());
         if ($summary === null) {
-            $summary = $this->appDailySummaryFactory->create($data->applicationUsers(), $data->registeredUsers());
+            $summary = $this->appDailySummaryFactory->create($data->applicationUsers(), $data->registeredUsers(), $data->countries());
         } else {
-            $summary->replaceAnalysis($data->applicationUsers(), $data->registeredUsers());
+            $summary->replaceAnalysis($data->applicationUsers(), $data->registeredUsers(), $data->countries());
         }
-        $summary->replaceCountries($data->countries());
         $this->appDailySummaryRepository->save($summary);
         $output->setSummaryCount(1);
     }

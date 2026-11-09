@@ -28,7 +28,6 @@ class RegisteredIdentityCountQueryServiceTest extends TestCase
         $cutoff = new DateTimeImmutable('2020-01-02T00:00:00Z');
         $countries = $query->countByCountryBefore($cutoff);
         self::assertSame(['' => '1', 'JP' => '1', 'KR' => '1'], array_replace(array_fill_keys(['', 'JP', 'KR'], ''), $countries));
-        self::assertSame('3', $query->countBefore($cutoff));
     }
 
     public function testHistoricalBalanceIncludesLaterWithdrawalsAndExcludesEndBoundaryRegistrations(): void
@@ -38,7 +37,7 @@ class RegisteredIdentityCountQueryServiceTest extends TestCase
         $this->archive('2019-01-01', '2020-01-02');
         $this->archive('2019-01-01', '2020-01-01 23:59:59');
         $this->archive('2020-01-02', '2020-01-03');
-        self::assertSame('2', (new RegisteredIdentityCountQueryService())->countBefore(new DateTimeImmutable('2020-01-02T00:00:00Z')));
+        self::assertSame(['' => '2'], (new RegisteredIdentityCountQueryService())->countByCountryBefore(new DateTimeImmutable('2020-01-02T00:00:00Z')));
     }
 
     private function identity(string $created): string

@@ -9,14 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @phpstan-type StoredProvenance array{source: string, metric: string, grain: string, version: string, quality: list<string>, updated_at: string}
- * @phpstan-type StoredCountryMetrics array{application_users: string, registered_users: string}
- * @property ?array<string, StoredCountryMetrics> $country_metrics
  * @property string $id
  * @property string $day
  * @property string $revision
  * @property ?string $application_users
- * @property ?string $registered_users
- * @property ?CarbonImmutable $registered_users_snapshot_at
  * @property array<string, StoredProvenance> $measurements
  * @property ?CarbonImmutable $updated_at
  * @property ?string $value
@@ -33,6 +29,6 @@ class AppDailySummary extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['country_metrics' => 'array', 'measurements' => 'array', 'updated_at' => 'immutable_datetime', 'application_users' => 'decimal:9', 'registered_users' => 'decimal:9', 'registered_users_snapshot_at' => 'immutable_datetime', 'value' => 'decimal:9', 'quality' => 'array', 'denominator' => 'integer'];
+        return ['measurements' => 'array', 'updated_at' => 'immutable_datetime', 'application_users' => 'decimal:9', 'value' => 'decimal:9', 'quality' => 'array', 'denominator' => 'integer'];
     }
 }

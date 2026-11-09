@@ -7,6 +7,7 @@ namespace Source\Analyze\App\Infrastructure\Service;
 use Application\Http\Client\GoogleAnalyticsClient\GoogleAnalyticsClientInterface;
 use Application\Http\Client\GoogleAnalyticsClient\RunReport\FilterExpression;
 use Application\Http\Client\GoogleAnalyticsClient\RunReport\RunReportRequest;
+use Brick\Math\BigInteger;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Analyze\App\Application\Exception\IncompleteDailyMetricsException;
@@ -57,7 +58,6 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
             }
             $rows = $response->rows();
             $registeredAt = $day->next()->instant();
-            $registeredUsers = $this->registeredIdentityCountQueryService->countBefore($registeredAt);
             $countryUsers = $this->fetchCountryUsers($day, $maxPages, $host);
             $countryRegistered = $this->registeredIdentityCountQueryService->countByCountryBefore($registeredAt);
             $countries = [];
@@ -71,7 +71,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
 
             return new AppDailySummaryData(
                 new ApplicationUserCount($rows === [] ? '0' : $rows[0]->metric('totalUsers'), new MetricProvenance($applicationUsersDefinition, $day, $now)),
-                new RegisteredUserSnapshot($registeredUsers, $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
+                new RegisteredUserSnapshot((string) BigInteger::sum(0, ...array_values($countryRegistered)), $registeredAt, new MetricProvenance($registeredUsersDefinition, $day, $now)),
                 $countries,
             );
         } catch (IncompleteDailyMetricsException $exception) {

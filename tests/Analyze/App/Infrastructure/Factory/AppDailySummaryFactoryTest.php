@@ -15,11 +15,11 @@ class AppDailySummaryFactoryTest extends TestCase
     public function testFactoryCreatesAnIdentifiedSummaryWithEveryRequiredValue(): void
     {
         $day = new UtcDate('2020-01-01');
-        $values = AnalyzeAppMetrics::analysisValues($day);
+        $values = AnalyzeAppMetrics::summaryValues($day);
         $identifier = '69200000-0000-7000-8000-000000000099';
         $uuidGenerator = $this->createMock(UuidGeneratorInterface::class);
         $uuidGenerator->expects(self::once())->method('generate')->willReturn($identifier);
-        $summary = (new AppDailySummaryFactory($uuidGenerator))->create($values[0], $values[1]);
+        $summary = (new AppDailySummaryFactory($uuidGenerator))->create($values[0], $values[1], $values[2]);
         self::assertSame($identifier, (string) $summary->identifier());
         self::assertSame($day, $summary->day());
         self::assertSame($values[0], $summary->applicationUsers());

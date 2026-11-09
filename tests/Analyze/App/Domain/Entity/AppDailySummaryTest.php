@@ -16,12 +16,12 @@ class AppDailySummaryTest extends TestCase
     public function testAllAnalyticalValuesExistAtConstructionAndAreReplacedTogether(): void
     {
         $day = new UtcDate('2020-01-01');
-        $values = AnalyzeAppMetrics::analysisValues($day);
-        $summary = new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1]);
+        $values = AnalyzeAppMetrics::summaryValues($day);
+        $summary = new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1], $values[2]);
         self::assertSame($values[0], $summary->applicationUsers());
         self::assertSame($values[1], $summary->registeredUsers());
         $identifier = $summary->identifier();
-        $updated = AnalyzeAppMetrics::analysisValues($day, ['application_users' => '0']);
+        $updated = AnalyzeAppMetrics::summaryValues($day, ['application_users' => '0']);
         $summary->replaceAnalysis(...$updated);
         self::assertSame($identifier, $summary->identifier());
         self::assertSame('0', $summary->applicationUsers()->count());
@@ -30,10 +30,10 @@ class AppDailySummaryTest extends TestCase
     public function testInvalidReplacementDoesNotMutateAnyValue(): void
     {
         $day = new UtcDate('2020-01-01');
-        $values = AnalyzeAppMetrics::analysisValues($day);
-        $summary = new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1]);
-        $invalid = AnalyzeAppMetrics::analysisValues($day, ['application_users' => '9']);
-        $invalid[1] = AnalyzeAppMetrics::analysisValues($day->next())[1];
+        $values = AnalyzeAppMetrics::summaryValues($day);
+        $summary = new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1], $values[2]);
+        $invalid = AnalyzeAppMetrics::summaryValues($day, ['application_users' => '9']);
+        $invalid[1] = AnalyzeAppMetrics::summaryValues($day->next())[1];
 
         try {
             $summary->replaceAnalysis(...$invalid);
@@ -47,9 +47,9 @@ class AppDailySummaryTest extends TestCase
     public function testInitialValuesMustBelongToTheSummaryDay(): void
     {
         $day = new UtcDate('2020-01-01');
-        $values = AnalyzeAppMetrics::analysisValues($day);
-        $values[0] = AnalyzeAppMetrics::analysisValues($day->next())[0];
+        $values = AnalyzeAppMetrics::summaryValues($day);
+        $values[0] = AnalyzeAppMetrics::summaryValues($day->next())[0];
         $this->expectException(InvalidDailySummaryException::class);
-        new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1]);
+        new AppDailySummary(new AppDailySummaryIdentifier('69200000-0000-7000-8000-000000000099'), $day, $values[0], $values[1], $values[2]);
     }
 }

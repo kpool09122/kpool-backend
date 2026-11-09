@@ -237,18 +237,23 @@ class AnalyzeSampleSeeder extends Seeder
         }
         $countries[''] = ['application_users' => (string) $remainingUsers, 'registered_users' => (string) $remainingRegistered];
         // Preserve a real imported snapshot if it already occupies this day.
-        DB::table('analyze_app_daily_summaries')->insertOrIgnore([
+        $inserted = DB::table('analyze_app_daily_summaries')->insertOrIgnore([
             'id' => $this->identifier("app:{$day->toDateString()}"),
             'day' => $day->toDateString(),
             'revision' => $revision,
             'application_users' => (string) $users,
-            'country_metrics' => json_encode($countries, JSON_THROW_ON_ERROR),
-            'registered_users' => (string) (8500 + $index * 28),
-            'registered_users_snapshot_at' => $day->addDay()->toDateTimeString(),
             'measurements' => json_encode($metadata, JSON_THROW_ON_ERROR),
             'created_at' => $day->toDateTimeString(),
             'updated_at' => $day->addDay()->setTime(6, 0)->toDateTimeString(),
         ]);
+        if ($inserted === 1) {
+            foreach ($countries as $country => $values) {
+                DB::table('analyze_app_country_daily_summaries')->insert([
+                    'id' => $this->identifier("app-country:{$day->toDateString()}:$country"),
+                    'day' => $day->toDateString(), 'country' => $country, ...$values,
+                ]);
+            }
+        }
     }
 
     /** @param list<Metric> $metrics

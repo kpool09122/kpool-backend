@@ -14,45 +14,41 @@ use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 class AppDailySummary
 {
     /** @throws InvalidDailySummaryException */
-    /** @param ?list<AppCountryMetrics> $countries */
+    /** @param list<AppCountryMetrics> $countries */
     public function __construct(
         private readonly AppDailySummaryIdentifier $identifier,
         private readonly UtcDate $day,
         private ApplicationUserCount $applicationUsers,
         private RegisteredUserSnapshot $registeredUsers,
-        private ?array $countries = null,
+        private array $countries,
     ) {
         $this->validateAnalysis($applicationUsers, $registeredUsers);
         $this->replaceCountries($countries);
     }
 
-    /** @throws InvalidDailySummaryException */
-    public function replaceAnalysis(ApplicationUserCount $applicationUsers, RegisteredUserSnapshot $registeredUsers): void
-    {
-        $this->validateAnalysis($applicationUsers, $registeredUsers);
-        $this->applicationUsers = $applicationUsers;
-        $this->registeredUsers = $registeredUsers;
-    }
-
-    /** @param ?list<AppCountryMetrics> $countries
+    /** @param list<AppCountryMetrics> $countries
      * @throws InvalidDailySummaryException
      */
-    public function replaceCountries(?array $countries): void
+    public function replaceAnalysis(ApplicationUserCount $applicationUsers, RegisteredUserSnapshot $registeredUsers, array $countries): void
     {
-        $seen = [];
-        foreach ($countries ?? [] as $row) {
-            $key = $row->countryKey();
-            if (isset($seen[$key])) {
-                throw new InvalidDailySummaryException('Duplicate App country.');
-            }
-            $seen[$key] = true;
-            $this->validateAnalysis($row->applicationUsers, $row->registeredUsers);
-        }
+        $this->validateAnalysis($applicationUsers, $registeredUsers);
+        $this->validateCountries($countries);
+        $this->applicationUsers = $applicationUsers;
+        $this->registeredUsers = $registeredUsers;
         $this->countries = $countries;
     }
 
-    /** @return ?list<AppCountryMetrics> */
-    public function countries(): ?array
+    /** @param list<AppCountryMetrics> $countries
+     * @throws InvalidDailySummaryException
+     */
+    public function replaceCountries(array $countries): void
+    {
+        $this->validateCountries($countries);
+        $this->countries = $countries;
+    }
+
+    /** @return list<AppCountryMetrics> */
+    public function countries(): array
     {
         return $this->countries;
     }
@@ -75,6 +71,22 @@ class AppDailySummary
     public function day(): UtcDate
     {
         return $this->day;
+    }
+
+    /** @param list<AppCountryMetrics> $countries
+     * @throws InvalidDailySummaryException
+     */
+    private function validateCountries(array $countries): void
+    {
+        $seen = [];
+        foreach ($countries as $row) {
+            $key = $row->countryKey();
+            if (isset($seen[$key])) {
+                throw new InvalidDailySummaryException('Duplicate App country.');
+            }
+            $seen[$key] = true;
+            $this->validateAnalysis($row->applicationUsers, $row->registeredUsers);
+        }
     }
 
     /** @throws InvalidDailySummaryException */

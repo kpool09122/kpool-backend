@@ -10,16 +10,16 @@ use Source\Analyze\App\Domain\ValueObject\RegisteredUserSnapshot;
 
 readonly class AppDailySummaryData
 {
-    /** @param ?list<AppCountryMetrics> $countries */
+    /** @param list<AppCountryMetrics> $countries */
     public function __construct(
         private ApplicationUserCount $applicationUsers,
         private RegisteredUserSnapshot $registeredUsers,
-        private ?array $countries = null,
+        private array $countries,
     ) {
     }
 
-    /** @return ?list<AppCountryMetrics> */
-    public function countries(): ?array
+    /** @return list<AppCountryMetrics> */
+    public function countries(): array
     {
         return $this->countries;
     }

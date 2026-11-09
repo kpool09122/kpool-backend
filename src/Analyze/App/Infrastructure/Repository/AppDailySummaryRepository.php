@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Analyze\App\Infrastructure\Repository;
 
+use Application\Models\Analyze\App\AppCountryDailySummary as CountryModel;
 use Application\Models\Analyze\App\AppDailySummary as SummaryModel;
 use DateTimeImmutable;
 use Source\Analyze\App\Domain\Entity\AppDailySummary;
@@ -40,16 +41,15 @@ readonly class AppDailySummaryRepository implements AppDailySummaryRepositoryInt
             $provenance[$metric->value] = $this->restoreProvenance($metadata, $day);
         }
 
-        $countries = null;
-        if ($row->country_metrics !== null) {
-            $countries = [];
-            foreach ($row->country_metrics as $country => $values) {
-                $countries[] = new AppCountryMetrics(
-                    $country === '' ? null : CountryCode::from($country),
-                    new ApplicationUserCount($values['application_users'], $provenance[Metric::APPLICATION_USERS->value]),
-                    new RegisteredUserSnapshot($values['registered_users'], $row->registered_users_snapshot_at?->toDateTimeImmutable() ?? throw new InvalidDailySummaryException('Registered snapshot time is missing.'), $provenance[Metric::REGISTERED_USERS->value]),
-                );
-            }
+        $countryRows = CountryModel::query()->where('day', (string) $day)->get();
+        $registeredTotal = CountryModel::query()->where('day', (string) $day)->sum('registered_users');
+        $countries = [];
+        foreach ($countryRows as $countryRow) {
+            $countries[] = new AppCountryMetrics(
+                $countryRow->country === '' ? null : CountryCode::from($countryRow->country),
+                new ApplicationUserCount($this->count($countryRow->application_users), $provenance[Metric::APPLICATION_USERS->value]),
+                new RegisteredUserSnapshot($this->count($countryRow->registered_users), $day->next()->instant(), $provenance[Metric::REGISTERED_USERS->value]),
+            );
         }
 
         return new AppDailySummary(
@@ -57,7 +57,7 @@ readonly class AppDailySummaryRepository implements AppDailySummaryRepositoryInt
             $day,
             countries: $countries,
             applicationUsers: new ApplicationUserCount($this->count($row->application_users), $provenance[Metric::APPLICATION_USERS->value]),
-            registeredUsers: new RegisteredUserSnapshot($this->count($row->registered_users), $row->registered_users_snapshot_at?->toDateTimeImmutable() ?? throw new InvalidDailySummaryException('Registered snapshot time is missing.'), $provenance[Metric::REGISTERED_USERS->value]),
+            registeredUsers: new RegisteredUserSnapshot($this->count((string) $registeredTotal), $day->next()->instant(), $provenance[Metric::REGISTERED_USERS->value]),
         );
     }
 
@@ -71,25 +71,19 @@ readonly class AppDailySummaryRepository implements AppDailySummaryRepositoryInt
         foreach ($provenance as $origin) {
             $metadata[$origin->definition()->metric->value] = $this->serializeProvenance($origin);
         }
-        $countries = null;
-        if ($summary->countries() !== null) {
-            $countries = [];
-            foreach ($summary->countries() as $row) {
-                $countries[$row->countryKey()] = [
-                    'application_users' => $row->applicationUsers->count(),
-                    'registered_users' => $row->registeredUsers->count(),
-                ];
-            }
-        }
         SummaryModel::query()->updateOrCreate(['id' => (string) $summary->identifier()], [
             'day' => (string) $summary->day(),
             'revision' => (string) Uuid::v7(),
             'application_users' => $summary->applicationUsers()->count(),
-            'registered_users' => $summary->registeredUsers()->count(),
-            'registered_users_snapshot_at' => $summary->registeredUsers()->asOf(),
             'measurements' => $metadata,
-            'country_metrics' => $countries === [] ? (object) [] : $countries,
         ]);
+        CountryModel::query()->where('day', (string) $summary->day())->delete();
+        foreach ($summary->countries() as $country) {
+            CountryModel::query()->create([
+                'id' => (string) Uuid::v7(), 'day' => (string) $summary->day(), 'country' => $country->countryKey(),
+                'application_users' => $country->applicationUsers->count(), 'registered_users' => $country->registeredUsers->count(),
+            ]);
+        }
     }
 
     /** @throws InvalidDailySummaryException */
