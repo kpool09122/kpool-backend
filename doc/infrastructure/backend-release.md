@@ -140,6 +140,8 @@ backendの `production` Environmentへ次を設定する。
 - Secret `CLOUDFLARE_API_TOKEN`。対象accountのWorkers配備・metadata読取・R2 cache投入、custom domain設定に必要な権限を与える。権限と対象account/zoneは[frontend配備手順](https://github.com/kpool09122/kpool-frontend/blob/main/docs/cloudflare-workers.md)に従う。
 - Variable `FRONTEND_RELEASE_CONFIGURATION`。下記JSONを実値で設定する。`wrangler` はfrontendの `wrangler.json` を元にし、local名を本番のWorker/R2名へ変更し、account/domain/API URLを設定する。DO migration、IMAGES等のbindingを維持する。
 
+API URLはAnalyzeを含む5種類すべて必須。既存の設定にも `wrangler.vars.KPOOL_ANALYZE_API_BASE_URL` を追加し、対応するbackendの配備スクリプトとfrontendの配備検証を含むタグで新しいリリースを実行する。
+
 ```json
 {
   "paused": false,
@@ -163,7 +165,8 @@ backendの `production` Environmentへ次を設定する。
       "KPOOL_WIKI_PRIVATE_API_BASE_URL": "https://api.k-pool.app",
       "KPOOL_IDENTITY_API_BASE_URL": "https://api.k-pool.app",
       "KPOOL_ACCOUNT_API_BASE_URL": "https://api.k-pool.app",
-      "KPOOL_SITE_MANAGEMENT_API_BASE_URL": "https://api.k-pool.app"
+      "KPOOL_SITE_MANAGEMENT_API_BASE_URL": "https://api.k-pool.app",
+      "KPOOL_ANALYZE_API_BASE_URL": "https://api.k-pool.app"
     }
   }
 }

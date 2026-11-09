@@ -30,6 +30,16 @@ def fixture():
 
 
 class FrontendReleaseTests(unittest.TestCase):
+    def test_analyze_api_url_is_required_before_build_or_deployment(self):
+        plan, config = fixture()
+        config['wrangler']['vars']['KPOOL_ANALYZE_API_BASE_URL'] = 'https://api.example.invalid'
+        plan['frontend_configuration_sha256'] = configuration_digest(config)
+        validate_configuration(config, plan)
+        del config['wrangler']['vars']['KPOOL_ANALYZE_API_BASE_URL']
+        plan['frontend_configuration_sha256'] = configuration_digest(config)
+        with self.assertRaisesRegex(ValueError, 'nonsecret API URLs'):
+            validate_configuration(config, plan)
+
     def test_cloudflare_metadata_selects_current_deployment_and_rejects_weighted_versions(self):
         _, config = fixture()
         older = dict(id='old', created_on='2026-10-17T00:00:00Z', versions=[dict(percentage=100, version_id='old-version')])

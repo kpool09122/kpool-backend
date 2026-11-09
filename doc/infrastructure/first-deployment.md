@@ -133,7 +133,7 @@ frontendのbuild/deployもbackendの `Production release` から実行する。
 [リリース手順](backend-release.md#backend-actionsからのfrontend配備)のCloudflare token・`FRONTEND_RELEASE_CONFIGURATION` をbackendのproduction Environmentへ設定する。
 
 - 承認したWorker名・R2 cache bucket・account・custom domainをfrontendの配備JSONへ設定する。
-- 4つのKPOOL API base URLを本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
+- 5つのKPOOL API base URL（Wiki・Identity・Account・SiteManagement・Analyze）を本番APIへ設定し、self-reference/R2/DO migration/IMAGES bindingを確認する。
 - 署名用Workers Secretを登録する。本番画像hostをNextのremotePatternsで許可する。
 - 個別に配備する場合は `target=frontend`, `mode=deploy` でfrontendのリリースタグを指定する。通常は手順5の `target=all` で両方を配備する。
 - Cloudflare Workers等の料金はAWS見積もりと別。

@@ -41,7 +41,7 @@ Variables はバックエンド repository の Settings → Environments → pro
 | 画像DNS | root `ImageBaseUrl`、CloudFront distributionのdomain（root `ImageDistributionDomainName`） | authoritative DNSのCNAME／alias | DNS-onlyを初期値、CloudFront OACと画像独自domainを確認。APIや書類のcacheと混同しない、基盤管理者 |
 | DNS管理先 | registrarのNSとCloudflare／Route53 zone ID | 管理者環境台帳 | 権威NSを実照会し、一方にのみ設定。Cloudflare管理ならAPI証明書は事前発行しACMのDNS検証CNAMEを登録、基盤管理者 |
 | 証明書 | API: 東京 `CertificateArn`、画像: root入力 `ImageCertificateArn` はus-east-1 | ACM、DNS検証レコードはDNS管理者 | ISSUED、SAN、期限、更新用CNAME維持。2regionを取り違えない、基盤管理者／実環境検証担当 |
-| API URL | runtime `ApiUrl` | frontend `KPOOL_WIKI_PRIVATE_API_BASE_URL`, `KPOOL_IDENTITY_API_BASE_URL`, `KPOOL_ACCOUNT_API_BASE_URL`, `KPOOL_SITE_MANAGEMENT_API_BASE_URL` | 各frontend既存設定のpath仕様に沿って本番APIへ。build時／runtimeの使用時点をfrontendで確定、Pipeline担当／実環境検証担当 |
+| API URL | runtime `ApiUrl` | frontend `KPOOL_WIKI_PRIVATE_API_BASE_URL`, `KPOOL_IDENTITY_API_BASE_URL`, `KPOOL_ACCOUNT_API_BASE_URL`, `KPOOL_SITE_MANAGEMENT_API_BASE_URL`, `KPOOL_ANALYZE_API_BASE_URL` | 各frontend既存設定のpath仕様に沿って本番APIへ。build時／runtimeの使用時点をfrontendで確定、Pipeline担当／実環境検証担当 |
 | bindings／secret名 | frontend配備方式の設定・dashboard | Wrangler等の bindings と Workers Secrets | OpenNextのself reference/R2/DO/IMAGESを維持し、実resource名を管理者が登録。Wiki署名キーはWorkers runtime Secretで管理 |
 | 配備API token | Cloudflare My Profile → API Tokens | backend production Secret `CLOUDFLARE_API_TOKEN`、frontend配備jobだけへ明示渡し | 対象accountの Workers Scripts: Edit を基本に、採用方式の必要権限を追加レビュー。route操作時のみ対象zoneのWorkers Routes: Edit、Zone: Read等。DNS: Editや全account wildcardを無条件付与しない、基盤管理者／Pipeline担当 |
 | token更新 | 管理者パスワード保管庫・失効期限台帳 | 新tokenでEnvironment Secret更新→固定成果物の配備確認→旧token失効 | 実行中jobを排出し失効順序を管理。値をCLI引数／ログ／Issueへ出さない、基盤管理者／Pipeline担当 |

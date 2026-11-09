@@ -14,7 +14,8 @@ from contract import FRONTEND
 from records import write_json
 
 API_KEYS = ('KPOOL_WIKI_PRIVATE_API_BASE_URL', 'KPOOL_IDENTITY_API_BASE_URL',
-            'KPOOL_ACCOUNT_API_BASE_URL', 'KPOOL_SITE_MANAGEMENT_API_BASE_URL')
+            'KPOOL_ACCOUNT_API_BASE_URL', 'KPOOL_SITE_MANAGEMENT_API_BASE_URL',
+            'KPOOL_ANALYZE_API_BASE_URL')
 
 
 def configuration_digest(config):
