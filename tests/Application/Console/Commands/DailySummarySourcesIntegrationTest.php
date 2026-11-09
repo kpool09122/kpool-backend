@@ -114,7 +114,7 @@ class DailySummarySourcesIntegrationTest extends TestCase
         self::assertSame('120.000000000', WikiDailySummary::query()->where('country', 'JP')->firstOrFail()->views);
         self::assertSame('0.000000000', WikiDailySummary::query()->where('country', 'US')->firstOrFail()->views);
         self::assertSame('1.000000000', WikiDailySummary::query()->where('country', 'US')->firstOrFail()->publications);
-        self::assertCount(4, $http->requests);
+        self::assertCount(5, $http->requests);
         $before = WikiDailySummary::query()->orderBy('id')->get()->toArray();
         $http->status = 429;
         self::assertSame(1, Artisan::call('analyze:import-wiki-daily-summary', ['--from' => '2020-01-01','--to' => '2020-01-01']));

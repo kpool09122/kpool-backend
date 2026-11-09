@@ -47,6 +47,7 @@ use Source\Identity\Domain\ValueObject\WebAuthnChallenge;
 use Source\Identity\Domain\ValueObject\WebAuthnCredentialId;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -115,6 +116,7 @@ class RegisterWithPasskeyTest extends TestCase
             Mockery::on(static fn (IdentityName $name): bool => (string) $name === 'Passkey User'),
             $email,
             Language::ENGLISH,
+            CountryCode::JAPAN,
         )->andReturn($identity);
         $webAuthn = Mockery::mock(WebAuthnServiceInterface::class);
         $webAuthn->shouldReceive('verifyRegistration')->once()->with(Mockery::on(
@@ -174,6 +176,7 @@ class RegisterWithPasskeyTest extends TestCase
             new PasskeyDisplayName('Personal passkey'),
             '{"id":"Y3JlZGVudGlhbA"}',
             null,
+            registrationCountry: CountryCode::JAPAN,
         ), $output);
 
         self::assertTrue(array_key_exists('identityIdentifier', $output->toArray()));

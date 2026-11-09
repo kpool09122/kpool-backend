@@ -36,6 +36,7 @@ readonly class ImportAppDailySummary implements ImportAppDailySummaryInterface
         } else {
             $summary->replaceAnalysis($data->applicationUsers(), $data->registeredUsers());
         }
+        $summary->replaceCountries($data->countries());
         $this->appDailySummaryRepository->save($summary);
         $output->setSummaryCount(1);
     }

@@ -37,7 +37,7 @@ readonly class GetAppDailySummaryReportAction
         try {
             try {
                 $period = new ReportingPeriod(new UtcDate($request->from()), new UtcDate($request->to()), Carbon::now('UTC')->toDateTimeImmutable());
-                $readModel = $this->getAppDailySummaryReport->process(new GetAppDailySummaryReportInput($this->analyzeContext->principalIdentifier, $period));
+                $readModel = $this->getAppDailySummaryReport->process(new GetAppDailySummaryReportInput($this->analyzeContext->principalIdentifier, $period, $request->country() === 'unknown' ? '' : $request->country()));
             } catch (UnauthorizedException $e) {
                 throw new ForbiddenHttpException(detail: error_message('unauthorized', $this->actorContext->language->value), previous: $e);
             } catch (InvalidArgumentException $e) {

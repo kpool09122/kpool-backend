@@ -13,6 +13,7 @@ use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\TestCase;
 
@@ -60,7 +61,7 @@ class SignupSessionRepositoryTest extends TestCase
     public function testStoreAndFind(): void
     {
         $state = new OAuthState('test-state-token');
-        $session = new SignupSession(AccountType::INDIVIDUAL);
+        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
         $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
@@ -69,6 +70,7 @@ class SignupSessionRepositoryTest extends TestCase
 
         $this->assertNotNull($foundSession);
         $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
+        $this->assertSame(CountryCode::JAPAN, $foundSession->registrationCountry());
     }
 
     public function testStoreAndFindWithReturnTo(): void
@@ -130,7 +132,7 @@ class SignupSessionRepositoryTest extends TestCase
     public function testDelete(): void
     {
         $state = new OAuthState('test-state-token');
-        $session = new SignupSession(AccountType::INDIVIDUAL);
+        $session = new SignupSession(AccountType::INDIVIDUAL, registrationCountry: CountryCode::JAPAN);
 
         $repository = $this->app()->make(SignupSessionRepositoryInterface::class);
         $repository->store($state, $session, new DateTimeImmutable('+10 minutes'));
@@ -201,6 +203,7 @@ class SignupSessionRepositoryTest extends TestCase
 
         $this->assertNotNull($foundSession);
         $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
+        $this->assertNull($foundSession->registrationCountry());
         $this->assertNotNull($foundSession->oneTimeToken());
         $this->assertSame($token, (string) $foundSession->oneTimeToken());
     }
@@ -223,6 +226,7 @@ class SignupSessionRepositoryTest extends TestCase
 
         $this->assertNotNull($foundSession);
         $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
+        $this->assertNull($foundSession->registrationCountry());
         $this->assertNull($foundSession->oneTimeToken());
     }
 }

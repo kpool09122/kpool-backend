@@ -7,6 +7,7 @@ namespace Application\Http\Action\Identity\Command\SocialLogin\Redirect;
 use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use Application\Http\Support\VisitorLocationVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -27,6 +28,7 @@ readonly class SocialLoginRedirectAction
     public function __construct(
         private SocialLoginRedirectInterface $socialLoginRedirect,
         private LoggerInterface $logger,
+        private VisitorLocationVerifier $visitorLocationVerifier,
     ) {
     }
 
@@ -41,17 +43,16 @@ readonly class SocialLoginRedirectAction
             try {
                 $provider = SocialProvider::fromString($request->provider());
                 $returnTo = ReturnToUrl::normalize($request->returnTo());
-                $signupSession = ($request->accountType() !== null || $request->oneTimeToken() !== null || $returnTo !== null)
-                    ? new SignupSession(
-                        accountType: $request->accountType() !== null
+                $signupSession = new SignupSession(
+                    accountType: $request->accountType() !== null
                             ? AccountType::from($request->accountType())
                             : null,
-                        oneTimeToken: $request->oneTimeToken() !== null
+                    oneTimeToken: $request->oneTimeToken() !== null
                             ? new OneTimeToken($request->oneTimeToken())
                             : null,
-                        returnTo: $returnTo,
-                    )
-                    : null;
+                    returnTo: $returnTo,
+                    registrationCountry: $this->visitorLocationVerifier->country($request),
+                );
 
                 $input = new SocialLoginRedirectInput(
                     provider: $provider,

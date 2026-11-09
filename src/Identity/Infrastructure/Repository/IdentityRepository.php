@@ -14,6 +14,7 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -65,6 +66,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 'identity_name' => (string) $identity->identityName(),
                 'email' => (string) $identity->email(),
                 'language' => $identity->language()->value,
+                'registration_country' => $identity->registrationCountry()?->value,
                 'profile_image' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,
                 'email_verified_at' => $identity->emailVerifiedAt() !== null
                     ? Carbon::createFromImmutable($identity->emailVerifiedAt())
@@ -154,6 +156,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
                 : null,
             $socialConnections,
             $eloquent->created_at?->toDateTimeImmutable(),
+            $eloquent->registration_country !== null ? CountryCode::from($eloquent->registration_country) : null,
         );
     }
 }

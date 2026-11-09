@@ -69,7 +69,7 @@ class ComposedIdentityWithdrawalTest extends TestCase
         $this->assertSiteHistory($subject, $history);
         $archive = DB::table('archived_identities')->where('identity_id', $subject['identities'])->first();
         $this->assertNotNull($archive);
-        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at'], array_keys((array) $archive));
+        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at', 'registration_country'], array_keys((array) $archive));
         $this->assertSame('ja', $archive->language);
         $this->assertNotNull($archive->identity_created_at);
         $accountArchive = DB::table('archived_accounts')->where('account_id', $subject['accounts'])->first();

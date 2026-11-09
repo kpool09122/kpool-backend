@@ -7,7 +7,7 @@ paths:
   /app/daily-summary:
     get:
       operationId: AnalysisOperations_getAppDailySummaryReport
-      description: 'Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.'
+      description: 'Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. country=unknown selects unknown; omitted/null selects all. Country breakdowns are unavailable for imports predating country collection. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.'
       parameters:
         - name: from
           in: query
@@ -22,6 +22,13 @@ paths:
           schema:
             type: string
             format: date
+          explode: false
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
           explode: false
       responses:
         '200':
@@ -315,11 +322,11 @@ components:
         applicationUsers:
           allOf:
             - $ref: '#/components/schemas/MetricReport'
-          description: Sum of independently acquired daily application users (person-days). No country projection.
+          description: Sum of independently acquired daily application users (person-days), with separately acquired country breakdowns. Global users are not the sum of countries.
         registeredUsers:
           allOf:
             - $ref: '#/components/schemas/MetricReport'
-          description: Identity closing balance on the final selected day; never filtered by Wiki/language/country. No country projection.
+          description: Identity closing balance on the final selected day, grouped by immutable registration-time access country. Missing registration country is unknown; account addresses are never used. Wiki/language filters do not apply.
     CountryMetric:
       type: object
       required:

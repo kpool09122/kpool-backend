@@ -190,10 +190,11 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $this->assertNotNull($account);
         $this->assertNotNull($identity->archived_at);
         $this->assertNotNull($account->archived_at);
-        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at'], Schema::getColumnListing('archived_identities'));
+        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at', 'registration_country'], Schema::getColumnListing('archived_identities'));
         $this->assertSame(['id', 'account_id', 'account_category', 'account_type', 'archived_at'], Schema::getColumnListing('archived_accounts'));
         $this->assertSame(['id', 'identity_id', 'principal_type', 'principal_id', 'account_id', 'archived_at'], Schema::getColumnListing('archived_principals'));
         $this->assertSame('ja', $identity->language);
+        $this->assertSame('JP', $identity->registration_country);
         $this->assertNotNull($identity->identity_created_at);
         $this->assertSame('general', $account->account_category);
         $this->assertSame('individual', $account->account_type);
@@ -245,7 +246,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountId = StrTestHelper::generateUuid();
         $principalId = StrTestHelper::generateUuid();
-        CreateIdentity::create($identityIdentifier, ['identity_name' => 'private name', 'email' => 'private@example.com']);
+        CreateIdentity::create($identityIdentifier, ['identity_name' => 'private name', 'email' => 'private@example.com', 'registration_country' => 'JP']);
         CreateAccount::create($accountId);
         DB::table('account_principals')->insert(['id' => $principalId, 'identity_id' => (string) $identityIdentifier, 'account_id' => $accountId, 'created_at' => now(), 'updated_at' => now()]);
 

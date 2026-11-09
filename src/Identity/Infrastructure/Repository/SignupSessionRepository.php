@@ -11,6 +11,7 @@ use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Shared\Domain\Support\TypedValue;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class SignupSessionRepository implements SignupSessionRepositoryInterface
@@ -25,6 +26,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
         if ($ttl > 0) {
             $data = [
                 'account_type' => $session->accountType()?->value,
+                'registration_country' => $session->registrationCountry()?->value,
                 'one_time_token' => $session->oneTimeToken() !== null
                     ? (string) $session->oneTimeToken()
                     : null,
@@ -59,7 +61,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
 
         $returnTo = isset($data['return_to']) ? TypedValue::string($data['return_to']) : null;
 
-        return new SignupSession($accountType, $oneTimeToken, $returnTo);
+        return new SignupSession($accountType, $oneTimeToken, $returnTo, isset($data['registration_country']) ? CountryCode::tryFrom(TypedValue::string($data['registration_country'])) : null);
     }
 
     public function delete(OAuthState $state): void

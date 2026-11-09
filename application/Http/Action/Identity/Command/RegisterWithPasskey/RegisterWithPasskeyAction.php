@@ -9,6 +9,7 @@ use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use Application\Http\Support\VisitorLocationVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -39,6 +40,7 @@ readonly class RegisterWithPasskeyAction
     public function __construct(
         private RegisterWithPasskeyInterface $registerWithPasskey,
         private LoggerInterface $logger,
+        private VisitorLocationVerifier $visitorLocationVerifier,
     ) {
     }
 
@@ -53,6 +55,7 @@ readonly class RegisterWithPasskeyAction
                     new PasskeyDisplayName($request->displayName()),
                     json_encode($request->credential(), JSON_THROW_ON_ERROR),
                     $request->base64EncodedImage(),
+                    $this->visitorLocationVerifier->country($request),
                 );
                 $output = new RegisterWithPasskeyOutput();
             } catch (InvalidArgumentException|JsonException $exception) {

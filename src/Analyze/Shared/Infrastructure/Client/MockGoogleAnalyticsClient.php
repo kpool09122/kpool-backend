@@ -21,6 +21,8 @@ class MockGoogleAnalyticsClient implements GoogleAnalyticsClientInterface
         $day = str_replace('-', '', $request->day());
         if ($request->dimensions() === ['date'] && $request->metrics() === ['totalUsers']) {
             $rows = [new AnalyticsReportRow(['date' => $day], ['totalUsers' => '250'])];
+        } elseif ($request->dimensions() === ['date', 'countryId'] && $request->metrics() === ['totalUsers']) {
+            $rows = [new AnalyticsReportRow(['date' => $day, 'countryId' => 'JP'], ['totalUsers' => '180']), new AnalyticsReportRow(['date' => $day, 'countryId' => 'US'], ['totalUsers' => '90'])];
         } else {
             if ($request->dimensions() !== ['date', 'customEvent:wiki_id', 'customEvent:wiki_translation_set_id', 'customEvent:wiki_language', 'countryId']) {
                 throw new GoogleAnalyticsRequestFailedException('Unknown mock report.');

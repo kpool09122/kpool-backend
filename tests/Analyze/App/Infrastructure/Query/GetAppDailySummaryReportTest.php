@@ -39,6 +39,47 @@ class GetAppDailySummaryReportTest extends TestCase
         $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
     }
 
+    public function testCountryTrendsAndFinalSnapshotsRemainIndependentFromGlobalUsers(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        foreach ([$day, $day->next()] as $index => $date) {
+            $this->save($date, ['application_users' => $index === 0 ? '5' : '7', 'registered_users' => $index === 0 ? '100' : '110']);
+            SummaryModel::query()->where('day', (string) $date)->update(['country_metrics' => [
+                'JP' => ['application_users' => $index === 0 ? '2' : '6', 'registered_users' => $index === 0 ? '60' : '70'],
+                'US' => ['application_users' => $index === 0 ? '4' : '5', 'registered_users' => '40'],
+                '' => ['application_users' => '0', 'registered_users' => '0'],
+            ]]);
+        }
+        $period = new ReportingPeriod($day, $day->next(), AnalyzeAppMetrics::now());
+        $query = $this->app()->make(GetAppDailySummaryReport::class);
+        $global = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period));
+        self::assertSame('12.000000000', $global->applicationUsers()->total());
+        self::assertSame(['0.000000000', '8.000000000', '9.000000000'], array_column($global->applicationUsers()->countries(), 'value'));
+        self::assertSame(['0.000000000', '70.000000000', '40.000000000'], array_column($global->registeredUsers()->countries(), 'value'));
+        $japan = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, 'JP'));
+        self::assertSame('8.000000000', $japan->applicationUsers()->total());
+        self::assertSame(['2.000000000', '6.000000000'], array_column($japan->applicationUsers()->days(), 'value'));
+        self::assertSame('70.000000000', $japan->registeredUsers()->total());
+        self::assertSame(['JP'], array_column($japan->applicationUsers()->countries(), 'country'));
+        $unknown = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, ''));
+        self::assertSame('0.000000000', $unknown->registeredUsers()->total());
+        $absent = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, 'DE'));
+        self::assertSame(['measured', 'measured'], array_column($absent->applicationUsers()->days(), 'availability'));
+        self::assertSame('0.000000000', $absent->registeredUsers()->total());
+    }
+
+    public function testLegacyImportsDoNotFabricateCountryZeros(): void
+    {
+        $day = new UtcDate('2020-01-01');
+        $this->save($day);
+        $query = $this->app()->make(GetAppDailySummaryReport::class);
+        $period = new ReportingPeriod($day, $day, AnalyzeAppMetrics::now());
+        $report = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, 'JP'));
+        self::assertNull($report->applicationUsers()->total());
+        self::assertNull($report->registeredUsers()->total());
+        self::assertSame('missing', $report->applicationUsers()->days()[0]['availability']);
+    }
+
     public function testDailyUsersAreAddedButRegisteredUsersUseOnlyTheFinalClosingBalance(): void
     {
         $first = new UtcDate('2020-01-01');

@@ -46,6 +46,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
             $identityIdentifier,
             $identity->language(),
             $identity->createdAt(),
+            $identity->registrationCountry(),
         );
         $this->archivedIdentityRepository->save($archivedIdentity);
         $this->eventDispatcher->dispatch(new IdentityWithdrawing($identityIdentifier));

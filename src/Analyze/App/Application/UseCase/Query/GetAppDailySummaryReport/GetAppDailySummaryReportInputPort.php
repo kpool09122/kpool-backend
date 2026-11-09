@@ -11,5 +11,7 @@ interface GetAppDailySummaryReportInputPort
 {
     public function principalIdentifier(): PrincipalIdentifier;
 
+    public function country(): ?string;
+
     public function period(): ReportingPeriod;
 }

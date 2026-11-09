@@ -12,12 +12,18 @@ readonly class GetAppDailySummaryReportInput implements GetAppDailySummaryReport
     public function __construct(
         private PrincipalIdentifier $principalIdentifier,
         private ReportingPeriod $period,
+        private ?string $country = null,
     ) {
     }
 
     public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
+    }
+
+    public function country(): ?string
+    {
+        return $this->country;
     }
 
     public function period(): ReportingPeriod
