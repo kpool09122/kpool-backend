@@ -33,6 +33,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
                 'wiki_images.source_name as hero_image_source_name',
                 'wiki_images.is_hidden as hero_image_is_hidden',
             )
+            ->withAvailableLanguages()
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
             ->with(['groupBasic'])
             ->where('wikis.resource_type', ResourceType::GROUP->value)
@@ -51,6 +52,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
             translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
+            availableLanguages: $model->available_languages,
             resourceType: ResourceType::GROUP->value,
             version: $model->version,
             isOfficial: $model->owner_account_id !== null,

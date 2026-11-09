@@ -12,6 +12,8 @@ readonly class WikiReadModel
     private string $translationSetIdentifier;
     private string $slug;
     private string $language;
+    /** @var list<string> */
+    private array $availableLanguages;
     private string $resourceType;
     private int $version;
     private bool $isOfficial;
@@ -32,6 +34,7 @@ readonly class WikiReadModel
      * @param array<string, mixed>|WikiBasicReadModel $basic
      * @param list<array<array-key, mixed>> $sections
      * @param list<string>|null $keywords
+     * @param list<string>|null $availableLanguages
      */
     public function __construct(
         string $wikiIdentifier,
@@ -49,11 +52,13 @@ readonly class WikiReadModel
         ?string $metaDescription = null,
         ?array $keywords = null,
         ?string $fontStyle = null,
+        ?array $availableLanguages = null,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
         $this->translationSetIdentifier = $translationSetIdentifier;
         $this->slug = $slug;
         $this->language = $language;
+        $this->availableLanguages = $availableLanguages ?? [$language];
         $this->resourceType = $resourceType;
         $this->version = $version;
         $this->isOfficial = $isOfficial;
@@ -91,6 +96,12 @@ readonly class WikiReadModel
     public function language(): string
     {
         return $this->language;
+    }
+
+    /** @return list<string> */
+    public function availableLanguages(): array
+    {
+        return $this->availableLanguages;
     }
 
     public function resourceType(): string
@@ -160,7 +171,7 @@ readonly class WikiReadModel
     }
 
     /**
-     * @return array{wikiIdentifier: string, translationSetIdentifier: string, slug: string, language: string, resourceType: string, version: int, isOfficial: bool, themeColor: string|null, fontStyle: string|null, title: string|null, metaDescription: string|null, keywords: list<string>|null, heroImage: array<string, mixed>, basic: array<string, mixed>, sections: list<array<array-key, mixed>>}
+     * @return array{wikiIdentifier: string, translationSetIdentifier: string, slug: string, language: string, availableLanguages: list<string>, resourceType: string, version: int, isOfficial: bool, themeColor: string|null, fontStyle: string|null, title: string|null, metaDescription: string|null, keywords: list<string>|null, heroImage: array<string, mixed>, basic: array<string, mixed>, sections: list<array<array-key, mixed>>}
      */
     public function toArray(): array
     {
@@ -169,6 +180,7 @@ readonly class WikiReadModel
             'translationSetIdentifier' => $this->translationSetIdentifier,
             'slug' => $this->slug,
             'language' => $this->language,
+            'availableLanguages' => $this->availableLanguages,
             'resourceType' => $this->resourceType,
             'version' => $this->version,
             'isOfficial' => $this->isOfficial,

@@ -76,6 +76,7 @@ class WikiReadModelTest extends TestCase
             'translationSetIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f003',
             'slug' => 'gr-twice',
             'language' => 'ko',
+            'availableLanguages' => ['ko'],
             'resourceType' => 'group',
             'version' => 2,
             'isOfficial' => true,
