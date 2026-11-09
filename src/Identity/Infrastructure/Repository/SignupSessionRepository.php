@@ -13,6 +13,7 @@ use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\OneTimeToken;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 class SignupSessionRepository implements SignupSessionRepositoryInterface
 {
@@ -27,6 +28,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
             $data = [
                 'account_type' => $session->accountType()?->value,
                 'registration_country' => $session->registrationCountry()?->value,
+                'registration_region' => $session->registrationRegion() !== null ? (string) $session->registrationRegion() : null,
                 'one_time_token' => $session->oneTimeToken() !== null
                     ? (string) $session->oneTimeToken()
                     : null,
@@ -61,7 +63,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
 
         $returnTo = isset($data['return_to']) ? TypedValue::string($data['return_to']) : null;
 
-        return new SignupSession($accountType, $oneTimeToken, $returnTo, isset($data['registration_country']) ? CountryCode::tryFrom(TypedValue::string($data['registration_country'])) : null);
+        return new SignupSession($accountType, $oneTimeToken, $returnTo, isset($data['registration_country']) ? CountryCode::tryFrom(TypedValue::string($data['registration_country'])) : null, isset($data['registration_region'], $data['registration_country']) ? new SubdivisionCode(CountryCode::from(TypedValue::string($data['registration_country'])), TypedValue::string($data['registration_region'])) : null);
     }
 
     public function delete(OAuthState $state): void

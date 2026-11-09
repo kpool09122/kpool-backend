@@ -117,7 +117,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             return;
         }
 
-        $newIdentity = $this->identityFactory->createFromSocialProfile($profile, $signupSession?->registrationCountry());
+        $newIdentity = $this->identityFactory->createFromSocialProfile($profile, $signupSession?->registrationCountry(), $signupSession?->registrationRegion());
         if ($profile->avatarUrl() !== null) {
             try {
                 $imagePath = $this->imageService->importFromUrl($profile->avatarUrl());

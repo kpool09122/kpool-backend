@@ -9,6 +9,7 @@ use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PasskeyDisplayName;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\SubdivisionCode;
 
 readonly class RegisterWithPasskeyInput implements RegisterWithPasskeyInputPort
 {
@@ -20,7 +21,13 @@ readonly class RegisterWithPasskeyInput implements RegisterWithPasskeyInputPort
         private string $responseJson,
         private ?string $base64EncodedImage,
         private ?CountryCode $registrationCountry = null,
+        private ?SubdivisionCode $registrationRegion = null,
     ) {
+    }
+
+    public function registrationRegion(): ?SubdivisionCode
+    {
+        return $this->registrationRegion;
     }
 
     public function registrationCountry(): ?CountryCode

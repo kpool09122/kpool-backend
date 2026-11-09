@@ -17,6 +17,7 @@ readonly class ArchivedIdentityRepository implements ArchivedIdentityRepositoryI
             'identity_id' => (string) $archivedIdentity->identityIdentifier(),
             'language' => $archivedIdentity->language()->value,
             'registration_country' => $archivedIdentity->registrationCountry()?->value,
+                'registration_region' => $archivedIdentity->registrationRegion() !== null ? (string) $archivedIdentity->registrationRegion() : null,
             'identity_created_at' => $archivedIdentity->identityCreatedAt(),
             'archived_at' => $archivedIdentity->archivedAt(),
         ]);

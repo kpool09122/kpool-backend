@@ -20,7 +20,7 @@ readonly class MetricDefinition
                 throw new InvalidArgumentException('Invalid metric definition key.');
             }
         }
-        if ($grain !== $metric->grain()) {
+        if ($grain !== $metric->grain() && $grain !== $metric->grain() . '_region') {
             throw new InvalidArgumentException('Invalid metric grain.');
         }
     }

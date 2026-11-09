@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Override;
 
 /**
- * @property ?string $registration_country
  * @property string $id
+ * @property ?string $registration_region
  * @property ?string $registration_country
  * @property string $identity_id
  * @property string $language
@@ -24,6 +24,7 @@ use Override;
     'identity_id',
     'language',
     'registration_country',
+    'registration_region',
     'identity_created_at',
     'archived_at',
 ])]

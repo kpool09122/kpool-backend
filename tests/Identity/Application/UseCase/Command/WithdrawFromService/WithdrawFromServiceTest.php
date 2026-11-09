@@ -92,6 +92,7 @@ class WithdrawFromServiceTest extends TestCase
         $identity->shouldReceive('language')->once()->andReturn(Language::JAPANESE);
         $identity->shouldReceive('createdAt')->once()->andReturn($createdAt);
         $identity->shouldReceive('registrationCountry')->once()->andReturnNull();
+        $identity->shouldReceive('registrationRegion')->once()->andReturnNull();
         $profileImage = new ImagePath('images/withdrawal.webp');
         $identity->shouldReceive('profileImage')->once()->andReturn($profileImage);
         /** @var IdentityRepositoryInterface&MockInterface $identityRepository */
@@ -101,7 +102,7 @@ class WithdrawFromServiceTest extends TestCase
         /** @var ArchivedIdentityFactoryInterface&MockInterface $archivedIdentityFactory */
         $archivedIdentityFactory = Mockery::mock(ArchivedIdentityFactoryInterface::class);
         $archivedIdentityFactory->shouldReceive('create')->once()
-            ->with($identityIdentifier, Language::JAPANESE, $createdAt, null)
+            ->with($identityIdentifier, Language::JAPANESE, $createdAt, null, null)
             ->andReturn($archivedIdentity);
         /** @var ArchivedIdentityRepositoryInterface&MockInterface $archivedIdentityRepository */
         $archivedIdentityRepository = Mockery::mock(ArchivedIdentityRepositoryInterface::class);

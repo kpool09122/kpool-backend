@@ -190,7 +190,7 @@ class WithdrawFromServiceIntegrationTest extends TestCase
         $this->assertNotNull($account);
         $this->assertNotNull($identity->archived_at);
         $this->assertNotNull($account->archived_at);
-        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at', 'registration_country'], Schema::getColumnListing('archived_identities'));
+        $this->assertSame(['id', 'identity_id', 'language', 'identity_created_at', 'archived_at', 'registration_country', 'registration_region'], Schema::getColumnListing('archived_identities'));
         $this->assertSame(['id', 'account_id', 'account_category', 'account_type', 'archived_at'], Schema::getColumnListing('archived_accounts'));
         $this->assertSame(['id', 'identity_id', 'principal_type', 'principal_id', 'account_id', 'archived_at'], Schema::getColumnListing('archived_principals'));
         $this->assertSame('ja', $identity->language);

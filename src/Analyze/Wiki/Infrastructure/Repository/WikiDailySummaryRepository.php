@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Analyze\Wiki\Infrastructure\Repository;
 
+use Application\Models\Analyze\RegionalDailySummary as RegionalModel;
 use Application\Models\Analyze\Wiki\WikiDailySummary as SummaryModel;
 use DateTimeImmutable;
 use Source\Analyze\Shared\Domain\Exception\MetricDefinitionMismatchException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
+use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Wiki\Domain\Entity\WikiDailySummary;
 use Source\Analyze\Wiki\Domain\Exception\InvalidDailySummaryException;
@@ -37,6 +39,22 @@ readonly class WikiDailySummaryRepository implements WikiDailySummaryRepositoryI
     public function findAllByDay(UtcDate $day): array
     {
         $rows = SummaryModel::query()->where('day', (string) $day)->get();
+        $regionsByTarget = [];
+        foreach (RegionalModel::query()->where('context', 'wiki')->where('day', (string) $day)->get() as $region) {
+            $regionsByTarget[implode("\0", [$region->wiki_identifier, $region->language, $region->country])][] = new RegionalMetricObservation(
+                $region->country,
+                $region->region,
+                $region->metric,
+                $region->metric === 'engagement_seconds'
+                    ? ($region->value ?? throw new InvalidDailySummaryException('Regional engagement time is missing.'))
+                    : $this->count($region->value),
+                $region->denominator,
+                $region->quality,
+                $region->wiki_identifier,
+                $region->translation_set_identifier,
+                $region->language,
+            );
+        }
         $result = [];
         foreach ($rows as $row) {
             $provenance = [];
@@ -56,6 +74,7 @@ readonly class WikiDailySummaryRepository implements WikiDailySummaryRepositoryI
                 engagementTime: new WikiEngagementTime($row->engagement_seconds ?? throw new InvalidDailySummaryException('Engagement time is missing.'), $row->engagement_denominator, $provenance[Metric::ENGAGEMENT_SECONDS->value]),
                 submissions: new WikiSubmissionCount($this->count($row->submissions), $provenance[Metric::SUBMISSIONS->value]),
                 publications: new WikiPublicationCount($this->count($row->publications), $provenance[Metric::PUBLICATIONS->value]),
+                regions: $regionsByTarget[implode("\0", [$row->wiki_identifier, $row->language, $row->country])] ?? [],
             );
         }
 
@@ -88,6 +107,29 @@ readonly class WikiDailySummaryRepository implements WikiDailySummaryRepositoryI
             'engagement_denominator' => $summary->engagementTime()->sampleCount(),
             'measurements' => $metadata,
         ]);
+        $this->saveRegions($summary);
+    }
+
+    private function saveRegions(WikiDailySummary $summary): void
+    {
+        RegionalModel::query()->where('context', 'wiki')->where('day', (string) $summary->day())
+            ->where('wiki_identifier', (string) $summary->wikiIdentifier())
+            ->where('language', $summary->language()->value)
+            ->where('country', $summary->country() === null ? '' : $summary->country()->value)->delete();
+        foreach ($summary->regions() as $region) {
+            RegionalModel::query()->insert([
+                'context' => 'wiki', 'day' => (string) $summary->day(),
+                'country' => $region->country, 'region' => $region->region,
+                'wiki_identifier' => (string) $summary->wikiIdentifier(),
+                'translation_set_identifier' => (string) $summary->translationSetIdentifier(),
+                'language' => $summary->language()->value,
+                'metric' => $region->metric,
+                'source' => 'ga4', 'definition_version' => '1',
+                'value' => $region->value, 'denominator' => $region->denominator,
+                'quality' => json_encode($region->quality, JSON_THROW_ON_ERROR),
+                'revision' => (string) Uuid::v7(), 'updated_at' => $summary->views()->provenance()->updatedAt()->format('Y-m-d H:i:s.uP'),
+            ]);
+        }
     }
 
     /** @throws InvalidDailySummaryException */

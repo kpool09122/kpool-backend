@@ -52,6 +52,7 @@ readonly class SocialLoginRedirectAction
                             : null,
                     returnTo: $returnTo,
                     registrationCountry: $this->visitorLocationVerifier->country($request),
+                    registrationRegion: $this->visitorLocationVerifier->region($request),
                 );
 
                 $input = new SocialLoginRedirectInput(

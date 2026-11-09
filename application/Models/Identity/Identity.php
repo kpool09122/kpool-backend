@@ -17,8 +17,8 @@ use Illuminate\Support\Carbon;
 use Override;
 
 /**
- * @property ?string $registration_country
  * @property string $id
+ * @property ?string $registration_region
  * @property ?string $registration_country
  * @property string $identity_name
  * @property string $email
@@ -41,6 +41,7 @@ use Override;
     'email',
     'language',
     'registration_country',
+    'registration_region',
     'profile_image',
     'email_verified_at',
 ])]

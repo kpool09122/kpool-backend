@@ -56,6 +56,7 @@ readonly class RegisterWithPasskeyAction
                     json_encode($request->credential(), JSON_THROW_ON_ERROR),
                     $request->base64EncodedImage(),
                     $this->visitorLocationVerifier->country($request),
+                    $this->visitorLocationVerifier->region($request),
                 );
                 $output = new RegisterWithPasskeyOutput();
             } catch (InvalidArgumentException|JsonException $exception) {

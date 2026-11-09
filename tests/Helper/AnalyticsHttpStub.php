@@ -24,9 +24,12 @@ class AnalyticsHttpStub implements ClientInterface
     /** @var array<string, mixed> */
     public array $metadata = ['timeZone' => 'UTC'];
     public int $status = 200;
+    /** @var list<string> */
+    public array $regionalFailureDays = [];
     public bool $empty = false;
     public bool $wrongDate = false;
     public bool $paginate = false;
+    public bool $paginateRegions = false;
     public bool $changingTotal = false;
     public bool $emptyContinuation = false;
     public bool $otherRow = false;
@@ -56,6 +59,7 @@ class AnalyticsHttpStub implements ClientInterface
         /** @var array{dimensions: list<array{name:string}>, metrics:list<array{name:string}>, dateRanges:list<array{startDate:string}>, offset?:string, limit?:string} $body */
         $body = json_decode((string) $request->getBody(), true, flags: JSON_THROW_ON_ERROR);
         $day = str_replace('-', '', $body['dateRanges'][0]['startDate']);
+        $paginate = $this->paginate || ($this->paginateRegions && in_array('region', array_column($body['dimensions'], 'name'), true));
         $dimensionValues = [];
         foreach ($body['dimensions'] as $dimension) {
             $name = $dimension['name'];
@@ -64,8 +68,9 @@ class AnalyticsHttpStub implements ClientInterface
                 'customEvent:wiki_id' => MockGoogleAnalyticsClient::WIKI_IDENTIFIER,
                 'customEvent:wiki_translation_set_id' => MockGoogleAnalyticsClient::TRANSLATION_SET_IDENTIFIER,
                 'customEvent:wiki_language' => 'ja',
-                'countryId' => $this->paginate && (int) ($body['offset'] ?? '0') === 1 ? 'US' : 'JP',
+                'countryId' => $paginate && (int) ($body['offset'] ?? '0') === 1 ? 'US' : 'JP',
                 'deviceCategory' => 'mobile',
+                'region' => 'Tokyo',
                 default => 'example',
             };
             $dimensionValues[] = ['value' => $value];
@@ -82,13 +87,15 @@ class AnalyticsHttpStub implements ClientInterface
             }];
         }
         $row = ['dimensionValues' => $dimensionValues, 'metricValues' => $this->missingMetric ? [] : $metricValues];
-        $rowCount = $this->empty ? 0 : ($this->paginate ? 2 : 1);
+        $rowCount = $this->empty ? 0 : ($paginate ? 2 : 1);
         if ($this->changingTotal && (int) ($body['offset'] ?? '0') > 0) {
             $rowCount++;
         }
         $data = ['dimensionHeaders' => $body['dimensions'], 'metricHeaders' => $body['metrics'], 'metadata' => $this->metadata, 'rowCount' => $rowCount,
             'rows' => $this->empty || ($this->emptyContinuation && (int) ($body['offset'] ?? '0') > 0) || (int) ($body['offset'] ?? '0') >= $rowCount ? [] : [$row]];
 
-        return new Response($this->status, [], json_encode($data, JSON_THROW_ON_ERROR));
+        $status = in_array('region', array_column($body['dimensions'], 'name'), true) && in_array($body['dateRanges'][0]['startDate'], $this->regionalFailureDays, true) ? 503 : $this->status;
+
+        return new Response($status, [], json_encode($data, JSON_THROW_ON_ERROR));
     }
 }
