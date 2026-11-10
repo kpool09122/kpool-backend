@@ -15,6 +15,7 @@ use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
 use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
+use Source\Analyze\Shared\Infrastructure\Service\UtcDailyReportTimeZone;
 use Source\Analyze\Wiki\Application\Collection\CompleteWikiMetric;
 use Source\Analyze\Wiki\Application\Exception\IncompleteDailyMetricsException;
 use Source\Analyze\Wiki\Application\Exception\MetricsFetchFailedException;
@@ -164,7 +165,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
                 FilterExpression::all(...$filters),
                 $offset
             ));
-            if (! in_array($response->params()->timeZone(), ['UTC', 'Etc/UTC', 'Etc/GMT', 'GMT'], true) || ($expectedRows !== null && $expectedRows !== $response->rowCount())) {
+            if (! UtcDailyReportTimeZone::matches($response->params()->timeZone(), $day) || ($expectedRows !== null && $expectedRows !== $response->rowCount())) {
                 throw new IncompleteDailyMetricsException('Wiki metrics require complete, stable UTC reports.');
             }
             $expectedRows = $response->rowCount();

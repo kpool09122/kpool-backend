@@ -54,7 +54,7 @@ readonly class RegionalMetricsFetchService
         $seen = [];
         for ($page = 0; $page < $maxPages; $page++) {
             $response = $this->googleAnalyticsClient->runReport(new RunReportRequest((string) $day, $metrics, $dimensions, FilterExpression::all(...$filters), $offset));
-            if (! in_array($response->params()->timeZone(), ['UTC', 'Etc/UTC', 'Etc/GMT', 'GMT'], true) || ($expected !== null && $expected !== $response->rowCount())) {
+            if (! UtcDailyReportTimeZone::matches($response->params()->timeZone(), $day) || ($expected !== null && $expected !== $response->rowCount())) {
                 throw new RuntimeException('Regional metrics require a complete stable UTC report.');
             }
             $expected = $response->rowCount();

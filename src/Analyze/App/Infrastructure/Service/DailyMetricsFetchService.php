@@ -24,6 +24,7 @@ use Source\Analyze\Shared\Domain\ValueObject\MetricProvenance;
 use Source\Analyze\Shared\Domain\ValueObject\RegionalMetricObservation;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
 use Source\Analyze\Shared\Infrastructure\Service\RegionalMetricsFetchService;
+use Source\Analyze\Shared\Infrastructure\Service\UtcDailyReportTimeZone;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Throwable;
 
@@ -56,7 +57,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
                 throw new InvalidArgumentException('The frontend URL must use HTTP or HTTPS and contain a host.');
             }
             $response = $this->googleAnalyticsClient->runReport(new RunReportRequest((string) $day, ['totalUsers'], ['date'], FilterExpression::exact('hostName', $host)));
-            if (! in_array($response->params()->timeZone(), ['UTC', 'Etc/UTC', 'Etc/GMT', 'GMT'], true) || $response->rowCount() > 1 || count($response->rows()) !== $response->rowCount()) {
+            if (! UtcDailyReportTimeZone::matches($response->params()->timeZone(), $day) || $response->rowCount() > 1 || count($response->rows()) !== $response->rowCount()) {
                 throw new IncompleteDailyMetricsException('Application users require a complete UTC daily report.');
             }
             $rows = $response->rows();
@@ -127,7 +128,7 @@ readonly class DailyMetricsFetchService implements DailyMetricsFetchServiceInter
                 FilterExpression::exact('hostName', $host),
                 $offset,
             ));
-            if (! in_array($response->params()->timeZone(), ['UTC', 'Etc/UTC', 'Etc/GMT', 'GMT'], true)
+            if (! UtcDailyReportTimeZone::matches($response->params()->timeZone(), $day)
                 || ($expectedRows !== null && $expectedRows !== $response->rowCount())) {
                 throw new IncompleteDailyMetricsException('App country users require complete, stable UTC reports.');
             }
