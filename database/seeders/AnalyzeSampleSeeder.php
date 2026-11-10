@@ -15,11 +15,11 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\Uid\Uuid;
 
-/** Local/test fixtures for the Analyze globe, country summaries and daily tables. */
+/** Local/test fixtures for the Analyze globe, country/regional summaries and daily tables. */
 class AnalyzeSampleSeeder extends Seeder
 {
     private const string NAMESPACE = '9a119a00-5100-5000-8000-000000000001';
-    private const string MARKER = 'analyze_sample_seeder';
+    public const string MARKER = 'analyze_sample_seeder';
     private const string HISTORY_SUBJECT = 'Analyze sample';
 
     /** @var list<array{principal: string, identity: string, account: string}> */
@@ -33,6 +33,7 @@ class AnalyzeSampleSeeder extends Seeder
         'JP' => [420, 180, 90, 3, 2],
         'KR' => [350, 160, 150, 5, 3],
         'US' => [300, 140, 60, 4, 2],
+        'CN' => [280, 125, 85, 3, 2],
         'BR' => [160, 90, 110, 2, 1],
         'GB' => [130, 70, 80, 2, 1],
         'DE' => [95, 55, 100, 1, 1],
@@ -124,6 +125,7 @@ class AnalyzeSampleSeeder extends Seeder
                                 'updated_at' => $day->addDay()->setTime(6, 0)->toDateTimeString(),
                             ];
                         }
+                        $regions = AnalyzeRegionalSampleSeeder::regions($country);
                         foreach (['draft_status_change' => $submissions, 'publish' => $publications] as $action => $count) {
                             for ($event = 0; $event < $count; $event++) {
                                 $actor = self::ACCOUNTS[($index + $wikiIndex + $event) % count(self::ACCOUNTS)];
@@ -142,6 +144,7 @@ class AnalyzeSampleSeeder extends Seeder
                                     'from_version' => $action === 'publish' ? 1 : null,
                                     'to_version' => $action === 'publish' ? 2 : null,
                                     'visitor_country' => $country === '' ? null : $country,
+                                    'visitor_region' => $regions === [] ? null : (substr($regions[($index * 7 + $wikiIndex * 3 + $event) % count($regions)], 3) ?: null),
                                     'recorded_at' => $day->setTime(12, $event)->toDateTimeString(),
                                 ];
                             }
@@ -155,6 +158,7 @@ class AnalyzeSampleSeeder extends Seeder
             foreach (array_chunk($histories, 500) as $chunk) {
                 DB::table('wiki_histories')->insertOrIgnore($chunk);
             }
+            $this->call(AnalyzeRegionalSampleSeeder::class);
         });
 
         $this->command?->info("Analyze samples: {$start->toDateString()} through {$end->toDateString()} (UTC). Search Wiki names for 分析サンプル / Analyze Sample.");
@@ -209,6 +213,8 @@ class AnalyzeSampleSeeder extends Seeder
     private function removePreviousSamples(array $wikiIdentifiers): void
     {
         foreach (['analyze_app_daily_summaries', 'analyze_wiki_daily_summaries'] as $table) {
+            $revisions = DB::table($table)->where('measurements->sample_data->source', self::MARKER)->pluck('revision');
+            DB::table('analyze_regional_daily_summaries')->whereIn('revision', $revisions)->delete();
             DB::table($table)->where('measurements->sample_data->source', self::MARKER)->delete();
         }
         DB::table('wiki_histories')->whereIn('wiki_id', $wikiIdentifiers)->where('subject_name', self::HISTORY_SUBJECT)->delete();
@@ -227,7 +233,7 @@ class AnalyzeSampleSeeder extends Seeder
         $countries = [];
         $remainingUsers = $users;
         $remainingRegistered = $registered;
-        $weights = ['JP' => 28, 'KR' => 23, 'US' => 14, 'BR' => 8, 'DE' => 6, 'IN' => 5, 'ID' => 5, 'GB' => 4, 'CA' => 3, 'IS' => 0];
+        $weights = ['JP' => 28, 'KR' => 18, 'US' => 14, 'CN' => 5, 'BR' => 8, 'DE' => 6, 'IN' => 5, 'ID' => 5, 'GB' => 4, 'CA' => 3, 'IS' => 0];
         foreach ($weights as $country => $weight) {
             $countryUsers = intdiv($users * $weight, 100);
             $countryRegistered = intdiv($registered * $weight, 100);

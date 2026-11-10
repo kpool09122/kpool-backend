@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Database\Seeders;
 
+use Database\Seeders\AnalyzeRegionalSampleSeeder;
 use Database\Seeders\AnalyzeSampleSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\MasterDataSeeder;
@@ -41,6 +42,7 @@ class SeederEnvironmentTest extends TestCase
         $this->app()->make(TestAccountSeeder::class)->run();
         $this->app()->make(WikiEditorSampleSeeder::class)->run();
         $this->app()->make(AnalyzeSampleSeeder::class)->run();
+        $this->app()->make(AnalyzeRegionalSampleSeeder::class)->run();
     }
 
     /**
