@@ -12,10 +12,13 @@ use Source\Analyze\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Analyze\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Analyze\Principal\Domain\ValueObject\Action;
 use Source\Analyze\Principal\Domain\ValueObject\Resource;
+use Source\Analyze\Shared\Application\Service\PeriodComparisonCalculatorInterface;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Domain\Exception\UnauthorizedException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPreviousPeriod;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiDailySummaryReport\GetWikiDailySummaryReportInputPort;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiDailySummaryReport\GetWikiDailySummaryReportInterface;
 use Source\Analyze\Wiki\Application\UseCase\Query\WikiDailySummaryReportReadModel;
@@ -30,6 +33,7 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PeriodComparisonCalculatorInterface $periodComparisonCalculator,
     ) {
     }
 
@@ -41,14 +45,69 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
             throw new UnauthorizedException();
         }
 
-        [$submissions, $publications] = $this->operations($input);
-        [$views, $viewers, $engagementTime] = $this->summaries($input);
+        $period = $input->period();
+        $previousPeriod = $period->previous();
+        [$submissions, $publications] = $this->operations($input, $period);
+        [$views, $viewers, $engagementTime] = $this->summaries($input, $period);
+        [$previousSubmissions, $previousPublications] = $this->operations($input, $previousPeriod);
+        [$previousViews, $previousViewers, $previousEngagement] = $this->summaries($input, $previousPeriod);
 
-        return new WikiDailySummaryReportReadModel($views, $viewers, $engagementTime, $submissions, $publications);
+        return new WikiDailySummaryReportReadModel(
+            new MetricReportReadModel(
+                definition: $views->definition(),
+                revision: $views->revision(),
+                days: $views->days(),
+                total: $views->total(),
+                denominator: $views->denominator(),
+                actorCount: $views->actorCount(),
+                countries: $views->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($views, $previousViews, $previousPeriod),
+            ),
+            new MetricReportReadModel(
+                definition: $viewers->definition(),
+                revision: $viewers->revision(),
+                days: $viewers->days(),
+                total: $viewers->total(),
+                denominator: $viewers->denominator(),
+                actorCount: $viewers->actorCount(),
+                countries: $viewers->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($viewers, $previousViewers, $previousPeriod),
+            ),
+            new MetricReportReadModel(
+                definition: $engagementTime->definition(),
+                revision: $engagementTime->revision(),
+                days: $engagementTime->days(),
+                total: $engagementTime->total(),
+                denominator: $engagementTime->denominator(),
+                actorCount: $engagementTime->actorCount(),
+                countries: $engagementTime->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($engagementTime, $previousEngagement, $previousPeriod),
+            ),
+            new MetricReportReadModel(
+                definition: $submissions->definition(),
+                revision: $submissions->revision(),
+                days: $submissions->days(),
+                total: $submissions->total(),
+                denominator: $submissions->denominator(),
+                actorCount: $submissions->actorCount(),
+                countries: $submissions->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($submissions, $previousSubmissions, $previousPeriod),
+            ),
+            new MetricReportReadModel(
+                definition: $publications->definition(),
+                revision: $publications->revision(),
+                days: $publications->days(),
+                total: $publications->total(),
+                denominator: $publications->denominator(),
+                actorCount: $publications->actorCount(),
+                countries: $publications->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($publications, $previousPublications, $previousPeriod),
+            ),
+        );
     }
 
     /** @return array{MetricReportReadModel, MetricReportReadModel, MetricReportReadModel} */
-    private function summaries(GetWikiDailySummaryReportInputPort $input): array
+    private function summaries(GetWikiDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
         /** @var list<array{literal-string, MetricDefinition}> $metrics */
         $metrics = [
@@ -57,8 +116,8 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
             ['engagement_seconds', new MetricDefinition('ga4', Metric::ENGAGEMENT_SECONDS, 'wiki_language_country', '1')],
         ];
         $source = SummaryModel::query()
-            ->where('day', '>=', (string) $input->period()->start())
-            ->where('day', '<', (string) $input->period()->endExclusive())
+            ->where('day', '>=', (string) $period->start())
+            ->where('day', '<', (string) $period->endExclusive())
             ->select('*');
         foreach (['wiki_identifier' => $input->wikiIdentifier(), 'translation_set_identifier' => $input->translationSetIdentifier(), 'language' => $input->language(), 'country' => $input->country()] as $column => $filter) {
             if ($filter !== null) {
@@ -99,7 +158,7 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
             /** @var MetricAggregate|null $totals */
             $totals = $totalRow?->getAttribute($alias);
             $days = [];
-            foreach ($input->period()->days() as $day) {
+            foreach ($period->days() as $day) {
                 /** @var MetricAggregate|null $values */
                 $values = $daily->get((string) $day)?->getAttribute($alias);
                 $days[] = [
@@ -131,12 +190,12 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
     }
 
     /** @return array{MetricReportReadModel, MetricReportReadModel} */
-    private function operations(GetWikiDailySummaryReportInputPort $input): array
+    private function operations(GetWikiDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
         $histories = WikiHistory::query()->from('wiki_histories AS history')
             ->leftJoin('draft_wikis AS draft', 'draft.id', '=', 'history.draft_wiki_id')
-            ->where('history.recorded_at', '>=', $input->period()->start()->instant())
-            ->where('history.recorded_at', '<', $input->period()->endExclusive()->instant())
+            ->where('history.recorded_at', '>=', $period->start()->instant())
+            ->where('history.recorded_at', '<', $period->endExclusive()->instant())
             ->where(static function (Builder $query): void {
                 $query->where('history.action_type', 'publish')->orWhere(static fn (Builder $submission) => $submission->where('history.action_type', 'draft_status_change')->where('history.to_status', 'under_review'));
             })
@@ -175,7 +234,7 @@ readonly class GetWikiDailySummaryReport implements GetWikiDailySummaryReportInt
             $totals = $matching->where('country_group', 1)->firstWhere('report_day', null);
             $daily = $matching->filter(static fn ($row): bool => $row->report_day !== null)->keyBy('report_day');
             $days = [];
-            foreach ($input->period()->days() as $day) {
+            foreach ($period->days() as $day) {
                 $values = $daily->get((string) $day);
                 $attributionMissing = ($values->missing_count ?? 0) > 0;
                 $days[] = [

@@ -17,6 +17,8 @@ use Source\Analyze\Principal\Application\UseCase\Command\WithdrawFromService\Wit
 use Source\Analyze\Principal\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Analyze\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
 use Source\Analyze\Principal\Infrastructure\Query\GetCurrentPrincipal;
+use Source\Analyze\Shared\Application\Service\PeriodComparisonCalculatorInterface;
+use Source\Analyze\Shared\Infrastructure\Service\PeriodComparisonCalculator;
 use Source\Analyze\Wiki\Application\UseCase\Command\ImportWikiDailySummary\ImportWikiDailySummary;
 use Source\Analyze\Wiki\Application\UseCase\Command\ImportWikiDailySummary\ImportWikiDailySummaryInterface;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiDailySummaryReport\GetWikiDailySummaryReportInterface;
@@ -28,6 +30,7 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(PeriodComparisonCalculatorInterface::class, PeriodComparisonCalculator::class);
         $this->app->singleton(GetWikiRegionalDailySummaryReportInterface::class, GetWikiRegionalDailySummaryReport::class);
         $this->app->singleton(GetAppRegionalDailySummaryReportInterface::class, GetAppRegionalDailySummaryReport::class);
         $this->app->singleton(ImportAppDailySummaryInterface::class, ImportAppDailySummary::class);

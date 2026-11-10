@@ -20,6 +20,8 @@ class AnalyzeSampleSeeder extends Seeder
 {
     private const string NAMESPACE = '9a119a00-5100-5000-8000-000000000001';
     public const string MARKER = 'analyze_sample_seeder';
+    // Two maximum six-month selections (184 days each), plus UTC/local date margin.
+    public const int SAMPLE_DAYS = 370;
     private const string HISTORY_SUBJECT = 'Analyze sample';
 
     /** @var list<array{principal: string, identity: string, account: string}> */
@@ -45,7 +47,7 @@ class AnalyzeSampleSeeder extends Seeder
         'CA' => [65, 35, 75, 1, 1],
         'ZA' => [40, 20, 55, 1, 0],
         'IS' => [0, 0, 0, 0, 0],
-        'NG' => [0, 0, 0, 0, 0],
+        'NG' => [55, 25, 75, 1, 1],
         '' => [30, 15, 65, 1, 1],
     ];
 
@@ -69,43 +71,26 @@ class AnalyzeSampleSeeder extends Seeder
 
         $now = CarbonImmutable::now('UTC');
         $end = $now->startOfDay()->subDays(3);
-        $start = $end->subDays(27);
+        $start = $end->subDays(self::SAMPLE_DAYS - 1);
 
         $revision = $this->identifier("revision:{$now->toISOString()}");
         DB::transaction(function () use ($revision, $start): void {
             $this->enableSampleAccounts();
             $wikis = $this->seedWikis($start->subWeek());
             $this->removePreviousSamples(array_column($wikis, 'id'));
-            $wikiRows = [];
-            $histories = [];
-            for ($index = 0; $index < 28; $index++) {
+            for ($index = 0; $index < self::SAMPLE_DAYS; $index++) {
+                $wikiRows = [];
+                $histories = [];
                 $day = $start->addDays($index);
-                // An absent day differs from a stored day with unavailable metrics.
-                if ($index !== 3) {
-                    $this->seedAppDay($day, $index, $revision);
-                }
+                $this->seedAppDay($day, $index, $revision);
                 foreach ($wikis as $wikiIndex => $wiki) {
                     foreach (self::COUNTRIES as $country => $profile) {
-                        // NG has only one unavailable observation; other days have no observation.
-                        if ($country === 'NG' && $index !== 9) {
-                            continue;
-                        }
                         [$baseViews, $baseViewers, $baseSeconds, $baseSubmissions, $basePublications] = $profile;
                         $factor = $wiki['weight'] * (10 + $index % 5);
                         $viewers = $baseViewers * $factor;
                         $submissions = $baseSubmissions === 0 ? 0 : $baseSubmissions + ($index + $wikiIndex) % 3;
                         $publications = $basePublications === 0 ? 0 : $basePublications + ($index + $wikiIndex) % 2;
                         $metadata = $this->measurements([Metric::VIEWS, Metric::VIEWERS, Metric::ENGAGEMENT_SECONDS, Metric::SUBMISSIONS, Metric::PUBLICATIONS], $day);
-                        foreach ([Metric::VIEWS, Metric::VIEWERS, Metric::ENGAGEMENT_SECONDS] as $metric) {
-                            if ($index === 9 || $country === 'NG' || ($index === 16 && $country === 'JP' && $metric === Metric::VIEWS)) {
-                                $metadata[$metric->value]['version'] = 'sample-unavailable';
-                            }
-                        }
-                        // Show unavailable average time in CA without poisoning the other valid denominators.
-                        if ($country === 'CA') {
-                            $metadata[Metric::ENGAGEMENT_SECONDS->value]['version'] = 'sample-unavailable';
-                        }
-                        if ($index !== 3) {
                             $wikiRows[] = [
                                 'id' => $this->identifier("summary:{$day->toDateString()}:{$wiki['id']}:$country"),
                                 'day' => $day->toDateString(),
@@ -117,14 +102,13 @@ class AnalyzeSampleSeeder extends Seeder
                                 'views' => (string) ($baseViews * $factor),
                                 'viewers' => (string) $viewers,
                                 'engagement_seconds' => number_format($viewers * ($baseSeconds + (($index + $wikiIndex) % 5) / 4), 3, '.', ''),
-                                'engagement_denominator' => $country === 'CA' ? null : $viewers,
+                                'engagement_denominator' => $viewers,
                                 'submissions' => (string) $submissions,
                                 'publications' => (string) $publications,
                                 'measurements' => json_encode($metadata, JSON_THROW_ON_ERROR),
                                 'created_at' => $day->toDateTimeString(),
                                 'updated_at' => $day->addDay()->setTime(6, 0)->toDateTimeString(),
                             ];
-                        }
                         $regions = AnalyzeRegionalSampleSeeder::regions($country);
                         foreach (['draft_status_change' => $submissions, 'publish' => $publications] as $action => $count) {
                             for ($event = 0; $event < $count; $event++) {
@@ -151,12 +135,13 @@ class AnalyzeSampleSeeder extends Seeder
                         }
                     }
                 }
-            }
-            foreach (array_chunk($wikiRows, 500) as $chunk) {
-                DB::table('analyze_wiki_daily_summaries')->insertOrIgnore($chunk);
-            }
-            foreach (array_chunk($histories, 500) as $chunk) {
-                DB::table('wiki_histories')->insertOrIgnore($chunk);
+                // Bound memory when generating both the selected and comparison periods.
+                foreach (array_chunk($wikiRows, 500) as $chunk) {
+                    DB::table('analyze_wiki_daily_summaries')->insertOrIgnore($chunk);
+                }
+                foreach (array_chunk($histories, 500) as $chunk) {
+                    DB::table('wiki_histories')->insertOrIgnore($chunk);
+                }
             }
             $this->call(AnalyzeRegionalSampleSeeder::class);
         });
@@ -223,11 +208,6 @@ class AnalyzeSampleSeeder extends Seeder
     private function seedAppDay(CarbonImmutable $day, int $index, string $revision): void
     {
         $metadata = $this->measurements([Metric::APPLICATION_USERS, Metric::REGISTERED_USERS], $day);
-        if ($index === 9) {
-            foreach ([Metric::APPLICATION_USERS, Metric::REGISTERED_USERS] as $metric) {
-                $metadata[$metric->value]['version'] = 'sample-unavailable';
-            }
-        }
         $users = 1800 + $index * 140 + ($index % 7) * 60;
         $registered = 8500 + $index * 28;
         $countries = [];

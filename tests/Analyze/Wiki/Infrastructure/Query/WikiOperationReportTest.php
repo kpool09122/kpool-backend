@@ -111,7 +111,7 @@ class WikiOperationReportTest extends TestCase
 
         try {
             $report = $this->report(wiki: $first->wiki_id);
-            self::assertCount(10, DB::getQueryLog());
+            self::assertCount(12, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();

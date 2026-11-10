@@ -57,7 +57,7 @@ class GetWikiDailySummaryReportTest extends TestCase
 
         try {
             $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process(new GetWikiDailySummaryReportInput($this->principalIdentifier, new ReportingPeriod($first, $first->next(), AnalyzeWikiMetrics::now())));
-            self::assertCount(10, DB::getQueryLog());
+            self::assertCount(12, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();
@@ -72,6 +72,24 @@ class GetWikiDailySummaryReportTest extends TestCase
         self::assertSame('1', $report->publications()->actorCount());
         self::assertSame('not_collected', $report->views()->days()[1]['availability']);
         self::assertSame('measured', $report->submissions()->days()[1]['availability']);
+    }
+
+    public function testPreviousPeriodUsesIdenticalFiltersAndWeightedAverages(): void
+    {
+        foreach (['2019-12-30', '2019-12-31', '2020-01-01', '2020-01-02'] as $index => $date) {
+            $this->save(new UtcDate($date), ['wiki_views' => $index < 2 ? '10' : '20', 'wiki_engagement_seconds' => $index < 2 ? '30' : '90']);
+            $this->save(new UtcDate($date), ['wiki_views' => '1000'], language: 'en', country: 'US');
+            SummaryModel::query()->where('day', $date)->where('language', 'ja')->update(['engagement_denominator' => $index < 2 ? 3 : 6]);
+        }
+        $period = new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-02'), AnalyzeWikiMetrics::now());
+        $input = new GetWikiDailySummaryReportInput($this->principalIdentifier, $period, translationSetIdentifier: '69200000-0000-7000-8000-000000000002', language: 'ja', country: 'JP');
+        $data = $this->app()->make(GetWikiDailySummaryReport::class)->process($input)->toArray();
+        self::assertNotNull($data['views']['comparison']);
+        self::assertSame('100.0', $data['views']['comparison']['percentageChange']);
+        self::assertNotNull($data['engagementTime']['comparison']);
+        self::assertSame('50.0', $data['engagementTime']['comparison']['percentageChange']);
+        self::assertNotNull($data['submissions']['comparison']);
+        self::assertSame('zero_baseline', $data['submissions']['comparison']['reason']);
     }
 
     public function testBatchAggregationKeepsMetricQualityAndUnknownDenominatorsIndependent(): void

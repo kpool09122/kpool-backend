@@ -23,7 +23,7 @@ class MetricReportReadModelTest extends TestCase
         $report = new MetricReportReadModel($definition, null, [], null, null);
         self::assertSame([
             'definition' => ['source' => $definition->source, 'metric' => $definition->metric->value, 'grain' => $definition->grain, 'version' => $definition->version],
-            'revision' => null, 'days' => [], 'total' => null, 'denominator' => null, 'actorCount' => null, 'countries' => [],
+            'revision' => null, 'days' => [], 'total' => null, 'denominator' => null, 'actorCount' => null, 'countries' => [], 'comparison' => null,
         ], $report->toArray());
     }
 
