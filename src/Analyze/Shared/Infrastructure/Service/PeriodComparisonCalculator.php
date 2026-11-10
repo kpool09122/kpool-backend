@@ -62,7 +62,7 @@ readonly class PeriodComparisonCalculator implements PeriodComparisonCalculatorI
         if ($values[1]->isZero()) {
             return [null, 'zero_baseline'];
         }
-        $change = $values[0]->minus($values[1])->dividedBy($values[1])->multipliedBy(100)->toScale(1, RoundingMode::HALF_UP);
+        $change = $values[0]->minus($values[1])->dividedBy($values[1])->multipliedBy(100)->toScale(1, RoundingMode::HalfUp);
 
         return [$change->isZero() ? '0.0' : (string) $change, null];
     }
