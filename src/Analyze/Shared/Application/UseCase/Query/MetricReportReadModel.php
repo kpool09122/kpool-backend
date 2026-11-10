@@ -7,7 +7,8 @@ namespace Source\Analyze\Shared\Application\UseCase\Query;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 
 /**
- * @phpstan-type SerializedMetricReport array{definition: array{source: string, metric: string, grain: string, version: string}, revision: ?string, days: list<DailyResult>, total: ?string, denominator: ?int, actorCount: ?string, countries: list<CountryResult>}
+ * @phpstan-import-type SerializedComparison from PeriodComparisonReadModel
+ * @phpstan-type SerializedMetricReport array{definition: array{source: string, metric: string, grain: string, version: string}, revision: ?string, days: list<DailyResult>, total: ?string, denominator: ?int, actorCount: ?string, countries: list<CountryResult>, comparison: ?SerializedComparison}
  * @phpstan-type CountryResult array{country: ?string, value: ?string, denominator: ?int, quality: list<string>, actorCount?: ?string}
  * @phpstan-type DailyResult array{day: string, availability: string, value: ?string, denominator: ?int, quality: list<string>, updatedAt: ?string, actorCount?: ?string}
  */
@@ -26,6 +27,7 @@ readonly class MetricReportReadModel
         private ?int $denominator,
         private ?string $actorCount = null,
         private array $countries = [],
+        private ?PeriodComparisonReadModel $comparison = null,
     ) {
     }
 
@@ -34,8 +36,13 @@ readonly class MetricReportReadModel
     {
         return [
             'definition' => ['source' => $this->definition->source, 'metric' => $this->definition->metric->value, 'grain' => $this->definition->grain, 'version' => $this->definition->version],
-            'revision' => $this->revision, 'days' => $this->days, 'total' => $this->total, 'denominator' => $this->denominator, 'actorCount' => $this->actorCount, 'countries' => $this->countries,
+            'revision' => $this->revision, 'days' => $this->days, 'total' => $this->total, 'denominator' => $this->denominator, 'actorCount' => $this->actorCount, 'countries' => $this->countries, 'comparison' => $this->comparison?->toArray(),
         ];
+    }
+
+    public function comparison(): ?PeriodComparisonReadModel
+    {
+        return $this->comparison;
     }
 
     /** @return list<CountryResult> */

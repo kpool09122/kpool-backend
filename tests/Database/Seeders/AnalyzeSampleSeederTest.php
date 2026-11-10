@@ -9,13 +9,17 @@ use Database\Seeders\AnalyzeRegionalSampleSeeder;
 use Database\Seeders\AnalyzeSampleSeeder;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Analyze\App\Application\UseCase\Query\GetAppDailySummaryReport\GetAppDailySummaryReportInput;
 use Source\Analyze\App\Application\UseCase\Query\GetAppRegionalDailySummaryReport\GetAppRegionalDailySummaryReportInput;
+use Source\Analyze\App\Infrastructure\Query\GetAppDailySummaryReport;
 use Source\Analyze\App\Infrastructure\Query\GetAppRegionalDailySummaryReport;
 use Source\Analyze\Principal\Domain\ValueObject\PrincipalIdentifier;
 use Source\Analyze\Shared\Domain\ValueObject\RegionalSelection;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
 use Source\Analyze\Shared\Domain\ValueObject\UtcDate;
+use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiDailySummaryReport\GetWikiDailySummaryReportInput;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiRegionalDailySummaryReport\GetWikiRegionalDailySummaryReportInput;
+use Source\Analyze\Wiki\Infrastructure\Query\GetWikiDailySummaryReport;
 use Source\Analyze\Wiki\Infrastructure\Query\GetWikiRegionalDailySummaryReport;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Symfony\Component\Uid\Uuid;
@@ -48,8 +52,12 @@ class AnalyzeSampleSeederTest extends TestCase
             $app = $this->app()->make(GetAppRegionalDailySummaryReport::class)->process(new GetAppRegionalDailySummaryReportInput($principal, $period, $selection))->toArray();
             $wiki = $this->app()->make(GetWikiRegionalDailySummaryReport::class)->process(new GetWikiRegionalDailySummaryReportInput($principal, $period, $selection, language: 'ja'))->toArray();
             self::assertCount(28, $app['applicationUsers']['days']);
-            self::assertSame('not_collected', $app['applicationUsers']['days'][3]['availability']);
-            self::assertSame('not_collected', $app['applicationUsers']['days'][9]['availability']);
+            self::assertSame(['measured'], array_values(array_unique(array_column($app['applicationUsers']['days'], 'availability'))));
+            foreach ([$app['applicationUsers'], $app['registeredUsers'], $wiki['views'], $wiki['viewers'], $wiki['engagementTime'], $wiki['submissions'], $wiki['publications']] as $metric) {
+                self::assertNotNull($metric['comparison']);
+                self::assertNull($metric['comparison']['reason']);
+                self::assertNotNull($metric['comparison']['percentageChange']);
+            }
             self::assertNotNull($app['registeredUsers']['total']);
             self::assertNotNull($wiki['views']['total']);
             self::assertGreaterThan(0, $wiki['engagementTime']['denominator']);
@@ -62,6 +70,18 @@ class AnalyzeSampleSeederTest extends TestCase
             sort($expected);
             self::assertSame($expected, $regions);
         }
+        // Every day of the maximum six-month selection and its equal-day predecessor is seeded.
+        $maximum = new ReportingPeriod(new UtcDate($end->subMonthsNoOverflow(6)->addDay()->toDateString()), new UtcDate($end->toDateString()), $now);
+        $globalApp = $this->app()->make(GetAppDailySummaryReport::class)->process(new GetAppDailySummaryReportInput($principal, $maximum))->toArray();
+        $globalWiki = $this->app()->make(GetWikiDailySummaryReport::class)->process(new GetWikiDailySummaryReportInput($principal, $maximum))->toArray();
+        foreach ([...array_values($globalApp), ...array_values($globalWiki)] as $metric) {
+            self::assertNotNull($metric['comparison']);
+            self::assertNull($metric['comparison']['reason']);
+            self::assertNotNull($metric['comparison']['percentageChange']);
+        }
+        $oldest = $end->subDays(AnalyzeSampleSeeder::SAMPLE_DAYS - 1)->toDateString();
+        self::assertSame($oldest, DB::table('analyze_app_daily_summaries')->min('day'));
+        self::assertSame(AnalyzeSampleSeeder::SAMPLE_DAYS, DB::table('analyze_app_daily_summaries')->count());
         $count = DB::table('analyze_regional_daily_summaries')->count();
         $historyCount = DB::table('wiki_histories')->count();
         // Advance the rolling window to ensure old regional samples are also removed.
@@ -75,6 +95,6 @@ class AnalyzeSampleSeederTest extends TestCase
         self::assertSame($count, DB::table('analyze_regional_daily_summaries')->count());
         self::assertSame($historyCount, DB::table('wiki_histories')->count());
         self::assertSame('9999.000000000', DB::table('analyze_regional_daily_summaries')->where('revision', $importRevision)->value('value'));
-        self::assertFalse(DB::table('analyze_regional_daily_summaries')->where('day', $start->toDateString())->exists());
+        self::assertFalse(DB::table('analyze_regional_daily_summaries')->where('day', $oldest)->exists());
     }
 }

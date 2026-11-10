@@ -13,6 +13,7 @@ use Source\Analyze\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Analyze\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Analyze\Principal\Domain\ValueObject\Action;
 use Source\Analyze\Principal\Domain\ValueObject\Resource;
+use Source\Analyze\Shared\Application\Service\PeriodComparisonCalculatorInterface;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Application\UseCase\Query\RegionalMetricReportReadModel;
 use Source\Analyze\Shared\Application\UseCase\Query\RegionalReportReadModel;
@@ -20,6 +21,7 @@ use Source\Analyze\Shared\Domain\Exception\UnauthorizedException;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\RegionalSelection;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPreviousPeriod;
 use Source\Shared\Domain\ValueObject\AdministrativeAreaCode;
 
 /**
@@ -30,6 +32,7 @@ readonly class GetAppRegionalDailySummaryReport implements GetAppRegionalDailySu
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PeriodComparisonCalculatorInterface $periodComparisonCalculator,
         private GetAppDailySummaryReportInterface $getAppDailySummaryReport,
     ) {
     }
@@ -41,8 +44,31 @@ readonly class GetAppRegionalDailySummaryReport implements GetAppRegionalDailySu
         if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::ANALYSIS_VIEW, new Resource())) {
             throw new UnauthorizedException();
         }
+        $period = $input->period();
         $country = $this->getAppDailySummaryReport->process($input);
-        $reports = $this->regionalReports($input, ['applicationUsers' => ['application_users', $country->applicationUsers()], 'registeredUsers' => ['registered_users', $country->registeredUsers()]]);
+        $reports = $this->regionalReports($input, ['applicationUsers' => ['application_users', $country->applicationUsers()], 'registeredUsers' => ['registered_users', $country->registeredUsers()]], $period);
+
+        if ($input->selection()->region !== null) {
+            $previousPeriod = $period->previous();
+            $previous = $this->regionalReports($input, ['applicationUsers' => ['application_users', $country->applicationUsers()], 'registeredUsers' => ['registered_users', $country->registeredUsers()]], $previousPeriod);
+            foreach ($reports as $key => $report) {
+                $current = $report->selection();
+                $previousSelection = $previous[$key]->selection();
+                $reports[$key] = new RegionalMetricReportReadModel(
+                    new MetricReportReadModel(
+                        definition: $current->definition(),
+                        revision: $current->revision(),
+                        days: $current->days(),
+                        total: $current->total(),
+                        denominator: $current->denominator(),
+                        actorCount: $current->actorCount(),
+                        countries: $current->countries(),
+                        comparison: $this->periodComparisonCalculator->calculate($current, $previousSelection, $previousPeriod),
+                    ),
+                    $report->regions(),
+                );
+            }
+        }
 
         return new RegionalReportReadModel($reports);
     }
@@ -52,9 +78,8 @@ readonly class GetAppRegionalDailySummaryReport implements GetAppRegionalDailySu
      *
      * @return array<string, RegionalMetricReportReadModel>
      */
-    private function regionalReports(GetAppRegionalDailySummaryReportInputPort $input, array $countryReports): array
+    private function regionalReports(GetAppRegionalDailySummaryReportInputPort $input, array $countryReports, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
-        $period = $input->period();
         $selection = $input->selection();
         $query = RegionalDailySummary::query()->where('context', 'app')->where('country', $selection->country->value)
             ->where('day', '>=', (string) $period->start())->where('day', '<', (string) $period->endExclusive())
@@ -89,7 +114,7 @@ readonly class GetAppRegionalDailySummaryReport implements GetAppRegionalDailySu
     }
 
     /** @param list<Aggregate> $rows */
-    private function regionalReport(array $rows, MetricReportReadModel $countryReport, ReportingPeriod $period, RegionalSelection $selection): RegionalMetricReportReadModel
+    private function regionalReport(array $rows, MetricReportReadModel $countryReport, ReportingPeriod|ReportingPreviousPeriod $period, RegionalSelection $selection): RegionalMetricReportReadModel
     {
         $definition = $countryReport->definition();
         $totals = [];
@@ -110,7 +135,7 @@ readonly class GetAppRegionalDailySummaryReport implements GetAppRegionalDailySu
         }
         if ($selection->region === null) {
             $revision = hash('sha256', json_encode(['country' => $countryReport->revision(), 'regions' => array_map(static fn ($row): ?string => $row->report_revision, $totals)], JSON_THROW_ON_ERROR));
-            $combined = new MetricReportReadModel($definition, $revision, $countryReport->days(), $countryReport->total(), $countryReport->denominator(), $countryReport->actorCount());
+            $combined = new MetricReportReadModel($definition, $revision, $countryReport->days(), $countryReport->total(), $countryReport->denominator(), $countryReport->actorCount(), comparison: $countryReport->comparison());
 
             return new RegionalMetricReportReadModel($combined, $regions);
         }

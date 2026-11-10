@@ -13,13 +13,11 @@ readonly class ReportingPeriod
 {
     public function __construct(private UtcDate $start, private UtcDate $endInclusive, DateTimeImmutable $now)
     {
-        $year = (int) $start->instant()->format('Y') + 1;
-        $month = $start->instant()->format('m');
-        $first = new DateTimeImmutable(sprintf('%04d-%s-01', $year, $month), new DateTimeZone('UTC'));
-        $anniversary = $first->setDate($year, (int) $month, min((int) $start->instant()->format('d'), (int) $first->format('t')));
+        $first = $start->instant()->modify('first day of this month')->modify('+6 months');
+        $anniversary = $first->setDate((int) $first->format('Y'), (int) $first->format('m'), min((int) $start->instant()->format('d'), (int) $first->format('t')));
         $latest = $now->setTimezone(new DateTimeZone('UTC'))->setTime(0, 0)->modify('-3 days');
         if ($endInclusive->instant() < $start->instant() || $endInclusive->next()->instant() > $anniversary || $endInclusive->instant() > $latest) {
-            throw new InvalidArgumentException('Expected an inclusive period of at most one calendar year ending no later than UTC D-3.');
+            throw new InvalidArgumentException('Expected an inclusive period of at most six calendar months ending no later than UTC D-3.');
         }
     }
 
@@ -36,6 +34,11 @@ readonly class ReportingPeriod
     public function endExclusive(): UtcDate
     {
         return $this->endInclusive->next();
+    }
+
+    public function previous(): ReportingPreviousPeriod
+    {
+        return new ReportingPreviousPeriod($this);
     }
 
     /** @return Generator<int, UtcDate> */

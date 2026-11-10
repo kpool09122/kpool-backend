@@ -50,9 +50,9 @@ class GetWikiRegionalDailySummaryReportTest extends TestCase
         try {
             $report = $query->process($input)->toArray();
             $regionalQueries = array_filter(DB::getQueryLog(), static fn (array $entry): bool => str_contains($entry['query'], 'analyze_regional_daily_summaries'));
-            self::assertCount(1, $regionalQueries);
+            self::assertCount(2, $regionalQueries);
             $historyQueries = array_filter(DB::getQueryLog(), static fn (array $entry): bool => str_contains($entry['query'], 'wiki_histories'));
-            self::assertCount(1, $historyQueries);
+            self::assertCount(2, $historyQueries);
         } finally {
             DB::disableQueryLog();
         }
@@ -74,5 +74,21 @@ class GetWikiRegionalDailySummaryReportTest extends TestCase
         $combined = $query->process($input)->toArray()['engagementTime'];
         self::assertSame('2100.375000002', $combined['total']);
         self::assertSame(60 + 20, $combined['denominator']);
+    }
+
+    public function testPreviousPeriodUsesSelectedRegionRatherThanCountryValues(): void
+    {
+        $principal = CreateAnalyzePrincipal::create()->principalIdentifier();
+        foreach (['2019-12-31' => '20', '2020-01-01' => '30'] as $day => $value) {
+            foreach (['JP-13' => $value, 'JP-27' => '1000'] as $region => $count) {
+                RegionalDailySummary::query()->create(['context' => 'wiki', 'day' => $day, 'country' => 'JP', 'region' => $region, 'metric' => 'views', 'value' => $count, 'quality' => [], 'revision' => (string) Uuid::v7(), 'updated_at' => '2020-01-03T00:00:00Z']);
+            }
+        }
+        $period = new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-01'), AnalyzeWikiMetrics::now());
+        $input = new GetWikiRegionalDailySummaryReportInput($principal, $period, new RegionalSelection(CountryCode::JAPAN, 'JP-13'));
+        $data = $this->app()->make(GetWikiRegionalDailySummaryReport::class)->process($input)->toArray();
+        self::assertNotNull($data['views']['comparison']);
+        self::assertSame('50.0', $data['views']['comparison']['percentageChange']);
+        self::assertSame('2019-12-31', $data['views']['comparison']['from']);
     }
 }

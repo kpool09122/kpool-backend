@@ -44,7 +44,7 @@ class GetAppRegionalDailySummaryReportTest extends TestCase
         try {
             $report = $this->app()->make(GetAppRegionalDailySummaryReport::class)->process($input)->toArray();
             $regionalQueries = array_filter(DB::getQueryLog(), static fn (array $entry): bool => str_contains($entry['query'], 'analyze_regional_daily_summaries'));
-            self::assertCount(1, $regionalQueries);
+            self::assertCount(2, $regionalQueries);
         } finally {
             DB::disableQueryLog();
         }
@@ -130,5 +130,21 @@ class GetAppRegionalDailySummaryReportTest extends TestCase
         self::assertNull($query->process(new GetAppRegionalDailySummaryReportInput($principal, $period, new RegionalSelection(CountryCode::JAPAN, 'JP-13')))->toArray()['applicationUsers']['total']);
         DB::table('analyze_regional_daily_summaries')->where($key)->update(['source' => 'ga4']);
         self::assertSame('9.000000000', $query->process(new GetAppRegionalDailySummaryReportInput($principal, $period, new RegionalSelection(CountryCode::JAPAN, 'JP-13')))->toArray()['applicationUsers']['total']);
+    }
+
+    public function testPreviousPeriodUsesSelectedRegionRatherThanCountryValues(): void
+    {
+        $principal = CreateAnalyzePrincipal::create()->principalIdentifier();
+        foreach (['2019-12-31' => '20', '2020-01-01' => '30'] as $day => $value) {
+            foreach (['JP-13' => $value, 'JP-27' => '1000'] as $region => $count) {
+                RegionalDailySummary::query()->create(['context' => 'app', 'day' => $day, 'country' => 'JP', 'region' => $region, 'metric' => 'application_users', 'value' => $count, 'quality' => [], 'revision' => (string) Uuid::v7(), 'updated_at' => '2020-01-03T00:00:00Z']);
+            }
+        }
+        $period = new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-01'), AnalyzeAppMetrics::now());
+        $input = new GetAppRegionalDailySummaryReportInput($principal, $period, new RegionalSelection(CountryCode::JAPAN, 'JP-13'));
+        $data = $this->app()->make(GetAppRegionalDailySummaryReport::class)->process($input)->toArray();
+        self::assertNotNull($data['applicationUsers']['comparison']);
+        self::assertSame('50.0', $data['applicationUsers']['comparison']['percentageChange']);
+        self::assertSame('2019-12-31', $data['applicationUsers']['comparison']['from']);
     }
 }

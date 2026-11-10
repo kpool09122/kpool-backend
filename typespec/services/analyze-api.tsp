@@ -82,6 +82,18 @@ model CountryMetric {
   actorCount?: string | null;
 }
 
+@doc("Comparison with the immediately preceding equal number of UTC days under identical filters. Percentage values are decimal strings rounded half-up to one decimal place. Counts use period totals, registeredUsers uses closing balances, engagementTime uses each period's summed numerator divided by its summed denominator. Uses available period aggregates even when daily data is partial or missing. Null period aggregates are not zero; null rates distinguish missing previous/current data, a zero baseline and unavailable average denominators. Operation actors use period-distinct counts.")
+model PeriodComparison {
+  from: plainDate;
+  to: plainDate;
+  percentageChange: string | null;
+  reason: ComparisonReason | null;
+  actorPercentageChange: string | null;
+  actorReason: ComparisonReason | null;
+}
+
+alias ComparisonReason = "no_previous_data" | "no_current_data" | "zero_baseline" | "invalid_denominator" | "not_applicable";
+
 model MetricReport {
   definition: MetricDefinition;
   revision: string | null;
@@ -92,6 +104,7 @@ model MetricReport {
   @doc("Distinct operation Principals over the full selection, never a sum of daily/country actors. Null for other metrics or incomplete attribution.")
   actorCount: string | null;
   countries: CountryMetric[];
+  comparison: PeriodComparison | null;
 }
 
 model AppDailySummaryReport {
@@ -128,7 +141,7 @@ interface AnalysisOperations {
   @route("/app/daily-summary")
   @useAuth(SessionCookieAuth)
   @get
-  @doc("Get all App metrics for an inclusive UTC period of at most one calendar year ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. country=unknown selects unknown; omitted/null selects all. Country breakdowns are unavailable for imports predating country collection. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.")
+  @doc("Get all App metrics for an inclusive UTC period of at most six calendar months ending no later than UTC D-3. Stored historical periods have no age cutoff. Requires active Account/Account principal and enrolled active Analyze principal with analysis:view. General grants all analyses; explicit Deny wins. Authorization is re-evaluated on every request. country=unknown selects unknown; omitted/null selects all. Country breakdowns are unavailable for imports predating country collection. Never returns individual viewer/actor identifiers. Invalid period: 400; invalid query format: 422.")
   getAppDailySummaryReport(@query from: plainDate, @query to: plainDate, @query country?: string | null): AppDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 
   @route("/wiki/daily-summary")
@@ -157,6 +170,7 @@ model RegionalMetricReport {
   denominator: int64 | null;
   actorCount: string | null;
   regions: RegionMetric[];
+  comparison: PeriodComparison | null;
 }
 
 model AppRegionalDailySummaryReport {
@@ -186,7 +200,7 @@ interface RegionalAnalysisOperations {
   @route("/app/regional-daily-summary")
   @useAuth(SessionCookieAuth)
   @get
-  @doc("Country required (ISO 3166-1 alpha-2). region omitted/null returns the country trend and exact-region breakdown; region=unknown selects unknown, otherwise a complete country-prefixed known subdivision code, e.g. JP-13 or DE-BE (valid even though DE is not in map coverage). Mismatched/invalid codes and missing country return 422. Same inclusive UTC period (at most one calendar year, ending no later than D-3; invalid period 400) and fresh analysis:view authorization as the country endpoint. Registered users are final-day closing balances attributed to immutable verified registration-time region, including archives, never account addresses. Old API remains unchanged. No raw viewer/actor identifiers are returned.")
+  @doc("Country required (ISO 3166-1 alpha-2). region omitted/null returns the country trend and exact-region breakdown; region=unknown selects unknown, otherwise a complete country-prefixed known subdivision code, e.g. JP-13 or DE-BE (valid even though DE is not in map coverage). Mismatched/invalid codes and missing country return 422. Same inclusive UTC period (at most six calendar months, ending no later than D-3; invalid period 400) and fresh analysis:view authorization as the country endpoint. Registered users are final-day closing balances attributed to immutable verified registration-time region, including archives, never account addresses. Old API remains unchanged. No raw viewer/actor identifiers are returned.")
   getAppRegionalDailySummaryReport(@query from: plainDate, @query to: plainDate, @query country: string, @query region?: string | null): AppRegionalDailySummaryResponse | BadRequestProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 
   @route("/wiki/regional-daily-summary")

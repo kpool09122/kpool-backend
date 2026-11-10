@@ -45,7 +45,7 @@ class WikiRegionalOperationReportTest extends TestCase
         try {
             $country = $this->app()->make(GetWikiRegionalDailySummaryReport::class)->process($input)->toArray()['publications'];
             $historyQueries = array_filter(DB::getQueryLog(), static fn (array $entry): bool => str_contains($entry['query'], 'wiki_histories'));
-            self::assertCount(1, $historyQueries);
+            self::assertCount(2, $historyQueries);
         } finally {
             DB::disableQueryLog();
         }

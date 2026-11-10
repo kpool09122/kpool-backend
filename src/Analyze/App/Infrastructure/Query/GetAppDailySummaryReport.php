@@ -15,10 +15,13 @@ use Source\Analyze\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Analyze\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Analyze\Principal\Domain\ValueObject\Action;
 use Source\Analyze\Principal\Domain\ValueObject\Resource;
+use Source\Analyze\Shared\Application\Service\PeriodComparisonCalculatorInterface;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Domain\Exception\UnauthorizedException;
 use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPreviousPeriod;
 
 /**
  * @phpstan-type MetricAggregate array{invalid: int, value: ?string, denominator: ?int, quality: list<list<string>>, revision: ?string, updatedAt: ?string}
@@ -29,6 +32,7 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PeriodComparisonCalculatorInterface $periodComparisonCalculator,
     ) {
     }
 
@@ -40,13 +44,37 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
             throw new UnauthorizedException();
         }
 
-        [$applicationUsers, $registeredUsers] = $this->summaries($input);
+        $period = $input->period();
+        $previousPeriod = $period->previous();
+        [$applicationUsers, $registeredUsers] = $this->summaries($input, $period);
+        [$previousUsers, $previousRegistered] = $this->summaries($input, $previousPeriod);
 
-        return new AppDailySummaryReportReadModel($applicationUsers, $registeredUsers);
+        return new AppDailySummaryReportReadModel(
+            new MetricReportReadModel(
+                definition: $applicationUsers->definition(),
+                revision: $applicationUsers->revision(),
+                days: $applicationUsers->days(),
+                total: $applicationUsers->total(),
+                denominator: $applicationUsers->denominator(),
+                actorCount: $applicationUsers->actorCount(),
+                countries: $applicationUsers->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($applicationUsers, $previousUsers, $previousPeriod),
+            ),
+            new MetricReportReadModel(
+                definition: $registeredUsers->definition(),
+                revision: $registeredUsers->revision(),
+                days: $registeredUsers->days(),
+                total: $registeredUsers->total(),
+                denominator: $registeredUsers->denominator(),
+                actorCount: $registeredUsers->actorCount(),
+                countries: $registeredUsers->countries(),
+                comparison: $this->periodComparisonCalculator->calculate($registeredUsers, $previousRegistered, $previousPeriod),
+            ),
+        );
     }
 
     /** @return array{MetricReportReadModel, MetricReportReadModel} */
-    private function summaries(GetAppDailySummaryReportInputPort $input): array
+    private function summaries(GetAppDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
         /** @var list<array{literal-string, MetricDefinition}> $metrics */
         $metrics = [
@@ -54,8 +82,8 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
             ['registered_users', new MetricDefinition('identity_history', Metric::REGISTERED_USERS, 'application_day', '1')],
         ];
         $source = SummaryModel::query()
-            ->where('day', '>=', (string) $input->period()->start())
-            ->where('day', '<', (string) $input->period()->endExclusive())
+            ->where('day', '>=', (string) $period->start())
+            ->where('day', '<', (string) $period->endExclusive())
             ->select('*')
             ->selectSub(CountryModel::query()->selectRaw('COALESCE(SUM(registered_users), 0)')->whereColumn('day', 'analyze_app_daily_summaries.day'), 'registered_users');
         $source = SummaryModel::query()->fromSub($source, 'daily_summaries')->select('*');
@@ -109,7 +137,7 @@ readonly class GetAppDailySummaryReport implements GetAppDailySummaryReportInter
             /** @var MetricAggregate|null $totals */
             $totals = $totalRow?->getAttribute($alias);
             $days = [];
-            foreach ($input->period()->days() as $day) {
+            foreach ($period->days() as $day) {
                 /** @var MetricAggregate|null $values */
                 $values = $daily->get((string) $day)?->getAttribute($alias);
                 $days[] = [

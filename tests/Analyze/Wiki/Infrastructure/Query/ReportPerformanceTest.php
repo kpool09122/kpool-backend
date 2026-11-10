@@ -39,7 +39,7 @@ class ReportPerformanceTest extends TestCase
         $this->principalIdentifier = CreateAnalyzePrincipal::create()->principalIdentifier();
     }
 
-    public function testMaximumYearAllTranslationSetAndCountryHaveBoundedQueries(): void
+    public function testMaximumSixMonthsAndPreviousPeriodAllTranslationSetAndCountryHaveBoundedQueries(): void
     {
         $day = new UtcDate('2020-01-01');
         $translationSet = '69200000-0000-7000-8000-000000000002';
@@ -53,7 +53,7 @@ class ReportPerformanceTest extends TestCase
                 'translation_set_identifier', CASE WHEN w <= 50 THEN ?::uuid ELSE md5('other-set')::uuid END
             ))).*
             FROM analyze_wiki_daily_summaries seed
-            CROSS JOIN generate_series('2020-01-01'::date, '2020-12-31'::date, '1 day') d
+            CROSS JOIN generate_series('2019-12-30'::date, '2020-12-31'::date, '1 day') d
             CROSS JOIN generate_series(1, 100) w
             CROSS JOIN (VALUES (''), ('JP'), ('US'), ('KR')) countries(c)
             SQL, [$translationSet]);
@@ -63,7 +63,7 @@ class ReportPerformanceTest extends TestCase
             INSERT INTO wiki_histories
             SELECT (jsonb_populate_record(NULL::wiki_histories, to_jsonb(seed) || jsonb_build_object(
                 'id', md5(concat('history-', n))::uuid, 'actor_id', md5((n % 1000)::text)::uuid,
-                'recorded_at', '2020-01-01'::timestamp + (n % 366) * interval '1 day',
+                'recorded_at', '2019-12-30'::timestamp + (n % 368) * interval '1 day',
                 'visitor_country', CASE WHEN n % 4 = 0 THEN NULL WHEN n % 4 = 1 THEN 'JP' WHEN n % 4 = 2 THEN 'US' ELSE 'KR' END
             ))).*
             FROM wiki_histories seed CROSS JOIN generate_series(1, 20000) n
@@ -72,8 +72,8 @@ class ReportPerformanceTest extends TestCase
         $history->delete();
         DB::statement('ANALYZE analyze_wiki_daily_summaries');
         DB::statement('ANALYZE wiki_histories');
-        self::assertSame(146400, SummaryModel::query()->count());
-        $period = new ReportingPeriod($day, new UtcDate('2020-12-31'), AnalyzeWikiMetrics::now());
+        self::assertSame(147200, SummaryModel::query()->count());
+        $period = new ReportingPeriod(new UtcDate('2020-07-01'), new UtcDate('2020-12-31'), AnalyzeWikiMetrics::now());
         $results = [];
         foreach (['ALL' => new GetWikiDailySummaryReportInput($this->principalIdentifier, $period), 'translation-set' => new GetWikiDailySummaryReportInput($this->principalIdentifier, $period, translationSetIdentifier: $translationSet), 'country' => new GetWikiDailySummaryReportInput($this->principalIdentifier, $period, country: 'JP')] as $name => $input) {
             DB::flushQueryLog();
@@ -83,9 +83,10 @@ class ReportPerformanceTest extends TestCase
             try {
                 $report = ($this->app()->make(GetWikiDailySummaryReport::class))->process($input);
                 $queries = DB::getQueryLog();
-                self::assertCount(10, $queries);
-                self::assertCount(366, $report->views()->days());
+                self::assertCount(12, $queries);
+                self::assertCount(184, $report->views()->days());
                 self::assertNotNull($report->views()->total());
+                self::assertSame('0.0', $report->views()->comparison()?->toArray()['percentageChange']);
             } finally {
                 DB::disableQueryLog();
             }
@@ -98,6 +99,6 @@ class ReportPerformanceTest extends TestCase
             }
             $results[$name] = ['seconds' => $elapsed, 'queryCount' => count($queries), 'plans' => $plans];
         }
-        file_put_contents(__DIR__ . '/../../../../../storage/logs/analyze-report-performance.json', json_encode(['summaryRows' => 146400, 'historyRows' => 20000, 'results' => $results], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+        file_put_contents(__DIR__ . '/../../../../../storage/logs/analyze-report-performance.json', json_encode(['summaryRows' => 147200, 'historyRows' => 20000, 'results' => $results], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
     }
 }

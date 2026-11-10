@@ -74,6 +74,35 @@ class GetAppDailySummaryReportTest extends TestCase
         self::assertSame('0.000000000', $absent->registeredUsers()->total());
     }
 
+    public function testPreviousPeriodComparesFilteredTotalsAndClosingBalances(): void
+    {
+        foreach (['2019-12-30', '2019-12-31', '2020-01-01', '2020-01-02'] as $index => $date) {
+            $day = new UtcDate($date);
+            $this->save($day, ['application_users' => $index < 2 ? '10' : '15', 'registered_users' => $index < 2 ? '100' : '120']);
+            CountryModel::query()->where('day', $date)->delete();
+            CountryModel::query()->create(['id' => (string) Uuid::v7(), 'day' => $date, 'country' => 'JP', 'application_users' => $index < 2 ? '2' : '4', 'registered_users' => $index < 2 ? '50' : '75']);
+        }
+        $period = new ReportingPeriod(new UtcDate('2020-01-01'), new UtcDate('2020-01-02'), AnalyzeAppMetrics::now());
+        $query = $this->app()->make(GetAppDailySummaryReport::class);
+        $global = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period))->toArray();
+        self::assertNotNull($global['applicationUsers']['comparison']);
+        self::assertSame('50.0', $global['applicationUsers']['comparison']['percentageChange']);
+        self::assertNotNull($global['registeredUsers']['comparison']);
+        self::assertSame('50.0', $global['registeredUsers']['comparison']['percentageChange']);
+        $japan = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, 'JP'))->toArray();
+        self::assertNotNull($japan['applicationUsers']['comparison']);
+        self::assertSame('100.0', $japan['applicationUsers']['comparison']['percentageChange']);
+        self::assertSame('2019-12-30', $japan['applicationUsers']['comparison']['from']);
+        self::assertSame('2019-12-31', $japan['applicationUsers']['comparison']['to']);
+        SummaryModel::query()->where('day', '2019-12-30')->delete();
+        $missing = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period, 'JP'))->toArray();
+        self::assertNotNull($missing['applicationUsers']['comparison']);
+        self::assertSame('300.0', $missing['applicationUsers']['comparison']['percentageChange']);
+        self::assertNull($missing['applicationUsers']['comparison']['reason']);
+        self::assertNotNull($missing['registeredUsers']['comparison']);
+        self::assertSame('50.0', $missing['registeredUsers']['comparison']['percentageChange']);
+    }
+
     public function testAbsentCountryInACollectedDayIsMeasuredZero(): void
     {
         $day = new UtcDate('2020-01-01');
@@ -101,7 +130,7 @@ class GetAppDailySummaryReportTest extends TestCase
 
         try {
             $report = $query->process(new GetAppDailySummaryReportInput($this->principalIdentifier, $period));
-            self::assertCount(9, DB::getQueryLog());
+            self::assertCount(10, DB::getQueryLog());
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();

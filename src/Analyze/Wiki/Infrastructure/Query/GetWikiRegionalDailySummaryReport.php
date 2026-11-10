@@ -13,6 +13,7 @@ use Source\Analyze\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Analyze\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Analyze\Principal\Domain\ValueObject\Action;
 use Source\Analyze\Principal\Domain\ValueObject\Resource;
+use Source\Analyze\Shared\Application\Service\PeriodComparisonCalculatorInterface;
 use Source\Analyze\Shared\Application\UseCase\Query\MetricReportReadModel;
 use Source\Analyze\Shared\Application\UseCase\Query\RegionalMetricReportReadModel;
 use Source\Analyze\Shared\Application\UseCase\Query\RegionalReportReadModel;
@@ -21,6 +22,7 @@ use Source\Analyze\Shared\Domain\ValueObject\Metric;
 use Source\Analyze\Shared\Domain\ValueObject\MetricDefinition;
 use Source\Analyze\Shared\Domain\ValueObject\RegionalSelection;
 use Source\Analyze\Shared\Domain\ValueObject\ReportingPeriod;
+use Source\Analyze\Shared\Domain\ValueObject\ReportingPreviousPeriod;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiRegionalDailySummaryReport\GetWikiRegionalDailySummaryReportInputPort;
 use Source\Analyze\Wiki\Application\UseCase\Query\GetWikiRegionalDailySummaryReport\GetWikiRegionalDailySummaryReportInterface;
 use Source\Shared\Domain\ValueObject\AdministrativeAreaCode;
@@ -37,6 +39,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
     public function __construct(
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PeriodComparisonCalculatorInterface $periodComparisonCalculator,
     ) {
     }
 
@@ -47,9 +50,37 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
         if ($principal === null || ! $this->policyEvaluator->evaluate($principal, Action::ANALYSIS_VIEW, new Resource())) {
             throw new UnauthorizedException();
         }
-        [$views, $viewers, $engagementTime] = $this->summaries($input);
-        $reports = $this->regionalReports($input, ['views' => ['views', $views], 'viewers' => ['viewers', $viewers], 'engagementTime' => ['engagement_seconds', $engagementTime]]);
-        [$submissions, $publications] = $this->operations($input);
+        $period = $input->period();
+        $previousPeriod = $period->previous();
+        $reports = $this->reports($input, $period);
+        $previous = $this->reports($input, $previousPeriod);
+        foreach ($reports as $key => $report) {
+            $current = $report->selection();
+            $previousSelection = $previous[$key]->selection();
+            $reports[$key] = new RegionalMetricReportReadModel(
+                new MetricReportReadModel(
+                    definition: $current->definition(),
+                    revision: $current->revision(),
+                    days: $current->days(),
+                    total: $current->total(),
+                    denominator: $current->denominator(),
+                    actorCount: $current->actorCount(),
+                    countries: $current->countries(),
+                    comparison: $this->periodComparisonCalculator->calculate($current, $previousSelection, $previousPeriod),
+                ),
+                $report->regions(),
+            );
+        }
+
+        return new RegionalReportReadModel($reports);
+    }
+
+    /** @return array<string, RegionalMetricReportReadModel> */
+    private function reports(GetWikiRegionalDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
+    {
+        [$views, $viewers, $engagementTime] = $this->summaries($input, $period);
+        $reports = $this->regionalReports($input, ['views' => ['views', $views], 'viewers' => ['viewers', $viewers], 'engagementTime' => ['engagement_seconds', $engagementTime]], $period);
+        [$submissions, $publications] = $this->operations($input, $period);
         foreach (['submissions' => $submissions, 'publications' => $publications] as $key => $metric) {
             $regions = [];
             foreach ($metric->countries() as $row) {
@@ -59,7 +90,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
             $reports[$key] = new RegionalMetricReportReadModel($metric, $regions);
         }
 
-        return new RegionalReportReadModel($reports);
+        return $reports;
     }
 
     /**
@@ -67,9 +98,8 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
      *
      * @return array<string, RegionalMetricReportReadModel>
      */
-    private function regionalReports(GetWikiRegionalDailySummaryReportInputPort $input, array $countryReports): array
+    private function regionalReports(GetWikiRegionalDailySummaryReportInputPort $input, array $countryReports, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
-        $period = $input->period();
         $selection = $input->selection();
         $query = RegionalDailySummary::query()->where('context', 'wiki')->where('country', $selection->country->value)
             ->where('day', '>=', (string) $period->start())->where('day', '<', (string) $period->endExclusive())
@@ -109,7 +139,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
     }
 
     /** @param list<Aggregate> $rows */
-    private function regionalReport(array $rows, MetricReportReadModel $countryReport, ReportingPeriod $period, RegionalSelection $selection): RegionalMetricReportReadModel
+    private function regionalReport(array $rows, MetricReportReadModel $countryReport, ReportingPeriod|ReportingPreviousPeriod $period, RegionalSelection $selection): RegionalMetricReportReadModel
     {
         $definition = $countryReport->definition();
         $totals = [];
@@ -130,7 +160,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
         }
         if ($selection->region === null) {
             $revision = hash('sha256', json_encode(['country' => $countryReport->revision(), 'regions' => array_map(static fn ($row): ?string => $row->report_revision, $totals)], JSON_THROW_ON_ERROR));
-            $combined = new MetricReportReadModel($definition, $revision, $countryReport->days(), $countryReport->total(), $countryReport->denominator(), $countryReport->actorCount());
+            $combined = new MetricReportReadModel($definition, $revision, $countryReport->days(), $countryReport->total(), $countryReport->denominator(), $countryReport->actorCount(), comparison: $countryReport->comparison());
 
             return new RegionalMetricReportReadModel($combined, $regions);
         }
@@ -149,7 +179,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
     }
 
     /** @return array{MetricReportReadModel, MetricReportReadModel, MetricReportReadModel} */
-    private function summaries(GetWikiRegionalDailySummaryReportInputPort $input): array
+    private function summaries(GetWikiRegionalDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
         /** @var list<array{literal-string, MetricDefinition}> $metrics */
         $metrics = [
@@ -158,8 +188,8 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
             ['engagement_seconds', new MetricDefinition('ga4', Metric::ENGAGEMENT_SECONDS, 'wiki_language_country', '1')],
         ];
         $source = SummaryModel::query()
-            ->where('day', '>=', (string) $input->period()->start())
-            ->where('day', '<', (string) $input->period()->endExclusive())
+            ->where('day', '>=', (string) $period->start())
+            ->where('day', '<', (string) $period->endExclusive())
             ->select('*');
         foreach (['wiki_identifier' => $input->wikiIdentifier(), 'translation_set_identifier' => $input->translationSetIdentifier(), 'language' => $input->language(), 'country' => $input->country()] as $column => $filter) {
             if ($filter !== null) {
@@ -200,7 +230,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
             /** @var MetricAggregate|null $totals */
             $totals = $totalRow?->getAttribute($alias);
             $days = [];
-            foreach ($input->period()->days() as $day) {
+            foreach ($period->days() as $day) {
                 /** @var MetricAggregate|null $values */
                 $values = $daily->get((string) $day)?->getAttribute($alias);
                 $days[] = [
@@ -232,13 +262,13 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
     }
 
     /** @return array{MetricReportReadModel, MetricReportReadModel} */
-    private function operations(GetWikiRegionalDailySummaryReportInputPort $input): array
+    private function operations(GetWikiRegionalDailySummaryReportInputPort $input, ReportingPeriod|ReportingPreviousPeriod $period): array
     {
         $selection = $input->selection();
         $histories = WikiHistory::query()->from('wiki_histories AS history')
             ->leftJoin('draft_wikis AS draft', 'draft.id', '=', 'history.draft_wiki_id')
-            ->where('history.recorded_at', '>=', $input->period()->start()->instant())
-            ->where('history.recorded_at', '<', $input->period()->endExclusive()->instant())
+            ->where('history.recorded_at', '>=', $period->start()->instant())
+            ->where('history.recorded_at', '<', $period->endExclusive()->instant())
             ->where(static function (Builder $query): void {
                 $query->where('history.action_type', 'publish')->orWhere(static fn (Builder $submission) => $submission->where('history.action_type', 'draft_status_change')->where('history.to_status', 'under_review'));
             })
@@ -287,7 +317,7 @@ readonly class GetWikiRegionalDailySummaryReport implements GetWikiRegionalDaily
             $totals = $matching->where('country_group', 1)->firstWhere('report_day', null);
             $daily = $matching->filter(static fn ($row): bool => $row->report_day !== null)->keyBy('report_day');
             $days = [];
-            foreach ($input->period()->days() as $day) {
+            foreach ($period->days() as $day) {
                 $values = $daily->get((string) $day);
                 $attributionMissing = ($values->missing_count ?? 0) > 0;
                 $days[] = [
