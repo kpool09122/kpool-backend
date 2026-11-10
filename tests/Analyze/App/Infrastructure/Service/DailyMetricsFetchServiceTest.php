@@ -34,6 +34,7 @@ class DailyMetricsFetchServiceTest extends TestCase
     {
         config(['app.frontend_url' => 'https://public.example.test:8443/wiki/test?lang=ja']);
         $http = new AnalyticsHttpStub();
+        $http->metadata = ['timeZone' => 'Atlantic/Reykjavik'];
         $day = new UtcDate('2020-01-01');
         /** @var RegisteredIdentityCountQueryServiceInterface&MockInterface $query */
         $query = Mockery::mock(RegisteredIdentityCountQueryServiceInterface::class);

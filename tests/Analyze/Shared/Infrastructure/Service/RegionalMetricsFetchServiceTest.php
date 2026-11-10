@@ -17,6 +17,7 @@ class RegionalMetricsFetchServiceTest extends TestCase
     {
         config(['app.frontend_url' => 'https://example.test']);
         $http = new AnalyticsHttpStub();
+        $http->metadata = ['timeZone' => 'Atlantic/Reykjavik'];
         $observations = (new RegionalMetricsFetchService($http->client(), new RegionNormalizer()))->fetch('wiki', 'engagement_seconds', 'userEngagementDuration', new UtcDate('2020-01-01'), 2);
         self::assertCount(1, $observations);
         self::assertSame('JP-13', $observations[0]->region);
