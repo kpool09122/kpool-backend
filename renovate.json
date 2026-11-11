@@ -3,17 +3,39 @@
     "extends": ["config:recommended"],
     "timezone": "Asia/Tokyo",
     "prHourlyLimit": 0,
-    "enabledManagers": ["npm", "composer", "github-actions"],
+    "enabledManagers": ["npm", "composer", "github-actions", "custom.regex"],
     "includePaths": [
         "package.json",
         "pnpm-lock.yaml",
         "composer.json",
         "composer.lock",
+        "Dockerfile",
         ".github/workflows/**"
     ],
     "dependencyDashboard": true,
     "labels": ["dependencies"],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Dockerfile と CI の Composer 本体を検出する",
+            "managerFilePatterns": ["Dockerfile", ".github/workflows/ci.yml"],
+            "matchStrings": [
+                "COPY --from=composer:(?<currentValue>\\d+\\.\\d+\\.\\d+) /usr/bin/composer /usr/(?:local/)?bin/composer",
+                "(?:^|\\r?\\n)[ \\t]+tools:[ \\t]+composer:(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+            ],
+            "depNameTemplate": "composer",
+            "datasourceTemplate": "docker"
+        }
+    ],
     "packageRules": [
+        {
+            "description": "Dockerfile と CI の Composer 本体を同じ PR で更新する",
+            "matchManagers": ["custom.regex"],
+            "matchDatasources": ["docker"],
+            "matchPackageNames": ["composer"],
+            "groupName": "Composer CLI",
+            "pinDigests": false
+        },
         {
             "description": "TypeSpec など root の npm devDependencies をまとめる",
             "matchManagers": ["npm"],

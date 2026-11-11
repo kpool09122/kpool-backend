@@ -19,7 +19,7 @@ COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 WORKDIR /var/www/html
 
 FROM runtime AS dependencies
-COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:2.11.2 /usr/bin/composer /usr/local/bin/composer
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction --no-progress
 COPY application/ application/
@@ -62,7 +62,7 @@ FROM extensions AS development
 RUN set -eux; apt-get update; apt-get install -y --no-install-recommends bash curl unzip mecab mecab-ipadic-utf8 librsvg2-bin; \
     install-php-extension-source pcov 1.0.12 krakjoe/pcov e16c08e14da0a74fd19e2e14960382bc8f28292d; \
     rm -rf /var/lib/apt/lists/*
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.11.2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
