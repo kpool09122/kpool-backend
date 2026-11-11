@@ -211,6 +211,7 @@ final class WikiCommandPayloadMapper
             'content' => $content['content'] ?? '',
             'image_identifier' => $content['imageIdentifier'] ?? null,
             'image_identifiers' => $content['imageIdentifiers'] ?? [],
+            'image_width' => isset($content['imageWidth']) ? RequestValue::integer($content['imageWidth']) : null,
             'caption' => $content['caption'] ?? null,
             'alt' => $content['alt'] ?? null,
             'provider' => $content['provider'] ?? null,

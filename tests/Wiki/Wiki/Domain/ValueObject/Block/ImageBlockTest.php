@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Domain\ValueObject\Block;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
@@ -26,6 +27,7 @@ class ImageBlockTest extends TestCase
             displayOrder: $displayOrder,
             imageIdentifier: $imageIdentifier,
             caption: $caption,
+            imageWidth: 450,
             alt: $alt,
         );
 
@@ -33,6 +35,7 @@ class ImageBlockTest extends TestCase
         $this->assertSame(BlockType::IMAGE, $block->blockType());
         $this->assertSame($imageIdentifier, $block->imageIdentifier());
         $this->assertSame($caption, $block->caption());
+        $this->assertSame(450, $block->imageWidth());
         $this->assertSame($alt, $block->alt());
     }
 
@@ -47,6 +50,18 @@ class ImageBlockTest extends TestCase
         );
 
         $this->assertNull($block->caption());
+        $this->assertNull($block->imageWidth());
         $this->assertNull($block->alt());
+    }
+
+    public function testRejectsNonPositiveImageWidth(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new ImageBlock(
+            displayOrder: 1,
+            imageIdentifier: new ImageIdentifier(StrTestHelper::generateUuid()),
+            imageWidth: -1,
+        );
     }
 }

@@ -51,11 +51,12 @@ class SectionContentMapperTest extends TestCase
     {
         $imageId = StrTestHelper::generateUuid();
         $collection = new SectionContentCollection([
-            new ImageBlock(displayOrder: 1, imageIdentifier: new ImageIdentifier($imageId), caption: 'キャプション', alt: '代替テキスト'),
+            new ImageBlock(displayOrder: 1, imageIdentifier: new ImageIdentifier($imageId), caption: 'キャプション', alt: '代替テキスト', imageWidth: 450),
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
         $this->assertSame($imageId, $array[0]['image_identifier']);
+        $this->assertSame(450, $array[0]['image_width']);
 
         $restored = SectionContentMapper::collectionFromArray($array);
 
@@ -64,6 +65,7 @@ class SectionContentMapperTest extends TestCase
         $this->assertSame(1, $block->displayOrder());
         $this->assertSame('キャプション', $block->caption());
         $this->assertSame('代替テキスト', $block->alt());
+        $this->assertSame(450, $block->imageWidth());
     }
 
     /**
@@ -78,11 +80,13 @@ class SectionContentMapperTest extends TestCase
                 displayOrder: 1,
                 imageIdentifiers: [new ImageIdentifier($imageId1), new ImageIdentifier($imageId2)],
                 caption: 'ギャラリー',
+                imageWidth: 700,
             ),
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
         $this->assertSame([$imageId1, $imageId2], $array[0]['image_identifiers']);
+        $this->assertSame(700, $array[0]['image_width']);
 
         $restored = SectionContentMapper::collectionFromArray($array);
 
@@ -90,6 +94,22 @@ class SectionContentMapperTest extends TestCase
         $this->assertInstanceOf(ImageGalleryBlock::class, $block);
         $this->assertCount(2, $block->imageIdentifiers());
         $this->assertSame('ギャラリー', $block->caption());
+        $this->assertSame(700, $block->imageWidth());
+    }
+
+    public function testRestoresLegacyImageBlocksWithoutWidth(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $contents = SectionContentMapper::collectionFromArray([
+            ['block_type' => 'image', 'image_identifier' => $imageId],
+            ['block_type' => 'image_gallery', 'image_identifiers' => [$imageId]],
+        ]);
+
+        [$image, $gallery] = $contents->all();
+        $this->assertInstanceOf(ImageBlock::class, $image);
+        $this->assertInstanceOf(ImageGalleryBlock::class, $gallery);
+        $this->assertNull($image->imageWidth());
+        $this->assertNull($gallery->imageWidth());
     }
 
     /**

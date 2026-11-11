@@ -915,8 +915,8 @@ class TranslationServiceTest extends TestCase
         $profileId = new WikiIdentifier(StrTestHelper::generateUuid());
         $sections = new SectionContentCollection([
             new Section('미디어', 0, new SectionContentCollection([
-                new ImageBlock(0, $imageId, '사진 설명', '대체 텍스트'),
-                new ImageGalleryBlock(1, [$imageId], '갤러리 설명'),
+                new ImageBlock(0, $imageId, '사진 설명', '대체 텍스트', imageWidth: 450),
+                new ImageGalleryBlock(1, [$imageId], '갤러리 설명', imageWidth: 700),
                 new EmbedBlock(2, EmbedProvider::YOUTUBE, 'abc123', '영상 설명'),
                 new ProfileCardListBlock(3, [$profileId], '관련 인물'),
                 new Section('상세', 4, new SectionContentCollection([new TextBlock(0, '본문')]), 2),
@@ -938,9 +938,11 @@ class TranslationServiceTest extends TestCase
         self::assertSame('写真の説明', $image->caption());
         self::assertSame('代替テキスト', $image->alt());
         self::assertSame($imageId, $image->imageIdentifier());
+        self::assertSame(450, $image->imageWidth());
         self::assertInstanceOf(ImageGalleryBlock::class, $gallery);
         self::assertSame('ギャラリーの説明', $gallery->caption());
         self::assertSame([$imageId], $gallery->imageIdentifiers());
+        self::assertSame(700, $gallery->imageWidth());
         self::assertInstanceOf(EmbedBlock::class, $embed);
         self::assertSame('動画の説明', $embed->caption());
         self::assertSame('abc123', $embed->embedId());

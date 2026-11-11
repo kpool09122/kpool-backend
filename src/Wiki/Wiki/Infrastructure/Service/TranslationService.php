@@ -416,11 +416,12 @@ readonly class TranslationService implements TranslationServiceInterface
                 $content->displayOrder(),
                 $content->imageIdentifier(),
                 $this->mapOptionalText($content->caption(), $translate),
-                $this->mapOptionalText($content->alt(), $translate)
+                $this->mapOptionalText($content->alt(), $translate),
+                $content->imageWidth(),
             );
         }
         if ($content instanceof ImageGalleryBlock) {
-            return new ImageGalleryBlock($content->displayOrder(), $content->imageIdentifiers(), $this->mapOptionalText($content->caption(), $translate));
+            return new ImageGalleryBlock($content->displayOrder(), $content->imageIdentifiers(), $this->mapOptionalText($content->caption(), $translate), $content->imageWidth());
         }
         if ($content instanceof EmbedBlock) {
             return new EmbedBlock($content->displayOrder(), $content->provider(), $content->embedId(), $this->mapOptionalText($content->caption(), $translate));

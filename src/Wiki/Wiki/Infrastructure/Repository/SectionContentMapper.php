@@ -56,10 +56,12 @@ final class SectionContentMapper
                             'block_type' => $content->blockType()->value,
                             'display_order' => $content->displayOrder(),
                             'image_identifier' => (string) $content->imageIdentifier(),
+                            'image_width' => $content->imageWidth(),
                             'caption' => $content->caption(),
                             'alt' => $content->alt(),
                         ],
                         ImageGalleryBlock::class => [
+                            'image_width' => $content->imageWidth(),
                             'block_type' => $content->blockType()->value,
                             'display_order' => $content->displayOrder(),
                             'image_identifiers' => array_map(
@@ -144,8 +146,10 @@ final class SectionContentMapper
                         imageIdentifier: new ImageIdentifier(TypedValue::string($contentData['image_identifier'] ?? '')),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                         alt: TypedValue::nullableString($contentData['alt'] ?? null),
+                        imageWidth: TypedValue::nullableInt($contentData['image_width'] ?? null),
                     ),
                     BlockType::IMAGE_GALLERY => new ImageGalleryBlock(
+                        imageWidth: TypedValue::nullableInt($contentData['image_width'] ?? null),
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         imageIdentifiers: array_map(
                             static fn (string $id): ImageIdentifier => new ImageIdentifier($id),
