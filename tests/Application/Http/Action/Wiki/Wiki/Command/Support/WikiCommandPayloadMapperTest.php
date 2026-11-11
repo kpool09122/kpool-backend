@@ -11,6 +11,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
@@ -19,6 +21,7 @@ class WikiCommandPayloadMapperTest extends TestCase
 {
     public function testSectionsMapsCamelCaseApiPayloadToInternalSectionContents(): void
     {
+        $imageId = '01965bb2-bcc9-7c6f-8b90-89f7f217f001';
         $sections = WikiCommandPayloadMapper::sections([
             [
                 'type' => 'section',
@@ -30,6 +33,18 @@ class WikiCommandPayloadMapperTest extends TestCase
                         'displayOrder' => 1,
                         'content' => 'Hello World',
                     ],
+                    [
+                        'type' => 'image',
+                        'displayOrder' => 2,
+                        'imageIdentifier' => $imageId,
+                        'imageWidth' => 450,
+                    ],
+                    [
+                        'type' => 'image_gallery',
+                        'displayOrder' => 3,
+                        'imageIdentifiers' => [$imageId],
+                        'imageWidth' => 700,
+                    ],
                 ],
             ],
         ]);
@@ -38,10 +53,14 @@ class WikiCommandPayloadMapperTest extends TestCase
         $this->assertInstanceOf(Section::class, $section);
         $this->assertSame(1, $section->displayOrder());
 
-        $block = $section->contents()->sorted()[0];
+        [$block, $image, $gallery] = $section->contents()->sorted();
         $this->assertInstanceOf(TextBlock::class, $block);
         $this->assertSame(1, $block->displayOrder());
         $this->assertSame('Hello World', $block->content());
+        $this->assertInstanceOf(ImageBlock::class, $image);
+        $this->assertSame(450, $image->imageWidth());
+        $this->assertInstanceOf(ImageGalleryBlock::class, $gallery);
+        $this->assertSame(700, $gallery->imageWidth());
     }
 
     public function testSectionsRejectsMissingContentType(): void
