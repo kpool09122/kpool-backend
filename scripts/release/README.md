@@ -29,12 +29,13 @@ Pythonの検証環境は3.15に統一し、`cfn-lint==1.47.0` のインストー
 ローカルのLinux ARM64 / Python 3.15.0環境では、依存インストール・`pip check`・リリース86件・インフラ96件（任意DB統合1件skip）・cfn-lint・actionlint v1.7.7が成功した。
 ネイティブ依存をソースからビルドする場合はC/Rustのビルド環境が必要。マージ前には変更をpushしたheadのinfrastructure CI成功も確認する。
 
-[Node公式告知](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)で公開された26.xの修正版26.12.1を使用する。
-バックエンドの `.node-version` とZod workflow、フロントエンドのNode固定版を26.12.1に揃える。
-更新時にはTypeSpecと全6 APIのZod生成を実行する。
+PR #732 では、[Node公式告知](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)で公開された26.xの修正版26.12.1を使用した。
 Node 26.12.1 / pnpm 12.4.2では、固定lockfileからのインストール・TypeSpecコンパイル・openapi-zod-client 1.18.3による全6 APIの生成がローカルのLinux ARM64環境で成功した。
 
+バックエンドとZod workflowのNodeバージョンは、リポジトリ直下の `.node-version` で管理する。
+更新時にはTypeSpecのコンパイルと全対象APIのZod生成を実行する。
+
 setup-node v7.1.0は `smol-toml@1.7.1` を同梱し、[GHSA-r4xh-jqrq-34v2](https://github.com/advisories/GHSA-r4xh-jqrq-34v2)（Medium、修正版1.9.0）の対象。
-Zod workflowは `node-version` の直接指定、release workflowはJSONの `source/package.json` 指定で、現在はTOMLを入力しない。
+Zod workflowは `.node-version`、release workflowのフロントエンド処理は `source/package.json` を参照する。
 PR担当者はマージ前とsetup-node更新時に公式releaseを確認し、smol-toml 1.9.0以降を実行用distへ同梱した版が公開され次第、固定SHAを更新する。
 TOMLのversion-fileを採用する場合は、その更新を先に完了する。
