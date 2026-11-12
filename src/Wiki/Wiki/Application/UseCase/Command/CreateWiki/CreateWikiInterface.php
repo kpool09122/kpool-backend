@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 
 interface CreateWikiInterface
 {
@@ -16,6 +17,7 @@ interface CreateWikiInterface
      * @return void
      * @throws DuplicateSlugException
      * @throws DisallowedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(CreateWikiInputPort $input, CreateWikiOutputPort $output): void;

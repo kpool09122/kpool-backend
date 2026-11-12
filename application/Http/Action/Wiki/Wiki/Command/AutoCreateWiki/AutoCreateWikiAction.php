@@ -23,6 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,6 +84,11 @@ readonly class AutoCreateWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
+            } catch (NgWordDetectedException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new UnprocessableEntityHttpException(detail: error_message('wiki_ng_word_detected', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

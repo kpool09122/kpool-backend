@@ -25,6 +25,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiOutput;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
@@ -99,6 +100,11 @@ readonly class EditWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ConflictHttpException(detail: error_message('invalid_status', $language), previous: $e);
+            } catch (NgWordDetectedException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new UnprocessableEntityHttpException(detail: error_message('wiki_ng_word_detected', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

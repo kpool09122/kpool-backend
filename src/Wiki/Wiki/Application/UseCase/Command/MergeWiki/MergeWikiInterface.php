@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 
 interface MergeWikiInterface
 {
@@ -16,6 +17,7 @@ interface MergeWikiInterface
      * @return void
      * @throws WikiNotFoundException
      * @throws UnauthorizedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(MergeWikiInputPort $input, MergeWikiOutputPort $output): void;

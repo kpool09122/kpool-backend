@@ -24,6 +24,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiOutput;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
@@ -94,6 +95,11 @@ readonly class MergeWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('unauthorized', $language), previous: $e);
+            } catch (NgWordDetectedException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new UnprocessableEntityHttpException(detail: error_message('wiki_ng_word_detected', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

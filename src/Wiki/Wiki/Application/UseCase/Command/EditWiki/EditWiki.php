@@ -15,14 +15,17 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 
 readonly class EditWiki implements EditWikiInterface
 {
     public function __construct(
-        private DraftWikiRepositoryInterface $draftWikiRepository,
-        private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface     $policyEvaluator,
+        private DraftWikiRepositoryInterface         $draftWikiRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
     ) {
     }
 
@@ -34,6 +37,7 @@ readonly class EditWiki implements EditWikiInterface
      * @throws DisallowedException
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
+     * @throws NgWordDetectedException
      */
     public function process(EditWikiInputPort $input, EditWikiOutputPort $output): void
     {
@@ -69,6 +73,14 @@ readonly class EditWiki implements EditWikiInterface
             && $wiki->status() !== ApprovalStatus::Rejected) {
             throw new InvalidStatusException();
         }
+
+        $this->wikiNgWordValidationService->validate(
+            basic: $input->basic(),
+            sections: $input->sections(),
+            title: $input->title(),
+            metaDescription: $input->metaDescription(),
+            keywords: $input->keywords(),
+        );
 
         $wiki->setBasic($input->basic());
         $wiki->setSections($input->sections());

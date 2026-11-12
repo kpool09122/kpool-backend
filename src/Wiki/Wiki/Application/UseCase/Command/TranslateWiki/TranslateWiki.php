@@ -16,9 +16,11 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
@@ -28,12 +30,13 @@ use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 readonly class TranslateWiki implements TranslateWikiInterface
 {
     public function __construct(
-        private WikiRepositoryInterface      $wikiRepository,
-        private DraftWikiRepositoryInterface $draftWikiRepository,
-        private TranslationServiceInterface  $translationService,
-        private DraftWikiFactoryInterface    $draftWikiFactory,
-        private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface     $policyEvaluator,
+        private WikiRepositoryInterface              $wikiRepository,
+        private DraftWikiRepositoryInterface         $draftWikiRepository,
+        private TranslationServiceInterface          $translationService,
+        private DraftWikiFactoryInterface            $draftWikiFactory,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
     ) {
     }
 
@@ -43,6 +46,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
      * @return void
      * @throws WikiNotFoundException
      * @throws DisallowedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(TranslateWikiInputPort $input, TranslateWikiOutputPort $output): void
@@ -113,7 +117,18 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $wikiDraft->setTranslatedAt($translatedAt);
             $wikiDraft->setTranslationSource(new TranslationSource($wiki->wikiIdentifier(), $wiki->version()));
 
+            $this->wikiNgWordValidationService->validate(
+                basic: $wikiDraft->basic(),
+                sections: $wikiDraft->sections(),
+                title: $wikiDraft->title(),
+                metaDescription: $wikiDraft->metaDescription(),
+                keywords: $wikiDraft->keywords(),
+            );
+
             $wikiDrafts[] = $wikiDraft;
+        }
+
+        foreach ($wikiDrafts as $wikiDraft) {
             $this->draftWikiRepository->save($wikiDraft);
         }
 

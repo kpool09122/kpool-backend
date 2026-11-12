@@ -38,6 +38,7 @@ return [
     'disallowed' => '이 작업은 허용되지 않습니다.',
     'allow_only_under_review_status' => '제출 완료 상태의 초안 위키만 승인할 수 있습니다.',
     'wiki_not_found' => '지정된 초안 위키를 찾을 수 없습니다.',
+    'wiki_ng_word_detected' => '위키 내용에 금지어가 포함되어 있습니다.',
     'duplicate_slug' => '지정된 Slug가 이미 존재합니다.',
     'exists_approved_draft_wiki' => '아직 게시되지 않은 승인된 초안 위키가 있습니다.',
     'internal_server_error' => '서버 오류가 발생했습니다.',
