@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use UnexpectedValueException;
 
 final class VideoLinkRepository implements VideoLinkRepositoryInterface
@@ -65,7 +64,6 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
                 'wiki_id' => (string) $videoLink->wikiIdentifier(),
                 'url' => (string) $videoLink->url(),
                 'thumbnail_path' => $videoLink->thumbnailPath() === null ? null : (string) $videoLink->thumbnailPath(),
-                'video_usage' => $videoLink->videoUsage()->value,
                 'title' => (string) $videoLink->title(),
                 'thumbnail_url' => $videoLink->thumbnailUrl() !== null ? (string) $videoLink->thumbnailUrl() : null,
                 'published_at' => $videoLink->publishedAt(),
@@ -95,16 +93,10 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
 
     public function deleteAutoCollectedByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void
     {
-        $autoCollectedUsages = [
-            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value,
-            VideoUsage::YOUTUBE_AUTO_LIKE_COUNT->value,
-            VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value,
-        ];
-
         VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
             ->where('wiki_id', (string) $resourceIdentifier)
-            ->whereIn('video_usage', $autoCollectedUsages)
+            ->whereNull('creator_principal_id')
             ->delete();
         $this->videoThumbnailService->releaseUnused();
     }
@@ -143,7 +135,6 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ResourceType::from($model->resource_type),
             new WikiIdentifier($model->wiki_id),
             new ExternalContentLink($model->url),
-            VideoUsage::from($model->video_usage),
             new VideoTitle($model->title),
             $model->thumbnail_url !== null ? new ThumbnailUrl($model->thumbnail_url) : null,
             $model->published_at?->toDateTimeImmutable(),

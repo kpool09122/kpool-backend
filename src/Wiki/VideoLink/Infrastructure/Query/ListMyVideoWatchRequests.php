@@ -28,7 +28,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoWatchRequests\Lis
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoWatchRequests\ListMyVideoWatchRequestsInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\VideoWatchRequestStatusReadModel;
 use Source\Wiki\VideoLink\Domain\Service\VideoWatchRequestPolicy;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 
 final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequestsInterface
 {
@@ -90,7 +89,7 @@ final readonly class ListMyVideoWatchRequests implements ListMyVideoWatchRequest
                 type: $type,
                 isOfficial: $wiki?->owner_account_id !== null,
                 wikiResourceType: $wiki === null ? null : ResourceType::from($wiki->resource_type),
-                isManualVideo: VideoUsage::from($video->video_usage)->isManual(),
+                isManualVideo: $video->creator_principal_id !== null,
             );
             $resourceKey = implode(':', [$type->value, $wiki->resource_type ?? '', (int) $resource->isOfficial(), (int) $resource->isManualVideo()]);
             $target = $targetPermissions[$resourceKey] ??= $this->policyEvaluator->evaluate($principal, Action::SEND_VIDEO_WATCH_REQUEST, $resource);

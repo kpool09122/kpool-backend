@@ -15,6 +15,40 @@ use Tests\TestCase;
 #[Group('useDb')]
 class VideoLinkTableMigrationTest extends TestCase
 {
+    public function testDroppingVideoUsagePreservesVideosAndTheirCreators(): void
+    {
+        /** @var Migration $migration */
+        $migration = require dirname(__DIR__, 5) . '/database/migrations/2026_11_12_000000_drop_video_usage_from_video_links_table.php';
+
+        $legacyUsages = [
+            'music_video' => false,
+            'short' => false,
+            'youtube_auto_view_count' => true,
+            'youtube_auto_like_count' => true,
+            'youtube_auto_recent_popular' => true,
+        ];
+        $identifiers = [];
+        foreach ($legacyUsages as $usage => $isAutoCollected) {
+            $identifier = StrTestHelper::generateUuid();
+            CreateVideoLink::create($identifier, ['creator_principal_id' => $isAutoCollected ? null : StrTestHelper::generateUuid(), 'duration_seconds' => 253]);
+            $identifiers[$usage] = $identifier;
+        }
+        $before = DB::table('wiki_video_links')->whereIn('id', $identifiers)->orderBy('id')->get()->toArray();
+
+        $rollback = [$migration, 'down'];
+        self::assertIsCallable($rollback);
+        $rollback();
+        foreach ($identifiers as $usage => $identifier) {
+            DB::table('wiki_video_links')->where('id', $identifier)->update(['video_usage' => $usage]);
+        }
+        $migrate = [$migration, 'up'];
+        self::assertIsCallable($migrate);
+        $migrate();
+
+        self::assertFalse(Schema::hasColumn('wiki_video_links', 'video_usage'));
+        self::assertEquals($before, DB::table('wiki_video_links')->whereIn('id', $identifiers)->orderBy('id')->get()->toArray());
+    }
+
     public function testRenameAndRollbackPreserveExistingVideos(): void
     {
         $identifier = StrTestHelper::generateUuid();

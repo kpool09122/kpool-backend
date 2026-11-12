@@ -50,7 +50,7 @@ class RecordVideoLinkWatchTest extends TestCase
         $wiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['owner_account_id' => (string) $account, 'slug' => 'tl-watched', 'language' => 'ja', 'published_at' => '2026-01-01']);
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => (string) $principal]);
         $record = $this->app()->make(RecordVideoLinkWatchInterface::class);
         $record->process(new RecordVideoLinkWatchInput($video, $principal));
         $timestamp = DB::table('wiki_video_link_watches')->value('watched_at');

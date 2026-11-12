@@ -23,7 +23,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkOutput;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
@@ -68,11 +67,11 @@ class CreateVideoLinkAuthorizationTest extends TestCase
         CreatePrincipalGroupMembership::create((string) $groupId, (string) $principalId);
         DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $groupId, 'role_id' => DB::table('wiki_roles')->where('name', $role)->value('id')]);
         CreateWiki::create((string) $wikiId, ResourceType::TALENT->value);
-        foreach ([VideoUsage::MUSIC_VIDEO, VideoUsage::YOUTUBE_AUTO_VIEW_COUNT] as $usage) {
-            CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => (string) $wikiId, 'resource_type' => ResourceType::TALENT->value, 'url' => 'https://example.com/' . $usage->value, 'video_usage' => $usage->value]);
+        foreach (['manual' => false, 'automatic' => true] as $origin => $isAutoCollected) {
+            CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => (string) $wikiId, 'resource_type' => ResourceType::TALENT->value, 'url' => 'https://example.com/' . $origin, 'creator_principal_id' => $isAutoCollected ? null : StrTestHelper::generateUuid()]);
         }
         $before = DB::table('wiki_video_links')->orderBy('id')->get()->toArray();
-        $input = new CreateVideoLinkInput($principalId, ResourceType::TALENT, $wikiId, new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DurationSeconds(253));
+        $input = new CreateVideoLinkInput($principalId, ResourceType::TALENT, $wikiId, new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), new VideoTitle('New video'), new DurationSeconds(253));
         if (! $allowed) {
             try {
                 $this->app()->make(CreateVideoLinkInterface::class)->process($input, new CreateVideoLinkOutput());

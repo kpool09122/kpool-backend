@@ -156,7 +156,7 @@ class PlaylistRepositoryTest extends TestCase
         $id = new PlaylistIdentifier(StrTestHelper::generateUuid());
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
         $wiki = new WikiIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => (string) $wiki, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
+        CreateVideoLink::create((string) $video, ['wiki_id' => (string) $wiki, 'resource_type' => 'talent']);
         $item = PlaylistTestHelper::item($id, 0, $video);
         $repository = $this->app()->make(PlaylistRepositoryInterface::class);
         $repository->save(PlaylistTestHelper::playlist($id, $owner, [$item]));

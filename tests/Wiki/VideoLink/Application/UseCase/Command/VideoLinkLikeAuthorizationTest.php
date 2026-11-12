@@ -94,26 +94,26 @@ class VideoLinkLikeAuthorizationTest extends TestCase
         self::assertSame(1, DB::table('wiki_video_link_likes')->count());
     }
 
-    /** @return iterable<string, array{string,string,string}> */
+    /** @return iterable<string, array{string,string,bool}> */
     public static function allowedVideos(): iterable
     {
         foreach (['Collaborator', 'SeniorCollaborator', 'Operator', 'AgencyActor', 'TalentActor'] as $role) {
             foreach (['agency', 'group', 'song', 'talent'] as $type) {
-                foreach (['music_video', 'youtube_auto_view_count', 'youtube_auto_like_count', 'youtube_auto_recent_popular'] as $usage) {
-                    yield "$role/$type/$usage" => [$role, $type, $usage];
+                foreach (['manual' => false, 'automatic' => true] as $origin => $isAutoCollected) {
+                    yield "$role/$type/$origin" => [$role, $type, $isAutoCollected];
                 }
             }
         }
     }
 
     #[DataProvider('allowedVideos')]
-    public function testAuthorizedLikesRejectDuplicatesAndUnlikeOnlyDeletesOwnRecord(string $role, string $type, string $usage): void
+    public function testAuthorizedLikesRejectDuplicatesAndUnlikeOnlyDeletesOwnRecord(string $role, string $type, bool $isAutoCollected): void
     {
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
         $principal = $this->principal($role);
         $other = $this->principal('Collaborator');
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['resource_type' => $type, 'video_usage' => $usage]);
+        CreateVideoLink::create((string) $video, ['resource_type' => $type, 'creator_principal_id' => $isAutoCollected ? null : StrTestHelper::generateUuid()]);
         $likeVideoLink = $this->app()->make(LikeVideoLinkInterface::class);
         $unlikeVideoLink = $this->app()->make(UnlikeVideoLinkInterface::class);
         $likeVideoLink->process(new LikeVideoLinkInput($video, $principal));

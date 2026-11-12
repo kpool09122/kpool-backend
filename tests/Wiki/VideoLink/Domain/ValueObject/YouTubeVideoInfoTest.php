@@ -6,7 +6,6 @@ namespace Tests\Wiki\VideoLink\Domain\ValueObject;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 
 class YouTubeVideoInfoTest extends TestCase
@@ -23,7 +22,6 @@ class YouTubeVideoInfoTest extends TestCase
             title: 'テスト動画タイトル',
             url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
             thumbnailUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
             publishedAt: $publishedAt,
             durationSeconds: null,
         );
@@ -32,45 +30,6 @@ class YouTubeVideoInfoTest extends TestCase
         $this->assertSame('テスト動画タイトル', $videoInfo->title());
         $this->assertSame('https://www.youtube.com/watch?v=dQw4w9WgXcQ', $videoInfo->url());
         $this->assertSame('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', $videoInfo->thumbnailUrl());
-        $this->assertSame(VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, $videoInfo->videoUsage());
         $this->assertSame($publishedAt, $videoInfo->publishedAt());
-    }
-
-    /**
-     * 正常系: 高評価数カテゴリの動画情報を作成できること.
-     */
-    public function testCreateWithLikeCountUsage(): void
-    {
-        $videoInfo = new YouTubeVideoInfo(
-            videoId: 'abc123',
-            title: '高評価動画',
-            url: 'https://www.youtube.com/watch?v=abc123',
-            thumbnailUrl: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg',
-            videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
-            publishedAt: new DateTimeImmutable(),
-            durationSeconds: null,
-        );
-
-        $this->assertSame(VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, $videoInfo->videoUsage());
-        $this->assertTrue($videoInfo->videoUsage()->isAutoCollected());
-    }
-
-    /**
-     * 正常系: 直近人気カテゴリの動画情報を作成できること.
-     */
-    public function testCreateWithRecentPopularUsage(): void
-    {
-        $videoInfo = new YouTubeVideoInfo(
-            videoId: 'xyz789',
-            title: '直近人気動画',
-            url: 'https://www.youtube.com/watch?v=xyz789',
-            thumbnailUrl: 'https://i.ytimg.com/vi/xyz789/hqdefault.jpg',
-            videoUsage: VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR,
-            publishedAt: new DateTimeImmutable(),
-            durationSeconds: null,
-        );
-
-        $this->assertSame(VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR, $videoInfo->videoUsage());
-        $this->assertTrue($videoInfo->videoUsage()->isAutoCollected());
     }
 }

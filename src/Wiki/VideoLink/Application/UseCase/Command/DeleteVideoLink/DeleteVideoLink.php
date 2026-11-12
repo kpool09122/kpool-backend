@@ -51,9 +51,8 @@ readonly class DeleteVideoLink implements DeleteVideoLinkInterface
             throw new DisallowedException();
         }
 
-        if (! $videoLink->videoUsage()->isAutoCollected()
-            && ($videoLink->creatorPrincipalIdentifier() === null
-                || (string) $videoLink->creatorPrincipalIdentifier() !== (string) $principal->principalIdentifier())) {
+        $creatorPrincipalIdentifier = $videoLink->creatorPrincipalIdentifier();
+        if ($creatorPrincipalIdentifier !== null && (string) $creatorPrincipalIdentifier !== (string) $principal->principalIdentifier()) {
             throw new DisallowedException();
         }
 

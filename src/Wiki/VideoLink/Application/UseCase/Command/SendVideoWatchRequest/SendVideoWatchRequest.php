@@ -69,7 +69,7 @@ final readonly class SendVideoWatchRequest implements SendVideoWatchRequestInter
             type: $video->resourceType(),
             isOfficial: $wiki->isOfficial(),
             wikiResourceType: $wiki->resourceType(),
-            isManualVideo: $video->videoUsage()->isManual(),
+            isManualVideo: $video->creatorPrincipalIdentifier() !== null,
         );
         if (! $this->policyEvaluator->evaluate($principal, Action::SEND_VIDEO_WATCH_REQUEST, $resource)) {
             throw new DisallowedException();

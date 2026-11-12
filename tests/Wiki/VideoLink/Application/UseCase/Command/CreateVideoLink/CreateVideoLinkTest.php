@@ -39,7 +39,6 @@ use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -64,7 +63,6 @@ class CreateVideoLinkTest extends TestCase
             && $video->durationSeconds()?->value() === 253
             && $video->resourceType() === $input->resourceType()
             && $video->wikiIdentifier() === $input->wikiIdentifier()
-            && $video->videoUsage() === $input->videoUsage()
             && $video->title() === $input->title()
             && $video->url() === $input->url()
             && $video->thumbnailUrl() === $input->thumbnailUrl()
@@ -97,7 +95,7 @@ class CreateVideoLinkTest extends TestCase
         $input = $this->input();
         $this->authorize($input);
         $repository = Mockery::mock(VideoLinkRepositoryInterface::class);
-        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $input->url(), VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new VideoTitle('Existing'), );
+        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $input->url(), new VideoTitle('Existing'), );
         $repository->shouldReceive('findByResourceAndUrls')->once()->andReturn([$existing]);
         $repository->shouldNotReceive('save');
         $this->app()->instance(VideoLinkRepositoryInterface::class, $repository);
@@ -133,7 +131,7 @@ class CreateVideoLinkTest extends TestCase
     #[DataProvider('tikTokUrls')]
     public function testCreatesTikTokWithServerMetadataAndReportsNewImageForRollback(string $inputUrl): void
     {
-        $input = new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new TikTokVideoUrl($inputUrl), VideoUsage::SHORT, new VideoTitle('User title'), null);
+        $input = new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new TikTokVideoUrl($inputUrl), new VideoTitle('User title'), null);
         $this->authorize($input);
         $metadataService = Mockery::mock(VideoMetadataServiceInterface::class);
         $path = new ImagePath('images/cover.webp');
@@ -162,7 +160,7 @@ class CreateVideoLinkTest extends TestCase
     #[DataProvider('registrationFailures')]
     public function testReportsNewCoverForCompensationOnDuplicateOrDatabaseFailure(bool $duplicate): void
     {
-        $input = new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new TikTokVideoUrl('https://vt.tiktok.com/abc/'), VideoUsage::SHORT, new VideoTitle('User title'), new DurationSeconds(999), new ThumbnailUrl('https://example.com/ignored.jpg'));
+        $input = new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new TikTokVideoUrl('https://vt.tiktok.com/abc/'), new VideoTitle('User title'), new DurationSeconds(999), new ThumbnailUrl('https://example.com/ignored.jpg'));
         $this->authorize($input);
         $path = new ImagePath('images/new.webp');
         $url = new TikTokVideoUrl('https://www.tiktok.com/@renamed/video/6718335390845095173');
@@ -170,7 +168,7 @@ class CreateVideoLinkTest extends TestCase
         $metadataService->shouldReceive('resolve')->once()->andReturn(new VideoMetadata($url, new DurationSeconds(12), $path));
         $this->app()->instance(VideoMetadataServiceInterface::class, $metadataService);
         $repository = Mockery::mock(VideoLinkRepositoryInterface::class);
-        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $url, VideoUsage::SHORT, $input->title());
+        $existing = $this->app()->make(VideoLinkFactoryInterface::class)->create($input->resourceType(), $input->wikiIdentifier(), $url, $input->title());
         $repository->shouldReceive('findByResourceAndUrls')->once()->with($input->resourceType(), $input->wikiIdentifier(), [(string) $url])->andReturn($duplicate ? [$existing] : []);
         if ($duplicate) {
             $repository->shouldNotReceive('save');
@@ -197,7 +195,7 @@ class CreateVideoLinkTest extends TestCase
 
     private function input(): CreateVideoLinkInput
     {
-        return new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), VideoUsage::MUSIC_VIDEO, new VideoTitle('New video'), new DurationSeconds(253), new ThumbnailUrl('https://i.ytimg.com/vi/new/hqdefault.jpg'), new DateTimeImmutable('2026-10-01'));
+        return new CreateVideoLinkInput(new PrincipalIdentifier(StrTestHelper::generateUuid()), ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new YouTubeVideoUrl('https://www.youtube.com/watch?v=Os_heh8vPfs'), new VideoTitle('New video'), new DurationSeconds(253), new ThumbnailUrl('https://i.ytimg.com/vi/new/hqdefault.jpg'), new DateTimeImmutable('2026-10-01'));
     }
 
     private function authorize(CreateVideoLinkInput $input, bool $allowed = true): void

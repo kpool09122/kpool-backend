@@ -20,7 +20,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CollectVideoLinks\CollectV
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkCollectionFailedException;
 use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 use Tests\Helper\CreateVideoLink;
 use Tests\Helper\CreateVideoLinkCollectionStatus;
@@ -46,7 +45,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
         $this->oldVideoId = StrTestHelper::generateUuid();
         $this->statusId = StrTestHelper::generateUuid();
         CreateWiki::create($this->wikiId, 'group', ['published_at' => '2026-01-01']);
-        CreateVideoLink::create($this->oldVideoId, ['wiki_id' => $this->wikiId,'resource_type' => 'group','video_usage' => 'youtube_auto_view_count']);
+        CreateVideoLink::create($this->oldVideoId, ['wiki_id' => $this->wikiId,'resource_type' => 'group']);
         CreateVideoLinkCollectionStatus::create($this->statusId, ['wiki_id' => $this->wikiId,'resource_type' => 'group','last_collected_at' => '2020-01-01 00:00:00']);
     }
 
@@ -147,8 +146,8 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
     {
         $manualId = StrTestHelper::generateUuid();
         $otherId = StrTestHelper::generateUuid();
-        CreateVideoLink::create($manualId, ['wiki_id' => $this->wikiId, 'resource_type' => 'group']);
-        CreateVideoLink::create($otherId, ['video_usage' => 'youtube_auto_view_count']);
+        CreateVideoLink::create($manualId, ['wiki_id' => $this->wikiId, 'resource_type' => 'group', 'creator_principal_id' => StrTestHelper::generateUuid()]);
+        CreateVideoLink::create($otherId);
         $this->searchReturns([]);
         $this->collect();
         $this->assertFalse(DB::table('wiki_video_links')->where('id', $this->oldVideoId)->exists());
@@ -207,7 +206,7 @@ class CollectVideoLinksJobIntegrationTest extends TestCase
 
     private function video(string $title): YouTubeVideoInfo
     {
-        return new YouTubeVideoInfo($title, $title, 'https://www.youtube.com/watch?v='.$title, 'https://i.ytimg.com/'.$title.'.jpg', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, new DateTimeImmutable('2026-01-01'), durationSeconds: null);
+        return new YouTubeVideoInfo($title, $title, 'https://www.youtube.com/watch?v='.$title, 'https://i.ytimg.com/'.$title.'.jpg', new DateTimeImmutable('2026-01-01'), durationSeconds: null);
     }
 
     /**

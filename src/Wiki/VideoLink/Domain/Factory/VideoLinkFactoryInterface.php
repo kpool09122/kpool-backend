@@ -14,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 
 interface VideoLinkFactoryInterface
 {
@@ -22,7 +21,6 @@ interface VideoLinkFactoryInterface
         ResourceType $resourceType,
         WikiIdentifier $wikiIdentifier,
         ExternalContentLink $url,
-        VideoUsage $videoUsage,
         VideoTitle $title,
         ?ThumbnailUrl $thumbnailUrl = null,
         ?DateTimeImmutable $publishedAt = null,

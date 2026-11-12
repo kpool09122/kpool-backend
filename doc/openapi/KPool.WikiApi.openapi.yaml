@@ -3380,7 +3380,7 @@ paths:
   /video-link/{videoLinkId}/watch-requests:
     post:
       operationId: VideoWatchRequestOperations_sendVideoWatchRequest
-      description: A video already watched by its current official owner returns 409 video_already_watched. Send a persistent watch request as an active authenticated Wiki collaborator with SEND_VIDEO_WATCH_REQUEST permission. The video must belong directly to an officially certified talent wiki and be user-created, liked by the caller, and confirmed to be at most 30 seconds (30 inclusive). The send policy requires a talent video on an officially certified talent wiki and user-created usage; policy rejection returns 403. Unknown/long stored durations are rejected with 409. Sender and target wiki are determined on the server. Eligibility uses durationSeconds stored in the database for both YouTube and TikTok; a missing stored duration is ineligible. No external duration lookup is performed. Sender, exact target wiki/video and server timestamp are stored permanently. Maximum three requests per caller/talent translation set across all languages in the last 168 hours; same-video resend, own unlike and any deletion are blocked for 168 hours, expiring exactly at that boundary. Success 204. A missing target wiki returns 409 video_watch_request_target_not_eligible. Other eligibility/limit failures return 409 video_watch_request_duration_not_eligible, video_watch_request_like_required, video_watch_request_resend_not_available or video_watch_request_weekly_limit_reached. Other callers' histories are never returned.
+      description: A video already watched by its current official owner returns 409 video_already_watched. Send a persistent watch request as an active authenticated Wiki collaborator with SEND_VIDEO_WATCH_REQUEST permission. The video must belong directly to an officially certified talent wiki and be user-created, liked by the caller, and confirmed to be at most 30 seconds (30 inclusive). The send policy requires a talent video on an officially certified talent wiki and a manually added video; policy rejection returns 403. Unknown/long stored durations are rejected with 409. Sender and target wiki are determined on the server. Eligibility uses durationSeconds stored in the database for both YouTube and TikTok; a missing stored duration is ineligible. No external duration lookup is performed. Sender, exact target wiki/video and server timestamp are stored permanently. Maximum three requests per caller/talent translation set across all languages in the last 168 hours; same-video resend, own unlike and any deletion are blocked for 168 hours, expiring exactly at that boundary. Success 204. A missing target wiki returns 409 video_watch_request_target_not_eligible. Other eligibility/limit failures return 409 video_watch_request_duration_not_eligible, video_watch_request_like_required, video_watch_request_resend_not_available or video_watch_request_weekly_limit_reached. Other callers' histories are never returned.
       parameters:
         - name: videoLinkId
           in: path
@@ -6155,7 +6155,6 @@ components:
         - resourceType
         - wikiIdentifier
         - url
-        - videoUsage
         - title
       properties:
         resourceType:
@@ -6171,18 +6170,6 @@ components:
           type: string
           maxLength: 255
           description: HTTPS YouTube or TikTok video URL. YouTube supports watch, youtu.be, shorts, live and embed URLs. TikTok supports www.tiktok.com/@user/video/string-id and vm.tiktok.com / vt.tiktok.com share links. Canonicalized by the server; profiles, photos and other hosts return 422.
-        videoUsage:
-          type: string
-          enum:
-            - music_video
-            - live
-            - interview
-            - behind_the_scenes
-            - cover
-            - collaboration
-            - short
-            - other
-          description: Usage category of the video.
         title:
           type: string
           maxLength: 255
@@ -9218,7 +9205,6 @@ components:
         - durationSeconds
         - creatorPrincipalIdentifier
         - creatorIdentityName
-        - videoUsage
       properties:
         provider:
           type: string
@@ -9262,24 +9248,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
+          description: The saved creator identifier for manually added videos. Null for automatically collected videos.
         creatorIdentityName:
           type: string
           nullable: true
           description: The creator's current Identity user name. Null for automatically collected videos or when the creator's Principal or Identity no longer exists.
-        videoUsage:
-          type: string
-          enum:
-            - music_video
-            - live
-            - interview
-            - behind_the_scenes
-            - cover
-            - collaboration
-            - short
-            - other
-            - youtube_auto_view_count
-            - youtube_auto_like_count
-            - youtube_auto_recent_popular
       description: A public wiki video. Includes manually created and automatically collected videos.
     VideoLinkLikesPagination:
       type: object

@@ -100,7 +100,6 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
                     $status->resourceType(),
                     $status->wikiIdentifier(),
                     new ExternalContentLink($video->url()),
-                    $video->videoUsage(),
                     new VideoTitle($video->title()),
                     new ThumbnailUrl($video->thumbnailUrl()),
                     $video->publishedAt(),

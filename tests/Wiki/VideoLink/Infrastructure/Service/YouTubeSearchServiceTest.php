@@ -15,7 +15,6 @@ use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\YouTubeClientTestHelper;
 use Tests\TestCase;
 
@@ -117,7 +116,6 @@ class YouTubeSearchServiceTest extends TestCase
         $this->assertLessThanOrEqual(10, count($result));
 
         foreach ($result as $video) {
-            $this->assertTrue($video->videoUsage()->isAutoCollected());
             $this->assertSame(253, $video->durationSeconds());
         }
     }
@@ -175,40 +173,6 @@ class YouTubeSearchServiceTest extends TestCase
         $uniqueVideoIds = array_unique($videoIds);
 
         $this->assertCount(count($uniqueVideoIds), $videoIds);
-    }
-
-    /**
-     * 正常系: 各カテゴリのVideoUsageが正しく設定されること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testSearchVideosAssignsCorrectVideoUsage(): void
-    {
-        $client = $this->createYouTubeClient(
-            viewCountVideoIds: ['view_video'],
-            relevanceVideoIds: ['like_video'],
-            videoDetails: [
-                'view_video' => $this->createVideoDetail('view_video', 'View Video', 1000000, 50000),
-                'like_video' => $this->createVideoDetail('like_video', 'Like Video', 50000, 10000),
-            ],
-        );
-
-        $this->app()->instance(YouTubeClient::class, $client);
-
-        $service = $this->app()->make(YouTubeSearchServiceInterface::class);
-        $result = $service->searchVideos('test keyword', ['en' => ['Video']]);
-
-        $videoUsages = array_map(static fn ($video) => $video->videoUsage(), $result);
-
-        $autoCollectedUsages = [
-            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
-            VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
-        ];
-
-        foreach ($videoUsages as $usage) {
-            $this->assertContains($usage, $autoCollectedUsages);
-        }
     }
 
     /**
@@ -341,10 +305,6 @@ class YouTubeSearchServiceTest extends TestCase
         self::assertSame(
             ['view45', 'view46', 'view47', 'view48', 'view49', 'like50', 'like49', 'like48', 'like47', 'like46'],
             array_map(static fn ($video) => $video->videoId(), $result),
-        );
-        self::assertSame(
-            [...array_fill(0, 5, VideoUsage::YOUTUBE_AUTO_VIEW_COUNT), ...array_fill(0, 5, VideoUsage::YOUTUBE_AUTO_LIKE_COUNT)],
-            array_map(static fn ($video) => $video->videoUsage(), $result),
         );
     }
 
