@@ -13,18 +13,21 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 
 readonly class CreateWiki implements CreateWikiInterface
 {
     public function __construct(
-        private DraftWikiFactoryInterface    $draftWikiFactory,
-        private WikiRepositoryInterface      $wikiRepository,
-        private DraftWikiRepositoryInterface $draftWikiRepository,
-        private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface     $policyEvaluator,
+        private DraftWikiFactoryInterface            $draftWikiFactory,
+        private WikiRepositoryInterface              $wikiRepository,
+        private DraftWikiRepositoryInterface         $draftWikiRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
     ) {
     }
 
@@ -34,6 +37,7 @@ readonly class CreateWiki implements CreateWikiInterface
      * @return void
      * @throws DuplicateSlugException
      * @throws DisallowedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(CreateWikiInputPort $input, CreateWikiOutputPort $output): void
@@ -70,6 +74,14 @@ readonly class CreateWiki implements CreateWikiInterface
                 throw new DuplicateSlugException();
             }
         }
+
+        $this->wikiNgWordValidationService->validate(
+            basic: $input->basic(),
+            sections: $input->sections(),
+            title: $input->title(),
+            metaDescription: $input->metaDescription(),
+            keywords: $input->keywords(),
+        );
 
         $wiki = $this->draftWikiFactory->create(
             $input->principalIdentifier(),

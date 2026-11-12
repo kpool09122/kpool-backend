@@ -12,14 +12,17 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 
 readonly class MergeWiki implements MergeWikiInterface
 {
     public function __construct(
-        private DraftWikiRepositoryInterface $draftWikiRepository,
-        private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface     $policyEvaluator,
+        private DraftWikiRepositoryInterface         $draftWikiRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
     ) {
     }
 
@@ -29,6 +32,7 @@ readonly class MergeWiki implements MergeWikiInterface
      * @return void
      * @throws WikiNotFoundException
      * @throws UnauthorizedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(MergeWikiInputPort $input, MergeWikiOutputPort $output): void
@@ -60,6 +64,14 @@ readonly class MergeWiki implements MergeWikiInterface
         if (! $this->policyEvaluator->evaluate($principal, Action::MERGE, $resource)) {
             throw new UnauthorizedException();
         }
+
+        $this->wikiNgWordValidationService->validate(
+            basic: $input->basic(),
+            sections: $input->sections(),
+            title: $input->title(),
+            metaDescription: $input->metaDescription(),
+            keywords: $input->keywords(),
+        );
 
         $wiki->setBasic($input->basic());
         $wiki->setSections($input->sections());

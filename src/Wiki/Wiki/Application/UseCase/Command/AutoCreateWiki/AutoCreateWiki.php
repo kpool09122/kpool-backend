@@ -15,21 +15,24 @@ use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 
 readonly class AutoCreateWiki implements AutoCreateWikiInterface
 {
     public function __construct(
-        private AutoWikiCreationServiceInterface $autoWikiCreationService,
-        private DraftWikiFactoryInterface        $draftWikiFactory,
-        private DraftWikiRepositoryInterface     $draftWikiRepository,
-        private WikiRepositoryInterface          $wikiRepository,
-        private NormalizationServiceInterface    $normalizationService,
-        private PrincipalRepositoryInterface     $principalRepository,
-        private PolicyEvaluatorInterface         $policyEvaluator,
+        private AutoWikiCreationServiceInterface     $autoWikiCreationService,
+        private DraftWikiFactoryInterface            $draftWikiFactory,
+        private DraftWikiRepositoryInterface         $draftWikiRepository,
+        private WikiRepositoryInterface              $wikiRepository,
+        private NormalizationServiceInterface        $normalizationService,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
     ) {
     }
 
@@ -39,6 +42,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
      * @return void
      * @throws DuplicateSlugException
      * @throws DisallowedException
+     * @throws NgWordDetectedException
      * @throws PrincipalNotFoundException
      */
     public function process(AutoCreateWikiInputPort $input, AutoCreateWikiOutputPort $output): void
@@ -82,6 +86,14 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
             );
         }
         $basic = $generatedBasic::fromArray($basicArray);
+
+        $this->wikiNgWordValidationService->validate(
+            basic: $basic,
+            sections: $generatedData->sections(),
+            title: $generatedData->title(),
+            metaDescription: $generatedData->metaDescription(),
+            keywords: $generatedData->keywords(),
+        );
 
         $draftWiki = $this->draftWikiFactory->create(
             editorIdentifier: $input->principalIdentifier(),

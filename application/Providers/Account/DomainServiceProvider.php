@@ -85,7 +85,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountCategoryChangeRequestSnapshotServiceInterface::class, AccountCategoryChangeRequestSnapshotService::class);
         $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
         $this->app->bind(PrincipalReachabilityInterface::class, PrincipalReachability::class);
-        $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
+        $this->app->singleton(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WithdrawalEligibilityServiceInterface::class, WithdrawalEligibilityService::class);
         $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);
         $this->app->singleton(ArchivedAccountRepositoryInterface::class, ArchivedAccountRepository::class);

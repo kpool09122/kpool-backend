@@ -21,6 +21,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiOutput;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -72,6 +73,11 @@ readonly class TranslateWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
+            } catch (NgWordDetectedException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new UnprocessableEntityHttpException(detail: error_message('wiki_ng_word_detected', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

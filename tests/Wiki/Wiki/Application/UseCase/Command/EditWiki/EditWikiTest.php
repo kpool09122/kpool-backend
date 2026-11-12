@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -27,15 +28,19 @@ use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -146,6 +151,62 @@ class EditWikiTest extends TestCase
         $this->assertSame($updatedTitle, $testData->draftWiki->title());
         $this->assertSame($updatedMetaDescription, $testData->draftWiki->metaDescription());
         $this->assertSame($updatedKeywords, $testData->draftWiki->keywords());
+    }
+
+    #[DataProvider('ngWordCases')]
+    public function testRejectsNgWordBeforeSaving(
+        string $name,
+        ?SectionContentCollection $sections = null,
+        ?SeoKeywords $keywords = null,
+    ): void {
+        $testData = $this->createDummyEditWiki(name: $name);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $input = new EditWikiInput(
+            $testData->wikiIdentifier,
+            $testData->basic,
+            $sections ?? $testData->sections,
+            $testData->themeColor,
+            $principalIdentifier,
+            $testData->resourceType,
+            $testData->agencyIdentifier,
+            $testData->groupIdentifiers,
+            $testData->talentIdentifiers,
+            keywords: $keywords,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findById')->once()->with($testData->wikiIdentifier)->andReturn($testData->draftWiki);
+        $draftWikiRepository->shouldNotReceive('save');
+
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $editWiki = $this->app()->make(EditWikiInterface::class);
+        $this->expectException(NgWordDetectedException::class);
+        $editWiki->process($input, new EditWikiOutput());
+    }
+
+    /** @return iterable<string, array{string, 1?: ?SectionContentCollection, 2?: SeoKeywords}> */
+    public static function ngWordCases(): iterable
+    {
+        yield 'case-insensitive match within the basic name' => ['MOTHERFUCKER Fan Wiki'];
+        yield 'nested table cell' => [
+            'TWICE',
+            new SectionContentCollection([
+                new Section('プロフィール', 0, new SectionContentCollection([
+                    new Section('詳細', 0, new SectionContentCollection([
+                        new TableBlock(0, [[new TableCell('あいつはｸｿ野郎だ')]]),
+                    ]), depth: 2),
+                ])),
+            ]),
+        ];
+        yield 'explicit SEO keyword' => ['TWICE', null, new SeoKeywords(['中出し動画'])];
     }
 
     /**
@@ -428,7 +489,7 @@ class EditWikiTest extends TestCase
      *
      * @return EditWikiTestData
      */
-    private function createDummyEditWiki(ApprovalStatus $status = ApprovalStatus::Pending): EditWikiTestData
+    private function createDummyEditWiki(ApprovalStatus $status = ApprovalStatus::Pending, string $name = 'TWICE'): EditWikiTestData
     {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $publishedWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -437,8 +498,8 @@ class EditWikiTest extends TestCase
         $language = Language::KOREAN;
         $resourceType = ResourceType::GROUP;
         $basic = new GroupBasic(
-            name: new Name('TWICE'),
-            normalizedName: 'twice',
+            name: new Name($name),
+            normalizedName: strtolower($name),
             agencyIdentifier: null,
             groupType: null,
             status: null,

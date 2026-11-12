@@ -152,6 +152,8 @@ use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationService;
+use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 use Source\Wiki\Wiki\Domain\Service\WikiService;
 use Source\Wiki\Wiki\Domain\Service\WikiServiceInterface;
 use Source\Wiki\Wiki\Infrastructure\Factory\DraftWikiFactory;
@@ -179,7 +181,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PlaylistRepositoryInterface::class, PlaylistRepository::class);
         $this->app->singleton(FreeMaterialSearchServiceInterface::class, FreeMaterialSearchService::class);
         $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
-        $this->app->bind(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
+        $this->app->singleton(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WikiContextServiceInterface::class, WikiContextService::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
@@ -240,6 +242,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(ProcessRolePromotionInterface::class, ProcessRolePromotion::class);
         $this->app->singleton(UpdateContributionPointSummaryInterface::class, UpdateContributionPointSummary::class);
         $this->app->singleton(AutoWikiCreationServiceInterface::class, AutoWikiCreationService::class);
+        $this->app->singleton(WikiNgWordValidationServiceInterface::class, WikiNgWordValidationService::class);
         $this->app->singleton(WikiServiceInterface::class, WikiService::class);
         $this->app->singleton(WikiRepositoryInterface::class, WikiRepository::class);
         $this->app->singleton(WikiSnapshotRepositoryInterface::class, WikiSnapshotRepository::class);

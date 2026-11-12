@@ -8,6 +8,7 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 
 interface EditWikiInterface
 {
@@ -19,6 +20,7 @@ interface EditWikiInterface
      * @throws InvalidStatusException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
+     * @throws NgWordDetectedException
      */
     public function process(EditWikiInputPort $input, EditWikiOutputPort $output): void;
 }

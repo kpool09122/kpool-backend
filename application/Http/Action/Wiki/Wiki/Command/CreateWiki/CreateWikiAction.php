@@ -25,6 +25,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -95,6 +96,11 @@ readonly class CreateWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
+            } catch (NgWordDetectedException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new UnprocessableEntityHttpException(detail: error_message('wiki_ng_word_detected', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

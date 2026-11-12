@@ -28,6 +28,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
+use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -47,6 +48,41 @@ use Tests\TestCase;
 
 class CreateWikiTest extends TestCase
 {
+    public function testRejectsNgWordBeforeSaving(): void
+    {
+        $testData = $this->createDummyCreateWiki();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()));
+        $input = new CreateWikiInput(
+            null,
+            $testData->language,
+            $testData->resourceType,
+            $testData->basic,
+            $testData->sections,
+            $testData->themeColor,
+            $testData->slug,
+            $principalIdentifier,
+            title: new SeoTitle('ＨＡＲＤＣＯＲＥ　ＰＯＲＮ'),
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findBySlugAndResourceType')->once()->with($input->slug(), $input->resourceType())->andReturn([]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldNotReceive('save');
+
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $this->expectException(NgWordDetectedException::class);
+        $this->app()->make(CreateWikiInterface::class)->process($input, new CreateWikiOutput());
+    }
+
     public function testPublishedWikiWithDuplicateSlugPreventsCreation(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

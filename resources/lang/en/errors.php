@@ -38,6 +38,7 @@ return [
     'disallowed' => 'This operation is not allowed.',
     'allow_only_under_review_status' => 'Only draft wikis with submitted status can be approved.',
     'wiki_not_found' => 'The specified draft wiki was not found.',
+    'wiki_ng_word_detected' => 'The wiki content contains a prohibited word.',
     'duplicate_slug' => 'The specified slug already exists.',
     'exists_approved_draft_wiki' => 'There is an approved draft wiki that has not yet been published.',
     'internal_server_error' => 'A server error has occurred.',
