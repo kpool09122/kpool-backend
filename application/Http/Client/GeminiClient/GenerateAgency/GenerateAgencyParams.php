@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateAgency;
 
 use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 
+/** @phpstan-import-type GeneratedSourceReference from SourceReferenceExtractor */
 final readonly class GenerateAgencyParams
 {
     /**
      * @param string[] $artists
      * @param string[] $socialLinks
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public function __construct(
         private ?string $alphabetName,
@@ -32,7 +33,7 @@ final readonly class GenerateAgencyParams
 
     /**
      * @param array<string, mixed> $data
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public static function fromArray(array $data, array $sources): self
     {
@@ -131,7 +132,7 @@ final readonly class GenerateAgencyParams
     }
 
     /**
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     public function sources(): array
     {

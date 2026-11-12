@@ -30,6 +30,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -133,6 +135,10 @@ readonly class TranslationService implements TranslationServiceInterface
             $shape[] = [$part::class, count($this->scopeTexts($part)), match (true) {
                 $part instanceof ImageBlock => [$part->caption() !== null, $part->alt() !== null],
                 $part instanceof QuoteBlock => [$part->source() !== null],
+                $part instanceof HistoryBlock => array_map(
+                    static fn (HistoryEntry $entry): array => [$entry->year, $entry->detail !== null],
+                    $part->entries(),
+                ),
                 $part instanceof TableBlock => [count($part->headerCells() ?? []), array_map(count(...), $part->rowCells())],
                 default => [],
             }];
@@ -403,6 +409,16 @@ readonly class TranslationService implements TranslationServiceInterface
             return new ListBlock($content->displayOrder(), $content->listType(), array_map(
                 static fn (string $item): string => $translate($item, null),
                 $content->items(),
+            ));
+        }
+        if ($content instanceof HistoryBlock) {
+            return new HistoryBlock($content->displayOrder(), array_map(
+                fn (HistoryEntry $entry): HistoryEntry => new HistoryEntry(
+                    $entry->year,
+                    $translate($entry->title, null),
+                    $this->mapOptionalText($entry->detail, $translate),
+                ),
+                $content->entries(),
             ));
         }
         if ($content instanceof TableBlock) {

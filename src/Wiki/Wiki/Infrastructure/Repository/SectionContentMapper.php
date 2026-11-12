@@ -12,6 +12,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -88,6 +90,11 @@ final class SectionContentMapper
                             'display_order' => $content->displayOrder(),
                             'list_type' => $content->listType()->value,
                             'items' => $content->items(),
+                        ],
+                        HistoryBlock::class => [
+                            'block_type' => $content->blockType()->value,
+                            'display_order' => $content->displayOrder(),
+                            'entries' => array_map(static fn (HistoryEntry $entry): array => $entry->toArray(), $content->entries()),
                         ],
                         TableBlock::class => [
                             'block_type' => $content->blockType()->value,
@@ -172,6 +179,17 @@ final class SectionContentMapper
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         listType: ListType::from(TypedValue::string($contentData['list_type'] ?? 'bullet')),
                         items: TypedValue::stringArray($contentData['items'] ?? []),
+                    ),
+                    BlockType::HISTORY => new HistoryBlock(
+                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        entries: array_values(array_map(
+                            static fn (array $entry): HistoryEntry => new HistoryEntry(
+                                year: TypedValue::int($entry['year'] ?? null),
+                                title: TypedValue::string($entry['title'] ?? null),
+                                detail: TypedValue::nullableString($entry['detail'] ?? null),
+                            ),
+                            self::arrayRows($contentData['entries'] ?? []),
+                        )),
                     ),
                     BlockType::TABLE => new TableBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),

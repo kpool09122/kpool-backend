@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient;
 
-use Source\Wiki\Shared\Application\DTO\SourceReference;
-
+/** @phpstan-type GeneratedSourceReference array{uri: string, title: string} */
 final readonly class SourceReferenceExtractor
 {
     /**
      * @param array<string, mixed> $data
      * @param array<string, mixed> $responseBody
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     public function extract(array $data, array $responseBody): array
     {
@@ -25,7 +24,7 @@ final readonly class SourceReferenceExtractor
 
     /**
      * @param array<string, mixed> $data
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     private function extractGeneratedSources(array $data): array
     {
@@ -45,10 +44,10 @@ final readonly class SourceReferenceExtractor
                 continue;
             }
 
-            $sources[] = new SourceReference(
-                uri: $uri,
-                title: $this->generatedSourceTitle($source),
-            );
+            $sources[] = [
+                'uri' => $uri,
+                'title' => $this->generatedSourceTitle($source),
+            ];
             $seenUris[$uri] = true;
         }
 
@@ -61,7 +60,7 @@ final readonly class SourceReferenceExtractor
     }
 
     /**
-     * @param array<string, mixed> $source
+     * @param array<array-key, mixed> $source
      */
     private function generatedSourceTitle(array $source): string
     {
@@ -80,11 +79,13 @@ final readonly class SourceReferenceExtractor
 
     /**
      * @param array<string, mixed> $responseBody
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     private function extractGroundingSources(array $responseBody): array
     {
-        $groundingMetadata = $responseBody['candidates'][0]['groundingMetadata'] ?? [];
+        $candidates = $responseBody['candidates'] ?? null;
+        $candidate = is_array($candidates) ? ($candidates[0] ?? null) : null;
+        $groundingMetadata = is_array($candidate) ? ($candidate['groundingMetadata'] ?? null) : null;
         $groundingChunks = is_array($groundingMetadata) && is_array($groundingMetadata['groundingChunks'] ?? null)
             ? $groundingMetadata['groundingChunks']
             : [];
@@ -100,10 +101,10 @@ final readonly class SourceReferenceExtractor
             $title = $chunk['web']['title'] ?? null;
 
             if (is_string($uri) && $uri !== '' && ! isset($seenUris[$uri])) {
-                $sources[] = new SourceReference(
-                    uri: $uri,
-                    title: is_string($title) ? $title : '',
-                );
+                $sources[] = [
+                    'uri' => $uri,
+                    'title' => is_string($title) ? $title : '',
+                ];
                 $seenUris[$uri] = true;
             }
         }

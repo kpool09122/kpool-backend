@@ -31,7 +31,7 @@ final class SectionTranslationFingerprint
     {
         $fields = [];
         foreach ($data as $key => $value) {
-            if (is_string($key) && ! in_array($key, ['type', 'block_type', 'title', 'contents', 'content', 'source', 'caption', 'alt', 'items', 'header_cells', 'row_cells'], true)) {
+            if (is_string($key) && ! in_array($key, ['type', 'block_type', 'title', 'contents', 'content', 'source', 'caption', 'alt', 'items', 'entries', 'year', 'detail', 'header_cells', 'row_cells'], true)) {
                 continue;
             }
             $fields[$key] = is_array($value) ? self::textFields($value) : $value;

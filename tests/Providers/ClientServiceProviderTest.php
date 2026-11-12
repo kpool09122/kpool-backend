@@ -6,6 +6,7 @@ namespace Tests\Providers;
 
 use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Mockery;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -38,7 +39,7 @@ class ClientServiceProviderTest extends TestCase
         $this->app()->instance(ClientInterface::class, $httpClient);
 
         $client = $this->app()->make(GeminiClient::class);
-        $result = $client->generateTalent(new GenerateTalentRequest(talentName: 'Sample', language: 'en'));
+        $result = $client->generateTalent(new GenerateTalentRequest(talentName: 'Sample', language: 'en', metadataPrompt: new WikiMetadataPrompt(40, 140, 5, 20)));
 
         self::assertSame('Sample', $result->params()->alphabetName());
     }

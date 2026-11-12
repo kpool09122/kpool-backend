@@ -8,6 +8,7 @@ use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\GeminiClient\Exceptions\GeminiException;
 use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Mockery;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
@@ -66,6 +67,7 @@ class GeminiClientTest extends TestCase
         $result = $client->generateTalent(new GenerateTalentRequest(
             talentName: 'Giselle',
             language: 'ja',
+            metadataPrompt: new WikiMetadataPrompt(40, 140, 5, 20),
         ));
 
         $this->assertSame('Giselle', $result->params()->alphabetName());
@@ -101,6 +103,7 @@ class GeminiClientTest extends TestCase
         $client->generateTalent(new GenerateTalentRequest(
             talentName: 'Giselle',
             language: 'ja',
+            metadataPrompt: new WikiMetadataPrompt(40, 140, 5, 20),
         ));
     }
 }

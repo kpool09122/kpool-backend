@@ -7,12 +7,15 @@ namespace Source\Wiki\Wiki\Infrastructure\Service;
 use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyParams;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
+use Application\Http\Client\GeminiClient\GeneratedHistoryEntries;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupParams;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongParams;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongRequest;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentParams;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use BackedEnum;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -42,6 +45,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\ZodiacSign;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
@@ -52,6 +57,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Throwable;
 
+/**
+ * @phpstan-import-type GeneratedHistoryEntry from GeneratedHistoryEntries
+ * @phpstan-import-type GeneratedSourceReference from SourceReferenceExtractor
+ */
 readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterface
 {
     public function __construct(
@@ -78,6 +87,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateAgencyRequest(
             agencyName: (string) $payload->name(),
             language: $payload->language()->value,
+            metadataPrompt: $this->metadataPrompt(),
             notes: $payload->notes(),
         );
 
@@ -102,11 +112,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'social_links' => $this->validHttpsUrls($params->socialLinks()),
         ]);
 
+        $sources = $this->sourceReferences($params->sources());
+
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildAgencySections($params, $payload->language()->value),
-            sources: $params->sources(),
+            sections: $this->buildAgencySections($params, $payload->language()->value, $sources),
+            sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
             keywords: $this->seoKeywords($params->metadata()->keywords()),
@@ -120,6 +132,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateGroupRequest(
             groupName: (string) $payload->name(),
             language: $payload->language()->value,
+            metadataPrompt: $this->metadataPrompt(),
             notes: $payload->notes(),
             agencyName: $agencyName,
         );
@@ -149,11 +162,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'representative_symbol' => $params->representativeSymbol() ?? '',
         ]);
 
+        $sources = $this->sourceReferences($params->sources());
+
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildGroupSections($params, $payload->language()->value),
-            sources: $params->sources(),
+            sections: $this->buildGroupSections($params, $payload->language()->value, $sources),
+            sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
             keywords: $this->seoKeywords($params->metadata()->keywords()),
@@ -168,6 +183,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateTalentRequest(
             talentName: (string) $payload->name(),
             language: $payload->language()->value,
+            metadataPrompt: $this->metadataPrompt(),
             notes: $payload->notes(),
             agencyName: $agencyName,
             groupNames: $groupNames,
@@ -213,11 +229,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'fandom_name' => $params->fandomName() ?? '',
         ]);
 
+        $sources = $this->sourceReferences($params->sources());
+
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildTalentSections($params, $payload->language()->value),
-            sources: $params->sources(),
+            sections: $this->buildTalentSections($params, $payload->language()->value, $sources),
+            sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
             keywords: $this->seoKeywords($params->metadata()->keywords()),
@@ -244,6 +262,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         $request = new GenerateSongRequest(
             songName: (string) $payload->name(),
             language: $payload->language()->value,
+            metadataPrompt: $this->metadataPrompt(),
             notes: $payload->notes(),
             agencyName: $agencyName,
             groupName: $groupName,
@@ -281,14 +300,26 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'arranger' => $params->arranger() ?? '',
         ]);
 
+        $sources = $this->sourceReferences($params->sources());
+
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSongSections($params, $payload->language()->value),
-            sources: $params->sources(),
+            sections: $this->buildSongSections($params, $payload->language()->value, $sources),
+            sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
             keywords: $this->seoKeywords($params->metadata()->keywords()),
+        );
+    }
+
+    private function metadataPrompt(): WikiMetadataPrompt
+    {
+        return new WikiMetadataPrompt(
+            titleLength: SeoTitle::MAX_LENGTH,
+            descriptionLength: MetaDescription::MAX_LENGTH,
+            keywordCount: SeoKeywords::MAX_COUNT,
+            keywordLength: SeoKeywords::MAX_KEYWORD_LENGTH,
         );
     }
 
@@ -359,7 +390,8 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return (string) $wiki->basic()->name();
     }
 
-    private function buildGroupSections(GenerateGroupParams $params, string $language): SectionContentCollection
+    /** @param list<SourceReference> $sources */
+    private function buildGroupSections(GenerateGroupParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -381,22 +413,14 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         }
 
         if ($params->representativeSongs() !== []) {
-            $songs = array_slice($params->representativeSongs(), 0, 5);
             $contents = [];
-            foreach ($songs as $song) {
-                $contents[] = new ListBlock(
-                    displayOrder: count($contents),
-                    listType: ListType::BULLET,
-                    items: [$song->title()],
+            foreach ($params->representativeSongs() as $index => $song) {
+                $contents[] = new EmbedBlock(
+                    displayOrder: $index,
+                    provider: EmbedProvider::YOUTUBE,
+                    embedId: $song->youtubeVideoId(),
+                    caption: $song->title(),
                 );
-                if ($song->youtubeVideoId() !== null) {
-                    $contents[] = new EmbedBlock(
-                        displayOrder: count($contents),
-                        provider: EmbedProvider::YOUTUBE,
-                        embedId: $song->youtubeVideoId(),
-                        caption: $song->title(),
-                    );
-                }
             }
 
             $sections[] = new Section(
@@ -410,7 +434,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             $sections[] = new Section(
                 title: section_title('awards', $language),
                 displayOrder: $order++,
-                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->awards())]),
+                contents: new SectionContentCollection([$this->historyBlock($params->awards())]),
             );
         }
 
@@ -422,7 +446,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
             $sections[] = $sourcesSection;
         }
@@ -430,7 +454,8 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new SectionContentCollection($sections);
     }
 
-    private function buildAgencySections(GenerateAgencyParams $params, string $language): SectionContentCollection
+    /** @param list<SourceReference> $sources */
+    private function buildAgencySections(GenerateAgencyParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -459,7 +484,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
             $sections[] = $sourcesSection;
         }
@@ -467,7 +492,8 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new SectionContentCollection($sections);
     }
 
-    private function buildTalentSections(GenerateTalentParams $params, string $language): SectionContentCollection
+    /** @param list<SourceReference> $sources */
+    private function buildTalentSections(GenerateTalentParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -492,7 +518,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             $sections[] = new Section(
                 title: section_title('appearances', $language),
                 displayOrder: $order++,
-                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->appearances())]),
+                contents: new SectionContentCollection([$this->historyBlock($params->appearances())]),
             );
         }
 
@@ -500,11 +526,11 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             $sections[] = new Section(
                 title: section_title('awards', $language),
                 displayOrder: $order++,
-                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->awards())]),
+                contents: new SectionContentCollection([$this->historyBlock($params->awards())]),
             );
         }
 
-        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
             $sections[] = $sourcesSection;
         }
@@ -512,7 +538,8 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new SectionContentCollection($sections);
     }
 
-    private function buildSongSections(GenerateSongParams $params, string $language): SectionContentCollection
+    /** @param list<SourceReference> $sources */
+    private function buildSongSections(GenerateSongParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -545,12 +572,33 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
             $sections[] = $sourcesSection;
         }
 
         return new SectionContentCollection($sections);
+    }
+
+    /** @param list<GeneratedHistoryEntry> $entries */
+    private function historyBlock(array $entries): HistoryBlock
+    {
+        return new HistoryBlock(0, array_map(
+            static fn (array $entry): HistoryEntry => new HistoryEntry($entry['year'], $entry['title'], $entry['detail']),
+            $entries,
+        ));
+    }
+
+    /**
+     * @param list<GeneratedSourceReference> $sources
+     * @return list<SourceReference>
+     */
+    private function sourceReferences(array $sources): array
+    {
+        return array_map(
+            static fn (array $source): SourceReference => new SourceReference($source['uri'], $source['title']),
+            $sources,
+        );
     }
 
     /**

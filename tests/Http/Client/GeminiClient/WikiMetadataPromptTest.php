@@ -8,6 +8,7 @@ use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongRequest;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -17,11 +18,13 @@ class WikiMetadataPromptTest extends TestCase
     /** @return array<string, array{GenerateAgencyRequest|GenerateGroupRequest|GenerateTalentRequest|GenerateSongRequest}> */
     public static function requests(): array
     {
+        $metadataPrompt = new WikiMetadataPrompt(40, 140, 5, 20);
+
         return [
-            'agency' => [new GenerateAgencyRequest('JYP', 'ja')],
-            'group' => [new GenerateGroupRequest('TWICE', 'ja')],
-            'talent' => [new GenerateTalentRequest('NAYEON', 'ja')],
-            'song' => [new GenerateSongRequest('TT', 'ja')],
+            'agency' => [new GenerateAgencyRequest('JYP', 'ja', $metadataPrompt)],
+            'group' => [new GenerateGroupRequest('TWICE', 'ja', $metadataPrompt)],
+            'talent' => [new GenerateTalentRequest('NAYEON', 'ja', $metadataPrompt)],
+            'song' => [new GenerateSongRequest('TT', 'ja', $metadataPrompt)],
         ];
     }
 

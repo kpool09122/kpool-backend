@@ -15,6 +15,7 @@ final readonly class GenerateSongRequest
     public function __construct(
         private string $songName,
         private string $language,
+        private WikiMetadataPrompt $metadataPrompt,
         private ?string $agencyName = null,
         private ?string $groupName = null,
         private ?string $talentName = null,
@@ -96,7 +97,7 @@ final readonly class GenerateSongRequest
         $affiliationContext = $this->buildAffiliationContext();
 
         $researchContext = WikiResearchContextPrompt::instructions($this->notes);
-        $metadataInstructions = WikiMetadataPrompt::instructions();
+        $metadataInstructions = $this->metadataPrompt->instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT

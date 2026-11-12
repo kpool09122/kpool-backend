@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateTalent;
 
+use Application\Http\Client\GeminiClient\GeneratedHistoryEntries;
 use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 
+/**
+ * @phpstan-import-type GeneratedHistoryEntry from GeneratedHistoryEntries
+ * @phpstan-import-type GeneratedSourceReference from SourceReferenceExtractor
+ */
 final readonly class GenerateTalentParams
 {
     /**
-     * @param string[] $appearances
-     * @param string[] $awards
-     * @param SourceReference[] $sources
+     * @param list<GeneratedHistoryEntry> $appearances
+     * @param list<GeneratedHistoryEntry> $awards
+     * @param list<GeneratedSourceReference> $sources
      */
     public function __construct(
         private ?string $alphabetName,
@@ -38,7 +43,7 @@ final readonly class GenerateTalentParams
 
     /**
      * @param array<string, mixed> $data
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public static function fromArray(array $data, array $sources): self
     {
@@ -57,8 +62,8 @@ final readonly class GenerateTalentParams
             representativeSymbol: self::nullableString($data['representative_symbol'] ?? null),
             overview: self::nullableString($data['overview'] ?? null),
             history: self::nullableString($data['history'] ?? null),
-            appearances: self::stringArray($data['appearances'] ?? []),
-            awards: self::stringArray($data['awards'] ?? []),
+            appearances: GeneratedHistoryEntries::fromValue($data['appearances'] ?? null),
+            awards: GeneratedHistoryEntries::fromValue($data['awards'] ?? null),
             sources: $sources,
             metadata: GeneratedWikiMetadata::fromArray($data),
         );
@@ -163,7 +168,7 @@ final readonly class GenerateTalentParams
     }
 
     /**
-     * @return string[]
+     * @return list<GeneratedHistoryEntry>
      */
     public function appearances(): array
     {
@@ -171,7 +176,7 @@ final readonly class GenerateTalentParams
     }
 
     /**
-     * @return string[]
+     * @return list<GeneratedHistoryEntry>
      */
     public function awards(): array
     {
@@ -179,23 +184,11 @@ final readonly class GenerateTalentParams
     }
 
     /**
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     public function sources(): array
     {
         return $this->sources;
-    }
-
-    /**
-     * @return string[]
-     */
-    private static function stringArray(mixed $value): array
-    {
-        if (! is_array($value)) {
-            return [];
-        }
-
-        return array_values(array_filter($value, static fn (mixed $item) => is_string($item)));
     }
 
     private static function nullableString(mixed $value): ?string

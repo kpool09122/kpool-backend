@@ -8,6 +8,7 @@ use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
 use Application\Http\Client\GeminiClient\GenerateSong\GenerateSongRequest;
 use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\WikiMetadataPrompt;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -32,10 +33,10 @@ class WikiResearchContextPromptTest extends TestCase
     public function testIncludesOnlyNonEmptyNotesAsResearchContext(string $resourceType, ?string $notes): void
     {
         $request = match ($resourceType) {
-            'agency' => new GenerateAgencyRequest('Test', 'ja', notes: $notes),
-            'group' => new GenerateGroupRequest('Test', 'ja', notes: $notes),
-            'talent' => new GenerateTalentRequest('Test', 'ja', notes: $notes),
-            'song' => new GenerateSongRequest('Test', 'ja', notes: $notes),
+            'agency' => new GenerateAgencyRequest('Test', 'ja', new WikiMetadataPrompt(40, 140, 5, 20), notes: $notes),
+            'group' => new GenerateGroupRequest('Test', 'ja', new WikiMetadataPrompt(40, 140, 5, 20), notes: $notes),
+            'talent' => new GenerateTalentRequest('Test', 'ja', new WikiMetadataPrompt(40, 140, 5, 20), notes: $notes),
+            'song' => new GenerateSongRequest('Test', 'ja', new WikiMetadataPrompt(40, 140, 5, 20), notes: $notes),
         };
         $factory = new Psr17Factory();
         $psrRequest = $request->toPsrRequest($factory->createRequest('POST', 'https://example.com'), $factory);

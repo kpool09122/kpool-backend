@@ -37,6 +37,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
@@ -252,7 +254,7 @@ class AutoWikiCreationServiceTest extends TestCase
     // Group
     // ========================================================================
 
-    public function testGenerateGroupEmbedsMusicVideosAndLimitsSongsToFive(): void
+    public function testGenerateGroupEmbedsEveryValidRepresentativeMusicVideo(): void
     {
         $responseJson = $this->createGeminiResponseJson([
             'representative_songs' => [
@@ -264,6 +266,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 ['title' => 'Song D (2023)', 'official_mv_url' => 'https://www.youtube.com/watch?v=invalid'],
                 ['title' => 'Song E (2024)', 'official_mv_url' => 'https://www.youtube.com/watch?v=123456789_-'],
                 ['title' => 'Song F (2025)', 'official_mv_url' => 'https://www.youtube.com/watch?v=ABCDEFGHIJK'],
+                ['title' => 'Song G (2019)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij1'],
+                ['title' => 'Song H (2018)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij2'],
+                ['title' => 'Song I (2026)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij3'],
             ],
         ]);
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -286,23 +291,23 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertCount(1, $sections);
         $this->assertSame('代表曲', $sections[0]->title());
         $blocks = $sections[0]->contents()->blocks();
-        $this->assertCount(7, $blocks);
-        foreach ([0 => 'Song A (2020)', 2 => 'Song B (2021)', 3 => 'Song C (2022)', 4 => 'Song D (2023)', 5 => 'Song E (2024)'] as $index => $title) {
-            $this->assertInstanceOf(ListBlock::class, $blocks[$index]);
-            $this->assertSame([$title], $blocks[$index]->items());
-        }
-        foreach ($blocks as $index => $block) {
+        $expectedVideos = [
+            ['abcdefghijk', 'Song A (2020)'],
+            ['123456789_-', 'Song E (2024)'],
+            ['ABCDEFGHIJK', 'Song F (2025)'],
+            ['abcdefghij1', 'Song G (2019)'],
+            ['abcdefghij2', 'Song H (2018)'],
+            ['abcdefghij3', 'Song I (2026)'],
+        ];
+        $this->assertCount(count($expectedVideos), $blocks);
+        foreach ($expectedVideos as $index => [$videoId, $caption]) {
+            $block = $blocks[$index];
+            $this->assertInstanceOf(EmbedBlock::class, $block);
+            $this->assertSame(EmbedProvider::YOUTUBE, $block->provider());
+            $this->assertSame($videoId, $block->embedId());
+            $this->assertSame($caption, $block->caption());
             $this->assertSame($index, $block->displayOrder());
         }
-        $this->assertInstanceOf(EmbedBlock::class, $blocks[1]);
-        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[1]->provider());
-        $this->assertSame('abcdefghijk', $blocks[1]->embedId());
-        $this->assertSame('Song A (2020)', $blocks[1]->caption());
-        $this->assertSame(1, $blocks[1]->displayOrder());
-        $this->assertInstanceOf(EmbedBlock::class, $blocks[6]);
-        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[6]->provider());
-        $this->assertSame('123456789_-', $blocks[6]->embedId());
-        $this->assertSame('Song E (2024)', $blocks[6]->caption());
     }
 
     /**
@@ -316,8 +321,14 @@ class AutoWikiCreationServiceTest extends TestCase
         $agencyId = new WikiIdentifier(StrTestHelper::generateUuid());
         $overview = 'TWICEは韓国の9人組ガールズグループです。';
         $history = '2015年にサバイバルオーディション番組「SIXTEEN」を通じて結成されました。';
-        $representativeSongs = ['Cheer Up (2016)', 'TT (2016)'];
-        $awards = ['Mnet Asian Music Awards - Song of the Year (2016)'];
+        $representativeSongs = [
+            ['title' => 'Cheer Up (2016)', 'official_mv_url' => null],
+            ['title' => 'TT (2016)', 'official_mv_url' => 'https://www.youtube.com/watch?v=invalid'],
+        ];
+        $awards = [
+            ['title' => 'Undated award', 'detail' => 'Grand Prize', 'year' => null],
+            ['title' => 'Mnet Asian Music Awards', 'detail' => 'Song of the Year', 'year' => 2016],
+        ];
         $members = ['ナヨン', 'ジョンヨン', 'モモ'];
 
         $agencyWiki = $this->createWikiMock('JYP Entertainment');
@@ -396,7 +407,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
-        $this->assertCount(6, $sections);
+        $this->assertCount(5, $sections);
 
         $this->assertSame('개요', $sections[0]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
@@ -405,23 +416,18 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('경력', $sections[1]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[1]->contents()->blocks()[0]);
 
-        $this->assertSame('대표곡', $sections[2]->title());
-        $songBlocks = $sections[2]->contents()->blocks();
-        $this->assertCount(count($representativeSongs), $songBlocks);
-        foreach ($representativeSongs as $index => $title) {
-            $this->assertInstanceOf(ListBlock::class, $songBlocks[$index]);
-            $this->assertSame([$title], $songBlocks[$index]->items());
-            $this->assertSame($index, $songBlocks[$index]->displayOrder());
-        }
+        $this->assertSame('수상 이력', $sections[2]->title());
+        $awardBlocks = $sections[2]->contents()->blocks();
+        $this->assertCount(1, $awardBlocks);
+        $this->assertInstanceOf(HistoryBlock::class, $awardBlocks[0]);
+        $this->assertEquals([new HistoryEntry(2016, 'Mnet Asian Music Awards', 'Song of the Year')], $awardBlocks[0]->entries());
+        $this->assertSame('멤버', $sections[3]->title());
 
-        $this->assertSame('수상 이력', $sections[3]->title());
-        $this->assertSame('멤버', $sections[4]->title());
-
-        $this->assertSame('출처', $sections[5]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
+        $this->assertSame('출처', $sections[4]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
         $this->assertSame(
             ['[트와이스 - 위키백과](https://ko.wikipedia.org/wiki/트와이스)'],
-            $sections[5]->contents()->blocks()[0]->items(),
+            $sections[4]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());
@@ -477,6 +483,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'BTS',
             'overview' => 'BTSは世界的に有名なK-POPグループです。',
+            'awards' => [['title' => 'Undated award', 'year' => null, 'detail' => null]],
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -502,6 +509,8 @@ class AutoWikiCreationServiceTest extends TestCase
         $result = $service->generate($payload);
 
         $this->assertSame('BTS', $result->alphabetName());
+        $this->assertCount(1, $result->sections()->sections());
+        $this->assertSame('概要', $result->sections()->sections()[0]->title());
     }
 
     /**
@@ -567,8 +576,11 @@ class AutoWikiCreationServiceTest extends TestCase
         $groupId = new WikiIdentifier(StrTestHelper::generateUuid());
         $overview = 'ジミンはBTSのメンバーです。';
         $history = '1995年10月13日生まれ。2013年にBTSとしてデビュー。';
-        $appearances = ['Hwarang (Drama, 2016)'];
-        $awards = ['Billboard Music Awards - Top Social Artist (2017)'];
+        $appearances = [
+            ['title' => 'Hwarang', 'detail' => 'Drama', 'year' => 2016],
+            ['title' => 'Special Appearance', 'detail' => null, 'year' => 2018],
+        ];
+        $awards = [['title' => 'Billboard Music Awards', 'detail' => 'Top Social Artist', 'year' => 2017]];
 
         $agencyWiki = $this->createWikiMock('HYBE');
         $groupWiki = $this->createWikiMock('BTS');
@@ -661,10 +673,17 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertSame('経歴', $sections[1]->title());
         $this->assertSame('出演作品', $sections[2]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
-        $this->assertSame($appearances, $sections[2]->contents()->blocks()[0]->items());
+        $appearancesBlock = $sections[2]->contents()->blocks()[0];
+        $this->assertInstanceOf(HistoryBlock::class, $appearancesBlock);
+        $this->assertEquals([
+            new HistoryEntry(2016, 'Hwarang', 'Drama'),
+            new HistoryEntry(2018, 'Special Appearance'),
+        ], $appearancesBlock->entries());
 
         $this->assertSame('受賞歴', $sections[3]->title());
+        $awardsBlock = $sections[3]->contents()->blocks()[0];
+        $this->assertInstanceOf(HistoryBlock::class, $awardsBlock);
+        $this->assertEquals([new HistoryEntry(2017, 'Billboard Music Awards', 'Top Social Artist')], $awardsBlock->entries());
 
         $this->assertSame('出典', $sections[4]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
