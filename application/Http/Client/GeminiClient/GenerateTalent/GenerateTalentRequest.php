@@ -18,6 +18,7 @@ final readonly class GenerateTalentRequest
     public function __construct(
         private string $talentName,
         private string $language,
+        private WikiMetadataPrompt $metadataPrompt,
         private ?string $agencyName = null,
         private array $groupNames = [],
         private ?string $notes = null,
@@ -96,7 +97,7 @@ final readonly class GenerateTalentRequest
         $affiliationContext = $this->buildAffiliationContext();
 
         $researchContext = WikiResearchContextPrompt::instructions($this->notes);
-        $metadataInstructions = WikiMetadataPrompt::instructions();
+        $metadataInstructions = $this->metadataPrompt->instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT
@@ -129,8 +130,8 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 12. representative_symbol: Representative symbol text or null.
 13. overview: Introduction of the person (group affiliation, agency, position, main characteristics) approximately 800 characters.
 14. history: Chronological description of upbringing, debut, and career milestones, approximately 1200 characters.
-15. appearances: Array of appearances in works (max 10). Format: "Title (Type, Year)". Example: "Hwarang (Drama, 2016)"
-16. awards: Array of major individual awards (max 10).
+15. appearances: Array of appearances in works (max 10). Each item is an object such as {"title":"Hwarang","detail":"Drama","year":2016}. Use null for an unknown work type or year. A known year must be a four-digit integer.
+16. awards: Array of major individual awards (max 10). Each item is an object such as {"title":"Award name","detail":"Category","year":2024}. Use null for an unknown category or year. A known year must be a four-digit integer.
 17. sources: Array of referenced pages used for this response. Each item must have:
    - page_title: Specific page title that describes the referenced content.
    - site_name: Website or publication name, not a search/proxy/cache host.

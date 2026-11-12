@@ -15,6 +15,7 @@ final readonly class GenerateAgencyRequest
     public function __construct(
         private string $agencyName,
         private string $language,
+        private WikiMetadataPrompt $metadataPrompt,
         private ?string $notes = null,
     ) {
     }
@@ -76,7 +77,7 @@ final readonly class GenerateAgencyRequest
         };
 
         $researchContext = WikiResearchContextPrompt::instructions($this->notes);
-        $metadataInstructions = WikiMetadataPrompt::instructions();
+        $metadataInstructions = $this->metadataPrompt->instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT

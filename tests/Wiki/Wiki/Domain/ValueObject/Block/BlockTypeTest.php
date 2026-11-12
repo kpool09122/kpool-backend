@@ -18,6 +18,7 @@ class BlockTypeTest extends TestCase
             'EMBED' => 'embed',
             'QUOTE' => 'quote',
             'LIST' => 'list',
+            'HISTORY' => 'history',
             'TABLE' => 'table',
             'PROFILE_CARD_LIST' => 'profile_card_list',
         ], array_column(BlockType::cases(), 'value', 'name'));

@@ -9,6 +9,8 @@ use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -95,6 +97,25 @@ class SectionContentMapperTest extends TestCase
         $this->assertCount(2, $block->imageIdentifiers());
         $this->assertSame('ギャラリー', $block->caption());
         $this->assertSame(700, $block->imageWidth());
+    }
+
+    public function testHistoryBlockRoundTrip(): void
+    {
+        $block = new HistoryBlock(3, [
+            new HistoryEntry(2024, 'Debut'),
+            new HistoryEntry(2025, 'First concert', 'Seoul'),
+        ]);
+
+        $data = SectionContentMapper::collectionToArray(new SectionContentCollection([$block]));
+        $this->assertSame([[
+            'block_type' => 'history',
+            'display_order' => 3,
+            'entries' => [
+                ['year' => 2024, 'title' => 'Debut', 'detail' => null],
+                ['year' => 2025, 'title' => 'First concert', 'detail' => 'Seoul'],
+            ],
+        ]], $data);
+        $this->assertEquals($block, SectionContentMapper::collectionFromArray($data)->all()[0]);
     }
 
     public function testRestoresLegacyImageBlocksWithoutWidth(): void

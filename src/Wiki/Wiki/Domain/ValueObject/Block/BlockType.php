@@ -12,6 +12,7 @@ enum BlockType: string
     case EMBED = 'embed';
     case QUOTE = 'quote';
     case LIST = 'list';
+    case HISTORY = 'history';
     case TABLE = 'table';
     case PROFILE_CARD_LIST = 'profile_card_list';
 }

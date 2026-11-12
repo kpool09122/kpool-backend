@@ -6,14 +6,15 @@ namespace Application\Http\Client\GeminiClient\GenerateSong;
 
 use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
 use Application\Http\Client\GeminiClient\GeneratedYouTubeVideo;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 
+/** @phpstan-import-type GeneratedSourceReference from SourceReferenceExtractor */
 final readonly class GenerateSongParams
 {
     /**
      * @param string[] $chartPerformance
      * @param string[] $genres
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public function __construct(
         private ?string $alphabetName,
@@ -34,7 +35,7 @@ final readonly class GenerateSongParams
 
     /**
      * @param array<string, mixed> $data
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public static function fromArray(array $data, array $sources): self
     {
@@ -147,7 +148,7 @@ final readonly class GenerateSongParams
     }
 
     /**
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     public function sources(): array
     {

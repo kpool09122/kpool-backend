@@ -15,6 +15,7 @@ final readonly class GenerateGroupRequest
     public function __construct(
         private string $groupName,
         private string $language,
+        private WikiMetadataPrompt $metadataPrompt,
         private ?string $agencyName = null,
         private ?string $notes = null,
     ) {
@@ -86,7 +87,7 @@ final readonly class GenerateGroupRequest
             : '';
 
         $researchContext = WikiResearchContextPrompt::instructions($this->notes);
-        $metadataInstructions = WikiMetadataPrompt::instructions();
+        $metadataInstructions = $this->metadataPrompt->instructions();
         $writingStyleInstructions = WikiWritingStylePrompt::instructions($this->language);
 
         return <<<PROMPT
@@ -121,7 +122,7 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
    - title: Song title and release year, e.g. "Dynamite (2020)".
    - official_mv_url: Direct YouTube watch URL (https://www.youtube.com/watch?v=VIDEO_ID) of the official full music video, or null if not verified.
    Search for each song's official MV. Only use uploads from the artist, agency, label, or authorized distributor's official channel, with evidence linking that channel to the artist/release. Do not rely on "official" in the video title alone. Exclude fan uploads, reuploads, teasers, Shorts, live performances, and dance practices. Never invent a URL or video ID. Include the pages used to verify the video and official uploader in sources. Keep the song with official_mv_url: null when no official MV can be verified.
-14. awards: Array of major awards (max 10). Include award name and year.
+14. awards: Array of major awards (max 10). Each item is an object such as {"title":"Award name","detail":"Category","year":2024}. Use null for an unknown category or year. A known year must be a four-digit integer.
 15. members: Array of current member names (stage names).
 16. sources: Array of referenced pages used for this response. Each item must have:
    - page_title: Specific page title that describes the referenced content.

@@ -37,6 +37,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
@@ -317,7 +319,10 @@ class AutoWikiCreationServiceTest extends TestCase
         $overview = 'TWICEは韓国の9人組ガールズグループです。';
         $history = '2015年にサバイバルオーディション番組「SIXTEEN」を通じて結成されました。';
         $representativeSongs = ['Cheer Up (2016)', 'TT (2016)'];
-        $awards = ['Mnet Asian Music Awards - Song of the Year (2016)'];
+        $awards = [
+            ['title' => 'Undated award', 'detail' => 'Grand Prize', 'year' => null],
+            ['title' => 'Mnet Asian Music Awards', 'detail' => 'Song of the Year', 'year' => 2016],
+        ];
         $members = ['ナヨン', 'ジョンヨン', 'モモ'];
 
         $agencyWiki = $this->createWikiMock('JYP Entertainment');
@@ -415,6 +420,10 @@ class AutoWikiCreationServiceTest extends TestCase
         }
 
         $this->assertSame('수상 이력', $sections[3]->title());
+        $awardBlocks = $sections[3]->contents()->blocks();
+        $this->assertCount(1, $awardBlocks);
+        $this->assertInstanceOf(HistoryBlock::class, $awardBlocks[0]);
+        $this->assertEquals([new HistoryEntry(2016, 'Mnet Asian Music Awards', 'Song of the Year')], $awardBlocks[0]->entries());
         $this->assertSame('멤버', $sections[4]->title());
 
         $this->assertSame('출처', $sections[5]->title());
@@ -477,6 +486,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'BTS',
             'overview' => 'BTSは世界的に有名なK-POPグループです。',
+            'awards' => [['title' => 'Undated award', 'year' => null, 'detail' => null]],
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -502,6 +512,8 @@ class AutoWikiCreationServiceTest extends TestCase
         $result = $service->generate($payload);
 
         $this->assertSame('BTS', $result->alphabetName());
+        $this->assertCount(1, $result->sections()->sections());
+        $this->assertSame('概要', $result->sections()->sections()[0]->title());
     }
 
     /**
@@ -567,8 +579,11 @@ class AutoWikiCreationServiceTest extends TestCase
         $groupId = new WikiIdentifier(StrTestHelper::generateUuid());
         $overview = 'ジミンはBTSのメンバーです。';
         $history = '1995年10月13日生まれ。2013年にBTSとしてデビュー。';
-        $appearances = ['Hwarang (Drama, 2016)'];
-        $awards = ['Billboard Music Awards - Top Social Artist (2017)'];
+        $appearances = [
+            ['title' => 'Hwarang', 'detail' => 'Drama', 'year' => 2016],
+            ['title' => 'Special Appearance', 'detail' => null, 'year' => 2018],
+        ];
+        $awards = [['title' => 'Billboard Music Awards', 'detail' => 'Top Social Artist', 'year' => 2017]];
 
         $agencyWiki = $this->createWikiMock('HYBE');
         $groupWiki = $this->createWikiMock('BTS');
@@ -661,10 +676,17 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertSame('経歴', $sections[1]->title());
         $this->assertSame('出演作品', $sections[2]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
-        $this->assertSame($appearances, $sections[2]->contents()->blocks()[0]->items());
+        $appearancesBlock = $sections[2]->contents()->blocks()[0];
+        $this->assertInstanceOf(HistoryBlock::class, $appearancesBlock);
+        $this->assertEquals([
+            new HistoryEntry(2016, 'Hwarang', 'Drama'),
+            new HistoryEntry(2018, 'Special Appearance'),
+        ], $appearancesBlock->entries());
 
         $this->assertSame('受賞歴', $sections[3]->title());
+        $awardsBlock = $sections[3]->contents()->blocks()[0];
+        $this->assertInstanceOf(HistoryBlock::class, $awardsBlock);
+        $this->assertEquals([new HistoryEntry(2017, 'Billboard Music Awards', 'Top Social Artist')], $awardsBlock->entries());
 
         $this->assertSame('出典', $sections[4]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);

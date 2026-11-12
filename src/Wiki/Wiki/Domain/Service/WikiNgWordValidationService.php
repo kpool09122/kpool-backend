@@ -11,6 +11,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -94,6 +96,10 @@ final readonly class WikiNgWordValidationService implements WikiNgWordValidation
                 $content instanceof ImageBlock => [$content->caption(), $content->alt()],
                 $content instanceof ImageGalleryBlock, $content instanceof EmbedBlock => [$content->caption()],
                 $content instanceof ListBlock => $content->items(),
+                $content instanceof HistoryBlock => array_merge([], ...array_map(
+                    static fn (HistoryEntry $entry): array => [$entry->title, $entry->detail],
+                    $content->entries(),
+                )),
                 $content instanceof TableBlock => array_map(
                     static fn (TableCell $cell): string => $cell->content(),
                     array_merge($content->headerCells() ?? [], ...array_values($content->rowCells())),

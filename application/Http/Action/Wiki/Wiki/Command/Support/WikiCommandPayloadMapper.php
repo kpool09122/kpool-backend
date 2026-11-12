@@ -219,12 +219,28 @@ final class WikiCommandPayloadMapper
             'source' => $content['source'] ?? null,
             'list_type' => $content['listType'] ?? 'bullet',
             'items' => $content['items'] ?? [],
+            'entries' => $type === BlockType::HISTORY->value ? self::historyEntries($content['entries'] ?? []) : [],
             'header_cells' => $content['headerCells'] ?? null,
             'row_cells' => $content['rowCells'] ?? [],
             'table_width' => isset($content['tableWidth']) ? RequestValue::string($content['tableWidth']) : null,
             'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
             'title' => $content['title'] ?? null,
         ];
+    }
+
+    /** @return list<array{year: int, title: string, detail: ?string}> */
+    private static function historyEntries(mixed $entries): array
+    {
+        return array_map(static function (array $entry): array {
+            $year = $entry['year'] ?? null;
+            $title = $entry['title'] ?? null;
+            $detail = $entry['detail'] ?? null;
+            if (! is_int($year) || ! is_string($title) || ($detail !== null && ! is_string($detail))) {
+                throw new InvalidArgumentException('Invalid history entry.');
+            }
+
+            return ['year' => $year, 'title' => $title, 'detail' => $detail];
+        }, RequestValue::objects($entries));
     }
 
     /**

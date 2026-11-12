@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
+use Application\Http\Client\GeminiClient\GeneratedHistoryEntries;
 use Application\Http\Client\GeminiClient\GeneratedWikiMetadata;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 
+/**
+ * @phpstan-import-type GeneratedHistoryEntry from GeneratedHistoryEntries
+ * @phpstan-import-type GeneratedSourceReference from SourceReferenceExtractor
+ */
 final readonly class GenerateGroupParams
 {
     /**
      * @param RepresentativeSong[] $representativeSongs
-     * @param string[] $awards
+     * @param list<GeneratedHistoryEntry> $awards
      * @param string[] $members
-     * @param string[] $officialColors
-     * @param SourceReference[] $sources
+     * @param list<array{color_code: string, label: string}> $officialColors
+     * @param list<GeneratedSourceReference> $sources
      */
     public function __construct(
         private ?string $alphabetName,
@@ -39,7 +44,7 @@ final readonly class GenerateGroupParams
 
     /**
      * @param array<string, mixed> $data
-     * @param SourceReference[] $sources
+     * @param list<GeneratedSourceReference> $sources
      */
     public static function fromArray(array $data, array $sources): self
     {
@@ -57,7 +62,7 @@ final readonly class GenerateGroupParams
             overview: self::nullableString($data['overview'] ?? null),
             history: self::nullableString($data['history'] ?? null),
             representativeSongs: self::songsArray($data['representative_songs'] ?? []),
-            awards: self::stringArray($data['awards'] ?? []),
+            awards: GeneratedHistoryEntries::fromValue($data['awards'] ?? null),
             members: self::stringArray($data['members'] ?? []),
             sources: $sources,
             metadata: GeneratedWikiMetadata::fromArray($data),
@@ -163,7 +168,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return string[]
+     * @return list<GeneratedHistoryEntry>
      */
     public function awards(): array
     {
@@ -179,7 +184,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return SourceReference[]
+     * @return list<GeneratedSourceReference>
      */
     public function sources(): array
     {

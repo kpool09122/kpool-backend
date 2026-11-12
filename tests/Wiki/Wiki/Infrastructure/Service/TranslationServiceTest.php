@@ -33,6 +33,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -841,7 +843,7 @@ class TranslationServiceTest extends TestCase
     }
 
     /**
-     * 正常系：QuoteBlock、ListBlock、TableBlockが翻訳されること.
+     * 正常系：QuoteBlock、ListBlock、TableBlock、HistoryBlockが翻訳されること.
      *
      * @throws BindingResolutionException
      */
@@ -860,6 +862,10 @@ class TranslationServiceTest extends TestCase
                         [new TableCell('헤더1'), new TableCell('헤더2')],
                         '75%',
                     ),
+                    new HistoryBlock(3, [
+                        new HistoryEntry(2023, '데뷔'),
+                        new HistoryEntry(2024, '공연', '서울'),
+                    ]),
                 ]),
             ),
         ]);
@@ -879,6 +885,9 @@ class TranslationServiceTest extends TestCase
             'ヘッダー2',                           // table header 2
             'セル1',                               // table cell 1
             'セル2',                               // table cell 2
+            'デビュー',
+            '公演',
+            'ソウル',
         ]);
 
         $this->app()->instance(GoogleTranslateClient::class, $googleTranslateClient);
@@ -907,6 +916,13 @@ class TranslationServiceTest extends TestCase
             $tableBlock->rowCells()
         );
         $this->assertSame('75%', $tableBlock->tableWidth());
+
+        $history = $blocks[3];
+        $this->assertInstanceOf(HistoryBlock::class, $history);
+        $this->assertEquals([
+            new HistoryEntry(2023, 'デビュー'),
+            new HistoryEntry(2024, '公演', 'ソウル'),
+        ], $history->entries());
     }
 
     public function testTranslatesMediaDescriptionsAndPreservesReferences(): void
