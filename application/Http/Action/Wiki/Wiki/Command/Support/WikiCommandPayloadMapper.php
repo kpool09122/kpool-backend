@@ -224,6 +224,7 @@ final class WikiCommandPayloadMapper
             'row_cells' => $content['rowCells'] ?? [],
             'table_width' => isset($content['tableWidth']) ? RequestValue::string($content['tableWidth']) : null,
             'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
+            'card_shape' => $content['cardShape'] ?? null,
             'title' => $content['title'] ?? null,
         ];
     }

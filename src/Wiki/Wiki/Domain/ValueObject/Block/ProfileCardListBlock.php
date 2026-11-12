@@ -14,6 +14,7 @@ final readonly class ProfileCardListBlock implements BlockInterface
     public function __construct(
         private int $displayOrder,
         private array $wikiIdentifiers,
+        private ProfileCardShape $cardShape,
         private ?string $title = null,
     ) {
     }
@@ -34,6 +35,11 @@ final readonly class ProfileCardListBlock implements BlockInterface
     public function wikiIdentifiers(): array
     {
         return $this->wikiIdentifiers;
+    }
+
+    public function cardShape(): ProfileCardShape
+    {
+        return $this->cardShape;
     }
 
     public function title(): ?string

@@ -9,6 +9,7 @@ use Application\Models\Wiki\WikiImage as WikiImageModel;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Wiki\Application\UseCase\Query\RelatedProfileReadModel;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 
 final readonly class WikiSectionReadModelBuilder
 {
@@ -88,6 +89,7 @@ final readonly class WikiSectionReadModelBuilder
 
                 $content['wikiIdentifiers'] = $content['wikiIdentifiers'] ?? $wikiIdentifiers;
                 $content['profiles'] = $profiles;
+                $content['cardShape'] = ProfileCardShape::fromValue($content['card_shape'] ?? $content['cardShape'] ?? null)->value;
                 $content['relatedResourceType'] = $content['relatedResourceType'] ?? $content['related_resource_type'] ?? $this->relatedResourceType($profiles);
             }
 

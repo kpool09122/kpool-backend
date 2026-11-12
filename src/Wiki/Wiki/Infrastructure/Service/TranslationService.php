@@ -443,7 +443,12 @@ readonly class TranslationService implements TranslationServiceInterface
             return new EmbedBlock($content->displayOrder(), $content->provider(), $content->embedId(), $this->mapOptionalText($content->caption(), $translate));
         }
         if ($content instanceof ProfileCardListBlock) {
-            return new ProfileCardListBlock($content->displayOrder(), $content->wikiIdentifiers(), $this->mapOptionalText($content->title(), $translate));
+            return new ProfileCardListBlock(
+                $content->displayOrder(),
+                $content->wikiIdentifiers(),
+                $content->cardShape(),
+                $this->mapOptionalText($content->title(), $translate),
+            );
         }
 
         return $content;

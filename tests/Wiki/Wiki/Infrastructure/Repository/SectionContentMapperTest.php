@@ -16,6 +16,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
@@ -232,6 +233,7 @@ class SectionContentMapperTest extends TestCase
             new ProfileCardListBlock(
                 displayOrder: 1,
                 wikiIdentifiers: [new WikiIdentifier($wikiId1), new WikiIdentifier($wikiId2)],
+                cardShape: ProfileCardShape::SQUARE,
                 title: 'メンバー',
             ),
         ]);
@@ -245,6 +247,20 @@ class SectionContentMapperTest extends TestCase
         $this->assertSame($wikiId1, (string) $block->wikiIdentifiers()[0]);
         $this->assertSame($wikiId2, (string) $block->wikiIdentifiers()[1]);
         $this->assertSame('メンバー', $block->title());
+        $this->assertSame(ProfileCardShape::SQUARE, $block->cardShape());
+    }
+
+    public function testProfileCardListBlockPersistsPortraitWhenShapeIsMissing(): void
+    {
+        $collection = SectionContentMapper::collectionFromArray([
+            [
+                'block_type' => 'profile_card_list',
+                'display_order' => 1,
+                'wiki_identifiers' => [],
+            ],
+        ]);
+
+        $this->assertSame('portrait', SectionContentMapper::collectionToArray($collection)[0]['card_shape']);
     }
 
     /**

@@ -40,6 +40,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
@@ -934,7 +935,7 @@ class TranslationServiceTest extends TestCase
                 new ImageBlock(0, $imageId, '사진 설명', '대체 텍스트', imageWidth: 450),
                 new ImageGalleryBlock(1, [$imageId], '갤러리 설명', imageWidth: 700),
                 new EmbedBlock(2, EmbedProvider::YOUTUBE, 'abc123', '영상 설명'),
-                new ProfileCardListBlock(3, [$profileId], '관련 인물'),
+                new ProfileCardListBlock(3, [$profileId], ProfileCardShape::PORTRAIT, '관련 인물'),
                 new Section('상세', 4, new SectionContentCollection([new TextBlock(0, '본문')]), 2),
             ])),
         ]);
@@ -982,7 +983,7 @@ class TranslationServiceTest extends TestCase
             new ImageBlock(0, $imageId, null, ''),
             new ImageGalleryBlock(1, [$imageId]),
             new EmbedBlock(2, EmbedProvider::YOUTUBE, 'abc123', ''),
-            new ProfileCardListBlock(3, []),
+            new ProfileCardListBlock(3, [], ProfileCardShape::PORTRAIT),
             new TextBlock(4, '본문'),
         ]);
         $client = $this->createGoogleTranslateClientMock(['チェヨン', 'ソン・チェヨン', '本文']);
