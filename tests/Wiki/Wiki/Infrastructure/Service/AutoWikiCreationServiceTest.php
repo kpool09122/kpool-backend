@@ -254,7 +254,7 @@ class AutoWikiCreationServiceTest extends TestCase
     // Group
     // ========================================================================
 
-    public function testGenerateGroupEmbedsMusicVideosAndLimitsSongsToFive(): void
+    public function testGenerateGroupEmbedsEveryValidRepresentativeMusicVideo(): void
     {
         $responseJson = $this->createGeminiResponseJson([
             'representative_songs' => [
@@ -266,6 +266,9 @@ class AutoWikiCreationServiceTest extends TestCase
                 ['title' => 'Song D (2023)', 'official_mv_url' => 'https://www.youtube.com/watch?v=invalid'],
                 ['title' => 'Song E (2024)', 'official_mv_url' => 'https://www.youtube.com/watch?v=123456789_-'],
                 ['title' => 'Song F (2025)', 'official_mv_url' => 'https://www.youtube.com/watch?v=ABCDEFGHIJK'],
+                ['title' => 'Song G (2019)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij1'],
+                ['title' => 'Song H (2018)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij2'],
+                ['title' => 'Song I (2026)', 'official_mv_url' => 'https://www.youtube.com/watch?v=abcdefghij3'],
             ],
         ]);
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -288,23 +291,23 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertCount(1, $sections);
         $this->assertSame('代表曲', $sections[0]->title());
         $blocks = $sections[0]->contents()->blocks();
-        $this->assertCount(7, $blocks);
-        foreach ([0 => 'Song A (2020)', 2 => 'Song B (2021)', 3 => 'Song C (2022)', 4 => 'Song D (2023)', 5 => 'Song E (2024)'] as $index => $title) {
-            $this->assertInstanceOf(ListBlock::class, $blocks[$index]);
-            $this->assertSame([$title], $blocks[$index]->items());
-        }
-        foreach ($blocks as $index => $block) {
+        $expectedVideos = [
+            ['abcdefghijk', 'Song A (2020)'],
+            ['123456789_-', 'Song E (2024)'],
+            ['ABCDEFGHIJK', 'Song F (2025)'],
+            ['abcdefghij1', 'Song G (2019)'],
+            ['abcdefghij2', 'Song H (2018)'],
+            ['abcdefghij3', 'Song I (2026)'],
+        ];
+        $this->assertCount(count($expectedVideos), $blocks);
+        foreach ($expectedVideos as $index => [$videoId, $caption]) {
+            $block = $blocks[$index];
+            $this->assertInstanceOf(EmbedBlock::class, $block);
+            $this->assertSame(EmbedProvider::YOUTUBE, $block->provider());
+            $this->assertSame($videoId, $block->embedId());
+            $this->assertSame($caption, $block->caption());
             $this->assertSame($index, $block->displayOrder());
         }
-        $this->assertInstanceOf(EmbedBlock::class, $blocks[1]);
-        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[1]->provider());
-        $this->assertSame('abcdefghijk', $blocks[1]->embedId());
-        $this->assertSame('Song A (2020)', $blocks[1]->caption());
-        $this->assertSame(1, $blocks[1]->displayOrder());
-        $this->assertInstanceOf(EmbedBlock::class, $blocks[6]);
-        $this->assertSame(EmbedProvider::YOUTUBE, $blocks[6]->provider());
-        $this->assertSame('123456789_-', $blocks[6]->embedId());
-        $this->assertSame('Song E (2024)', $blocks[6]->caption());
     }
 
     /**
@@ -318,7 +321,10 @@ class AutoWikiCreationServiceTest extends TestCase
         $agencyId = new WikiIdentifier(StrTestHelper::generateUuid());
         $overview = 'TWICEは韓国の9人組ガールズグループです。';
         $history = '2015年にサバイバルオーディション番組「SIXTEEN」を通じて結成されました。';
-        $representativeSongs = ['Cheer Up (2016)', 'TT (2016)'];
+        $representativeSongs = [
+            ['title' => 'Cheer Up (2016)', 'official_mv_url' => null],
+            ['title' => 'TT (2016)', 'official_mv_url' => 'https://www.youtube.com/watch?v=invalid'],
+        ];
         $awards = [
             ['title' => 'Undated award', 'detail' => 'Grand Prize', 'year' => null],
             ['title' => 'Mnet Asian Music Awards', 'detail' => 'Song of the Year', 'year' => 2016],
@@ -401,7 +407,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
-        $this->assertCount(6, $sections);
+        $this->assertCount(5, $sections);
 
         $this->assertSame('개요', $sections[0]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
@@ -410,27 +416,18 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('경력', $sections[1]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[1]->contents()->blocks()[0]);
 
-        $this->assertSame('대표곡', $sections[2]->title());
-        $songBlocks = $sections[2]->contents()->blocks();
-        $this->assertCount(count($representativeSongs), $songBlocks);
-        foreach ($representativeSongs as $index => $title) {
-            $this->assertInstanceOf(ListBlock::class, $songBlocks[$index]);
-            $this->assertSame([$title], $songBlocks[$index]->items());
-            $this->assertSame($index, $songBlocks[$index]->displayOrder());
-        }
-
-        $this->assertSame('수상 이력', $sections[3]->title());
-        $awardBlocks = $sections[3]->contents()->blocks();
+        $this->assertSame('수상 이력', $sections[2]->title());
+        $awardBlocks = $sections[2]->contents()->blocks();
         $this->assertCount(1, $awardBlocks);
         $this->assertInstanceOf(HistoryBlock::class, $awardBlocks[0]);
         $this->assertEquals([new HistoryEntry(2016, 'Mnet Asian Music Awards', 'Song of the Year')], $awardBlocks[0]->entries());
-        $this->assertSame('멤버', $sections[4]->title());
+        $this->assertSame('멤버', $sections[3]->title());
 
-        $this->assertSame('출처', $sections[5]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
+        $this->assertSame('출처', $sections[4]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
         $this->assertSame(
             ['[트와이스 - 위키백과](https://ko.wikipedia.org/wiki/트와이스)'],
-            $sections[5]->contents()->blocks()[0]->items(),
+            $sections[4]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());

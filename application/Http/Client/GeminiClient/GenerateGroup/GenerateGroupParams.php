@@ -15,7 +15,7 @@ use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 final readonly class GenerateGroupParams
 {
     /**
-     * @param RepresentativeSong[] $representativeSongs
+     * @param list<RepresentativeSong> $representativeSongs
      * @param list<GeneratedHistoryEntry> $awards
      * @param string[] $members
      * @param list<array{color_code: string, label: string}> $officialColors
@@ -160,7 +160,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return RepresentativeSong[]
+     * @return list<RepresentativeSong>
      */
     public function representativeSongs(): array
     {
@@ -192,7 +192,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return RepresentativeSong[]
+     * @return list<RepresentativeSong>
      */
     private static function songsArray(mixed $value): array
     {
@@ -205,9 +205,6 @@ final readonly class GenerateGroupParams
             $song = RepresentativeSong::fromValue($item);
             if ($song !== null) {
                 $songs[] = $song;
-            }
-            if (count($songs) === 5) {
-                break;
             }
         }
 

@@ -413,22 +413,14 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         }
 
         if ($params->representativeSongs() !== []) {
-            $songs = array_slice($params->representativeSongs(), 0, 5);
             $contents = [];
-            foreach ($songs as $song) {
-                $contents[] = new ListBlock(
-                    displayOrder: count($contents),
-                    listType: ListType::BULLET,
-                    items: [$song->title()],
+            foreach ($params->representativeSongs() as $index => $song) {
+                $contents[] = new EmbedBlock(
+                    displayOrder: $index,
+                    provider: EmbedProvider::YOUTUBE,
+                    embedId: $song->youtubeVideoId(),
+                    caption: $song->title(),
                 );
-                if ($song->youtubeVideoId() !== null) {
-                    $contents[] = new EmbedBlock(
-                        displayOrder: count($contents),
-                        provider: EmbedProvider::YOUTUBE,
-                        embedId: $song->youtubeVideoId(),
-                        caption: $song->title(),
-                    );
-                }
             }
 
             $sections[] = new Section(
