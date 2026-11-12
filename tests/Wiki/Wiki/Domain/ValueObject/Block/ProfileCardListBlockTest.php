@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 use Tests\Helper\StrTestHelper;
 
 class ProfileCardListBlockTest extends TestCase
@@ -28,6 +29,7 @@ class ProfileCardListBlockTest extends TestCase
         $block = new ProfileCardListBlock(
             displayOrder: $displayOrder,
             wikiIdentifiers: $wikiIdentifiers,
+            cardShape: ProfileCardShape::PORTRAIT,
             title: $title,
         );
 
@@ -47,6 +49,7 @@ class ProfileCardListBlockTest extends TestCase
             wikiIdentifiers: [
                 new WikiIdentifier(StrTestHelper::generateUuid()),
             ],
+            cardShape: ProfileCardShape::PORTRAIT,
         );
 
         $this->assertNull($block->title());
@@ -60,6 +63,7 @@ class ProfileCardListBlockTest extends TestCase
         $block = new ProfileCardListBlock(
             displayOrder: 0,
             wikiIdentifiers: [],
+            cardShape: ProfileCardShape::PORTRAIT,
         );
 
         $this->assertEmpty($block->wikiIdentifiers());

@@ -19,6 +19,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
@@ -113,6 +114,7 @@ final class SectionContentMapper
                                 static fn (WikiIdentifier $id) => (string) $id,
                                 $content->wikiIdentifiers(),
                             ),
+                            'card_shape' => $content->cardShape()->value,
                             'title' => $content->title(),
                         ],
                         default => throw new InvalidArgumentException('Unknown block type: ' . $content::class),
@@ -206,6 +208,7 @@ final class SectionContentMapper
                             static fn (string $id) => new WikiIdentifier($id),
                             TypedValue::stringArray($contentData['wiki_identifiers'] ?? []),
                         ),
+                        cardShape: ProfileCardShape::fromValue($contentData['card_shape'] ?? null),
                         title: TypedValue::nullableString($contentData['title'] ?? null),
                     ),
                 };

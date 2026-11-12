@@ -97,5 +97,6 @@ class WikiSectionReadModelBuilderTest extends TestCase
         $this->assertSame([], $profileBlock['wikiIdentifiers']);
         $this->assertSame([], $profileBlock['profiles']);
         $this->assertNull($profileBlock['relatedResourceType']);
+        $this->assertSame('portrait', $profileBlock['cardShape']);
     }
 }

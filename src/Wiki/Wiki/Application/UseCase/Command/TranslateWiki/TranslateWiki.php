@@ -184,6 +184,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
                         static fn (string $identifier): WikiIdentifier => new WikiIdentifier($identifier),
                         array_values(array_unique($identifiers)),
                     ),
+                    $content->cardShape(),
                     $content->title(),
                 );
             }

@@ -38,6 +38,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
@@ -462,8 +463,13 @@ class TranslateWikiTest extends TestCase
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
             ->with($untranslatedSet, [Language::JAPANESE])->andReturn([]);
         $text = new TextBlock(1, '翻訳済みの本文');
-        $profiles = new ProfileCardListBlock(3, [$sourceId, $targetId, $untranslatedId, $missingId], '関連プロフィール');
-        $emptyProfiles = new ProfileCardListBlock(2, [$untranslatedId, $missingId]);
+        $profiles = new ProfileCardListBlock(
+            3,
+            [$sourceId, $targetId, $untranslatedId, $missingId],
+            ProfileCardShape::PORTRAIT,
+            '関連プロフィール',
+        );
+        $emptyProfiles = new ProfileCardListBlock(2, [$untranslatedId, $missingId], ProfileCardShape::PORTRAIT);
         $sections = new SectionContentCollection([
             new Section('翻訳済みの見出し', 5, new SectionContentCollection([
                 $text,
