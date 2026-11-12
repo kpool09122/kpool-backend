@@ -29,7 +29,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Command\CreateVideoLink\CreateVideoLinkOutput;
 use Source\Wiki\VideoLink\Domain\Exception\VideoLinkAlreadyExistsException;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -59,7 +58,6 @@ readonly class CreateVideoLinkAction
                     ResourceType::from($request->resourceType()),
                     new WikiIdentifier($request->wikiIdentifier()),
                     $this->videoUrlBuilder->build($request->url()),
-                    VideoUsage::from($request->videoUsage()),
                     new VideoTitle($request->title()),
                     $request->durationSeconds() !== null ? new DurationSeconds($request->durationSeconds()) : null,
                     $request->thumbnailUrl() !== null ? new ThumbnailUrl($request->thumbnailUrl()) : null,

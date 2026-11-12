@@ -13,7 +13,6 @@ readonly class YouTubeVideoInfo
         private string $title,
         private string $url,
         private string $thumbnailUrl,
-        private VideoUsage $videoUsage,
         private DateTimeImmutable $publishedAt,
         private ?int $durationSeconds,
     ) {
@@ -37,11 +36,6 @@ readonly class YouTubeVideoInfo
     public function thumbnailUrl(): string
     {
         return $this->thumbnailUrl;
-    }
-
-    public function videoUsage(): VideoUsage
-    {
-        return $this->videoUsage;
     }
 
     public function durationSeconds(): ?int

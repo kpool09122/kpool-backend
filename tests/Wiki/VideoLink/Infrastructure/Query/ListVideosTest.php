@@ -142,20 +142,20 @@ class ListVideosTest extends TestCase
         CreateWiki::create($other, 'group', ['slug' => 'gr-test', 'language' => 'en', 'published_at' => '2026-01-01']);
         $ids = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         sort($ids);
-        foreach (['youtube_auto_view_count', 'youtube_auto_like_count', 'youtube_auto_recent_popular'] as $i => $usage) {
-            CreateVideoLink::create($ids[$i], ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => $usage, 'created_at' => '2026-10-01 00:00:00']);
+        foreach ($ids as $videoId) {
+            CreateVideoLink::create($videoId, ['wiki_id' => $id, 'resource_type' => 'group', 'created_at' => '2026-10-01 00:00:00']);
         }
         $manualId = StrTestHelper::generateUuid();
         $creator = StrTestHelper::generateUuid();
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, ['identity_name' => '動画の作成者']);
         CreatePrincipal::create(new PrincipalIdentifier($creator), $identityIdentifier);
-        CreateVideoLink::create($manualId, ['wiki_id' => $id, 'resource_type' => 'group', 'video_usage' => 'music_video', 'duration_seconds' => 253, 'creator_principal_id' => $creator, 'created_at' => '2026-10-02 00:00:00']);
-        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $other, 'resource_type' => 'group', 'video_usage' => 'youtube_auto_view_count']);
-        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent', 'video_usage' => 'youtube_auto_view_count']);
+        CreateVideoLink::create($manualId, ['wiki_id' => $id, 'resource_type' => 'group', 'duration_seconds' => 253, 'creator_principal_id' => $creator, 'created_at' => '2026-10-02 00:00:00']);
+        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $other, 'resource_type' => 'group']);
+        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'talent']);
         $payload = $this->process('gr-test', Language::JAPANESE, ResourceType::GROUP);
         $this->assertSame([$manualId, ...$ids], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'videoUsage', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount', 'hasOfficialOwnerLike', 'hasOfficialOwnerWatch'], array_keys($payload['videos'][0]));
+        $this->assertSame(['provider', 'externalVideoId', 'videoLinkIdentifier', 'url', 'title', 'thumbnailUrl', 'publishedAt', 'durationSeconds', 'creatorPrincipalIdentifier', 'creatorIdentityName', 'likeCount', 'hasOfficialOwnerLike', 'hasOfficialOwnerWatch'], array_keys($payload['videos'][0]));
         $this->assertNull($payload['videos'][0]['thumbnailUrl']);
         $this->assertNull($payload['videos'][0]['publishedAt']);
         $this->assertSame('Test Video', $payload['videos'][0]['title']);
@@ -174,8 +174,8 @@ class ListVideosTest extends TestCase
         CreateWiki::create($wiki, 'group', ['slug' => 'gr-likes', 'language' => 'ja', 'published_at' => '2026-01-01']);
         $ids = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         sort($ids);
-        foreach ($ids as $i => $id) {
-            CreateVideoLink::create($id, ['wiki_id' => $wiki, 'resource_type' => 'group', 'video_usage' => $i === 0 ? 'music_video' : 'youtube_auto_view_count', 'created_at' => '2026-10-01']);
+        foreach ($ids as $id) {
+            CreateVideoLink::create($id, ['wiki_id' => $wiki, 'resource_type' => 'group', 'created_at' => '2026-10-01']);
         }
         foreach ([0, 1] as $i) {
             $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -237,10 +237,12 @@ class ListVideosTest extends TestCase
         $id = StrTestHelper::generateUuid();
         CreateWiki::create($id, 'agency', ['slug' => 'ag-test','published_at' => '2026-01-01']);
         $videoId = StrTestHelper::generateUuid();
-        CreateVideoLink::create($videoId, ['wiki_id' => $id, 'resource_type' => 'agency', 'video_usage' => 'music_video']);
+        $creator = StrTestHelper::generateUuid();
+        CreateVideoLink::create($videoId, ['wiki_id' => $id, 'resource_type' => 'agency', 'creator_principal_id' => $creator]);
+        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $id, 'resource_type' => 'agency']);
         $payload = $this->process('ag-test', Language::KOREAN, ResourceType::AGENCY);
         $this->assertSame([$videoId], array_column($payload['videos'], 'videoLinkIdentifier'));
-        $this->assertSame('music_video', $payload['videos'][0]['videoUsage']);
+        $this->assertSame($creator, $payload['videos'][0]['creatorPrincipalIdentifier']);
     }
 
     public function testDeletionRemovesOnlyTargetFromPublicList(): void
@@ -286,15 +288,11 @@ class ListVideosTest extends TestCase
         $this->assertNull($videos[0]['creatorIdentityName']);
     }
 
-    public function testAutoVideoDoesNotReturnCreatorEvenWhenStored(): void
+    public function testAutoVideoDoesNotReturnCreator(): void
     {
         $wiki = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        CreateIdentity::create($identityIdentifier, ['identity_name' => '作成者']);
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
         CreateWiki::create($wiki, 'group', ['slug' => 'gr-auto-creator', 'language' => 'ja', 'published_at' => '2026-01-01']);
-        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $wiki, 'resource_type' => 'group', 'video_usage' => 'youtube_auto_view_count', 'creator_principal_id' => (string) $principalIdentifier]);
+        CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => $wiki, 'resource_type' => 'group']);
         $videos = $this->process('gr-auto-creator', Language::JAPANESE, ResourceType::GROUP)['videos'];
         $this->assertNull($videos[0]['creatorPrincipalIdentifier']);
         $this->assertNull($videos[0]['creatorIdentityName']);

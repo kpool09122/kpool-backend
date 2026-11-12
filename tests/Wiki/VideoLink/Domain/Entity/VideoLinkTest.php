@@ -15,7 +15,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\StrTestHelper;
 
 class VideoLinkTest extends TestCase
@@ -28,12 +27,11 @@ class VideoLinkTest extends TestCase
         $url = new ExternalContentLink('https://www.youtube.com/watch?v=test');
         $publishedAt = new DateTimeImmutable('2026-10-01');
         $createdAt = new DateTimeImmutable('2026-10-23');
-        $video = new VideoLink($identifier, ResourceType::TALENT, $wikiIdentifier, $url, VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb.jpg'), $publishedAt, $createdAt, new DurationSeconds(253), $principalIdentifier);
+        $video = new VideoLink($identifier, ResourceType::TALENT, $wikiIdentifier, $url, new VideoTitle('Title'), new ThumbnailUrl('https://example.com/thumb.jpg'), $publishedAt, $createdAt, new DurationSeconds(253), $principalIdentifier);
         self::assertSame($identifier, $video->videoLinkIdentifier());
         self::assertSame($wikiIdentifier, $video->wikiIdentifier());
         self::assertSame(ResourceType::TALENT, $video->resourceType());
         self::assertSame($url, $video->url());
-        self::assertSame(VideoUsage::MUSIC_VIDEO, $video->videoUsage());
         self::assertSame('Title', (string) $video->title());
         self::assertSame('https://example.com/thumb.jpg', (string) $video->thumbnailUrl());
         self::assertSame($publishedAt, $video->publishedAt());

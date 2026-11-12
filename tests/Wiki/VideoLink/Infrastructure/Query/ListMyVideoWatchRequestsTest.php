@@ -40,7 +40,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $wiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['owner_account_id' => StrTestHelper::generateUuid(), 'published_at' => '2026-01-01']);
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => StrTestHelper::generateUuid()]);
         DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
         foreach ([[(string) $principal,'2026-10-21 00:00:00'],[(string) $other,'2026-10-22 00:00:00']] as [$sender,$sent]) {
             DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'wiki_id' => $wiki, 'principal_id' => $sender, 'sent_at' => $sent]);
@@ -78,7 +78,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $otherWiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['owner_account_id' => StrTestHelper::generateUuid()]);
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => StrTestHelper::generateUuid()]);
         foreach ([$principal, $other] as $sender) {
             DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $sender, 'created_at' => now()]);
         }
@@ -121,7 +121,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
             $wiki = StrTestHelper::generateUuid();
             CreateWiki::create($wiki, 'talent', ['language' => $language, 'translation_set_identifier' => $translationSet, 'owner_account_id' => StrTestHelper::generateUuid()]);
             $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => StrTestHelper::generateUuid()]);
             DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
             DB::table('wiki_video_watch_requests')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => StrTestHelper::generateUuid(), 'wiki_id' => $wiki, 'principal_id' => (string) $principal, 'sent_at' => '2026-10-' . (22 + $index) . ' 00:00:00']);
             $videos[] = $video;
@@ -163,7 +163,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $videos = [];
         foreach ([$wiki, $wiki, $otherWiki] as $wikiId) {
             $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-            CreateVideoLink::create((string) $video, ['wiki_id' => $wikiId, 'duration_seconds' => 30]);
+            CreateVideoLink::create((string) $video, ['wiki_id' => $wikiId, 'duration_seconds' => 30, 'creator_principal_id' => StrTestHelper::generateUuid()]);
             $videos[] = $video;
         }
         DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $videos[0], 'principal_id' => (string) $principal, 'created_at' => now()]);
@@ -200,7 +200,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
         $principal = $this->principal();
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video);
+        CreateVideoLink::create((string) $video, ['creator_principal_id' => StrTestHelper::generateUuid()]);
         $query = $this->app()->make(ListMyVideoWatchRequestsInterface::class);
         $this->expectException(VideoLinkNotFoundException::class);
         $query->process(new ListMyVideoWatchRequestsInput([$video, new VideoLinkIdentifier(StrTestHelper::generateUuid())], $principal));
@@ -211,7 +211,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
         $principal = $this->principal('None');
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video);
+        CreateVideoLink::create((string) $video, ['creator_principal_id' => StrTestHelper::generateUuid()]);
         $query = $this->app()->make(ListMyVideoWatchRequestsInterface::class);
         $this->expectException(DisallowedException::class);
         $query->process(new ListMyVideoWatchRequestsInput([$video], $principal));
@@ -238,7 +238,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $wiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['owner_account_id' => StrTestHelper::generateUuid()]);
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'url' => $url, 'duration_seconds' => $duration]);
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'url' => $url, 'duration_seconds' => $duration, 'creator_principal_id' => StrTestHelper::generateUuid()]);
         DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
 
         $query = $this->app()->make(ListMyVideoWatchRequestsInterface::class);
@@ -262,7 +262,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
                 ]);
             }
             $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'video_usage' => $scenario === 'automatic' ? 'youtube_auto_view_count' : 'music_video']);
+            CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => $scenario === 'automatic' ? null : StrTestHelper::generateUuid()]);
             DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
             $videos[$scenario] = $video;
         }
@@ -283,7 +283,7 @@ class ListMyVideoWatchRequestsTest extends TestCase
         $wiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['owner_account_id' => StrTestHelper::generateUuid()]);
         $video = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30]);
+        CreateVideoLink::create((string) $video, ['wiki_id' => $wiki, 'duration_seconds' => 30, 'creator_principal_id' => StrTestHelper::generateUuid()]);
         DB::table('wiki_video_link_likes')->insert(['id' => StrTestHelper::generateUuid(), 'video_link_id' => (string) $video, 'principal_id' => (string) $principal, 'created_at' => now()]);
         DB::table('wiki_policies')->where('name', 'GLOBAL_SEND_VIDEO_WATCH_REQUEST')->update([
             'statements' => json_encode([['effect' => 'deny', 'actions' => ['send_video_watch_request'], 'resource_types' => ['talent'], 'condition' => null]]),

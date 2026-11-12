@@ -14,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\ThumbnailUrl;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 
 readonly class VideoLink
 {
@@ -23,7 +22,6 @@ readonly class VideoLink
         private ResourceType $resourceType,
         private WikiIdentifier $wikiIdentifier,
         private ExternalContentLink $url,
-        private VideoUsage $videoUsage,
         private VideoTitle $title,
         private ?ThumbnailUrl $thumbnailUrl,
         private ?DateTimeImmutable $publishedAt,
@@ -52,11 +50,6 @@ readonly class VideoLink
     public function url(): ExternalContentLink
     {
         return $this->url;
-    }
-
-    public function videoUsage(): VideoUsage
-    {
-        return $this->videoUsage;
     }
 
     public function title(): VideoTitle

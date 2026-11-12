@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -27,7 +28,6 @@ use Source\Wiki\VideoLink\Domain\Repository\VideoLinkCollectionStatusRepositoryI
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -102,7 +102,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Test Video 1',
                 url: 'https://www.youtube.com/watch?v=video1',
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: 253,
             ),
@@ -111,7 +110,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Test Video 2',
                 url: 'https://www.youtube.com/watch?v=video2',
                 thumbnailUrl: 'https://i.ytimg.com/vi/video2/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -158,7 +156,6 @@ class CollectVideoLinksTest extends TestCase
                 && (string) $videoLink->wikiIdentifier() === $resourceId
                 && (string) $videoLink->url() === $videos[0]->url()
                 && (string) $videoLink->title() === (string) $videos[0]->title()
-                && $videoLink->videoUsage() === $videos[0]->videoUsage()
                 && (string) $videoLink->thumbnailUrl() === $videos[0]->thumbnailUrl()
                 && $videoLink->publishedAt() === $videos[0]->publishedAt()
                 && $videoLink->creatorPrincipalIdentifier() === null));
@@ -170,7 +167,6 @@ class CollectVideoLinksTest extends TestCase
                 && (string) $videoLink->wikiIdentifier() === $resourceId
                 && (string) $videoLink->url() === $videos[1]->url()
                 && (string) $videoLink->title() === $videos[1]->title()
-                && $videoLink->videoUsage() === $videos[1]->videoUsage()
                 && (string) $videoLink->thumbnailUrl() === $videos[1]->thumbnailUrl()
                 && $videoLink->publishedAt() === $videos[1]->publishedAt()
                 && $videoLink->creatorPrincipalIdentifier() === null));
@@ -267,7 +263,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Test Video 1',
                 url: 'https://www.youtube.com/watch?v=video1',
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -345,7 +340,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Test Song Video 1',
                 url: 'https://www.youtube.com/watch?v=video1',
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -467,7 +461,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Test Video 1',
                 url: 'https://www.youtube.com/watch?v=video1',
                 thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -558,7 +551,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'Existing Video',
                 url: $existingUrl,
                 thumbnailUrl: 'https://i.ytimg.com/vi/existing/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -567,7 +559,6 @@ class CollectVideoLinksTest extends TestCase
                 title: 'New Video',
                 url: $newUrl,
                 thumbnailUrl: 'https://i.ytimg.com/vi/new/hqdefault.jpg',
-                videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 publishedAt: new DateTimeImmutable(),
                 durationSeconds: null,
             ),
@@ -578,12 +569,12 @@ class CollectVideoLinksTest extends TestCase
             ResourceType::TALENT,
             new WikiIdentifier($resourceId),
             new ExternalContentLink($existingUrl),
-            VideoUsage::MUSIC_VIDEO,
             new VideoTitle('Existing Video'),
             null,
             null,
             new DateTimeImmutable(),
             durationSeconds: null,
+            creatorPrincipalIdentifier: new PrincipalIdentifier(StrTestHelper::generateUuid()),
         );
 
         $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);

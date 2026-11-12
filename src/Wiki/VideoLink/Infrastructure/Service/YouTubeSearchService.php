@@ -12,7 +12,6 @@ use Psr\Log\LoggerInterface;
 use Source\Wiki\VideoLink\Domain\Exception\VideoSearchFailedException;
 use Source\Wiki\VideoLink\Domain\Service\VideoTitleFilterServiceInterface;
 use Source\Wiki\VideoLink\Domain\Service\YouTubeSearchServiceInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Domain\ValueObject\YouTubeVideoInfo;
 use Throwable;
 
@@ -75,8 +74,8 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
             );
             $videoDetails = array_intersect_key($videoDetails, $matchingTitles);
 
-            $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, false);
-            $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, true);
+            $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', false);
+            $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', true);
 
             return $this->deduplicateVideos([...$viewCountVideos, ...$likeRateVideos]);
         } catch (Throwable $exception) {
@@ -91,7 +90,7 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
      * @param string[] $videoIds
      * @return YouTubeVideoInfo[]
      */
-    private function selectTopVideos(array $videoDetails, array $videoIds, string $sortBy, VideoUsage $usage, bool $isLikeRateCategory): array
+    private function selectTopVideos(array $videoDetails, array $videoIds, string $sortBy, bool $isLikeRateCategory): array
     {
         $candidates = [];
 
@@ -128,7 +127,6 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
                 title: $video['title'],
                 url: "https://www.youtube.com/watch?v={$video['id']}",
                 thumbnailUrl: $video['thumbnailUrl'],
-                videoUsage: $usage,
                 publishedAt: CarbonImmutable::parse($video['publishedAt'])->toDateTimeImmutable(),
                 durationSeconds: $video['durationSeconds'],
             ),

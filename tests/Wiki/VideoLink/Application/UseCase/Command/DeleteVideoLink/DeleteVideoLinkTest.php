@@ -27,7 +27,6 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVide
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoWatchRequestRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -45,77 +44,40 @@ class DeleteVideoLinkTest extends TestCase
     {
         $input = $this->input();
         $this->principal($input);
-        $this->video($input, VideoUsage::MUSIC_VIDEO, new PrincipalIdentifier((string) $input->principalIdentifier()), true);
+        $this->video($input, new PrincipalIdentifier((string) $input->principalIdentifier()), true);
         $this->app()->make(DeleteVideoLinkInterface::class)->process($input);
     }
 
-    /** @return array<string, array{VideoUsage, bool}> */
-    public static function autoVideos(): array
-    {
-        $cases = [];
-        foreach ([VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR] as $usage) {
-            $cases[$usage->value . ' without creator'] = [$usage, false];
-            $cases[$usage->value . ' with other creator'] = [$usage, true];
-        }
-
-        return $cases;
-    }
-
-    #[DataProvider('autoVideos')]
-    public function testCollaboratorCanDeleteAutoVideo(VideoUsage $usage, bool $hasCreator): void
+    public function testCollaboratorCanDeleteAutoVideo(): void
     {
         $input = $this->input();
         $this->principal($input);
-        $this->video($input, $usage, $hasCreator ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : null, true);
+        $this->video($input, null, true);
         $this->app()->make(DeleteVideoLinkInterface::class)->process($input);
     }
 
-    /** @return iterable<string, array{VideoUsage}> */
+    /** @return iterable<string, array{bool}> */
     public static function allVideos(): iterable
     {
-        foreach (VideoUsage::cases() as $usage) {
-            yield $usage->value => [$usage];
-        }
+        yield 'manual' => [false];
+        yield 'automatic' => [true];
     }
 
     #[DataProvider('allVideos')]
-    public function testPrincipalWithoutDeletionPermissionCannotDeleteVideoEvenAsCreator(VideoUsage $usage): void
+    public function testPrincipalWithoutDeletionPermissionCannotDeleteManualOrAutoVideo(bool $isAutoCollected): void
     {
         $input = $this->input();
         $this->principal($input);
-        $this->video($input, $usage, $input->principalIdentifier(), false, false);
+        $this->video($input, $isAutoCollected ? null : $input->principalIdentifier(), false, false);
         $this->expectException(DisallowedException::class);
         $this->app()->make(DeleteVideoLinkInterface::class)->process($input);
     }
 
-    /** @return array<string, array{VideoUsage}> */
-    public static function manualVideos(): array
-    {
-        $cases = [];
-        foreach (VideoUsage::cases() as $usage) {
-            if ($usage->isManual()) {
-                $cases[$usage->value] = [$usage];
-            }
-        }
-
-        return $cases;
-    }
-
-    #[DataProvider('manualVideos')]
-    public function testOtherPrincipalCannotDeleteManualVideo(VideoUsage $usage): void
+    public function testOtherPrincipalCannotDeleteManualVideo(): void
     {
         $input = $this->input();
         $this->principal($input);
-        $this->video($input, $usage, new PrincipalIdentifier(StrTestHelper::generateUuid()), false);
-        $this->expectException(DisallowedException::class);
-        $this->app()->make(DeleteVideoLinkInterface::class)->process($input);
-    }
-
-    public function testManualVideoWithoutCreatorIsNotTreatedAsAutoCollected(): void
-    {
-        $input = $this->input();
-        $this->principal($input);
-        $this->video($input, VideoUsage::OTHER, null, false);
+        $this->video($input, new PrincipalIdentifier(StrTestHelper::generateUuid()), false);
         $this->expectException(DisallowedException::class);
         $this->app()->make(DeleteVideoLinkInterface::class)->process($input);
     }
@@ -159,7 +121,7 @@ class DeleteVideoLinkTest extends TestCase
         $this->app()->instance(PolicyEvaluatorInterface::class, $policy);
     }
 
-    private function video(DeleteVideoLinkInput $input, VideoUsage $usage, ?PrincipalIdentifier $creator, bool $allowed, bool $hasDeletionPermission = true): void
+    private function video(DeleteVideoLinkInput $input, ?PrincipalIdentifier $creator, bool $allowed, bool $hasDeletionPermission = true): void
     {
         $policy = Mockery::mock(PolicyEvaluatorInterface::class);
         $policy->shouldReceive('evaluate')->once()->with(
@@ -168,7 +130,7 @@ class DeleteVideoLinkTest extends TestCase
             Mockery::on(fn (Resource $resource): bool => $resource->type() === ResourceType::TALENT),
         )->andReturn($hasDeletionPermission);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policy);
-        $video = $this->app()->make(VideoLinkFactoryInterface::class)->create(ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://www.youtube.com/watch?v=test'), $usage, new VideoTitle('Video'), creatorPrincipalIdentifier: $creator);
+        $video = $this->app()->make(VideoLinkFactoryInterface::class)->create(ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://www.youtube.com/watch?v=test'), new VideoTitle('Video'), creatorPrincipalIdentifier: $creator);
         $repository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $repository->shouldReceive('findById')->once()->with($input->videoLinkIdentifier())->andReturn($video);
         if ($allowed) {

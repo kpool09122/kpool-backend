@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\CreateVideoLink;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -41,7 +40,7 @@ class VideoLinkRepositoryTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identifier = new VideoLinkIdentifier(StrTestHelper::generateUuid());
-        $video = new VideoLink($identifier, ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/manual'), VideoUsage::MUSIC_VIDEO, new VideoTitle('Title'), null, null, new DateTimeImmutable(), new DurationSeconds(253), $principalIdentifier);
+        $video = new VideoLink($identifier, ResourceType::TALENT, new WikiIdentifier(StrTestHelper::generateUuid()), new ExternalContentLink('https://example.com/manual'), new VideoTitle('Title'), null, null, new DateTimeImmutable(), new DurationSeconds(253), $principalIdentifier);
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
         $repository->save($video);
         $restored = $repository->findById($identifier);
@@ -61,7 +60,6 @@ class VideoLinkRepositoryTest extends TestCase
             ResourceType::TALENT,
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new ExternalContentLink('https://www.youtube.com/watch?v=test'),
-            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
             new VideoTitle('Test Video'),
             null,
             null,
@@ -101,7 +99,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => 'https://www.youtube.com/watch?v=test123',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Test Music Video',
         ]);
 
@@ -113,7 +110,6 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertSame(ResourceType::TALENT, $videoLink->resourceType());
         $this->assertSame($wikiId, (string) $videoLink->wikiIdentifier());
         $this->assertSame('https://www.youtube.com/watch?v=test123', (string) $videoLink->url());
-        $this->assertSame(VideoUsage::MUSIC_VIDEO, $videoLink->videoUsage());
         $this->assertSame('Test Music Video', (string) $videoLink->title());
         $this->assertInstanceOf(DateTimeImmutable::class, $videoLink->createdAt());
     }
@@ -150,7 +146,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => 'https://www.youtube.com/watch?v=video1',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Music Video 1',
         ]);
 
@@ -158,7 +153,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => 'https://www.youtube.com/watch?v=video2',
-            'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Live Video',
         ]);
 
@@ -166,7 +160,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::GROUP->value,
             'wiki_id' => StrTestHelper::generateUuid(),
             'url' => 'https://www.youtube.com/watch?v=other',
-            'video_usage' => VideoUsage::INTERVIEW->value,
             'title' => 'Other Video',
         ]);
 
@@ -218,7 +211,6 @@ class VideoLinkRepositoryTest extends TestCase
             ResourceType::TALENT,
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new ExternalContentLink('https://www.youtube.com/watch?v=newvideo'),
-            VideoUsage::MUSIC_VIDEO,
             new VideoTitle('New Music Video'),
             null,
             null,
@@ -234,7 +226,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => $videoLink->resourceType()->value,
             'wiki_id' => (string) $videoLink->wikiIdentifier(),
             'url' => (string) $videoLink->url(),
-            'video_usage' => $videoLink->videoUsage()->value,
             'title' => (string) $videoLink->title(),
         ]);
     }
@@ -254,7 +245,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => 'https://www.youtube.com/watch?v=old',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Old Title',
         ]);
 
@@ -263,7 +253,6 @@ class VideoLinkRepositoryTest extends TestCase
             ResourceType::TALENT,
             new WikiIdentifier($wikiId),
             new ExternalContentLink('https://www.youtube.com/watch?v=updated'),
-            VideoUsage::LIVE,
             new VideoTitle('Updated Title'),
             null,
             null,
@@ -277,7 +266,6 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_video_links', [
             'id' => $videoLinkId,
             'url' => 'https://www.youtube.com/watch?v=updated',
-            'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Updated Title',
         ]);
 
@@ -297,7 +285,6 @@ class VideoLinkRepositoryTest extends TestCase
         CreateVideoLink::create($videoLinkId, [
             'resource_type' => ResourceType::TALENT->value,
             'url' => 'https://www.youtube.com/watch?v=delete',
-            'video_usage' => VideoUsage::OTHER->value,
         ]);
 
         $this->assertDatabaseHas('wiki_video_links', ['id' => $videoLinkId]);
@@ -367,25 +354,22 @@ class VideoLinkRepositoryTest extends TestCase
         CreateVideoLink::create($manualVideoLinkId, [
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'creator_principal_id' => StrTestHelper::generateUuid(),
         ]);
 
         CreateVideoLink::create($autoViewCountId, [
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
-            'video_usage' => VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value,
         ]);
 
         CreateVideoLink::create($autoLikeCountId, [
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
-            'video_usage' => VideoUsage::YOUTUBE_AUTO_LIKE_COUNT->value,
         ]);
 
         CreateVideoLink::create($autoRecentId, [
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
-            'video_usage' => VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value,
         ]);
 
         $repository = $this->app()->make(VideoLinkRepositoryInterface::class);
@@ -421,7 +405,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => $url1,
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Existing Video 1',
         ]);
 
@@ -429,7 +412,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => $url2,
-            'video_usage' => VideoUsage::LIVE->value,
             'title' => 'Existing Video 2',
         ]);
 
@@ -469,7 +451,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $otherResourceId,
             'url' => $url,
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Other Resource Video',
         ]);
 
@@ -497,7 +478,6 @@ class VideoLinkRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'wiki_id' => $wikiId,
             'url' => 'https://www.youtube.com/watch?v=existing',
-            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
             'title' => 'Existing Video',
         ]);
 

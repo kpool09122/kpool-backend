@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\DeleteVideoLink\DeleteVideoLinkInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
@@ -33,21 +32,21 @@ use Tests\TestCase;
 #[Group('useDb')]
 class DeleteVideoLinkAuthorizationTest extends TestCase
 {
-    /** @return iterable<string, array{string, bool, VideoUsage}> */
+    /** @return iterable<string, array{string, bool, bool}> */
     public static function roles(): iterable
     {
         foreach (['Collaborator', 'None', 'Administrator'] as $role) {
-            foreach (VideoUsage::cases() as $usage) {
-                yield $role . ' ' . $usage->value => [$role, $role === 'Collaborator', $usage];
+            foreach (['manual' => false, 'automatic' => true] as $origin => $isAutoCollected) {
+                yield $role . ' ' . $origin => [$role, $role === 'Collaborator', $isAutoCollected];
             }
         }
-        foreach (VideoUsage::cases() as $usage) {
-            yield 'Collaborator with creation permission only ' . $usage->value => ['Collaborator', false, $usage];
+        foreach (['manual' => false, 'automatic' => true] as $origin => $isAutoCollected) {
+            yield 'Collaborator with creation permission only ' . $origin => ['Collaborator', false, $isAutoCollected];
         }
     }
 
     #[DataProvider('roles')]
-    public function testSeededAuthorizationAndPreservation(string $role, bool $allowed, VideoUsage $usage): void
+    public function testSeededAuthorizationAndPreservation(string $role, bool $allowed, bool $isAutoCollected): void
     {
         $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
         if ($role === 'Collaborator' && ! $allowed) {
@@ -72,8 +71,7 @@ class DeleteVideoLinkAuthorizationTest extends TestCase
         CreateVideoLink::create((string) $videoLinkId, [
             'wiki_id' => (string) $wikiId,
             'resource_type' => ResourceType::TALENT->value,
-            'video_usage' => $usage->value,
-            'creator_principal_id' => $usage->isManual() ? (string) $principalId : null,
+            'creator_principal_id' => ! $isAutoCollected ? (string) $principalId : null,
         ]);
         CreateVideoLink::create(StrTestHelper::generateUuid(), ['wiki_id' => (string) $wikiId]);
         $before = DB::table('wiki_video_links')->orderBy('id')->get()->toArray();

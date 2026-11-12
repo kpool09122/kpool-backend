@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\VideoTitle;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
-use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 
 readonly class VideoLinkFactory implements VideoLinkFactoryInterface
 {
@@ -30,7 +29,6 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
         ResourceType $resourceType,
         WikiIdentifier $wikiIdentifier,
         ExternalContentLink $url,
-        VideoUsage $videoUsage,
         VideoTitle $title,
         ?ThumbnailUrl $thumbnailUrl = null,
         ?DateTimeImmutable $publishedAt = null,
@@ -43,7 +41,6 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
             $resourceType,
             $wikiIdentifier,
             $url,
-            $videoUsage,
             $title,
             $thumbnailUrl,
             $publishedAt,

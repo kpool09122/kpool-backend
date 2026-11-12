@@ -72,7 +72,6 @@ readonly class CreateVideoLink implements CreateVideoLinkInterface
             $input->resourceType(),
             $input->wikiIdentifier(),
             $url,
-            $input->videoUsage(),
             $input->title(),
             $thumbnail,
             $input->publishedAt(),

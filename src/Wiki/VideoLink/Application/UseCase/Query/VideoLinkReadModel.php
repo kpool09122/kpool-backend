@@ -20,7 +20,6 @@ readonly class VideoLinkReadModel
         public string $title,
         public ?string $thumbnailUrl,
         public ?string $publishedAt,
-        public string $videoUsage,
         public ?int $durationSeconds,
         public ?string $creatorPrincipalIdentifier,
         public ?string $creatorIdentityName,
@@ -33,7 +32,7 @@ readonly class VideoLinkReadModel
         $this->externalVideoId = $url->externalVideoId() ?? throw new InvalidArgumentException('A resolved video URL is required.');
     }
 
-    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,videoUsage:string,durationSeconds:?int,creatorPrincipalIdentifier:?string,creatorIdentityName:?string,likeCount:int,hasOfficialOwnerLike:bool,hasOfficialOwnerWatch:bool} */
+    /** @return array{provider:string,externalVideoId:string,videoLinkIdentifier:string,url:string,title:string,thumbnailUrl:?string,publishedAt:?string,durationSeconds:?int,creatorPrincipalIdentifier:?string,creatorIdentityName:?string,likeCount:int,hasOfficialOwnerLike:bool,hasOfficialOwnerWatch:bool} */
     public function toArray(): array
     {
         return [
@@ -44,7 +43,6 @@ readonly class VideoLinkReadModel
             'title' => $this->title,
             'thumbnailUrl' => $this->thumbnailUrl,
             'publishedAt' => $this->publishedAt,
-            'videoUsage' => $this->videoUsage,
             'durationSeconds' => $this->durationSeconds,
             'creatorPrincipalIdentifier' => $this->creatorPrincipalIdentifier,
             'creatorIdentityName' => $this->creatorIdentityName,
