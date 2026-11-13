@@ -20,6 +20,7 @@ readonly class UpdateImageMetadataInput implements UpdateImageMetadataInputPort
         private ImageLicense $license,
         private string $altText,
         private int $displayOrder,
+        private string $sourceUrl,
     ) {
         if (trim($sourceName) === '' || mb_strlen($sourceName) > 255) {
             throw new InvalidArgumentException('Source name must contain between 1 and 255 characters.');
@@ -45,6 +46,11 @@ readonly class UpdateImageMetadataInput implements UpdateImageMetadataInputPort
     public function sourceName(): string
     {
         return $this->sourceName;
+    }
+
+    public function sourceUrl(): string
+    {
+        return $this->sourceUrl;
     }
 
     public function author(): ImageAuthor

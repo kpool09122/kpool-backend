@@ -50,6 +50,7 @@ readonly class UpdateImageMetadata implements UpdateImageMetadataInterface
         }
 
         $image->setSourceName($input->sourceName());
+        $image->setSourceUrl($input->sourceUrl());
         $image->setAttribution($input->author(), $input->license());
         $image->setAltText($input->altText());
         $image->setDisplayOrder($input->displayOrder());

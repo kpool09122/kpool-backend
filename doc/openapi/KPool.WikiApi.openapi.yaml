@@ -489,7 +489,7 @@ paths:
   /image/{imageId}/metadata:
     patch:
       operationId: ImageMetadataOperations_updateImageMetadata
-      description: Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.
+      description: Update published image metadata immediately for operators. Preserves image file, approval and visibility.
       parameters:
         - name: imageId
           in: path
@@ -9440,12 +9440,18 @@ components:
     UpdateImageMetadataRequestBody:
       type: object
       required:
+        - sourceUrl
         - sourceName
         - author
         - license
         - altText
         - displayOrder
       properties:
+        sourceUrl:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: HTTP or HTTPS source URL. Send an empty string or null to clear it.
         sourceName:
           type: string
           minLength: 1

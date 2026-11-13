@@ -7,6 +7,7 @@ namespace Tests\Wiki\Image\Infrastructure\Query;
 use Database\Seeders\SystemPolicySeeder;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -59,7 +60,15 @@ class ManagedImagesTest extends TestCase
         self::assertSame([$draftId], array_column($output->toArray()['images'], 'imageIdentifier'));
     }
 
-    public function testEditsMetadataImmediatelyPreservingApprovalFileSourceAndVisibility(): void
+    /** @return iterable<string, array{string}> */
+    public static function sourceUrlUpdates(): iterable
+    {
+        yield 'changed' => ['https://example.org/new-source'];
+        yield 'cleared' => [''];
+    }
+
+    #[DataProvider('sourceUrlUpdates')]
+    public function testEditsMetadataImmediatelyPreservingApprovalFileAndVisibility(string $sourceUrl): void
     {
         $principalId = $this->createOperatorPrincipal();
         $imageId = StrTestHelper::generateUuid();
@@ -74,6 +83,7 @@ class ManagedImagesTest extends TestCase
             ImageLicense::CC_BY,
             '',
             3,
+            sourceUrl: $sourceUrl,
         ), $output);
         $after = DB::table('wiki_images')->where('id', $imageId)->first();
         self::assertNotNull($before);
@@ -83,7 +93,8 @@ class ManagedImagesTest extends TestCase
         self::assertSame('CC-BY-4.0', $after->license);
         self::assertSame('', $after->alt_text);
         self::assertSame(3, $after->display_order);
-        foreach (['image_path', 'source_url', 'approved_at', 'approver_id', 'uploader_id', 'uploaded_at', 'is_hidden'] as $field) {
+        self::assertSame($sourceUrl, $after->source_url);
+        foreach (['image_path', 'approved_at', 'approver_id', 'uploader_id', 'uploaded_at', 'is_hidden'] as $field) {
             self::assertSame($before->{$field}, $after->{$field});
         }
         self::assertSame((string) $principalId, $after->updater_id);
