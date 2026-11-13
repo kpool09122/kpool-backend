@@ -19,14 +19,18 @@ use Source\Wiki\Image\Application\UseCase\Command\RequestImageDeletion\RequestIm
 use Source\Wiki\Image\Application\UseCase\Command\RequestImageDeletion\RequestImageDeletionInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImage;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\UpdateImageMetadata\UpdateImageMetadata;
+use Source\Wiki\Image\Application\UseCase\Command\UpdateImageMetadata\UpdateImageMetadataInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInterface;
+use Source\Wiki\Image\Application\UseCase\Query\ListManagedImages\ListManagedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\SearchFreeMaterials\SearchFreeMaterialsInterface;
 use Source\Wiki\Image\Infrastructure\Query\ListDraftImages;
 use Source\Wiki\Image\Infrastructure\Query\ListImageDeletionRequests;
+use Source\Wiki\Image\Infrastructure\Query\ListManagedImages;
 use Source\Wiki\Image\Infrastructure\Query\ListUploadedImages;
 use Source\Wiki\Image\Infrastructure\Query\SearchFreeMaterials;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
@@ -232,6 +236,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeleteImageInterface::class, DeleteImage::class);
         $this->app->singleton(DeleteVideoLinkInterface::class, DeleteVideoLink::class);
         $this->app->singleton(UnhideImageInterface::class, UnhideImage::class);
+        $this->app->singleton(UpdateImageMetadataInterface::class, UpdateImageMetadata::class);
+        $this->app->singleton(ListManagedImagesInterface::class, ListManagedImages::class);
         $this->app->singleton(RequestImageDeletionInterface::class, RequestImageDeletion::class);
         $this->app->singleton(ApproveImageDeletionInterface::class, ApproveImageDeletion::class);
         $this->app->singleton(RejectImageDeletionInterface::class, RejectImageDeletion::class);

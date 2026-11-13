@@ -36,6 +36,8 @@ class ActionTest extends TestCase
             'SEND_VIDEO_WATCH_REQUEST' => 'send_video_watch_request',
             'LIST_MY_VIDEO_WATCH_REQUESTS' => 'list_my_video_watch_requests',
             'UNLIKE_VIDEO_LINK' => 'unlike_video_link',
+            'LIST_MANAGED_IMAGES' => 'list_managed_images',
+            'UPDATE_IMAGE_METADATA' => 'update_image_metadata',
             'SEARCH_FREE_MATERIALS' => 'search_free_materials',
             'DELETE' => 'delete',
             'HIDE' => 'hide',

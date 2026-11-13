@@ -7,9 +7,11 @@ use Application\Http\Action\Wiki\Image\Command\ApproveImageDeletion\ApproveImage
 use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageDeletion\RejectImageDeletionAction;
 use Application\Http\Action\Wiki\Image\Command\RequestImageDeletion\RequestImageDeletionAction;
+use Application\Http\Action\Wiki\Image\Command\UpdateImageMetadata\UpdateImageMetadataAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListImageDeletionRequests\ListImageDeletionRequestsAction;
+use Application\Http\Action\Wiki\Image\Query\ListManagedImages\ListManagedImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImagesAction;
 use Application\Http\Action\Wiki\Image\Query\SearchFreeMaterials\SearchFreeMaterialsAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
@@ -127,6 +129,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class);
 
         // ImageDeletionRequest
+        Route::get('/managed-images', ListManagedImagesAction::class);
         Route::get('/image-deletion-requests', ListImageDeletionRequestsAction::class);
         Route::post('/images/search-free-materials', SearchFreeMaterialsAction::class);
 
@@ -155,6 +158,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
 
         // Image
+        Route::patch('/image/{imageId}/metadata', UpdateImageMetadataAction::class);
         Route::post('/image/{imageId}/approve', ApproveImageAction::class);
         // Disabled by #605: Route::delete('/image/{imageId}', DeleteImageAction::class);
         Route::post('/image/{imageId}/reject', RejectImageAction::class);

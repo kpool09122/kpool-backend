@@ -56,7 +56,7 @@ class SystemPolicySeeder extends Seeder
                 effect: Effect::ALLOW,
                 action: $action,
                 resourceTypes: match ($action) {
-                    Action::SEARCH_FREE_MATERIALS => [ResourceType::IMAGE],
+                    Action::LIST_MANAGED_IMAGES, Action::UPDATE_IMAGE_METADATA, Action::SEARCH_FREE_MATERIALS => [ResourceType::IMAGE],
                     Action::CREATE_PLAYLIST, Action::LIST_MY_PLAYLISTS, Action::GET_MY_PLAYLIST, Action::DELETE_PLAYLIST, Action::SAVE_PLAYLIST => [ResourceType::PLAYLIST],
                     Action::RECORD_VIDEO_LINK_WATCH, Action::SEND_VIDEO_WATCH_REQUEST, Action::LIST_MY_VIDEO_WATCH_REQUESTS => [ResourceType::TALENT],
                     Action::LIKE_VIDEO_LINK, Action::UNLIKE_VIDEO_LINK => [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG, ResourceType::TALENT],

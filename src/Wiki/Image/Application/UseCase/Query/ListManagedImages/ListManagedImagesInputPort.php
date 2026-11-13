@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Wiki\Image\Application\UseCase\Query\ListManagedImages;
+
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+
+interface ListManagedImagesInputPort
+{
+    public function principalIdentifier(): PrincipalIdentifier;
+
+    public function perPage(): int;
+
+    public function status(): ApprovalStatus;
+}

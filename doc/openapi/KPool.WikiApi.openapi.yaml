@@ -486,6 +486,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /image/{imageId}/metadata:
+    patch:
+      operationId: ImageMetadataOperations_updateImageMetadata
+      description: Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility. Saves the previous image as a snapshot.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an image operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateImageMetadataRequestBody'
   /image/{imageId}/reject:
     post:
       operationId: ImageOperations_rejectImage
@@ -897,6 +956,67 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchFreeMaterialsRequestBody'
+  /managed-images:
+    get:
+      operationId: ManagedImageListOperations_listManagedImages
+      description: List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts.
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/DraftImageStatus'
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListManagedImagesResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /my/draft-wikis:
     get:
       operationId: MyDraftWikiListOperations_listMyDraftWikis
@@ -7247,6 +7367,31 @@ components:
           format: int32
           description: Number of images per page.
       description: Response body for the pending image deletion request list endpoint.
+    ListManagedImagesResponseBody:
+      type: object
+      required:
+        - images
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedImageListItem'
+        current_page:
+          type: integer
+          format: int32
+        last_page:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        per_page:
+          type: integer
+          format: int32
     ListMyOwnedWikisResponseBody:
       type: object
       required:
@@ -7404,6 +7549,79 @@ components:
           format: int32
           description: Number of wikis per page.
       description: Response body for the wiki list endpoint.
+    ManagedImageListItem:
+      type: object
+      required:
+        - imageIdentifier
+        - url
+        - resourceType
+        - translationSetIdentifier
+        - displayOrder
+        - sourceUrl
+        - sourceName
+        - author
+        - license
+        - altText
+        - isHidden
+        - uploadedAt
+        - wiki
+        - status
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier.
+        url:
+          type: string
+          description: Absolute image URL.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier that the image belongs to.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the image.
+        sourceUrl:
+          type: string
+          description: Original source URL of the image.
+        sourceName:
+          type: string
+          description: Original source name of the image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the image.
+        altText:
+          type: string
+          description: Alternative text for the image.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden.
+        uploadedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the image was uploaded.
+        wiki:
+          $ref: '#/components/schemas/DraftImageWikiDisplayInformation'
+        status:
+          $ref: '#/components/schemas/DraftImageStatus'
+      description: Operator-managed image with its associated Wiki and approval status.
     MaterialSearchRelatedWiki:
       type: object
       required:
@@ -9062,6 +9280,41 @@ components:
           type: string
           description: Unique slug for the wiki.
       description: Wiki item included in a translation set master search candidate.
+    UpdateImageMetadataRequestBody:
+      type: object
+      required:
+        - sourceName
+        - author
+        - license
+        - altText
+        - displayOrder
+      properties:
+        sourceName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        author:
+          type: string
+          minLength: 1
+          maxLength: 255
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+        altText:
+          type: string
+          nullable: true
+          maxLength: 512
+        displayOrder:
+          type: integer
+          format: int32
+          minimum: 0
     UpdatePrincipalGroupMembersItem:
       type: object
       required:
