@@ -422,6 +422,12 @@ interface ManagedImageListOperations {
     @query status: DraftImageStatus,
     @query @minValue(1) @maxValue(100) perPage?: int32 | null,
     @query @minValue(1) page?: int32 | null,
+    @doc("Filter by image license; omit to include all licenses.")
+    @query license?: ImageLicense | null,
+    @doc("Only images with a null, empty or space-only author when true.")
+    @query authorMissing?: boolean | null,
+    @doc("Only images without a selected license (null) when true.")
+    @query licenseMissing?: boolean | null,
   ): ListManagedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 

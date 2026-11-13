@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListManagedImages\ListManagedImagesInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListManagedImages\ListManagedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListManagedImages\ListManagedImagesOutput;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -36,9 +37,13 @@ readonly class ListManagedImagesAction
     {
         try {
             try {
+                $license = $request->license();
                 $input = new ListManagedImagesInput(
                     principalIdentifier: $this->wikiContext->principalIdentifier,
                     perPage: $request->perPage(),
+                    license: $license === null ? null : ImageLicense::from($license),
+                    authorMissing: $request->boolean('authorMissing'),
+                    licenseMissing: $request->boolean('licenseMissing'),
                     status: ApprovalStatus::from($request->string('status')->toString()),
                 );
                 $output = new ListManagedImagesOutput();

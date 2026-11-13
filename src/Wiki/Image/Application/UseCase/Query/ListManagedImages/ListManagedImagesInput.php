@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Application\UseCase\Query\ListManagedImages;
 
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
@@ -13,7 +14,25 @@ readonly class ListManagedImagesInput implements ListManagedImagesInputPort
         private PrincipalIdentifier $principalIdentifier,
         private ApprovalStatus $status,
         private ?int $perPage = null,
+        private ?ImageLicense $license = null,
+        private bool $authorMissing = false,
+        private bool $licenseMissing = false,
     ) {
+    }
+
+    public function licenseMissing(): bool
+    {
+        return $this->licenseMissing;
+    }
+
+    public function license(): ?ImageLicense
+    {
+        return $this->license;
+    }
+
+    public function authorMissing(): bool
+    {
+        return $this->authorMissing;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

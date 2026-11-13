@@ -986,6 +986,38 @@ paths:
             nullable: true
             minimum: 1
           explode: false
+        - name: license
+          in: query
+          required: false
+          description: Filter by image license; omit to include all licenses.
+          schema:
+            type: string
+            enum:
+              - CC-BY-4.0
+              - CC-BY-SA-4.0
+              - CC-BY-ND-4.0
+              - CC-BY-NC-4.0
+              - CC-BY-NC-SA-4.0
+              - CC-BY-NC-ND-4.0
+              - CC0-1.0
+            nullable: true
+          explode: false
+        - name: authorMissing
+          in: query
+          required: false
+          description: Only images with a null, empty or space-only author when true.
+          schema:
+            type: boolean
+            nullable: true
+          explode: false
+        - name: licenseMissing
+          in: query
+          required: false
+          description: Only images without a selected license (null) when true.
+          schema:
+            type: boolean
+            nullable: true
+          explode: false
       responses:
         '200':
           description: The request has succeeded.

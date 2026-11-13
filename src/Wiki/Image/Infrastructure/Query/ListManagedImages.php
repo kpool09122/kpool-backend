@@ -52,6 +52,16 @@ readonly class ListManagedImages implements ListManagedImagesInterface
             $query->where('status', $input->status()->value);
         }
 
+        if ($input->license() !== null) {
+            $query->where('license', $input->license()->value);
+        }
+        if ($input->licenseMissing()) {
+            $query->whereNull('license');
+        }
+        if ($input->authorMissing()) {
+            $query->whereRaw("COALESCE(TRIM(author), '') = ''");
+        }
+
         /** @var LengthAwarePaginator<int, DraftWikiImage|WikiImage> $paginator */
         $paginator = $query->paginate($input->perPage());
 

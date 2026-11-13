@@ -37,17 +37,7 @@ class ManagedImagesTest extends TestCase
 {
     public function testListsPublishedImagesAcrossWikisWithPaginationAndFiltersDrafts(): void
     {
-        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        CreateIdentity::create($identityId);
-        CreateAccount::create((string) $accountId);
-        CreatePrincipal::create($principalId, $identityId, $accountId);
-        CreatePrincipalGroup::create($groupId, $accountId);
-        CreatePrincipalGroupMembership::create((string) $groupId, (string) $principalId);
-        DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $groupId, 'role_id' => DB::table('wiki_roles')->where('name', 'Operator')->value('id')]);
+        $principalId = $this->createOperatorPrincipal();
         $firstId = StrTestHelper::generateUuid();
         $secondId = StrTestHelper::generateUuid();
         $draftId = StrTestHelper::generateUuid();
@@ -71,17 +61,7 @@ class ManagedImagesTest extends TestCase
 
     public function testEditsMetadataImmediatelyPreservingApprovalFileSourceAndVisibility(): void
     {
-        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        CreateIdentity::create($identityId);
-        CreateAccount::create((string) $accountId);
-        CreatePrincipal::create($principalId, $identityId, $accountId);
-        CreatePrincipalGroup::create($groupId, $accountId);
-        CreatePrincipalGroupMembership::create((string) $groupId, (string) $principalId);
-        DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $groupId, 'role_id' => DB::table('wiki_roles')->where('name', 'Operator')->value('id')]);
+        $principalId = $this->createOperatorPrincipal();
         $imageId = StrTestHelper::generateUuid();
         CreateImage::create($imageId, ['is_hidden' => true]);
         $before = DB::table('wiki_images')->where('id', $imageId)->first();
@@ -109,5 +89,75 @@ class ManagedImagesTest extends TestCase
         self::assertSame((string) $principalId, $after->updater_id);
         self::assertNotNull($after->updated_at);
         self::assertSame(0, DB::table('draft_wiki_images')->count());
+    }
+
+    public function testFiltersLicenseAndMissingAuthorsBeforePaginationForPublishedAndDraftImages(): void
+    {
+        $principalId = $this->createOperatorPrincipal();
+        $query = $this->app()->make(ListManagedImagesInterface::class);
+        foreach ([ApprovalStatus::Approved, ApprovalStatus::UnderReview] as $status) {
+            $table = $status === ApprovalStatus::Approved ? 'wiki_images' : 'draft_wiki_images';
+            $matchingIds = [];
+            foreach ([null, '', '   ', 'Author'] as $author) {
+                $id = StrTestHelper::generateUuid();
+                if ($status === ApprovalStatus::Approved) {
+                    CreateImage::create($id);
+                } else {
+                    CreateDraftImage::create($id, ['status' => $status->value]);
+                }
+                DB::table($table)->where('id', $id)->update(['author' => $author, 'license' => ImageLicense::CC_BY->value]);
+                if ($author !== 'Author') {
+                    $matchingIds[] = $id;
+                }
+            }
+            $otherId = StrTestHelper::generateUuid();
+            if ($status === ApprovalStatus::Approved) {
+                CreateImage::create($otherId);
+            } else {
+                CreateDraftImage::create($otherId, ['status' => $status->value]);
+            }
+            DB::table($table)->where('id', $otherId)->update(['author' => null, 'license' => ImageLicense::CC0->value]);
+
+            $output = new ListManagedImagesOutput();
+            $query->process(new ListManagedImagesInput($principalId, $status, license: ImageLicense::CC_BY, authorMissing: true), $output);
+            self::assertEqualsCanonicalizing($matchingIds, array_column($output->toArray()['images'], 'imageIdentifier'));
+            $query->process(new ListManagedImagesInput($principalId, $status, 1, ImageLicense::CC_BY, true), $output);
+            self::assertSame(3, $output->toArray()['total']);
+            self::assertSame(3, $output->toArray()['last_page']);
+            self::assertCount(1, $output->toArray()['images']);
+            $query->process(new ListManagedImagesInput($principalId, $status, license: ImageLicense::CC_BY), $output);
+            self::assertSame(4, $output->toArray()['total']);
+            $query->process(new ListManagedImagesInput($principalId, $status, authorMissing: true), $output);
+            self::assertSame(4, $output->toArray()['total']);
+            $query->process(new ListManagedImagesInput($principalId, $status), $output);
+            self::assertSame(5, $output->toArray()['total']);
+            $unlicensedId = StrTestHelper::generateUuid();
+            if ($status === ApprovalStatus::Approved) {
+                CreateImage::create($unlicensedId);
+            } else {
+                CreateDraftImage::create($unlicensedId, ['status' => $status->value]);
+            }
+            $query->process(new ListManagedImagesInput($principalId, $status, licenseMissing: true), $output);
+            self::assertSame([$unlicensedId], array_column($output->toArray()['images'], 'imageIdentifier'));
+            $query->process(new ListManagedImagesInput($principalId, $status, authorMissing: true, licenseMissing: true), $output);
+            self::assertSame(1, $output->toArray()['total']);
+        }
+    }
+
+    private function createOperatorPrincipal(): PrincipalIdentifier
+    {
+        $this->seed([SystemPolicySeeder::class, SystemRoleSeeder::class]);
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountId = new AccountIdentifier(StrTestHelper::generateUuid());
+        $principalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityId);
+        CreateAccount::create((string) $accountId);
+        CreatePrincipal::create($principalId, $identityId, $accountId);
+        CreatePrincipalGroup::create($groupId, $accountId);
+        CreatePrincipalGroupMembership::create((string) $groupId, (string) $principalId);
+        DB::table('wiki_principal_group_role_attachments')->insert(['principal_group_id' => (string) $groupId, 'role_id' => DB::table('wiki_roles')->where('name', 'Operator')->value('id')]);
+
+        return $principalId;
     }
 }
