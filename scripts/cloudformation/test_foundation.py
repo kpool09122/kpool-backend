@@ -31,16 +31,21 @@ class FoundationTest(unittest.TestCase):
 
     def test_nested_interfaces_and_outputs(self):
         root = self.templates['root']
-        for resource in root['Resources'].values():
+        nested = self.resources('root', 'CloudFormation::Stack')
+        for resource in nested.values():
             child = self.templates[Path(resource['Properties']['TemplateURL']).stem]
             parameters = resource['Properties'].get('Parameters', {})
             self.assertEqual(set(parameters), set(child.get('Parameters', {})))
             self.assertNotIn('DeletionPolicy', resource)
             self.assertNotIn('UpdateReplacePolicy', resource)
         for output in root['Outputs'].values():
-            stack, attribute = output['Value']['Fn::GetAtt']
+            value = output['Value']
+            if 'Ref' in value:
+                self.assertIn(value['Ref'], root['Resources'])
+                continue
+            stack, attribute = value['Fn::GetAtt']
             name = attribute.removeprefix('Outputs.')
-            child = self.templates[Path(root['Resources'][stack]['Properties']['TemplateURL']).stem]
+            child = self.templates[Path(nested[stack]['Properties']['TemplateURL']).stem]
             self.assertIn(name, child['Outputs'])
 
 
@@ -114,7 +119,7 @@ class FoundationTest(unittest.TestCase):
         network['Outputs']['PublicSubnetIds']['Value']['Fn::Join'][1].append({'Ref': 'ExtraPublicSubnet'})
         self.assert_data_network_is_private(network)
 
-    def test_data_access_only_from_application_security_group(self):
+    def test_inline_data_access_only_from_application_security_group(self):
         groups = self.resources('network', 'EC2::SecurityGroup')
         for name, ports in [('DatabaseSecurityGroup', (5432, 5432)), ('CacheSecurityGroup', (6379, 6380))]:
             ingress = groups[name]['Properties']['SecurityGroupIngress']
@@ -124,6 +129,29 @@ class FoundationTest(unittest.TestCase):
                 'SourceSecurityGroupId': {'Ref': 'ApplicationSecurityGroup'},
             })
         self.assertFalse(groups['ApplicationSecurityGroup']['Properties'].get('SecurityGroupIngress'))
+
+    def test_database_operator_security_group_allows_only_postgresql(self):
+        operator = {'Ref': 'DatabaseOperatorSecurityGroup'}
+        database = {'Fn::GetAtt': ['Network', 'Outputs.DatabaseSecurityGroupId']}
+        postgres = {'IpProtocol': 'tcp', 'FromPort': 5432, 'ToPort': 5432}
+        self.assertNotIn(operator['Ref'], self.templates['network']['Resources'])
+        group = self.resources('root', 'EC2::SecurityGroup')[operator['Ref']]['Properties']
+        self.assertEqual(group['VpcId'], {'Fn::GetAtt': ['Network', 'Outputs.VpcId']})
+        self.assertFalse(group.get('SecurityGroupIngress'))
+        self.assertEqual(group['SecurityGroupEgress'], [
+            {**postgres, 'DestinationSecurityGroupId': database},
+        ])
+        ingress = self.resources('root', 'EC2::SecurityGroupIngress')
+        self.assertEqual({
+            name: rule for name, rule in ingress.items()
+            if rule['Properties'].get('SourceSecurityGroupId') == operator
+        }, {
+            'DatabaseOperatorIngress': {
+                'Type': 'AWS::EC2::SecurityGroupIngress',
+                'Properties': {**postgres, 'GroupId': database, 'SourceSecurityGroupId': operator},
+            },
+        })
+        self.assertEqual(self.templates['root']['Outputs']['DatabaseOperatorSecurityGroupId']['Value'], operator)
 
     def test_database_backup_tls_and_deletion_protection(self):
         database = self.resources('data', 'RDS::DBInstance')['Database']

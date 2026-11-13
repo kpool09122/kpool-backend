@@ -10,8 +10,8 @@ from pathlib import Path
 import subprocess
 import sys
 import uuid
-from urllib.parse import quote
-from cfnlint.decode import decode
+from urllib.parse import parse_qs, quote, urlsplit
+from cfnlint.decode import cfn_yaml, decode
 
 from environment import RUNTIME_STATE, load_contract, parameters, validate_config
 from runtime_state import resolve
@@ -195,10 +195,25 @@ def upload_template(aws, config, path, key):
             + '?versionId=' + quote(version, safe=''))
 
 
-def package_nested_templates(aws, config, root, directory, prefix, template):
-    """Upload JSON children so YAML 1.2 -> 1.1 conversion cannot change scalars."""
+def applied_template(aws, stack_id):
+    response = aws('cloudformation', 'get-template', '--stack-name', stack_id, '--template-stage', 'Original')
+    body = response['TemplateBody']
+    return cfn_yaml.loads(body) if isinstance(body, str) else body
+
+
+def package_nested_templates(aws, config, root, directory, prefix, template, existing=None):
+    """Reuse unchanged child versions and upload changed children as JSON."""
     packaged = copy.deepcopy(template)
-    for resource in packaged.get('Resources', {}).values():
+    live_resources = {}
+    child_ids = {}
+    if existing:
+        stack_id = existing['StackId']
+        live_resources = applied_template(aws, stack_id).get('Resources', {})
+        children = aws('cloudformation', 'list-stack-resources', '--stack-name', stack_id)
+        child_ids = {item['LogicalResourceId']: item['PhysicalResourceId']
+                     for item in children['StackResourceSummaries']
+                     if item['ResourceType'] == 'AWS::CloudFormation::Stack'}
+    for logical_id, resource in packaged.get('Resources', {}).items():
         if resource['Type'] != 'AWS::CloudFormation::Stack':
             continue
         reference = resource.get('Properties', {}).get('TemplateURL')
@@ -213,6 +228,15 @@ def package_nested_templates(aws, config, root, directory, prefix, template):
             raise ValueError('Invalid nested template: ' + path.name)
         if any(item['Type'] == 'AWS::CloudFormation::Stack' for item in child.get('Resources', {}).values()):
             raise ValueError('Foundation children must not contain further nested stacks')
+        live_url = live_resources.get(logical_id, {}).get('Properties', {}).get('TemplateURL')
+        if logical_id in child_ids and isinstance(live_url, str):
+            url = urlsplit(live_url)
+            version = parse_qs(url.query).get('versionId')
+            if url.scheme == 'https' and version and version != ['null']:
+                live = applied_template(aws, child_ids[logical_id])
+                if json.dumps(live, sort_keys=True) == json.dumps(child, sort_keys=True):
+                    resource['Properties']['TemplateURL'] = live_url
+                    continue
         rendered = directory / (path.stem + '.rendered.json')
         rendered.write_text(json.dumps(child, separators=(',', ':')))
         resource['Properties']['TemplateURL'] = upload_template(
@@ -250,7 +274,7 @@ def prepare(aws, config, stack, root, directory, paused):
                        '--expected-bucket-owner', config['accountId'])
         if location.get('LocationConstraint') != config['region']:
             raise ValueError('Package bucket must be in the deployment region')
-        rendered_template = package_nested_templates(aws, config, root, directory, name, rendered_template)
+        rendered_template = package_nested_templates(aws, config, root, directory, name, rendered_template, existing)
     # JSON preserves times, boolean-looking strings and inline source exactly.
     template = directory / f'{stack}.rendered.json'
     template.write_text(json.dumps(rendered_template, separators=(',', ':')))
