@@ -999,6 +999,30 @@ paths:
               - CC-BY-NC-4.0
               - CC-BY-NC-SA-4.0
               - CC-BY-NC-ND-4.0
+              - CC-BY-3.0
+              - CC-BY-SA-3.0
+              - CC-BY-ND-3.0
+              - CC-BY-NC-3.0
+              - CC-BY-NC-SA-3.0
+              - CC-BY-NC-ND-3.0
+              - CC-BY-2.5
+              - CC-BY-SA-2.5
+              - CC-BY-ND-2.5
+              - CC-BY-NC-2.5
+              - CC-BY-NC-SA-2.5
+              - CC-BY-NC-ND-2.5
+              - CC-BY-2.0
+              - CC-BY-SA-2.0
+              - CC-BY-ND-2.0
+              - CC-BY-NC-2.0
+              - CC-BY-NC-SA-2.0
+              - CC-BY-NC-ND-2.0
+              - CC-BY-1.0
+              - CC-BY-SA-1.0
+              - CC-BY-ND-1.0
+              - CC-BY-NC-1.0
+              - CC-BY-NC-SA-1.0
+              - CC-BY-ND-NC-1.0
               - CC0-1.0
             nullable: true
           explode: false
@@ -6523,6 +6547,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the image.
@@ -6698,6 +6746,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the hero image.
@@ -7088,6 +7160,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the image.
@@ -7636,6 +7732,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the image.
@@ -9338,6 +9458,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
         altText:
           type: string
@@ -9486,6 +9630,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           description: License of the image.
         altText:
@@ -9551,6 +9719,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the image.
@@ -9896,6 +10088,30 @@ components:
             - CC-BY-NC-4.0
             - CC-BY-NC-SA-4.0
             - CC-BY-NC-ND-4.0
+            - CC-BY-3.0
+            - CC-BY-SA-3.0
+            - CC-BY-ND-3.0
+            - CC-BY-NC-3.0
+            - CC-BY-NC-SA-3.0
+            - CC-BY-NC-ND-3.0
+            - CC-BY-2.5
+            - CC-BY-SA-2.5
+            - CC-BY-ND-2.5
+            - CC-BY-NC-2.5
+            - CC-BY-NC-SA-2.5
+            - CC-BY-NC-ND-2.5
+            - CC-BY-2.0
+            - CC-BY-SA-2.0
+            - CC-BY-ND-2.0
+            - CC-BY-NC-2.0
+            - CC-BY-NC-SA-2.0
+            - CC-BY-NC-ND-2.0
+            - CC-BY-1.0
+            - CC-BY-SA-1.0
+            - CC-BY-ND-1.0
+            - CC-BY-NC-1.0
+            - CC-BY-NC-SA-1.0
+            - CC-BY-ND-NC-1.0
             - CC0-1.0
           nullable: true
           description: License of the hero image.
