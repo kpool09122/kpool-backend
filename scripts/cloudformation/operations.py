@@ -195,6 +195,12 @@ def upload_template(aws, config, path, key):
             + '?versionId=' + quote(version, safe=''))
 
 
+def applied_template(aws, stack_id):
+    response = aws('cloudformation', 'get-template', '--stack-name', stack_id, '--template-stage', 'Original')
+    body = response['TemplateBody']
+    return cfn_yaml.loads(body) if isinstance(body, str) else body
+
+
 def package_nested_templates(aws, config, root, directory, prefix, template, existing=None):
     """Reuse unchanged child versions and upload changed children as JSON."""
     packaged = copy.deepcopy(template)
@@ -202,8 +208,7 @@ def package_nested_templates(aws, config, root, directory, prefix, template, exi
     child_ids = {}
     if existing:
         stack_id = existing['StackId']
-        live = aws('cloudformation', 'get-template', '--stack-name', stack_id, '--template-stage', 'Original')
-        live_resources = cfn_yaml.loads(live['TemplateBody']).get('Resources', {})
+        live_resources = applied_template(aws, stack_id).get('Resources', {})
         children = aws('cloudformation', 'list-stack-resources', '--stack-name', stack_id)
         child_ids = {item['LogicalResourceId']: item['PhysicalResourceId']
                      for item in children['StackResourceSummaries']
@@ -228,9 +233,8 @@ def package_nested_templates(aws, config, root, directory, prefix, template, exi
             url = urlsplit(live_url)
             version = parse_qs(url.query).get('versionId')
             if url.scheme == 'https' and version and version != ['null']:
-                live = aws('cloudformation', 'get-template', '--stack-name', child_ids[logical_id],
-                           '--template-stage', 'Original')
-                if json.dumps(cfn_yaml.loads(live['TemplateBody']), sort_keys=True) == json.dumps(child, sort_keys=True):
+                live = applied_template(aws, child_ids[logical_id])
+                if json.dumps(live, sort_keys=True) == json.dumps(child, sort_keys=True):
                     resource['Properties']['TemplateURL'] = live_url
                     continue
         rendered = directory / (path.stem + '.rendered.json')

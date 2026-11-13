@@ -138,8 +138,8 @@ class OperationsTests(unittest.TestCase):
             self.assertFalse(errors)
             if name == 'Storage':
                 child['Description'] = 'Previous storage template'
-            self.aws.live_templates[child_id] = json.dumps(child)
-        self.aws.live_templates[stack_id] = json.dumps(live)
+            self.aws.live_templates[child_id] = json.dumps(child) if name == 'Network' else child
+        self.aws.live_templates[stack_id] = live
         with tempfile.TemporaryDirectory() as directory:
             operations.prepare(self.aws, self.config, 'root', ROOT, Path(directory), True)
             parent = json.loads((Path(directory) / 'root.rendered.json').read_text())
