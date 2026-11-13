@@ -393,3 +393,58 @@ interface ImageDeletionRequestListOperations {
     @query perPage?: int32 | null,
   ): ListImageDeletionRequestsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
+
+@doc("Operator-managed image with its associated Wiki and approval status.")
+model ManagedImageListItem {
+  ...UploadedImageListItem;
+  wiki: DraftImageWikiDisplayInformation;
+  status: DraftImageStatus;
+}
+
+model ListManagedImagesResponseBody {
+  images: ManagedImageListItem[];
+  current_page: int32;
+  last_page: int32;
+  total: int32;
+  per_page: int32;
+}
+
+model ListManagedImagesResponse {
+  @statusCode statusCode: 200;
+  @body body: ListManagedImagesResponseBody;
+}
+
+@route("/managed-images")
+interface ManagedImageListOperations {
+  @get
+  @doc("List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts.")
+  listManagedImages(
+    @query status: DraftImageStatus,
+    @query @minValue(1) @maxValue(100) perPage?: int32 | null,
+    @query @minValue(1) page?: int32 | null,
+    @doc("Filter by image license; omit to include all licenses.")
+    @query license?: ImageLicense | null,
+    @doc("Only images with a null, empty or space-only author when true.")
+    @query authorMissing?: boolean | null,
+    @doc("Only images without a selected license (null) when true.")
+    @query licenseMissing?: boolean | null,
+  ): ListManagedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+model UpdateImageMetadataRequestBody {
+  @minLength(1) @maxLength(255) sourceName: string;
+  @minLength(1) @maxLength(255) author: string;
+  license: ImageLicense;
+  @maxLength(512) altText: string | null;
+  @minValue(0) displayOrder: int32;
+}
+
+@route("/image/{imageId}/metadata")
+interface ImageMetadataOperations {
+  @patch
+  @doc("Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.")
+  updateImageMetadata(
+    @path imageId: Uuid,
+    @body body: UpdateImageMetadataRequestBody,
+  ): OkImageResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
+}

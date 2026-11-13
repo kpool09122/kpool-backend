@@ -32,6 +32,7 @@ use Override;
  * @property ?Carbon $approved_at
  * @property ?string $updater_id
  * @property ?Carbon $updated_at
+ * @property-read Collection<int, Wiki> $wikis
  * @property-read Collection<int, ImageDeletionRequest> $deletionRequests
  */
 #[Fillable([
@@ -82,5 +83,11 @@ class WikiImage extends Model
     {
         return $this->hasMany(ImageDeletionRequest::class, 'image_id', 'id')
             ->orderBy('requested_at');
+    }
+
+    /** @return HasMany<Wiki, $this> */
+    public function wikis(): HasMany
+    {
+        return $this->hasMany(Wiki::class, 'translation_set_identifier', 'translation_set_identifier');
     }
 }

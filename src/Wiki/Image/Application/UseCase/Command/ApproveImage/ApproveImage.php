@@ -7,10 +7,8 @@ namespace Source\Wiki\Image\Application\UseCase\Command\ApproveImage;
 use DateTimeImmutable;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
-use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -26,8 +24,6 @@ readonly class ApproveImage implements ApproveImageInterface
         private DraftImageRepositoryInterface $draftImageRepository,
         private ImageRepositoryInterface $imageRepository,
         private ImageFactoryInterface $imageFactory,
-        private ImageSnapshotFactoryInterface $imageSnapshotFactory,
-        private ImageSnapshotRepositoryInterface $imageSnapshotRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private ImageAuthorizationResourceBuilderInterface $imageAuthorizationResourceBuilder,
@@ -72,13 +68,6 @@ readonly class ApproveImage implements ApproveImageInterface
             // 既存Imageの更新
             $existingImage = $this->imageRepository->findById($publishedImageIdentifier);
             if ($existingImage !== null) {
-                // スナップショット作成
-                $snapshot = $this->imageSnapshotFactory->create(
-                    $existingImage,
-                    $existingImage->translationSetIdentifier(),
-                );
-                $this->imageSnapshotRepository->save($snapshot);
-
                 // 既存Imageを更新
                 $existingImage->setImagePath($draftImage->imagePath());
                 $existingImage->setDisplayOrder($draftImage->displayOrder());

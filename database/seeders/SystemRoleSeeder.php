@@ -174,6 +174,8 @@ class SystemRoleSeeder extends Seeder
     private function operatorOnlyPolicyNames(): array
     {
         return [
+            'GLOBAL_LIST_MANAGED_IMAGES',
+            'GLOBAL_UPDATE_IMAGE_METADATA',
             'GLOBAL_ROLLBACK',
             'GLOBAL_OFFICIAL_CERTIFICATION_READ',
             'GLOBAL_OFFICIAL_CERTIFICATION_APPROVE',

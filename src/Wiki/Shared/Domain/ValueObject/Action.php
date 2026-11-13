@@ -31,6 +31,8 @@ enum Action: string
     case SEND_VIDEO_WATCH_REQUEST = 'send_video_watch_request';
     case LIST_MY_VIDEO_WATCH_REQUESTS = 'list_my_video_watch_requests';
     case UNLIKE_VIDEO_LINK = 'unlike_video_link';
+    case LIST_MANAGED_IMAGES = 'list_managed_images';
+    case UPDATE_IMAGE_METADATA = 'update_image_metadata';
     case SEARCH_FREE_MATERIALS = 'search_free_materials';
     case DELETE = 'delete';
     case HIDE = 'hide';
