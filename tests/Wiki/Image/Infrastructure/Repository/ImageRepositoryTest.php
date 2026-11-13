@@ -12,6 +12,8 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -170,6 +172,8 @@ class ImageRepositoryTest extends TestCase
             null,
             null,
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Example Author'),
+            license: ImageLicense::CC_BY,
         );
 
         $repository = $this->app()->make(ImageRepositoryInterface::class);
@@ -183,10 +187,17 @@ class ImageRepositoryTest extends TestCase
             'display_order' => $image->displayOrder(),
             'source_url' => $image->sourceUrl(),
             'source_name' => $image->sourceName(),
+            'author' => 'Example Author',
+            'license' => 'CC-BY-4.0',
             'alt_text' => $image->altText(),
             'uploader_id' => (string) $uploaderIdentifier,
             'approver_id' => (string) $approverIdentifier,
         ]);
+
+        $savedImage = $repository->findById($image->imageIdentifier());
+        $this->assertNotNull($savedImage);
+        $this->assertSame('Example Author', (string) $savedImage->author());
+        $this->assertSame(ImageLicense::CC_BY, $savedImage->license());
     }
 
     /**

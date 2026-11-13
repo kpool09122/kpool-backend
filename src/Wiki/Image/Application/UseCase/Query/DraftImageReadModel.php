@@ -20,11 +20,13 @@ readonly class DraftImageReadModel
         private array $wiki,
         private string $status,
         private ?string $uploadedAt,
+        private ?string $author = null,
+        private ?string $license = null,
     ) {
     }
 
     /**
-     * @return array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}
+     * @return array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, author: string|null, license: string|null, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}
      */
     public function toArray(): array
     {
@@ -37,6 +39,8 @@ readonly class DraftImageReadModel
             'displayOrder' => $this->displayOrder,
             'sourceUrl' => $this->sourceUrl,
             'sourceName' => $this->sourceName,
+            'author' => $this->author,
+            'license' => $this->license,
             'altText' => $this->altText,
             'wiki' => $this->wiki,
             'status' => $this->status,

@@ -18,6 +18,8 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageOutput;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -56,6 +58,8 @@ readonly class UploadImageAction
                     $request->altText(),
                     new DateTimeImmutable($request->agreedToTermsAt()),
                     new RightsConfirmationAgreed($request->rightsConfirmationAgreed()),
+                    new ImageAuthor($request->author()),
+                    ImageLicense::from($request->license()),
                 );
                 $output = new UploadImageOutput();
             } catch (InvalidArgumentException $e) {

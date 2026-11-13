@@ -3,6 +3,15 @@ using KPool.Common;
 
 namespace KPool.WikiApi;
 
+alias ImageLicense =
+  "CC-BY-4.0"
+  | "CC-BY-SA-4.0"
+  | "CC-BY-ND-4.0"
+  | "CC-BY-NC-4.0"
+  | "CC-BY-NC-SA-4.0"
+  | "CC-BY-NC-ND-4.0"
+  | "CC0-1.0";
+
 @doc("Request body for uploading an image.")
 model UploadImageRequestBody {
   @doc("Published image identifier to replace.")
@@ -19,6 +28,10 @@ model UploadImageRequestBody {
   sourceUrl: string;
   @doc("Original source name of the image.")
   sourceName: string;
+  @doc("Name of the image creator.")
+  @minLength(1) @maxLength(255) author: string;
+  @doc("License of the image.")
+  license: ImageLicense;
   @doc("Alternative text for the image.")
   altText: string;
   @doc("Timestamp when the uploader agreed to the terms.")
@@ -59,6 +72,10 @@ model UploadedImageListItem {
   sourceUrl: string;
   @doc("Original source name of the image.")
   sourceName: string;
+  @doc("Name of the image creator.")
+  author: string | null;
+  @doc("License of the image.")
+  license: ImageLicense | null;
   @doc("Alternative text for the image.")
   altText: string;
   @doc("Whether the image is hidden.")
@@ -83,6 +100,10 @@ model ImageDeletionRequestListItem {
   sourceUrl: string;
   @doc("Original source name of the image.")
   sourceName: string;
+  @doc("Name of the image creator.")
+  author: string | null;
+  @doc("License of the image.")
+  license: ImageLicense | null;
   @doc("Alternative text for the image.")
   altText: string;
   @doc("Whether the image is hidden.")
@@ -131,6 +152,10 @@ model DraftImageListItem {
   sourceUrl: string;
   @doc("Original source name of the image.")
   sourceName: string;
+  @doc("Name of the image creator.")
+  author: string | null;
+  @doc("License of the image.")
+  license: ImageLicense | null;
   @doc("Alternative text for the image.")
   altText: string;
   @doc("Wiki display information linked to this image through its translation set.")

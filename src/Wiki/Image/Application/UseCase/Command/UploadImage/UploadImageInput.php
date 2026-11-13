@@ -6,6 +6,8 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -25,6 +27,8 @@ readonly class UploadImageInput implements UploadImageInputPort
         private string              $altText,
         private DateTimeImmutable   $agreedToTermsAt,
         private RightsConfirmationAgreed $rightsConfirmationAgreed,
+        private ImageAuthor $author,
+        private ImageLicense $license,
     ) {
     }
 
@@ -66,6 +70,16 @@ readonly class UploadImageInput implements UploadImageInputPort
     public function sourceName(): string
     {
         return $this->sourceName;
+    }
+
+    public function author(): ImageAuthor
+    {
+        return $this->author;
+    }
+
+    public function license(): ImageLicense
+    {
+        return $this->license;
     }
 
     public function altText(): string

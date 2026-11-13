@@ -25,6 +25,8 @@ use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -121,6 +123,8 @@ class ApproveImageTest extends TestCase
                 Mockery::type(PrincipalIdentifier::class),
                 Mockery::type(DateTimeImmutable::class),
                 $testData->draftImage->rightsConfirmationAgreed(),
+                $testData->draftImage->author(),
+                $testData->draftImage->license(),
             )
             ->andReturn($testData->image);
 
@@ -365,6 +369,8 @@ class ApproveImageTest extends TestCase
         $this->assertSame((string) $testData->publishedImageIdentifier, $result['imageIdentifier']);
         $this->assertSame($testData->existingImage->resourceType()->value, $result['resourceType']);
         $this->assertFalse($result['isHidden']);
+        $this->assertSame('Replacement Author', (string) $testData->existingImage->author());
+        $this->assertSame(ImageLicense::CC_BY_SA, $testData->existingImage->license());
     }
 
     /**
@@ -507,6 +513,8 @@ class ApproveImageTest extends TestCase
             $agreedToTermsAt,
             $uploadedAt,
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Original Author'),
+            license: ImageLicense::CC0,
         );
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
@@ -658,6 +666,8 @@ class ApproveImageTest extends TestCase
             $agreedToTermsAt,
             $uploadedAt,
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Replacement Author'),
+            license: ImageLicense::CC_BY_SA,
         );
 
         return new ApproveImageUpdateTestData(

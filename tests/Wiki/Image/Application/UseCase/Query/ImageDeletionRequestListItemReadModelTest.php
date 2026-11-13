@@ -35,6 +35,8 @@ class ImageDeletionRequestListItemReadModelTest extends TestCase
             'displayOrder' => 1,
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',
+            'author' => null,
+            'license' => null,
             'altText' => 'Profile image',
             'isHidden' => false,
             'uploadedAt' => '2026-05-01T00:00:00+00:00',

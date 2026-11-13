@@ -10,6 +10,8 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Exception\ImageDeletionRequestAlreadyPendingException;
 use Source\Wiki\Image\Domain\Exception\ImageDeletionRequestNotPendingException;
 use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -39,6 +41,8 @@ class Image
         private ?DateTimeImmutable $updatedAt,
         private RightsConfirmationAgreed $rightsConfirmationAgreed,
         private array $deletionRequests = [],
+        private ?ImageAuthor $author = null,
+        private ?ImageLicense $license = null,
     ) {
     }
 
@@ -155,6 +159,22 @@ class Image
     public function setSourceName(string $sourceName): void
     {
         $this->sourceName = $sourceName;
+    }
+
+    public function author(): ?ImageAuthor
+    {
+        return $this->author;
+    }
+
+    public function license(): ?ImageLicense
+    {
+        return $this->license;
+    }
+
+    public function setAttribution(?ImageAuthor $author, ?ImageLicense $license): void
+    {
+        $this->author = $author;
+        $this->license = $license;
     }
 
     public function altText(): string

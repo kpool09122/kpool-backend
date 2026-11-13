@@ -84,6 +84,7 @@ readonly class ApproveImage implements ApproveImageInterface
                 $existingImage->setDisplayOrder($draftImage->displayOrder());
                 $existingImage->setSourceUrl($draftImage->sourceUrl());
                 $existingImage->setSourceName($draftImage->sourceName());
+                $existingImage->setAttribution($draftImage->author(), $draftImage->license());
                 $existingImage->setAltText($draftImage->altText());
                 $existingImage->setRightsConfirmationAgreed($draftImage->rightsConfirmationAgreed());
                 $existingImage->setApproverIdentifier($input->principalIdentifier());
@@ -113,6 +114,8 @@ readonly class ApproveImage implements ApproveImageInterface
             $input->principalIdentifier(),
             $now,
             $draftImage->rightsConfirmationAgreed(),
+            $draftImage->author(),
+            $draftImage->license(),
         );
 
         $this->imageRepository->save($image);

@@ -20,6 +20,8 @@ use Override;
  * @property int $display_order
  * @property string $source_url
  * @property string $source_name
+ * @property string|null $author
+ * @property string|null $license
  * @property string $alt_text
  * @property bool $is_hidden
  * @property ?Carbon $hidden_at
@@ -40,6 +42,8 @@ use Override;
     'display_order',
     'source_url',
     'source_name',
+    'author',
+    'license',
     'alt_text',
     'is_hidden',
     'hidden_at',

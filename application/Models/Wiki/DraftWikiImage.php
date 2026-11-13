@@ -22,6 +22,8 @@ use Override;
  * @property int $display_order
  * @property string $source_url
  * @property string $source_name
+ * @property string|null $author
+ * @property string|null $license
  * @property string $alt_text
  * @property string $status
  * @property Carbon $agreed_to_terms_at
@@ -39,6 +41,8 @@ use Override;
     'display_order',
     'source_url',
     'source_name',
+    'author',
+    'license',
     'alt_text',
     'status',
     'agreed_to_terms_at',

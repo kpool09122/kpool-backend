@@ -60,6 +60,8 @@ class ListImageDeletionRequestsTest extends TestCase
             'displayOrder' => 3,
             'sourceUrl' => 'https://example.com/source-image',
             'sourceName' => 'Source Name',
+            'author' => null,
+            'license' => null,
             'altText' => 'Deletion request target',
             'isHidden' => false,
             'uploadedAt' => '2026-05-01T00:00:00+00:00',

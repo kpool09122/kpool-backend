@@ -10,6 +10,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -35,6 +37,8 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
         string              $altText,
         DateTimeImmutable   $agreedToTermsAt,
         RightsConfirmationAgreed $rightsConfirmationAgreed,
+        ImageAuthor $author,
+        ImageLicense $license,
     ): DraftImage {
         return new DraftImage(
             new ImageIdentifier($this->uuidGenerator->generate()),
@@ -51,6 +55,8 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
             $agreedToTermsAt,
             new DateTimeImmutable(),
             $rightsConfirmationAgreed,
+            author: $author,
+            license: $license,
         );
     }
 }

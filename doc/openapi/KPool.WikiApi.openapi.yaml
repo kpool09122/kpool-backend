@@ -6321,6 +6321,8 @@ components:
         - displayOrder
         - sourceUrl
         - sourceName
+        - author
+        - license
         - altText
         - wiki
         - status
@@ -6356,6 +6358,22 @@ components:
         sourceName:
           type: string
           description: Original source name of the image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the image.
         altText:
           type: string
           description: Alternative text for the image.
@@ -6489,6 +6507,8 @@ components:
         - imageIdentifier
         - src
         - alt
+        - author
+        - license
         - isHidden
       properties:
         imageIdentifier:
@@ -6513,6 +6533,22 @@ components:
           type: string
           nullable: true
           description: Source site name for the hero image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the hero image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the hero image.
         isHidden:
           type: boolean
           nullable: true
@@ -6854,6 +6890,8 @@ components:
         - displayOrder
         - sourceUrl
         - sourceName
+        - author
+        - license
         - altText
         - isHidden
         - uploadedAt
@@ -6885,6 +6923,22 @@ components:
         sourceName:
           type: string
           description: Original source name of the image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the image.
         altText:
           type: string
           description: Alternative text for the image.
@@ -9103,6 +9157,8 @@ components:
         - displayOrder
         - sourceUrl
         - sourceName
+        - author
+        - license
         - altText
         - agreedToTermsAt
         - rightsConfirmationAgreed
@@ -9131,6 +9187,22 @@ components:
         sourceName:
           type: string
           description: Original source name of the image.
+        author:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          description: License of the image.
         altText:
           type: string
           description: Alternative text for the image.
@@ -9151,6 +9223,8 @@ components:
         - displayOrder
         - sourceUrl
         - sourceName
+        - author
+        - license
         - altText
         - isHidden
         - uploadedAt
@@ -9179,6 +9253,22 @@ components:
         sourceName:
           type: string
           description: Original source name of the image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the image.
         altText:
           type: string
           description: Alternative text for the image.
@@ -9482,6 +9572,8 @@ components:
         - imageIdentifier
         - src
         - alt
+        - author
+        - license
         - isHidden
       properties:
         imageIdentifier:
@@ -9506,6 +9598,22 @@ components:
           type: string
           nullable: true
           description: Source site name for the hero image.
+        author:
+          type: string
+          nullable: true
+          description: Name of the hero image creator.
+        license:
+          type: string
+          enum:
+            - CC-BY-4.0
+            - CC-BY-SA-4.0
+            - CC-BY-ND-4.0
+            - CC-BY-NC-4.0
+            - CC-BY-NC-SA-4.0
+            - CC-BY-NC-ND-4.0
+            - CC0-1.0
+          nullable: true
+          description: License of the hero image.
         isHidden:
           type: boolean
           nullable: true

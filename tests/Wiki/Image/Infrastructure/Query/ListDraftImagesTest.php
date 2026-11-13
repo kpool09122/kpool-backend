@@ -174,6 +174,8 @@ class ListDraftImagesTest extends TestCase
             'displayOrder' => 2,
             'sourceUrl' => 'https://example.com/source-image',
             'sourceName' => 'Source Name',
+            'author' => null,
+            'license' => null,
             'altText' => 'Cover image',
             'wiki' => [
                 'names' => [
