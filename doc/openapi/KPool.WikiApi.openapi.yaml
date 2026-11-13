@@ -489,7 +489,7 @@ paths:
   /image/{imageId}/metadata:
     patch:
       operationId: ImageMetadataOperations_updateImageMetadata
-      description: Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility. Saves the previous image as a snapshot.
+      description: Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.
       parameters:
         - name: imageId
           in: path

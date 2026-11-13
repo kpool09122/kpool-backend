@@ -6,9 +6,7 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UpdateImageMetadata;
 
 use DateTimeImmutable;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
-use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -20,8 +18,6 @@ readonly class UpdateImageMetadata implements UpdateImageMetadataInterface
 {
     public function __construct(
         private ImageRepositoryInterface $imageRepository,
-        private ImageSnapshotFactoryInterface $imageSnapshotFactory,
-        private ImageSnapshotRepositoryInterface $imageSnapshotRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private ImageAuthorizationResourceBuilderInterface $imageAuthorizationResourceBuilder,
@@ -53,7 +49,6 @@ readonly class UpdateImageMetadata implements UpdateImageMetadataInterface
             throw new DisallowedException();
         }
 
-        $this->imageSnapshotRepository->save($this->imageSnapshotFactory->create($image, $image->translationSetIdentifier()));
         $image->setSourceName($input->sourceName());
         $image->setAttribution($input->author(), $input->license());
         $image->setAltText($input->altText());

@@ -18,16 +18,12 @@ use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageInter
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
-use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
-use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
 use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
-use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -56,16 +52,12 @@ class ApproveImageTest extends TestCase
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
@@ -128,8 +120,6 @@ class ApproveImageTest extends TestCase
             )
             ->andReturn($testData->image);
 
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -149,8 +139,6 @@ class ApproveImageTest extends TestCase
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
@@ -188,16 +176,12 @@ class ApproveImageTest extends TestCase
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
@@ -232,8 +216,6 @@ class ApproveImageTest extends TestCase
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -253,8 +235,6 @@ class ApproveImageTest extends TestCase
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
@@ -284,24 +264,6 @@ class ApproveImageTest extends TestCase
 
         $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
-        $snapshot = new ImageSnapshot(
-            new ImageSnapshotIdentifier(StrTestHelper::generateUuid()),
-            $testData->existingImage->imageIdentifier(),
-            $testData->existingImage->translationSetIdentifier(),
-            $testData->existingImage->imagePath(),
-            $testData->existingImage->displayOrder(),
-            $testData->existingImage->sourceUrl(),
-            $testData->existingImage->sourceName(),
-            $testData->existingImage->altText(),
-            $testData->existingImage->uploaderIdentifier(),
-            $testData->existingImage->uploadedAt(),
-            $testData->existingImage->approverIdentifier(),
-            $testData->existingImage->approvedAt(),
-            $testData->existingImage->updaterIdentifier(),
-            $testData->existingImage->updatedAt(),
-            $testData->existingImage->rightsConfirmationAgreed(),
-        );
-
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $draftImageRepository->shouldReceive('findById')
             ->once()
@@ -324,17 +286,7 @@ class ApproveImageTest extends TestCase
 
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
 
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotFactory->shouldReceive('create')
-            ->once()
-            ->with($testData->existingImage, $testData->existingImage->translationSetIdentifier())
-            ->andReturn($snapshot);
 
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
-        $imageSnapshotRepository->shouldReceive('save')
-            ->once()
-            ->with($snapshot)
-            ->andReturn(null);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -354,8 +306,6 @@ class ApproveImageTest extends TestCase
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
@@ -399,8 +349,6 @@ class ApproveImageTest extends TestCase
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -420,8 +368,6 @@ class ApproveImageTest extends TestCase
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
@@ -456,8 +402,6 @@ class ApproveImageTest extends TestCase
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
-        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
-        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -470,8 +414,6 @@ class ApproveImageTest extends TestCase
         $this->app()->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app()->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app()->instance(ImageFactoryInterface::class, $imageFactory);
-        $this->app()->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
-        $this->app()->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app()->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 

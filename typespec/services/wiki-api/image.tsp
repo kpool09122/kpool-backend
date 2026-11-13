@@ -436,7 +436,7 @@ model UpdateImageMetadataRequestBody {
 @route("/image/{imageId}/metadata")
 interface ImageMetadataOperations {
   @patch
-  @doc("Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility. Saves the previous image as a snapshot.")
+  @doc("Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.")
   updateImageMetadata(
     @path imageId: Uuid,
     @body body: UpdateImageMetadataRequestBody,

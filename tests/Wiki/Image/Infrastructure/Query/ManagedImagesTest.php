@@ -109,6 +109,5 @@ class ManagedImagesTest extends TestCase
         self::assertSame((string) $principalId, $after->updater_id);
         self::assertNotNull($after->updated_at);
         self::assertSame(0, DB::table('draft_wiki_images')->count());
-        self::assertSame(1, DB::table('wiki_image_snapshots')->count());
     }
 }
