@@ -1024,6 +1024,7 @@ paths:
               - CC-BY-NC-SA-1.0
               - CC-BY-ND-NC-1.0
               - CC0-1.0
+              - PUBLIC-DOMAIN
             nullable: true
           explode: false
         - name: authorMissing
@@ -6572,6 +6573,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -6771,6 +6773,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the hero image.
         isHidden:
@@ -7185,6 +7188,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -7757,6 +7761,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -9483,6 +9488,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
         altText:
           type: string
           nullable: true
@@ -9655,6 +9661,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           description: License of the image.
         altText:
           type: string
@@ -9744,6 +9751,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -10113,6 +10121,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the hero image.
         isHidden:

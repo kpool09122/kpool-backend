@@ -34,7 +34,8 @@ alias ImageLicense =
   | "CC-BY-NC-1.0"
   | "CC-BY-NC-SA-1.0"
   | "CC-BY-ND-NC-1.0"
-  | "CC0-1.0";
+  | "CC0-1.0"
+  | "PUBLIC-DOMAIN";
 
 @doc("Request body for uploading an image.")
 model UploadImageRequestBody {
