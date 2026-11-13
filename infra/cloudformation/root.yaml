@@ -82,6 +82,9 @@ Outputs:
     Value: !GetAtt Network.Outputs.ApplicationSecurityGroupId
   DatabaseSecurityGroupId:
     Value: !GetAtt Network.Outputs.DatabaseSecurityGroupId
+  DatabaseOperatorSecurityGroupId:
+    Description: Select this security group for CloudShell VPC database operations.
+    Value: !GetAtt Network.Outputs.DatabaseOperatorSecurityGroupId
   CacheSecurityGroupId:
     Value: !GetAtt Network.Outputs.CacheSecurityGroupId
   DatabaseEndpoint:

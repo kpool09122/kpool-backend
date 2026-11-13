@@ -3,6 +3,7 @@
 構成と設定の正本は [インフラの入口](../../infra/cloudformation/README.md)。本書は操作の正本。
 [接続台帳](pipeline-handoff.md) は登録先・外部担当、専門文書はコンテナ/queue/S3の業務契約だけを扱う。
 本書のAWS変更操作は、管理者が正しい環境・権限を確認して実行する。自動実装/CIは配備しない。
+本番 DB の調査・手動補正は [CloudShell からの本番 DB 操作](database-operations.md) を参照する。
 
 ## 1. 環境入力を用意する
 

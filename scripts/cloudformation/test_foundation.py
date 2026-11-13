@@ -114,7 +114,7 @@ class FoundationTest(unittest.TestCase):
         network['Outputs']['PublicSubnetIds']['Value']['Fn::Join'][1].append({'Ref': 'ExtraPublicSubnet'})
         self.assert_data_network_is_private(network)
 
-    def test_data_access_only_from_application_security_group(self):
+    def test_inline_data_access_only_from_application_security_group(self):
         groups = self.resources('network', 'EC2::SecurityGroup')
         for name, ports in [('DatabaseSecurityGroup', (5432, 5432)), ('CacheSecurityGroup', (6379, 6380))]:
             ingress = groups[name]['Properties']['SecurityGroupIngress']
@@ -124,6 +124,31 @@ class FoundationTest(unittest.TestCase):
                 'SourceSecurityGroupId': {'Ref': 'ApplicationSecurityGroup'},
             })
         self.assertFalse(groups['ApplicationSecurityGroup']['Properties'].get('SecurityGroupIngress'))
+
+    def test_database_operator_security_group_allows_only_postgresql(self):
+        operator = {'Ref': 'DatabaseOperatorSecurityGroup'}
+        database = {'Ref': 'DatabaseSecurityGroup'}
+        postgres = {'IpProtocol': 'tcp', 'FromPort': 5432, 'ToPort': 5432}
+        network = self.templates['network']
+        group = self.resources('network', 'EC2::SecurityGroup')[operator['Ref']]['Properties']
+        self.assertEqual(group['VpcId'], {'Ref': 'Vpc'})
+        self.assertFalse(group.get('SecurityGroupIngress'))
+        self.assertEqual(group['SecurityGroupEgress'], [
+            {**postgres, 'DestinationSecurityGroupId': database},
+        ])
+        ingress = self.resources('network', 'EC2::SecurityGroupIngress')
+        self.assertEqual({
+            name: rule for name, rule in ingress.items()
+            if rule['Properties'].get('SourceSecurityGroupId') == operator
+        }, {
+            'DatabaseOperatorIngress': {
+                'Type': 'AWS::EC2::SecurityGroupIngress',
+                'Properties': {**postgres, 'GroupId': database, 'SourceSecurityGroupId': operator},
+            },
+        })
+        self.assertEqual(network['Outputs']['DatabaseOperatorSecurityGroupId']['Value'], operator)
+        self.assertEqual(self.templates['root']['Outputs']['DatabaseOperatorSecurityGroupId']['Value'],
+                         {'Fn::GetAtt': ['Network', 'Outputs.DatabaseOperatorSecurityGroupId']})
 
     def test_database_backup_tls_and_deletion_protection(self):
         database = self.resources('data', 'RDS::DBInstance')['Database']
