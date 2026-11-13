@@ -95,7 +95,6 @@ Resources:
   DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      # Preserve the existing description to avoid replacing the RDS security group.
       GroupDescription: PostgreSQL from application tasks only
       VpcId: !Ref Vpc
       SecurityGroupIngress:
@@ -107,24 +106,6 @@ Resources:
       SecurityGroupEgress:
         - IpProtocol: '-1'
           CidrIp: 127.0.0.1/32
-  DatabaseOperatorSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: CloudShell VPC sessions for manual PostgreSQL operations
-      VpcId: !Ref Vpc
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 5432
-          ToPort: 5432
-          DestinationSecurityGroupId: !Ref DatabaseSecurityGroup
-  DatabaseOperatorIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref DatabaseSecurityGroup
-      IpProtocol: tcp
-      FromPort: 5432
-      ToPort: 5432
-      SourceSecurityGroupId: !Ref DatabaseOperatorSecurityGroup
   CacheSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -165,7 +146,5 @@ Outputs:
     Value: !Ref ApplicationSecurityGroup
   DatabaseSecurityGroupId:
     Value: !Ref DatabaseSecurityGroup
-  DatabaseOperatorSecurityGroupId:
-    Value: !Ref DatabaseOperatorSecurityGroup
   CacheSecurityGroupId:
     Value: !Ref CacheSecurityGroup

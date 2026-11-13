@@ -23,6 +23,8 @@ class FakeAws:
         self.after_wait = lambda: None
         self.runtime_data = None
         self.uploaded_templates = {}
+        self.live_templates = {}
+        self.stack_resources = {}
         self.change = {'Id': 'arn:aws:cloudformation:ap-northeast-1:123456789012:changeSet/test/id',
                        'Status': 'CREATE_COMPLETE', 'ExecutionStatus': 'AVAILABLE', 'Changes': []}
 
@@ -41,6 +43,10 @@ class FakeAws:
             if name not in self.stacks:
                 raise operations.AwsError(service, operation, f'ValidationError: Stack with id {name} does not exist')
             return {'Stacks': [copy.deepcopy(self.stacks[name])]}
+        if operation == 'get-template':
+            return {'TemplateBody': self.live_templates[args[1]]}
+        if operation == 'list-stack-resources':
+            return {'StackResourceSummaries': self.stack_resources[args[1]]}
         if operation == 'create-change-set':
             name = args[args.index('--stack-name') + 1]
             self.change['StackId'] = f'arn:aws:cloudformation:ap-northeast-1:123456789012:stack/{name}/id'
@@ -106,6 +112,44 @@ class OperationsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(ValueError, 'versioning'):
             operations.package_nested_templates(unversioned, self.config, ROOT, Path(directory), 'test', templates['root'])
         self.assertFalse(any(op == 'create-change-set' for _, op, _ in self.aws.calls))
+
+    def test_existing_root_reuses_only_unchanged_pinned_child_templates(self):
+        templates, contract = environment.load_contract(ROOT)
+        bootstrap = environment.parameters(self.config, 'bootstrap', templates, contract, {})
+        self.aws.stacks[self.config['stacks']['bootstrap']] = {
+            'StackStatus': 'CREATE_COMPLETE',
+            'Parameters': [{'ParameterKey': key, 'ParameterValue': value} for key, value in bootstrap.items()],
+            'Outputs': [{'OutputKey': 'CloudFormationExecutionRoleArn', 'OutputValue': 'fixture-cfn-role'}],
+        }
+        stack_id = 'fixture-root-stack'
+        self.aws.stacks[self.config['stacks']['root']] = {'StackStatus': 'CREATE_COMPLETE', 'StackId': stack_id}
+        live = copy.deepcopy(templates['root'])
+        live['Resources'].pop('DatabaseOperatorSecurityGroup')
+        live['Resources'].pop('DatabaseOperatorIngress')
+        live['Outputs'].pop('DatabaseOperatorSecurityGroupId')
+        self.aws.stack_resources[stack_id] = []
+        for name in ('Network', 'Data', 'Storage'):
+            live['Resources'][name]['Properties']['TemplateURL'] = f'https://example.test/{name}.json?versionId=live'
+            child_id = 'fixture-' + name
+            self.aws.stack_resources[stack_id].append({
+                'LogicalResourceId': name, 'PhysicalResourceId': child_id, 'ResourceType': 'AWS::CloudFormation::Stack',
+            })
+            child, errors = decode(str(ROOT / f'{name.lower()}.yaml'))
+            self.assertFalse(errors)
+            if name == 'Storage':
+                child['Description'] = 'Previous storage template'
+            self.aws.live_templates[child_id] = json.dumps(child)
+        self.aws.live_templates[stack_id] = json.dumps(live)
+        with tempfile.TemporaryDirectory() as directory:
+            operations.prepare(self.aws, self.config, 'root', ROOT, Path(directory), True)
+            parent = json.loads((Path(directory) / 'root.rendered.json').read_text())
+        self.assertEqual([Path(key).name for key in self.aws.uploaded_templates], ['storage.json'])
+        for name in ('Network', 'Data'):
+            self.assertEqual(parent['Resources'][name], live['Resources'][name])
+        self.assertIn('/storage.json?versionId=fixture-version',
+                      parent['Resources']['Storage']['Properties']['TemplateURL'])
+        self.assertIn('DatabaseOperatorIngress', parent['Resources'])
+        self.assertIn('DatabaseOperatorSecurityGroupId', parent['Outputs'])
 
     def test_plan_then_execute_uses_exact_reviewed_changeset(self):
         with tempfile.TemporaryDirectory() as directory:

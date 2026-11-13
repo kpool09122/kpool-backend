@@ -45,7 +45,7 @@ bootstrapだけは管理者本人の権限、他の親はbootstrap OutputのClou
 runtimeのHostedZoneIdやhook bucket/key、rootのWorkQueueNameを変更すると、bootstrapの権限更新が必要になる場合がある。
 planが `Bootstrap is stale` で停止したら、同じenvironmentでbootstrapを先にplan/review/executeし、対象の親を再計画する。
 キュー名が既存bootstrapのProjectNameまたはFoundationStackNameの接頭辞で許可済みなら、キュー名だけのためにbootstrapを更新する必要はない。
-rootはpackageし `--include-nested-stacks` で子Change Setも作る。
+root は変更のある子テンプレートを package し、内容が同一の子は適用済みのバージョン付き URL を再利用する。`--include-nested-stacks` で子の変更も確認できる。
 既存runtimeの task ARN/desired/primary/production/test/Scheduler State・ARNを実状態から取込み、旧Parametersをそのまま再利用しない。
 複数deployment、中間重み、不明target、service不安定、取得失敗は中止。test targetをproductionの逆と推測しない。
 計画作成中のstack/配備変化も拒否する。planは0600・上書き不可、repo外に保存する。
