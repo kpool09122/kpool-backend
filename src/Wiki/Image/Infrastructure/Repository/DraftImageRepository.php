@@ -9,6 +9,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -57,6 +59,8 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'display_order' => $draftImage->displayOrder(),
                 'source_url' => $draftImage->sourceUrl(),
                 'source_name' => $draftImage->sourceName(),
+                'author' => $draftImage->author() === null ? null : (string) $draftImage->author(),
+                'license' => $draftImage->license()?->value,
                 'alt_text' => $draftImage->altText(),
                 'status' => $draftImage->status()->value,
                 'agreed_to_terms_at' => $draftImage->agreedToTermsAt(),
@@ -98,6 +102,8 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             $model->agreed_to_terms_at->toDateTimeImmutable(),
             $model->uploaded_at->toDateTimeImmutable(),
             new RightsConfirmationAgreed($model->rights_confirmation_agreed),
+            author: $model->author === null ? null : new ImageAuthor($model->author),
+            license: $model->license === null ? null : ImageLicense::from($model->license),
         );
     }
 }

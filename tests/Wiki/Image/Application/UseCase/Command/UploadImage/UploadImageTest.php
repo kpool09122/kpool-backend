@@ -21,6 +21,8 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -88,6 +90,8 @@ class UploadImageTest extends TestCase
             $testData->altText,
             $testData->agreedToTermsAt,
             $testData->rightsConfirmationAgreed,
+            new ImageAuthor('Example Author'),
+            ImageLicense::CC_BY,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -111,6 +115,8 @@ class UploadImageTest extends TestCase
                 $testData->altText,
                 $testData->agreedToTermsAt,
                 $testData->rightsConfirmationAgreed,
+                $input->author(),
+                ImageLicense::CC_BY,
             )
             ->andReturn($testData->draftImage);
 
@@ -178,6 +184,8 @@ class UploadImageTest extends TestCase
             $testData->altText,
             $testData->agreedToTermsAt,
             $testData->rightsConfirmationAgreed,
+            new ImageAuthor('Example Author'),
+            ImageLicense::CC_BY,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -236,6 +244,8 @@ class UploadImageTest extends TestCase
             $testData->altText,
             $testData->agreedToTermsAt,
             $testData->rightsConfirmationAgreed,
+            new ImageAuthor('Example Author'),
+            ImageLicense::CC_BY,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);

@@ -41,6 +41,8 @@ class DraftImageReadModelTest extends TestCase
             'displayOrder' => 1,
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',
+            'author' => null,
+            'license' => null,
             'altText' => 'Profile image',
             'wiki' => [
                 'names' => [

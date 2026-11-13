@@ -17,11 +17,13 @@ readonly class UploadedImageReadModel
         private string $altText,
         private bool $isHidden,
         private ?string $uploadedAt,
+        private ?string $author = null,
+        private ?string $license = null,
     ) {
     }
 
     /**
-     * @return array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, isHidden: bool, uploadedAt: string|null}
+     * @return array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, author: string|null, license: string|null, altText: string, isHidden: bool, uploadedAt: string|null}
      */
     public function toArray(): array
     {
@@ -33,6 +35,8 @@ readonly class UploadedImageReadModel
             'displayOrder' => $this->displayOrder,
             'sourceUrl' => $this->sourceUrl,
             'sourceName' => $this->sourceName,
+            'author' => $this->author,
+            'license' => $this->license,
             'altText' => $this->altText,
             'isHidden' => $this->isHidden,
             'uploadedAt' => $this->uploadedAt,

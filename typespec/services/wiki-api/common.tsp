@@ -72,6 +72,10 @@ model DraftWikiHeroImage {
   sourceUrl?: string | null;
   @doc("Source site name for the hero image.")
   sourceName?: string | null;
+  @doc("Name of the hero image creator.")
+  author: string | null;
+  @doc("License of the hero image.")
+  license: ImageLicense | null;
   @doc("Whether the hero image is hidden.")
   isHidden: boolean | null;
 }
@@ -88,6 +92,10 @@ model WikiHeroImage {
   sourceUrl?: string | null;
   @doc("Source site name for the hero image.")
   sourceName?: string | null;
+  @doc("Name of the hero image creator.")
+  author: string | null;
+  @doc("License of the hero image.")
+  license: ImageLicense | null;
   @doc("Whether the hero image is hidden.")
   isHidden: boolean | null;
 }

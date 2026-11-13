@@ -7,6 +7,8 @@ namespace Source\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -30,6 +32,8 @@ class DraftImage
         private readonly DateTimeImmutable   $agreedToTermsAt,
         private readonly DateTimeImmutable   $uploadedAt,
         private readonly RightsConfirmationAgreed $rightsConfirmationAgreed,
+        private readonly ?ImageAuthor $author = null,
+        private readonly ?ImageLicense $license = null,
     ) {
     }
 
@@ -101,6 +105,16 @@ class DraftImage
     public function setSourceName(string $sourceName): void
     {
         $this->sourceName = $sourceName;
+    }
+
+    public function author(): ?ImageAuthor
+    {
+        return $this->author;
+    }
+
+    public function license(): ?ImageLicense
+    {
+        return $this->license;
     }
 
     public function altText(): string

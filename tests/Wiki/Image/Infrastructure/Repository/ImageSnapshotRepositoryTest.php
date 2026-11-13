@@ -11,6 +11,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -60,6 +62,8 @@ class ImageSnapshotRepositoryTest extends TestCase
             $updaterIdentifier,
             $updatedAt,
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Example Author'),
+            license: ImageLicense::CC_BY,
         );
 
         $repository = $this->app()->make(ImageSnapshotRepositoryInterface::class);
@@ -73,11 +77,18 @@ class ImageSnapshotRepositoryTest extends TestCase
             'display_order' => $displayOrder,
             'source_url' => $sourceUrl,
             'source_name' => $sourceName,
+            'author' => 'Example Author',
+            'license' => 'CC-BY-4.0',
             'alt_text' => $altText,
             'uploader_id' => (string) $uploaderIdentifier,
             'approver_id' => (string) $approverIdentifier,
             'updater_id' => (string) $updaterIdentifier,
         ]);
+
+        $savedImage = $repository->findById(new ImageSnapshotIdentifier($snapshotId));
+        $this->assertNotNull($savedImage);
+        $this->assertSame('Example Author', (string) $savedImage->author());
+        $this->assertSame(ImageLicense::CC_BY, $savedImage->license());
     }
 
     /**

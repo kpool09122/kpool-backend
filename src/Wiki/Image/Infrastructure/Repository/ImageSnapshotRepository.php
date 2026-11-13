@@ -9,6 +9,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -52,6 +54,8 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             'display_order' => $imageSnapshot->displayOrder(),
             'source_url' => $imageSnapshot->sourceUrl(),
             'source_name' => $imageSnapshot->sourceName(),
+            'author' => $imageSnapshot->author() === null ? null : (string) $imageSnapshot->author(),
+            'license' => $imageSnapshot->license()?->value,
             'alt_text' => $imageSnapshot->altText(),
             'uploader_id' => (string) $imageSnapshot->uploaderIdentifier(),
             'uploaded_at' => $imageSnapshot->uploadedAt(),
@@ -81,6 +85,8 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
             $model->updated_at?->toDateTimeImmutable(),
             new RightsConfirmationAgreed($model->rights_confirmation_agreed),
+            author: $model->author === null ? null : new ImageAuthor($model->author),
+            license: $model->license === null ? null : ImageLicense::from($model->license),
         );
     }
 }

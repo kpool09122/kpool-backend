@@ -59,6 +59,8 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             displayOrder: $image->display_order,
             sourceUrl: $image->source_url,
             sourceName: $image->source_name,
+            author: $image->author,
+            license: $image->license,
             altText: $image->alt_text,
             wiki: $this->wikiDisplayInformation($image),
             status: $image->status,

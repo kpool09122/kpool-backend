@@ -38,6 +38,8 @@ readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
             $image->updaterIdentifier(),
             $image->updatedAt(),
             $image->rightsConfirmationAgreed(),
+            author: $image->author(),
+            license: $image->license(),
         );
     }
 }

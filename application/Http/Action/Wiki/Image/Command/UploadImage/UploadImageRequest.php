@@ -7,6 +7,9 @@ namespace Application\Http\Action\Wiki\Image\Command\UploadImage;
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 
 class UploadImageRequest extends FormRequest
 {
@@ -25,6 +28,8 @@ class UploadImageRequest extends FormRequest
             'displayOrder' => ['required', 'integer'],
             'sourceUrl' => ['required', 'string'],
             'sourceName' => ['required', 'string'],
+            'author' => ['required', 'string', 'max:' . ImageAuthor::MAX_LENGTH],
+            'license' => ['required', 'string', Rule::enum(ImageLicense::class)],
             'altText' => ['required', 'string'],
             'agreedToTermsAt' => ['required', 'date'],
             'rightsConfirmationAgreed' => [
@@ -73,6 +78,16 @@ class UploadImageRequest extends FormRequest
     public function sourceName(): string
     {
         return RequestValue::string($this->input('sourceName'));
+    }
+
+    public function author(): string
+    {
+        return RequestValue::string($this->input('author'));
+    }
+
+    public function license(): string
+    {
+        return RequestValue::string($this->input('license'));
     }
 
     public function altText(): string

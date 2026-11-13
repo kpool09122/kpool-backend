@@ -12,6 +12,8 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -59,6 +61,8 @@ final class ImageRepository implements ImageRepositoryInterface
                 'display_order' => $image->displayOrder(),
                 'source_url' => $image->sourceUrl(),
                 'source_name' => $image->sourceName(),
+                'author' => $image->author() === null ? null : (string) $image->author(),
+                'license' => $image->license()?->value,
                 'alt_text' => $image->altText(),
                 'is_hidden' => $image->isHidden(),
                 'hidden_at' => $image->hiddenAt(),
@@ -136,6 +140,8 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->deletionRequests
                 ->map(fn (ImageDeletionRequestModel $deletionRequestModel) => $this->toDeletionRequest($deletionRequestModel))
                 ->all(),
+            author: $model->author === null ? null : new ImageAuthor($model->author),
+            license: $model->license === null ? null : ImageLicense::from($model->license),
         );
     }
 

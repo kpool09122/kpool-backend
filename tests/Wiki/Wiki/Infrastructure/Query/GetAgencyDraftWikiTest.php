@@ -108,6 +108,8 @@ class GetAgencyDraftWikiTest extends TestCase
             'alt' => 'JYP Entertainment hero image',
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',
+            'author' => null,
+            'license' => null,
             'isHidden' => true,
         ], $readModel->heroImage());
         $this->assertInstanceOf(AgencyWikiBasicReadModel::class, $readModel->basic());

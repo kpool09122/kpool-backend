@@ -47,6 +47,8 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
             displayOrder: $image->display_order,
             sourceUrl: $image->source_url,
             sourceName: $image->source_name,
+            author: $image->author,
+            license: $image->license,
             altText: $image->alt_text,
             isHidden: $image->is_hidden,
             uploadedAt: $this->formatDateTime($image->uploaded_at),

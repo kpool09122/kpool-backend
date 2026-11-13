@@ -7,6 +7,8 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\UploadImage;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -47,6 +49,8 @@ class UploadImageInputTest extends TestCase
             $altText,
             $agreedToTermsAt,
             $rightsConfirmationAgreed,
+            new ImageAuthor('Example Author'),
+            ImageLicense::CC_BY,
         );
 
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
@@ -57,6 +61,8 @@ class UploadImageInputTest extends TestCase
         $this->assertSame($displayOrder, $input->displayOrder());
         $this->assertSame($sourceUrl, $input->sourceUrl());
         $this->assertSame($sourceName, $input->sourceName());
+        $this->assertSame('Example Author', (string) $input->author());
+        $this->assertSame(ImageLicense::CC_BY, $input->license());
         $this->assertSame($altText, $input->altText());
         $this->assertSame($agreedToTermsAt, $input->agreedToTermsAt());
         $this->assertSame($rightsConfirmationAgreed, $input->rightsConfirmationAgreed());
@@ -92,6 +98,8 @@ class UploadImageInputTest extends TestCase
             $altText,
             $agreedToTermsAt,
             $rightsConfirmationAgreed,
+            new ImageAuthor('Example Author'),
+            ImageLicense::CC_BY,
         );
 
         $this->assertNull($input->publishedImageIdentifier());

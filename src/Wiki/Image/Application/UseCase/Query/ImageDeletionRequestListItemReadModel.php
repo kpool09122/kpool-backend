@@ -20,11 +20,13 @@ readonly class ImageDeletionRequestListItemReadModel
         private string $name,
         private string $email,
         private string $reason,
+        private ?string $author = null,
+        private ?string $license = null,
     ) {
     }
 
     /**
-     * @return array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, altText: string, isHidden: bool, uploadedAt: string|null, name: string, email: string, reason: string}
+     * @return array{imageIdentifier: string, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, author: string|null, license: string|null, altText: string, isHidden: bool, uploadedAt: string|null, name: string, email: string, reason: string}
      */
     public function toArray(): array
     {
@@ -36,6 +38,8 @@ readonly class ImageDeletionRequestListItemReadModel
             'displayOrder' => $this->displayOrder,
             'sourceUrl' => $this->sourceUrl,
             'sourceName' => $this->sourceName,
+            'author' => $this->author,
+            'license' => $this->license,
             'altText' => $this->altText,
             'isHidden' => $this->isHidden,
             'uploadedAt' => $this->uploadedAt,

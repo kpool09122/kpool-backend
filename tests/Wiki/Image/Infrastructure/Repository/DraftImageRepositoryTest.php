@@ -11,6 +11,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -191,6 +193,8 @@ class DraftImageRepositoryTest extends TestCase
             new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Example Author'),
+            license: ImageLicense::CC_BY,
         );
 
         $repository = $this->app()->make(DraftImageRepositoryInterface::class);
@@ -206,9 +210,16 @@ class DraftImageRepositoryTest extends TestCase
             'display_order' => $draft->displayOrder(),
             'source_url' => $draft->sourceUrl(),
             'source_name' => $draft->sourceName(),
+            'author' => 'Example Author',
+            'license' => 'CC-BY-4.0',
             'alt_text' => $draft->altText(),
             'status' => $draft->status()->value,
         ]);
+
+        $savedImage = $repository->findById($draft->imageIdentifier());
+        $this->assertNotNull($savedImage);
+        $this->assertSame('Example Author', (string) $savedImage->author());
+        $this->assertSame(ImageLicense::CC_BY, $savedImage->license());
     }
 
     /**

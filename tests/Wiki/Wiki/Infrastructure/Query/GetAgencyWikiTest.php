@@ -24,6 +24,8 @@ class GetAgencyWikiTest extends TestCase
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f404', [
             'image_path' => '/images/wiki/agency-hero.jpg',
             'alt_text' => 'JYP Entertainment hero image',
+            'author' => 'Example Author',
+            'license' => 'CC-BY-4.0',
             'is_hidden' => true,
         ]);
 
@@ -101,6 +103,8 @@ class GetAgencyWikiTest extends TestCase
             'alt' => 'JYP Entertainment hero image',
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',
+            'author' => 'Example Author',
+            'license' => 'CC-BY-4.0',
             'isHidden' => true,
         ], $readModel->heroImage());
         $this->assertInstanceOf(AgencyWikiBasicReadModel::class, $readModel->basic());

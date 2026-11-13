@@ -8,6 +8,8 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -26,5 +28,7 @@ interface ImageFactoryInterface
         PrincipalIdentifier $approverIdentifier,
         DateTimeImmutable   $approvedAt,
         RightsConfirmationAgreed $rightsConfirmationAgreed,
+        ?ImageAuthor $author = null,
+        ?ImageLicense $license = null,
     ): Image;
 }

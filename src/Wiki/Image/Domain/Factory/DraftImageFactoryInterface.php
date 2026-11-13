@@ -8,6 +8,8 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -27,5 +29,7 @@ interface DraftImageFactoryInterface
         string              $altText,
         DateTimeImmutable   $agreedToTermsAt,
         RightsConfirmationAgreed $rightsConfirmationAgreed,
+        ImageAuthor $author,
+        ImageLicense $license,
     ): DraftImage;
 }

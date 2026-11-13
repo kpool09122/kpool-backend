@@ -161,6 +161,8 @@ class ListUploadedImagesTest extends TestCase
             'displayOrder' => 2,
             'sourceUrl' => 'https://example.com/source-image',
             'sourceName' => 'Source Name',
+            'author' => null,
+            'license' => null,
             'altText' => 'Cover image',
             'isHidden' => false,
             'uploadedAt' => '2026-05-01T00:00:00+00:00',

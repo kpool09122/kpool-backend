@@ -7,6 +7,8 @@ namespace Source\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -30,6 +32,8 @@ readonly class ImageSnapshot
         private ?PrincipalIdentifier    $updaterIdentifier,
         private ?DateTimeImmutable      $updatedAt,
         private RightsConfirmationAgreed $rightsConfirmationAgreed,
+        private ?ImageAuthor $author = null,
+        private ?ImageLicense $license = null,
     ) {
     }
 
@@ -101,6 +105,16 @@ readonly class ImageSnapshot
     public function sourceName(): string
     {
         return $this->sourceName;
+    }
+
+    public function author(): ?ImageAuthor
+    {
+        return $this->author;
+    }
+
+    public function license(): ?ImageLicense
+    {
+        return $this->license;
     }
 
     public function altText(): string

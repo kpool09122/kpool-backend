@@ -11,6 +11,8 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\ImageSnapshotFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -72,6 +74,8 @@ class ImageSnapshotFactoryTest extends TestCase
             $updaterIdentifier,
             $updatedAt,
             new RightsConfirmationAgreed(true),
+            author: new ImageAuthor('Example Author'),
+            license: ImageLicense::CC_BY,
         );
 
         $resourceSnapshotIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
@@ -86,6 +90,8 @@ class ImageSnapshotFactoryTest extends TestCase
         $this->assertSame($displayOrder, $snapshot->displayOrder());
         $this->assertSame($sourceUrl, $snapshot->sourceUrl());
         $this->assertSame($sourceName, $snapshot->sourceName());
+        $this->assertSame('Example Author', (string) $snapshot->author());
+        $this->assertSame(ImageLicense::CC_BY, $snapshot->license());
         $this->assertSame($altText, $snapshot->altText());
         $this->assertSame((string) $uploaderIdentifier, (string) $snapshot->uploaderIdentifier());
         $this->assertSame($uploadedAt, $snapshot->uploadedAt());

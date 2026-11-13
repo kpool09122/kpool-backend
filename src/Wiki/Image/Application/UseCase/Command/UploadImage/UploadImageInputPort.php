@@ -6,6 +6,8 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Image\Domain\ValueObject\ImageAuthor;
+use Source\Wiki\Image\Domain\ValueObject\ImageLicense;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -28,6 +30,10 @@ interface UploadImageInputPort
     public function sourceUrl(): string;
 
     public function sourceName(): string;
+
+    public function author(): ImageAuthor;
+
+    public function license(): ImageLicense;
 
     public function altText(): string;
 
