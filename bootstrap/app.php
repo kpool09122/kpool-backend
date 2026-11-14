@@ -38,6 +38,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use Laravel\Passport\PassportServiceProvider;
 use Sentry\Laravel\Integration as SentryIntegration;
 
 $app = Application::configure(basePath: dirname(__DIR__))
@@ -83,6 +84,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         AccountEventServiceProvider::class,
 
         // Identity
+        PassportServiceProvider::class,
         IdentityDomainServiceProvider::class,
         IdentityUseCaseServiceProvider::class,
         IdentityEventServiceProvider::class,

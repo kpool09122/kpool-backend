@@ -6,6 +6,7 @@ parameters:
     paths:
         - src
         - application/Http/Action
+        - application/Passport
         - tests
         - phpstan/Rules
     excludePaths:

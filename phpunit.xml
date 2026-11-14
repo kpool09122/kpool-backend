@@ -13,6 +13,7 @@
             <directory>src</directory>
             <directory>application/Shared</directory>
             <directory>application/Http/Context</directory>
+            <directory>application/Passport</directory>
         </include>
     </source>
     <coverage>

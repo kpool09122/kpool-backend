@@ -19,7 +19,8 @@
         "phpseclib/phpseclib": "^4.0",
         "aws/aws-sdk-php": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.0",
-        "brick/math": "^0.20"
+        "brick/math": "^0.20",
+        "laravel/passport": "~13.10.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

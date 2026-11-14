@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Application\Providers\Identity;
 
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
+use Application\Models\Identity\McpAccessToken;
+use Application\Models\Identity\McpAuthCode;
+use Application\Models\Identity\McpClient;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\ActorContextServiceInterface;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Application\Service\AuthCodeSendingRateLimitServiceInterface;
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Application\Service\IdentitySessionServiceInterface;
@@ -27,10 +33,12 @@ use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterf
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
@@ -39,11 +47,14 @@ use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Infrastructure\Factory\ArchivedIdentityFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyCredentialFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyUserFactory;
 use Source\Identity\Infrastructure\Repository\ArchivedIdentityRepository;
+use Source\Identity\Infrastructure\Repository\AuthorizationConsentRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyCredentialRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyUserRepository;
@@ -58,6 +69,8 @@ use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
 use Source\Identity\Infrastructure\Service\IdentitySessionService;
 use Source\Identity\Infrastructure\Service\LogSecurityEventRecorder;
+use Source\Identity\Infrastructure\Service\McpAuthorizationService;
+use Source\Identity\Infrastructure\Service\McpAuthorizationTokenVerifier;
 use Source\Identity\Infrastructure\Service\OAuthStateGenerator;
 use Source\Identity\Infrastructure\Service\OAuthStateStorageService;
 use Source\Identity\Infrastructure\Service\PasskeyRecoveryEmailVerificationService;
@@ -74,8 +87,26 @@ use Source\Shared\Application\Service\AccountNotificationRecipientServiceInterfa
 
 class DomainServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        Passport::ignoreRoutes();
+        Passport::useTokenModel(McpAccessToken::class);
+        Passport::useAuthCodeModel(McpAuthCode::class);
+        Passport::useClientModel(McpClient::class);
+        $this->app->singleton(AuthorizationConsentFactoryInterface::class, AuthorizationConsentFactory::class);
+        $this->app->singleton(AuthorizationConsentRepositoryInterface::class, AuthorizationConsentRepository::class);
+        $this->app->singleton(AuthorizationTokenVerifierInterface::class, McpAuthorizationTokenVerifier::class);
+        $this->app->singleton(AuthorizationConsentServiceInterface::class, McpAuthorizationService::class);
+        $this->app->singleton(McpAuthorizationService::class);
+    }
+
     public function boot(): void
     {
+        Passport::tokensCan(array_combine(
+            array_map(static fn (AuthorizationScope $scope): string => $scope->value, AuthorizationScope::cases()),
+            array_map(static fn (AuthorizationScope $scope): string => $scope->name, AuthorizationScope::cases()),
+        ));
+
         $this->app->singleton(ArchivedIdentityFactoryInterface::class, ArchivedIdentityFactory::class);
         $this->app->singleton(ArchivedIdentityRepositoryInterface::class, ArchivedIdentityRepository::class);
         $this->app->bind(ActorContextServiceInterface::class, ActorContextService::class);

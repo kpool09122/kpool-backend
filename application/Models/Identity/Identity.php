@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Token;
 use Override;
 
 /**
@@ -46,8 +50,20 @@ use Override;
     'email_verified_at',
 ])]
 #[Table(name: 'identities', keyType: 'string')]
-class Identity extends Authenticatable
+class Identity extends Authenticatable implements OAuthenticatable
 {
+    use HasApiTokens;
+
+    public function getProviderName(): string
+    {
+        return 'users';
+    }
+
+    /** @return HasMany<Token, $this> */
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(Passport::tokenModel(), 'user_id', 'id');
+    }
     #[Override]
     public $incrementing = false;
 
