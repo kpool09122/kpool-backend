@@ -34,7 +34,8 @@ alias ImageLicense =
   | "CC-BY-NC-1.0"
   | "CC-BY-NC-SA-1.0"
   | "CC-BY-ND-NC-1.0"
-  | "CC0-1.0";
+  | "CC0-1.0"
+  | "PUBLIC-DOMAIN";
 
 @doc("Request body for uploading an image.")
 model UploadImageRequestBody {
@@ -456,6 +457,8 @@ interface ManagedImageListOperations {
 }
 
 model UpdateImageMetadataRequestBody {
+  @doc("HTTP or HTTPS source URL. Send an empty string or null to clear it.")
+  @maxLength(512) sourceUrl: string | null;
   @minLength(1) @maxLength(255) sourceName: string;
   @minLength(1) @maxLength(255) author: string;
   license: ImageLicense;
@@ -466,7 +469,7 @@ model UpdateImageMetadataRequestBody {
 @route("/image/{imageId}/metadata")
 interface ImageMetadataOperations {
   @patch
-  @doc("Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.")
+  @doc("Update published image metadata immediately for operators. Preserves image file, approval and visibility.")
   updateImageMetadata(
     @path imageId: Uuid,
     @body body: UpdateImageMetadataRequestBody,

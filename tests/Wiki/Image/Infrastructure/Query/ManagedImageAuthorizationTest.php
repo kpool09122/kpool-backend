@@ -94,6 +94,7 @@ class ManagedImageAuthorizationTest extends TestCase
             ImageLicense::CC_BY,
             'Alt',
             0,
+            sourceUrl: 'https://example.org/source',
         ), $output);
         self::assertSame('Creator', DB::table('wiki_images')->where('id', $imageId)->value('author'));
     }

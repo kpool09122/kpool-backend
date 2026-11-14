@@ -37,4 +37,5 @@ enum ImageLicense: string
     case CC_BY_NC_SA_1_0 = 'CC-BY-NC-SA-1.0';
     case CC_BY_ND_NC_1_0 = 'CC-BY-ND-NC-1.0';
     case CC0 = 'CC0-1.0';
+    case PUBLIC_DOMAIN = 'PUBLIC-DOMAIN';
 }

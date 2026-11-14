@@ -43,6 +43,7 @@ class ImageLicenseTest extends TestCase
             'CC-BY-NC-SA-1.0',
             'CC-BY-ND-NC-1.0',
             'CC0-1.0',
+            'PUBLIC-DOMAIN',
         ], array_column(ImageLicense::cases(), 'value'));
     }
 }

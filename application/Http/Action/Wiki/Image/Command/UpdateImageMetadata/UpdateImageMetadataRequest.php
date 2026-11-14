@@ -25,7 +25,7 @@ class UpdateImageMetadataRequest extends FormRequest
             'license' => ['required', Rule::enum(ImageLicense::class)],
             'altText' => ['present', 'nullable', 'string', 'max:512'],
             'displayOrder' => ['required', 'integer', 'min:0', 'max:2147483647'],
-            'sourceUrl' => ['prohibited'],
+            'sourceUrl' => ['present', 'nullable', 'string', 'max:512', 'url:http,https'],
             'base64EncodedImage' => ['prohibited'],
         ];
     }

@@ -51,6 +51,7 @@ readonly class UpdateImageMetadataAction
                     ImageLicense::from($request->string('license')->toString()),
                     $request->string('altText')->toString(),
                     $request->integer('displayOrder'),
+                    $request->string('sourceUrl')->toString(),
                 );
                 $output = new UpdateImageMetadataOutput();
             } catch (InvalidArgumentException $e) {

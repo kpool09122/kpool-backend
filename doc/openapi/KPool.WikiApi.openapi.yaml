@@ -489,7 +489,7 @@ paths:
   /image/{imageId}/metadata:
     patch:
       operationId: ImageMetadataOperations_updateImageMetadata
-      description: Update published image metadata immediately for operators. Preserves image file, source URL, approval and visibility.
+      description: Update published image metadata immediately for operators. Preserves image file, approval and visibility.
       parameters:
         - name: imageId
           in: path
@@ -1024,6 +1024,7 @@ paths:
               - CC-BY-NC-SA-1.0
               - CC-BY-ND-NC-1.0
               - CC0-1.0
+              - PUBLIC-DOMAIN
             nullable: true
           explode: false
         - name: authorMissing
@@ -6572,6 +6573,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -6771,6 +6773,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the hero image.
         isHidden:
@@ -7185,6 +7188,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -7757,6 +7761,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -9435,12 +9440,18 @@ components:
     UpdateImageMetadataRequestBody:
       type: object
       required:
+        - sourceUrl
         - sourceName
         - author
         - license
         - altText
         - displayOrder
       properties:
+        sourceUrl:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: HTTP or HTTPS source URL. Send an empty string or null to clear it.
         sourceName:
           type: string
           minLength: 1
@@ -9483,6 +9494,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
         altText:
           type: string
           nullable: true
@@ -9655,6 +9667,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           description: License of the image.
         altText:
           type: string
@@ -9744,6 +9757,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the image.
         altText:
@@ -10113,6 +10127,7 @@ components:
             - CC-BY-NC-SA-1.0
             - CC-BY-ND-NC-1.0
             - CC0-1.0
+            - PUBLIC-DOMAIN
           nullable: true
           description: License of the hero image.
         isHidden:

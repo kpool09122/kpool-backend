@@ -17,6 +17,8 @@ interface UpdateImageMetadataInputPort
 
     public function sourceName(): string;
 
+    public function sourceUrl(): string;
+
     public function author(): ImageAuthor;
 
     public function license(): ImageLicense;

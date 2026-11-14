@@ -34,11 +34,13 @@ class UpdateImageMetadataInputTest extends TestCase
             ImageLicense::CC_BY,
             "Alt",
             2,
+            sourceUrl: 'https://example.org/source',
         );
 
         $this->assertSame((string) $imageIdentifier, (string) $input->imageIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame('Source', $input->sourceName());
+        $this->assertSame('https://example.org/source', $input->sourceUrl());
         $this->assertSame('Creator', (string) $input->author());
         $this->assertSame(ImageLicense::CC_BY, $input->license());
         $this->assertSame('Alt', $input->altText());
@@ -67,6 +69,7 @@ class UpdateImageMetadataInputTest extends TestCase
             ImageLicense::CC_BY,
             $altText,
             $displayOrder,
+            sourceUrl: '',
         );
     }
 
@@ -80,6 +83,7 @@ class UpdateImageMetadataInputTest extends TestCase
             ImageLicense::CC_BY,
             str_repeat('あ', 512),
             2147483647,
+            sourceUrl: '',
         );
         self::assertSame(2147483647, $input->displayOrder());
         self::assertSame(512, mb_strlen($input->altText()));
