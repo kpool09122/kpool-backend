@@ -12,6 +12,7 @@ use Application\Providers\Analyze\DomainServiceProvider as AnalyzeDomainServiceP
 use Application\Providers\Analyze\EventServiceProvider as AnalyzeEventServiceProvider;
 use Application\Providers\Analyze\UseCaseServiceProvider as AnalyzeUseCaseServiceProvider;
 use Application\Providers\ClientServiceProvider;
+use Application\Providers\Identity\AuthorizationServiceProvider;
 use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
 use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
@@ -19,14 +20,15 @@ use Application\Providers\Monetization\DomainServiceProvider as MonetizationDoma
 use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
 use Application\Providers\SharedServiceProvider;
 use Application\Providers\SiteManagement\DomainServiceProvider as SiteManagementDomainServiceProvider;
-// Add conditional-db related imports
 use Application\Providers\SiteManagement\UseCaseServiceProvider as SiteManagementUseCaseServiceProvider;
+// Add conditional-db related imports
 use Application\Providers\Wiki\DomainServiceProvider;
 use Application\Providers\Wiki\EventServiceProvider;
 use Application\Providers\Wiki\UseCaseServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
+use Laravel\Passport\PassportServiceProvider;
 use LogicException;
 use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
@@ -66,6 +68,8 @@ abstract class TestCase extends OrchestraTestCase
             SiteManagementDomainServiceProvider::class,
             SiteManagementUseCaseServiceProvider::class,
             IdentityUseCaseServiceProvider::class,
+            PassportServiceProvider::class,
+            AuthorizationServiceProvider::class,
             IdentityDomainServiceProvider::class,
             IdentityEventServiceProvider::class,
             AccountUseCaseServiceProvider::class,

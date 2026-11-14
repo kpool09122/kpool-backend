@@ -21,6 +21,8 @@ use Application\Providers\Analyze\DomainServiceProvider as AnalyzeDomainServiceP
 use Application\Providers\Analyze\EventServiceProvider as AnalyzeEventServiceProvider;
 use Application\Providers\Analyze\UseCaseServiceProvider as AnalyzeUseCaseServiceProvider;
 use Application\Providers\ClientServiceProvider;
+use Application\Providers\Identity\AuthorizationServiceProvider;
+use Laravel\Passport\PassportServiceProvider;
 use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
 use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
@@ -83,6 +85,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         AccountEventServiceProvider::class,
 
         // Identity
+        PassportServiceProvider::class,
+        AuthorizationServiceProvider::class,
         IdentityDomainServiceProvider::class,
         IdentityUseCaseServiceProvider::class,
         IdentityEventServiceProvider::class,
