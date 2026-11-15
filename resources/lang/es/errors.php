@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'oauth_invalid_request' => 'La solicitud de autorización no es válida.',
+    'oauth_request_expired' => 'La solicitud de autorización ha caducado. Inicie de nuevo la autorización.',
+    'oauth_request_completed' => 'La solicitud de autorización ya se ha completado.',
+    'oauth_account_unavailable' => 'La cuenta o delegación seleccionada ya no está disponible.',
+
     'invalid_analysis_period' => 'Especifique un período UTC inclusivo de un año natural como máximo que termine a más tardar en UTC D-3.',
     'video_already_watched' => 'El titular oficial ya ha visto este video.',
     'video_watch_request_target_not_eligible' => 'Solo se admiten videos de usuarios en una wiki oficial de talento.',

@@ -8,8 +8,8 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\AuthorizationConsent;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -77,7 +77,7 @@ class AuthorizationConsentTest extends TestCase
             $scopes,
             $targets,
             $original,
-            new PrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
+            new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
             $targets[0]->accountIdentifier,
             'https://mcp.example.test/mcp',
             new DateTimeImmutable()
@@ -93,7 +93,7 @@ class AuthorizationConsentTest extends TestCase
             [AuthorizationScope::WikiRead],
             [],
             new AccountIdentifier('0199f700-0000-7000-8000-000000000003'),
-            new PrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
+            new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
             new AccountIdentifier('0199f700-0000-7000-8000-000000000005'),
             'https://mcp.example.test/mcp',
             new DateTimeImmutable(),

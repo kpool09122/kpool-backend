@@ -7,12 +7,16 @@ namespace Application\Providers\Identity;
 use Illuminate\Support\ServiceProvider;
 use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskey;
 use Source\Identity\Application\UseCase\Command\AddPasskey\AddPasskeyInterface;
+use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
+use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskey;
 use Source\Identity\Application\UseCase\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyInterface;
 use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial\CompletePasskeyRecoveryWithSocial;
 use Source\Identity\Application\UseCase\Command\CompletePasskeyRecoveryWithSocial\CompletePasskeyRecoveryWithSocialInterface;
 use Source\Identity\Application\UseCase\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskey;
 use Source\Identity\Application\UseCase\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskeyInterface;
+use Source\Identity\Application\UseCase\Command\CreateAuthorizationRequest\CreateAuthorizationRequest;
+use Source\Identity\Application\UseCase\Command\CreateAuthorizationRequest\CreateAuthorizationRequestInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptions;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsInterface;
 use Source\Identity\Application\UseCase\Command\CreatePasskeyOptions\CreatePasskeyOptions;
@@ -25,6 +29,8 @@ use Source\Identity\Application\UseCase\Command\CreateStepUpPasskeyOptions\Creat
 use Source\Identity\Application\UseCase\Command\CreateStepUpPasskeyOptions\CreateStepUpPasskeyOptionsInterface;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskey;
 use Source\Identity\Application\UseCase\Command\DeletePasskey\DeletePasskeyInterface;
+use Source\Identity\Application\UseCase\Command\DenyAuthorization\DenyAuthorization;
+use Source\Identity\Application\UseCase\Command\DenyAuthorization\DenyAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\Logout\Logout;
 use Source\Identity\Application\UseCase\Command\Logout\LogoutInterface;
 use Source\Identity\Application\UseCase\Command\RecoverPasskey\RecoverPasskey;
@@ -58,9 +64,11 @@ use Source\Identity\Application\UseCase\Command\VerifySocialLinkingEmail\VerifyS
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
+use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Infrastructure\Query\GetAuthenticatedIdentity;
+use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
 use Source\Identity\Infrastructure\Query\GetIdentityProfile;
 use Source\Identity\Infrastructure\Query\ListPasskeys;
 
@@ -68,6 +76,11 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(CreateAuthorizationRequestInterface::class, CreateAuthorizationRequest::class);
+        $this->app->singleton(ApproveAuthorizationInterface::class, ApproveAuthorization::class);
+        $this->app->singleton(DenyAuthorizationInterface::class, DenyAuthorization::class);
+        $this->app->singleton(GetAuthorizationRequestInterface::class, GetAuthorizationRequest::class);
+
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(SendSocialLinkingEmailInterface::class, SendSocialLinkingEmail::class);
         $this->app->singleton(VerifySocialLinkingEmailInterface::class, VerifySocialLinkingEmail::class);

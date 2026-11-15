@@ -8,10 +8,10 @@ use DateTimeImmutable;
 use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Assert;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\AuthorizationConsent;
 use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -46,7 +46,7 @@ class CreateAuthorizationConsent
             [AuthorizationScope::WikiRead, AuthorizationScope::DraftRead],
             [new AuthorizationTarget($account)],
             $account,
-            new PrincipalIdentifier((string) Str::uuid7()),
+            new AccountPrincipalIdentifier((string) Str::uuid7()),
             $account,
             self::RESOURCE,
             new DateTimeImmutable()

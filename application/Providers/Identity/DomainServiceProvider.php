@@ -16,7 +16,10 @@ use Source\Identity\Application\Service\ActorContextServiceInterface;
 use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInterface;
 use Source\Identity\Application\Service\AuthCodeSendingRateLimitServiceInterface;
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
+use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
+use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
@@ -64,6 +67,9 @@ use Source\Identity\Infrastructure\Service\AffiliationRequestNotificationService
 use Source\Identity\Infrastructure\Service\AuthCodeSendingRateLimitService;
 use Source\Identity\Infrastructure\Service\AuthCodeService;
 use Source\Identity\Infrastructure\Service\AuthCodeSessionStorageService;
+use Source\Identity\Infrastructure\Service\AuthorizationAccountService;
+use Source\Identity\Infrastructure\Service\AuthorizationRequestStorageService;
+use Source\Identity\Infrastructure\Service\AuthorizationRequestValidator;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
@@ -89,6 +95,10 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(AuthorizationAccountServiceInterface::class, AuthorizationAccountService::class);
+        $this->app->singleton(AuthorizationRequestValidatorInterface::class, AuthorizationRequestValidator::class);
+        $this->app->singleton(AuthorizationRequestStorageServiceInterface::class, AuthorizationRequestStorageService::class);
+
         Passport::ignoreRoutes();
         Passport::useTokenModel(McpAccessToken::class);
         Passport::useAuthCodeModel(McpAuthCode::class);

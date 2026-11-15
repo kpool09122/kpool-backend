@@ -92,6 +92,21 @@ class AuthenticatedRouteProtectionTest extends TestCase
         }
     }
 
+    public function testOAuthConsentRoutesRequireAuthenticationAndActorContext(): void
+    {
+        $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/identity/oauth/requests')));
+        $this->assertCount(4, $routes);
+        foreach ($routes as $route) {
+            $middleware = $route->gatherMiddleware();
+            $this->assertContains('session', $middleware);
+            $this->assertContains('auth.api', $middleware);
+            $this->assertContains('resolve.actor', $middleware);
+            $this->assertNotContains('account.active', $middleware);
+            $this->assertNotContains('principal.active', $middleware);
+            $this->assertNotContains('resolve.account', $middleware);
+        }
+    }
+
     public function testSessionApisShareCsrfProtection(): void
     {
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {

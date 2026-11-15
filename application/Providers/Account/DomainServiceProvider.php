@@ -82,6 +82,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+
         $this->app->singleton(AccountCategoryChangeRequestSnapshotServiceInterface::class, AccountCategoryChangeRequestSnapshotService::class);
         $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
         $this->app->bind(PrincipalReachabilityInterface::class, PrincipalReachability::class);

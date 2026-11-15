@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'oauth_invalid_request' => '인증 요청이 유효하지 않습니다.',
+    'oauth_request_expired' => '인증 요청이 만료되었습니다. 다시 시작해 주세요.',
+    'oauth_request_completed' => '이미 완료된 인증 요청입니다.',
+    'oauth_account_unavailable' => '선택한 계정 또는 위임 관계를 사용할 수 없습니다.',
+
     'invalid_analysis_period' => 'UTC D-3 이전에 끝나는 시작일과 종료일을 포함한 최대 1년의 기간을 지정해 주세요.',
     'video_already_watched' => '본인이 이미 시청한 동영상입니다.',
     'video_watch_request_target_not_eligible' => '공식 인증된 탤런트 위키의 사용자 제작 영상만 요청할 수 있습니다.',

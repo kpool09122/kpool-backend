@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Repository;
 
 use Application\Models\Identity\AuthorizationConsent as ConsentModel;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Entity\AuthorizationConsent;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
@@ -57,7 +57,7 @@ readonly class AuthorizationConsentRepository implements AuthorizationConsentRep
                 $target['delegation_id'] === null ? null : new DelegationIdentifier($target['delegation_id']),
             ), $model->targets),
             new AccountIdentifier($model->original_account_id),
-            new PrincipalIdentifier($model->original_principal_id),
+            new AccountPrincipalIdentifier($model->original_principal_id),
             new AccountIdentifier($model->initial_account_id),
             $model->resource,
             $model->consented_at->toDateTimeImmutable(),

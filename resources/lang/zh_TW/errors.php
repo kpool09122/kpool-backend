@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'oauth_invalid_request' => '授權請求無效。',
+    'oauth_request_expired' => '授權請求已過期，請重新開始授權。',
+    'oauth_request_completed' => '授權請求已完成。',
+    'oauth_account_unavailable' => '所選帳戶或委託關係已無法使用。',
+
     'invalid_analysis_period' => '請指定包含起迄日期、最長一個曆年且結束日期不晚於UTC D-3的期間。',
     'video_already_watched' => '本人已觀看此影片。',
     'video_watch_request_target_not_eligible' => '僅可請求官方認證藝人維基中的使用者建立影片。',
