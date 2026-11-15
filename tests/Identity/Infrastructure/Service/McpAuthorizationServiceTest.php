@@ -337,10 +337,10 @@ class McpAuthorizationServiceTest extends TestCase
             [AuthorizationScope::WikiRead],
             self::RESOURCE,
             rtrim(strtr(base64_encode(hash('sha256', self::VERIFIER, true)), '+/', '-_'), '='),
-            'state',
+            ' opaque state & value ',
         ));
         parse_str((string) parse_url($redirect, PHP_URL_QUERY), $parameters);
-        $this->assertSame('state', $parameters['state']);
+        $this->assertSame(' opaque state & value ', $parameters['state']);
         $this->assertIsString($parameters['code']);
         $tokens = $this->exchange($consent, $parameters['code']);
         $this->assertSame([AuthorizationScope::WikiRead], $this->app()->make(AuthorizationTokenVerifierInterface::class)->verify($tokens['access_token'])->scopes);

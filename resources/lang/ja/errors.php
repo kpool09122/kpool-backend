@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'oauth_invalid_request' => '認可要求が無効です。',
+    'oauth_request_expired' => '認可要求の有効期限が切れました。認可を開始し直してください。',
+    'oauth_request_completed' => '認可要求は既に完了しています。',
+    'oauth_account_unavailable' => '選択したアカウントまたは代理関係は利用できません。',
+
     'invalid_analysis_period' => '分析期間はUTC D-3以前を終了日とする、開始日・終了日を含む最長暦年1年で指定してください。',
     'video_already_watched' => '本人がすでに視聴済みの動画です。',
     'video_watch_request_target_not_eligible' => '公式認証済みタレントWikiのユーザー作成動画のみ送信できます。',

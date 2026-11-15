@@ -95,7 +95,8 @@ readonly class AccountResolver
         );
     }
 
-    private function initialCurrentAccount(IdentityIdentifier $identityIdentifier): CurrentAccount
+    /** @throws AccountNotFoundException */
+    public function resolveInitialPrincipal(IdentityIdentifier $identityIdentifier): Principal
     {
         $principals = $this->principalRepository->findAllByIdentityIdentifier($identityIdentifier);
         $principal = count($principals) === 1
@@ -106,6 +107,12 @@ readonly class AccountResolver
             throw new AccountNotFoundException('Current account is not selected.');
         }
 
+        return $principal;
+    }
+
+    private function initialCurrentAccount(IdentityIdentifier $identityIdentifier): CurrentAccount
+    {
+        $principal = $this->resolveInitialPrincipal($identityIdentifier);
         $currentAccount = new CurrentAccount(
             originalIdentityIdentifier: $identityIdentifier,
             originalAccountIdentifier: $principal->accountIdentifier(),

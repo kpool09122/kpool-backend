@@ -90,6 +90,10 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         }
         $server = $this->server($context);
         $authorization = $server->validateAuthorizationRequest($request);
+        // State is opaque: League trims query parameters, but callbacks must echo it exactly.
+        if (is_string($parameters['state'] ?? null)) {
+            $authorization->setState($parameters['state']);
+        }
         $context->requireConsent(
             (string) $context->consent->identityIdentifier(),
             $authorization->getClient()->getIdentifier(),

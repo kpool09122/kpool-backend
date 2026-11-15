@@ -6,8 +6,8 @@ namespace Tests\Identity\Application\Service;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -27,7 +27,7 @@ class ValidatedAuthorizationTokenTest extends TestCase
             [AuthorizationScope::WikiRead],
             [new AuthorizationTarget($account)],
             $account,
-            new PrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
+            new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
             $account,
             'https://mcp.example/mcp',
             new DateTimeImmutable()

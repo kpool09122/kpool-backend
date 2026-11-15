@@ -103,7 +103,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         WikiEventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->trimStrings(except: ['confirmationIdentityName']);
+        $middleware->trimStrings(except: ['confirmationIdentityName', 'state']);
         $middleware->group('session', [
             EncryptCookies::class,
             StartApplicationSession::class,

@@ -772,3 +772,87 @@ interface IdentityOperations {
     @body body: UpdateIdentityRequestBody,
   ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
+model BadRequestProblemResponse { @statusCode statusCode: 400; @body body: ProblemDetails; }
+
+@doc("OAuth operation ceilings, never a grant of the user's business permissions. Draft write covers normal creation/editing, not automatic creation.")
+union ConsentScope {
+  "wiki:read", "wiki-drafts:read", "wiki-drafts:write", "wiki-drafts:submit", "wiki-images:read", "wiki-images:write",
+}
+
+@doc("Validated authorization request. Start from the frontend consent URL's OAuth parameters, converting snake_case OAuth parameters to these fields. The server requires exact registered redirect URI, configured resource, response_type=code and PKCE S256. Unknown scopes are rejected.")
+model CreateAuthorizationRequestBody {
+  clientIdentifier: Uuid;
+  redirectUri: string;
+  scopes: ConsentScope[];
+  resource: string;
+  codeChallenge: string;
+  codeChallengeMethod: "S256";
+  responseType: "code";
+  state: string;
+}
+
+@doc("Opaque request handle bound at creation to the authenticated Identity and browser session. It expires after ten minutes. Use it to fetch consent details and to approve or cancel that request.")
+model PendingAuthorizationResult {
+  requestIdentifier: string;
+  expiresAt: Timestamp;
+}
+
+model AuthorizationAccountChoice {
+  accountIdentifier: Uuid;
+  @doc("Required for delegated accounts; null only for the original account. The server verifies the exact pair again on approval.")
+  delegationIdentifier: Uuid | null;
+  name: string;
+}
+
+model AuthorizationRequestResult extends PendingAuthorizationResult {
+  clientName: string;
+  scopes: { scope: ConsentScope; description: string; }[];
+  @doc("Retained for identity/delegation verification only, not automatically added to consent targets.")
+  originalAccountIdentifier: Uuid;
+  @doc("Original account first; approved, active delegated accounts in delegation identifier order. Only candidates currently permitted by the original principal are returned.")
+  accounts: AuthorizationAccountChoice[];
+}
+
+model AuthorizationTargetChoice {
+  accountIdentifier: Uuid;
+  delegationIdentifier?: Uuid | null;
+}
+
+model ApproveAuthorizationBody {
+  @doc("Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.")
+  scopes: ConsentScope[];
+  @doc("Explicit nonempty set. New memberships/delegations never expand existing consent automatically.")
+  targets: AuthorizationTargetChoice[];
+  @doc("Must be included in targets.")
+  initialAccountIdentifier: Uuid;
+}
+
+@doc("Navigate to this server-generated, registered OAuth client URI. Approval carries code and original state; denial carries error=access_denied and original state. Never expose access or refresh tokens to the consent screen. Invalid requests are local errors and must not redirect to unvalidated input.")
+model AuthorizationContinuationResult { redirectUri: string; }
+model CreatedAuthorizationRequestResponse { @statusCode statusCode: 201; @body body: PendingAuthorizationResult; }
+model AuthorizationRequestResponse { @statusCode statusCode: 200; @body body: AuthorizationRequestResult; }
+model AuthorizationContinuationResponse { @statusCode statusCode: 200; @body body: AuthorizationContinuationResult; }
+
+@route("/oauth/requests")
+@doc("Authenticated consent API with cookie/session and CSRF protection. Responses are no-store. An expired or completed request returns 409 with code oauth_request_expired or oauth_request_completed. An unknown or foreign request returns 404. Account or permission loss returns 403. Invalid consent returns 400. Restart after expiry or completion and ask for consent again. Frontend login/consent UI belongs to kpool-frontend#631/#632.")
+interface OAuthConsent {
+  @post
+  @doc("Validate and save the request for the signed-in Identity, replacing any previous request in the same browser session. If login is required, set the frontend login page's returnTo to the local consent-page URL, preserving the original OAuth query. Use the OAuth client's redirect_uri only when returning the authorization result. After login, obtain a fresh token from /auth/csrf-token and forward the session cookies. Create the request, then GET its details.")
+  @useAuth(SessionCookieAuth)
+  createAuthorizationRequest(@body body: CreateAuthorizationRequestBody): CreatedAuthorizationRequestResponse | UnauthorizedProblemResponse | BadRequestProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+
+  @get @route("/{requestIdentifier}")
+  @doc("Read consent-screen details for the Identity and session that created the request. Scope and account candidates are freshly validated. Scope ceilings do not grant business permissions.")
+  @useAuth(SessionCookieAuth)
+  getAuthorizationRequest(@path requestIdentifier: string): AuthorizationRequestResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+
+  @post @route("/{requestIdentifier}/approve")
+  @doc("Revalidate membership, approved delegation pairs, active statuses and switch policy; persist consent and issue code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.")
+  @useAuth(SessionCookieAuth)
+  approveAuthorization(@path requestIdentifier: string, @body body: ApproveAuthorizationBody): AuthorizationContinuationResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+
+  @post @route("/{requestIdentifier}/deny")
+  @doc("Reject without storing consent or issuing a code; complete the request and return access_denied to the freshly validated registered redirect URI.")
+  @useAuth(SessionCookieAuth)
+  denyAuthorization(@path requestIdentifier: string): AuthorizationContinuationResponse | UnauthorizedProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+}

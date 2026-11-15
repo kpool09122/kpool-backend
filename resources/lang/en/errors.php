@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'oauth_invalid_request' => 'The authorization request is invalid.',
+    'oauth_request_expired' => 'The authorization request has expired. Start authorization again.',
+    'oauth_request_completed' => 'The authorization request has already been completed.',
+    'oauth_account_unavailable' => 'The selected account or delegation is no longer available.',
+
     'invalid_analysis_period' => 'Specify an inclusive UTC period of at most one calendar year ending no later than UTC D-3.',
     'video_already_watched' => 'The official owner has already watched this video.',
     'video_watch_request_target_not_eligible' => 'Only user-created videos on an officially certified talent wiki are eligible.',

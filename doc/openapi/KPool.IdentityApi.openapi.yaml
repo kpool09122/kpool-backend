@@ -1752,6 +1752,317 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /oauth/requests:
+    post:
+      operationId: OAuthConsent_createAuthorizationRequest
+      description: Validate and save the request for the signed-in Identity, replacing any previous request in the same browser session. If login is required, set the frontend login page's returnTo to the local consent-page URL, preserving the original OAuth query. Use the OAuth client's redirect_uri only when returning the authorization result. After login, obtain a fresh token from /auth/csrf-token and forward the session cookies. Create the request, then GET its details.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingAuthorizationResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAuthorizationRequestBody'
+      security:
+        - SessionCookieAuth: []
+  /oauth/requests/{requestIdentifier}:
+    get:
+      operationId: OAuthConsent_getAuthorizationRequest
+      description: Read consent-screen details for the Identity and session that created the request. Scope and account candidates are freshly validated. Scope ceilings do not grant business permissions.
+      parameters:
+        - name: requestIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationRequestResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /oauth/requests/{requestIdentifier}/approve:
+    post:
+      operationId: OAuthConsent_approveAuthorization
+      description: Revalidate membership, approved delegation pairs, active statuses and switch policy; persist consent and issue code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.
+      parameters:
+        - name: requestIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationContinuationResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveAuthorizationBody'
+      security:
+        - SessionCookieAuth: []
+  /oauth/requests/{requestIdentifier}/deny:
+    post:
+      operationId: OAuthConsent_denyAuthorization
+      description: Reject without storing consent or issuing a code; complete the request and return access_denied to the freshly validated registered redirect URI.
+      parameters:
+        - name: requestIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationContinuationResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
 components:
   schemas:
     AccountEffectivePolicySummary:
@@ -1851,6 +2162,27 @@ components:
         credential:
           $ref: '#/components/schemas/PasskeyRegistrationCredential'
       description: Request body for completing registration of an additional passkey.
+    ApproveAuthorizationBody:
+      type: object
+      required:
+        - scopes
+        - targets
+        - initialAccountIdentifier
+      properties:
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentScope'
+          description: Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizationTargetChoice'
+          description: Explicit nonempty set. New memberships/delegations never expand existing consent automatically.
+        initialAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Must be included in targets.
     AuthenticateWithPasskeyRequestBody:
       type: object
       required:
@@ -2061,6 +2393,76 @@ components:
             type: string
           description: Social providers linked to the current identity.
       description: Authentication methods available to the current identity without exposing passkey or provider-account details.
+    AuthorizationAccountChoice:
+      type: object
+      required:
+        - accountIdentifier
+        - delegationIdentifier
+        - name
+      properties:
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Required for delegated accounts; null only for the original account. The server verifies the exact pair again on approval.
+        name:
+          type: string
+    AuthorizationContinuationResult:
+      type: object
+      required:
+        - redirectUri
+      properties:
+        redirectUri:
+          type: string
+      description: Navigate to this server-generated, registered OAuth client URI. Approval carries code and original state; denial carries error=access_denied and original state. Never expose access or refresh tokens to the consent screen. Invalid requests are local errors and must not redirect to unvalidated input.
+    AuthorizationRequestResult:
+      type: object
+      required:
+        - clientName
+        - scopes
+        - originalAccountIdentifier
+        - accounts
+      properties:
+        clientName:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: object
+            properties:
+              scope:
+                $ref: '#/components/schemas/ConsentScope'
+              description:
+                type: string
+            required:
+              - scope
+              - description
+        originalAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Retained for identity/delegation verification only, not automatically added to consent targets.
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizationAccountChoice'
+          description: Original account first; approved, active delegated accounts in delegation identifier order. Only candidates currently permitted by the original principal are returned.
+      allOf:
+        - $ref: '#/components/schemas/PendingAuthorizationResult'
+    AuthorizationTargetChoice:
+      type: object
+      required:
+        - accountIdentifier
+      properties:
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
     CompleteStepUpWithPasskeyRequestBody:
       type: object
       required:
@@ -2072,6 +2474,51 @@ components:
         credential:
           $ref: '#/components/schemas/PasskeyAuthenticationCredential'
       description: Request body for completing passkey step-up authentication.
+    ConsentScope:
+      type: string
+      enum:
+        - wiki:read
+        - wiki-drafts:read
+        - wiki-drafts:write
+        - wiki-drafts:submit
+        - wiki-images:read
+        - wiki-images:write
+      description: OAuth operation ceilings, never a grant of the user's business permissions. Draft write covers normal creation/editing, not automatic creation.
+    CreateAuthorizationRequestBody:
+      type: object
+      required:
+        - clientIdentifier
+        - redirectUri
+        - scopes
+        - resource
+        - codeChallenge
+        - codeChallengeMethod
+        - responseType
+        - state
+      properties:
+        clientIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        redirectUri:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentScope'
+        resource:
+          type: string
+        codeChallenge:
+          type: string
+        codeChallengeMethod:
+          type: string
+          enum:
+            - S256
+        responseType:
+          type: string
+          enum:
+            - code
+        state:
+          type: string
+      description: Validated authorization request. Start from the frontend consent URL's OAuth parameters, converting snake_case OAuth parameters to these fields. The server requires exact registered redirect URI, configured resource, response_type=code and PKCE S256. Unknown scopes are rejected.
     CreatePasskeyRecoveryOptionsRequestBody:
       type: object
       required:
@@ -2523,6 +2970,17 @@ components:
           type: string
         displayName:
           type: string
+    PendingAuthorizationResult:
+      type: object
+      required:
+        - requestIdentifier
+        - expiresAt
+      properties:
+        requestIdentifier:
+          type: string
+        expiresAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+      description: Opaque request handle bound at creation to the authenticated Identity and browser session. It expires after ten minutes. Use it to fetch consent details and to approve or cancel that request.
     RecoverPasskeyRequestBody:
       type: object
       required:
@@ -2775,6 +3233,12 @@ components:
       properties:
         canWithdraw:
           type: boolean
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: k-pool_session
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/v1/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
 servers:
   - url: /api/v1/identity
     description: Laravel route prefix from bootstrap/app.php.

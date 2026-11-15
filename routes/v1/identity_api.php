@@ -3,14 +3,17 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Identity\Command\AddPasskey\AddPasskeyAction;
+use Application\Http\Action\Identity\Command\ApproveAuthorization\ApproveAuthorizationAction;
 use Application\Http\Action\Identity\Command\AuthenticateWithPasskey\AuthenticateWithPasskeyAction;
 use Application\Http\Action\Identity\Command\CompleteStepUpWithPasskey\CompleteStepUpWithPasskeyAction;
+use Application\Http\Action\Identity\Command\CreateAuthorizationRequest\CreateAuthorizationRequestAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyAuthenticationOptions\CreatePasskeyAuthenticationOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyOptions\CreatePasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRecoveryOptions\CreatePasskeyRecoveryOptionsAction;
 use Application\Http\Action\Identity\Command\CreatePasskeyRegistrationOptions\CreatePasskeyRegistrationOptionsAction;
 use Application\Http\Action\Identity\Command\CreateStepUpPasskeyOptions\CreateStepUpPasskeyOptionsAction;
 use Application\Http\Action\Identity\Command\DeletePasskey\DeletePasskeyAction;
+use Application\Http\Action\Identity\Command\DenyAuthorization\DenyAuthorizationAction;
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\RecoverPasskey\RecoverPasskeyAction;
 use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
@@ -28,6 +31,7 @@ use Application\Http\Action\Identity\Command\VerifyPasskeyRecoveryEmail\VerifyPa
 use Application\Http\Action\Identity\Command\VerifySocialLinkingEmail\VerifySocialLinkingEmailAction;
 use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
+use Application\Http\Action\Identity\Query\GetAuthorizationRequest\GetAuthorizationRequestAction;
 use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
@@ -71,6 +75,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::get('/auth/passkeys', ListPasskeysAction::class);
         // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
         Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
+        Route::get('/oauth/requests/{requestIdentifier}', GetAuthorizationRequestAction::class);
     });
 
     Route::middleware('rate-limit:screen,command')->group(function () {
@@ -84,5 +89,8 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::post('/auth/logout', LogoutAction::class);
         Route::patch('/identities/me', UpdateIdentityAction::class);
         Route::delete('/identities/me', WithdrawFromServiceAction::class);
+        Route::post('/oauth/requests', CreateAuthorizationRequestAction::class);
+        Route::post('/oauth/requests/{requestIdentifier}/approve', ApproveAuthorizationAction::class);
+        Route::post('/oauth/requests/{requestIdentifier}/deny', DenyAuthorizationAction::class);
     });
 });

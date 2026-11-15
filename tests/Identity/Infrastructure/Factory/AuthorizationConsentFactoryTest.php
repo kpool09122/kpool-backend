@@ -6,8 +6,8 @@ namespace Tests\Identity\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Mockery;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -34,7 +34,7 @@ class AuthorizationConsentFactoryTest extends TestCase
             [AuthorizationScope::WikiRead],
             [new AuthorizationTarget($account)],
             $account,
-            new PrincipalIdentifier('0199f700-0000-7000-8000-000000000005'),
+            new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000005'),
             $account,
             'https://mcp.example.test/mcp',
             $consentedAt,

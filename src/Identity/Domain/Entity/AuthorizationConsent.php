@@ -6,7 +6,7 @@ namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationTarget;
@@ -27,7 +27,7 @@ class AuthorizationConsent
         private readonly array $scopes,
         private readonly array $targets,
         private readonly AccountIdentifier $originalAccountIdentifier,
-        private readonly PrincipalIdentifier $originalPrincipalIdentifier,
+        private readonly AccountPrincipalIdentifier $originalPrincipalIdentifier,
         private readonly AccountIdentifier $initialAccountIdentifier,
         private readonly string $resource,
         private readonly DateTimeImmutable $consentedAt,
@@ -88,7 +88,7 @@ class AuthorizationConsent
         return $this->originalAccountIdentifier;
     }
 
-    public function originalPrincipalIdentifier(): PrincipalIdentifier
+    public function originalPrincipalIdentifier(): AccountPrincipalIdentifier
     {
         return $this->originalPrincipalIdentifier;
     }
