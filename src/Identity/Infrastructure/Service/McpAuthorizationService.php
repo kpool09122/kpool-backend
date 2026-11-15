@@ -1,0 +1,166 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Identity\Infrastructure\Service;
+
+use Application\Models\Identity\McpClient;
+use Application\Passport\AccessTokenRepository;
+use Application\Passport\AuthCodeRepository;
+use Application\Passport\IssuanceContext;
+use Application\Passport\RefreshTokenRepository;
+use Application\Passport\ScopeRepository;
+use Application\Passport\SigningKeys;
+use DateInterval;
+use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\Events\Dispatcher;
+use Laravel\Passport\Bridge\ClientRepository as PassportClientRepository;
+use Laravel\Passport\Bridge\User;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Grant\AuthCodeGrant;
+use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Nyholm\Psr7\Response;
+use Nyholm\Psr7\ServerRequest;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Service\AuthorizationCodeParameters;
+use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationScope;
+
+/** Passport adapter for trusted consent completion and token issuance. */
+readonly class McpAuthorizationService implements AuthorizationConsentServiceInterface
+{
+    public function __construct(
+        private AuthorizationConsentRepositoryInterface $authorizationConsentRepository,
+        private PassportClientRepository $passportClientRepository,
+        private ClientRepository $clientRepository,
+        private Dispatcher $dispatcher,
+        private Encrypter $encrypter,
+    ) {
+    }
+
+    /** @throws InvalidAuthorizationConsentException */
+    public function issueCode(AuthorizationConsentIdentifier $consentIdentifier, AuthorizationCodeParameters $authorizationCodeParameters): string
+    {
+        try {
+            $response = $this->authorize($consentIdentifier, (new ServerRequest('GET', '/oauth/authorize'))->withQueryParams([
+                'client_id' => (string) $authorizationCodeParameters->clientIdentifier,
+                'response_type' => 'code',
+                'redirect_uri' => $authorizationCodeParameters->redirectUri,
+                'scope' => implode(' ', array_map(static fn (AuthorizationScope $scope): string => $scope->value, $authorizationCodeParameters->requestedScopes)),
+                'resource' => $authorizationCodeParameters->resource,
+                'code_challenge_method' => 'S256',
+                'code_challenge' => $authorizationCodeParameters->codeChallenge,
+                'state' => $authorizationCodeParameters->state,
+            ]));
+
+            return $response->getHeaderLine('Location');
+        } catch (OAuthServerException $exception) {
+            throw new InvalidAuthorizationConsentException($exception);
+        }
+    }
+
+    /**
+     * Trusted server-side completion, NOT an unauthenticated HTTP entry point.
+     * The caller owns the DB transaction containing consent creation and code issuance.
+     */
+    public function authorize(AuthorizationConsentIdentifier $consentIdentifier, ServerRequestInterface $request): ResponseInterface
+    {
+        $parameters = $request->getQueryParams();
+        $resource = $parameters['resource'] ?? null;
+        $resource = $this->assertResource($resource);
+        if (($parameters['code_challenge_method'] ?? null) !== 'S256'
+            || ! isset($parameters['code_challenge']) || ! isset($parameters['redirect_uri'])) {
+            throw OAuthServerException::invalidRequest('code_challenge_method');
+        }
+        $context = new IssuanceContext($this->authorizationConsentRepository, $resource);
+        if (! $context->load($consentIdentifier) || $context->consent === null) {
+            throw OAuthServerException::invalidGrant('Inactive authorization consent.');
+        }
+        $client = McpClient::query()->find((string) $context->consent->clientIdentifier());
+        if ($client === null || ! is_string($parameters['redirect_uri'])
+            || ! in_array($parameters['redirect_uri'], $client->redirect_uris, true)) {
+            throw OAuthServerException::invalidRequest('redirect_uri');
+        }
+        $server = $this->server($context);
+        $authorization = $server->validateAuthorizationRequest($request);
+        $context->requireConsent(
+            (string) $context->consent->identityIdentifier(),
+            $authorization->getClient()->getIdentifier(),
+            array_map(static fn ($scope): string => $scope->getIdentifier(), $authorization->getScopes()),
+        );
+        $authorization->setUser(new User((string) $context->consent->identityIdentifier() ?: throw OAuthServerException::invalidGrant()));
+        $authorization->setAuthorizationApproved(true);
+
+        return $server->completeAuthorizationRequest($authorization, new Response());
+    }
+
+    /** The caller owns the transaction, including refresh rotation and old-token revocation. */
+    public function exchange(ServerRequestInterface $request): ResponseInterface
+    {
+        $parameters = $request->getParsedBody();
+        if (! is_array($parameters)) {
+            throw OAuthServerException::invalidRequest('grant_type');
+        }
+        $grant = $parameters['grant_type'] ?? null;
+        if (! in_array($grant, ['authorization_code', 'refresh_token'], true)) {
+            throw OAuthServerException::unsupportedGrantType();
+        }
+        if ($grant === 'authorization_code' && array_key_exists('scope', $parameters)) {
+            throw OAuthServerException::invalidRequest('scope');
+        }
+        foreach (['authorization_consent_id', 'connection_id', 'authorization_connection_id', 'identity_id', 'user_id', 'account_id', 'targets'] as $parameter) {
+            if (array_key_exists($parameter, $parameters)) {
+                throw OAuthServerException::invalidRequest($parameter);
+            }
+        }
+        $resource = $parameters['resource'] ?? null;
+        if ($grant === 'authorization_code' || array_key_exists('resource', $parameters)) {
+            $resource = $this->assertResource($resource);
+        }
+        $context = new IssuanceContext($this->authorizationConsentRepository, is_string($resource) ? $resource : null);
+
+        return $this->server($context)->respondToAccessTokenRequest($request, new Response());
+    }
+
+    private function assertResource(mixed $resource): string
+    {
+        if (! is_string($resource) || $resource === '' || $resource !== config()->string('mcp_oauth.resource')
+            || config()->string('mcp_oauth.issuer') === '') {
+            throw OAuthServerException::invalidRequest('resource');
+        }
+
+        return $resource;
+    }
+
+    private function server(IssuanceContext $issuanceContext): AuthorizationServer
+    {
+        $refreshTokenRepository = new RefreshTokenRepository($this->dispatcher, $issuanceContext);
+        $server = new AuthorizationServer(
+            $this->passportClientRepository,
+            new AccessTokenRepository($this->dispatcher, $issuanceContext),
+            new ScopeRepository($this->clientRepository, $issuanceContext),
+            SigningKeys::load('private'),
+            Passport::tokenEncryptionKey($this->encrypter),
+        );
+        $code = new AuthCodeGrant(
+            new AuthCodeRepository($issuanceContext),
+            $refreshTokenRepository,
+            new DateInterval('PT' . config()->integer('mcp_oauth.authorization_code_seconds') . 'S')
+        );
+        $refresh = new RefreshTokenGrant($refreshTokenRepository);
+        foreach ([$code, $refresh] as $grant) {
+            $grant->setRefreshTokenTTL(new DateInterval('PT' . config()->integer('mcp_oauth.refresh_token_seconds') . 'S'));
+            $server->enableGrantType($grant, new DateInterval('PT' . config()->integer('mcp_oauth.access_token_seconds') . 'S'));
+        }
+        $server->revokeRefreshTokens(true);
+
+        return $server;
+    }
+}
