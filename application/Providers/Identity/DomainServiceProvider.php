@@ -24,6 +24,7 @@ use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\ChallengeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Application\Service\IdentitySessionServiceInterface;
+use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
 use Source\Identity\Application\Service\OAuthStateGeneratorInterface;
 use Source\Identity\Application\Service\OAuthStateStorageServiceInterface;
 use Source\Identity\Application\Service\PasskeyRecovery\PasskeyRecoveryEmailVerificationServiceInterface;
@@ -74,6 +75,7 @@ use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Identity\Infrastructure\Service\ChallengeSessionStorageService;
 use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
 use Source\Identity\Infrastructure\Service\IdentitySessionService;
+use Source\Identity\Infrastructure\Service\InternalApiTokenService;
 use Source\Identity\Infrastructure\Service\LogSecurityEventRecorder;
 use Source\Identity\Infrastructure\Service\McpAuthorizationService;
 use Source\Identity\Infrastructure\Service\McpAuthorizationTokenVerifier;
@@ -106,6 +108,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AuthorizationConsentFactoryInterface::class, AuthorizationConsentFactory::class);
         $this->app->singleton(AuthorizationConsentRepositoryInterface::class, AuthorizationConsentRepository::class);
         $this->app->singleton(AuthorizationTokenVerifierInterface::class, McpAuthorizationTokenVerifier::class);
+        $this->app->singleton(InternalApiTokenServiceInterface::class, InternalApiTokenService::class);
         $this->app->singleton(AuthorizationConsentServiceInterface::class, McpAuthorizationService::class);
         $this->app->singleton(McpAuthorizationService::class);
     }
