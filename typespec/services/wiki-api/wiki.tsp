@@ -515,17 +515,19 @@ interface WikiListOperations {
 
   @get
   @route("/{language}/masters")
-  @doc("Search published wiki masters for lightweight selection candidates.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Search published wiki masters for lightweight selection candidates. Internal API Bearer scope: wiki-drafts:read.")
   searchMasterWikis(
     @path language: string,
     @query resourceType: "agency" | "group" | "talent" | "song",
     @query keyword: string,
     @query limit?: int32,
-  ): SearchMasterWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): SearchMasterWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}")
-  @doc("List published wikis by language.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("List published wikis by language. Internal API Bearer scope: wiki:read.")
   listWikis(
     @path language: string,
     @query perPage?: int32,
@@ -534,7 +536,7 @@ interface WikiListOperations {
     @doc("Sort field. Use createdAt for newly created wikis and version for most frequently updated wikis.")
     @query sort?: "updatedAt" | "name" | "createdAt" | "version" | null,
     @query order?: string,
-  ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 
 
@@ -542,12 +544,13 @@ interface WikiListOperations {
 interface WikiTranslationSetOperations {
   @get
   @route("/masters")
-  @doc("Search wiki masters grouped by translation set for official certification requests.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Search wiki masters grouped by translation set for official certification requests. Internal API Bearer scope: wiki-drafts:read.")
   searchTranslationSetMasterWikis(
     @query resourceType: "agency" | "group" | "talent" | "song",
     @query keyword: string,
     @query limit?: int32,
-  ): SearchTranslationSetMasterWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): SearchTranslationSetMasterWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 
 @route("/my/owned-wikis")
@@ -562,19 +565,21 @@ interface MyOwnedWikiListOperations {
 @route("/my/draft-wikis")
 interface MyDraftWikiListOperations {
   @get
-  @doc("List draft wikis edited by the current principal.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("List draft wikis edited by the current principal. Internal API Bearer scope: wiki-drafts:read.")
   listMyDraftWikis(
     @query perPage?: int32,
     @query translationSetIdentifier?: Uuid,
     @query statuses: DraftWikiStatus[],
     @query resourceType?: string,
-  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 
 @route("/draft-wikis")
 interface DraftWikiListOperations {
   @get
-  @doc("List draft wikis with read policy authorization.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("List draft wikis with read policy authorization. Internal API Bearer scope: wiki-drafts:read.")
   listDraftWikis(
     @query perPage?: int32,
     @query translationSetIdentifier?: Uuid,
@@ -587,14 +592,16 @@ interface DraftWikiListOperations {
 interface WikiOperations {
   @post
   @route("/create")
-  @doc("Create a new wiki draft.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Create a new wiki draft. Internal API Bearer scope: wiki-drafts:write.")
   createWiki(
     @body body: CreateWikiRequestBody,
-  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/auto-create")
   @doc("Automatically create a wiki draft from the provided metadata.")
+  @useAuth(SessionCookieAuth)
   autoCreateWiki(
     @body body: AutoCreateWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -618,11 +625,12 @@ interface WikiOperations {
 
   @post
   @route("/{wikiId}/edit")
-  @doc("Edit an existing wiki draft.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Edit an existing wiki draft. Internal API Bearer scope: wiki-drafts:write.")
   editWiki(
     @path wikiId: Uuid,
     @body body: UpdateWikiDraftRequestBody,
-  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{wikiId}/merge")
@@ -670,12 +678,13 @@ interface WikiOperations {
 
   @post
   @route("/{wikiId}/submit")
-  @doc("Submit a wiki draft for review.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Submit a wiki draft for review. Internal API Bearer scope: wiki-drafts:submit.")
   submitWiki(
     ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
-  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{wikiId}/withdraw")
@@ -696,12 +705,13 @@ interface WikiOperations {
 
   @get
   @route("/{language}/{slug}/related-profiles")
-  @doc("List related published wiki profiles for a source wiki.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("List related published wiki profiles for a source wiki. Internal API Bearer scope: wiki:read.")
   listRelatedProfiles(
     @path language: string,
     @path slug: string,
     @query resourceType: string,
-  ): ListRelatedProfilesResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ListRelatedProfilesResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{resourceType}/{translationSetIdentifier}/related-wikis")
@@ -713,96 +723,108 @@ interface WikiOperations {
 
   @get
   @route("/{language}/group/{slug}")
-  @doc("Fetch the published group wiki.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("Fetch the published group wiki. Internal API Bearer scope: wiki:read.")
   getGroupWiki(
     @path language: string,
     @path slug: string,
-  ): GetGroupWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetGroupWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/group/{wikiIdentifier}/draft")
-  @doc("Fetch a group draft wiki by draft wiki identifier.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch a group draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
   getGroupDraftWiki(
     @path wikiIdentifier: Uuid,
-  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/talent/{slug}")
-  @doc("Fetch the published talent wiki.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("Fetch the published talent wiki. Internal API Bearer scope: wiki:read.")
   getTalentWiki(
     @path language: string,
     @path slug: string,
-  ): GetTalentWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetTalentWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/talent/{wikiIdentifier}/draft")
-  @doc("Fetch a talent draft wiki by draft wiki identifier.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch a talent draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
   getTalentDraftWiki(
     @path wikiIdentifier: Uuid,
-  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/song/{slug}")
-  @doc("Fetch the published song wiki.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("Fetch the published song wiki. Internal API Bearer scope: wiki:read.")
   getSongWiki(
     @path language: string,
     @path slug: string,
-  ): GetSongWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetSongWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/song/{wikiIdentifier}/draft")
-  @doc("Fetch a song draft wiki by draft wiki identifier.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch a song draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
   getSongDraftWiki(
     @path wikiIdentifier: Uuid,
-  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/agency/{slug}")
-  @doc("Fetch the published agency wiki.")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("Fetch the published agency wiki. Internal API Bearer scope: wiki:read.")
   getAgencyWiki(
     @path language: string,
     @path slug: string,
-  ): GetAgencyWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetAgencyWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/agency/{wikiIdentifier}/draft")
-  @doc("Fetch an agency draft wiki by draft wiki identifier.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch an agency draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
   getAgencyDraftWiki(
     @path wikiIdentifier: Uuid,
-  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 
 @route("/wiki")
 interface MyWikiOperations {
   @get
   @route("/{language}/group/{slug}/my/draft")
-  @doc("Fetch the current principal's group draft wiki by language and slug.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch the current principal's group draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read.")
   getMyGroupDraftWiki(
     @path language: string,
     @path slug: string,
-  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/talent/{slug}/my/draft")
-  @doc("Fetch the current principal's talent draft wiki by language and slug.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch the current principal's talent draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read.")
   getMyTalentDraftWiki(
     @path language: string,
     @path slug: string,
-  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/song/{slug}/my/draft")
-  @doc("Fetch the current principal's song draft wiki by language and slug.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch the current principal's song draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read.")
   getMySongDraftWiki(
     @path language: string,
     @path slug: string,
-  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/{language}/agency/{slug}/my/draft")
-  @doc("Fetch the current principal's agency draft wiki by language and slug.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Fetch the current principal's agency draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read.")
   getMyAgencyDraftWiki(
     @path language: string,
     @path slug: string,
-  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }

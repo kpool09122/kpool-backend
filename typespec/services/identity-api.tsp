@@ -676,8 +676,9 @@ interface IdentityAuthOperations {
 
   @get
   @route("/me")
-  @doc("Get the current authenticated identity.")
-  getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Get the current authenticated identity. Internal API Bearer is an Account-selection helper with no additional scope.")
+  getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
   @route("/passkeys")

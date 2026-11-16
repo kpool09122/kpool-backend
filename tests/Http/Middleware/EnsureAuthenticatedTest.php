@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Mockery;
 use Mockery\MockInterface;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\Service\AuthServiceInterface;
+use Tests\Helper\CreateApiAuthenticationContext;
 use Tests\TestCase;
 
 class EnsureAuthenticatedTest extends TestCase
@@ -57,6 +59,18 @@ class EnsureAuthenticatedTest extends TestCase
             $this->assertSame('authentication_required', $exception->toProblemDetails()['code']);
             $this->assertFalse($called);
         }
+    }
+
+    public function testVerifiedBearerDoesNotValidateOrLogoutTheBrowserSession(): void
+    {
+        $request = Request::create('/api/v1/wiki/wiki/create', 'POST');
+        $request->attributes->set(ApiAuthenticationContext::class, CreateApiAuthenticationContext::create());
+        /** @var AuthServiceInterface&MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldNotReceive('isCurrentSessionValid');
+        $authService->shouldNotReceive('logout');
+        Auth::shouldReceive('check')->never();
+        self::assertSame(200, (new EnsureAuthenticated($authService))->handle($request, static fn () => response('ok'))->getStatusCode());
     }
 
     public function testPassesWhenAuthenticated(): void

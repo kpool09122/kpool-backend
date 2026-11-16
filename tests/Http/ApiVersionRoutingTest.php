@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Http;
 
+use Application\Http\Middleware\AuthenticateApiRequest;
 use Application\Http\Middleware\PreventRequestForgery;
+use Application\Http\Middleware\StartApplicationSession;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
@@ -22,6 +25,23 @@ class ApiVersionRoutingTest extends TestCase
         $app->make(HttpKernel::class);
 
         return $app;
+    }
+
+    public function testAuthenticationModeIsSelectedBeforeCookieDecryptionAndSessionStartOnEveryApiRoute(): void
+    {
+        foreach ($this->app['router']->getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/v1/')) {
+                continue;
+            }
+            $middleware = $this->app['router']->gatherRouteMiddleware($route);
+            $authentication = array_search(AuthenticateApiRequest::class, $middleware, true);
+            self::assertIsInt($authentication, $route->uri());
+            foreach ([EncryptCookies::class, StartApplicationSession::class, PreventRequestForgery::class] as $class) {
+                $position = array_search($class, $middleware, true);
+                self::assertIsInt($position, $route->uri());
+                self::assertLessThan($position, $authentication, $route->uri());
+            }
+        }
     }
 
     public function testAllBusinessRoutesUseFixedV1PrefixAndSessionProtection(): void

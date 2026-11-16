@@ -8,6 +8,7 @@ use Application\Http\Exceptions\UnauthorizedHttpException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,10 @@ class EnsureAuthenticated
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext) {
+            return $next($request);
+        }
+
         $isAuthenticated = Auth::check();
         if (! $isAuthenticated
             || ! $this->authService->isCurrentSessionValid(new IdentityIdentifier((string) Auth::id()))) {

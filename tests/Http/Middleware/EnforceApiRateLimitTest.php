@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Http\Middleware;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\TooManyRequestsHttpException;
@@ -14,11 +15,16 @@ use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
 use RedisException;
 use RuntimeException;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\Service\AuthServiceInterface;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Tests\Helper\CreateAccountContext;
+use Tests\Helper\CreateApiAuthenticationContext;
 use Tests\TestCase;
 
 class EnforceApiRateLimitTest extends TestCase
@@ -38,6 +44,50 @@ class EnforceApiRateLimitTest extends TestCase
             ],
         ]);
         Auth::shouldReceive('check')->andReturn(false);
+    }
+
+    public function testVerifiedBearerUsesTheSelectedAccountLimitWithoutBrowserSessionValidation(): void
+    {
+        $context = CreateApiAuthenticationContext::create();
+        $request = Request::create('/api/v1/wiki/wikis/ja', 'GET');
+        $request->attributes->set(ApiAuthenticationContext::class, $context);
+        app()->instance(AccountContext::class, CreateAccountContext::create($context->identityIdentifier(), $context->initialAccountIdentifier()));
+        $limiter = new RateLimiter(new Repository(new ArrayStore()));
+        config()->set('api_rate_limit.surfaces.screen.account.query', 1);
+        /** @var AuthServiceInterface&MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldNotReceive('isCurrentSessionValid');
+        $authService->shouldNotReceive('logout');
+        $middleware = new EnforceApiRateLimit(new ApiRateLimiter($limiter), $authService, app(AccountResolver::class), app(AuthContextCache::class));
+        self::assertSame(200, $middleware->handle($request, static fn () => response('ok'), 'screen', 'query')->getStatusCode());
+        $request->server->set('REMOTE_ADDR', '203.0.113.99');
+        $this->expectException(TooManyRequestsHttpException::class);
+        $middleware->handle($request, static fn () => response('must not run'), 'screen', 'query');
+    }
+
+    public function testBearerAccountsHaveSeparateBudgetsAndShareTheGlobalBudget(): void
+    {
+        $context = CreateApiAuthenticationContext::create();
+        $request = Request::create('/api/v1/wiki/wikis/ja', 'GET');
+        $request->attributes->set(ApiAuthenticationContext::class, $context);
+        $first = CreateAccountContext::create($context->identityIdentifier(), $context->initialAccountIdentifier());
+        $second = CreateAccountContext::create($context->identityIdentifier(), new AccountIdentifier((string) Str::uuid7()));
+        $limiter = new RateLimiter(new Repository(new ArrayStore()));
+        config()->set('api_rate_limit.global.query', 2);
+        config()->set('api_rate_limit.surfaces.screen.account.query', 1);
+        /** @var AuthServiceInterface&MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldNotReceive('isCurrentSessionValid');
+        $middleware = new EnforceApiRateLimit(new ApiRateLimiter($limiter), $authService, app(AccountResolver::class), app(AuthContextCache::class));
+        foreach ([$first, $second] as $account) {
+            app()->instance(AccountContext::class, $account);
+            self::assertSame(200, $middleware->handle($request, static fn () => response('ok'), 'screen', 'query')->getStatusCode());
+            self::assertSame(1, $limiter->attempts('api-rate-limit:screen:account:' . $account->principal()->accountIdentifier() . ':query'));
+        }
+        self::assertSame(2, $limiter->attempts('api-rate-limit:global:query'));
+        app()->instance(AccountContext::class, CreateAccountContext::create($context->identityIdentifier(), new AccountIdentifier((string) Str::uuid7())));
+        $this->expectException(TooManyRequestsHttpException::class);
+        $middleware->handle($request, static fn () => response('must not run'), 'screen', 'query');
     }
 
     public function testUnauthenticatedRequestsUseTheIpLimit(): void

@@ -7,7 +7,7 @@ paths:
   /draft-images:
     get:
       operationId: DraftImageListOperations_listDraftImages
-      description: List draft images.
+      description: 'List draft images. Internal API Bearer scope: wiki-images:read.'
       parameters:
         - name: translationSetIdentifier
           in: query
@@ -44,6 +44,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -74,10 +80,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /draft-wikis:
     get:
       operationId: DraftWikiListOperations_listDraftWikis
-      description: List draft wikis with read policy authorization.
+      description: 'List draft wikis with read policy authorization. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: perPage
           in: query
@@ -161,6 +170,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /image-deletion-requests:
     get:
       operationId: ImageDeletionRequestListOperations_listImageDeletionRequests
@@ -226,7 +238,7 @@ paths:
   /image/upload:
     post:
       operationId: ImageOperations_uploadImage
-      description: Upload a new image.
+      description: 'Upload a new image. Internal API Bearer scope: wiki-images:write.'
       parameters: []
       responses:
         '201':
@@ -235,6 +247,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImageDraftSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -283,6 +301,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UploadImageRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /image/{imageId}:
     delete:
       operationId: ImageOperations_deleteImage
@@ -489,7 +510,7 @@ paths:
   /image/{imageId}/metadata:
     patch:
       operationId: ImageMetadataOperations_updateImageMetadata
-      description: Update published image metadata immediately for operators. Preserves image file, approval and visibility.
+      description: 'Update published image metadata immediately for operators. Preserves image file, approval and visibility. Internal API Bearer scope: wiki-images:write.'
       parameters:
         - name: imageId
           in: path
@@ -533,8 +554,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '500':
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
           content:
             application/json:
               schema:
@@ -545,6 +584,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateImageMetadataRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /image/{imageId}/reject:
     post:
       operationId: ImageOperations_rejectImage
@@ -832,7 +874,7 @@ paths:
   /images:
     get:
       operationId: ImageListOperations_listUploadedImages
-      description: List uploaded images.
+      description: 'List uploaded images. Internal API Bearer scope: wiki-images:read.'
       parameters:
         - name: translationSetIdentifier
           in: query
@@ -856,6 +898,12 @@ paths:
                 $ref: '#/components/schemas/ListUploadedImagesResponseBody'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
           content:
             application/json:
               schema:
@@ -890,6 +938,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /images/search-free-materials:
     post:
       operationId: FreeMaterialSearchOperations_searchFreeMaterials
@@ -959,7 +1010,7 @@ paths:
   /managed-images:
     get:
       operationId: ManagedImageListOperations_listManagedImages
-      description: List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts.
+      description: 'List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts. Internal API Bearer scope: wiki-images:read.'
       parameters:
         - name: status
           in: query
@@ -1068,16 +1119,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '500':
           description: Server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /my/draft-wikis:
     get:
       operationId: MyDraftWikiListOperations_listMyDraftWikis
-      description: List draft wikis edited by the current principal.
+      description: 'List draft wikis edited by the current principal. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: perPage
           in: query
@@ -1119,6 +1191,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -1155,6 +1233,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /my/official-certifications:
     get:
       operationId: OfficialCertificationListOperations_listMyOfficialCertifications
@@ -3697,7 +3778,7 @@ paths:
   /wiki-translation-sets/masters:
     get:
       operationId: WikiTranslationSetOperations_searchTranslationSetMasterWikis
-      description: Search wiki masters grouped by translation set for official certification requests.
+      description: 'Search wiki masters grouped by translation set for official certification requests. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: resourceType
           in: query
@@ -3736,6 +3817,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -3766,10 +3853,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/agency/{wikiIdentifier}/draft:
     get:
       operationId: WikiOperations_getAgencyDraftWiki
-      description: Fetch an agency draft wiki by draft wiki identifier.
+      description: 'Fetch an agency draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: wikiIdentifier
           in: path
@@ -3783,6 +3873,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgencyDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -3819,6 +3921,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/auto-create:
     post:
       operationId: WikiOperations_autoCreateWiki
@@ -3879,10 +3984,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AutoCreateWikiRequestBody'
+      security:
+        - SessionCookieAuth: []
   /wiki/create:
     post:
       operationId: WikiOperations_createWiki
-      description: Create a new wiki draft.
+      description: 'Create a new wiki draft. Internal API Bearer scope: wiki-drafts:write.'
       parameters: []
       responses:
         '201':
@@ -3891,6 +3998,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -3945,10 +4058,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWikiRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/group/{wikiIdentifier}/draft:
     get:
       operationId: WikiOperations_getGroupDraftWiki
-      description: Fetch a group draft wiki by draft wiki identifier.
+      description: 'Fetch a group draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: wikiIdentifier
           in: path
@@ -3962,6 +4078,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -3998,10 +4126,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/song/{wikiIdentifier}/draft:
     get:
       operationId: WikiOperations_getSongDraftWiki
-      description: Fetch a song draft wiki by draft wiki identifier.
+      description: 'Fetch a song draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: wikiIdentifier
           in: path
@@ -4015,6 +4146,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SongDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4051,10 +4194,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/talent/{wikiIdentifier}/draft:
     get:
       operationId: WikiOperations_getTalentDraftWiki
-      description: Fetch a talent draft wiki by draft wiki identifier.
+      description: 'Fetch a talent draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: wikiIdentifier
           in: path
@@ -4068,6 +4214,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TalentDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4104,10 +4262,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{language}/agency/{slug}:
     get:
       operationId: WikiOperations_getAgencyWiki
-      description: Fetch the published agency wiki.
+      description: 'Fetch the published agency wiki. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -4126,6 +4287,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgencyWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4162,10 +4335,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wiki/{language}/agency/{slug}/my/draft:
     get:
       operationId: MyWikiOperations_getMyAgencyDraftWiki
-      description: Fetch the current principal's agency draft wiki by language and slug.
+      description: "Fetch the current principal's agency draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read."
       parameters:
         - name: language
           in: path
@@ -4184,6 +4360,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgencyDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4220,10 +4408,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{language}/group/{slug}:
     get:
       operationId: WikiOperations_getGroupWiki
-      description: Fetch the published group wiki.
+      description: 'Fetch the published group wiki. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -4242,6 +4433,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4278,10 +4481,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wiki/{language}/group/{slug}/my/draft:
     get:
       operationId: MyWikiOperations_getMyGroupDraftWiki
-      description: Fetch the current principal's group draft wiki by language and slug.
+      description: "Fetch the current principal's group draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read."
       parameters:
         - name: language
           in: path
@@ -4300,6 +4506,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4336,10 +4554,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{language}/song/{slug}:
     get:
       operationId: WikiOperations_getSongWiki
-      description: Fetch the published song wiki.
+      description: 'Fetch the published song wiki. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -4358,6 +4579,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SongWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4394,10 +4627,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wiki/{language}/song/{slug}/my/draft:
     get:
       operationId: MyWikiOperations_getMySongDraftWiki
-      description: Fetch the current principal's song draft wiki by language and slug.
+      description: "Fetch the current principal's song draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read."
       parameters:
         - name: language
           in: path
@@ -4416,6 +4652,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SongDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4452,10 +4700,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{language}/talent/{slug}:
     get:
       operationId: WikiOperations_getTalentWiki
-      description: Fetch the published talent wiki.
+      description: 'Fetch the published talent wiki. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -4474,6 +4725,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TalentWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4510,10 +4773,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wiki/{language}/talent/{slug}/my/draft:
     get:
       operationId: MyWikiOperations_getMyTalentDraftWiki
-      description: Fetch the current principal's talent draft wiki by language and slug.
+      description: "Fetch the current principal's talent draft wiki by language and slug. Internal API Bearer scope: wiki-drafts:read."
       parameters:
         - name: language
           in: path
@@ -4532,6 +4798,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TalentDraftWikiDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4568,6 +4846,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{language}/{resourceType}/{slug}/videos:
     get:
       operationId: PublicVideoLinkOperations_listVideos
@@ -4686,7 +4967,7 @@ paths:
   /wiki/{language}/{slug}/related-profiles:
     get:
       operationId: WikiOperations_listRelatedProfiles
-      description: List related published wiki profiles for a source wiki.
+      description: 'List related published wiki profiles for a source wiki. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -4711,6 +4992,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListRelatedProfilesResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4747,6 +5040,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wiki/{resourceType}/{translationSetIdentifier}/related-wikis:
     get:
       operationId: WikiOperations_listRelatedWikis
@@ -4977,7 +5273,7 @@ paths:
   /wiki/{wikiId}/edit:
     post:
       operationId: WikiOperations_editWiki
-      description: Edit an existing wiki draft.
+      description: 'Edit an existing wiki draft. Internal API Bearer scope: wiki-drafts:write.'
       parameters:
         - name: wikiId
           in: path
@@ -4991,6 +5287,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -5051,6 +5353,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateWikiDraftRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{wikiId}/merge:
     post:
       operationId: WikiOperations_mergeWiki
@@ -5455,7 +5760,7 @@ paths:
   /wiki/{wikiId}/submit:
     post:
       operationId: WikiOperations_submitWiki
-      description: Submit a wiki draft for review.
+      description: 'Submit a wiki draft for review. Internal API Bearer scope: wiki-drafts:submit.'
       parameters:
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
@@ -5473,6 +5778,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -5533,6 +5844,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/WikiWorkflowRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{wikiId}/translate:
     post:
       operationId: WikiOperations_translateWiki
@@ -5767,7 +6081,7 @@ paths:
   /wikis/{language}:
     get:
       operationId: WikiListOperations_listWikis
-      description: List published wikis by language.
+      description: 'List published wikis by language. Internal API Bearer scope: wiki:read.'
       parameters:
         - name: language
           in: path
@@ -5819,6 +6133,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -5849,10 +6175,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
+        - InternalApiBearerAuth: []
   /wikis/{language}/masters:
     get:
       operationId: WikiListOperations_searchMasterWikis
-      description: Search published wiki masters for lightweight selection candidates.
+      description: 'Search published wiki masters for lightweight selection candidates. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
         - name: language
           in: path
@@ -5890,6 +6219,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchMasterWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -5920,6 +6261,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
 components:
   parameters:
     VisitorLocationHeaders.visitorCountry:
@@ -7326,7 +7670,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: Machine-readable application error code. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.
+          description: 'Machine-readable application error code. Internal API Bearer errors: 401 authentication_required for malformed, expired, revoked, wrong-audience tokens or a missing Identity; 403 insufficient_scope for a missing route scope; 403 oauth_route_not_allowed for non-allowlisted method/route pairs; 403 oauth_api_disabled until Account restrictions are complete. Internal API token configuration failures return 500, not 401. Cookie-only mutations can return 419 csrf_token_mismatch. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.'
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Uuid:
       type: string
@@ -10286,6 +10630,16 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for withdrawing a wiki draft review request.
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: k-pool_session
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/v1/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
+    InternalApiBearerAuth:
+      type: http
+      scheme: Bearer
+      description: 'Short-lived internal API Bearer token, minted server-side from verified MCP authorization. Never send the MCP access token directly to this API. Authorization takes precedence over cookies with no fallback. Each request verifies the token, then checks the method/route scope allowlist and existing business permissions. Verified Bearer does not use a session or CSRF token. HTTP Bearer access stays disabled (403 oauth_api_disabled) until consent-scoped Account restrictions in #890 are complete. Account selection helpers need no extra scope; unregistered routes, including auto-create, consent APIs and authentication management, reject Bearer (403 oauth_route_not_allowed).'
 servers:
   - url: /api/v1/wiki
     description: Laravel route prefix from bootstrap/app.php.
