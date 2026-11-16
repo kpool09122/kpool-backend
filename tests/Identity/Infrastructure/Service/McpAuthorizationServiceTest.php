@@ -18,12 +18,14 @@ use Mockery;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
 use Source\Identity\Application\Exception\InvalidAuthorizationTokenException;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
 use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
+use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
 use Source\Identity\Domain\Entity\AuthorizationConsent;
 use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
@@ -469,6 +471,8 @@ class McpAuthorizationServiceTest extends TestCase
             $this->app()->make(ClientRepository::class),
             $dispatcher,
             $this->app()->make(Encrypter::class),
+            $this->app()->make(InternalApiTokenServiceInterface::class),
+            $this->app()->make(LoggerInterface::class),
         );
 
         try {

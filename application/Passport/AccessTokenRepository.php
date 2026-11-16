@@ -16,6 +16,8 @@ use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 
 class AccessTokenRepository extends PassportAccessTokenRepository
 {
+    private ?string $revokedTokenIdentifier = null;
+
     public function __construct(Dispatcher $events, private readonly IssuanceContext $issuanceContext)
     {
         parent::__construct($events);
@@ -57,5 +59,16 @@ class AccessTokenRepository extends PassportAccessTokenRepository
 
         return $token === null || $token->revoked
             || ! $this->issuanceContext->load(new AuthorizationConsentIdentifier($token->authorization_consent_id));
+    }
+
+    public function revokeAccessToken(string $tokenId): void
+    {
+        parent::revokeAccessToken($tokenId);
+        $this->revokedTokenIdentifier = $tokenId;
+    }
+
+    public function revokedTokenIdentifier(): ?string
+    {
+        return $this->revokedTokenIdentifier;
     }
 }
