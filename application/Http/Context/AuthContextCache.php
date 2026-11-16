@@ -13,6 +13,7 @@ use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -150,6 +151,11 @@ class AuthContextCache
         foreach ($this->keys(self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':*') as $key) {
             $this->delete($key);
         }
+    }
+
+    public function forgetAccountForAuthorizationConsent(IdentityIdentifier $identityIdentifier, AuthorizationConsentIdentifier $consentIdentifier): void
+    {
+        $this->delete(self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':consent:' . $consentIdentifier);
     }
 
     public function forgetCurrentAccount(IdentityIdentifier $identityIdentifier): void

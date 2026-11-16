@@ -40,6 +40,17 @@ readonly class AuthorizationConsentRepository implements AuthorizationConsentRep
             return null;
         }
 
+        return $this->toEntity($model);
+    }
+
+    public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): array
+    {
+        return array_values(ConsentModel::query()->where('identity_id', (string) $identityIdentifier)->orderBy('id')->get()
+            ->map(fn (ConsentModel $model): AuthorizationConsent => $this->toEntity($model))->all());
+    }
+
+    private function toEntity(ConsentModel $model): AuthorizationConsent
+    {
         return new AuthorizationConsent(
             new AuthorizationConsentIdentifier($model->id),
             new IdentityIdentifier($model->identity_id),

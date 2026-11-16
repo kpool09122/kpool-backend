@@ -11,6 +11,7 @@ use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -78,6 +79,12 @@ class CurrentAccountService implements CurrentAccountServiceInterface
             return;
         }
         $forget();
+    }
+
+    public function forgetForAuthorizationConsent(IdentityIdentifier $identityIdentifier, AuthorizationConsentIdentifier $consentIdentifier): void
+    {
+        $key = self::KEY_PREFIX . $identityIdentifier . ':consent:' . $consentIdentifier;
+        DB::afterCommit(static fn () => Redis::command('del', [$key]));
     }
 
     private function key(IdentityIdentifier $identityIdentifier): string
