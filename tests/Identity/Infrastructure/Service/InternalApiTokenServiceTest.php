@@ -8,6 +8,7 @@ use Application\Models\Identity\McpAccessToken;
 use Application\Models\Identity\McpClient;
 use DateTimeImmutable;
 use Firebase\JWT\JWT;
+use Illuminate\Foundation\Testing\DatabaseTransactionsManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Passport;
@@ -263,9 +264,20 @@ class InternalApiTokenServiceTest extends TestCase
         $tokens = $this->sourceTokens($consent);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $oldApi = $service->issue($tokens['access_token']);
-        $oldContext = $service->verify($oldApi->reveal());
-        $refreshed = $this->exchange(['grant_type' => 'refresh_token', 'client_id' => (string) $consent->clientIdentifier(),
-            'refresh_token' => $tokens['refresh_token'], 'scope' => 'wiki:read']);
+        $service->verify($oldApi->reveal());
+
+        // Run commit callbacks for the refresh transaction inside the test's outer rollback transaction.
+        $connectionName = DB::getDefaultConnection();
+        $transactions = new DatabaseTransactionsManager([$connectionName]);
+        $transactions->begin($connectionName, DB::transactionLevel());
+        DB::connection()->setTransactionManager($transactions);
+        $refreshed = DB::transaction(function () use ($consent, $tokens, $service, $oldApi): array {
+            $refreshed = $this->exchange(['grant_type' => 'refresh_token', 'client_id' => (string) $consent->clientIdentifier(),
+                'refresh_token' => $tokens['refresh_token'], 'scope' => 'wiki:read']);
+            $service->verify($oldApi->reveal());
+
+            return $refreshed;
+        });
         $first = $service->issue($refreshed['access_token']);
         $second = $service->issue($refreshed['access_token']);
         self::assertNotSame($first->reveal(), $second->reveal());
@@ -275,7 +287,6 @@ class InternalApiTokenServiceTest extends TestCase
             self::assertSame([AuthorizationScope::WikiRead], $context->scopes());
             self::assertEquals($consent->targets(), $context->targets());
         }
-        $service->forgetCachedAuthorization($oldContext->sourceTokenIdentifier());
         $this->expectException(InvalidAuthorizationTokenException::class);
         $service->verify($oldApi->reveal());
     }

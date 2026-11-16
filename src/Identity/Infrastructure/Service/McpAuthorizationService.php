@@ -14,6 +14,7 @@ use Application\Passport\SigningKeys;
 use DateInterval;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Bridge\ClientRepository as PassportClientRepository;
 use Laravel\Passport\Bridge\User;
 use Laravel\Passport\ClientRepository;
@@ -26,12 +27,15 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
+use Throwable;
 
 /** Passport adapter for trusted consent completion and token issuance. */
 readonly class McpAuthorizationService implements AuthorizationConsentServiceInterface
@@ -42,6 +46,8 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         private ClientRepository $clientRepository,
         private Dispatcher $dispatcher,
         private Encrypter $encrypter,
+        private InternalApiTokenServiceInterface $internalApiTokenService,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -88,7 +94,7 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
             || ! in_array($parameters['redirect_uri'], $client->redirect_uris, true)) {
             throw OAuthServerException::invalidRequest('redirect_uri');
         }
-        $server = $this->server($context);
+        $server = $this->server($context, new AccessTokenRepository($this->dispatcher, $context));
         $authorization = $server->validateAuthorizationRequest($request);
         // State is opaque: League trims query parameters, but callbacks must echo it exactly.
         if (is_string($parameters['state'] ?? null)) {
@@ -129,8 +135,21 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
             $resource = $this->assertResource($resource);
         }
         $context = new IssuanceContext($this->authorizationConsentRepository, is_string($resource) ? $resource : null);
+        $accessTokenRepository = new AccessTokenRepository($this->dispatcher, $context);
+        $response = $this->server($context, $accessTokenRepository)->respondToAccessTokenRequest($request, new Response());
 
-        return $this->server($context)->respondToAccessTokenRequest($request, new Response());
+        $revokedTokenIdentifier = $accessTokenRepository->revokedTokenIdentifier();
+        if ($revokedTokenIdentifier !== null) {
+            DB::afterCommit(function () use ($revokedTokenIdentifier): void {
+                try {
+                    $this->internalApiTokenService->forgetCachedAuthorization($revokedTokenIdentifier);
+                } catch (Throwable $exception) {
+                    $this->logger->warning('Internal API authorization cache invalidation failed after token refresh.', ['exception' => $exception]);
+                }
+            });
+        }
+
+        return $response;
     }
 
     private function assertResource(mixed $resource): string
@@ -143,12 +162,12 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         return $resource;
     }
 
-    private function server(IssuanceContext $issuanceContext): AuthorizationServer
+    private function server(IssuanceContext $issuanceContext, AccessTokenRepository $accessTokenRepository): AuthorizationServer
     {
         $refreshTokenRepository = new RefreshTokenRepository($this->dispatcher, $issuanceContext);
         $server = new AuthorizationServer(
             $this->passportClientRepository,
-            new AccessTokenRepository($this->dispatcher, $issuanceContext),
+            $accessTokenRepository,
             new ScopeRepository($this->clientRepository, $issuanceContext),
             SigningKeys::load('private'),
             Passport::tokenEncryptionKey($this->encrypter),
