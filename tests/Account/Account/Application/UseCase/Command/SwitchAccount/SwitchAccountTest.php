@@ -115,7 +115,8 @@ class SwitchAccountTest extends TestCase
             switchBack: true,
         );
         $deps->delegationRepository->shouldNotReceive('findById');
-        $deps->accountRepository->shouldNotReceive('findById');
+        $originalAccount = $originalPrincipal->accountIdentifier();
+        $deps->accountRepository->shouldReceive('findById')->once()->with($originalAccount)->andReturn($this->account($originalAccount));
         $deps->policy->shouldNotReceive('evaluate');
         $deps->currentAccountService->shouldReceive('save')->once()->withArgs(
             fn (CurrentAccount $currentAccount): bool =>

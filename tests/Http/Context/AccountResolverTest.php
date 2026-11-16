@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Http\Context;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Context\AccountResolver;
 use DateTimeImmutable;
 use Mockery;
@@ -27,19 +28,60 @@ use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Tests\Helper\CreateApiAuthenticationContext;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountResolverTest extends TestCase
 {
+    public function testResolvesOriginalPrincipalIdentifierFromSessionAccountContext(): void
+    {
+        $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $originalPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $effectivePrincipal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            $identity,
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        );
+        app()->instance(AccountContext::class, new AccountContext(
+            principal: $effectivePrincipal,
+            accountType: AccountType::CORPORATION,
+            accountStatus: AccountStatus::ACTIVE,
+            accountCategory: AccountCategory::AGENCY,
+            originalPrincipalIdentifier: $originalPrincipalIdentifier,
+            delegationIdentifier: new DelegationIdentifier(StrTestHelper::generateUuid()),
+        ));
+        [$resolver] = $this->resolver();
+
+        self::assertSame($originalPrincipalIdentifier, $resolver->resolveOriginalPrincipalIdentifier($identity));
+    }
+
+    public function testResolvesOriginalPrincipalIdentifierForBearerWithoutAccountContext(): void
+    {
+        $authorization = CreateApiAuthenticationContext::create();
+        request()->attributes->set(ApiAuthenticationContext::class, $authorization);
+        $identity = $authorization->identityIdentifier();
+        $originalPrincipalIdentifier = new PrincipalIdentifier((string) $authorization->originalPrincipalIdentifier());
+        $originalPrincipal = new Principal($originalPrincipalIdentifier, $identity, $authorization->originalAccountIdentifier());
+        [$resolver, $deps] = $this->resolver();
+        $deps['principalRepository']->shouldReceive('findById')->once()->with(Mockery::on(
+            static fn (mixed $identifier): bool => $identifier instanceof PrincipalIdentifier
+                && (string) $identifier === (string) $originalPrincipalIdentifier,
+        ))->andReturn($originalPrincipal);
+
+        self::assertSame($originalPrincipalIdentifier, $resolver->resolveOriginalPrincipalIdentifier($identity));
+    }
+
     public function testResolvesExplicitDelegatedContextAndKeepsOriginalIdentityForAudit(): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -162,7 +204,7 @@ class AccountResolverTest extends TestCase
         /** @var PolicyRepositoryInterface&Mockery\MockInterface $policyRepository */
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
 
-        return [new AccountResolver($currentAccountService, $accountRepository, $principalRepository, $delegationRepository, $principalGroupRepository, $roleRepository, $policyRepository), compact('currentAccountService', 'accountRepository', 'principalRepository', 'delegationRepository', 'principalGroupRepository', 'roleRepository', 'policyRepository')];
+        return [new AccountResolver($currentAccountService, $accountRepository, $principalRepository, $delegationRepository, $principalGroupRepository, $roleRepository, $policyRepository, $this->app()->make(PolicyEvaluatorInterface::class)), compact('currentAccountService', 'accountRepository', 'principalRepository', 'delegationRepository', 'principalGroupRepository', 'roleRepository', 'policyRepository')];
     }
 
     private function delegation(DelegationIdentifier $id, AccountIdentifier $delegate, AccountIdentifier $delegator, DelegationStatus $status): Delegation

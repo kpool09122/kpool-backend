@@ -4,48 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Repository;
 
-use DateTimeImmutable;
-use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Infrastructure\Repository\AuthorizationConsentRepository;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\CreateAuthorizationConsent;
 use Tests\TestCase;
 
 class AuthorizationConsentRepositoryTest extends TestCase
 {
-    #[Group('useDb')]
-    public function testDelegationTargetIsPersistedWithoutAddingTheOriginalAccount(): void
-    {
-        $first = CreateAuthorizationConsent::create();
-        $account = new AccountIdentifier((string) Str::uuid7());
-        $delegation = new DelegationIdentifier((string) Str::uuid7());
-        $consent = $this->app()->make(AuthorizationConsentFactoryInterface::class)->create(
-            $first->identityIdentifier(),
-            $first->clientIdentifier(),
-            $first->scopes(),
-            [new AuthorizationTarget($account, $delegation)],
-            $first->originalAccountIdentifier(),
-            $first->originalPrincipalIdentifier(),
-            $account,
-            $first->resource(),
-            new DateTimeImmutable()
-        );
-        $repository = $this->app()->make(AuthorizationConsentRepositoryInterface::class);
-        $repository->save($consent);
-        $found = $repository->find($consent->identifier());
-        $this->assertNotNull($found);
-        $this->assertCount(1, $found->targets());
-        $this->assertEquals($account, $found->targets()[0]->accountIdentifier);
-        $this->assertEquals($delegation, $found->targets()[0]->delegationIdentifier);
-        $this->assertEquals($account, $found->initialAccountIdentifier());
-    }
-
     public function testItIsBound(): void
     {
         $this->assertInstanceOf(AuthorizationConsentRepository::class, $this->app()->make(AuthorizationConsentRepositoryInterface::class));
@@ -62,10 +29,8 @@ class AuthorizationConsentRepositoryTest extends TestCase
         $this->assertEquals($consent->identityIdentifier(), $restored->identityIdentifier());
         $this->assertEquals($consent->clientIdentifier(), $restored->clientIdentifier());
         $this->assertSame($consent->scopes(), $restored->scopes());
-        $this->assertEquals($consent->targets(), $restored->targets());
         $this->assertEquals($consent->originalAccountIdentifier(), $restored->originalAccountIdentifier());
         $this->assertEquals($consent->originalPrincipalIdentifier(), $restored->originalPrincipalIdentifier());
-        $this->assertEquals($consent->initialAccountIdentifier(), $restored->initialAccountIdentifier());
         $this->assertSame($consent->resource(), $restored->resource());
         $this->assertSame($consent->consentedAt()->getTimestamp(), $restored->consentedAt()->getTimestamp());
         $this->assertNull($restored->revokedAt());

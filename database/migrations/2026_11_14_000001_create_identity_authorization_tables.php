@@ -27,10 +27,8 @@ return new class extends Migration
             $table->foreignUuid('identity_id')->constrained('identities');
             $table->foreignUuid('client_id')->constrained('oauth_clients');
             $table->jsonb('scopes');
-            $table->jsonb('targets');
             $table->uuid('original_account_id');
             $table->uuid('original_principal_id');
-            $table->uuid('initial_account_id');
             $table->text('resource');
             $table->timestampTz('consented_at');
             $table->timestampTz('revoked_at')->nullable();

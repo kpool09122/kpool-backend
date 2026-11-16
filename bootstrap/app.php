@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Application\Http\Exceptions\Handler;
 use Application\Http\Middleware\EnforceApiRateLimit;
 use Application\Http\Middleware\AuthenticateApiRequest;
+use Application\Http\Middleware\AuthorizeApiAccount;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\EnsureAuthenticated;
@@ -111,6 +112,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             EncryptCookies::class,
             StartApplicationSession::class,
             PreventRequestForgery::class,
+            AuthorizeApiAccount::class,
         ]);
         $middleware->group('auth.api', [
             EnsureAuthenticated::class,

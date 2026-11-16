@@ -12,6 +12,7 @@ use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -61,7 +62,10 @@ class AuthContextCache
      */
     public function resolveAccount(IdentityIdentifier $identityIdentifier, callable $dbResolver): AccountContext
     {
-        $cached = $this->read($this->accountKey($identityIdentifier));
+        // Authorization for a connection must be evaluated from current membership and delegation state.
+        $cached = request()->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext
+            ? null
+            : $this->read($this->accountKey($identityIdentifier));
         if ($cached !== null) {
             $context = $this->accountFromPayload($cached);
             if ($context !== null) {
@@ -191,6 +195,10 @@ class AuthContextCache
     private function accountKey(IdentityIdentifier $identityIdentifier): string
     {
         $request = request();
+        $context = $request->attributes->get(ApiAuthenticationContext::class);
+        if ($context instanceof ApiAuthenticationContext) {
+            return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':consent:' . $context->consentIdentifier();
+        }
         $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
 
         return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':' . $sessionId;

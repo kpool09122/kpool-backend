@@ -16,14 +16,21 @@ use Application\Models\SiteManagement\Principal as SiteManagementPrincipalModel;
 use Application\Models\SiteManagement\RolePolicyAttachment;
 use Illuminate\Database\Eloquent\Collection;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\UseCase\Query\AuthenticatedAccountReferenceReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedAccountSummaryReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\AuthenticationMethodsReadModel;
+use Source\Identity\Application\UseCase\Query\AuthenticationReadModel;
+use Source\Identity\Application\UseCase\Query\AuthorizedAccountSelectionReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\SwitchableAccountReadModel;
@@ -38,14 +45,25 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
         private AccountResolver $accountResolver,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private AuthorizationAccountServiceInterface $authorizationAccountService,
     ) {
     }
 
     /**
      * @throws IdentityNotFoundException
      */
-    public function process(GetAuthenticatedIdentityInputPort $input): AuthenticatedIdentityReadModel
+    public function process(GetAuthenticatedIdentityInputPort $input): AuthenticationReadModel
     {
+        $authorization = request()->attributes->get(ApiAuthenticationContext::class);
+        if ($authorization instanceof ApiAuthenticationContext) {
+            if ((string) $authorization->identityIdentifier() !== (string) $input->identityIdentifier()
+                || ! IdentityModel::query()->whereKey((string) $input->identityIdentifier())->exists()) {
+                throw new IdentityNotFoundException();
+            }
+
+            return $this->authorizedSelection($authorization);
+        }
+
         $model = IdentityModel::query()
             ->withCount('passkeyCredentials')
             ->addSelect([
@@ -189,6 +207,70 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
                 ->where('account_id', (string) $accountContext->principal()->accountIdentifier())
                 ->whereHas('identity')
                 ->count(),
+        );
+    }
+
+    private function authorizedSelection(ApiAuthenticationContext $authorization): AuthorizedAccountSelectionReadModel
+    {
+        $current = null;
+
+        try {
+            $current = $this->accountResolver->resolve($authorization->identityIdentifier());
+        } catch (AccountNotFoundException|DelegationUnavailableException) {
+        }
+
+        $switchable = [];
+        $originalAccount = null;
+
+        try {
+            $original = $this->authorizationAccountService->resolveOriginalAccount($authorization->identityIdentifier());
+            if ((string) $original->accountIdentifier !== (string) $authorization->originalAccountIdentifier()
+                || (string) $original->principalIdentifier !== (string) $authorization->originalPrincipalIdentifier()) {
+                throw new AuthorizationAccountUnavailableException();
+            }
+
+            $originalAccount = new AuthenticatedAccountReferenceReadModel((string) $original->accountIdentifier, $original->name);
+            $switchable[] = new SwitchableAccountReadModel(
+                null,
+                (string) $original->accountIdentifier,
+                $originalAccount,
+                $current !== null && $current->delegationIdentifier() === null,
+            );
+
+            $delegations = DelegationModel::query()
+                ->where('delegate_account_id', (string) $original->accountIdentifier)
+                ->where('status', 'approved')
+                ->withWhereHas('delegatorAccount', static fn ($query) => $query->where('status', AccountStatus::ACTIVE->value))
+                ->get();
+            foreach ($delegations as $delegation) {
+                $account = $delegation->delegatorAccount;
+                if ($account === null || ! $this->authorizationAccountService->allowsDelegatedTarget(
+                    $original,
+                    new AccountIdentifier($account->id),
+                    new DelegationIdentifier($delegation->id),
+                )) {
+                    continue;
+                }
+
+                $switchable[] = new SwitchableAccountReadModel(
+                    $delegation->id,
+                    $account->id,
+                    self::accountReference($account),
+                    (string) $current?->delegationIdentifier() === $delegation->id,
+                );
+            }
+        } catch (AuthorizationAccountUnavailableException) {
+        }
+        usort($switchable, static fn (SwitchableAccountReadModel $a, SwitchableAccountReadModel $b): int => strcmp($a->toArray()['accountIdentifier'], $b->toArray()['accountIdentifier']));
+        $currentModel = $current === null ? null : AccountModel::query()->select(['id', 'name'])->whereKey((string) $current->principal()->accountIdentifier())->first();
+
+        return new AuthorizedAccountSelectionReadModel(
+            (string) $authorization->identityIdentifier(),
+            $currentModel === null ? null : self::accountReference($currentModel),
+            $current === null ? null : (string) $current->principal()->principalIdentifier(),
+            $current?->delegationIdentifier() === null ? null : (string) $current->delegationIdentifier(),
+            $originalAccount,
+            $switchable,
         );
     }
 

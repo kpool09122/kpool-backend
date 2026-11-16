@@ -15,10 +15,8 @@ use Override;
  * @property string $identity_id
  * @property string $client_id
  * @property list<string> $scopes
- * @property list<array{account_id: string, delegation_id: ?string}> $targets
  * @property string $original_account_id
  * @property string $original_principal_id
- * @property string $initial_account_id
  * @property string $resource
  * @property Carbon $consented_at
  * @property ?Carbon $revoked_at
@@ -28,10 +26,8 @@ use Override;
     'identity_id',
     'client_id',
     'scopes',
-    'targets',
     'original_account_id',
     'original_principal_id',
-    'initial_account_id',
     'resource',
     'consented_at',
     'revoked_at',
@@ -47,7 +43,6 @@ class AuthorizationConsent extends Model
     {
         return [
             'scopes' => 'array',
-            'targets' => 'array',
             'consented_at' => 'immutable_datetime',
             'revoked_at' => 'immutable_datetime',
         ];

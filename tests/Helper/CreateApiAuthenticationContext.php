@@ -7,9 +7,9 @@ namespace Tests\Helper;
 use DateTimeImmutable;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
+use Source\Identity\Domain\Entity\AuthorizationConsent;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -18,6 +18,13 @@ use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 
 class CreateApiAuthenticationContext
 {
+    public static function fromConsent(AuthorizationConsent $consent, string $tokenIdentifier = 'source-token'): ApiAuthenticationContext
+    {
+        $expires = new DateTimeImmutable('+1 hour');
+
+        return new ApiAuthenticationContext(new ValidatedAuthorizationToken($tokenIdentifier, $consent, $consent->scopes(), $expires), $expires);
+    }
+
     /** @param list<AuthorizationScope> $scopes */
     public static function create(array $scopes = [AuthorizationScope::WikiRead]): ApiAuthenticationContext
     {
@@ -26,10 +33,8 @@ class CreateApiAuthenticationContext
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
             $scopes,
-            [new AuthorizationTarget($account)],
             $account,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
-            $account,
             'https://mcp.example/mcp',
             new DateTimeImmutable(),
         );

@@ -8,6 +8,7 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Delegation\Application\Exception\DelegationUnavailableException;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Principal\Domain\Entity\Policy;
@@ -16,12 +17,17 @@ use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Condition;
 use Source\Account\Principal\Domain\ValueObject\ConditionClause;
+use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
+use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Account\Principal\Domain\ValueObject\Statement;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class AccountResolver
@@ -34,6 +40,7 @@ readonly class AccountResolver
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private RoleRepositoryInterface $roleRepository,
         private PolicyRepositoryInterface $policyRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -55,6 +62,23 @@ readonly class AccountResolver
         }
 
         $this->assertDelegationIsActive($currentAccount);
+        $authorization = request()->attributes->get(ApiAuthenticationContext::class);
+        if ($authorization instanceof ApiAuthenticationContext) {
+            $originalPrincipal = $this->resolveInitialPrincipal($identityIdentifier);
+            if ((string) $currentAccount->originalAccountIdentifier !== (string) $originalPrincipal->accountIdentifier()
+                || (string) $currentAccount->originalPrincipalIdentifier !== (string) $originalPrincipal->principalIdentifier()
+                || $originalPrincipal->status() !== PrincipalStatus::ACTIVE
+                || $principal->status() !== PrincipalStatus::ACTIVE) {
+                throw new AccountNotFoundException('Selected account is not authorized.');
+            }
+            if ($currentAccount->delegationIdentifier !== null && ! $this->policyEvaluator->evaluate(
+                $originalPrincipal,
+                Action::DELEGATION_ACCOUNT_SWITCH,
+                Resource::delegationAccount($originalPrincipal->accountIdentifier(), $currentAccount->delegationIdentifier, $currentAccount->effectiveAccountIdentifier),
+            )) {
+                throw new AccountNotFoundException('Delegation permission is no longer available.');
+            }
+        }
 
         $account = $this->accountRepository->findById($currentAccount->effectiveAccountIdentifier);
         if ($account === null) {
@@ -68,6 +92,11 @@ readonly class AccountResolver
                 throw new AccountNotFoundException('Original account was not found.');
             }
             $originalAccountStatus = $originalAccount->status();
+        }
+
+        if ($authorization instanceof ApiAuthenticationContext
+            && ($account->status() !== AccountStatus::ACTIVE || $originalAccountStatus !== AccountStatus::ACTIVE)) {
+            throw new AccountNotFoundException('The account is not active.');
         }
 
         $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
@@ -96,8 +125,30 @@ readonly class AccountResolver
     }
 
     /** @throws AccountNotFoundException */
+    public function resolveOriginalPrincipalIdentifier(IdentityIdentifier $identityIdentifier): PrincipalIdentifier
+    {
+        if (request()->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext) {
+            return $this->resolveInitialPrincipal($identityIdentifier)->principalIdentifier();
+        }
+
+        return app(AccountContext::class)->originalPrincipalIdentifier();
+    }
+
+    /** @throws AccountNotFoundException */
     public function resolveInitialPrincipal(IdentityIdentifier $identityIdentifier): Principal
     {
+        $authorization = request()->attributes->get(ApiAuthenticationContext::class);
+        if ($authorization instanceof ApiAuthenticationContext) {
+            $principal = $this->principalRepository->findById(new PrincipalIdentifier((string) $authorization->originalPrincipalIdentifier()));
+            if ($principal === null
+                || (string) $authorization->identityIdentifier() !== (string) $identityIdentifier
+                || (string) $principal->identityIdentifier() !== (string) $identityIdentifier
+                || (string) $principal->accountIdentifier() !== (string) $authorization->originalAccountIdentifier()) {
+                throw new AccountNotFoundException('The original principal is not available.');
+            }
+
+            return $principal;
+        }
         $principals = $this->principalRepository->findAllByIdentityIdentifier($identityIdentifier);
         $principal = count($principals) === 1
             ? $principals[0]
@@ -179,6 +230,9 @@ readonly class AccountResolver
         if ($delegation === null || ! $delegation->isApproved()
             || (string) $delegation->delegateAccountIdentifier() !== (string) $currentAccount->originalAccountIdentifier
             || (string) $delegation->delegatorAccountIdentifier() !== (string) $currentAccount->effectiveAccountIdentifier) {
+            if (request()->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext) {
+                throw new DelegationUnavailableException('Delegated account context is no longer active.');
+            }
             $this->currentAccountService->save(new CurrentAccount(
                 originalIdentityIdentifier: $currentAccount->originalIdentityIdentifier,
                 originalAccountIdentifier: $currentAccount->originalAccountIdentifier,

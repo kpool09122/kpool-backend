@@ -44,10 +44,30 @@ readonly class EnforceApiRateLimit
     private function resolveSubject(Request $request): RateLimitSubject
     {
         $apiAuthenticationContext = $request->attributes->get(ApiAuthenticationContext::class);
-        if ($apiAuthenticationContext instanceof ApiAuthenticationContext) {
-            return $this->accountSubject($apiAuthenticationContext->identityIdentifier());
+
+        return match (true) {
+            $apiAuthenticationContext instanceof ApiAuthenticationContext => $this->resolveBearerSubject($request, $apiAuthenticationContext),
+            default => $this->resolveSessionSubject($request),
+        };
+    }
+
+    private function resolveBearerSubject(Request $request, ApiAuthenticationContext $apiAuthenticationContext): RateLimitSubject
+    {
+        // Selection helpers must remain reachable when the selected delegation is invalid.
+        if (AuthorizeApiAccount::isSelectionRequest($request)) {
+            return RateLimitSubject::account((string) $apiAuthenticationContext->originalAccountIdentifier());
         }
 
+        $account = $request->attributes->get(AccountContext::class);
+        if ($account instanceof AccountContext) {
+            return RateLimitSubject::account((string) $account->principal()->accountIdentifier());
+        }
+
+        return $this->accountSubject($apiAuthenticationContext->identityIdentifier());
+    }
+
+    private function resolveSessionSubject(Request $request): RateLimitSubject
+    {
         if (! Auth::check()) {
             return RateLimitSubject::ip($request->ip() ?? 'unknown');
         }

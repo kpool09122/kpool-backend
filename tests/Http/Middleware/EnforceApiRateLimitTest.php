@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RedisException;
 use RuntimeException;
+use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -46,12 +48,40 @@ class EnforceApiRateLimitTest extends TestCase
         Auth::shouldReceive('check')->andReturn(false);
     }
 
+    /** @return array<string, array{string, string}> */
+    public static function auxiliaryRequests(): array
+    {
+        return ['snapshot' => ['GET', '/api/v1/identity/auth/me'], 'switch' => ['POST', '/api/v1/account/accounts/switch']];
+    }
+
+    #[DataProvider('auxiliaryRequests')]
+    public function testOAuthRecoveryIsRateLimitedWithoutResolvingTheUnavailableSelection(string $method, string $path): void
+    {
+        $context = CreateApiAuthenticationContext::create();
+        /** @var CurrentAccountServiceInterface&MockInterface $selection */
+        $selection = Mockery::mock(CurrentAccountServiceInterface::class);
+        $selection->shouldNotReceive('find');
+        app()->instance(CurrentAccountServiceInterface::class, $selection);
+        $request = Request::create($path, $method);
+        $request->attributes->set(ApiAuthenticationContext::class, $context);
+        $limiter = new RateLimiter(new Repository(new ArrayStore()));
+        config()->set('api_rate_limit.surfaces.screen.account.query', 1);
+        /** @var AuthServiceInterface&MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldNotReceive('isCurrentSessionValid');
+        $middleware = new EnforceApiRateLimit(new ApiRateLimiter($limiter), $authService, app(AccountResolver::class), app(AuthContextCache::class));
+        self::assertSame(200, $middleware->handle($request, static fn () => response('recovery'), 'screen', 'query')->getStatusCode());
+        self::assertSame(1, $limiter->attempts('api-rate-limit:screen:account:' . $context->originalAccountIdentifier() . ':query'));
+        $this->expectException(TooManyRequestsHttpException::class);
+        $middleware->handle($request, static fn () => response('must not run'), 'screen', 'query');
+    }
+
     public function testVerifiedBearerUsesTheSelectedAccountLimitWithoutBrowserSessionValidation(): void
     {
         $context = CreateApiAuthenticationContext::create();
         $request = Request::create('/api/v1/wiki/wikis/ja', 'GET');
         $request->attributes->set(ApiAuthenticationContext::class, $context);
-        app()->instance(AccountContext::class, CreateAccountContext::create($context->identityIdentifier(), $context->initialAccountIdentifier()));
+        app()->instance(AccountContext::class, CreateAccountContext::create($context->identityIdentifier(), $context->originalAccountIdentifier()));
         $limiter = new RateLimiter(new Repository(new ArrayStore()));
         config()->set('api_rate_limit.surfaces.screen.account.query', 1);
         /** @var AuthServiceInterface&MockInterface $authService */
@@ -70,7 +100,7 @@ class EnforceApiRateLimitTest extends TestCase
         $context = CreateApiAuthenticationContext::create();
         $request = Request::create('/api/v1/wiki/wikis/ja', 'GET');
         $request->attributes->set(ApiAuthenticationContext::class, $context);
-        $first = CreateAccountContext::create($context->identityIdentifier(), $context->initialAccountIdentifier());
+        $first = CreateAccountContext::create($context->identityIdentifier(), $context->originalAccountIdentifier());
         $second = CreateAccountContext::create($context->identityIdentifier(), new AccountIdentifier((string) Str::uuid7()));
         $limiter = new RateLimiter(new Repository(new ArrayStore()));
         config()->set('api_rate_limit.global.query', 2);

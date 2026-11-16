@@ -27,7 +27,6 @@ class AuthenticateApiRequestTest extends TestCase
 {
     public function testVerifiedBearerSetsIdentityAndPassesTheVerifiedEnvelopeWithoutSessionLogin(): void
     {
-        config()->set('internal_api_token.http_enabled', true);
         $context = CreateApiAuthenticationContext::create();
         $request = Request::create('/api/v1/wiki/wikis/ja', 'GET', server: ['HTTP_AUTHORIZATION' => 'Bearer internal-token']);
         $request->setRouteResolver(static fn () => new Route('GET', 'api/v1/wiki/wikis/{language}', static fn () => null));
@@ -81,22 +80,6 @@ class AuthenticateApiRequestTest extends TestCase
         (new AuthenticateApiRequest($service))->handle($request, static fn () => response('must not run'));
     }
 
-    public function testValidBearerRemainsDisabledUntilAccountConstraintsAreImplemented(): void
-    {
-        $request = $this->bearerRequest('GET', 'api/v1/identity/auth/me');
-        /** @var InternalApiTokenServiceInterface&MockInterface $service */
-        $service = Mockery::mock(InternalApiTokenServiceInterface::class);
-        $service->shouldReceive('verify')->once()->andReturn(CreateApiAuthenticationContext::create());
-        Auth::shouldReceive('onceUsingId')->never();
-
-        try {
-            (new AuthenticateApiRequest($service))->handle($request, static fn () => response('must not run'));
-            self::fail('HTTP Bearer must be closed by default.');
-        } catch (ForbiddenHttpException $exception) {
-            self::assertSame('oauth_api_disabled', $exception->toProblemDetails()['code']);
-        }
-    }
-
     /** @return array<string, array{string, string, AuthorizationScope|null}> */
     public static function allowedRoutes(): array
     {
@@ -142,7 +125,6 @@ class AuthenticateApiRequestTest extends TestCase
         self::assertIsString($path);
         $actual = RouteFacade::getRoutes()->match(Request::create('/' . $path, $method));
         self::assertSame($uri, $actual->uri());
-        config()->set('internal_api_token.http_enabled', true);
         $request = $this->bearerRequest($method, $uri);
         $context = CreateApiAuthenticationContext::create([$scope ?? AuthorizationScope::WikiRead]);
         /** @var InternalApiTokenServiceInterface&MockInterface $service */
@@ -163,7 +145,6 @@ class AuthenticateApiRequestTest extends TestCase
 
             return;
         }
-        config()->set('internal_api_token.http_enabled', true);
         $request = $this->bearerRequest($method, $uri);
         $wrongScope = $scope === AuthorizationScope::WikiRead ? AuthorizationScope::DraftWrite : AuthorizationScope::WikiRead;
         /** @var InternalApiTokenServiceInterface&MockInterface $service */
@@ -201,7 +182,6 @@ class AuthenticateApiRequestTest extends TestCase
     #[DataProvider('forbiddenRoutes')]
     public function testUnregisteredRoutesAre403EvenWithAllScopes(string $method, string $uri): void
     {
-        config()->set('internal_api_token.http_enabled', true);
         $request = $this->bearerRequest($method, $uri);
         /** @var InternalApiTokenServiceInterface&MockInterface $service */
         $service = Mockery::mock(InternalApiTokenServiceInterface::class);
@@ -218,7 +198,6 @@ class AuthenticateApiRequestTest extends TestCase
 
     public function testDownstreamBusinessAuthorizationFailurePropagatesAndClearsBearerState(): void
     {
-        config()->set('internal_api_token.http_enabled', true);
         $request = $this->bearerRequest('POST', 'api/v1/wiki/wiki/{wikiId}/edit');
         /** @var InternalApiTokenServiceInterface&MockInterface $service */
         $service = Mockery::mock(InternalApiTokenServiceInterface::class);
@@ -266,7 +245,6 @@ class AuthenticateApiRequestTest extends TestCase
 
     public function testMissingIdentityIs401WithoutStartingASession(): void
     {
-        config()->set('internal_api_token.http_enabled', true);
         $request = $this->bearerRequest('GET', 'api/v1/identity/auth/me');
         /** @var InternalApiTokenServiceInterface&MockInterface $service */
         $service = Mockery::mock(InternalApiTokenServiceInterface::class);

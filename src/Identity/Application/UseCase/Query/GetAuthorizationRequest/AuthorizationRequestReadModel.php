@@ -9,16 +9,13 @@ use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class AuthorizationRequestReadModel
 {
-    /** @param list<array{accountIdentifier: string, name: string, delegationIdentifier: string|null}> $accounts */
     public function __construct(
         private PendingAuthorization $pending,
         private string $clientName,
-        private string $originalAccountIdentifier,
-        private array $accounts,
     ) {
     }
 
-    /** @return array{requestIdentifier: string, expiresAt: string, clientName: string, scopes: list<array{scope: string, description: string}>, originalAccountIdentifier: string, accounts: list<array{accountIdentifier: string, name: string, delegationIdentifier: string|null}>} */
+    /** @return array{requestIdentifier: string, expiresAt: string, clientName: string, scopes: list<array{scope: string, description: string}>} */
     public function toArray(): array
     {
         return [
@@ -33,8 +30,6 @@ readonly class AuthorizationRequestReadModel
                 AuthorizationScope::ImageRead => 'Wiki 画像の閲覧',
                 AuthorizationScope::ImageWrite => 'Wiki 画像の追加・編集',
             }], $this->pending->parameters->requestedScopes),
-            'originalAccountIdentifier' => $this->originalAccountIdentifier,
-            'accounts' => $this->accounts,
         ];
     }
 }

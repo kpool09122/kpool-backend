@@ -83,10 +83,6 @@ readonly class AuthenticateApiRequest
         if ($scope !== null && ! in_array($scope, $context->scopes(), true)) {
             throw $this->forbidden($request, 'insufficient_scope');
         }
-        // #890 must complete consent-scoped account selection before enabling HTTP Bearer access.
-        if (config('internal_api_token.http_enabled') !== true) {
-            throw $this->forbidden($request, 'oauth_api_disabled');
-        }
 
         if (Auth::onceUsingId((string) $context->identityIdentifier()) === false) {
             throw $this->unauthorized($request);

@@ -10,7 +10,6 @@ use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -26,10 +25,8 @@ class ApiAuthenticationContextTest extends TestCase
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
             [AuthorizationScope::WikiRead],
-            [new AuthorizationTarget($account)],
             $account,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
-            $account,
             'https://mcp.example/mcp',
             new DateTimeImmutable()
         );
@@ -41,10 +38,8 @@ class ApiAuthenticationContextTest extends TestCase
         self::assertSame($consent->identityIdentifier(), $context->identityIdentifier());
         self::assertSame($consent->clientIdentifier(), $context->clientIdentifier());
         self::assertSame($token->scopes, $context->scopes());
-        self::assertSame($consent->targets(), $context->targets());
         self::assertSame($consent->originalAccountIdentifier(), $context->originalAccountIdentifier());
         self::assertSame($consent->originalPrincipalIdentifier(), $context->originalPrincipalIdentifier());
-        self::assertSame($consent->initialAccountIdentifier(), $context->initialAccountIdentifier());
         self::assertSame($expires, $context->expiresAt());
     }
 }

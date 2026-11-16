@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\ApproveAuthorization;
 
-use Application\Http\Action\Support\RequestValue;
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\BadRequestHttpException;
 use Application\Http\Exceptions\ConflictHttpException;
@@ -22,9 +21,6 @@ use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuth
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Throwable;
 use ValueError;
 
@@ -43,11 +39,6 @@ readonly class ApproveAuthorizationAction
                     $requestIdentifier,
                     $this->actorContext->identityIdentifier,
                     array_map(static fn (string $scope): AuthorizationScope => AuthorizationScope::from($scope), $request->scopes()),
-                    array_map(static fn (array $target): AuthorizationTarget => new AuthorizationTarget(
-                        new AccountIdentifier(RequestValue::string($target['accountIdentifier'])),
-                        ($target['delegationIdentifier'] ?? null) === null ? null : new DelegationIdentifier(RequestValue::string($target['delegationIdentifier'])),
-                    ), $request->targets()),
-                    new AccountIdentifier($request->initialAccountIdentifier())
                 );
                 DB::transaction(fn () => $this->useCase->process($input, $output));
                 $result = $output->toArray();

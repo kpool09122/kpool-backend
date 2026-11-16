@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Service;
 
-use Application\Models\Account\Delegation;
 use Application\Models\Account\Principal;
 use Application\Models\Identity\AuthorizationConsent;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
-use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
 use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
@@ -30,46 +26,13 @@ use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\AuthorizationRequestScenario;
-use Tests\Helper\CreateAccount;
 use Tests\TestCase;
 
 #[Group('useDb')]
 class AuthorizationConsentFlowTest extends TestCase
 {
-    public function testDelegatedOnlyConsentNeverAddsOriginalAccountToGrantedTargets(): void
-    {
-        $scenario = AuthorizationRequestScenario::create();
-        $target = new AccountIdentifier((string) Str::uuid7());
-        $delegation = new DelegationIdentifier((string) Str::uuid7());
-        CreateAccount::create((string) $target);
-        Delegation::query()->create([
-            'id' => (string) $delegation,
-            'affiliation_id' => (string) Str::uuid7(),
-            'delegate_account_id' => (string) $scenario->base->originalAccountIdentifier(),
-            'delegator_account_id' => (string) $target,
-            'requested_by_account_id' => (string) $target,
-            'status' => 'approved',
-            'direction' => DelegationDirection::FROM_AGENCY->value,
-            'requested_at' => now(),
-        ]);
-        $policyEvaluator = $this->createStub(PolicyEvaluatorInterface::class);
-        $policyEvaluator->method('evaluate')->willReturn(true);
-        app()->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $useCase = app(ApproveConsent::class);
-        $input = new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), [AuthorizationScope::WikiRead], [new AuthorizationTarget($target, $delegation)], $target);
-        DB::transaction(fn () => $useCase->process($input, new ApproveAuthorizationOutput()));
-        $model = AuthorizationConsent::query()->sole();
-        $this->assertSame([['account_id' => (string) $target, 'delegation_id' => (string) $delegation]], $model->targets);
-        $this->assertSame((string) $scenario->base->originalAccountIdentifier(), $model->original_account_id);
-        $this->assertSame((string) $scenario->base->originalPrincipalIdentifier(), $model->original_principal_id);
-        $this->assertSame((string) $target, $model->initial_account_id);
-    }
-
     public function testPersistsOnlySelectedScopesAndIssuesRealCodeFromStoredParameters(): void
     {
         $scenario = AuthorizationRequestScenario::create();
@@ -79,7 +42,8 @@ class AuthorizationConsentFlowTest extends TestCase
         DB::transaction(fn () => $useCase->process($input, $output));
         $model = AuthorizationConsent::query()->sole();
         $this->assertSame(['wiki-drafts:write'], $model->scopes);
-        $this->assertSame([['account_id' => (string) $scenario->base->originalAccountIdentifier(), 'delegation_id' => null]], $model->targets);
+        $this->assertSame((string) $scenario->base->originalAccountIdentifier(), $model->original_account_id);
+        $this->assertSame((string) $scenario->base->originalPrincipalIdentifier(), $model->original_principal_id);
         $this->assertSame((string) $scenario->base->identityIdentifier(), $model->identity_id);
         $this->assertSame((string) $scenario->base->clientIdentifier(), $model->client_id);
         $url = $output->toArray()['redirectUri'];
@@ -127,17 +91,15 @@ class AuthorizationConsentFlowTest extends TestCase
     }
 
     /** @return array<string, array{string}> */
-    public static function invalidSelections(): array
+    public static function invalidScopes(): array
     {
-        return ['scope expansion' => ['scope'], 'empty scopes' => ['emptyScopes'], 'duplicate scopes' => ['duplicateScopes'], 'foreign account' => ['foreign'], 'forged delegation' => ['delegation'], 'duplicate accounts' => ['duplicateAccounts'], 'unselected initial' => ['initial'], 'empty targets' => ['emptyTargets']];
+        return ['scope expansion' => ['scope'], 'empty scopes' => ['emptyScopes'], 'duplicate scopes' => ['duplicateScopes']];
     }
 
-    #[DataProvider('invalidSelections')]
-    public function testRejectsTamperedSelectionsWithoutConsent(string $case): void
+    #[DataProvider('invalidScopes')]
+    public function testRejectsInvalidScopesWithoutConsent(string $case): void
     {
         $scenario = AuthorizationRequestScenario::create();
-        $original = $scenario->base->originalAccountIdentifier();
-        $foreign = new AccountIdentifier((string) Str::uuid7());
         $scopes = match($case) {
             'emptyScopes' => [], 'duplicateScopes' => [AuthorizationScope::WikiRead, AuthorizationScope::WikiRead], default => [AuthorizationScope::WikiRead]
         };
@@ -147,10 +109,7 @@ class AuthorizationConsentFlowTest extends TestCase
             $parameters = new AuthorizationCodeParameters($pending->parameters->clientIdentifier, $pending->parameters->redirectUri, [AuthorizationScope::DraftRead], $pending->parameters->resource, $pending->parameters->codeChallenge, $pending->parameters->state);
             $session->put('oauth_authorization_requests', [$pending->identifier => new PendingAuthorization($pending->identifier, $parameters, $pending->expiresAt, $scenario->base->identityIdentifier())]);
         }
-        $targets = match($case) {
-            'foreign' => [new AuthorizationTarget($foreign)], 'delegation' => [new AuthorizationTarget($original, new DelegationIdentifier((string) Str::uuid7()))], 'duplicateAccounts' => [new AuthorizationTarget($original), new AuthorizationTarget($original)], 'emptyTargets' => [], default => [new AuthorizationTarget($original)]
-        };
-        $input = new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), $scopes, $targets, $case === 'initial' ? $foreign : $original);
+        $input = new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), $scopes);
 
         try {
             $useCase = app(ApproveConsent::class);
@@ -175,6 +134,6 @@ class AuthorizationConsentFlowTest extends TestCase
 
     private function input(AuthorizationRequestScenario $scenario): ApproveAuthorizationInput
     {
-        return new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), [AuthorizationScope::DraftWrite], [new AuthorizationTarget($scenario->base->originalAccountIdentifier())], $scenario->base->originalAccountIdentifier());
+        return new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), [AuthorizationScope::DraftWrite]);
     }
 }

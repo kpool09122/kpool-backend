@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
@@ -65,6 +66,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $input = new GetAuthenticatedIdentityInput($identity);
         $empty = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $empty);
         $this->assertNull($empty->siteManagementPrincipalIdentifier());
         self::assertNull($empty->toArray()['accountPrincipalStatus']);
         self::assertNull($empty->toArray()['siteManagementPrincipalStatus']);
@@ -77,6 +79,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $output = new ProvisionPrincipalOutput();
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($identity, $account), $output);
         $general = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $general);
         $principal = $output->principal();
         $this->assertNotNull($principal);
         $this->assertSame((string) $principal->principalIdentifier(), $general->siteManagementPrincipalIdentifier());
@@ -86,6 +89,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         CreateIdentity::create($secondIdentity, ['email' => 'second@example.com']);
         DB::table('account_principals')->insert(['id' => StrTestHelper::generateUuid(), 'identity_id' => (string) $secondIdentity, 'account_id' => (string) $account]);
         $accountOnly = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $accountOnly);
         $this->assertSame(2, $accountOnly->accountIdentityCount());
         $this->assertSame(1, $accountOnly->siteManagementPrincipalCount());
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($secondIdentity, $account), new ProvisionPrincipalOutput());
@@ -93,10 +97,12 @@ class GetAuthenticatedIdentityTest extends TestCase
         CreateAccount::create((string) $otherAccount, ['email' => 'other-account@example.com']);
         $this->app()->make(ProvisionPrincipalInterface::class)->process(new ProvisionPrincipalInput($secondIdentity, $otherAccount), new ProvisionPrincipalOutput());
         $multiple = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $multiple);
         $this->assertSame(2, $multiple->siteManagementPrincipalCount());
         $this->assertSame(2, $multiple->toArray()['siteManagementPrincipalCount']);
         SiteManagementAuthorization::grantOperator($principal);
         $admin = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $admin);
         $this->assertCount(2, $admin->siteManagementPolicies());
         // Change an attached policy to Deny; the response must retain the effect.
         $id = $admin->siteManagementPolicies()[0]['policyIdentifier'];
@@ -104,6 +110,7 @@ class GetAuthenticatedIdentityTest extends TestCase
             ['effect' => 'deny', 'actions' => ['contact:view'], 'resource_types' => ['contact'], 'condition' => null],
         ])]);
         $denied = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $denied);
         $this->assertSame('deny', $denied->siteManagementPolicies()[0]['statements'][0]['effect']);
         $this->assertSame($general->siteManagementPrincipalIdentifier(), $denied->siteManagementPrincipalIdentifier());
     }
@@ -149,6 +156,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
         $this->assertSame('test-user', $readModel->identityName());
@@ -224,6 +232,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         Redis::shouldReceive('set')->andReturn(true);
         $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
             ->process(new GetAuthenticatedIdentityInput($identity));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
         $this->assertSame(2, $readModel->accountIdentityCount());
         $this->assertSame(2, $readModel->toArray()['accountIdentityCount']);
     }
@@ -252,6 +261,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
             ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
 
         $this->assertSame((string) $accountIdentifier, $readModel->accountIdentifier());
         $this->assertNull($readModel->accountType());
@@ -297,6 +307,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         DB::enableQueryLog();
         $readModel = $this->app()->make(GetAuthenticatedIdentityInterface::class)
             ->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
         $authenticationMethodQueries = array_values(array_filter(
             DB::getQueryLog(),
             static fn (array $query): bool => str_contains($query['query'], 'from "identities"')
@@ -330,6 +341,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
         $this->assertSame('test-user', $readModel->identityName());
@@ -386,6 +398,7 @@ class GetAuthenticatedIdentityTest extends TestCase
 
         $useCase = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
         $this->assertSame([], $readModel->switchableAccounts());
 
         $this->grantSwitchPermission(
@@ -398,6 +411,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         );
 
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
 
         $this->assertSame([
             [
@@ -491,7 +505,9 @@ class GetAuthenticatedIdentityTest extends TestCase
         $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $input = new GetAuthenticatedIdentityInput($identityIdentifier);
         $before = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $before);
         $readModel = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $readModel);
         $this->assertSame((string) $originalAccountIdentifier, $before->accountIdentifier());
         $this->assertSame($originalPrincipalIdentifier, $before->accountPrincipalIdentifier());
         $this->assertSame($effectivePrincipalIdentifier, $readModel->accountPrincipalIdentifier());

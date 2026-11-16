@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Query;
 
-readonly class AuthenticatedIdentityReadModel
+readonly class AuthenticatedIdentityReadModel extends AuthenticationReadModel
 {
     /**
      * @param array<int, array<string, mixed>> $accountPolicies
@@ -131,7 +131,7 @@ readonly class AuthenticatedIdentityReadModel
     }
 
     /**
-     * @return array{accountPrincipalStatus: string|null, siteManagementPrincipalStatus: string|null, siteManagementPrincipalCount: int, siteManagementPrincipalIdentifier: string|null, siteManagementPolicies: array<int, array<string, mixed>>, identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountIdentityCount: int, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
+     * @return array{accountPrincipalStatus: string|null, siteManagementPrincipalStatus: string|null, siteManagementPrincipalCount: int, siteManagementPrincipalIdentifier: string|null, siteManagementPolicies: array<int, array<string, mixed>>, identityIdentifier: string, identityName: string, email: string, language: string, profileImage: string|null, accountIdentifier: string|null, accountPrincipalIdentifier: string|null, accountType: string|null, accountIdentityCount: int, accountPolicies: array<int, array<string, mixed>>, account: array{accountIdentifier: string, email: string, type: string|null, name: string, status: string, accountCategory: string, phone: string|null, address: array<string, mixed>|null}|null, originalAccount: array{accountIdentifier: string, name: string}|null, delegationIdentifier: string|null, switchableAccounts: array<array{delegationIdentifier: string|null, accountIdentifier: string, account: array{accountIdentifier: string, name: string}, isCurrent: bool}>, authenticationMethods: array{passkeyCount: int, linkedSocialProviders: array<string>}}
      */
     public function toArray(): array
     {

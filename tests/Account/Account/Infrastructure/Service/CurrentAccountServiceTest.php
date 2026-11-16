@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Infrastructure\Service;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Mockery;
@@ -13,13 +14,51 @@ use RuntimeException;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationScope;
+use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
+use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
+use Tests\Helper\CreateApiAuthenticationContext;
 use Tests\TestCase;
 
 class CurrentAccountServiceTest extends TestCase
 {
+    public function testOAuthStateIsIsolatedByConsentAndSurvivesSourceTokenRotation(): void
+    {
+        $identity = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000001');
+        $account = new AccountIdentifier('019c9b4c-0000-7000-8000-000000000002');
+        $principal = new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000003');
+        $factory = new AuthorizationConsentFactory(new UuidGenerator());
+        $create = static fn () => $factory->create($identity, new OAuthClientIdentifier('019c9b4c-0000-4000-8000-000000000004'), [AuthorizationScope::WikiRead], $account, new AccountPrincipalIdentifier((string) $principal), 'https://mcp.test/mcp', new DateTimeImmutable());
+        $first = $create();
+        $second = $create();
+        $state = [];
+        Redis::shouldReceive('set')->andReturnUsing(static function (string $key, string $value) use (&$state): void {
+            $state[$key] = $value;
+        });
+        Redis::shouldReceive('get')->andReturnUsing(static function (string $key) use (&$state): ?string {
+            return $state[$key] ?? null;
+        });
+        $service = new CurrentAccountService(new NullLogger());
+        $selected = new CurrentAccount($identity, $account, $principal, $account, $principal, null);
+        $cookie = new CurrentAccount($identity, $account, $principal, new AccountIdentifier('019c9b4c-0000-7000-8000-000000000005'), $principal, new DelegationIdentifier('019c9b4c-0000-7000-8000-000000000006'));
+        $service->save($cookie);
+        request()->attributes->set(ApiAuthenticationContext::class, CreateApiAuthenticationContext::fromConsent($first));
+        $service->save($selected);
+        request()->attributes->set(ApiAuthenticationContext::class, CreateApiAuthenticationContext::fromConsent($second));
+        self::assertNull($service->find($identity));
+        $service->save($cookie);
+        request()->attributes->remove(ApiAuthenticationContext::class);
+        self::assertEquals($cookie, $service->find($identity));
+        request()->attributes->set(ApiAuthenticationContext::class, CreateApiAuthenticationContext::fromConsent($first, 'rotated-token'));
+        self::assertEquals($selected, $service->find($identity));
+    }
+
     public function testSavesAndRestoresDelegatedAndOriginalContexts(): void
     {
         $identityIdentifier = new IdentityIdentifier('019c9b4c-0000-7000-8000-000000000001');

@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -22,11 +21,8 @@ readonly class ApiAuthenticationContext
     private OAuthClientIdentifier $clientIdentifier;
     /** @var list<AuthorizationScope> */
     private array $scopes;
-    /** @var list<AuthorizationTarget> */
-    private array $targets;
     private AccountIdentifier $originalAccountIdentifier;
     private AccountPrincipalIdentifier $originalPrincipalIdentifier;
-    private AccountIdentifier $initialAccountIdentifier;
 
     public function __construct(ValidatedAuthorizationToken $authorizationToken, private DateTimeImmutable $expiresAt)
     {
@@ -36,10 +32,8 @@ readonly class ApiAuthenticationContext
         $this->identityIdentifier = $consent->identityIdentifier();
         $this->clientIdentifier = $consent->clientIdentifier();
         $this->scopes = $authorizationToken->scopes;
-        $this->targets = $consent->targets();
         $this->originalAccountIdentifier = $consent->originalAccountIdentifier();
         $this->originalPrincipalIdentifier = $consent->originalPrincipalIdentifier();
-        $this->initialAccountIdentifier = $consent->initialAccountIdentifier();
     }
 
     public function sourceTokenIdentifier(): string
@@ -68,12 +62,6 @@ readonly class ApiAuthenticationContext
         return $this->scopes;
     }
 
-    /** @return list<AuthorizationTarget> */
-    public function targets(): array
-    {
-        return $this->targets;
-    }
-
     public function originalAccountIdentifier(): AccountIdentifier
     {
         return $this->originalAccountIdentifier;
@@ -82,11 +70,6 @@ readonly class ApiAuthenticationContext
     public function originalPrincipalIdentifier(): AccountPrincipalIdentifier
     {
         return $this->originalPrincipalIdentifier;
-    }
-
-    public function initialAccountIdentifier(): AccountIdentifier
-    {
-        return $this->initialAccountIdentifier;
     }
 
     public function expiresAt(): DateTimeImmutable

@@ -13,7 +13,6 @@ use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -44,10 +43,8 @@ class CreateAuthorizationConsent
             $identity,
             new OAuthClientIdentifier($client->id),
             [AuthorizationScope::WikiRead, AuthorizationScope::DraftRead],
-            [new AuthorizationTarget($account)],
             $account,
             new AccountPrincipalIdentifier((string) Str::uuid7()),
-            $account,
             self::RESOURCE,
             new DateTimeImmutable()
         );

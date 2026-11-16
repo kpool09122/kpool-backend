@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Tests\Http;
 
 use Application\Http\Middleware\AuthenticateApiRequest;
+use Application\Http\Middleware\AuthorizeApiAccount;
+use Application\Http\Middleware\EnsureAccountActive;
+use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\PreventRequestForgery;
+use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -40,6 +44,27 @@ class ApiVersionRoutingTest extends TestCase
                 $position = array_search($class, $middleware, true);
                 self::assertIsInt($position, $route->uri());
                 self::assertLessThan($position, $authentication, $route->uri());
+            }
+        }
+    }
+
+    public function testEveryApiRouteEnforcesConnectionAccountBeforeRouteSpecificAccountResolution(): void
+    {
+        foreach ($this->app['router']->getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/v1/')) {
+                continue;
+            }
+            $middleware = $this->app['router']->gatherRouteMiddleware($route);
+            $authorization = array_search(AuthorizeApiAccount::class, $middleware, true);
+            self::assertIsInt($authorization, $route->uri());
+            $authentication = array_search(AuthenticateApiRequest::class, $middleware, true);
+            self::assertIsInt($authentication, $route->uri());
+            self::assertLessThan($authorization, $authentication, $route->uri());
+            foreach ([EnsureAccountActive::class, EnsurePrincipalActive::class, ResolveAccountContext::class] as $class) {
+                $position = array_search($class, $middleware, true);
+                if (is_int($position)) {
+                    self::assertLessThan($position, $authorization, $route->uri());
+                }
             }
         }
     }
