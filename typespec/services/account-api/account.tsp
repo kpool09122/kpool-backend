@@ -151,7 +151,8 @@ interface AccountOperations {
 
   @post
   @route("/switch")
-  @doc("Switch the current effective account context without changing the authenticated identity.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Switch the current effective account context without changing the authenticated identity. Internal API Bearer is an Account-selection helper with no additional scope.")
   switchAccount(
     @body body: SwitchAccountRequestBody,
   ): SwitchAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;

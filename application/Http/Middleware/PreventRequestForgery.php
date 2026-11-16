@@ -10,6 +10,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery as LaravelPreven
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Override;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Symfony\Component\HttpFoundation\Response;
 
 class PreventRequestForgery extends LaravelPreventRequestForgery
@@ -18,6 +19,10 @@ class PreventRequestForgery extends LaravelPreventRequestForgery
     #[Override]
     public function handle($request, Closure $next): Response
     {
+        if ($request->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext) {
+            return $next($request);
+        }
+
         try {
             return parent::handle($request, $next);
         } catch (TokenMismatchException) {

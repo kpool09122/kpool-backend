@@ -313,10 +313,11 @@ interface ImageOperations {
 
   @post
   @route("/upload")
-  @doc("Upload a new image.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Upload a new image. Internal API Bearer scope: wiki-images:write.")
   uploadImage(
     @body body: UploadImageRequestBody,
-  ): CreateDraftImageResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): CreateDraftImageResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{imageId}/request-deletion")
@@ -393,22 +394,24 @@ interface FreeMaterialSearchOperations {
 @route("/images")
 interface ImageListOperations {
   @get
-  @doc("List uploaded images.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("List uploaded images. Internal API Bearer scope: wiki-images:read.")
   listUploadedImages(
     @query translationSetIdentifier: Uuid,
     @query perPage?: int32,
-  ): ListUploadedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ListUploadedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 
 @route("/draft-images")
 interface DraftImageListOperations {
   @get
-  @doc("List draft images.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("List draft images. Internal API Bearer scope: wiki-images:read.")
   listDraftImages(
     @query translationSetIdentifier?: Uuid | null,
     @query status: DraftImageStatus,
     @query perPage?: int32,
-  ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 @route("/image-deletion-requests")
 interface ImageDeletionRequestListOperations {
@@ -442,7 +445,8 @@ model ListManagedImagesResponse {
 @route("/managed-images")
 interface ManagedImageListOperations {
   @get
-  @doc("List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("List images across all Wikis for operators, including hidden published images. Approved selects published images; other statuses select drafts. Internal API Bearer scope: wiki-images:read.")
   listManagedImages(
     @query status: DraftImageStatus,
     @query @minValue(1) @maxValue(100) perPage?: int32 | null,
@@ -453,7 +457,7 @@ interface ManagedImageListOperations {
     @query authorMissing?: boolean | null,
     @doc("Only images without a selected license (null) when true.")
     @query licenseMissing?: boolean | null,
-  ): ListManagedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): ListManagedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }
 
 model UpdateImageMetadataRequestBody {
@@ -469,9 +473,10 @@ model UpdateImageMetadataRequestBody {
 @route("/image/{imageId}/metadata")
 interface ImageMetadataOperations {
   @patch
-  @doc("Update published image metadata immediately for operators. Preserves image file, approval and visibility.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Update published image metadata immediately for operators. Preserves image file, approval and visibility. Internal API Bearer scope: wiki-images:write.")
   updateImageMetadata(
     @path imageId: Uuid,
     @body body: UpdateImageMetadataRequestBody,
-  ): OkImageResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse;
+  ): OkImageResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }

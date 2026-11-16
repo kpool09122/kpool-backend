@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Application\Http\Exceptions\Handler;
 use Application\Http\Middleware\EnforceApiRateLimit;
+use Application\Http\Middleware\AuthenticateApiRequest;
 use Application\Http\Middleware\EnsureAccountActive;
 use Application\Http\Middleware\EnsurePrincipalActive;
 use Application\Http\Middleware\EnsureAuthenticated;
@@ -104,7 +105,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trimStrings(except: ['confirmationIdentityName', 'state']);
+        $middleware->prependToPriorityList(EncryptCookies::class, AuthenticateApiRequest::class);
         $middleware->group('session', [
+            AuthenticateApiRequest::class,
             EncryptCookies::class,
             StartApplicationSession::class,
             PreventRequestForgery::class,

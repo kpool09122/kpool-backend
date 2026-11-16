@@ -14,6 +14,7 @@ use Application\Http\RateLimit\RateLimitSurface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +43,11 @@ readonly class EnforceApiRateLimit
 
     private function resolveSubject(Request $request): RateLimitSubject
     {
+        $apiAuthenticationContext = $request->attributes->get(ApiAuthenticationContext::class);
+        if ($apiAuthenticationContext instanceof ApiAuthenticationContext) {
+            return $this->accountSubject($apiAuthenticationContext->identityIdentifier());
+        }
+
         if (! Auth::check()) {
             return RateLimitSubject::ip($request->ip() ?? 'unknown');
         }
@@ -53,6 +59,11 @@ readonly class EnforceApiRateLimit
             return RateLimitSubject::ip($request->ip() ?? 'unknown');
         }
 
+        return $this->accountSubject($identityIdentifier);
+    }
+
+    private function accountSubject(IdentityIdentifier $identityIdentifier): RateLimitSubject
+    {
         if (! app()->bound(AccountContext::class)) {
             app()->instance(AccountContext::class, $this->authContextCache->resolveAccount(
                 $identityIdentifier,
